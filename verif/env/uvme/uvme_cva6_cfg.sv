@@ -188,6 +188,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_hazards_enabled        == 1;
       rvfi_cfg.nret                         == CVA6Cfg.NrCommitPorts;
       unified_traps                         == 0;
+      axi_cfg.rand_channel_delay_enabled    == 0;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;

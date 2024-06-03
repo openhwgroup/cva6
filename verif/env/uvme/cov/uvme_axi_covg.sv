@@ -22,25 +22,25 @@ covergroup cg_axi_w_channel(string name)
    option.per_instance = 1;
    option.name         = name;
 
-   awready_to_valid: coverpoint (item.aw_delay) {
+   awready_to_valid: coverpoint (item.ready_delay_cycle_chan_ax) {
       bins dly[] = {[0:16]};
    }
 
-   wready_to_valid: coverpoint (item.w_data_trs[0].w_delay) {
+   wready_to_valid: coverpoint (item.ready_delay_cycle_chan_w[0]) {
       bins dly[] = {[0:16]};
    }
 
-   awsize: coverpoint (item.aw_size){
+   awsize: coverpoint (item.m_size){
       bins size[] = {[0:3]};
       ignore_bins IGN_SIZE3 = {3} iff(uvme_cva6_pkg::XLEN == 32);
    }
 
-   awlock: coverpoint (item.aw_lock){
+   awlock: coverpoint (item.m_lock){
       bins lock[]    = {[0:1]};
       ignore_bins IGN_EXCLUSIVE = {1} iff(!RVA);
    }
 
-   wstrb: coverpoint (item.w_data_trs[0].w_strb) {
+   wstrb: coverpoint (item.m_wstrb[0]) {
       bins strb1   = {1};
       bins strb2   = {2};
       bins strb3   = {3};
@@ -72,12 +72,12 @@ covergroup cg_axi_b_channel(string name)
    option.per_instance = 1;
    option.name         = name;
 
-   bid:   coverpoint (item.b_id){
+   bid:   coverpoint (item.m_id){
       bins one   = {[1:3]} iff(!hpdcache);
       illegal_bins ILLEGAL_BINS = {2} iff(!hpdcache);
       ignore_bins  IGN_EXID = {3} iff(!RVA && !hpdcache);
    }
-   bresp: coverpoint (item.b_resp){
+   bresp: coverpoint (item.m_resp[0]){
       bins zero  = {0};
       bins one   = {1};
       bins two   = {2};
@@ -93,23 +93,23 @@ covergroup cg_axi_ar_channel(string name)
    option.per_instance = 1;
    option.name         = name;
 
-   arid: coverpoint (item.ar_id) {
+   arid: coverpoint (item.m_id) {
       bins ID[] = {[0:1]} iff(!hpdcache);
    }
 
-   arlen: coverpoint (item.ar_len) {
+   arlen: coverpoint (item.m_len) {
       bins LEN[] = {[0:1]};
    }
 
-   arsize: coverpoint (item.ar_size) {
-      bins SIZE[] = {[0:3]} iff(item.ar_len == 0);
+   arsize: coverpoint (item.m_size) {
+      bins SIZE[] = {[0:3]} iff(item.m_len == 0);
    }
 
-   arready_to_valid: coverpoint (item.ar_delay) {
+   arready_to_valid: coverpoint (item.ready_delay_cycle_chan_ax) {
       bins dly[] = {[0:16]};
    }
 
-   arlock: coverpoint (item.ar_lock){
+   arlock: coverpoint (item.m_lock){
       bins lock[]    = {[0:1]};
       ignore_bins IGN_EXCLUSIVE = {1} iff(!RVA);
    }
@@ -136,15 +136,15 @@ covergroup cg_axi_r_channel(string name)
    option.per_instance = 1;
    option.name         = name;
 
-   rid: coverpoint (item.r_data_trs[index].r_id) {
+   rid: coverpoint (item.m_id) {
       bins ID[] = {[0:3]} iff(!hpdcache);
       illegal_bins ILLEGAL_BINS = {2} iff(!hpdcache);
       ignore_bins  IGN_EXID = {3} iff(!RVA && !hpdcache);
    }
 
-   rlast: coverpoint (item.r_data_trs[index].r_last);
+   rlast: coverpoint (item.m_last[index]);
 
-   rresp: coverpoint (item.r_data_trs[index].r_resp){
+   rresp: coverpoint (item.m_resp[index]){
       bins zero  = {0};
       bins one   = {1};
       bins two   = {2};
@@ -168,7 +168,10 @@ class uvme_axi_covg_c extends uvm_component;
    bit HPDCache;
 
    // TLM
-   uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_resp_fifo;
+   uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_aw_req_fifo;
+   uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_b_resp_fifo;
+   uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_ar_req_fifo;
+   uvm_tlm_analysis_fifo #(uvma_axi_transaction_c)    uvme_axi_cov_r_resp_fifo;
 
    // Covergroup instances
    cg_axi_w_channel       w_axi_cg;
@@ -229,7 +232,10 @@ function void uvme_axi_covg_c::build_phase(uvm_phase phase);
    RVA = cfg.ext_a_supported;
    HPDCache = cfg.HPDCache_supported;
 
-   uvme_axi_cov_resp_fifo  = new("uvme_axi_cov_resp_fifo"   , this);
+   uvme_axi_cov_b_resp_fifo  = new("uvme_axi_cov_b_resp_fifo"   , this);
+   uvme_axi_cov_r_resp_fifo  = new("uvme_axi_cov_r_resp_fifo"   , this);
+   uvme_axi_cov_ar_req_fifo  = new("uvme_axi_cov_ar_req_fifo"   , this);
+   uvme_axi_cov_aw_req_fifo  = new("uvme_axi_cov_aw_req_fifo"   , this);
 
    w_axi_cg  = new("w_axi_cg");
    b_axi_cg  = new("b_axi_cg");
@@ -244,25 +250,40 @@ task uvme_axi_covg_c::run_phase(uvm_phase phase);
    `uvm_info(get_type_name(), $sformatf("cov_model_enabled = %d", cfg.cov_model_enabled), UVM_HIGH)
    `uvm_info(get_type_name(), $sformatf("ATOMIC ENABLE = %d", RVA), UVM_HIGH)
    forever begin
-      uvma_axi_transaction_c  resp_item;
+      uvma_axi_transaction_c  aw_item;
+      uvma_axi_transaction_c  b_item;
+      uvma_axi_transaction_c  ar_item;
+      uvma_axi_transaction_c  r_item;
 
-      uvme_axi_cov_resp_fifo.get(resp_item);
-      case (resp_item.access_type)
-         UVMA_AXI_ACCESS_WRITE : begin
+     fork
+        uvme_axi_cov_b_resp_fifo.get(b_item);
+        uvme_axi_cov_r_resp_fifo.get(r_item);
+        uvme_axi_cov_ar_req_fifo.get(ar_item);
+        uvme_axi_cov_aw_req_fifo.get(aw_item);
+     join_any
+     disable fork;
 
-             w_axi_cg.sample(resp_item, RVA);
-             b_axi_cg.sample(resp_item, RVA, HPDCache);
+     if(aw_item != null) begin
+         `uvm_info(get_type_name(), $sformatf("WRITE REQ ITEM DETECTED"), UVM_LOW)
+         w_axi_cg.sample(aw_item, RVA);
+      end
 
+     if(b_item != null) begin
+         `uvm_info(get_type_name(), $sformatf("WRITE RESP ITEM DETECTED"), UVM_LOW)
+         b_axi_cg.sample(b_item, RVA, HPDCache);
+      end
+
+      if(ar_item != null) begin
+         `uvm_info(get_type_name(), $sformatf("READ ADDRESS ITEM DETECTED"), UVM_LOW)
+         ar_axi_cg.sample(ar_item, RVA, HPDCache);
+      end
+
+      if(r_item != null) begin
+         `uvm_info(get_type_name(), $sformatf("READ DATA ITEM DETECTED"), UVM_LOW)
+         for(int i = 0; i <= r_item.m_len; i++) begin
+            r_axi_cg.sample(r_item, i, RVA, HPDCache);
          end
-         UVMA_AXI_ACCESS_READ : begin
-
-            ar_axi_cg.sample(resp_item, RVA, HPDCache);
-            for(int i = 0; i <= resp_item.ar_len; i++) begin
-               r_axi_cg.sample(resp_item, i, RVA, HPDCache);
-            end
-
-         end
-      endcase
+      end
 
    end
 
