@@ -1,0 +1,7 @@
+[appendix]
+== Calling Convention for Vector State (Not authoritative - Placeholder Only)
+
+ifeval::[{RVV} == false]
+{ohg-config}: This appendix is not applicable as vector extension is
+not supported.
+endif::[]

@@ -1,0 +1,6 @@
+[[chap:zihintntl]]
+== "Zihintntl" Extension for Non-Temporal Locality Hints, Version 1.0
+
+ifeval::[{RVZihintntl} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

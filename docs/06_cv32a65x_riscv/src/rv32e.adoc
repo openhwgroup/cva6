@@ -1,0 +1,6 @@
+[[rv32e]]
+== RV32E and RV64E Base Integer Instruction Sets, Version 2.0
+
+ifeval::[{RVE} == false]
+{ohg-config}: These instruction sets are not supported.
+endif::[]

@@ -1,0 +1,6 @@
+[[ztso]]
+== "Ztso" Extension for Total Store Ordering, Version 1.0
+
+ifeval::[{RVZtso} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

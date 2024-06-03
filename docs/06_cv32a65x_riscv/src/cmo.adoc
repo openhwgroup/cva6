@@ -1,0 +1,6 @@
+[[cmo]]
+== "CMO" Extensions for Base Cache Management Operation ISA, Version 1.0.0
+
+ifeval::[{RVZicbo} == false]
+{ohg-config}: These extensions are not supported.
+endif::[]

@@ -1,0 +1,6 @@
+[[zifencei]]
+== "Zifencei" Extension for Instruction-Fetch Fence, Version 2.0
+
+ifeval::[{RVZifencei} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

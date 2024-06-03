@@ -1,0 +1,6 @@
+[[rv64]]
+== RV64I Base Integer Instruction Set, Version 2.1
+
+ifeval::[{XLEN} != 64]
+{ohg-config}: This instruction set is not supported.
+endif::[]

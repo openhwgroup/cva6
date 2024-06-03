@@ -1,0 +1,6 @@
+[[chap:zacas]]
+== "Zacas" Extension for Atomic Compare-and-Swap (CAS) Instructions, Version 1.0.0
+
+ifeval::[{RVZacas} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

@@ -1,0 +1,7 @@
+[[rv128]]
+== RV128I Base Integer Instruction Set, Version 1.7
+
+ifeval::[{XLEN} != 128]
+{ohg-config}: This instruction set is not supported.
+endif::[]
+

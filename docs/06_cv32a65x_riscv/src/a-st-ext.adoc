@@ -1,0 +1,6 @@
+[[atomics]]
+== "A" Extension for Atomic Instructions, Version 2.1
+
+ifeval::[{RVA} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
