@@ -526,7 +526,7 @@ code_coverage-report:
     - mv artifacts/coverage/seedlist.yaml verif/sim/seedlist.yaml
     - make -C verif/sim generate_cov_dash
     - mv verif/sim/urgReport artifacts/cov_reports/
-    - python3 .gitlab-ci/scripts/report_coverage.py artifacts/cov_reports/urgReport/hierarchy.txt
+    - python3 .gitlab-ci/scripts/report_coverage.py artifacts/cov_reports/urgReport/hierarchy.txt artifacts/cov_reports/urgReport/"feature.CVA6 Verification Master Plan1.7.-1268999905.txt"
 
 check gitlab jobs status:
   stage: find failures
