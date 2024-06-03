@@ -34,7 +34,9 @@ def csr_recursive_update(original_dict, csr_update):
             elif isinstance(value, bool):
                 if isinstance(original_dict[key], dict):
                     for k in original_dict[key]:
+                        print(k)
                         if isinstance(original_dict[key][k], dict):
+                 
                             for sub_key in original_dict[key][k]:
                                 original_dict[key][k][sub_key] = value
                         else:

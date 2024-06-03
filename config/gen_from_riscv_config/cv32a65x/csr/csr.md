@@ -45,27 +45,30 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x1800  
 **Privilege Mode** M  
 **Description** The mstatus register keeps track of and controls the hart’s current operating state.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|0|UIE|WPRI|0x0|WARL|Stores the state of the user mode interrupts.//not implemented|
-|1|SIE|WPRI|0x0|WARL|Stores the state of the supervisor mode interrupts.//not implemented|
+|0|UIE||0x0|WARL|Stores the state of the user mode interrupts.|
+|1|SIE||0x0|WARL|Stores the state of the supervisor mode interrupts.|
+|2|RESERVED_2||0x0|WPRI|RESERVED|
 |3|MIE|[0 , 1]|0x0|WLRL|Stores the state of the machine mode interrupts.|
-|4|UPIE|WPRI|0x0|WARL|Stores the state of the user mode interrupts prior to the trap.//not implemented|
-|5|SPIE|WPRI|0x0|WARL|Stores the state of the supervisor mode interrupts prior to the trap.//not implemented|
+|4|UPIE||0x0|WARL|Stores the state of the user mode interrupts prior to the trap.|
+|5|SPIE||0x0|WARL|Stores the state of the supervisor mode interrupts prior to the trap.|
+|6|RESERVED_6||0x0|WPRI|RESERVED|
 |7|MPIE|[0 , 1]|0x0|WLRL|Stores the state of the machine mode interrupts prior to the trap.|
-|8|SPP|WPRI|0x0|WARL|Stores the previous priority mode for supervisor.//not implemented|
+|8|SPP||0x0|WARL|Stores the previous priority mode for supervisor.|
+|[10:9]|RESERVED_9||0x0|WPRI|RESERVED|
 |[12:11]|MPP|[0x3]|0x3|WARL|Stores the previous priority mode for machine.|
-|[14:13]|FS|WPRI|0x0|WARL|Encodes the status of the floating-point unit, including the CSR fcsr and floating-point data registers.//not implemented|
-|[16:15]|XS|WPRI|0x0|WARL|Encodes the status of additional user-mode extensions and associated state.//not implemented|
-|17|MPRV|WPRI|0x0|WARL|Modifies the privilege level at which loads and stores execute in all privilege modes.//not implemented|
-|18|SUM|WPRI|0x0|WARL|Modifies the privilege with which S-mode loads and stores access virtual memory.//not implemented|
-|19|MXR|WPRI|0x0|WARL|Modifies the privilege with which loads access virtual memory.//not implemented|
-|20|TVM|WPRI|0x0|WARL|Supports intercepting supervisor virtual-memory management operations.//not implemented|
-|21|TW|WPRI|0x0|WARL|Supports intercepting the WFI instruction.//not implemented|
-|22|TSR|WPRI|0x0|WARL|Supports intercepting the supervisor exception return instruction.//not implemented|
-|23|SPELP|WPRI|0x0|WARL|Supervisor mode previous expected-landing-pad (ELP) state.//not implemented|
-|31|SD|WPRI|0x0|WARL|Read-only bit that summarizes whether either the FS field or XS field signals the presence of some dirty state.//not implemented|
-|[30:24]|RESERVED_24|WPRI|0x0|WPRI|RESERVED|
+|[14:13]|FS||0x0|WARL|Encodes the status of the floating-point unit, including the CSR fcsr and floating-point data registers.|
+|[16:15]|XS||0x0|WARL|Encodes the status of additional user-mode extensions and associated state.|
+|17|MPRV||0x0|WARL|Modifies the privilege level at which loads and stores execute in all privilege modes.|
+|18|SUM||0x0|WARL|Modifies the privilege with which S-mode loads and stores access virtual memory.|
+|19|MXR||0x0|WARL|Modifies the privilege with which loads access virtual memory.|
+|20|TVM||0x0|WARL|Supports intercepting supervisor virtual-memory management operations.|
+|21|TW||0x0|WARL|Supports intercepting the WFI instruction.|
+|22|TSR||0x0|WARL|Supports intercepting the supervisor exception return instruction.|
+|23|SPELP||0x0|WARL|Supervisor mode previous expected-landing-pad (ELP) state.|
+|[30:24]|RESERVED_24||0x0|WPRI|RESERVED|
+|31|SD||0x0|WARL|Read-only bit that summarizes whether either the FS field or XS field signals the presence of some dirty state.|
 
 #### MSTATUSH
   
@@ -74,14 +77,16 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mstatush register keeps track of and controls the hart’s current operating state.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|4|SBE|WPRI|0x0|WARL|control the endianness of memory accesses other than instruction fetches for supervisor mode//not implemented|
-|5|MBE|WPRI|0x0|WARL|control the endianness of memory accesses other than instruction fetches for machine mode//not implemented|
-|6|GVA|WPRI|0x0|WARL|Stores the state of the supervisor mode interrupts.//not implemented|
-|7|MPV|WPRI|0x0|WARL|Stores the state of the user mode interrupts.//not implemented|
-|9|MPELP|WPRI|0x0|WARL|Machine mode previous expected-landing-pad (ELP) state.//not implemented|
-|[31:10]|RESERVED_10|WPRI|0x0|WPRI|RESERVED|
+|[3:0]|RESERVED_0||0x0|WPRI|RESERVED|
+|4|SBE||0x0|WARL|control the endianness of memory accesses other than instruction fetches for supervisor mode|
+|5|MBE||0x0|WARL|control the endianness of memory accesses other than instruction fetches for machine mode|
+|6|GVA||0x0|WARL|Stores the state of the supervisor mode interrupts.|
+|7|MPV||0x0|WARL|Stores the state of the user mode interrupts.|
+|8|RESERVED_8||0x0|WPRI|RESERVED|
+|9|MPELP||0x0|WARL|Machine mode previous expected-landing-pad (ELP) state.|
+|[31:10]|RESERVED_10||0x0|WPRI|RESERVED|
 
 #### MISA
   
@@ -90,11 +95,11 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x40001106  
 **Privilege Mode** M  
 **Description** misa is a read-write register reporting the ISA supported by the hart.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[25:0]|EXTENSIONS|[0x0000000:0x3FFFFFF]|0x1106|WARL|Encodes the presence of the standard extensions, with a single bit per letter of the alphabet.|
+|[29:26]|RESERVED_26||0x0|WPRI|RESERVED|
 |[31:30]|MXL|[0x1]|0x1|WARL|Encodes the native base integer ISA width.|
-|[29:26]|RESERVED_26|WPRI|0x0|WPRI|RESERVED|
 
 #### MIE
   
@@ -103,22 +108,22 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mie register is an MXLEN-bit read/write register containing interrupt enable bits.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|0|USIE|WPRI|0x0|WARL|User Software Interrupt enable.//not implemented|
-|1|SSIE|WPRI|0x0|WARL|Supervisor Software Interrupt enable.//not implemented|
-|2|VSSIE|WPRI|0x0|WARL|VS-level Software Interrupt enable.//not implemented|
+|0|USIE||0x0|WARL|User Software Interrupt enable.|
+|1|SSIE||0x0|WARL|Supervisor Software Interrupt enable.|
+|2|VSSIE||0x0|WARL|VS-level Software Interrupt enable.|
 |3|MSIE|[0x0 , 0x1]|0x0|WLRL|Machine Software Interrupt enable.|
-|4|UTIE|WPRI|0x0|WARL|User Timer Interrupt enable.//not implemented|
-|5|STIE|WPRI|0x0|WARL|Supervisor Timer Interrupt enable.//not implemented|
-|6|VSTIE|WPRI|0x0|WARL|VS-level Timer Interrupt enable.//not implemented|
+|4|UTIE||0x0|WARL|User Timer Interrupt enable.|
+|5|STIE||0x0|WARL|Supervisor Timer Interrupt enable.|
+|6|VSTIE||0x0|WARL|VS-level Timer Interrupt enable.|
 |7|MTIE|[0 , 1]|0x0|WLRL|Machine Timer Interrupt enable.|
-|8|UEIE|WPRI|0x0|WARL|User External Interrupt enable.//not implemented|
-|9|SEIE|WPRI|0x0|WARL|Supervisor External Interrupt enable.//not implemented|
-|10|VSEIE|WPRI|0x0|WARL|VS-level External Interrupt enable.//not implemented|
+|8|UEIE||0x0|WARL|User External Interrupt enable.|
+|9|SEIE||0x0|WARL|Supervisor External Interrupt enable.|
+|10|VSEIE||0x0|WARL|VS-level External Interrupt enable.|
 |11|MEIE|[0 , 1]|0x0|WLRL|Machine External Interrupt enable.|
-|12|SGEIE|WPRI|0x0|WARL|HS-level External Interrupt enable.//not implemented|
-|[31:13]|RESERVED_13|WPRI|0x0|WPRI|RESERVED|
+|12|SGEIE||0x0|WARL|HS-level External Interrupt enable.|
+|[31:13]|RESERVED_13||0x0|WPRI|RESERVED|
 
 #### MTVEC
   
@@ -127,7 +132,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x80010000  
 **Privilege Mode** M  
 **Description** MXLEN-bit read/write register that holds trap vector configuration.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[1:0]|MODE|[0x0]|0x0|WARL|Vector mode.|
 |[31:2]|BASE|[0x3FFFFFFF, 0x00000000]|0x20004000|WARL|Vector base address.|
@@ -139,7 +144,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MHPMEVENT[I]|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.|
 
@@ -150,7 +155,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mscratch register is an MXLEN-bit read/write register dedicated for use by machine mode.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MSCRATCH|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mscratch register is an MXLEN-bit read/write register dedicated for use by machine mode.|
 
@@ -161,7 +166,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mepc is a warl register that must be able to hold all valid physical and virtual addresses.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MEPC|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mepc is a warl register that must be able to hold all valid physical and virtual addresses.|
 
@@ -172,7 +177,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mcause register stores the information regarding the trap.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[30:0]|EXCEPTION_CODE|[0 , 15]|0x0|WLRL|Encodes the exception code.|
 |31|INTERRUPT|[0x0 , 0x1]|0x0|WLRL|Indicates whether the trap was due to an interrupt.|
@@ -184,7 +189,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mtval is a warl register that holds the address of the instruction which caused the exception.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MTVAL|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mtval is a warl register that holds the address of the instruction which caused the exception.|
 
@@ -195,22 +200,22 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mip register is an MXLEN-bit read/write register containing information on pending interrupts.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|0|USIP|WPRI|0x0|WARL|User Software Interrupt Pending.//not implemented|
-|1|SSIP|WPRI|0x0|WARL|Supervisor Software Interrupt Pending.//not implemented|
-|2|VSSIP|WPRI|0x0|WARL|VS-level Software Interrupt Pending.//not implemented|
+|0|USIP||0x0|WARL|User Software Interrupt Pending.|
+|1|SSIP||0x0|WARL|Supervisor Software Interrupt Pending.|
+|2|VSSIP||0x0|WARL|VS-level Software Interrupt Pending.|
 |3|MSIP|0x1|0x0|RO_VARIABLE|Machine Software Interrupt Pending.|
-|4|UTIP|WPRI|0x0|WARL|User Timer Interrupt Pending.//not implemented|
-|5|STIP|WPRI|0x0|WARL|Supervisor Timer Interrupt Pending.//not implemented|
-|6|VSTIP|WPRI|0x0|WARL|VS-level Timer Interrupt Pending.//not implemented|
+|4|UTIP||0x0|WARL|User Timer Interrupt Pending.|
+|5|STIP||0x0|WARL|Supervisor Timer Interrupt Pending.|
+|6|VSTIP||0x0|WARL|VS-level Timer Interrupt Pending.|
 |7|MTIP|0x1|0x0|RO_VARIABLE|Machine Timer Interrupt Pending.|
-|8|UEIP|WPRI|0x0|WARL|User External Interrupt Pending.//not implemented|
-|9|SEIP|WPRI|0x0|WARL|Supervisor External Interrupt Pending.//not implemented|
-|10|VSEIP|WPRI|0x0|WARL|VS-level External Interrupt Pending.//not implemented|
+|8|UEIP||0x0|WARL|User External Interrupt Pending.|
+|9|SEIP||0x0|WARL|Supervisor External Interrupt Pending.|
+|10|VSEIP||0x0|WARL|VS-level External Interrupt Pending.|
 |11|MEIP|0x1|0x0|RO_VARIABLE|Machine External Interrupt Pending.|
-|12|SGEIP|WPRI|0x0|WARL|HS-level External Interrupt Pending.//not implemented|
-|[31:13]|RESERVED_13|WPRI|0x0|WPRI|RESERVED|
+|12|SGEIP||0x0|WARL|HS-level External Interrupt Pending.|
+|[31:13]|RESERVED_13||0x0|WPRI|RESERVED|
 
 #### PMPCFG[0-1]
   
@@ -219,7 +224,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** PMP configuration register
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[7:0]|PMP[I*4 + 0]CFG|[0x00:0xFF]|0x0|WARL|pmp configuration bits|
 |[15:8]|PMP[I*4 + 1]CFG|[0x00:0xFF]|0x0|WARL|pmp configuration bits|
@@ -233,7 +238,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Physical memory protection address register
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|PMPADDR[I]|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|Physical memory protection address register|
 
@@ -244,7 +249,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Counts the number of clock cycles executed from an arbitrary point in time.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MCYCLE|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|Counts the number of clock cycles executed from an arbitrary point in time.|
 
@@ -255,7 +260,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Counts the number of instructions completed from an arbitrary point in time.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MINSTRET|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|Counts the number of instructions completed from an arbitrary point in time.|
 
@@ -266,7 +271,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MHPMCOUNTER[I]|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.|
 
@@ -277,7 +282,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** upper 32 bits of mcycle
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MCYCLEH|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|upper 32 bits of mcycle|
 
@@ -288,7 +293,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Upper 32 bits of minstret.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MINSTRETH|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|Upper 32 bits of minstret.|
 
@@ -299,7 +304,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** The mhpmcounterh returns the upper half word in RV32I systems.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MHPMCOUNTER[I]H|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmcounterh returns the upper half word in RV32I systems.|
 
@@ -310,7 +315,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x602  
 **Privilege Mode** M  
 **Description** 32-bit read-only register providing the JEDEC manufacturer ID of the provider of the core.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MVENDORID|0x00000602|0x00000602|RO_CONSTANT|32-bit read-only register providing the JEDEC manufacturer ID of the provider of the core.|
 
@@ -321,7 +326,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x3  
 **Privilege Mode** M  
 **Description** MXLEN-bit read-only register encoding the base microarchitecture of the hart.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MARCHID|0x00000003|0x00000003|RO_CONSTANT|MXLEN-bit read-only register encoding the base microarchitecture of the hart.|
 
@@ -332,7 +337,7 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Provides a unique encoding of the version of the processor implementation.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MIMPID|0x00000000|0x00000000|RO_CONSTANT|Provides a unique encoding of the version of the processor implementation.|
 
@@ -343,6 +348,6 @@ Author: Abdessamii Oukalrazqou
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** MXLEN-bit read-only register containing the integer ID of the hardware thread running the code.
-|Bits|Field Name|Legal Values|Reset|Access|Description|
+|Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
 |[31:0]|MHARTID|0x00000000|0x00000000|RO_CONSTANT|MXLEN-bit read-only register containing the integer ID of the hardware thread running the code.|

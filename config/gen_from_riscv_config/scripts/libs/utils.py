@@ -273,6 +273,9 @@ class RstAddressBlock(AddressBlockClass):
                     reg_table.append(_line)
                 _headers = ["Bits", "Field Name", "Legal Values", "Reset", "Access"]
                 _headers.append("Description")
+                reg_table = sorted(
+                    reg_table, key=lambda x: int(x[0].strip("[]").split(":")[0])
+                )
                 # table of the register
                 r.table(header=_headers, data=reg_table)
         return r.data
@@ -428,6 +431,7 @@ class InstmdBlock(InstructionBlockClass):
                     ).replace("\n", " ")
                     reg_table.append(reg.Description[fieldIndex])
                     reg_table.append(reg.OperationName[fieldIndex])
+
                 self.mdFile.new_table(
                     columns=len(headers),
                     rows=len(reg.Description) + 1,
@@ -449,6 +453,13 @@ class MdAddressBlock(AddressBlockClass):
         self.registerList = []
         self.suffix = ".md"
         self.mdFile = MdUtils(file_name="none", title="")
+
+    def parse_bits(self, bits):
+        if ":" in bits:
+            msb, lsb = map(int, bits.strip("[]").split(":")[0])
+        else:
+            msb = lsb = int(bits.strip("[]").split(":")[0])
+        return msb, lsb
 
     def returnAsString(self):
         registerlist = sorted(self.registerList, key=lambda reg: reg.address)
@@ -491,27 +502,38 @@ class MdAddressBlock(AddressBlockClass):
         self.mdFile.new_header(level=3, title="Registers Description")
         for reg in registerlist:
             if reg.RV64 | reg.RV32:
-                headers = ["Bits", "Field Name", "Legal Values", "Reset", "Access"]
-                headers.append("Description")
                 self.returnMdRegDesc(
                     reg.name, reg.address, reg.resetValue, reg.desc, reg.access
                 )
                 reg_table = []
+                _line = []
                 for field in reg.field:
                     if field.bitWidth == 1:  # only one bit -> no range needed
                         bits = f"{field.bitlsb}"
                     else:
                         bits = f"[{field.bitmsb}:{field.bitlsb}]"
-                    reg_table.append(bits)
-                    reg_table.append(field.name.upper())
-                    reg_table.append(field.bitlegal)
-                    reg_table.append(field.fieldreset)
-                    reg_table.append(field.fieldaccess)
-                    reg_table.append(field.fieldDesc)
+                    reg_table.append(
+                        [
+                            bits,
+                            field.name.upper(),
+                            field.bitlegal,
+                            field.fieldreset,
+                            field.fieldaccess,
+                            field.fieldDesc,
+                        ]
+                    )
+                _headers = ["Bits", "Field Name", "Legal Values", "Reset", "Type"]
+                _headers.append("Description")
+                reg_table = sorted(
+                    reg_table, key=lambda x: int(x[0].strip("[]").split(":")[0])
+                )
+                reg_table_flattened = [
+                    item for sublist in reg_table for item in sublist
+                ]
                 self.mdFile.new_table(
-                    columns=len(headers),
-                    rows=len(reg.field) + 1,
-                    text=headers + reg_table,
+                    columns=len(_headers),
+                    rows=len(reg_table) + 1,
+                    text=_headers + reg_table_flattened,
                     text_align="left",
                 )
 
@@ -571,9 +593,9 @@ class CsrParser:
                     fieldaccess = ""
                     legal = registerElem.get("rv32", "")[item].get("type", None)
                     if legal is None:
-                        bitlegal = "WPRI"
+                        bitlegal = ""
                         fieldaccess = "WARL"
-                        fieldDesc = fieldDesc + "//not implemented"
+                        fieldDesc = fieldDesc
                     else:
                         warl = re.findall(pattern_warl, str(legal.keys()))
                         if warl:
@@ -618,12 +640,23 @@ class CsrParser:
                             )
                     else:
                         fieldName = item
+                    f = Field(
+                        fieldName,
+                        bitlegal,
+                        fieldreset,
+                        bitmsb,
+                        bitlsb,
+                        bitWidth,
+                        fieldDesc,
+                        fieldaccess,
+                    )
+                    field.append(f)
                 elif isinstance(item, list):
                     for item_ in item:
                         fieldName = f"Reserved_{item_[0]}"
                         bitlsb = item_[0]
                         bitmsb = item_[len(item_) - 1]
-                        legal = "WPRI"
+                        legal = ""
                         fieldaccess = "WPRI"
                         bitWidth = int(item_[len(item_) - 1]) - int(item_[0]) + 1
                         fieldDesc = "RESERVED"
@@ -631,17 +664,17 @@ class CsrParser:
                         fieldreset = hex(
                             int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
                         )
-                f = Field(
-                    fieldName,
-                    bitlegal,
-                    fieldreset,
-                    bitmsb,
-                    bitlsb,
-                    bitWidth,
-                    fieldDesc,
-                    fieldaccess,
-                )
-                field.append(f)
+                        f = Field(
+                            fieldName,
+                            bitlegal,
+                            fieldreset,
+                            bitmsb,
+                            bitlsb,
+                            bitWidth,
+                            fieldDesc,
+                            fieldaccess,
+                        )
+                        field.append(f)
         elif len(fieldList) == 0:
             pattern = r"(\D+)\[(\d+)\-\d+\](.*)"
             match = re.match(pattern, regName)
