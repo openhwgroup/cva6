@@ -245,68 +245,45 @@ module cva6_hpdcache_subsystem
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
 
-  typedef logic [63:0] hwpf_stride_param_t;
+  logic                 dcache_miss_ready;
+  logic                 dcache_miss_valid;
+  hpdcache_mem_req_t    dcache_miss;
 
-  logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
-  logic dcache_read_miss, dcache_write_miss;
+  logic                 dcache_miss_resp_ready;
+  logic                 dcache_miss_resp_valid;
+  hpdcache_mem_resp_r_t dcache_miss_resp;
 
-  logic                                   [                2:0] snoop_valid;
-  logic                                   [                2:0] snoop_abort;
-  hpdcache_req_offset_t                   [                2:0] snoop_addr_offset;
-  hpdcache_tag_t                          [                2:0] snoop_addr_tag;
-  logic                                   [                2:0] snoop_phys_indexed;
+  logic                 dcache_wbuf_ready;
+  logic                 dcache_wbuf_valid;
+  hpdcache_mem_req_t    dcache_wbuf;
 
-  logic                                                         dcache_cmo_req_is_prefetch;
+  logic                 dcache_wbuf_data_ready;
+  logic                 dcache_wbuf_data_valid;
+  hpdcache_mem_req_w_t  dcache_wbuf_data;
 
-  logic                                                         dcache_miss_ready;
-  logic                                                         dcache_miss_valid;
-  hpdcache_mem_req_t                                            dcache_miss;
+  logic                 dcache_wbuf_resp_ready;
+  logic                 dcache_wbuf_resp_valid;
+  hpdcache_mem_resp_w_t dcache_wbuf_resp;
 
-  logic                                                         dcache_miss_resp_ready;
-  logic                                                         dcache_miss_resp_valid;
-  hpdcache_mem_resp_r_t                                         dcache_miss_resp;
+  logic                 dcache_uc_read_ready;
+  logic                 dcache_uc_read_valid;
+  hpdcache_mem_req_t    dcache_uc_read;
 
-  logic                                                         dcache_wbuf_ready;
-  logic                                                         dcache_wbuf_valid;
-  hpdcache_mem_req_t                                            dcache_wbuf;
+  logic                 dcache_uc_read_resp_ready;
+  logic                 dcache_uc_read_resp_valid;
+  hpdcache_mem_resp_r_t dcache_uc_read_resp;
 
-  logic                                                         dcache_wbuf_data_ready;
-  logic                                                         dcache_wbuf_data_valid;
-  hpdcache_mem_req_w_t                                          dcache_wbuf_data;
+  logic                 dcache_uc_write_ready;
+  logic                 dcache_uc_write_valid;
+  hpdcache_mem_req_t    dcache_uc_write;
 
-  logic                                                         dcache_wbuf_resp_ready;
-  logic                                                         dcache_wbuf_resp_valid;
-  hpdcache_mem_resp_w_t                                         dcache_wbuf_resp;
+  logic                 dcache_uc_write_data_ready;
+  logic                 dcache_uc_write_data_valid;
+  hpdcache_mem_req_w_t  dcache_uc_write_data;
 
-  logic                                                         dcache_uc_read_ready;
-  logic                                                         dcache_uc_read_valid;
-  hpdcache_mem_req_t                                            dcache_uc_read;
-
-  logic                                                         dcache_uc_read_resp_ready;
-  logic                                                         dcache_uc_read_resp_valid;
-  hpdcache_mem_resp_r_t                                         dcache_uc_read_resp;
-
-  logic                                                         dcache_uc_write_ready;
-  logic                                                         dcache_uc_write_valid;
-  hpdcache_mem_req_t                                            dcache_uc_write;
-
-  logic                                                         dcache_uc_write_data_ready;
-  logic                                                         dcache_uc_write_data_valid;
-  hpdcache_mem_req_w_t                                          dcache_uc_write_data;
-
-  logic                                                         dcache_uc_write_resp_ready;
-  logic                                                         dcache_uc_write_resp_valid;
-  hpdcache_mem_resp_w_t                                         dcache_uc_write_resp;
-
-  hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
-  hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
+  logic                 dcache_uc_write_resp_ready;
+  logic                 dcache_uc_write_resp_valid;
+  hpdcache_mem_resp_w_t dcache_uc_write_resp;
 
   hpdcache_with_adapter #(
       .CVA6Cfg(CVA6Cfg),
