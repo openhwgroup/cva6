@@ -1,0 +1,54 @@
+diff --git a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+index 981ee6247..a972efb14 100644
+--- a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
++++ b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+@@ -636,6 +636,24 @@ hart_schema:
+                     - 0:1
+               default: {implemented: false}
+               check_with: s_check
++            ube:
++              type: dict
++              schema:
++                description: { type: string, default: control the endianness of memory accesses other than instruction fetches for user mode}
++                shadow: {type: string, default: , nullable: True}
++                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
++                msb: {type: integer, default: 6, allowed: [6]}
++                lsb: {type: integer, default: 6, allowed: [6]}
++                implemented: {type: boolean, default: true}
++                type:
++                  type: dict
++                  oneof:
++                  - schema: { warl: *ref_warl }
++                  - schema: {ro_constant: {type: integer, max: 0 , min : 0}}
++                  - schema: { wlrl: *ref_wlrl }
++                  default: {ro_constant: 0}
++              default: {implemented: false}
++              check_with: u_check
+             mpie:
+               type: dict
+               schema:
+@@ -1049,6 +1067,24 @@ hart_schema:
+                     - 0:1
+               default: {implemented: false}
+               check_with: s_check
++            ube:
++              type: dict
++              schema:
++                description: { type: string, default: control the endianness of memory accesses other than instruction fetches for user mode}
++                shadow: {type: string, default: , nullable: True}
++                shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
++                msb: {type: integer, default: 6, allowed: [6]}
++                lsb: {type: integer, default: 6, allowed: [6]}
++                implemented: {type: boolean, default: true}
++                type:
++                  type: dict
++                  oneof:
++                  - schema: { warl: *ref_warl }
++                  - schema: {ro_constant: {type: integer, max: 0 , min : 0}}
++                  - schema: { wlrl: *ref_wlrl }
++                  default: {ro_constant: 0}
++              default: {implemented: false}
++              check_with: u_check
+             mpie:
+               type: dict
+               schema:
