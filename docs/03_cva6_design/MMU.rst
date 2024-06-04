@@ -127,7 +127,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
    * - ``PtLevels``
      - Number of page table levels
      - Natural
-     - ``>1``
+     - ``log2(CVA6Cfg.XLEN)``
      - No
 
 .. raw:: html
