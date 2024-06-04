@@ -28,7 +28,7 @@ module cva6_rvfi_probes
     input logic [SUPERSCALAR:0][31:0] instruction_i,
     input logic [SUPERSCALAR:0]       is_compressed_i,
 
-    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
+    input logic [SUPERSCALAR            :0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_i,
 
     input logic flush_unissued_instr_i,

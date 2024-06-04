@@ -96,7 +96,7 @@ module scoreboard #(
     input logic x_we_i,
 
     // TO_BE_COMPLETED - RVFI
-    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    output logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
     // TO_BE_COMPLETED - RVFI
     output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
@@ -466,7 +466,7 @@ module scoreboard #(
   end
 
   //RVFI
-  assign rvfi_issue_pointer_o  = issue_pointer_q;
+  assign rvfi_issue_pointer_o  = issue_pointer[ariane_pkg::SUPERSCALAR:0];
   assign rvfi_commit_pointer_o = commit_pointer_q;
 
   //pragma translate_off

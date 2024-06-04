@@ -93,7 +93,7 @@
 
 // RVFI PROBES
 `define RVFI_PROBES_INSTR_T(Cfg) struct packed { \
-  logic [Cfg.TRANS_ID_BITS-1:0] issue_pointer; \
+  logic [ariane_pkg::SUPERSCALAR:0][Cfg.TRANS_ID_BITS-1:0] issue_pointer; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.TRANS_ID_BITS-1:0] commit_pointer; \
   logic flush_unissued_instr; \
   logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_valid; \

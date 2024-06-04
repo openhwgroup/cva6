@@ -462,7 +462,7 @@ module cva6
   // --------------
   // RVFI
   // --------------
-  logic [CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer;
   // --------------
   // COMMIT <-> ID
