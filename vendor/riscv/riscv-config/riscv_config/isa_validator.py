@@ -60,7 +60,12 @@ def get_extension_list(isa):
         elif a1 == a2 and a3 > a4:
             err = True
             err_list.append( f"Within the Z{a1.lower()} category extension {zext_list[i]} must occur after {zext_list[i+1]}")
-        
+    if 'B' not in extension_list and (set(['Zba', 'Zbb', 'Zbs']) & set(extension_list) == set(['Zba', 'Zbb', 'Zbs'])):
+        # Insert 'B' at correct location: after any of its predecessors in canonical ordering.
+        # At least 'I' or 'E' must be present by definition.
+        B_preds = canonical_ordering[:canonical_ordering.find('B')]
+        lastpred_B_idx = max([pos for pos, char in enumerate(standard_isa) if char in list(B_preds)])
+        extension_list.insert(lastpred_B_idx + 1, 'B')
     if 'I' not in extension_list and 'E' not in extension_list:
         err_list.append( 'Either of I or E base extensions need to be present in the ISA string')
         err = True

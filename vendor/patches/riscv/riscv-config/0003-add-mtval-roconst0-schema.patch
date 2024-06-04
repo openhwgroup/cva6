@@ -1,0 +1,15 @@
+diff --git a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+index a972efb14..a7536375f 100644
+--- a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
++++ b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+@@ -3594,7 +3594,9 @@ hart_schema:
+             lsb: {type: integer, default: 0, allowed: [0]}
+             type:
+               type: dict
+-              schema: { warl: *ref_warl }
++              oneof:
++              - schema: { ro_constant: {type: integer, default: 0x0, allowed: [0x0]}}
++              - schema: { warl: *ref_warl }
+               default:
+                 warl:
+                   dependency_fields: []
