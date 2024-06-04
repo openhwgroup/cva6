@@ -162,6 +162,8 @@ package config_pkg;
     int unsigned                 FetchUserWidth;
     // Is FPGA optimization of CV32A6
     bit                          FpgaEn;
+    // Is Techno Cut instanciated
+    bit                          TechnoCut;
     // Number of commit ports
     int unsigned                 NrCommitPorts;
     // Load cycle latency number
@@ -202,6 +204,7 @@ package config_pkg;
     int unsigned VMID_WIDTH;
 
     bit          FpgaEn;
+    bit          TechnoCut;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one

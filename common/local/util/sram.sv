@@ -48,6 +48,7 @@ logic [BE_WIDTH_ALIGNED-1:0]    be_aligned;
 logic [DATA_WIDTH_ALIGNED-1:0]  rdata_aligned;
 logic [USER_WIDTH_ALIGNED-1:0]  ruser_aligned;
 
+
 // align to 64 bits for inferrable macro below
 always_comb begin : p_align
     wdata_aligned                    ='0;
@@ -100,8 +101,17 @@ end
             .addr_i   ( addr_i                    ),
             .rdata_o  ( ruser_aligned[k*64 +: 64] )
         );
-      end else begin
-        assign ruser_aligned[k*64 +: 64] = '0;
+      end else begin : gen_mem_user
+          assign ruser_aligned[k*64 +: 64] = '0;
+          // synthesis translate_off
+          begin: i_tc_sram_wrapper_user
+            begin: i_tc_sram
+              logic init_val;
+              localparam type data_t = logic [63:0];
+              data_t sram [NUM_WORDS-1:0] /* verilator public_flat */;
+            end
+          end
+          // synthesis translate_on
       end
   end
 endmodule : sram

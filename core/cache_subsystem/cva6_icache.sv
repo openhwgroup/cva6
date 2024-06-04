@@ -457,10 +457,12 @@ module cva6_icache
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
-    sram #(
+    sram_cache #(
         // tag + valid bit
-        .DATA_WIDTH(CVA6Cfg.ICACHE_TAG_WIDTH + 1),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
+        .DATA_WIDTH (CVA6Cfg.ICACHE_TAG_WIDTH + 1),
+        .BYTE_ACCESS(0),
+        .TECHNO_CUT (CVA6Cfg.TechnoCut),
+        .NUM_WORDS  (ICACHE_NUM_WORDS)
     ) tag_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
@@ -480,11 +482,13 @@ module cva6_icache
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][CVA6Cfg.ICACHE_TAG_WIDTH];
 
     // Data RAM
-    sram #(
-        .USER_WIDTH(CVA6Cfg.ICACHE_USER_LINE_WIDTH),
-        .DATA_WIDTH(CVA6Cfg.ICACHE_LINE_WIDTH),
-        .USER_EN   (CVA6Cfg.FETCH_USER_EN),
-        .NUM_WORDS (ICACHE_NUM_WORDS)
+    sram_cache #(
+        .USER_WIDTH (CVA6Cfg.ICACHE_USER_LINE_WIDTH),
+        .DATA_WIDTH (CVA6Cfg.ICACHE_LINE_WIDTH),
+        .USER_EN    (CVA6Cfg.FETCH_USER_EN),
+        .BYTE_ACCESS(0),
+        .TECHNO_CUT (CVA6Cfg.TechnoCut),
+        .NUM_WORDS  (ICACHE_NUM_WORDS)
     ) data_sram (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),

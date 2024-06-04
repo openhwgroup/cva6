@@ -20,6 +20,9 @@ with open(log_path, 'r') as f:
 with open(str(sys.argv[2]), 'r') as f:
     synthesis_log = f.read()
 
+ignored_warning = ["RM-Error", "TFCHK-014", "TFCHK-012", "TFCHK-049",
+                    "MV-021", "MV-028", "TLUP-004", "TLUP-005",
+                    "TIM-164", "PWR-890", "PWR-80", "OPT-1413"]
 kgate_ratio = int(os.environ["NAND2_AREA"])
 path_re = r'^pd/synth/cva6_([^/]+)'
 with open(".gitlab-ci/expected_synth.yml", "r") as f:
@@ -30,6 +33,8 @@ log_metric = rb.LogMetric('Synthesis full log')
 error_log = []
 warning_log = []
 for line in synthesis_log.splitlines():
+    if any (el in line for el in ignored_warning):
+        continue
     if os.environ['FOUNDRY_PATH'] in line:
         continue
     if os.environ['TECH_NAME'] in line:

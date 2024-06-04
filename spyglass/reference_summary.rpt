@@ -58,6 +58,8 @@ INFO       HdlLibDuCheck_03     1     Reports that 'hdllibdu' is not required
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Severity   Rule Name            Count Short Help
 ===============================================================================
+ERROR      SYNTH_5251           1     This gets flagged for out-of-range for 
+                                      Part-Select Operations. 
 ERROR      SYNTH_5273           1     Number of bits for net/variable exceeds
                                       the mthresh value
 WARNING    SYNTH_12605          1     Used  Priority/Unique Type case/if

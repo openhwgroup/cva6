@@ -42,6 +42,7 @@ package build_config_pkg;
     cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
+    cfg.TechnoCut = CVA6Cfg.TechnoCut;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
     cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
     cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;

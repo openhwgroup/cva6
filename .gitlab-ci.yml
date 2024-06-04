@@ -228,24 +228,24 @@ asic-synthesis:
     DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
-    INPUT_DELAY: "0.46"
-    OUTPUT_DELAY: "0.11"
-    PERIOD: "0.85"
-    DV_TARGET: "cv32a6_embedded"
+    PERIOD: "15"
+    DV_TARGET: cv32a65x
   script:
-    - echo $SYNTH_PERIOD
-    - echo $INPUT_DELAY
-    - echo $OUTPUT_DELAY
-    - echo $NAND2_AREA
-    - echo $FOUNDRY_PATH
     - echo $PERIOD
-    - echo $TECH_NAME
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
+    - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
+    - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
-    - make -C pd/synth cva6_synth TARGET="$DV_TARGET"
-    - mv pd/synth/cva6_${DV_TARGET}_synth_modified.v artifacts/cva6_${DV_TARGET}_synth_modified.v
-    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${DV_TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt pd/synth/synthesis_batch.log
+    - cp -r ${SYNTH_FLOW} ./
+    - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="only-synth"
+    - export NAND2_AREA=$(cat pd/synth/cva6_${DV_TARGET}/nand2area.txt)
+    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synth_area.rpt pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synthesis.log
+    - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_synth/
+    - mv pd/synth/cva6_${DV_TARGET}/ artifacts/
+    - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/
+    - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/
 
 fpga-build:
   extends:
@@ -454,33 +454,41 @@ csr_embedded_tests:
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
 
-smoke-gate:
+simu-gate:
+  timeout : 4 hours
   extends:
     - .backend_test
   needs:
     - build_tools
     - asic-synthesis
+  parallel:
+    matrix:
+      - SIMU_PERIOD: ["20"]  # 50 Mhz
+        PERIOD:      ["15"]  # 66 Mhz
   variables:
-    DV_TARGET: cv32a6_embedded
-    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
+    DASHBOARD_JOB_TITLE: "Gate Level Simulation $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Tests to check netlist from ASIC synthesis and power consumption over different patterns"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
+    DV_TARGET: cv32a65x
+    TARGET: $DV_TARGET
   script:
     - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
-    - echo $LIB_VERILOG
-    - echo $FOUNDRY_PATH
     - echo $PERIOD
-    - echo $TECH_NAME
     - source ./verif/sim/setup-env.sh
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
+    - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
+    - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh
-    - mv artifacts/cva6_${DV_TARGET}_synth_modified.v pd/synth/cva6_${DV_TARGET}_synth_modified.v
-    - cd verif/sim
-    - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $DV_TARGET --iss=spike,vcs-gate $DV_OPTS
+    - mv artifacts/cva6_${DV_TARGET} pd/synth/
+    - mv artifacts/cva6_${DV_TARGET}_synth.v pd/synth/
+    - mv artifacts/cva6_${DV_TARGET}_synth.sdf pd/synth/
+    - mkdir -p pd/synth/cva6_${DV_TARGET}/outputs/
+    - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="simu-gate" --name=$PROG_NAME
+    - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_gate/
   after_script: *simu_after_script
 
 fpga-boot:

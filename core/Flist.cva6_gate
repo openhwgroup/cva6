@@ -9,6 +9,10 @@
 #
 
 +incdir+${CVA6_REPO_DIR}/core/include/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/include/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
++incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
++incdir+${CVA6_REPO_DIR}/common/local/util/
 
 ${CVA6_REPO_DIR}/core/include/config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
@@ -16,17 +20,54 @@ ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/axi/src/axi_pkg.sv
 
-${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
-
+// Packages
 ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
 
-${LIB_VERILOG}
-${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth_modified.v
+//CVXIF
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+${CVA6_REPO_DIR}/core/cvxif_example/include/cvxif_instr_pkg.sv
+${CVA6_REPO_DIR}/core/cvxif_fu.sv
+${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
+${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
+${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
 
+
+// Common Cells
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr_8bit.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_arbiter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_arbiter_flushable.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_mux.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_demux.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lzc.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/rr_arb_tree.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/unread.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
+
+// Common Cells for example coprocessor
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/counter.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/delta_counter.sv
+
+${CVA6_REPO_DIR}/core/cache_subsystem/axi_adapter.sv
+
+${LIB_VERILOG}
+${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth.v
+
+# Dedicated to black box in caches, cv32a65x only
 ${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
+${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080.sv 
+${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_1rw_00000006_0000001a_00000040.sv
+
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
+${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper_cache_techno.sv
+
 ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
+${CVA6_REPO_DIR}/common/local/util/sram_cache.sv

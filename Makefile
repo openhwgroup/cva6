@@ -12,6 +12,8 @@ vcs-library    ?= work-vcs
 dpi-library    ?= work-dpi
 # Top level module to compile
 top_level      ?= ariane_tb
+# Top level path
+top_level_path ?= corev_apu/tb/$(top_level).sv
 # Maximum amount of cycles for a successful simulation run
 max_cycles     ?= 10000000
 # Test case to run
@@ -222,7 +224,7 @@ fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/a
 fpga_src := $(addprefix $(root-dir), $(fpga_src)) src/bootrom/bootrom_$(XLEN).sv
 
 # look for testbenches
-tbs := corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
+tbs := $(top_level_path) corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
 
 tbs := $(addprefix $(root-dir), $(tbs))
 
@@ -258,7 +260,7 @@ compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 -per
 vopt_flag += -suppress 2085 -suppress 7063 -suppress 2698 -suppress 13262
 
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
-questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr) +define+QUESTA -suppress 3356
+questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) +tohost_addr=$(tohost_addr) +define+QUESTA -suppress 3356 -suppress 3579
 compile_flag_vhd += -64 -nologo -quiet -2008
 
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -298,16 +300,19 @@ else
 	questa-cmd += +jtag_rbb_enable=0
 endif
 
+flist ?= core/Flist.cva6
+
 vcs_build: $(dpi-library)/ariane_dpi.so
 	mkdir -p $(vcs-library)
 	cd $(vcs-library) &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) -assert svaext -f ../core/Flist.cva6 $(list_incdir) &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) -assert svaext -f $(flist) $(list_incdir) ../corev_apu/tb/common/mock_uart.sv -timescale=1ns/1ns &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) +incdir+$(VCS_HOME)/etc/uvm/src $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv  $(filter %.sv,$(src)) $(list_incdir) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) $(list_incdir) &&\
-	vcs $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb),) $(if $(TRACE_COMPACT),+vcs+fsdbon) -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb -error="IWNF"
+	vcs $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb),) $(if $(TRACE_COMPACT),+vcs+fsdbon) -ignore initializer_driver_checks -timescale=1ns/1ns -ntb_opts uvm-1.2 work.$(top_level) -error="IWNF" \
+	$(if $(gate), -sdf Max:ariane_gate_tb.i_ariane.i_cva6:$(CVA6_REPO_DIR)/pd/synth/cva6_$(TARGET)_synth.sdf +neg_tchk, +notimingcheck)
 
 vcs: vcs_build
 	cd $(vcs-library) && \
