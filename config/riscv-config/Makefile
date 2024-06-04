@@ -42,5 +42,8 @@ $(RVCONFIG_OUTPUTS): $(RVCONFIG_INPUTS) Makefile
 	  -cspec $(SPEC_DIR)/custom_spec.yaml \
 	  -pspec $(SPEC_DIR)/platform_spec.yaml
 
-clean:
-	$(RM) $(OUTPUT_FILES) $(RVCONFIG_OUTPUTS)
+clean: distclean
+	$(RM) $(OUTPUT_FILES)
+
+distclean:
+	$(RM) run.log $(RVCONFIG_OUTPUTS)
