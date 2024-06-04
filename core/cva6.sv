@@ -1274,6 +1274,20 @@ module cva6
         .icache_areq_o (icache_areq_cache_ex),
         .icache_dreq_i (icache_dreq_if_cache),
         .icache_dreq_o (icache_dreq_cache_if),
+        // .icache_enable_i   (icache_en_csr),
+        // .icache_flush_i    (icache_flush_ctrl_cache),
+        // .icache_flush_ack_o(/* hoge */), // TODO
+        // .icache_miss_o     (icache_miss_cache_perf),
+
+        // .icache_amo_req_i (amo_req), // TODO
+        // .icache_amo_resp_o(amo_resp), // TODO
+
+        // .icache_cmo_req_i ('0  /*FIXME*/),
+        // .icache_cmo_resp_o(  /*FIXME*/),
+
+        // .icache_req_ports_i(dcache_req_to_cache), /*FIXME*/  // TODO
+        // .icache_req_ports_o(dcache_req_from_cache), /*FIXME*/  // TODO
+        // ////////////////////////////////////////////////////
 
         .dcache_enable_i   (dcache_en_csr_nbdcache),
         .dcache_flush_i    (dcache_flush_ctrl_cache),

@@ -59,20 +59,28 @@ module cva6_hpdcache_subsystem
 
     //  I$
     //  {{{
-    // Instruction cache enable - CSR_REGFILE
-    input logic icache_en_i,
-    // Flush the instruction cache - CONTROLLER
-    input logic icache_flush_i,
-    // instructino cache miss - PERF_COUNTERS
+    //    Cache management
+    // Data cache enable - CSR_REGFILE
+    input  logic icache_enable_i,
+    // Data cache flush - CONTROLLER
+    input  logic icache_flush_i,
+    // Flush acknowledge - CONTROLLER
+    output logic icache_flush_ack_o,
+    // Load or store miss - PERF_COUNTERS
     output logic icache_miss_o,
-    // Input address translation request - EX_STAGE
-    input icache_areq_t icache_areq_i,
-    // Output address translation request - EX_STAGE
-    output icache_arsp_t icache_areq_o,
-    // Input data translation request - FRONTEND
-    input icache_dreq_t icache_dreq_i,
-    // Output data translation request - FRONTEND
-    output icache_drsp_t icache_dreq_o,
+
+    // AMO request - EX_STAGE
+    input  ariane_pkg::amo_req_t                 icache_amo_req_i,
+    // AMO response - EX_STAGE
+    output ariane_pkg::amo_resp_t                icache_amo_resp_o,
+    // CMO interface request - TO_BE_COMPLETED
+    input  cmo_req_t                             icache_cmo_req_i,
+    // CMO interface response - TO_BE_COMPLETED
+    output cmo_rsp_t                             icache_cmo_resp_o,
+    // Data cache input request ports - EX_STAGE
+    input  dcache_req_i_t         [NumPorts-1:0] icache_req_ports_i,
+    // Data cache output request ports - EX_STAGE
+    output dcache_req_o_t         [NumPorts-1:0] icache_req_ports_o,
     //   }}}
 
     //  D$
@@ -137,41 +145,41 @@ module cva6_hpdcache_subsystem
     return y < x ? x : y;
   endfunction
 
-  //  I$ instantiation
-  //  {{{
-  logic icache_miss_valid, icache_miss_ready;
-  icache_req_t icache_miss;
+  // //  I$ instantiation
+  // //  {{{
+  // logic icache_miss_valid, icache_miss_ready;
+  // icache_req_t icache_miss;
 
-  logic icache_miss_resp_valid;
-  icache_rtrn_t icache_miss_resp;
+  // logic icache_miss_resp_valid;
+  // icache_rtrn_t icache_miss_resp;
 
-  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
+  // localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
-  cva6_icache #(
-      .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId(ICACHE_RDTXID)
-  ) i_cva6_icache (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (icache_flush_i),
-      .en_i          (icache_en_i),
-      .miss_o        (icache_miss_o),
-      .areq_i        (icache_areq_i),
-      .areq_o        (icache_areq_o),
-      .dreq_i        (icache_dreq_i),
-      .dreq_o        (icache_dreq_o),
-      .mem_rtrn_vld_i(icache_miss_resp_valid),
-      .mem_rtrn_i    (icache_miss_resp),
-      .mem_data_req_o(icache_miss_valid),
-      .mem_data_ack_i(icache_miss_ready),
-      .mem_data_o    (icache_miss)
-  );
+  // cva6_icache #(
+  //     .CVA6Cfg(CVA6Cfg),
+  //     .icache_areq_t(icache_areq_t),
+  //     .icache_arsp_t(icache_arsp_t),
+  //     .icache_dreq_t(icache_dreq_t),
+  //     .icache_drsp_t(icache_drsp_t),
+  //     .icache_req_t(icache_req_t),
+  //     .icache_rtrn_t(icache_rtrn_t),
+  //     .RdTxId(ICACHE_RDTXID)
+  // ) i_cva6_icache (
+  //     .clk_i         (clk_i),
+  //     .rst_ni        (rst_ni),
+  //     .flush_i       (icache_flush_i),
+  //     .en_i          (icache_en_i),
+  //     .miss_o        (icache_miss_o),
+  //     .areq_i        (icache_areq_i),
+  //     .areq_o        (icache_areq_o),
+  //     .dreq_i        (icache_dreq_i),
+  //     .dreq_o        (icache_dreq_o),
+  //     .mem_rtrn_vld_i(icache_miss_resp_valid),
+  //     .mem_rtrn_i    (icache_miss_resp),
+  //     .mem_data_req_o(icache_miss_valid),
+  //     .mem_data_ack_i(icache_miss_ready),
+  //     .mem_data_o    (icache_miss)
+  // );
   //  }}}
 
   //  D$ instantiation
@@ -245,25 +253,155 @@ module cva6_hpdcache_subsystem
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
 
-  typedef logic [63:0] hwpf_stride_param_t;
+  // typedef logic [63:0] hwpf_stride_param_t;
 
-  logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
-  logic dcache_read_miss, dcache_write_miss;
+  // logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
+  // logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
+  // hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
+  // logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
+  // hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
+  // hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
+  // logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
+  // hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
+  // logic dcache_read_miss, dcache_write_miss;
 
-  logic                                   [                2:0] snoop_valid;
-  logic                                   [                2:0] snoop_abort;
-  hpdcache_req_offset_t                   [                2:0] snoop_addr_offset;
-  hpdcache_tag_t                          [                2:0] snoop_addr_tag;
-  logic                                   [                2:0] snoop_phys_indexed;
+  // logic                                   [                2:0] snoop_valid;
+  // logic                                   [                2:0] snoop_abort;
+  // hpdcache_req_offset_t                   [                2:0] snoop_addr_offset;
+  // hpdcache_tag_t                          [                2:0] snoop_addr_tag;
+  // logic                                   [                2:0] snoop_phys_indexed;
 
-  logic                                                         dcache_cmo_req_is_prefetch;
+  // logic                                                         dcache_cmo_req_is_prefetch;
+
+  logic                                                         icache_miss_ready;
+  logic                                                         icache_miss_valid;
+  hpdcache_mem_req_t                                            icache_miss;
+
+  logic                                                         icache_miss_resp_ready;
+  logic                                                         icache_miss_resp_valid;
+  hpdcache_mem_resp_r_t                                         icache_miss_resp;
+
+  logic                                                         icache_uc_read_ready;
+  logic                                                         icache_uc_read_valid;
+  hpdcache_mem_req_t                                            icache_uc_read;
+
+  logic                                                         icache_uc_read_resp_ready;
+  logic                                                         icache_uc_read_resp_valid;
+  hpdcache_mem_resp_r_t                                         icache_uc_read_resp;
+
+  // hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
+  // hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
+
+  hpdcache_with_adapter #(
+      .CVA6Cfg(CVA6Cfg),
+      .hpdcacheCfg(hpdcacheCfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .NumPorts(NumPorts),
+      .NrHwPrefetchers(NrHwPrefetchers),
+      .cmo_req_t(cmo_req_t),
+      .cmo_rsp_t(cmo_rsp_t),
+      .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
+      .hpdcache_mem_id_t(hpdcache_mem_id_t),
+      .hpdcache_mem_data_t(hpdcache_mem_data_t),
+      .hpdcache_mem_be_t(hpdcache_mem_be_t),
+      .hpdcache_mem_req_t(hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t(hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .hpdcache_req_offset_t(hpdcache_req_offset_t),
+      .hpdcache_data_word_t(hpdcache_data_word_t),
+      .hpdcache_req_data_t(hpdcache_req_data_t),
+      .hpdcache_req_be_t(hpdcache_req_be_t),
+      .hpdcache_req_sid_t(hpdcache_req_sid_t),
+      .hpdcache_req_tid_t(hpdcache_req_tid_t),
+      .hpdcache_tag_t(hpdcache_tag_t),
+      .hpdcache_req_t(hpdcache_req_t),
+      .hpdcache_rsp_t(hpdcache_rsp_t),
+      .hpdcache_wbuf_timecnt_t(hpdcache_wbuf_timecnt_t),
+      .hpdcache_data_be_t(hpdcache_data_be_t)
+  ) i_icache (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .dcache_enable_i(icache_enable_i),
+      .dcache_flush_i(icache_flush_i),
+      .dcache_flush_ack_o(icache_flush_ack_o),
+      .dcache_miss_o(icache_miss_o),
+      .dcache_amo_req_i(icache_amo_req_i),
+      .dcache_amo_resp_o(icache_amo_resp_o),
+      .dcache_cmo_req_i(icache_cmo_req_i),
+      .dcache_cmo_resp_o(icache_cmo_resp_o),
+      .dcache_req_ports_i(icache_req_ports_i),
+      .dcache_req_ports_o(icache_req_ports_o),
+      .wbuffer_empty_o(0), /* unused */
+      .wbuffer_not_ni_o(0), /* unused */
+      .hwpf_base_set_i(hwpf_base_set_i),
+      .hwpf_base_i( /* unused */),
+      .hwpf_base_o( /* unused */),
+      .hwpf_param_set_i( /* unused */),
+      .hwpf_param_i( /* unused */),
+      .hwpf_param_o( /* unused */),
+      .hwpf_throttle_set_i( /* unused */),
+      .hwpf_throttle_i( /* unused */),
+      .hwpf_throttle_o( /* unused */),
+      .hwpf_status_o( /* unused */),
+
+      .dcache_miss_ready_i(icache_miss_ready),
+      .dcache_miss_valid_o(icache_miss_valid),
+      .dcache_miss_lo(icache_miss),
+
+      .dcache_miss_resp_ready_o(icache_miss_resp_ready),
+      .dcache_miss_resp_valid_i(icache_miss_resp_valid),
+      .dcache_miss_resp_i(icache_miss_resp),
+
+      .dcache_wbuf_ready_i(0), /* unused */
+      .dcache_wbuf_valid_o(0), /* unused */
+      .dcache_wbuf_o( /* unused */),
+
+      .dcache_wbuf_data_ready_i(0),  /* unused */
+      .dcache_wbuf_data_valid_o(0),  /* unused */
+      .dcache_wbuf_data_o( /* unused */),
+
+      .dcache_wbuf_resp_ready_o(0),  /* unused */
+      .dcache_wbuf_resp_valid_i(0),  /* unused */
+      .dcache_wbuf_resp_i( /* unused */),
+
+      .dcache_uc_read_ready_i(icache_uc_read_ready),
+      .dcache_uc_read_valid_o(icache_uc_read_valid),
+      .dcache_uc_read_o(icache_uc_read),
+
+      .dcache_uc_read_resp_ready_o(icache_uc_read_resp_ready),
+      .dcache_uc_read_resp_valid_i(icache_uc_read_resp_valid),
+      .dcache_uc_read_resp_i(icache_uc_read_resp),
+
+      .dcache_uc_write_ready_i(0),  /* unused */
+      .dcache_uc_write_valid_o(0),  /* unused */
+      .dcache_uc_write_o( /* unused */),
+
+      .dcache_uc_write_data_ready_i(0), /* unused */
+      .dcache_uc_write_data_valid_o(0), /* unused */
+      .dcache_uc_write_data_o( /* unused */),
+
+      .dcache_uc_write_resp_ready_o(0),  /* unused */
+      .dcache_uc_write_resp_valid_i(0),  /* unused */
+      .dcache_uc_write_resp_i( /* unused */)
+
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ///////////////////////////////
 
   logic                                                         dcache_miss_ready;
   logic                                                         dcache_miss_valid;
@@ -305,8 +443,8 @@ module cva6_hpdcache_subsystem
   logic                                                         dcache_uc_write_resp_valid;
   hpdcache_mem_resp_w_t                                         dcache_uc_write_resp;
 
-  hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
-  hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
+  // hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
+  // hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   hpdcache_with_adapter #(
       .CVA6Cfg(CVA6Cfg),
@@ -431,13 +569,29 @@ module cva6_hpdcache_subsystem
       .clk_i,
       .rst_ni,
 
-      .icache_miss_valid_i(icache_miss_valid),
-      .icache_miss_ready_o(icache_miss_ready),
-      .icache_miss_i      (icache_miss),
-      .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
+      // .icache_miss_valid_i(icache_miss_valid),
+      // .icache_miss_ready_o(icache_miss_ready),
+      // .icache_miss_i      (icache_miss),
+      // .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
 
+      // .icache_miss_resp_valid_o(icache_miss_resp_valid),
+      // .icache_miss_resp_o      (icache_miss_resp),
+      .icache_miss_ready_o(icache_miss_ready),
+      .icache_miss_valid_i(icache_miss_valid),
+      .icache_miss_i      (icache_miss),
+
+      .icache_miss_resp_ready_i(icache_miss_resp_ready),
       .icache_miss_resp_valid_o(icache_miss_resp_valid),
       .icache_miss_resp_o      (icache_miss_resp),
+
+      .icache_uc_read_ready_o(icache_uc_read_ready),
+      .icache_uc_read_valid_i(icache_uc_read_valid),
+      .icache_uc_read_i      (icache_uc_read),
+      .icache_uc_read_id_i   ('1),
+
+      .icache_uc_read_resp_ready_i(icache_uc_read_resp_ready),
+      .icache_uc_read_resp_valid_o(icache_uc_read_resp_valid),
+      .icache_uc_read_resp_o      (icache_uc_read_resp),
 
       .dcache_miss_ready_o(dcache_miss_ready),
       .dcache_miss_valid_i(dcache_miss_valid),
