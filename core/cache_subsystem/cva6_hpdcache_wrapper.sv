@@ -14,7 +14,7 @@
 
 `include "hpdcache_typedef.svh"
 
-module hpdcache_with_adapter
+module cva6_hpdcache_wrapper
 //  Parameters
 //  {{{
 #(
@@ -113,45 +113,43 @@ module hpdcache_with_adapter
     output logic              dcache_miss_valid_o,
     output hpdcache_mem_req_t dcache_miss_lo,
 
-    output logic dcache_miss_resp_ready_o,
-    input logic dcache_miss_resp_valid_i,
-    input hpdcache_mem_resp_r_t dcache_miss_resp_i,
+    output logic                 dcache_miss_resp_ready_o,
+    input  logic                 dcache_miss_resp_valid_i,
+    input  hpdcache_mem_resp_r_t dcache_miss_resp_i,
 
-    input logic dcache_wbuf_ready_i,
-    output logic dcache_wbuf_valid_o,
+    input  logic              dcache_wbuf_ready_i,
+    output logic              dcache_wbuf_valid_o,
     output hpdcache_mem_req_t dcache_wbuf_o,
 
-    input logic dcache_wbuf_data_ready_i,
-    output logic dcache_wbuf_data_valid_o,
+    input  logic                dcache_wbuf_data_ready_i,
+    output logic                dcache_wbuf_data_valid_o,
     output hpdcache_mem_req_w_t dcache_wbuf_data_o,
 
-    output logic dcache_wbuf_resp_ready_o,
-    input logic dcache_wbuf_resp_valid_i,
-    input hpdcache_mem_resp_w_t dcache_wbuf_resp_i,
+    output logic                 dcache_wbuf_resp_ready_o,
+    input  logic                 dcache_wbuf_resp_valid_i,
+    input  hpdcache_mem_resp_w_t dcache_wbuf_resp_i,
 
-    input logic dcache_uc_read_ready_i,
-    output logic dcache_uc_read_valid_o,
+    input  logic              dcache_uc_read_ready_i,
+    output logic              dcache_uc_read_valid_o,
     output hpdcache_mem_req_t dcache_uc_read_o,
 
-    output logic dcache_uc_read_resp_ready_o,
-    input logic dcache_uc_read_resp_valid_i,
-    input hpdcache_mem_resp_r_t dcache_uc_read_resp_i,
+    output logic                 dcache_uc_read_resp_ready_o,
+    input  logic                 dcache_uc_read_resp_valid_i,
+    input  hpdcache_mem_resp_r_t dcache_uc_read_resp_i,
 
-    input logic dcache_uc_write_ready_i,
-    output logic dcache_uc_write_valid_o,
+    input  logic              dcache_uc_write_ready_i,
+    output logic              dcache_uc_write_valid_o,
     output hpdcache_mem_req_t dcache_uc_write_o,
 
-    input logic dcache_uc_write_data_ready_i,
-    output logic dcache_uc_write_data_valid_o,
+    input  logic                dcache_uc_write_data_ready_i,
+    output logic                dcache_uc_write_data_valid_o,
     output hpdcache_mem_req_w_t dcache_uc_write_data_o,
 
-    output logic dcache_uc_write_resp_ready_o,
-    input logic dcache_uc_write_resp_valid_i,
-    input hpdcache_mem_resp_w_t dcache_uc_write_resp_i
+    output logic                 dcache_uc_write_resp_ready_o,
+    input  logic                 dcache_uc_write_resp_valid_i,
+    input  hpdcache_mem_resp_w_t dcache_uc_write_resp_i
 );
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
-
-  //   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
 
   typedef logic [63:0] hwpf_stride_param_t;
 
@@ -477,4 +475,4 @@ module hpdcache_with_adapter
 
   //  }}}
 
-endmodule : hpdcache_with_adapter
+endmodule : cva6_hpdcache_wrapper

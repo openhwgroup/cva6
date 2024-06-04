@@ -285,7 +285,7 @@ module cva6_hpdcache_subsystem
   logic                 dcache_uc_write_resp_valid;
   hpdcache_mem_resp_w_t dcache_uc_write_resp;
 
-  hpdcache_with_adapter #(
+  cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
       .hpdcacheCfg(hpdcacheCfg),
       .dcache_req_i_t(dcache_req_i_t),
