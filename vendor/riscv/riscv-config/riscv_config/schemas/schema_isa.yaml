@@ -3594,7 +3594,9 @@ hart_schema:
             lsb: {type: integer, default: 0, allowed: [0]}
             type:
               type: dict
-              schema: { warl: *ref_warl }
+              oneof:
+              - schema: { ro_constant: {type: integer, default: 0x0, allowed: [0x0]}}
+              - schema: { warl: *ref_warl }
               default:
                 warl:
                   dependency_fields: []
