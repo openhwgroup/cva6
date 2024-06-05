@@ -339,45 +339,45 @@ module cva6_hpdcache_subsystem
       .hwpf_throttle_o(hwpf_throttle_o),
       .hwpf_status_o(hwpf_status_o),
 
-      .dcache_miss_ready_i(dcache_miss_ready),
-      .dcache_miss_valid_o(dcache_miss_valid),
-      .dcache_miss_lo(dcache_miss),
+      .dcache_mem_req_miss_read_ready_i(dcache_miss_ready),
+      .dcache_mem_req_miss_read_valid_o(dcache_miss_valid),
+      .dcache_mem_req_miss_read_o(dcache_miss),
 
-      .dcache_miss_resp_ready_o(dcache_miss_resp_ready),
-      .dcache_miss_resp_valid_i(dcache_miss_resp_valid),
-      .dcache_miss_resp_i(dcache_miss_resp),
+      .dcache_mem_resp_miss_read_ready_o(dcache_miss_resp_ready),
+      .dcache_mem_resp_miss_read_valid_i(dcache_miss_resp_valid),
+      .dcache_mem_resp_miss_read_i(dcache_miss_resp),
 
-      .dcache_wbuf_ready_i(dcache_wbuf_ready),
-      .dcache_wbuf_valid_o(dcache_wbuf_valid),
-      .dcache_wbuf_o(dcache_wbuf),
+      .dcache_mem_req_wbuf_write_ready_i(dcache_wbuf_ready),
+      .dcache_mem_req_wbuf_write_valid_o(dcache_wbuf_valid),
+      .dcache_mem_req_wbuf_write_o(dcache_wbuf),
 
-      .dcache_wbuf_data_ready_i(dcache_wbuf_data_ready),
-      .dcache_wbuf_data_valid_o(dcache_wbuf_data_valid),
-      .dcache_wbuf_data_o(dcache_wbuf_data),
+      .dcache_mem_req_wbuf_write_data_ready_i(dcache_wbuf_data_ready),
+      .dcache_mem_req_wbuf_write_data_valid_o(dcache_wbuf_data_valid),
+      .dcache_mem_req_wbuf_write_data_o(dcache_wbuf_data),
 
-      .dcache_wbuf_resp_ready_o(dcache_wbuf_resp_ready),
-      .dcache_wbuf_resp_valid_i(dcache_wbuf_resp_valid),
-      .dcache_wbuf_resp_i(dcache_wbuf_resp),
+      .dcache_mem_resp_wbuf_write_ready_o(dcache_wbuf_resp_ready),
+      .dcache_mem_resp_wbuf_write_valid_i(dcache_wbuf_resp_valid),
+      .dcache_mem_resp_wbuf_write_i(dcache_wbuf_resp),
 
-      .dcache_uc_read_ready_i(dcache_uc_read_ready),
-      .dcache_uc_read_valid_o(dcache_uc_read_valid),
-      .dcache_uc_read_o(dcache_uc_read),
+      .dcache_mem_req_uc_read_ready_i(dcache_uc_read_ready),
+      .dcache_mem_req_uc_read_valid_o(dcache_uc_read_valid),
+      .dcache_mem_req_uc_read_o(dcache_uc_read),
 
-      .dcache_uc_read_resp_ready_o(dcache_uc_read_resp_ready),
-      .dcache_uc_read_resp_valid_i(dcache_uc_read_resp_valid),
-      .dcache_uc_read_resp_i(dcache_uc_read_resp),
+      .dcache_mem_resp_uc_read_ready_o(dcache_uc_read_resp_ready),
+      .dcache_mem_resp_uc_read_valid_i(dcache_uc_read_resp_valid),
+      .dcache_mem_resp_uc_read_i(dcache_uc_read_resp),
 
-      .dcache_uc_write_ready_i(dcache_uc_write_ready),
-      .dcache_uc_write_valid_o(dcache_uc_write_valid),
-      .dcache_uc_write_o(dcache_uc_write),
+      .dcache_mem_req_uc_write_ready_i(dcache_uc_write_ready),
+      .dcache_mem_req_uc_write_valid_o(dcache_uc_write_valid),
+      .dcache_mem_req_uc_write_o(dcache_uc_write),
 
-      .dcache_uc_write_data_ready_i(dcache_uc_write_data_ready),
-      .dcache_uc_write_data_valid_o(dcache_uc_write_data_valid),
-      .dcache_uc_write_data_o(dcache_uc_write_data),
+      .dcache_mem_req_uc_write_data_ready_i(dcache_uc_write_data_ready),
+      .dcache_mem_req_uc_write_data_valid_o(dcache_uc_write_data_valid),
+      .dcache_mem_req_uc_write_data_o(dcache_uc_write_data),
 
-      .dcache_uc_write_resp_ready_o(dcache_uc_write_resp_ready),
-      .dcache_uc_write_resp_valid_i(dcache_uc_write_resp_valid),
-      .dcache_uc_write_resp_i(dcache_uc_write_resp)
+      .dcache_mem_resp_uc_write_ready_o(dcache_uc_write_resp_ready),
+      .dcache_mem_resp_uc_write_valid_i(dcache_uc_write_resp_valid),
+      .dcache_mem_resp_uc_write_i(dcache_uc_write_resp)
 
   );
 
