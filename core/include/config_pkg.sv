@@ -64,6 +64,10 @@ package config_pkg;
     bit                          RVZCMP;
     // Zicond RISC-V extension
     bit                          RVZiCond;
+    // Zicntr RISC-V extension
+    bit                          RVZicntr;
+    // Zihpm RISC-V extension
+    bit                          RVZihpm;
     // Floating Point
     bit                          RVF;
     // Floating Point
@@ -234,6 +238,8 @@ package config_pkg;
     bit          XFVec;
     bit          CvxifEn;
     bit          RVZiCond;
+    bit          RVZicntr;
+    bit          RVZihpm;
 
     int unsigned NR_SB_ENTRIES;
     int unsigned TRANS_ID_BITS;

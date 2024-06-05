@@ -587,14 +587,14 @@ package riscv;
     CSR_DPC              = 12'h7b1,
     CSR_DSCRATCH0        = 12'h7b2,  // optional
     CSR_DSCRATCH1        = 12'h7b3,  // optional
-    // Counters and Timers (User Mode - R/O Shadows)
+    // Counters and Timers from Zicntr extension (User Mode - R/O Shadows)
     CSR_CYCLE            = 12'hC00,
     CSR_CYCLEH           = 12'hC80,
     CSR_TIME             = 12'hC01,
     CSR_TIMEH            = 12'hC81,
     CSR_INSTRET          = 12'hC02,
     CSR_INSTRETH         = 12'hC82,
-    // Performance counters (User Mode - R/O Shadows)
+    // Performance counters from Zihpm extension (User Mode - R/O Shadows)
     CSR_HPM_COUNTER_3    = 12'hC03,
     CSR_HPM_COUNTER_4    = 12'hC04,
     CSR_HPM_COUNTER_5    = 12'hC05,
