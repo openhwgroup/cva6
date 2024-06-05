@@ -1065,8 +1065,23 @@ The SFENCE.VMA instruction can be used with certain specific source register spe
 
    **Figure 10:** Invalidate TLB entry for matching ASIDs
 
-The TLB fully implements the supervisor flush instructions, i.e., sfence, including filtering by ASID and virtual address. To support nested translation,it supports the two translation stages, including access permissions (rwx) and VMIDs. This is done analogously to the fence cases explained above.
+The TLB fully implements the supervisor flush instructions, i.e., hfence, including filtering by ASID and virtual address. To support nested translation,it supports the two translation stages, including access permissions (rwx) and VMIDs. This is done analogously to the fence cases explained above.
 
+* **HFENCE.VVMA vaddr asid case:** Invalidate all TLB entries which contain leaf page table entries corresponding to the Virtual Address to be flushed and that match the address space identifiers as specified by ASID_to_be_flushed_i and lu_VMID, except for entries containing global mappings.
+
+* **HFENCE.VVMA x0 x0 case:** Invalidate all TLB entries for all address spaces if current VMID matches and ASID is 0 and vaddr to be flushed is 0.
+
+* **HFENCE.VVMA vaddr x0 case:** Invalidate all TLB entries which contain leaf page table entries corresponding to the Virtual Address to be flushed if current VMID matches and ASID to be flushed is 0.
+
+* **HFENCE.VVMA x0 asid case:** Invalidate all TLB entries matching the address space identified by ASID_to_be_flushed_i and lu_VMID when vaddr to be flushed is 0, except for entries containing global mappings.
+
+* **HFENCE.GVMA gpaddr vmid case:** Invalidate all TLB entries which contain leaf page table entries corresponding to the gpaddr to be flushed and that match the VMID.
+
+* **HFENCE.GVMA x0 x0 case:** Invalidate all TLB entries for all address spaces if VMID is 0 and gpaddr to be flushed is 0.
+
+* **HFENCE.GVMA gpaddr x0 case:** Invalidate all TLB entries which contain leaf page table entries corresponding to the gpaddr to be flushed if VMID to be flushed is 0.
+
+* **HFENCE.GVMA x0 vmid case:** Invalidate all TLB entries matching the address space identified by VMID_to_be_flushed_i when gpaddr to be flushed is 0.
 
 .. raw:: html
 
