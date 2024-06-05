@@ -1349,10 +1349,12 @@ module csr_regfile
         end
 
         riscv::CSR_MTVEC: begin
-          mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
+          logic DirVecOnly;
+          DirVecOnly = CVA6Cfg.DirectVecOnly ? 1'b0 : csr_wdata[0];
+          mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, DirVecOnly};
           // we are in vector mode, this implementation requires the additional
           // alignment constraint of 64 * 4 bytes
-          if (csr_wdata[0]) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, csr_wdata[0]};
+          if (DirVecOnly) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, DirVecOnly};
         end
         riscv::CSR_MCOUNTEREN: begin
           if (CVA6Cfg.RVU) mcounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
