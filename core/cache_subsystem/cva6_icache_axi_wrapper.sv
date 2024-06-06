@@ -18,10 +18,10 @@ module cva6_icache_axi_wrapper
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
+    parameter type fetch_dreq_t = logic,
+    parameter type fetch_drsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     parameter type axi_req_t = logic,
@@ -34,15 +34,19 @@ module cva6_icache_axi_wrapper
     input logic flush_i,  // flush the icache, flush and kill have to be asserted together
     input logic en_i,  // enable icache
     output logic miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t areq_i,
-    output icache_arsp_t areq_o,
     // data requests
-    input icache_dreq_t dreq_i,
-    output icache_drsp_t dreq_o,
+    input fetch_dreq_t dreq_i,
+    output fetch_drsp_t dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t fetch_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t fetch_obi_rsp_o,
+
+
     // AXI refill port
     output axi_req_t axi_req_o,
-    input axi_rsp_t axi_resp_i
+    input  axi_rsp_t axi_resp_i
 );
 
   localparam AxiNumWords = (CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth) * (CVA6Cfg.ICACHE_LINE_WIDTH  > CVA6Cfg.DCACHE_LINE_WIDTH)  +
@@ -108,28 +112,28 @@ module cva6_icache_axi_wrapper
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
+      .fetch_dreq_t(fetch_dreq_t),
+      .fetch_drsp_t(fetch_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .RdTxId(0)
   ) i_cva6_icache (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (flush_i),
-      .en_i          (en_i),
-      .miss_o        (miss_o),
-      .areq_i        (areq_i),
-      .areq_o        (areq_o),
-      .dreq_i        (dreq_i),
-      .dreq_o        (dreq_o),
-      .mem_rtrn_vld_i(icache_mem_rtrn_vld),
-      .mem_rtrn_i    (icache_mem_rtrn),
-      .mem_data_req_o(icache_mem_data_req),
-      .mem_data_ack_i(icache_mem_data_ack),
-      .mem_data_o    (icache_mem_data)
+      .clk_i          (clk_i),
+      .rst_ni         (rst_ni),
+      .flush_i        (flush_i),
+      .en_i           (en_i),
+      .miss_o         (miss_o),
+      .dreq_i         (dreq_i),
+      .dreq_o         (dreq_o),
+      .fetch_obi_req_i(fetch_obi_req_i),
+      .fetch_obi_rsp_o(fetch_obi_rsp_o),
+      .mem_rtrn_vld_i (icache_mem_rtrn_vld),
+      .mem_rtrn_i     (icache_mem_rtrn),
+      .mem_data_req_o (icache_mem_data_req),
+      .mem_data_ack_i (icache_mem_data_ack),
+      .mem_data_o     (icache_mem_data)
   );
 
   // --------
