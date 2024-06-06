@@ -20,10 +20,10 @@ module std_cache_subsystem
   import std_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
+    parameter type fetch_dreq_t = logic,
+    parameter type fetch_drsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     parameter type dcache_req_i_t = logic,
@@ -42,12 +42,15 @@ module std_cache_subsystem
     input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
     input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
     output logic icache_miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t icache_areq_i,  // to/from frontend
-    output icache_arsp_t icache_areq_o,
     // data requests
-    input icache_dreq_t icache_dreq_i,  // to/from frontend
-    output icache_drsp_t icache_dreq_o,
+    input fetch_dreq_t fetch_dreq_i,  // to/from frontend
+    output fetch_drsp_t fetch_dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t fetch_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t fetch_obi_rsp_o,
+
     // AMOs
     input amo_req_t amo_req_i,
     output amo_resp_t amo_resp_o,
@@ -77,27 +80,27 @@ module std_cache_subsystem
 
   cva6_icache_axi_wrapper #(
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
+      .fetch_dreq_t(fetch_dreq_t),
+      .fetch_drsp_t(fetch_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_cva6_icache_axi_wrapper (
-      .clk_i     (clk_i),
-      .rst_ni    (rst_ni),
-      .priv_lvl_i(priv_lvl_i),
-      .flush_i   (icache_flush_i),
-      .en_i      (icache_en_i),
-      .miss_o    (icache_miss_o),
-      .areq_i    (icache_areq_i),
-      .areq_o    (icache_areq_o),
-      .dreq_i    (icache_dreq_i),
-      .dreq_o    (icache_dreq_o),
-      .axi_req_o (axi_req_icache),
-      .axi_resp_i(axi_resp_icache)
+      .clk_i          (clk_i),
+      .rst_ni         (rst_ni),
+      .priv_lvl_i     (priv_lvl_i),
+      .flush_i        (icache_flush_i),
+      .en_i           (icache_en_i),
+      .miss_o         (icache_miss_o),
+      .dreq_i         (fetch_dreq_i),
+      .dreq_o         (fetch_dreq_o),
+      .fetch_obi_req_i(fetch_obi_req_i),
+      .fetch_obi_rsp_o(fetch_obi_rsp_o),
+      .axi_req_o      (axi_req_icache),
+      .axi_resp_i     (axi_resp_icache)
   );
 
   // decreasing priority
@@ -290,13 +293,13 @@ module std_cache_subsystem
 
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (fetch_obi_rsp_o.rvalid && !fetch_dreq_o.invalid_data) |-> (|fetch_obi_rsp_o.r.rdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-        icache_dreq_o.vaddr,
-        icache_dreq_o.data
+        fetch_dreq_i.vaddr,
+        fetch_obi_rsp_o.r.rdata
     );
 
   a_invalid_write_data :

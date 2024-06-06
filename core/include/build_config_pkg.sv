@@ -148,7 +148,8 @@ package build_config_pkg;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
 
     cfg.FETCH_WIDTH = unsigned'(CVA6Cfg.SuperscalarEn ? 64 : 32);
-    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_WIDTH / 8);
+    cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
+    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
@@ -176,6 +177,44 @@ package build_config_pkg;
     cfg.X_DUALREAD = 0;
     cfg.X_DUALWRITE = 0;
     cfg.X_ISSUE_REGISTER_SPLIT = 0;
+
+    cfg.IdWidth = cfg.AxiIdWidth;  //to be changed
+
+    cfg.ObiFetchbusCfg.UseRReady = 1'b1;
+    cfg.ObiFetchbusCfg.CombGnt = 1'b0;
+    cfg.ObiFetchbusCfg.AddrWidth = cfg.PLEN;
+    cfg.ObiFetchbusCfg.DataWidth = cfg.FETCH_WIDTH;
+    cfg.ObiFetchbusCfg.IdWidth = cfg.IdWidth;
+    cfg.ObiFetchbusCfg.Integrity = 1'b0;
+    cfg.ObiFetchbusCfg.BeFull = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseAtop = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseMemtype = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseProt = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseDbg = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth = cfg.FETCH_USER_WIDTH;
+    cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth = cfg.FETCH_USER_WIDTH;
+    cfg.ObiFetchbusCfg.OptionalCfg.MidWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth = 1;
+
+    cfg.ObiDatabusCfg.UseRReady = 1'b1;
+    cfg.ObiDatabusCfg.CombGnt = 1'b0;
+    cfg.ObiDatabusCfg.AddrWidth = cfg.PLEN;
+    cfg.ObiDatabusCfg.DataWidth = cfg.XLEN;
+    cfg.ObiDatabusCfg.IdWidth = cfg.IdWidth;
+    cfg.ObiDatabusCfg.Integrity = 1'b0;
+    cfg.ObiDatabusCfg.BeFull = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseAtop = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseMemtype = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseProt = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseDbg = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.AUserWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.WUserWidth = cfg.DCACHE_USER_WIDTH;
+    cfg.ObiDatabusCfg.OptionalCfg.RUserWidth = cfg.DCACHE_USER_WIDTH;
+    cfg.ObiDatabusCfg.OptionalCfg.MidWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.AChkWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.RChkWidth = 1;
 
     return cfg;
   endfunction

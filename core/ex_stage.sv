@@ -24,10 +24,8 @@ module ex_stage
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
+    parameter type fetch_areq_t = logic,
+    parameter type fetch_arsp_t = logic,
     parameter type lsu_ctrl_t = logic,
     parameter type x_result_t = logic
 ) (
@@ -201,10 +199,10 @@ module ex_stage
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
-    // icache translation response - CACHE
-    input icache_arsp_t icache_areq_i,
-    // icache translation request - CACHE
-    output icache_areq_t icache_areq_o,
+    // fetch translation request - FETCH
+    input fetch_areq_t fetch_areq_i,
+    // fetch translation response - FETCH
+    output fetch_arsp_t fetch_arsp_o,
     // Data cache request ouput - CACHE
     input dcache_req_o_t [2:0] dcache_req_ports_i,
     // Data cache request input - CACHE
@@ -522,10 +520,8 @@ module ex_stage
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
       .fu_data_t (fu_data_t),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
+      .fetch_areq_t(fetch_areq_t),
+      .fetch_arsp_t(fetch_arsp_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_i (
       .clk_i,
@@ -551,8 +547,8 @@ module ex_stage
       .enable_g_translation_i,
       .en_ld_st_translation_i,
       .en_ld_st_g_translation_i,
-      .icache_areq_i,
-      .icache_areq_o,
+      .fetch_areq_i,
+      .fetch_arsp_o,
       .priv_lvl_i,
       .v_i,
       .ld_st_priv_lvl_i,
