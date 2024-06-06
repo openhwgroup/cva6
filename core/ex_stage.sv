@@ -433,12 +433,12 @@ module ex_stage
   fu_data_t lsu_data;
   logic [31:0] lsu_tinst;
   always_comb begin
-    lsu_data = lsu_valid_i[0] ? fu_data_i[0] : '0;
+    lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
     lsu_tinst = tinst_i[0];
 
     if (SUPERSCALAR) begin
       if (lsu_valid_i[1]) begin
-        lsu_data = fu_data_i[1];
+        lsu_data  = fu_data_i[1];
         lsu_tinst = tinst_i[1];
       end
     end
@@ -463,7 +463,7 @@ module ex_stage
       .no_st_pending_o,
       .fu_data_i             (lsu_data),
       .lsu_ready_o,
-      .lsu_valid_i          (|lsu_valid_i),
+      .lsu_valid_i           (|lsu_valid_i),
       .load_trans_id_o,
       .load_result_o,
       .load_valid_o,
@@ -512,7 +512,7 @@ module ex_stage
       .amo_valid_commit_i,
       .amo_req_o,
       .amo_resp_i,
-      .tinst_i(lsu_tinst),
+      .tinst_i               (lsu_tinst),
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,

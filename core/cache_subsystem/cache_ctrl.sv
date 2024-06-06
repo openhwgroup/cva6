@@ -311,9 +311,9 @@ module cache_ctrl
         // two memory look-ups on a single-ported SRAM and therefore is non-atomic
         if (!mshr_index_matches_i) begin
           // store data, write dirty bit
-          req_o                      = hit_way_q;
-          addr_o                     = mem_req_q.index;
-          we_o                       = 1'b1;
+          req_o                                   = hit_way_q;
+          addr_o                                  = mem_req_q.index;
+          we_o                                    = 1'b1;
 
           be_o.vldrty                             = hit_way_q;
 

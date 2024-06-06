@@ -135,16 +135,16 @@ module issue_read_operands
   fu_data_t [SUPERSCALAR:0] fu_data_n, fu_data_q;
   logic [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
-  logic [SUPERSCALAR:0] alu_valid_q;
-  logic [SUPERSCALAR:0] mult_valid_q;
-  logic [SUPERSCALAR:0] fpu_valid_q;
-  logic [          1:0] fpu_fmt_q;
-  logic [          2:0] fpu_rm_q;
-  logic [SUPERSCALAR:0] lsu_valid_q;
-  logic [SUPERSCALAR:0] csr_valid_q;
-  logic [SUPERSCALAR:0] branch_valid_q;
-  logic [SUPERSCALAR:0] cvxif_valid_q;
-  logic [         31:0] cvxif_off_instr_q;
+  logic [   SUPERSCALAR:0] alu_valid_q;
+  logic [   SUPERSCALAR:0] mult_valid_q;
+  logic [   SUPERSCALAR:0] fpu_valid_q;
+  logic [             1:0] fpu_fmt_q;
+  logic [             2:0] fpu_rm_q;
+  logic [   SUPERSCALAR:0] lsu_valid_q;
+  logic [   SUPERSCALAR:0] csr_valid_q;
+  logic [   SUPERSCALAR:0] branch_valid_q;
+  logic [   SUPERSCALAR:0] cvxif_valid_q;
+  logic [            31:0] cvxif_off_instr_q;
 
   logic [SUPERSCALAR:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
@@ -732,7 +732,7 @@ module issue_read_operands
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      fu_data_q             <= '0;
+      fu_data_q <= '0;
       if (CVA6Cfg.RVH) begin
         tinst_q <= '0;
       end

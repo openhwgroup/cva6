@@ -161,4 +161,4 @@
   logic [15:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
 
-`endif // RVFI_TYPES_SVH
+`endif  // RVFI_TYPES_SVH
