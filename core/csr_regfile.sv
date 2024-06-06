@@ -2101,7 +2101,8 @@ module csr_regfile
         // check counter-enabled counter CSR accesses
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
-          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31H]}) begin
+          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
+              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2118,7 +2119,8 @@ module csr_regfile
           end
         end
         if (CVA6Cfg.RVZicntr) begin
-          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRETH]}) begin
+          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
+              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2153,7 +2155,8 @@ module csr_regfile
         // check counter-enabled counter CSR accesses
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
-          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31H]}) begin
+          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
+              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2164,7 +2167,8 @@ module csr_regfile
           end
         end
         if (CVA6Cfg.RVZicntr) begin
-          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRETH]}) begin
+          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
+              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
