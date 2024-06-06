@@ -16,14 +16,14 @@
 
 hart_ids: [0]
 hart0:
-    ISA: RV32IMCZicsr_Zicntr_Zifencei_Zba_Zbb_Zbc_Zbs
+    ISA: RV32IMCZicsr_Zicntr_Zifencei_Zcb_Zba_Zbb_Zbc_Zbs
     User_Spec_Version: '2.3'
     supported_xlen:
       - 32
     physical_addr_sz: 32
-    pmp_granularity: 5
+    pmp_granularity: 4
     misa:
-        reset-val: 0x40001104
+        reset-val: 0x40001106
         rv32:
             accessible: true
             mxl:
@@ -43,12 +43,7 @@ hart0:
             extensions:
                 implemented: true
                 type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - extensions[25:0] in [0x0000000:0x3FFFFFF]
-                        wr_illegal:
-                          - unchanged
+                    ro_constant: 0x0001106
                 description: Encodes the presence of the standard extensions, with
                     a single bit per letter of the alphabet.
                 shadow:
@@ -95,6 +90,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
+             # All bits writable (first value of bitmask w/o cleared bits)
                           - base[29:0] bitmask [0x3FFFFFFF, 0x00000000]
                         wr_illegal:
                           - Unchanged
@@ -189,6 +185,14 @@ hart0:
                 shadow_type: rw
                 msb: 5
                 lsb: 5
+            ube:
+                implemented: false
+                description: control the endianness of memory accesses other than
+                    instruction fetches for user mode
+                shadow:
+                shadow_type: rw
+                msb: 6
+                lsb: 6
             mpie:
                 implemented: true
                 description: Stores the state of the machine mode interrupts prior
@@ -298,6 +302,7 @@ hart0:
               - mie
               - upie
               - spie
+              - ube
               - mpie
               - spp
               - mpp
@@ -314,8 +319,6 @@ hart0:
               -
                   -
                       - 2
-                  -
-                      - 6
                   -
                       - 9
                       - 10
@@ -354,14 +357,12 @@ hart0:
                 msb: 1
                 lsb: 1
             msip:
-                implemented: true
+                implemented: false
                 description: Machine Software Interrupt Pending.
                 shadow:
                 shadow_type: rw
                 msb: 3
                 lsb: 3
-                type:
-                    ro_variable: true
             utip:
                 implemented: false
                 description: User Timer Interrupt Pending.
@@ -489,15 +490,12 @@ hart0:
                 msb: 1
                 lsb: 1
             msie:
-                implemented: true
+                implemented: false
                 description: Machine Software Interrupt enable.
                 shadow:
                 shadow_type: rw
                 msb: 3
                 lsb: 3
-                type:
-                    wlrl:
-                      - 0x0:0x1
             utie:
                 implemented: false
                 description: User Timer Interrupt enable.
@@ -634,18 +632,13 @@ hart0:
         reset-val: 0x0
         rv32:
             accessible: true
+            type:
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
             msb: 31
             lsb: 0
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mtval[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
         rv64:
             accessible: false
         description: The mtval is a warl register that holds the address of the instruction
@@ -744,12 +737,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter3[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -762,35 +750,11 @@ hart0:
             RV32I mode.
         address: 0xB03
         priv_mode: M
-    hpmcounter3:
-        rv32:
-            accessible: false
-        rv64:
-            accessible: false
-        reset-val: 0x0
-        priv_mode: U
-        description: The hpmcounter3 is a 64-bit counter. Returns lower 32 bits in
-            RV32UI mode.
-        address: 0xC03
-    hpmcounter3h:
-        rv32:
-            accessible: false
-        rv64:
-            accessible: false
-        reset-val: 0x0
-        priv_mode: U
-        description: The hpmcounter3h returns the upper half word in RV32I systems.
-        address: 0xC83
     mhpmcounter4:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter4[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -803,37 +767,11 @@ hart0:
             RV42I mode.
         address: 0xB04
         priv_mode: M
-    mhpmcounter4h:
-        rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter4h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
-        rv64:
-            accessible: false
-        reset-val: 0x0
-        description: The mhpmcounter4h returns the upper half word in RV42I systems.
-        address: 0xB84
-        priv_mode: M
     mhpmcounter5:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter5[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -850,12 +788,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter6[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -872,12 +805,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter7[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -894,12 +822,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter8[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -916,12 +839,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter9[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -938,12 +856,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter10[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -960,12 +873,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter11[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -982,12 +890,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter12[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1004,12 +907,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter13[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1026,12 +924,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter14[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1048,12 +941,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter15[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1070,12 +958,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter16[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1092,12 +975,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter17[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1114,12 +992,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter18[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1136,12 +1009,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter19[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1158,12 +1026,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter20[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1180,12 +1043,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter21[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1202,12 +1060,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter22[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1224,12 +1077,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter23[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1246,12 +1094,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter24[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1268,12 +1111,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter25[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1290,12 +1128,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter26[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1312,12 +1145,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter27[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1334,12 +1162,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter28[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1356,12 +1179,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter29[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1378,12 +1196,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter30[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1400,12 +1213,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter31[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1422,12 +1230,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter3h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1439,16 +1242,27 @@ hart0:
         description: The mhpmcounter3h returns the upper half word in RV32I systems.
         address: 0xB83
         priv_mode: M
+    mhpmcounter4h:
+        rv32:
+            accessible: true
+            type:
+                ro_constant: 0x0
+            fields: []
+            shadow:
+            shadow_type: rw
+            msb: 31
+            lsb: 0
+        rv64:
+            accessible: false
+        reset-val: 0x0
+        description: The mhpmcounter4h returns the upper half word in RV42I systems.
+        address: 0xB84
+        priv_mode: M
     mhpmcounter5h:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter5h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1464,12 +1278,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter6h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1485,12 +1294,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter7h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1506,12 +1310,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter8h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1527,12 +1326,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter9h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1548,12 +1342,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter10h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1569,12 +1358,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter11h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1590,12 +1374,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter12h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1611,12 +1390,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter13h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1632,12 +1406,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter14h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1653,12 +1422,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter15h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1674,12 +1438,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter16h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1695,12 +1454,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter17h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1716,12 +1470,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter18h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1737,12 +1486,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter19h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1758,12 +1502,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter20h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1779,12 +1518,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter21h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1800,12 +1534,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter22h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1821,12 +1550,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter23h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1842,12 +1566,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter24h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1863,12 +1582,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter25h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1884,12 +1598,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter26h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1905,12 +1614,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter27h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1926,12 +1630,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter28h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1947,12 +1646,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter29h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1968,12 +1662,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter30h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -1989,12 +1678,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcounter31h[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2010,12 +1694,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmcountinhibit[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2032,12 +1711,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent3[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2053,12 +1727,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent4[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2074,12 +1743,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent5[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2095,12 +1759,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent6[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2116,12 +1775,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent7[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2137,12 +1791,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent8[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2158,12 +1807,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent9[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2179,12 +1823,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent10[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2201,12 +1840,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent11[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2223,12 +1857,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent12[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2245,12 +1874,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent13[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2267,12 +1891,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent14[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2289,12 +1908,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent15[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2311,12 +1925,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent16[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2333,12 +1942,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent17[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2355,12 +1959,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent18[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2377,12 +1976,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent19[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2399,12 +1993,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent20[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2421,12 +2010,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent21[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2443,12 +2027,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent22[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2465,12 +2044,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent23[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2487,12 +2061,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent24[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2509,12 +2078,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent25[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2531,12 +2095,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent26[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2553,12 +2112,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent27[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2575,12 +2129,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent28[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2597,12 +2146,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent29[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2619,12 +2163,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent30[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2641,12 +2180,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - mhpmevent31[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -2968,68 +2502,7 @@ hart0:
         priv_mode: M
     pmpcfg4:
         rv32:
-            accessible: true
-            pmp16cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp16cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp17cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp17cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp18cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp18cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp19cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp19cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp16cfg
-              - pmp17cfg
-              - pmp18cfg
-              - pmp19cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3038,68 +2511,7 @@ hart0:
         priv_mode: M
     pmpcfg5:
         rv32:
-            accessible: true
-            pmp20cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp20cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp21cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp21cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp22cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp22cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp23cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp23cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp20cfg
-              - pmp21cfg
-              - pmp22cfg
-              - pmp23cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3108,68 +2520,7 @@ hart0:
         priv_mode: M
     pmpcfg6:
         rv32:
-            accessible: true
-            pmp24cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp24cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp25cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp25cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp26cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp26cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp27cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp27cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp24cfg
-              - pmp25cfg
-              - pmp26cfg
-              - pmp27cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3178,68 +2529,7 @@ hart0:
         priv_mode: M
     pmpcfg7:
         rv32:
-            accessible: true
-            pmp28cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp28cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp29cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp29cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp30cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp30cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp31cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp31cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp28cfg
-              - pmp29cfg
-              - pmp30cfg
-              - pmp31cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3248,68 +2538,7 @@ hart0:
         priv_mode: M
     pmpcfg8:
         rv32:
-            accessible: true
-            pmp32cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp32cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp33cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp33cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp34cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp34cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp35cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp35cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp32cfg
-              - pmp33cfg
-              - pmp34cfg
-              - pmp35cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3318,68 +2547,7 @@ hart0:
         priv_mode: M
     pmpcfg9:
         rv32:
-            accessible: true
-            pmp36cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp36cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp37cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp37cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp38cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp38cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp39cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp39cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp36cfg
-              - pmp37cfg
-              - pmp38cfg
-              - pmp39cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3388,68 +2556,7 @@ hart0:
         priv_mode: M
     pmpcfg10:
         rv32:
-            accessible: true
-            pmp40cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp40cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp41cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp41cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp42cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp42cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp43cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp43cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp40cfg
-              - pmp41cfg
-              - pmp42cfg
-              - pmp43cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3458,68 +2565,7 @@ hart0:
         priv_mode: M
     pmpcfg11:
         rv32:
-            accessible: true
-            pmp44cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp44cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp45cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp45cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp46cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp46cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp47cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp47cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp44cfg
-              - pmp45cfg
-              - pmp46cfg
-              - pmp47cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3528,68 +2574,7 @@ hart0:
         priv_mode: M
     pmpcfg12:
         rv32:
-            accessible: true
-            pmp48cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp48cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp49cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp49cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp50cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp50cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp51cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp51cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp48cfg
-              - pmp49cfg
-              - pmp50cfg
-              - pmp51cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3598,68 +2583,7 @@ hart0:
         priv_mode: M
     pmpcfg13:
         rv32:
-            accessible: true
-            pmp52cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp52cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp53cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp53cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp54cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp54cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp55cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp55cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp52cfg
-              - pmp53cfg
-              - pmp54cfg
-              - pmp55cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3668,68 +2592,7 @@ hart0:
         priv_mode: M
     pmpcfg14:
         rv32:
-            accessible: true
-            pmp56cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp56cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp57cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp57cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp58cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp58cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp59cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp59cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp56cfg
-              - pmp57cfg
-              - pmp58cfg
-              - pmp59cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3738,68 +2601,7 @@ hart0:
         priv_mode: M
     pmpcfg15:
         rv32:
-            accessible: true
-            pmp60cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp60cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 7
-                lsb: 0
-            pmp61cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp61cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 15
-                lsb: 8
-            pmp62cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp62cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 23
-                lsb: 16
-            pmp63cfg:
-                implemented: true
-                type:
-                    warl:
-                        dependency_fields: []
-                        legal:
-                          - pmp63cfg[7:0] in [0x00:0xFF]
-                        wr_illegal:
-                          - unchanged
-                description: pmp configuration bits
-                shadow:
-                shadow_type: rw
-                msb: 31
-                lsb: 24
-            fields:
-              - pmp60cfg
-              - pmp61cfg
-              - pmp62cfg
-              - pmp63cfg
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -3909,7 +2711,7 @@ hart0:
             lsb: 0
         rv64:
             accessible: false
-        reset-val: 0x20
+        reset-val: 0
         description: Physical memory protection address register
         address: 0x3B0
         priv_mode: M
@@ -4064,12 +2866,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr8[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4085,12 +2882,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr9[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4106,12 +2898,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr10[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4127,12 +2914,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr11[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4148,12 +2930,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr12[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4169,12 +2946,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr13[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4190,12 +2962,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr14[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4211,12 +2978,7 @@ hart0:
         rv32:
             accessible: true
             type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr15[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
+                ro_constant: 0x0
             fields: []
             shadow:
             shadow_type: rw
@@ -4230,19 +2992,7 @@ hart0:
         priv_mode: M
     pmpaddr16:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr16[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4251,19 +3001,7 @@ hart0:
         priv_mode: M
     pmpaddr17:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr17[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4272,19 +3010,7 @@ hart0:
         priv_mode: M
     pmpaddr18:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr18[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4293,19 +3019,7 @@ hart0:
         priv_mode: M
     pmpaddr19:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr19[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4314,19 +3028,7 @@ hart0:
         priv_mode: M
     pmpaddr20:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr20[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4335,19 +3037,7 @@ hart0:
         priv_mode: M
     pmpaddr21:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr21[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4356,19 +3046,7 @@ hart0:
         priv_mode: M
     pmpaddr22:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr22[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4377,19 +3055,7 @@ hart0:
         priv_mode: M
     pmpaddr23:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr23[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4398,19 +3064,7 @@ hart0:
         priv_mode: M
     pmpaddr24:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr24[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4419,19 +3073,7 @@ hart0:
         priv_mode: M
     pmpaddr25:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr25[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4440,19 +3082,7 @@ hart0:
         priv_mode: M
     pmpaddr26:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr26[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4461,19 +3091,7 @@ hart0:
         priv_mode: M
     pmpaddr27:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr27[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4482,19 +3100,7 @@ hart0:
         priv_mode: M
     pmpaddr28:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr28[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4503,19 +3109,7 @@ hart0:
         priv_mode: M
     pmpaddr29:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr29[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4524,19 +3118,7 @@ hart0:
         priv_mode: M
     pmpaddr30:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr30[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4545,19 +3127,7 @@ hart0:
         priv_mode: M
     pmpaddr31:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr31[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4566,19 +3136,7 @@ hart0:
         priv_mode: M
     pmpaddr32:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr32[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4587,19 +3145,7 @@ hart0:
         priv_mode: M
     pmpaddr33:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr33[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4608,19 +3154,7 @@ hart0:
         priv_mode: M
     pmpaddr34:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr34[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4629,19 +3163,7 @@ hart0:
         priv_mode: M
     pmpaddr35:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr35[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4650,19 +3172,7 @@ hart0:
         priv_mode: M
     pmpaddr36:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr36[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4671,19 +3181,7 @@ hart0:
         priv_mode: M
     pmpaddr37:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr37[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4692,19 +3190,7 @@ hart0:
         priv_mode: M
     pmpaddr38:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr38[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4713,19 +3199,7 @@ hart0:
         priv_mode: M
     pmpaddr39:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr39[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4734,19 +3208,7 @@ hart0:
         priv_mode: M
     pmpaddr40:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr40[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4755,19 +3217,7 @@ hart0:
         priv_mode: M
     pmpaddr41:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr41[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4776,19 +3226,7 @@ hart0:
         priv_mode: M
     pmpaddr42:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr42[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4797,19 +3235,7 @@ hart0:
         priv_mode: M
     pmpaddr43:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr43[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4818,19 +3244,7 @@ hart0:
         priv_mode: M
     pmpaddr44:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr44[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4839,19 +3253,7 @@ hart0:
         priv_mode: M
     pmpaddr45:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr45[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4860,19 +3262,7 @@ hart0:
         priv_mode: M
     pmpaddr46:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr46[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4881,19 +3271,7 @@ hart0:
         priv_mode: M
     pmpaddr47:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr47[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4902,19 +3280,7 @@ hart0:
         priv_mode: M
     pmpaddr48:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr48[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4923,19 +3289,7 @@ hart0:
         priv_mode: M
     pmpaddr49:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr49[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4944,19 +3298,7 @@ hart0:
         priv_mode: M
     pmpaddr50:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr50[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4965,19 +3307,7 @@ hart0:
         priv_mode: M
     pmpaddr51:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr51[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -4986,19 +3316,7 @@ hart0:
         priv_mode: M
     pmpaddr52:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr52[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5007,19 +3325,7 @@ hart0:
         priv_mode: M
     pmpaddr53:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr53[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5028,19 +3334,7 @@ hart0:
         priv_mode: M
     pmpaddr54:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr54[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5049,19 +3343,7 @@ hart0:
         priv_mode: M
     pmpaddr55:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr55[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5070,19 +3352,7 @@ hart0:
         priv_mode: M
     pmpaddr56:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr56[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5091,19 +3361,7 @@ hart0:
         priv_mode: M
     pmpaddr57:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr57[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5112,19 +3370,7 @@ hart0:
         priv_mode: M
     pmpaddr58:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr58[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5133,19 +3379,7 @@ hart0:
         priv_mode: M
     pmpaddr59:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr59[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5154,19 +3388,7 @@ hart0:
         priv_mode: M
     pmpaddr60:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr60[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5175,19 +3397,7 @@ hart0:
         priv_mode: M
     pmpaddr61:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr61[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5196,19 +3406,7 @@ hart0:
         priv_mode: M
     pmpaddr62:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr62[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5217,19 +3415,7 @@ hart0:
         priv_mode: M
     pmpaddr63:
         rv32:
-            accessible: true
-            type:
-                warl:
-                    dependency_fields: []
-                    legal:
-                      - pmpaddr63[31:0] in [0x00000000:0xFFFFFFFF]
-                    wr_illegal:
-                      - unchanged
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0
@@ -5424,6 +3610,16 @@ hart0:
         address: 0xC82
         priv_mode: U
         reset-val: 0
+    hpmcounter3:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: false
+        priv_mode: U
+        reset-val: 0
+        description: The hpmcounter3 is a 64-bit counter. Returns lower 32 bits in
+            RV32UI mode.
+        address: 0xC03
     hpmcounter4:
         rv32:
             accessible: false
@@ -5704,6 +3900,15 @@ hart0:
         description: The hpmcounter31 is a 64-bit counter. Returns lower 32 bits in
             RV32UI mode.
         address: 0xC1F
+    hpmcounter3h:
+        rv32:
+            accessible: false
+        rv64:
+            accessible: false
+        priv_mode: U
+        reset-val: 0
+        description: The hpmcounter3h returns the upper half word in RV32I systems.
+        address: 0xC83
     hpmcounter4h:
         rv32:
             accessible: false

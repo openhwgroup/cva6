@@ -17,14 +17,15 @@ Author: Abdessamii Oukalrazqou
 |0x301|[MISA](#MISA)|misa is a read-write register reporting the ISA supported by the hart.|
 |0x304|[MIE](#MIE)|The mie register is an MXLEN-bit read/write register containing interrupt enable bits.|
 |0x305|[MTVEC](#MTVEC)|MXLEN-bit read/write register that holds trap vector configuration.|
+|0x320|[MCOUNTINHIBIT](#MCOUNTINHIBIT)|The mcountinhibit is a 32-bit WARL register that controls which of the hardware performance-monitoring counters increment.|
 |0x323-0x33f|[MHPMEVENT[3-31]](#MHPMEVENT[3-31])|The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.|
 |0x340|[MSCRATCH](#MSCRATCH)|The mscratch register is an MXLEN-bit read/write register dedicated for use by machine mode.|
 |0x341|[MEPC](#MEPC)|The mepc is a warl register that must be able to hold all valid physical and virtual addresses.|
 |0x342|[MCAUSE](#MCAUSE)|The mcause register stores the information regarding the trap.|
 |0x343|[MTVAL](#MTVAL)|The mtval is a warl register that holds the address of the instruction which caused the exception.|
 |0x344|[MIP](#MIP)|The mip register is an MXLEN-bit read/write register containing information on pending interrupts.|
-|0x3a0-0x3a1|[PMPCFG[0-1]](#PMPCFG[0-1])|PMP configuration register|
-|0x3b0-0x3b7|[PMPADDR[0-7]](#PMPADDR[0-7])|Physical memory protection address register|
+|0x3a0-0x3a3|[PMPCFG[0-3]](#PMPCFG[0-3])|PMP configuration register|
+|0x3b0-0x3bf|[PMPADDR[0-15]](#PMPADDR[0-15])|Physical memory protection address register|
 |0xb00|[MCYCLE](#MCYCLE)|Counts the number of clock cycles executed from an arbitrary point in time.|
 |0xb02|[MINSTRET](#MINSTRET)|Counts the number of instructions completed from an arbitrary point in time.|
 |0xb03-0xb1f|[MHPMCOUNTER[3-31]](#MHPMCOUNTER[3-31])|The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.|
@@ -53,7 +54,7 @@ Author: Abdessamii Oukalrazqou
 |3|MIE|[0 , 1]|0x0|WLRL|Stores the state of the machine mode interrupts.|
 |4|UPIE||0x0|WARL|Stores the state of the user mode interrupts prior to the trap.|
 |5|SPIE||0x0|WARL|Stores the state of the supervisor mode interrupts prior to the trap.|
-|6|RESERVED_6||0x0|WPRI|RESERVED|
+|6|UBE||0x0|WARL|control the endianness of memory accesses other than instruction fetches for user mode|
 |7|MPIE|[0 , 1]|0x0|WLRL|Stores the state of the machine mode interrupts prior to the trap.|
 |8|SPP||0x0|WARL|Stores the previous priority mode for supervisor.|
 |[10:9]|RESERVED_9||0x0|WPRI|RESERVED|
@@ -97,7 +98,7 @@ Author: Abdessamii Oukalrazqou
 **Description** misa is a read-write register reporting the ISA supported by the hart.
 |Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|[25:0]|EXTENSIONS|[0x0000000:0x3FFFFFF]|0x1106|WARL|Encodes the presence of the standard extensions, with a single bit per letter of the alphabet.|
+|[25:0]|EXTENSIONS|0x1106|0x1106|RO_CONSTANT|Encodes the presence of the standard extensions, with a single bit per letter of the alphabet.|
 |[29:26]|RESERVED_26||0x0|WPRI|RESERVED|
 |[31:30]|MXL|[0x1]|0x1|WARL|Encodes the native base integer ISA width.|
 
@@ -113,7 +114,7 @@ Author: Abdessamii Oukalrazqou
 |0|USIE||0x0|WARL|User Software Interrupt enable.|
 |1|SSIE||0x0|WARL|Supervisor Software Interrupt enable.|
 |2|VSSIE||0x0|WARL|VS-level Software Interrupt enable.|
-|3|MSIE|[0x0 , 0x1]|0x0|WLRL|Machine Software Interrupt enable.|
+|3|MSIE||0x0|WARL|Machine Software Interrupt enable.|
 |4|UTIE||0x0|WARL|User Timer Interrupt enable.|
 |5|STIE||0x0|WARL|Supervisor Timer Interrupt enable.|
 |6|VSTIE||0x0|WARL|VS-level Timer Interrupt enable.|
@@ -137,6 +138,17 @@ Author: Abdessamii Oukalrazqou
 |[1:0]|MODE|[0x0]|0x0|WARL|Vector mode.|
 |[31:2]|BASE|[0x3FFFFFFF, 0x00000000]|0x20004000|WARL|Vector base address.|
 
+#### MCOUNTINHIBIT
+  
+---  
+**Address** 0x320  
+**Reset Value** 0x0  
+**Privilege Mode** M  
+**Description** The mcountinhibit is a 32-bit WARL register that controls which of the hardware performance-monitoring counters increment.
+|Bits|Field Name|Legal Values|Reset|Type|Description|
+| :--- | :--- | :--- | :--- | :--- | :--- |
+|[31:0]|MCOUNTINHIBIT|0x00000000|0x00000000|RO_CONSTANT|The mcountinhibit is a 32-bit WARL register that controls which of the hardware performance-monitoring counters increment.|
+
 #### MHPMEVENT[3-31]
   
 ---  
@@ -146,7 +158,7 @@ Author: Abdessamii Oukalrazqou
 **Description** The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.
 |Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|[31:0]|MHPMEVENT[I]|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.|
+|[31:0]|MHPMEVENT[I]|0x00000000|0x00000000|RO_CONSTANT|The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.|
 
 #### MSCRATCH
   
@@ -191,7 +203,7 @@ Author: Abdessamii Oukalrazqou
 **Description** The mtval is a warl register that holds the address of the instruction which caused the exception.
 |Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|[31:0]|MTVAL|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mtval is a warl register that holds the address of the instruction which caused the exception.|
+|[31:0]|MTVAL|0x00000000|0x00000000|RO_CONSTANT|The mtval is a warl register that holds the address of the instruction which caused the exception.|
 
 #### MIP
   
@@ -205,7 +217,7 @@ Author: Abdessamii Oukalrazqou
 |0|USIP||0x0|WARL|User Software Interrupt Pending.|
 |1|SSIP||0x0|WARL|Supervisor Software Interrupt Pending.|
 |2|VSSIP||0x0|WARL|VS-level Software Interrupt Pending.|
-|3|MSIP|0x1|0x0|RO_VARIABLE|Machine Software Interrupt Pending.|
+|3|MSIP||0x0|WARL|Machine Software Interrupt Pending.|
 |4|UTIP||0x0|WARL|User Timer Interrupt Pending.|
 |5|STIP||0x0|WARL|Supervisor Timer Interrupt Pending.|
 |6|VSTIP||0x0|WARL|VS-level Timer Interrupt Pending.|
@@ -217,10 +229,10 @@ Author: Abdessamii Oukalrazqou
 |12|SGEIP||0x0|WARL|HS-level External Interrupt Pending.|
 |[31:13]|RESERVED_13||0x0|WPRI|RESERVED|
 
-#### PMPCFG[0-1]
+#### PMPCFG[0-3]
   
 ---  
-**Address** 0x3a0-0x3a1  
+**Address** 0x3a0-0x3a3  
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** PMP configuration register
@@ -231,10 +243,10 @@ Author: Abdessamii Oukalrazqou
 |[23:16]|PMP[I*4 + 2]CFG|[0x00:0xFF]|0x0|WARL|pmp configuration bits|
 |[31:24]|PMP[I*4 + 3]CFG|[0x00:0xFF]|0x0|WARL|pmp configuration bits|
 
-#### PMPADDR[0-7]
+#### PMPADDR[0-15]
   
 ---  
-**Address** 0x3b0-0x3b7  
+**Address** 0x3b0-0x3bf  
 **Reset Value** 0x0  
 **Privilege Mode** M  
 **Description** Physical memory protection address register
@@ -273,7 +285,7 @@ Author: Abdessamii Oukalrazqou
 **Description** The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.
 |Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|[31:0]|MHPMCOUNTER[I]|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.|
+|[31:0]|MHPMCOUNTER[I]|0x00000000|0x00000000|RO_CONSTANT|The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.|
 
 #### MCYCLEH
   
@@ -306,7 +318,7 @@ Author: Abdessamii Oukalrazqou
 **Description** The mhpmcounterh returns the upper half word in RV32I systems.
 |Bits|Field Name|Legal Values|Reset|Type|Description|
 | :--- | :--- | :--- | :--- | :--- | :--- |
-|[31:0]|MHPMCOUNTER[I]H|[0x00000000 , 0xFFFFFFFF]|0x00000000|WARL|The mhpmcounterh returns the upper half word in RV32I systems.|
+|[31:0]|MHPMCOUNTER[I]H|0x00000000|0x00000000|RO_CONSTANT|The mhpmcounterh returns the upper half word in RV32I systems.|
 
 #### MVENDORID
   
