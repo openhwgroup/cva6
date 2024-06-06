@@ -23,17 +23,19 @@
 //
 // 3) NC accesses to I/O space are expected to return 32bit from memory.
 //
-
+// Additional contributions by:
+// 06.06.2024 - Yannick Casamatta, Thales
+//              OBI Protocol
 
 module cva6_icache
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
+    parameter type fetch_req_t = logic,
+    parameter type fetch_rsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     /// ID to be used for read transactions
@@ -43,17 +45,20 @@ module cva6_icache
     input logic rst_ni,
 
     /// flush the icache, flush and kill have to be asserted together
-    input  logic         flush_i,
+    input  logic       flush_i,
     /// enable icache
-    input  logic         en_i,
+    input  logic       en_i,
     /// to performance counter
-    output logic         miss_o,
-    // address translation requests
-    input  icache_areq_t areq_i,
-    output icache_arsp_t areq_o,
+    output logic       miss_o,
     // data requests
-    input  icache_dreq_t dreq_i,
-    output icache_drsp_t dreq_o,
+    input  fetch_req_t fetch_req_i,
+    output fetch_rsp_t fetch_rsp_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t obi_fetch_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t obi_fetch_rsp_o,
+
     // refill port
     input  logic         mem_rtrn_vld_i,
     input  icache_rtrn_t mem_rtrn_i,
@@ -78,8 +83,9 @@ module cva6_icache
   // signals
   logic cache_en_d, cache_en_q;  // cache is enabled
   logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
-  logic paddr_is_nc;  // asserted if physical address is non-cacheable
-  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
+  logic paddr_is_nc_q, paddr_is_nc_d;  // asserted if physical address is non-cacheable
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit, cl_hit2;  // hit from tag compare
+
   logic cache_rden;  // triggers cache lookup
   logic cache_wren;  // triggers write to cacheline
   logic
@@ -123,31 +129,43 @@ module cva6_icache
     FLUSH,
     IDLE,
     READ,
+    READ_BIS,
     MISS,
-    KILL_ATRANS,
     KILL_MISS
   } state_e;
   state_e state_d, state_q;
+
+  logic obi_valid, obi_grant;
+
+  logic [CVA6Cfg.FETCH_WIDTH-1:0] data_d, data_q, obi_rdata;
+  logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] userdata_d, userdata_q, obi_ruser;
+  logic data_valid_obi, data_valid_obi_d, data_valid_obi_q;
+
+  //OBI
+  assign obi_fetch_rsp_o.gnt = obi_grant;
+  assign obi_fetch_rsp_o.gntpar = !obi_grant;
+  assign obi_fetch_rsp_o.rvalid = obi_valid;
+  assign obi_fetch_rsp_o.rvalidpar = !obi_valid;
+  assign obi_fetch_rsp_o.r.rid = '0;
+  assign obi_fetch_rsp_o.r.r_optional.exokay = '0;
+  assign obi_fetch_rsp_o.r.r_optional.rchk = '0;
+  assign obi_fetch_rsp_o.r.err = '0;
+  assign obi_fetch_rsp_o.r.rdata = obi_rdata;
+  assign obi_fetch_rsp_o.r.r_optional.ruser = obi_ruser;
+
 
   ///////////////////////////////////////////////////////
   // address -> cl_index mapping, interface plumbing
   ///////////////////////////////////////////////////////
 
   // extract tag from physical address, check if NC
-  assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
-
-  // noncacheable if request goes to I/O space, or if cache is disabled
-  assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, cl_tag_d, {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}}
-  ));
-
-  // pass exception through
-  assign dreq_o.ex = areq_i.fetch_exception;
+  assign cl_tag_d  = (obi_fetch_req_i.req && obi_grant) ? obi_fetch_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+  // memtype[1] = 1 is cacheable, memtype[1] = 0 is non cacheable
+  assign paddr_is_nc_d  = !cache_en_q || ((obi_fetch_req_i.req && obi_grant) ? !obi_fetch_req_i.a.a_optional.memtype[1] : paddr_is_nc_q);
 
   // latch this in case we have to stall later on
   // make sure this is 32bit aligned
-  assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
-  assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
+  assign vaddr_d = (fetch_rsp_o.ready & fetch_req_i.req) ? fetch_req_i.vaddr : vaddr_q;
 
   // split virtual address into index and offset to address cache arrays
   assign cl_index = vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
@@ -155,40 +173,120 @@ module cva6_icache
 
   if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP) begin : gen_axi_offset
     // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
-    assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? (dreq_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS :
-                         ( paddr_is_nc  & mem_data_req_o ) ? {{ICACHE_OFFSET_WIDTH-1{1'b0}}, cl_offset_q[2]}<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
+    assign cl_offset_d = ( fetch_rsp_o.ready & fetch_req_i.req)      ? (fetch_req_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS :
+                         ( paddr_is_nc_d  & mem_data_req_o ) ? {{ICACHE_OFFSET_WIDTH-1{1'b0}}, cl_offset_q[2]}<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
         cl_offset_q;
     // request word address instead of cl address in case of NC access
-    assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3], 3'b0} :                                         // align to 64bit
+    assign mem_data_o.paddr = (paddr_is_nc_d) ? {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3], 3'b0} :                                         // align to 64bit
         {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}}; // align to cl
   end else begin : gen_piton_offset
     // icache fills are either cachelines or 4byte fills, depending on whether they go to the Piton I/O space or not.
     // since the piton cache system replicates the data, we can always index the full CL
-    assign cl_offset_d = (dreq_o.ready & dreq_i.req) ? {dreq_i.vaddr >> 2, 2'b0} : cl_offset_q;
+    assign cl_offset_d = (fetch_rsp_o.ready & fetch_req_i.req) ? {fetch_req_i.vaddr >> 2, 2'b0} : cl_offset_q;
 
     // request word address instead of cl address in case of NC access
-    assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:2], 2'b0} :                                         // align to 32bit
+    assign mem_data_o.paddr = (paddr_is_nc_d) ? {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:2], 2'b0} :                                         // align to 32bit
         {cl_tag_d, vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}}; // align to cl
   end
 
 
   assign mem_data_o.tid = RdTxId;
 
-  assign mem_data_o.nc  = paddr_is_nc;
+  assign mem_data_o.nc  = paddr_is_nc_d;
   // way that is being replaced
   assign mem_data_o.way = repl_way;
-  assign dreq_o.vaddr   = vaddr_q;
 
   // invalidations take two cycles
   assign inv_d          = inv_en;
 
+
+  typedef enum logic [1:0] {
+    OBI_R_IDLE,
+    OBI_R_WAIT,
+    OBI_R_VALID,
+    OBI_R_KILLED
+  } obi_r_state_e;
+  obi_r_state_e obi_r_state_d, obi_r_state_q;
+
+
+  // Common clocked process
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_obi
+    if (!rst_ni) begin
+      obi_r_state_q <= OBI_R_IDLE;
+      data_q <= '0;
+      userdata_q <= '0;
+      data_valid_obi_q <= '0;
+    end else begin
+      obi_r_state_q <= obi_r_state_d;
+      data_q <= data_d;
+      userdata_q <= userdata_d;
+      data_valid_obi_q <= data_valid_obi_d;
+    end
+  end
+
+  // OBI CHANNEL R protocol FSM (combi)
+
+  always_comb begin : p_fsm_obi_r
+    // default assignment
+    obi_valid = '0;
+    fetch_rsp_o.invalid_data = '0;
+    obi_rdata = data_q;
+    obi_ruser = userdata_q;
+    obi_r_state_d = obi_r_state_q;
+
+    unique case (obi_r_state_q)
+      OBI_R_IDLE: begin
+        if (obi_fetch_req_i.req && obi_grant) begin
+          if (!(fetch_req_i.kill_req || flush_d)) begin
+            obi_r_state_d = OBI_R_WAIT;
+          end else begin
+            obi_r_state_d = OBI_R_KILLED;
+          end
+        end
+      end
+
+      OBI_R_WAIT: begin
+        if (fetch_req_i.kill_req || flush_d) begin
+          obi_valid = '1;
+          fetch_rsp_o.invalid_data = '1;
+          obi_r_state_d = OBI_R_IDLE;
+        end else if (data_valid_obi || data_valid_obi_q) begin
+          obi_valid = '1;
+          if (data_valid_obi) begin
+            obi_rdata = data_d;
+            obi_ruser = userdata_d;
+          end
+          obi_ruser = userdata_d;
+          if (!(obi_fetch_req_i.req && obi_grant)) begin
+            obi_r_state_d = OBI_R_IDLE;
+          end
+        end
+      end
+
+      OBI_R_KILLED: begin
+        obi_valid = '1;
+        fetch_rsp_o.invalid_data = '1;
+        if (obi_fetch_req_i.req && obi_grant) begin
+          if (!(fetch_req_i.kill_req || flush_d)) begin
+            obi_r_state_d = OBI_R_WAIT;
+          end
+        end else begin
+          obi_r_state_d = OBI_R_IDLE;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        obi_r_state_d = OBI_R_IDLE;
+      end
+    endcase
+  end
+
+
   ///////////////////////////////////////////////////////
   // main control logic
   ///////////////////////////////////////////////////////
-  logic addr_ni;
-  assign addr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, areq_i.fetch_paddr}
-  );
+
   always_comb begin : p_fsm
     // default assignment
     state_d = state_q;
@@ -199,14 +297,14 @@ module cva6_icache
     cache_wren = 1'b0;
     inv_en = 1'b0;
     flush_d = flush_q | flush_i;  // register incoming flush
-
     // interfaces
-    dreq_o.ready = 1'b0;
-    areq_o.fetch_req = 1'b0;
-    dreq_o.valid = 1'b0;
+    fetch_rsp_o.ready = 1'b0;
     mem_data_req_o = 1'b0;
     // performance counter
     miss_o = 1'b0;
+    obi_grant = 1'b0;
+    data_valid_obi = '0;
+    data_valid_obi_d = '0;
 
     // handle invalidations unconditionally
     // note: invald are mutually exclusive with
@@ -242,15 +340,16 @@ module cva6_icache
         end else begin
           // mem requests are for sure invals here
           if (!mem_rtrn_vld_i) begin
-            dreq_o.ready = 1'b1;
-            // we have a new request
-            if (dreq_i.req) begin
+            fetch_rsp_o.ready = 1'b1;
+            // we have a new request not killed
+            if (obi_fetch_req_i.req && !fetch_req_i.kill_req) begin
               cache_rden = 1'b1;
-              state_d    = READ;
+              state_d = READ_BIS;
+              obi_grant = 1'b1;
+            end else if (fetch_req_i.req && !fetch_req_i.kill_req) begin
+              cache_rden = 1'b1;
+              state_d = READ;
             end
-          end
-          if (dreq_i.kill_s1) begin
-            state_d = IDLE;
           end
         end
       end
@@ -261,38 +360,37 @@ module cva6_icache
       // reuse the miss mechanism to handle
       // the request
       READ: begin
-        areq_o.fetch_req = '1;
         // only enable tag comparison if cache is enabled
-        cmp_en_d    = cache_en_q;
+        cmp_en_d   = cache_en_q;
         // readout speculatively
-        cache_rden  = cache_en_q;
+        cache_rden = cache_en_q;
 
-        if (areq_i.fetch_valid && (!dreq_i.spec || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)))) begin
+        if (obi_fetch_req_i.req) begin
+          state_d   = READ_BIS;
+          obi_grant = 1'b1;
+
           // check if we have to flush
           if (flush_d) begin
             state_d = IDLE;
-            // we have a hit or an exception output valid result
-          end else if (((|cl_hit && cache_en_q) || areq_i.fetch_exception.valid) && !inv_q) begin
-            dreq_o.valid = ~dreq_i.kill_s2;  // just don't output in this case
-            state_d      = IDLE;
-
-            // we can accept another request
-            // and stay here, but only if no inval is coming in
-            // note: we are not expecting ifill return packets here...
+            // we have an exception
+          end else if (fetch_req_i.kill_req) begin
+            state_d = IDLE;
             if (!mem_rtrn_vld_i) begin
-              dreq_o.ready = 1'b1;
-              if (dreq_i.req) begin
+              fetch_rsp_o.ready = 1'b1;
+              if (fetch_req_i.req) begin
                 state_d = READ;
               end
             end
-            // if a request is being killed at this stage,
-            // we have to bail out and wait for the address translation to complete
-            if (dreq_i.kill_s1) begin
-              state_d = IDLE;
-            end
-            // we have a miss / NC transaction
-          end else if (dreq_i.kill_s2) begin
+            // we have a hit 
+          end else if (|cl_hit && cache_en_q && !inv_q) begin
+            data_valid_obi_d = '1;
             state_d = IDLE;
+            if (!mem_rtrn_vld_i) begin
+              fetch_rsp_o.ready = 1'b1;
+              if (fetch_req_i.req) begin
+                state_d = READ;
+              end
+            end
           end else if (!inv_q) begin
             cmp_en_d = 1'b0;
             // only count this as a miss if the cache is enabled, and
@@ -300,15 +398,80 @@ module cva6_icache
             // send out ifill request
             mem_data_req_o = 1'b1;
             if (mem_data_ack_i) begin
-              miss_o  = ~paddr_is_nc;
+              miss_o  = ~paddr_is_nc_d;
               state_d = MISS;
             end
           end
           // bail out if this request is being killed (and we missed on the TLB)
-        end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_ATRANS;
+        end else if (flush_d) begin
+          state_d = IDLE;
+        end else if (fetch_req_i.kill_req) begin
+          state_d = IDLE;
+          // we can accept another request
+          // and stay here, but only if no inval is coming in
+          // note: we are not expecting ifill return packets here...
+          if (!mem_rtrn_vld_i) begin
+            fetch_rsp_o.ready = 1'b1;
+            if (fetch_req_i.req) begin
+              state_d = READ;
+            end
+          end
+        end else if (fetch_req_i.req) begin
+          //abort previous index and launch new one
+          state_d = IDLE;
+          if (!mem_rtrn_vld_i) begin
+            cache_rden = 1'b1;
+            fetch_rsp_o.ready = 1'b1;
+            state_d = READ;
+          end
         end
       end
+
+      READ_BIS: begin
+        // only enable tag comparison if cache is enabled
+        cmp_en_d   = cache_en_q;
+        // readout speculatively
+        cache_rden = cache_en_q;
+
+        // check if we have to flush
+        if (flush_d) begin
+          state_d = IDLE;
+        end else if (fetch_req_i.kill_req) begin
+          state_d = IDLE;
+          if (!mem_rtrn_vld_i) begin
+            fetch_rsp_o.ready = 1'b1;
+            if (fetch_req_i.req) begin
+              state_d = READ;
+            end
+          end
+
+          // we have a hit
+        end else if ((|cl_hit2 && cache_en_q && !inv_q)) begin
+          state_d = IDLE;
+          data_valid_obi = 1'b1;
+          // we can accept another request
+          // and stay here, but only if no inval is coming in
+          // note: we are not expecting ifill return packets here...
+          if (!mem_rtrn_vld_i) begin
+            fetch_rsp_o.ready = 1'b1;
+            if (fetch_req_i.req) begin
+              state_d = READ;
+            end
+          end
+
+        end else if (!inv_q) begin
+          cmp_en_d = 1'b0;
+          // only count this as a miss if the cache is enabled, and
+          // the address is cacheable
+          // send out ifill request
+          mem_data_req_o = 1'b1;
+          if (mem_data_ack_i) begin
+            miss_o  = ~paddr_is_nc_d;
+            state_d = MISS;
+          end
+        end
+      end
+
       //////////////////////////////////
       // wait until the memory transaction
       // returns. do not write to memory
@@ -319,24 +482,14 @@ module cva6_icache
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
           state_d = IDLE;
           // only return data if request is not being killed
-          if (!(dreq_i.kill_s2 || flush_d)) begin
-            dreq_o.valid = 1'b1;
+          if (!(fetch_req_i.kill_req || flush_d)) begin
             // only write to cache if this address is cacheable
-            cache_wren   = ~paddr_is_nc;
+            cache_wren = ~paddr_is_nc_d;
+            data_valid_obi = '1;
           end
           // bail out if this request is being killed
-        end else if (dreq_i.kill_s2 || flush_d) begin
+        end else if (fetch_req_i.kill_req || flush_d) begin
           state_d = KILL_MISS;
-        end
-      end
-      //////////////////////////////////
-      // killed address translation,
-      // wait until paddr is valid, and go
-      // back to idle
-      KILL_ATRANS: begin
-        areq_o.fetch_req = '1;
-        if (areq_i.fetch_valid) begin
-          state_d = IDLE;
         end
       end
       //////////////////////////////////
@@ -348,6 +501,7 @@ module cva6_icache
           state_d = IDLE;
         end
       end
+
       default: begin
         // we should never get here
         state_d = FLUSH;
@@ -425,6 +579,7 @@ module cva6_icache
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     assign cl_hit[i]  = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
+    assign cl_hit2[i] = (cl_tag_rdata[i] == cl_tag_q) & vld_rdata[i];
     assign cl_sel[i]  = cl_rdata[i][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
     assign cl_user[i] = cl_ruser[i][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
   end
@@ -440,11 +595,11 @@ module cva6_icache
 
   always_comb begin
     if (cmp_en_q) begin
-      dreq_o.data = cl_sel[hit_idx];
-      dreq_o.user = cl_user[hit_idx];
+      data_d = cl_sel[hit_idx];
+      userdata_d = cl_user[hit_idx];
     end else begin
-      dreq_o.data = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
-      dreq_o.user = mem_rtrn_i.user[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
+      data_d = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
+      userdata_d = mem_rtrn_i.user[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
     end
   end
 
@@ -516,6 +671,7 @@ module cva6_icache
       cl_offset_q   <= '0;
       repl_way_oh_q <= '0;
       inv_q         <= '0;
+      paddr_is_nc_q <= '0;
     end else begin
       cl_tag_q      <= cl_tag_d;
       flush_cnt_q   <= flush_cnt_d;
@@ -527,6 +683,7 @@ module cva6_icache
       cl_offset_q   <= cl_offset_d;
       repl_way_oh_q <= repl_way_oh_d;
       inv_q         <= inv_d;
+      paddr_is_nc_q <= paddr_is_nc_d;
     end
   end
 
@@ -548,7 +705,7 @@ module cva6_icache
 
   invalid_state :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
+    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, READ_BIS, MISS, KILL_MISS}))
   else $fatal(1, "[l1 icache] fsm reached an invalid state");
 
   hot1 :

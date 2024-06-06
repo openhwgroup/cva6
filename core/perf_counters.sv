@@ -21,7 +21,7 @@ module perf_counters
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
-    parameter type icache_dreq_t = logic,
+    parameter type fetch_dreq_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter int unsigned NumPorts = 3  // number of miss ports
 ) (
@@ -52,7 +52,7 @@ module perf_counters
     input bp_resolve_t resolved_branch_i,
     // for newly added events
     input exception_t branch_exceptions_i,  //Branch exceptions->execute unit-> branch_exception_o
-    input icache_dreq_t l1_icache_access_i,
+    input fetch_dreq_t l1_fetch_access_i,
     input dcache_req_i_t [2:0] l1_dcache_access_i,
     input  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
     input logic i_tlb_flush_i,
@@ -123,7 +123,7 @@ module perf_counters
         5'b01101: events[i] = |return_event;  //Return
         5'b01110: events[i] = sb_full_i;  //MSB Full
         5'b01111: events[i] = if_empty_i;  //Instruction fetch Empty
-        5'b10000: events[i] = l1_icache_access_i.req;  //L1 I-Cache accesses
+        5'b10000: events[i] = l1_fetch_access_i.req;  //L1 I-Cache accesses
         5'b10001:
         events[i] = l1_dcache_access_i[0].data_req || l1_dcache_access_i[1].data_req || l1_dcache_access_i[2].data_req;//L1 D-Cache accesses
         5'b10010:

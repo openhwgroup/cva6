@@ -21,8 +21,8 @@ module load_store_unit
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
+    parameter type fetch_areq_t = logic,
+    parameter type fetch_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic
@@ -82,10 +82,10 @@ module load_store_unit
     // Enable G-Stage memory translation for load/stores - TO_BE_COMPLETED
     input logic en_ld_st_g_translation_i,
 
-    // Instruction cache input request - CACHES
-    input  icache_arsp_t icache_areq_i,
-    // Instruction cache output request - CACHES
-    output icache_areq_t icache_areq_o,
+    // Instruction cache input request - FETCH
+    input  fetch_areq_t fetch_areq_i,
+    // Instruction cache output response - FETCH
+    output fetch_arsp_t fetch_arsp_o,
 
     // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                          priv_lvl_i,
@@ -205,33 +205,33 @@ module load_store_unit
   logic                    translation_req;
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
-  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, lsu_paddr;
-  logic         [                     31:0] mmu_tinst;
-  logic                                     mmu_hs_ld_st_inst;
-  logic                                     mmu_hlvx_inst;
-  exception_t                               mmu_exception;
-  exception_t                               pmp_exception;
-  icache_areq_t                             pmp_icache_areq_i;
-  logic                                     pmp_translation_valid;
-  logic                                     dtlb_hit;
-  logic         [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
+  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, fetch_vaddr_plen, lsu_paddr;
+  logic        [                     31:0] mmu_tinst;
+  logic                                    mmu_hs_ld_st_inst;
+  logic                                    mmu_hlvx_inst;
+  exception_t                              mmu_exception;
+  exception_t                              pmp_exception;
+  fetch_arsp_t                             pmp_fetch_arsp;
+  logic                                    pmp_translation_valid;
+  logic                                    dtlb_hit;
+  logic        [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
 
-  logic                                     ld_valid;
-  logic         [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
-  logic         [         CVA6Cfg.XLEN-1:0] ld_result;
-  logic                                     st_valid;
-  logic         [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
-  logic         [         CVA6Cfg.XLEN-1:0] st_result;
+  logic                                    ld_valid;
+  logic        [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
+  logic        [         CVA6Cfg.XLEN-1:0] ld_result;
+  logic                                    st_valid;
+  logic        [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
+  logic        [         CVA6Cfg.XLEN-1:0] st_result;
 
-  logic         [                     11:0] page_offset;
-  logic                                     page_offset_matches;
+  logic        [                     11:0] page_offset;
+  logic                                    page_offset_matches;
 
-  exception_t                               misaligned_exception;
-  exception_t                               ld_ex;
-  exception_t                               st_ex;
+  exception_t                              misaligned_exception;
+  exception_t                              ld_ex;
+  exception_t                              st_ex;
 
-  logic                                     hs_ld_st_inst;
-  logic                                     hlvx_inst;
+  logic                                    hs_ld_st_inst;
+  logic                                    hlvx_inst;
 
   logic [1:0] sum, mxr;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn[2:0];
@@ -247,10 +247,8 @@ module load_store_unit
     cva6_mmu #(
         .CVA6Cfg       (CVA6Cfg),
         .exception_t   (exception_t),
-        .icache_areq_t (icache_areq_t),
-        .icache_arsp_t (icache_arsp_t),
-        .icache_dreq_t (icache_dreq_t),
-        .icache_drsp_t (icache_drsp_t),
+        .fetch_areq_t  (fetch_areq_t),
+        .fetch_arsp_t  (fetch_arsp_t),
         .dcache_req_i_t(dcache_req_i_t),
         .dcache_req_o_t(dcache_req_o_t),
         .HYP_EXT       (HYP_EXT)
@@ -262,8 +260,8 @@ module load_store_unit
         .enable_g_translation_i(enable_g_translation_i),
         .en_ld_st_translation_i(en_ld_st_translation_i),
         .en_ld_st_g_translation_i(en_ld_st_g_translation_i),
-        .icache_areq_i(icache_areq_i),
-        .icache_areq_o(pmp_icache_areq_i),
+        .fetch_areq_i(fetch_areq_i),
+        .fetch_arsp_o(pmp_fetch_arsp),
         // misaligned bypass
         .misaligned_ex_i(misaligned_exception),
         .lsu_req_i(translation_req),
@@ -313,14 +311,14 @@ module load_store_unit
         .pmpaddr_i
     );
   end else begin : gen_no_mmu
-    // icache request without MMU, virtual and physical address are identical
-    assign pmp_icache_areq_i.fetch_valid = icache_areq_i.fetch_req;
+    // fetch request without MMU, virtual and physical address are identical
+    assign pmp_fetch_arsp.fetch_valid = fetch_areq_i.fetch_req;
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
-      assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
+      assign pmp_fetch_arsp.fetch_paddr = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin : gen_virtual_physical_address_instruction_plen_greater
-      assign pmp_icache_areq_i.fetch_paddr = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr);
+      assign pmp_fetch_arsp.fetch_paddr = CVA6Cfg.PLEN'(fetch_areq_i.fetch_vaddr);
     end
-    assign pmp_icache_areq_i.fetch_exception = 'h0;
+    assign pmp_fetch_arsp.fetch_exception = 'h0;
     // dcache request without mmu for load or store,
     // Delay of 1 cycle to match MMU latency giving the address tag
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -363,14 +361,14 @@ module load_store_unit
 
   pmp_data_if #(
       .CVA6Cfg      (CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
+      .icache_areq_t(fetch_arsp_t),
       .exception_t  (exception_t)
   ) i_pmp_data_if (
       .clk_i               (clk_i),
       .rst_ni              (rst_ni),
-      .icache_areq_i       (pmp_icache_areq_i),
-      .icache_areq_o       (icache_areq_o),
-      .icache_fetch_vaddr_i(icache_areq_i.fetch_vaddr),
+      .icache_areq_i       (pmp_fetch_arsp),
+      .icache_areq_o       (fetch_arsp_o),
+      .icache_fetch_vaddr_i(fetch_areq_i.fetch_vaddr),
       .lsu_valid_i         (pmp_translation_valid),
       .lsu_paddr_i         (lsu_paddr),
       .lsu_vaddr_i         (mmu_vaddr),
