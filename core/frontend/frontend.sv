@@ -21,8 +21,12 @@ module frontend
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type fetch_entry_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic
+    parameter type fetch_dreq_t = logic,
+    parameter type fetch_drsp_t = logic,
+    parameter type fetch_areq_t = logic,
+    parameter type fetch_arsp_t = logic,
+    parameter type obi_fetch_req_t = logic,
+    parameter type obi_fetch_rsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -54,10 +58,18 @@ module frontend
     input logic set_debug_pc_i,
     // Debug mode state - CSR
     input logic debug_mode_i,
+    // address translation request chanel - EXECUTE
+    input fetch_arsp_t arsp_i,
+    // address translation response chanel - EXECUTE
+    output fetch_areq_t areq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
-    output icache_dreq_t icache_dreq_o,
+    output fetch_dreq_t fetch_dreq_o,
     // Handshake between CACHE and FRONTEND (fetch) - CACHES
-    input icache_drsp_t icache_dreq_i,
+    input fetch_drsp_t fetch_dreq_i,
+    // OBI Fetch Request channel - CACHES
+    output obi_fetch_req_t fetch_obi_req_o,
+    // OBI Fetch Response channel - CACHES
+    input obi_fetch_rsp_t fetch_obi_rsp_i,
     // Handshake's data between fetch and decode - ID_STAGE
     output fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_o,
     // Handshake's valid between fetch and decode - ID_STAGE
@@ -89,13 +101,13 @@ module frontend
   };
 
   // Instruction Cache Registers, from I$
-  logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] icache_data_q;
-  logic                                                          icache_valid_q;
-  ariane_pkg::frontend_exception_t                               icache_ex_valid_q;
-  logic                            [           CVA6Cfg.VLEN-1:0] icache_vaddr_q;
-  logic                            [          CVA6Cfg.GPLEN-1:0] icache_gpaddr_q;
-  logic                            [                       31:0] icache_tinst_q;
-  logic                                                          icache_gva_q;
+  logic                            [    CVA6Cfg.FETCH_WIDTH-1:0] fetch_data_q;
+  logic                                                          fetch_valid_q;
+  ariane_pkg::frontend_exception_t                               fetch_ex_valid_q;
+  logic                            [           CVA6Cfg.VLEN-1:0] fetch_vaddr_q;
+  logic                            [          CVA6Cfg.GPLEN-1:0] fetch_gpaddr_q;
+  logic                            [                       31:0] fetch_tinst_q;
+  logic                                                          fetch_gva_q;
   logic                                                          instr_queue_ready;
   logic                            [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_consumed;
   // upper-most branch-prediction from last cycle
@@ -106,16 +118,20 @@ module frontend
   logic [CVA6Cfg.VLEN-1:0] npc_d, npc_q;  // next PC
 
   // indicates whether we come out of reset (then we need to load boot_addr_i)
-  logic                                       npc_rst_load_q;
+  logic                    npc_rst_load_q;
 
-  logic                                       replay;
-  logic [                   CVA6Cfg.VLEN-1:0] replay_addr;
+  logic                    replay;
+  logic [CVA6Cfg.VLEN-1:0] replay_addr;
+
+  logic [CVA6Cfg.VLEN-1:0]
+      npc_fetch_address, vaddr_d, obi_vaddr_q, obi_vaddr_d, vaddr_q, fetch_vaddr_d;
+  logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
   logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
   // address will always be 16 bit aligned, make this explicit here
   if (CVA6Cfg.RVC) begin : gen_shamt
-    assign shamt = icache_dreq_i.vaddr[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
+    assign shamt = fetch_vaddr_d[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
   end else begin
     assign shamt = 1'b0;
   end
@@ -152,18 +168,20 @@ module frontend
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvi_cf;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
-  logic                               serving_unaligned;
+  logic kill_s1, kill_s2;
+
+  logic serving_unaligned;
   // Re-align instructions
   instr_realign #(
       .CVA6Cfg(CVA6Cfg)
   ) i_instr_realign (
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),
-      .flush_i            (icache_dreq_o.kill_s2),
-      .valid_i            (icache_valid_q),
+      .flush_i            (kill_s2),
+      .valid_i            (fetch_valid_q),
       .serving_unaligned_o(serving_unaligned),
-      .address_i          (icache_vaddr_q),
-      .data_i             (icache_data_q),
+      .address_i          (fetch_vaddr_q),
+      .data_i             (fetch_data_q),
       .valid_o            (instruction_valid),
       .addr_o             (addr),
       .instr_o            (instr)
@@ -304,26 +322,416 @@ module frontend
   end
   assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
-  // Cache interface
-  assign icache_dreq_o.req = instr_queue_ready;
-  assign if_ready = icache_dreq_i.ready & instr_queue_ready;
+  logic spec_req_non_idempot;
+
+  // MMU interface
+  assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
+
+  // Caches optimisation signals
+  logic custom_req;
+  logic custom_kill;
+  logic custom_ready;
+  logic data_valid_under_ex;
+  logic save_vaddr;
+
+  typedef enum logic [1:0] {
+    WAIT_NEW_REQ,
+    WAIT_ATRANS,
+    WAIT_OBI,
+    WAIT_FLUSH
+  } custom_state_e;
+  custom_state_e custom_state_d, custom_state_q;
+
+  // Address translation signals
+  logic atrans_req;
+  logic atrans_kill;
+  logic atrans_ready;
+  logic atrans_valid;
+  logic atrans_ex;
+
+  typedef enum logic [1:0] {
+    IDLE,
+    READ,
+    KILL_ATRANS
+  } atrans_state_e;
+  atrans_state_e atrans_state_d, atrans_state_q;
+
+  // OBI signals
+  logic obi_a_req;
+  logic obi_a_ready;
+
+  typedef enum logic [1:0] {
+    TRANSPARENT,
+    REGISTRED
+  } obi_a_state_e;
+  obi_a_state_e obi_a_state_d, obi_a_state_q;
+
+  // OBI signals
+  logic obi_r_req;
+  logic obi_r_ready;
+  logic data_valid_obi;
+
+  typedef enum logic [1:0] {
+    OBI_R_IDLE,
+    OBI_R_PENDING,
+    OBI_R_KILLED
+  } obi_r_state_e;
+  obi_r_state_e obi_r_state_d, obi_r_state_q;
+
   // We need to flush the cache pipeline if:
   // 1. We mispredicted
   // 2. Want to flush the whole processor front-end
   // 3. Need to replay an instruction because the fetch-fifo was full
-  assign icache_dreq_o.kill_s1 = is_mispredict | flush_i | replay;
+  assign kill_s1 = is_mispredict | flush_i | replay;
   // if we have a valid branch-prediction we need to only kill the last cache request
   // also if we killed the first stage we also need to kill the second stage (inclusive flush)
-  assign icache_dreq_o.kill_s2 = icache_dreq_o.kill_s1 | bp_valid;
+  assign kill_s2 = kill_s1 | bp_valid;
+
+  assign fetch_dreq_o.vaddr = vaddr_d;
+  assign fetch_dreq_o.kill_req = kill_s1 | kill_s2 | atrans_ex;
+
+  // Common clocked process
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      custom_state_q <= WAIT_NEW_REQ;
+      atrans_state_q <= IDLE;
+      obi_a_state_q <= TRANSPARENT;
+      obi_r_state_q <= OBI_R_IDLE;
+      vaddr_q <= '0;
+      paddr_q <= '0;
+      obi_vaddr_q <= '0;
+    end else begin
+      custom_state_q <= custom_state_d;
+      atrans_state_q <= atrans_state_d;
+      obi_a_state_q <= obi_a_state_d;
+      obi_r_state_q <= obi_r_state_d;
+      vaddr_q <= vaddr_d;
+      paddr_q <= paddr_d;
+      obi_vaddr_q <= obi_vaddr_d;
+    end
+  end
+
+  // custom protocol FSM (combi) 
+
+  always_comb begin : p_fsm_common
+    // default assignment
+    custom_state_d = custom_state_q;
+    atrans_req = '0;
+    atrans_kill = '0;
+    obi_a_req = '0;
+    obi_vaddr_d = obi_vaddr_q;
+    fetch_dreq_o.req = '0;
+    data_valid_under_ex = '0;
+    if_ready = '0;
+    vaddr_d = vaddr_q;
+
+    unique case (custom_state_q)
+      WAIT_NEW_REQ: begin
+        vaddr_d = npc_fetch_address;
+        if (instr_queue_ready && atrans_ready && !kill_s2) begin
+          fetch_dreq_o.req = '1;
+          if (fetch_dreq_i.ready) begin
+            if_ready = '1;
+            atrans_req = '1;
+            custom_state_d = WAIT_ATRANS;
+          end
+        end
+      end
+
+      WAIT_ATRANS: begin
+        if (atrans_valid) begin
+          if (kill_s2) begin
+            vaddr_d = npc_fetch_address;
+            if (instr_queue_ready && atrans_ready && !kill_s1) begin
+              fetch_dreq_o.req = '1;
+              if (fetch_dreq_i.ready) begin
+                if_ready   = '1;
+                atrans_req = '1;
+              end else begin
+                custom_state_d = WAIT_NEW_REQ;
+              end
+            end else begin
+              custom_state_d = WAIT_NEW_REQ;
+            end
+          end else if (atrans_ex) begin
+            obi_vaddr_d = vaddr_d;
+            data_valid_under_ex = '1;
+            custom_state_d = WAIT_FLUSH;
+          end else if (obi_a_ready && spec_req_non_idempot) begin
+            obi_a_req = '1;
+            obi_vaddr_d = vaddr_d;
+            vaddr_d = npc_fetch_address;
+            if (instr_queue_ready && atrans_ready && !kill_s1) begin
+              fetch_dreq_o.req = '1;
+              if (fetch_dreq_i.ready) begin
+                if_ready   = '1;
+                atrans_req = '1;
+              end else begin
+                custom_state_d = WAIT_NEW_REQ;
+              end
+            end else begin
+              custom_state_d = WAIT_NEW_REQ;
+            end
+          end else begin
+            custom_state_d = WAIT_OBI;
+          end
+        end
+        if (kill_s2) begin
+          atrans_kill = '1;
+          vaddr_d = npc_fetch_address;
+          if (instr_queue_ready && atrans_ready && !kill_s1) begin
+            fetch_dreq_o.req = '1;
+            if (fetch_dreq_i.ready) begin
+              if_ready   = '1;
+              atrans_req = '1;
+            end else begin
+              custom_state_d = WAIT_NEW_REQ;
+            end
+          end else begin
+            custom_state_d = WAIT_NEW_REQ;
+          end
+        end
+      end
+
+      WAIT_OBI: begin
+        if (kill_s2) begin
+          vaddr_d = npc_fetch_address;
+          if (instr_queue_ready && atrans_ready && !kill_s1) begin
+            fetch_dreq_o.req = '1;
+            if (fetch_dreq_i.ready) begin
+              if_ready = '1;
+              atrans_req = '1;
+              custom_state_d = WAIT_ATRANS;
+            end else begin
+              custom_state_d = WAIT_NEW_REQ;
+            end
+          end else begin
+            custom_state_d = WAIT_NEW_REQ;
+          end
+        end else if (obi_a_ready && spec_req_non_idempot) begin
+          obi_a_req = '1;
+          obi_vaddr_d = vaddr_d;
+          vaddr_d = npc_fetch_address;
+          if (instr_queue_ready && atrans_ready && !kill_s1) begin
+            fetch_dreq_o.req = '1;
+            if (fetch_dreq_i.ready) begin
+              if_ready = '1;
+              atrans_req = '1;
+              custom_state_d = WAIT_ATRANS;
+            end else begin
+              custom_state_d = WAIT_NEW_REQ;
+            end
+          end else begin
+            custom_state_d = WAIT_NEW_REQ;
+          end
+        end
+      end
+
+      WAIT_FLUSH: begin
+        if (kill_s1) begin
+          custom_state_d = WAIT_NEW_REQ;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        custom_state_d = WAIT_NEW_REQ;
+      end
+
+    endcase
+  end
+
+  // Address translation protocol FSM (combi)
+
+  always_comb begin : p_fsm_atrans
+    // default assignment
+    atrans_state_d = atrans_state_q;
+    areq_o.fetch_req = 1'b0;
+    atrans_ready = 1'b0;
+    atrans_valid = 1'b0;
+    paddr_d = paddr_q;
+    atrans_ex = 1'b0;
+
+    unique case (atrans_state_q)
+      IDLE: begin
+        atrans_ready = 1'b1;
+        if (atrans_req) begin
+          atrans_state_d = READ;
+        end
+      end
+
+      READ: begin
+        areq_o.fetch_req = '1;
+        if (arsp_i.fetch_valid) begin
+          atrans_ready = 1'b1;
+          if (!atrans_kill) begin
+            atrans_valid = 1'b1;
+            paddr_d = arsp_i.fetch_paddr;
+            atrans_ex = arsp_i.fetch_exception.valid;
+          end
+          if (!atrans_req) begin
+            atrans_state_d = IDLE;
+          end
+        end else if (atrans_kill) begin
+          atrans_state_d = KILL_ATRANS;
+        end
+      end
+
+      KILL_ATRANS: begin
+        areq_o.fetch_req = '1;
+        if (arsp_i.fetch_valid) begin
+          atrans_ready = 1'b1;
+          if (atrans_req) begin
+            atrans_state_d = READ;
+          end else begin
+            atrans_state_d = IDLE;
+          end
+        end
+      end
+
+      default: begin
+        // we should never get here
+        atrans_state_d = IDLE;
+      end
+    endcase
+  end
+
+  // OBI CHANNEL A protocol FSM (combi)
+
+  always_comb begin : p_fsm_obi_a
+    // default assignment
+    obi_a_state_d = obi_a_state_q;
+    obi_a_ready = 1'b0;
+    obi_r_req = '0;
+    //default obi state registred
+    fetch_obi_req_o.req    = 1'b1;
+    fetch_obi_req_o.reqpar = 1'b0;
+    fetch_obi_req_o.a.addr = paddr_q;
+    fetch_obi_req_o.a.we   = '0;
+    fetch_obi_req_o.a.be   = '1;
+    fetch_obi_req_o.a.wdata= '0;
+    fetch_obi_req_o.a.aid  = '0;
+    fetch_obi_req_o.a.a_optional.auser= '0;
+    fetch_obi_req_o.a.a_optional.wuser= '0;
+    fetch_obi_req_o.a.a_optional.atop= '0;
+    fetch_obi_req_o.a.a_optional.memtype= '0;
+    fetch_obi_req_o.a.a_optional.mid= '0;
+    fetch_obi_req_o.a.a_optional.prot= '0;
+    fetch_obi_req_o.a.a_optional.dbg= '0;
+    fetch_obi_req_o.a.a_optional.achk= '0;
+
+    unique case (obi_a_state_q)
+      TRANSPARENT: begin
+        obi_a_ready = obi_r_ready;
+        if (obi_a_req) begin
+          if (fetch_obi_rsp_i.gnt) begin
+            obi_r_req = '1;  //push pending request
+          end else begin
+            obi_a_state_d = REGISTRED;
+          end
+        end
+        fetch_obi_req_o.req    = obi_a_req;
+        fetch_obi_req_o.reqpar = !obi_a_req;
+        fetch_obi_req_o.a.addr = paddr_d;
+        fetch_obi_req_o.a.we   = '0;
+        fetch_obi_req_o.a.be   = '1;
+        fetch_obi_req_o.a.wdata= '0;
+        fetch_obi_req_o.a.aid  = '0;
+        fetch_obi_req_o.a.a_optional.auser= '0;
+        fetch_obi_req_o.a.a_optional.wuser= '0;
+        fetch_obi_req_o.a.a_optional.atop= '0;
+        fetch_obi_req_o.a.a_optional.memtype= '0;
+        fetch_obi_req_o.a.a_optional.mid= '0;
+        fetch_obi_req_o.a.a_optional.prot= '0;
+        fetch_obi_req_o.a.a_optional.dbg= '0;
+        fetch_obi_req_o.a.a_optional.achk= '0;
+      end
+
+      REGISTRED: begin
+        if (fetch_obi_rsp_i.gnt) begin
+          obi_r_req = '1;  //push pending request
+          obi_a_state_d = TRANSPARENT;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        obi_a_state_d = TRANSPARENT;
+      end
+    endcase
+  end
+
+  // OBI CHANNEL R protocol FSM (combi)
+
+  always_comb begin : p_fsm_obi_r
+    // default assignment
+    obi_r_ready = '0;
+    obi_r_state_d = obi_r_state_q;
+    data_valid_obi = '0;
+
+    unique case (obi_r_state_q)
+      OBI_R_IDLE: begin
+        obi_r_ready = '1;
+        if (obi_r_req) begin
+          if (kill_s2) begin
+            obi_r_state_d = OBI_R_KILLED;
+          end else begin
+            obi_r_state_d = OBI_R_PENDING;
+          end
+        end
+      end
+
+      OBI_R_PENDING: begin
+        if (fetch_obi_req_o.rready && fetch_obi_rsp_i.rvalid) begin
+          data_valid_obi = !kill_s2;
+          obi_r_ready = '1;
+          if (!obi_r_req) begin
+            obi_r_state_d = OBI_R_IDLE;
+          end
+        end else if (kill_s2) begin
+          obi_r_state_d = OBI_R_KILLED;
+        end
+      end
+
+      OBI_R_KILLED: begin
+        if (fetch_obi_req_o.rready && fetch_obi_rsp_i.rvalid) begin
+          obi_r_ready = '1;
+          if (obi_r_req) begin
+            if (!kill_s2) begin
+              obi_r_state_d = OBI_R_PENDING;
+            end
+          end else begin
+            obi_r_state_d = OBI_R_IDLE;
+          end
+        end
+      end
+
+      default: begin
+        // we should never get here
+        obi_r_state_d = OBI_R_IDLE;
+      end
+    endcase
+  end
+
+  //always ready to get data
+  assign fetch_obi_req_o.rready = '1;
+  assign fetch_obi_req_o.rreadypar = !fetch_obi_req_o.rready;
 
   // Update Control Flow Predictions
   bht_update_t bht_update;
   btb_update_t btb_update;
 
   // assert on branch, deassert when resolved
+  logic addr_ni;
+  assign addr_ni = config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_obi_req_o.a.addr}
+  );
+
   logic speculative_q, speculative_d;
   assign speculative_d = (speculative_q && !resolved_branch_i.valid || |is_branch || |is_return || |is_jalr) && !flush_i;
-  assign icache_dreq_o.spec = speculative_d;
+
+  assign spec_req_non_idempot = (speculative_d || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)));
+
 
   assign bht_update.valid = resolved_branch_i.valid
                                 & (resolved_branch_i.cf_type == ariane_pkg::Branch);
@@ -407,54 +815,59 @@ module frontend
     // enter debug on a hard-coded base-address
     if (CVA6Cfg.DebugEn && set_debug_pc_i)
       npc_d = CVA6Cfg.DmBaseAddress[CVA6Cfg.VLEN-1:0] + CVA6Cfg.HaltAddress[CVA6Cfg.VLEN-1:0];
-    icache_dreq_o.vaddr = fetch_address;
+    npc_fetch_address = fetch_address;
   end
 
-  logic [CVA6Cfg.FETCH_WIDTH-1:0] icache_data;
+  logic [CVA6Cfg.FETCH_WIDTH-1:0] fetch_data;
+  logic fetch_valid_d;
+
   // re-align the cache line
-  assign icache_data = icache_dreq_i.data >> {shamt, 4'b0};
+  assign fetch_data = data_valid_under_ex ? '0 : fetch_obi_rsp_i.r.rdata >> {shamt, 4'b0};
+  assign fetch_valid_d = data_valid_under_ex || data_valid_obi;
+  assign fetch_vaddr_d = data_valid_under_ex ? vaddr_q : obi_vaddr_q;
+
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      npc_rst_load_q    <= 1'b1;
-      npc_q             <= '0;
-      speculative_q     <= '0;
-      icache_data_q     <= '0;
-      icache_valid_q    <= 1'b0;
-      icache_vaddr_q    <= 'b0;
-      icache_gpaddr_q   <= 'b0;
-      icache_tinst_q    <= 'b0;
-      icache_gva_q      <= 1'b0;
-      icache_ex_valid_q <= ariane_pkg::FE_NONE;
-      btb_q             <= '0;
-      bht_q             <= '0;
+      npc_rst_load_q   <= 1'b1;
+      npc_q            <= '0;
+      speculative_q    <= '0;
+      fetch_data_q     <= '0;
+      fetch_valid_q    <= 1'b0;
+      fetch_vaddr_q    <= 'b0;
+      fetch_gpaddr_q   <= 'b0;
+      fetch_tinst_q    <= 'b0;
+      fetch_gva_q      <= 1'b0;
+      fetch_ex_valid_q <= ariane_pkg::FE_NONE;
+      btb_q            <= '0;
+      bht_q            <= '0;
     end else begin
       npc_rst_load_q <= 1'b0;
-      npc_q          <= npc_d;
-      speculative_q  <= speculative_d;
-      icache_valid_q <= icache_dreq_i.valid;
-      if (icache_dreq_i.valid) begin
-        icache_data_q  <= icache_data;
-        icache_vaddr_q <= icache_dreq_i.vaddr;
+      npc_q <= npc_d;
+      speculative_q <= speculative_d;
+      fetch_valid_q <= fetch_valid_d;
+      if (fetch_valid_d) begin
+        fetch_data_q  <= fetch_data;
+        fetch_vaddr_q <= fetch_vaddr_d;
         if (CVA6Cfg.RVH) begin
-          icache_gpaddr_q <= icache_dreq_i.ex.tval2[CVA6Cfg.GPLEN-1:0];
-          icache_tinst_q  <= icache_dreq_i.ex.tinst;
-          icache_gva_q    <= icache_dreq_i.ex.gva;
+          fetch_gpaddr_q <= arsp_i.fetch_exception.tval2[CVA6Cfg.GPLEN-1:0];
+          fetch_tinst_q  <= arsp_i.fetch_exception.tinst;
+          fetch_gva_q    <= arsp_i.fetch_exception.gva;
         end else begin
-          icache_gpaddr_q <= 'b0;
-          icache_tinst_q  <= 'b0;
-          icache_gva_q    <= 1'b0;
+          fetch_gpaddr_q <= 'b0;
+          fetch_tinst_q  <= 'b0;
+          fetch_gva_q    <= 1'b0;
         end
 
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
-          icache_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
-        end else if (CVA6Cfg.MmuPresent && icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
-          icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-        end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
-          icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
+        if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
+          fetch_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
+        end else if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT) begin
+          fetch_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
+        end else if (arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
+          fetch_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
         end else begin
-          icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          fetch_ex_valid_q <= ariane_pkg::FE_NONE;
         end
         // save the uppermost prediction
         btb_q <= btb_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
@@ -484,7 +897,7 @@ module frontend
   //For FPGA, BTB is implemented in read synchronous BRAM
   //while for ASIC, BTB is implemented in D flip-flop
   //and can be read at the same cycle.
-  assign vpc_btb = (CVA6Cfg.FpgaEn) ? icache_dreq_i.vaddr : icache_vaddr_q;
+  assign vpc_btb = (CVA6Cfg.FpgaEn) ? vaddr_q : fetch_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;
@@ -517,7 +930,7 @@ module frontend
         .rst_ni,
         .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
-        .vpc_i           (icache_vaddr_q),
+        .vpc_i           (fetch_vaddr_q),
         .bht_update_i    (bht_update),
         .bht_prediction_o(bht_prediction)
     );
@@ -555,11 +968,11 @@ module frontend
       .flush_i            (flush_i),
       .instr_i            (instr),                 // from re-aligner
       .addr_i             (addr),                  // from re-aligner
-      .exception_i        (icache_ex_valid_q),     // from I$
-      .exception_addr_i   (icache_vaddr_q),
-      .exception_gpaddr_i (icache_gpaddr_q),
-      .exception_tinst_i  (icache_tinst_q),
-      .exception_gva_i    (icache_gva_q),
+      .exception_i        (fetch_ex_valid_q),      // from I$
+      .exception_addr_i   (fetch_vaddr_q),
+      .exception_gpaddr_i (fetch_gpaddr_q),
+      .exception_tinst_i  (fetch_tinst_q),
+      .exception_gva_i    (fetch_gva_q),
       .predict_address_i  (predict_address),
       .cf_type_i          (cf_type),
       .valid_i            (instruction_valid),     // from re-aligner

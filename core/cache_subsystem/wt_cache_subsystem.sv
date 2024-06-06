@@ -23,18 +23,18 @@ module wt_cache_subsystem
   import ariane_pkg::*;
   import wt_cache_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   icache_areq_t  = logic,
-    parameter type                   icache_arsp_t  = logic,
-    parameter type                   icache_dreq_t  = logic,
-    parameter type                   icache_drsp_t  = logic,
-    parameter type                   dcache_req_i_t = logic,
-    parameter type                   dcache_req_o_t = logic,
-    parameter type                   icache_req_t   = logic,
-    parameter type                   icache_rtrn_t  = logic,
-    parameter int unsigned           NumPorts       = 4,
-    parameter type                   noc_req_t      = logic,
-    parameter type                   noc_resp_t     = logic
+    parameter config_pkg::cva6_cfg_t CVA6Cfg         = config_pkg::cva6_cfg_empty,
+    parameter type                   fetch_dreq_t    = logic,
+    parameter type                   fetch_drsp_t    = logic,
+    parameter type                   obi_fetch_req_t = logic,
+    parameter type                   obi_fetch_rsp_t = logic,
+    parameter type                   dcache_req_i_t  = logic,
+    parameter type                   dcache_req_o_t  = logic,
+    parameter type                   icache_req_t    = logic,
+    parameter type                   icache_rtrn_t   = logic,
+    parameter int unsigned           NumPorts        = 4,
+    parameter type                   noc_req_t       = logic,
+    parameter type                   noc_resp_t      = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -42,12 +42,15 @@ module wt_cache_subsystem
     input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
     input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
     output logic icache_miss_o,  // to performance counter
-    // address translation requests
-    input icache_areq_t icache_areq_i,  // to/from frontend
-    output icache_arsp_t icache_areq_o,
     // data requests
-    input icache_dreq_t icache_dreq_i,  // to/from frontend
-    output icache_drsp_t icache_dreq_o,
+    input fetch_dreq_t fetch_dreq_i,  // to/from frontend
+    output fetch_drsp_t fetch_dreq_o,
+
+    // OBI Fetch Request channel - FRONTEND
+    input  obi_fetch_req_t fetch_obi_req_i,
+    // OBI Fetch Response channel - FRONTEND
+    output obi_fetch_rsp_t fetch_obi_rsp_o,
+
     // D$
     // Cache management
     input logic dcache_enable_i,  // from CSR
@@ -115,28 +118,28 @@ module wt_cache_subsystem
   cva6_icache #(
       // use ID 0 for icache reads
       .CVA6Cfg(CVA6Cfg),
-      .icache_areq_t(icache_areq_t),
-      .icache_arsp_t(icache_arsp_t),
-      .icache_dreq_t(icache_dreq_t),
-      .icache_drsp_t(icache_drsp_t),
+      .fetch_dreq_t(fetch_dreq_t),
+      .fetch_drsp_t(fetch_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .RdTxId(0)
   ) i_cva6_icache (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (icache_flush_i),
-      .en_i          (icache_en_i),
-      .miss_o        (icache_miss_o),
-      .areq_i        (icache_areq_i),
-      .areq_o        (icache_areq_o),
-      .dreq_i        (icache_dreq_i),
-      .dreq_o        (icache_dreq_o),
-      .mem_rtrn_vld_i(adapter_icache_rtrn_vld),
-      .mem_rtrn_i    (adapter_icache),
-      .mem_data_req_o(icache_adapter_data_req),
-      .mem_data_ack_i(adapter_icache_data_ack),
-      .mem_data_o    (icache_adapter)
+      .clk_i          (clk_i),
+      .rst_ni         (rst_ni),
+      .flush_i        (icache_flush_i),
+      .en_i           (icache_en_i),
+      .miss_o         (icache_miss_o),
+      .dreq_i         (fetch_dreq_i),
+      .dreq_o         (fetch_dreq_o),
+      .fetch_obi_req_i(fetch_obi_req_i),
+      .fetch_obi_rsp_o(fetch_obi_rsp_o),
+      .mem_rtrn_vld_i (adapter_icache_rtrn_vld),
+      .mem_rtrn_i     (adapter_icache),
+      .mem_data_req_o (icache_adapter_data_req),
+      .mem_data_ack_i (adapter_icache_data_ack),
+      .mem_data_o     (icache_adapter)
   );
 
 
@@ -242,13 +245,13 @@ module wt_cache_subsystem
 `ifndef VERILATOR
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (fetch_obi_rsp_o.rvalid && !fetch_dreq_o.invalid_data) |-> (|fetch_obi_rsp_o.r.rdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-        icache_dreq_o.vaddr,
-        icache_dreq_o.data
+        fetch_dreq_i.vaddr,
+        fetch_obi_rsp_o.r.rdata
     );
 
   for (genvar j = 0; j < CVA6Cfg.XLEN / 8; j++) begin : gen_invalid_write_assertion
