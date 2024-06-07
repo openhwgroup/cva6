@@ -213,9 +213,7 @@ ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon)) \
 	  -cm_seqnoconst -diag noconst \
 
-ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait -licwait 20  \
-		-sv_lib $(CVA6_REPO_DIR)/verif/core-v-verif/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
-		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
+ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait $(issrun_opts) \
 
 ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/ \
 	  $(XCELIUM_HOME)/tools.lnx86/methodology/UVM/CDNS-1.2/sv/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_LOW -uvm -uvmhome CDNS-1.2 \
@@ -226,8 +224,6 @@ ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools
 ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/tools/spike/lib/libdisasm +signature=I-ADD-01.signature_output
 		          
 XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -log xrun.log -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 		
-		          
-##                          -xceligen on=1903	
 
 XRUN_DISABLED_WARNINGS := BIGWIX 	\
                         ZROMCW 		\
