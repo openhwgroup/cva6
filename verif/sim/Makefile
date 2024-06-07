@@ -145,12 +145,9 @@ spike:
 ###############################################################################
 # UVM specific commands, variables
 ###############################################################################
-ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CVA6_REPO_DIR)/verif/sim/vcs_results/default/vcs.d
 VSIM_WORK_DIR           = $(CVA6_REPO_DIR)/verif/sim/vsim_results/default/vsim.d
-VCS_SIMV                = $(VCS_WORK_DIR)/simv
 XRUN_WORK_DIR           = $(CVA6_REPO_DIR)/verif/sim/xrun_results
-XRUN_SIMV               = $(XRUN_WORK_DIR)/simv
 
 export CVA6_UVMT_DIR          = $(CVA6_REPO_DIR)/verif/tb/uvmt
 export CVA6_CORET_DIR          = $(CVA6_REPO_DIR)/verif/tb/core
