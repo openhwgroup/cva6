@@ -280,7 +280,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
            if (binary != "") begin
 
-               void'(read_elf(binary));
+               read_elf(binary);
                wait(clk_i);
 
                last_load_address = 'hFFFFFFFF;
@@ -289,7 +289,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
                    automatic int num_words0 = (len+7)/8;
                    `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
                    buffer = new [num_words0*8];
-                   void'(read_section_sv(address, buffer));
+                   read_section_sv(address, buffer);
                    // preload memories
                    // 64-bit
                    for (int i = 0; i < num_words0; i++) begin
