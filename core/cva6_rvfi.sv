@@ -51,21 +51,21 @@ module cva6_rvfi
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
 
   logic flush;
-  logic issue_instr_ack;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack;
   logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid;
   logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
   logic [ariane_pkg::SUPERSCALAR:0] is_compressed;
   logic [ariane_pkg::SUPERSCALAR:0][31:0] truncated;
 
-  logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
 
   logic flush_unissued_instr;
-  logic decoded_instr_valid;
-  logic decoded_instr_ack;
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_valid;
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_ack;
 
-  logic [CVA6Cfg.XLEN-1:0] rs1_forwarding;
-  logic [CVA6Cfg.XLEN-1:0] rs2_forwarding;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_forwarding;
+  logic [ariane_pkg::SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_forwarding;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0] commit_instr_op;
@@ -73,7 +73,7 @@ module cva6_rvfi
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs2;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] commit_instr_result;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_valid;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_instr_valid;
 
   logic [CVA6Cfg.XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
@@ -174,7 +174,11 @@ module cva6_rvfi
     issue_n = issue_q;
     took0   = 1'b0;
 
-    if (issue_instr_ack) issue_n[0].valid = 1'b0;
+    for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      if (issue_instr_ack[i]) begin
+        issue_n[i].valid = 1'b0;
+      end
+    end
 
     if (!issue_n[ariane_pkg::SUPERSCALAR].valid) begin
       issue_n[ariane_pkg::SUPERSCALAR].valid = fetch_entry_valid[0];
@@ -229,16 +233,18 @@ module cva6_rvfi
   always_comb begin : issue_fifo
     mem_n = mem_q;
 
-    if (decoded_instr_valid && decoded_instr_ack && !flush_unissued_instr) begin
-      mem_n[issue_pointer] = '{
-          rs1_rdata: rs1_forwarding,
-          rs2_rdata: rs2_forwarding,
-          lsu_addr: '0,
-          lsu_rmask: '0,
-          lsu_wmask: '0,
-          lsu_wdata: '0,
-          instr: issue_q[0].instr
-      };
+    for (int unsigned i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+      if (decoded_instr_valid[i] && decoded_instr_ack[i] && !flush_unissued_instr) begin
+        mem_n[issue_pointer[i]] = '{
+            rs1_rdata: rs1_forwarding[i],
+            rs2_rdata: rs2_forwarding[i],
+            lsu_addr: '0,
+            lsu_rmask: '0,
+            lsu_wmask: '0,
+            lsu_wdata: '0,
+            instr: issue_q[i].instr
+        };
+      end
     end
 
     if (lsu_rmask != 0) begin
@@ -266,7 +272,7 @@ module cva6_rvfi
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
-      exception = commit_instr_valid[i][0] && ex_commit_valid;
+      exception = commit_instr_valid[i] && ex_commit_valid;
       rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
@@ -350,7 +356,7 @@ module cva6_rvfi
   `CONNECT_RVFI_FULL(1'b1, mstatus, csr.mstatus_extended)
 
   bit [31:0] mstatush_q;
-    `CONNECT_RVFI_FULL(1'b1, mstatush, mstatush_q)
+  `CONNECT_RVFI_FULL(1'b1, mstatush, mstatush_q)
 
   `CONNECT_RVFI_FULL(1'b1, misa, IsaCode)
 

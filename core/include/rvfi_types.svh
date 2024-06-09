@@ -93,18 +93,18 @@
 
 // RVFI PROBES
 `define RVFI_PROBES_INSTR_T(Cfg) struct packed { \
-  logic [Cfg.TRANS_ID_BITS-1:0] issue_pointer; \
+  logic [ariane_pkg::SUPERSCALAR:0][Cfg.TRANS_ID_BITS-1:0] issue_pointer; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.TRANS_ID_BITS-1:0] commit_pointer; \
   logic flush_unissued_instr; \
-  logic decoded_instr_valid; \
-  logic decoded_instr_ack; \
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_valid; \
+  logic [ariane_pkg::SUPERSCALAR:0] decoded_instr_ack; \
   logic flush; \
-  logic issue_instr_ack; \
+  logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack; \
   logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid; \
   logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction; \
   logic [ariane_pkg::SUPERSCALAR:0] is_compressed; \
-  logic [Cfg.XLEN-1:0] rs1_forwarding; \
-  logic [Cfg.XLEN-1:0] rs2_forwarding; \
+  logic [ariane_pkg::SUPERSCALAR:0][Cfg.VLEN-1:0] rs1_forwarding; \
+  logic [ariane_pkg::SUPERSCALAR:0][Cfg.VLEN-1:0] rs2_forwarding; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_pc; \
   ariane_pkg::fu_op [Cfg.NrCommitPorts-1:0] commit_instr_op; \
   logic [Cfg.NrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs1; \
@@ -119,7 +119,7 @@
   ariane_pkg::fu_t lsu_ctrl_fu; \
   logic [(Cfg.XLEN/8)-1:0] lsu_ctrl_be; \
   logic [Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
-  logic [((Cfg.CvxifEn || Cfg.RVV) ? 5 : 4)-1:0][Cfg.XLEN-1:0] wbdata; \
+  logic [Cfg.NrWbPorts-1:0][Cfg.XLEN-1:0] wbdata; \
   logic [Cfg.NrCommitPorts-1:0] commit_ack; \
   logic [Cfg.PLEN-1:0] mem_paddr; \
   logic debug_mode; \
@@ -161,4 +161,4 @@
   logic [15:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
 
-`endif // RVFI_TYPES_SVH
+`endif  // RVFI_TYPES_SVH

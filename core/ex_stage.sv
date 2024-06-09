@@ -39,17 +39,17 @@ module ex_stage
     // Debug mode is enabled - CSR_REGFILE
     input logic debug_mode_i,
     // rs1 forwarding - ISSUE_STAGE
-    input logic [CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
+    input logic [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
     // rs2 forwarding - ISSUE_STAGE
-    input logic [CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
+    input logic [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
-    input fu_data_t fu_data_i,
+    input fu_data_t [SUPERSCALAR:0] fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
-    // Report whether isntruction is compressed - ISSUE_STAGE
+    // Report whether instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Report instruction encoding - ISSUE_STAGE
-    input logic [31:0] tinst_i,
+    input logic [SUPERSCALAR:0][31:0] tinst_i,
     // Fixed Latency Unit result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
     // ID of the scoreboard entry at which a=to write back - ISSUE_STAGE
@@ -61,9 +61,9 @@ module ex_stage
     // FLU result is valid - ISSUE_STAGE
     output logic flu_valid_o,
     // ALU instruction is valid - ISSUE_STAGE
-    input logic alu_valid_i,
+    input logic [SUPERSCALAR:0] alu_valid_i,
     // Branch unit instruction is valid - ISSUE_STAGE
-    input logic branch_valid_i,
+    input logic [SUPERSCALAR:0] branch_valid_i,
     // Information of branch prediction - ISSUE_STAGE
     input branchpredict_sbe_t branch_predict_i,
     // The branch engine uses the write back from the ALU - several_modules
@@ -71,17 +71,17 @@ module ex_stage
     // Signaling that we resolved the branch - ISSUE_STAGE
     output logic resolve_branch_o,
     // CSR instruction is valid - ISSUE_STAGE
-    input logic csr_valid_i,
+    input logic [SUPERSCALAR:0] csr_valid_i,
     // CSR address to write - COMMIT_STAGE
     output logic [11:0] csr_addr_o,
     // CSR commit - COMMIT_STAGE
     input logic csr_commit_i,
     // MULT instruction is valid - ISSUE_STAGE
-    input logic mult_valid_i,
+    input logic [SUPERSCALAR:0] mult_valid_i,
     // LSU is ready - ISSUE_STAGE
     output logic lsu_ready_o,
     // LSU instruction is valid - ISSUE_STAGE
-    input logic lsu_valid_i,
+    input logic [SUPERSCALAR:0] lsu_valid_i,
     // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
     // Load result valid - ISSUE_STAGE
@@ -113,7 +113,7 @@ module ex_stage
     // FU is ready - ISSUE_STAGE
     output logic fpu_ready_o,
     // FPU instruction is ready - ISSUE_STAGE
-    input logic fpu_valid_i,
+    input logic [SUPERSCALAR:0] fpu_valid_i,
     // FPU format - ISSUE_STAGE
     input logic [1:0] fpu_fmt_i,
     // FPU rm - ISSUE_STAGE
@@ -131,7 +131,7 @@ module ex_stage
     // FPU exception - ISSUE_STAGE
     output exception_t fpu_exception_o,
     // CVXIF instruction is valid - ISSUE_STAGE
-    input logic x_valid_i,
+    input logic [SUPERSCALAR:0] x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
     output logic x_ready_o,
     // undecoded instruction - ISSUE_STAGE
@@ -263,18 +263,29 @@ module ex_stage
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
-  // 1. ALU (combinatorial)
-  // data silence operation
-  fu_data_t alu_data;
-  assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i : '0;
+  logic [SUPERSCALAR:0] one_cycle_select;
+  assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i;
 
+  fu_data_t one_cycle_data;
+  always_comb begin
+    // data silence operation
+    one_cycle_data = one_cycle_select[0] ? fu_data_i[0] : '0;
+
+    if (SUPERSCALAR) begin
+      if (one_cycle_select[1]) begin
+        one_cycle_data = fu_data_i[1];
+      end
+    end
+  end
+
+  // 1. ALU (combinatorial)
   alu #(
       .CVA6Cfg  (CVA6Cfg),
       .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
       .rst_ni,
-      .fu_data_i       (alu_data),
+      .fu_data_i       (one_cycle_data),
       .result_o        (alu_result),
       .alu_branch_res_o(alu_branch_res)
   );
@@ -293,14 +304,12 @@ module ex_stage
       .rst_ni,
       .v_i,
       .debug_mode_i,
-      .fu_data_i,
+      .fu_data_i         (one_cycle_data),
       .pc_i,
       .is_compressed_instr_i,
-      // any functional unit is valid, check that there is no accidental mis-predict
-      .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i || acc_valid_i ) ,
-      .branch_valid_i,
-      .branch_comp_res_i(alu_branch_res),
-      .branch_result_o(branch_result),
+      .branch_valid_i    (|branch_valid_i),
+      .branch_comp_res_i (alu_branch_res),
+      .branch_result_o   (branch_result),
       .branch_predict_i,
       .resolved_branch_o,
       .resolve_branch_o,
@@ -315,26 +324,26 @@ module ex_stage
       .clk_i,
       .rst_ni,
       .flush_i,
-      .fu_data_i,
-      .csr_valid_i,
+      .fu_data_i   (one_cycle_data),
+      .csr_valid_i (|csr_valid_i),
       .csr_ready_o (csr_ready),
       .csr_result_o(csr_result),
       .csr_commit_i,
       .csr_addr_o
   );
 
-  assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i | mult_valid;
+  assign flu_valid_o = |one_cycle_select | mult_valid;
 
   // result MUX
   always_comb begin
     // Branch result as default case
     flu_result_o   = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, branch_result};
-    flu_trans_id_o = fu_data_i.trans_id;
+    flu_trans_id_o = one_cycle_data.trans_id;
     // ALU result
-    if (alu_valid_i) begin
+    if (|alu_valid_i) begin
       flu_result_o = alu_result;
       // CSR result
-    end else if (csr_valid_i) begin
+    end else if (|csr_valid_i) begin
       flu_result_o = csr_result;
     end else if (mult_valid) begin
       flu_result_o   = mult_result;
@@ -350,7 +359,14 @@ module ex_stage
   // 4. Multiplication (Sequential)
   fu_data_t mult_data;
   // input silencing of multiplier
-  assign mult_data = mult_valid_i ? fu_data_i : '0;
+  always_comb begin
+    mult_data = mult_valid_i[0] ? fu_data_i[0] : '0;
+    if (SUPERSCALAR) begin
+      if (mult_valid_i[1]) begin
+        mult_data = fu_data_i[1];
+      end
+    end
+  end
 
   mult #(
       .CVA6Cfg  (CVA6Cfg),
@@ -359,7 +375,7 @@ module ex_stage
       .clk_i,
       .rst_ni,
       .flush_i,
-      .mult_valid_i,
+      .mult_valid_i   (|mult_valid_i),
       .fu_data_i      (mult_data),
       .result_o       (mult_result),
       .mult_valid_o   (mult_valid),
@@ -373,7 +389,14 @@ module ex_stage
   generate
     if (CVA6Cfg.FpPresent) begin : fpu_gen
       fu_data_t fpu_data;
-      assign fpu_data = fpu_valid_i ? fu_data_i : '0;
+      always_comb begin
+        fpu_data = fpu_valid_i[0] ? fu_data_i[0] : '0;
+        if (SUPERSCALAR) begin
+          if (fpu_valid_i[1]) begin
+            fpu_data = fu_data_i[1];
+          end
+        end
+      end
 
       fpu_wrap #(
           .CVA6Cfg(CVA6Cfg),
@@ -383,7 +406,7 @@ module ex_stage
           .clk_i,
           .rst_ni,
           .flush_i,
-          .fpu_valid_i,
+          .fpu_valid_i(|fpu_valid_i),
           .fpu_ready_o,
           .fu_data_i(fpu_data),
           .fpu_fmt_i,
@@ -391,7 +414,7 @@ module ex_stage
           .fpu_frm_i,
           .fpu_prec_i,
           .fpu_trans_id_o,
-          .result_o (fpu_result_o),
+          .result_o(fpu_result_o),
           .fpu_valid_o,
           .fpu_exception_o
       );
@@ -408,8 +431,18 @@ module ex_stage
   // Load-Store Unit
   // ----------------
   fu_data_t lsu_data;
+  logic [31:0] lsu_tinst;
+  always_comb begin
+    lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
+    lsu_tinst = tinst_i[0];
 
-  assign lsu_data = lsu_valid_i ? fu_data_i : '0;
+    if (SUPERSCALAR) begin
+      if (lsu_valid_i[1]) begin
+        lsu_data  = fu_data_i[1];
+        lsu_tinst = tinst_i[1];
+      end
+    end
+  end
 
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
@@ -430,7 +463,7 @@ module ex_stage
       .no_st_pending_o,
       .fu_data_i             (lsu_data),
       .lsu_ready_o,
-      .lsu_valid_i,
+      .lsu_valid_i           (|lsu_valid_i),
       .load_trans_id_o,
       .load_result_o,
       .load_valid_o,
@@ -479,7 +512,7 @@ module ex_stage
       .amo_valid_commit_i,
       .amo_req_o,
       .amo_resp_i,
-      .tinst_i,
+      .tinst_i               (lsu_tinst),
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,
@@ -488,7 +521,15 @@ module ex_stage
 
   if (CVA6Cfg.CvxifEn) begin : gen_cvxif
     fu_data_t cvxif_data;
-    assign cvxif_data = x_valid_i ? fu_data_i : '0;
+    always_comb begin
+      cvxif_data = x_valid_i[0] ? fu_data_i[0] : '0;
+      if (SUPERSCALAR) begin
+        if (x_valid_i[1]) begin
+          cvxif_data = fu_data_i[1];
+        end
+      end
+    end
+
     cvxif_fu #(
         .CVA6Cfg(CVA6Cfg),
         .exception_t(exception_t),
@@ -496,9 +537,9 @@ module ex_stage
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,
-        .fu_data_i,
+        .fu_data_i (cvxif_data),
         .priv_lvl_i(ld_st_priv_lvl_i),
-        .x_valid_i,
+        .x_valid_i (|x_valid_i),
         .x_ready_o,
         .x_off_instr_i,
         .x_trans_id_o,
@@ -525,15 +566,16 @@ module ex_stage
           current_instruction_is_hfence_vvma <= 1'b0;
           current_instruction_is_hfence_gvma <= 1'b0;
         end else begin
+          // TODO handle this with superscalar (issue only one instruction in this case?)
           if (flush_i) begin
             current_instruction_is_sfence_vma  <= 1'b0;
             current_instruction_is_hfence_vvma <= 1'b0;
             current_instruction_is_hfence_gvma <= 1'b0;
-          end else if ((fu_data_i.operation == SFENCE_VMA && !v_i) && csr_valid_i) begin
+          end else if ((fu_data_i[0].operation == SFENCE_VMA && !v_i) && |csr_valid_i) begin
             current_instruction_is_sfence_vma <= 1'b1;
-          end else if (((fu_data_i.operation == SFENCE_VMA && v_i) || fu_data_i.operation == HFENCE_VVMA) && csr_valid_i) begin
+          end else if (((fu_data_i[0].operation == SFENCE_VMA && v_i) || fu_data_i[0].operation == HFENCE_VVMA) && |csr_valid_i) begin
             current_instruction_is_hfence_vvma <= 1'b1;
-          end else if ((fu_data_i.operation == HFENCE_GVMA) && csr_valid_i) begin
+          end else if ((fu_data_i[0].operation == HFENCE_GVMA) && |csr_valid_i) begin
             current_instruction_is_hfence_gvma <= 1'b1;
           end
         end
@@ -547,7 +589,7 @@ module ex_stage
         end else begin
           if (flush_i) begin
             current_instruction_is_sfence_vma <= 1'b0;
-          end else if (fu_data_i.operation == SFENCE_VMA && csr_valid_i) begin
+          end else if (fu_data_i[0].operation == SFENCE_VMA && |csr_valid_i) begin
             current_instruction_is_sfence_vma <= 1'b1;
           end
         end
@@ -562,7 +604,7 @@ module ex_stage
           vaddr_to_be_flushed  <= '0;
           gpaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-        end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i.operation == SFENCE_VMA || fu_data_i.operation == HFENCE_VVMA || fu_data_i.operation == HFENCE_GVMA ) && csr_valid_i))) begin
+        end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i[0].operation == SFENCE_VMA || fu_data_i[0].operation == HFENCE_VVMA || fu_data_i[0].operation == HFENCE_GVMA ) && |csr_valid_i))) begin
           vaddr_to_be_flushed  <= rs1_forwarding_i;
           gpaddr_to_be_flushed <= {2'b00, rs1_forwarding_i[CVA6Cfg.GPLEN-1:2]};
           asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
@@ -578,7 +620,7 @@ module ex_stage
           asid_to_be_flushed  <= '0;
           vaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
-        end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i.operation == SFENCE_VMA) && csr_valid_i))) begin
+        end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i[0].operation == SFENCE_VMA) && |csr_valid_i))) begin
           vaddr_to_be_flushed <= rs1_forwarding_i;
           asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
         end

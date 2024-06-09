@@ -33,8 +33,6 @@ module branch_unit #(
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
-    // any functional unit is valid, check that there is no accidental mis-predict - TO_BE_COMPLETED
-    input logic fu_valid_i,
     // Branch unit instruction is valid - ISSUE_STAGE
     input logic branch_valid_i,
     // ALU branch compare result - ALU
