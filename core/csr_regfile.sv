@@ -525,7 +525,9 @@ module csr_regfile
         else read_access_exception = 1'b1;
         riscv::CSR_MIE: csr_rdata = mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
-        riscv::CSR_MCOUNTEREN: csr_rdata = mcounteren_q;
+        riscv::CSR_MCOUNTEREN:
+        if (CVA6Cfg.RVU) csr_rdata = mcounteren_q;
+        else read_access_exception = 1'b1;
         riscv::CSR_MSCRATCH: csr_rdata = mscratch_q;
         riscv::CSR_MEPC: csr_rdata = mepc_q;
         riscv::CSR_MCAUSE: csr_rdata = mcause_q;
