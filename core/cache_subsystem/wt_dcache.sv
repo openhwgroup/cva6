@@ -18,8 +18,8 @@ module wt_dcache
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter type dcache_req_t = logic,
     parameter type dcache_rtrn_t = logic,
     parameter int unsigned NumPorts = 4,  // number of miss ports
@@ -43,8 +43,8 @@ module wt_dcache
     output amo_resp_t amo_resp_o,
 
     // Request ports
-    input  dcache_req_i_t [NumPorts-1:0] req_ports_i,
-    output dcache_req_o_t [NumPorts-1:0] req_ports_o,
+    input  dbus_req_t [NumPorts-1:0] req_ports_i,
+    output dbus_rsp_t [NumPorts-1:0] req_ports_o,
 
     output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
 
@@ -196,8 +196,8 @@ module wt_dcache
       wt_dcache_ctrl #(
           .CVA6Cfg(CVA6Cfg),
           .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
-          .dcache_req_i_t(dcache_req_i_t),
-          .dcache_req_o_t(dcache_req_o_t),
+          .dbus_req_t(dbus_req_t),
+          .dbus_rsp_t(dbus_rsp_t),
           .RdTxId(RdAmoTxId)
       ) i_wt_dcache_ctrl (
           .clk_i          (clk_i),
@@ -263,8 +263,8 @@ module wt_dcache
   wt_dcache_wbuffer #(
       .CVA6Cfg(CVA6Cfg),
       .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .wbuffer_t(wbuffer_t)
   ) i_wt_dcache_wbuffer (
       .clk_i          (clk_i),

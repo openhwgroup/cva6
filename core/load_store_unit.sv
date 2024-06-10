@@ -17,14 +17,14 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
     parameter type fetch_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -135,22 +135,21 @@ module load_store_unit
     output logic                                      dtlb_miss_o,
 
     // Data cache request output - CACHES
-    input  dcache_req_o_t [2:0] dcache_req_ports_i,
+    input  dbus_rsp_t      [                     2:0]                   dcache_req_ports_i,
     // Data cache request input - CACHES
-    output dcache_req_i_t [2:0] dcache_req_ports_o,
+    output dbus_req_t      [                     2:0]                   dcache_req_ports_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                dcache_wbuffer_empty_i,
+    input  logic                                                        dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                dcache_wbuffer_not_ni_i,
+    input  logic                                                        dcache_wbuffer_not_ni_i,
     // AMO request - CACHE
-    output amo_req_t            amo_req_o,
+    output amo_req_t                                                    amo_req_o,
     // AMO response - CACHE
-    input  amo_resp_t           amo_resp_i,
-
+    input  amo_resp_t                                                   amo_resp_i,
     // PMP configuration - CSR_REGFILE
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0]                   pmpcfg_i,
+    input  riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE
-    input logic           [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input  logic           [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     // RVFI inforamtion - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
@@ -243,13 +242,13 @@ module load_store_unit
     localparam HYP_EXT = CVA6Cfg.RVH ? 1 : 0;
 
     cva6_mmu #(
-        .CVA6Cfg       (CVA6Cfg),
-        .exception_t   (exception_t),
-        .fetch_areq_t  (fetch_areq_t),
-        .fetch_arsp_t  (fetch_arsp_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .HYP_EXT       (HYP_EXT)
+        .CVA6Cfg     (CVA6Cfg),
+        .exception_t (exception_t),
+        .fetch_areq_t(fetch_areq_t),
+        .fetch_arsp_t(fetch_arsp_t),
+        .dbus_req_t  (dbus_req_t),
+        .dbus_rsp_t  (dbus_rsp_t),
+        .HYP_EXT     (HYP_EXT)
     ) i_cva6_mmu (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
@@ -335,8 +334,8 @@ module load_store_unit
   // ------------------
   store_unit #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
@@ -384,8 +383,8 @@ module load_store_unit
   // ------------------
   load_unit #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
@@ -703,5 +702,4 @@ module load_store_unit
   assign rvfi_lsu_ctrl_o = lsu_ctrl;
 
 endmodule
-
 

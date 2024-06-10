@@ -25,13 +25,13 @@
 module cva6_mmu
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   fetch_areq_t   = logic,
-    parameter type                   fetch_arsp_t   = logic,
-    parameter type                   dcache_req_i_t = logic,
-    parameter type                   dcache_req_o_t = logic,
-    parameter type                   exception_t    = logic,
-    parameter int unsigned           HYP_EXT        = 0
+    parameter config_pkg::cva6_cfg_t CVA6Cfg      = config_pkg::cva6_cfg_empty,
+    parameter type                   fetch_areq_t = logic,
+    parameter type                   fetch_arsp_t = logic,
+    parameter type                   dbus_req_t   = logic,
+    parameter type                   dbus_rsp_t   = logic,
+    parameter type                   exception_t  = logic,
+    parameter int unsigned           HYP_EXT      = 0
 
 ) (
     input logic clk_i,
@@ -90,15 +90,14 @@ module cva6_mmu
     input logic flush_tlb_gvma_i,
 
     // Performance counters
-    output logic itlb_miss_o,
-    output logic dtlb_miss_o,
+    output logic                                                        itlb_miss_o,
+    output logic                                                        dtlb_miss_o,
     // PTW memory interface
-    input dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o,
-
+    input  dbus_rsp_t                                                   req_port_i,
+    output dbus_req_t                                                   req_port_o,
     // PMP
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input  riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0]                   pmpcfg_i,
+    input  logic           [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
   // memory management, pte for cva6
@@ -282,8 +281,8 @@ module cva6_mmu
       .CVA6Cfg          (CVA6Cfg),
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
-      .dcache_req_i_t   (dcache_req_i_t),
-      .dcache_req_o_t   (dcache_req_o_t),
+      .dbus_req_t       (dbus_req_t),
+      .dbus_rsp_t       (dbus_rsp_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
       .clk_i (clk_i),

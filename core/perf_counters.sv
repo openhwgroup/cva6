@@ -18,8 +18,8 @@ module perf_counters
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fetch_dreq_t = logic,
     parameter type scoreboard_entry_t = logic,
@@ -53,7 +53,7 @@ module perf_counters
     // for newly added events
     input exception_t branch_exceptions_i,  //Branch exceptions->execute unit-> branch_exception_o
     input fetch_dreq_t l1_fetch_access_i,
-    input dcache_req_i_t [2:0] l1_dcache_access_i,
+    input dbus_req_t [2:0] l1_dcache_access_i,
     input  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
     input logic i_tlb_flush_i,
     input logic stall_issue_i,  //stall-read operands

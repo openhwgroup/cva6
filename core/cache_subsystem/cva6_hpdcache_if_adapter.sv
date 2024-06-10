@@ -20,8 +20,8 @@ module cva6_hpdcache_if_adapter
     parameter type hpdcache_req_sid_t = logic,
     parameter type hpdcache_req_t = logic,
     parameter type hpdcache_rsp_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter bit is_load_port = 1'b1
 )
 //  }}}
@@ -37,8 +37,8 @@ module cva6_hpdcache_if_adapter
     input hpdcache_req_sid_t hpdcache_req_sid_i,
 
     //  Request/response ports from/to the CVA6 core
-    input  dcache_req_i_t         cva6_req_i,
-    output dcache_req_o_t         cva6_req_o,
+    input  dbus_req_t             cva6_req_i,
+    output dbus_rsp_t             cva6_req_o,
     input  ariane_pkg::amo_req_t  cva6_amo_req_i,
     output ariane_pkg::amo_resp_t cva6_amo_resp_o,
 

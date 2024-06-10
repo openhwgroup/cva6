@@ -18,8 +18,8 @@ module std_nbdcache
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
@@ -35,8 +35,8 @@ module std_nbdcache
     input amo_req_t amo_req_i,
     output amo_resp_t amo_resp_o,
     // Request ports
-    input dcache_req_i_t [NumPorts-1:0] req_ports_i,  // request ports
-    output dcache_req_o_t [NumPorts-1:0] req_ports_o,  // request ports
+    input dbus_req_t [NumPorts-1:0] req_ports_i,  // request ports
+    output dbus_rsp_t [NumPorts-1:0] req_ports_o,  // request ports
     // Cache AXI refill port
     output axi_req_t axi_data_o,
     input axi_rsp_t axi_data_i,
@@ -114,8 +114,8 @@ module std_nbdcache
           .CVA6Cfg(CVA6Cfg),
           .cache_line_t(cache_line_t),
           .cl_be_t(cl_be_t),
-          .dcache_req_i_t(dcache_req_i_t),
-          .dcache_req_o_t(dcache_req_o_t)
+          .dbus_req_t(dbus_req_t),
+          .dbus_rsp_t(dbus_rsp_t)
       ) i_cache_ctrl (
           .bypass_i  (~enable_i),
           .busy_o    (busy[i]),
