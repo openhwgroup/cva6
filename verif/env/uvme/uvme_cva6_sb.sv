@@ -180,15 +180,35 @@ function void uvme_cva6_sb_c::check_pc_trap(uvma_isacov_instr_c instr,
                                             uvma_isacov_instr_c instr_prev);
 
   if (instr.group == uvma_isacov_pkg::CSR_GROUP && instr.is_csr_write() && instr.csr_val == 12'h305) begin
-     if (instr.name inside {uvma_isacov_pkg::CSRRWI, uvma_isacov_pkg::CSRRSI, uvma_isacov_pkg::CSRRCI}) begin
+     if (instr.name == uvma_isacov_pkg::CSRRWI) begin
         mtvec_value = instr.rs1;
         mtvec_change = 1'h1;
-        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_NONE)
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
      end
-     else begin
+     if (instr.name == uvma_isacov_pkg::CSRRSI) begin
+        mtvec_value = instr.rvfi.rd1_wdata | instr.rs1;
+        mtvec_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRCI) begin
+        mtvec_value = instr.rvfi.rd1_wdata & ~(instr.rs1);
+        mtvec_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRW) begin
         mtvec_value = instr.rs1_value;
         mtvec_change = 1'h1;
-        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_NONE)
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRC) begin
+        mtvec_value = instr.rvfi.rd1_wdata & ~(instr.rs1_value);
+        mtvec_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRS) begin
+        mtvec_value = instr.rvfi.rd1_wdata | instr.rs1_value;
+        mtvec_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MTVEC the value = 0x%h", mtvec_value), UVM_DEBUG)
      end
   end
 
@@ -197,7 +217,7 @@ function void uvme_cva6_sb_c::check_pc_trap(uvma_isacov_instr_c instr,
         if (mtvec_change) begin
            if (instr.rvfi.pc_rdata[31:2] == mtvec_value[31:2]) begin
               //we only support MTVEC Direct mode
-              `uvm_info(get_type_name(), $sformatf("After a trap, PC matches MTVEC value"), UVM_NONE)
+              `uvm_info(get_type_name(), $sformatf("After a trap, PC matches MTVEC value"), UVM_DEBUG)
            end
            else begin
               `uvm_fatal(get_type_name(), "ERROR -> Doesn't jump to MTVEC")
@@ -225,7 +245,7 @@ function void uvme_cva6_sb_c::check_mepc(uvma_isacov_instr_c instr);
         trap_is_compressed = 1'h1;
      end
      if (trap_pc == instr.rvfi.name_csrs["mepc"].wdata) begin
-         `uvm_info(get_type_name(), $sformatf("Trap PC has been written successfully "), UVM_NONE)
+         `uvm_info(get_type_name(), $sformatf("Trap PC has been written successfully "), UVM_DEBUG)
      end
      else begin
          `uvm_error(get_type_name(), "ERROR -> Trap PC != MEPC")
@@ -238,18 +258,18 @@ function void uvme_cva6_sb_c::check_mepc(uvma_isacov_instr_c instr);
         if (instr.name inside {uvma_isacov_pkg::CSRRWI, uvma_isacov_pkg::CSRRSI, uvma_isacov_pkg::CSRRCI}) begin
            mepc_value = instr.rs1;
            mepc_change = 1'h1;
-           `uvm_info(get_type_name(), $sformatf("Write into MEPC the value = 0x%h", mepc_value), UVM_NONE)
+           `uvm_info(get_type_name(), $sformatf("Write into MEPC the value = 0x%h", mepc_value), UVM_DEBUG)
         end
         else begin
            mepc_value = instr.rs1_value;
            mepc_change = 1'h1;
-           `uvm_info(get_type_name(), $sformatf("Write into MEPC the value = 0x%h", mepc_value), UVM_NONE)
+           `uvm_info(get_type_name(), $sformatf("Write into MEPC the value = 0x%h", mepc_value), UVM_DEBUG)
         end
      end
 
      if (instr.name == uvma_isacov_pkg::MRET) begin
          if (mepc_change) begin
-            `uvm_info(get_type_name(), $sformatf("Trap is compressed ? : %h ", trap_is_compressed), UVM_NONE)
+            `uvm_info(get_type_name(), $sformatf("Trap is compressed ? : %h ", trap_is_compressed), UVM_DEBUG)
             if (trap_is_compressed) begin
                if (mepc_value != trap_pc + 'h2) begin
                   `uvm_warning(get_type_name(), $sformatf("BE CAREFUL -> MEPC hasn't the next instruction's PC 2"))
