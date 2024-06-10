@@ -328,11 +328,6 @@ module frontend
   assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
 
   // Caches optimisation signals
-  logic custom_req;
-  logic custom_kill;
-  logic custom_ready;
-  logic data_valid_under_ex;
-  logic save_vaddr;
 
   typedef enum logic [1:0] {
     WAIT_NEW_REQ,
@@ -368,8 +363,8 @@ module frontend
 
   // OBI signals
   logic obi_r_req;
-  logic obi_r_ready;
   logic data_valid_obi;
+  logic data_valid_under_ex;
 
   typedef enum logic [1:0] {
     OBI_R_IDLE,
@@ -622,7 +617,7 @@ module frontend
 
     unique case (obi_a_state_q)
       TRANSPARENT: begin
-        obi_a_ready = obi_r_ready;
+        obi_a_ready = '1;
         if (obi_a_req) begin
           if (fetch_obi_rsp_i.gnt) begin
             obi_r_req = '1;  //push pending request
@@ -665,13 +660,11 @@ module frontend
 
   always_comb begin : p_fsm_obi_r
     // default assignment
-    obi_r_ready = '0;
-    obi_r_state_d = obi_r_state_q;
+    obi_r_state_d  = obi_r_state_q;
     data_valid_obi = '0;
 
     unique case (obi_r_state_q)
       OBI_R_IDLE: begin
-        obi_r_ready = '1;
         if (obi_r_req) begin
           if (kill_s2) begin
             obi_r_state_d = OBI_R_KILLED;
@@ -684,7 +677,6 @@ module frontend
       OBI_R_PENDING: begin
         if (fetch_obi_req_o.rready && fetch_obi_rsp_i.rvalid) begin
           data_valid_obi = !kill_s2;
-          obi_r_ready = '1;
           if (!obi_r_req) begin
             obi_r_state_d = OBI_R_IDLE;
           end
@@ -695,7 +687,6 @@ module frontend
 
       OBI_R_KILLED: begin
         if (fetch_obi_req_o.rready && fetch_obi_rsp_i.rvalid) begin
-          obi_r_ready = '1;
           if (obi_r_req) begin
             if (!kill_s2) begin
               obi_r_state_d = OBI_R_PENDING;

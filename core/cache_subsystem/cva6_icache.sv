@@ -132,6 +132,23 @@ module cva6_icache
   } state_e;
   state_e state_d, state_q;
 
+  logic obi_valid, obi_grant;
+
+  logic [CVA6Cfg.FETCH_WIDTH-1:0] data_d, data_q, obi_rdata;
+  logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] userdata_d, userdata_q, obi_ruser;
+  logic data_valid_obi, data_valid_obi_d, data_valid_obi_q;
+
+  //OBI
+  assign fetch_obi_rsp_o.gnt = obi_grant;
+  assign fetch_obi_rsp_o.gntpar = !obi_grant;
+  assign fetch_obi_rsp_o.rvalid = obi_valid;
+  assign fetch_obi_rsp_o.rvalidpar = !obi_valid;
+  assign fetch_obi_rsp_o.r.rid = '0;
+  assign fetch_obi_rsp_o.r.r_optional.exokay = '0;
+  assign fetch_obi_rsp_o.r.r_optional.rchk = '0;
+  assign fetch_obi_rsp_o.r.err = '0;
+  assign fetch_obi_rsp_o.r.rdata = obi_rdata;
+  assign fetch_obi_rsp_o.r.r_optional.ruser = obi_ruser;
 
 
   ///////////////////////////////////////////////////////
@@ -139,7 +156,7 @@ module cva6_icache
   ///////////////////////////////////////////////////////
 
   // extract tag from physical address, check if NC
-  assign cl_tag_d  = (fetch_obi_req_i.req && fetch_obi_rsp_o.gnt) ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+  assign cl_tag_d  = (fetch_obi_req_i.req && obi_grant) ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
@@ -182,17 +199,6 @@ module cva6_icache
   // invalidations take two cycles
   assign inv_d          = inv_en;
 
-  logic rvalid_d, rvalid_q;
-  logic invalid_data_d, invalid_data_q;
-
-  //OBI
-  assign fetch_obi_rsp_o.gntpar              = !fetch_obi_rsp_o.gnt;
-  assign fetch_obi_rsp_o.rvalidpar           = !fetch_obi_rsp_o.rvalid;
-  assign fetch_obi_rsp_o.r.rid               = '0;
-  assign fetch_obi_rsp_o.r.r_optional.exokay = '0;
-  assign fetch_obi_rsp_o.r.r_optional.rchk   = '0;
-  assign fetch_obi_rsp_o.r.err               = '0;
-
 
   typedef enum logic [1:0] {
     OBI_R_IDLE,
@@ -202,9 +208,6 @@ module cva6_icache
   } obi_r_state_e;
   obi_r_state_e obi_r_state_d, obi_r_state_q;
 
-  logic [CVA6Cfg.FETCH_WIDTH-1:0] data_d, data_q;
-  logic [CVA6Cfg.FETCH_USER_WIDTH-1:0] userdata_d, userdata_q;
-  logic data_valid_obi;
 
   // Common clocked process
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_obi
@@ -212,10 +215,12 @@ module cva6_icache
       obi_r_state_q <= OBI_R_IDLE;
       data_q <= '0;
       userdata_q <= '0;
+      data_valid_obi_q <= '0;
     end else begin
       obi_r_state_q <= obi_r_state_d;
       data_q <= data_d;
       userdata_q <= userdata_d;
+      data_valid_obi_q <= data_valid_obi_d;
     end
   end
 
@@ -223,71 +228,42 @@ module cva6_icache
 
   always_comb begin : p_fsm_obi_r
     // default assignment
-    fetch_obi_rsp_o.rvalid = '0;
+    obi_valid = '0;
     dreq_o.invalid_data = '0;
-    fetch_obi_rsp_o.r.rdata = data_d;
-    fetch_obi_rsp_o.r.r_optional.ruser = userdata_d;
+    obi_rdata = data_q;
+    obi_ruser = userdata_q;
     obi_r_state_d = obi_r_state_q;
 
     unique case (obi_r_state_q)
       OBI_R_IDLE: begin
-        if (fetch_obi_req_i.req && fetch_obi_rsp_o.gnt) begin
-          if (dreq_i.kill_req || flush_d) begin
-            obi_r_state_d = OBI_R_KILLED;
-          end else if (data_valid_obi) begin
-            obi_r_state_d = OBI_R_VALID;
-          end else begin
-            obi_r_state_d = OBI_R_WAIT;
-          end
+        if (fetch_obi_req_i.req) begin
+          obi_r_state_d = OBI_R_WAIT;
         end
       end
 
       OBI_R_WAIT: begin
         if (dreq_i.kill_req || flush_d) begin
-          fetch_obi_rsp_o.rvalid = '1;
+          obi_valid = '1;
           dreq_o.invalid_data = '1;
           obi_r_state_d = OBI_R_IDLE;
-        end else if (data_valid_obi) begin
-          fetch_obi_rsp_o.rvalid = '1;
-          fetch_obi_rsp_o.r.rdata = data_d;
-          fetch_obi_rsp_o.r.r_optional.ruser = userdata_d;
-          obi_r_state_d = OBI_R_IDLE;
-        end
-      end
-
-      OBI_R_VALID: begin
-        if (dreq_i.kill_req || flush_d) begin
-          fetch_obi_rsp_o.rvalid = '1;
-          dreq_o.invalid_data = '1;
-        end else begin
-          fetch_obi_rsp_o.rvalid = '1;
-          fetch_obi_rsp_o.r.rdata = data_q;
-          fetch_obi_rsp_o.r.r_optional.ruser = userdata_q;
-        end
-        if (fetch_obi_req_i.req && fetch_obi_rsp_o.gnt) begin
-          if (dreq_i.kill_req || flush_d) begin
-            obi_r_state_d = OBI_R_KILLED;
-          end else if (data_valid_obi) begin
-            obi_r_state_d = OBI_R_VALID;
-          end else begin
-            obi_r_state_d = OBI_R_WAIT;
+        end else if (data_valid_obi || data_valid_obi_q) begin
+          obi_valid = '1;
+          if (data_valid_obi) begin
+            obi_rdata = data_d;
+            obi_ruser = userdata_d;
           end
-        end else begin
-          obi_r_state_d = OBI_R_IDLE;
+          obi_ruser = userdata_d;
+          if (!(fetch_obi_req_i.req)) begin
+            obi_r_state_d = OBI_R_IDLE;
+          end
         end
       end
 
       OBI_R_KILLED: begin
-        fetch_obi_rsp_o.rvalid = '1;
+        obi_valid = '1;
         dreq_o.invalid_data = '1;
-        if (fetch_obi_req_i.req && fetch_obi_rsp_o.gnt) begin
-          if (dreq_i.kill_req || flush_d) begin
-            obi_r_state_d = OBI_R_KILLED;
-          end else if (data_valid_obi) begin
-            obi_r_state_d = OBI_R_VALID;
-          end else begin
-            obi_r_state_d = OBI_R_WAIT;
-          end
+        if (fetch_obi_req_i.req) begin
+          obi_r_state_d = OBI_R_WAIT;
         end else begin
           obi_r_state_d = OBI_R_IDLE;
         end
@@ -320,8 +296,9 @@ module cva6_icache
     mem_data_req_o = 1'b0;
     // performance counter
     miss_o = 1'b0;
-    fetch_obi_rsp_o.gnt = 1'b0;
+    obi_grant = 1'b0;
     data_valid_obi = '0;
+    data_valid_obi_d = '0;
 
     // handle invalidations unconditionally
     // note: invald are mutually exclusive with
@@ -362,8 +339,8 @@ module cva6_icache
             if (dreq_i.req && !dreq_i.kill_req) begin
               cache_rden = 1'b1;
               if (fetch_obi_req_i.req) begin
-                state_d    = READ_BIS;
-                fetch_obi_rsp_o.gnt = 1'b1;
+                state_d   = READ_BIS;
+                obi_grant = 1'b1;
               end else begin
                 state_d = READ;
               end
@@ -384,8 +361,8 @@ module cva6_icache
         cache_rden = cache_en_q;
 
         if (fetch_obi_req_i.req) begin
-          state_d = READ_BIS;
-          fetch_obi_rsp_o.gnt = 1'b1;
+          state_d   = READ_BIS;
+          obi_grant = 1'b1;
 
           // check if we have to flush
           if (flush_d) begin
@@ -401,7 +378,7 @@ module cva6_icache
             end
             // we have a hit 
           end else if (|cl_hit && cache_en_q && !inv_q) begin
-            data_valid_obi = '1;
+            data_valid_obi_d = '1;
             state_d = IDLE;
             if (!mem_rtrn_vld_i) begin
               dreq_o.ready = 1'b1;
@@ -662,31 +639,27 @@ module cva6_icache
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      cl_tag_q       <= '0;
-      flush_cnt_q    <= '0;
-      vaddr_q        <= '0;
-      cmp_en_q       <= '0;
-      cache_en_q     <= '0;
-      flush_q        <= '0;
-      state_q        <= FLUSH;
-      cl_offset_q    <= '0;
-      repl_way_oh_q  <= '0;
-      inv_q          <= '0;
-      rvalid_q       <= '0;
-      invalid_data_q <= '0;
+      cl_tag_q      <= '0;
+      flush_cnt_q   <= '0;
+      vaddr_q       <= '0;
+      cmp_en_q      <= '0;
+      cache_en_q    <= '0;
+      flush_q       <= '0;
+      state_q       <= FLUSH;
+      cl_offset_q   <= '0;
+      repl_way_oh_q <= '0;
+      inv_q         <= '0;
     end else begin
-      cl_tag_q       <= cl_tag_d;
-      flush_cnt_q    <= flush_cnt_d;
-      vaddr_q        <= vaddr_d;
-      cmp_en_q       <= cmp_en_d;
-      cache_en_q     <= cache_en_d;
-      flush_q        <= flush_d;
-      state_q        <= state_d;
-      cl_offset_q    <= cl_offset_d;
-      repl_way_oh_q  <= repl_way_oh_d;
-      inv_q          <= inv_d;
-      rvalid_q       <= rvalid_d;
-      invalid_data_q <= invalid_data_d;
+      cl_tag_q      <= cl_tag_d;
+      flush_cnt_q   <= flush_cnt_d;
+      vaddr_q       <= vaddr_d;
+      cmp_en_q      <= cmp_en_d;
+      cache_en_q    <= cache_en_d;
+      flush_q       <= flush_d;
+      state_q       <= state_d;
+      cl_offset_q   <= cl_offset_d;
+      repl_way_oh_q <= repl_way_oh_d;
+      inv_q         <= inv_d;
     end
   end
 
