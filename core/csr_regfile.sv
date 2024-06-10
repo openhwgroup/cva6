@@ -563,13 +563,21 @@ module csr_regfile
         riscv::CSR_MINSTRETH:
         if (CVA6Cfg.XLEN == 32) csr_rdata = instret_q[63:32];
         else read_access_exception = 1'b1;
-        riscv::CSR_CYCLE: csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
-        riscv::CSR_CYCLEH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = cycle_q[63:32];
+        riscv::CSR_CYCLE:
+        if (CVA6Cfg.RVZicntr) csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
         else read_access_exception = 1'b1;
-        riscv::CSR_INSTRET: csr_rdata = instret_q[CVA6Cfg.XLEN-1:0];
+        riscv::CSR_CYCLEH:
+        if (CVA6Cfg.RVZicntr)
+          if (CVA6Cfg.XLEN == 32) csr_rdata = cycle_q[63:32];
+          else read_access_exception = 1'b1;
+        else read_access_exception = 1'b1;
+        riscv::CSR_INSTRET:
+        if (CVA6Cfg.RVZicntr) csr_rdata = instret_q[CVA6Cfg.XLEN-1:0];
+        else read_access_exception = 1'b1;
         riscv::CSR_INSTRETH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = instret_q[63:32];
+        if (CVA6Cfg.RVZicntr)
+          if (CVA6Cfg.XLEN == 32) csr_rdata = instret_q[63:32];
+          else read_access_exception = 1'b1;
         else read_access_exception = 1'b1;
         //Event Selector
         riscv::CSR_MHPM_EVENT_3,
@@ -696,7 +704,11 @@ module csr_regfile
                 riscv::CSR_HPM_COUNTER_29,
                 riscv::CSR_HPM_COUNTER_30,
                 riscv::CSR_HPM_COUNTER_31 :
-        csr_rdata = perf_data_i;
+        if (CVA6Cfg.RVZihpm) begin
+          csr_rdata = perf_data_i;
+        end else begin
+          read_access_exception = 1'b1;
+        end
 
         riscv::CSR_HPM_COUNTER_3H,
                 riscv::CSR_HPM_COUNTER_4H,
@@ -727,8 +739,12 @@ module csr_regfile
                 riscv::CSR_HPM_COUNTER_29H,
                 riscv::CSR_HPM_COUNTER_30H,
                 riscv::CSR_HPM_COUNTER_31H :
-        if (CVA6Cfg.XLEN == 32) csr_rdata = perf_data_i;
-        else read_access_exception = 1'b1;
+        if (CVA6Cfg.RVZihpm) begin
+          if (CVA6Cfg.XLEN == 32) csr_rdata = perf_data_i;
+          else read_access_exception = 1'b1;
+        end else begin
+          read_access_exception = 1'b1;
+        end
 
         // custom (non RISC-V) cache control
         riscv::CSR_DCACHE: csr_rdata = dcache_q;
@@ -2086,19 +2102,40 @@ module csr_regfile
         end
         // check counter-enabled counter CSR accesses
         // counter address range is C00 to C1F
-        if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_HPM_COUNTER_31]}) begin
-          if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
-            virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
-            privilege_violation = ~mcounteren_q[sel_cnt_en];
-          end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
-            virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
-            if (v_q) begin
-              privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en] & hcounteren_q[sel_cnt_en];
-            end else begin
-              privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en];
+        if (CVA6Cfg.RVZihpm) begin
+          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
+              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+            if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
+              privilege_violation = ~mcounteren_q[sel_cnt_en];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
+              if (v_q) begin
+                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en] & hcounteren_q[sel_cnt_en];
+              end else begin
+                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en];
+              end
+            end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
+              privilege_violation = 1'b0;
             end
-          end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
-            privilege_violation = 1'b0;
+          end
+        end
+        if (CVA6Cfg.RVZicntr) begin
+          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
+              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+            if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
+              privilege_violation = ~mcounteren_q[sel_cnt_en];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
+              if (v_q) begin
+                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en] & hcounteren_q[sel_cnt_en];
+              end else begin
+                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en];
+              end
+            end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
+              privilege_violation = 1'b0;
+            end
           end
         end
       end
@@ -2119,13 +2156,28 @@ module csr_regfile
         end
         // check counter-enabled counter CSR accesses
         // counter address range is C00 to C1F
-        if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_HPM_COUNTER_31]}) begin
-          if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
-            privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
-          end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
-            privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] | ~scounteren_q[csr_addr_i[4:0]];
-          end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
-            privilege_violation = 1'b0;
+        if (CVA6Cfg.RVZihpm) begin
+          if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
+              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+            if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+              privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+              privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] | ~scounteren_q[csr_addr_i[4:0]];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
+              privilege_violation = 1'b0;
+            end
+          end
+        end
+        if (CVA6Cfg.RVZicntr) begin
+          if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
+              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+            if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
+              privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
+              privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] | ~scounteren_q[csr_addr_i[4:0]];
+            end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
+              privilege_violation = 1'b0;
+            end
           end
         end
       end

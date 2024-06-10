@@ -52,6 +52,8 @@ package cva6_config_pkg;
       XFVec: bit'(0),
       CvxifEn: bit'(1),
       RVZiCond: bit'(0),
+      RVZicntr: bit'(1),
+      RVZihpm: bit'(1),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       PerfCounterEn: bit'(0),
       MmuPresent: bit'(1),
