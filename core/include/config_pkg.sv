@@ -94,6 +94,8 @@ package config_pkg;
     logic [63:0]                 ExceptionAddress;
     // Tval Support Enable
     bit                          TvalEn;
+    // MTVEC CSR supports only direct mode
+    bit                          DirectVecOnly;
     // PMP entries number
     int unsigned                 NrPMPEntries;
     // PMP CSR configuration reset values
@@ -267,6 +269,7 @@ package config_pkg;
 
     logic [63:0]                 DmBaseAddress;
     bit                          TvalEn;
+    bit                          DirectVecOnly;
     int unsigned                 NrPMPEntries;
     logic [15:0][63:0]           PMPCfgRstVal;
     logic [15:0][63:0]           PMPAddrRstVal;

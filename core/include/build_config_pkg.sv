@@ -92,6 +92,7 @@ package build_config_pkg;
     cfg.BHTEntries = CVA6Cfg.BHTEntries;
     cfg.DmBaseAddress = CVA6Cfg.DmBaseAddress;
     cfg.TvalEn = CVA6Cfg.TvalEn;
+    cfg.DirectVecOnly = CVA6Cfg.DirectVecOnly;
     cfg.NrPMPEntries = CVA6Cfg.NrPMPEntries;
     cfg.PMPCfgRstVal = CVA6Cfg.PMPCfgRstVal;
     cfg.PMPAddrRstVal = CVA6Cfg.PMPAddrRstVal;
