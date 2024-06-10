@@ -11,6 +11,44 @@ csrcsi:
     #User ignored registers: 
 
     ##########################
+    #MTVAL testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'hb}
+    ##########################
+    #MTVAL Write clear/set value 0x1f
+    csrrci x14, 0x343, 0x0
+    csrrsi x14, 0x343, 0x1f
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write clear/set value 0x0
+    csrrci x14, 0x343, 0x1f
+    csrrsi x14, 0x343, 0x0
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write clear/set value 0x15
+    csrrci x14, 0x343, 0xa
+    csrrsi x14, 0x343, 0x15
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write clear/set value 0xa
+    csrrci x14, 0x343, 0x15
+    csrrsi x14, 0x343, 0xa
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write clear/set value 0xb
+    csrrci x14, 0x343, 0x14
+    csrrsi x14, 0x343, 0xb
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    ##########################
     #MHPMCOUNTER23 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'hb} 
     ##########################
     #MHPMCOUNTER23 Write clear/set value 0x1f

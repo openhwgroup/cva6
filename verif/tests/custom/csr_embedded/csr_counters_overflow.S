@@ -19,8 +19,6 @@ csr_cycle_overflow:
     csrw mcycle, x3
     
     #Read backs registers
-    csrr x14, cycle
-    csrr x14, cycleh
     csrr x14, mcycle
     csrr x14, mcycleh
 
@@ -35,8 +33,6 @@ csr_cycle_overflow:
     nop
 
     #Read backs registers. cycle and mcycle should be arround 0, cycleh and mcycleh should increment by 1
-    csrr x14, cycle
-    csrr x14, cycleh
     csrr x14, mcycle
     csrr x14, mcycleh
 
@@ -47,8 +43,6 @@ csr_cycle_overflow:
     csrw mcycle, x3
 
     #Read backs registers
-    csrr x14, cycle
-    csrr x14, cycleh
     csrr x14, mcycle
     csrr x14, mcycleh
     
@@ -63,8 +57,6 @@ csr_cycle_overflow:
     nop
         
     #Read backs registers, cycle and mcycle should be arround 0, cycleh and mcycleh should be 0
-    csrr x14, cycle
-    csrr x14, cycleh
     csrr x14, mcycle
     csrr x14, mcycleh
 
@@ -76,8 +68,6 @@ csr_instert_overflow:
     csrw minstret, x3
     
     #Read backs registers
-    csrr x14, instret
-    csrr x14, instreth
     csrr x14, minstret
     csrr x14, minstreth
 
@@ -100,8 +90,6 @@ csr_instert_overflow:
     nop
 
     #Read backs registers. instret and minstret should be arround 0, instreth and minstreth should increment by 1
-    csrr x14, instret
-    csrr x14, instreth
     csrr x14, minstret
     csrr x14, minstreth
 
@@ -112,8 +100,6 @@ csr_instert_overflow:
     csrw minstret, x3
 
     #Read backs registers
-    csrr x14, instret
-    csrr x14, instreth
     csrr x14, minstret
     csrr x14, minstreth
     
@@ -136,8 +122,6 @@ csr_instert_overflow:
     nop
         
     #Read backs registers, instret and minstret should be arround 0, instreth and minstreth should be 0
-    csrr x14, instret
-    csrr x14, instreth
     csrr x14, minstret
     csrr x14, minstreth
 

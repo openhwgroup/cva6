@@ -86,36 +86,67 @@ class reg_mstatus extends csr_reg;
       option.per_instance = 1;
       SD: coverpoint data[31:31] {
          bins legal_values[] = {0};
-         //GIT ISSUE #1417: illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
-      TSR: coverpoint data[22:22];
-      TW: coverpoint data[21:21];
-      TVM: coverpoint data[20:20];
-      MXR: coverpoint data[19:19];
-      SUM: coverpoint data[18:18];
-      MPRV: coverpoint data[17:17];
+      TSR: coverpoint data[22:22] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      TW: coverpoint data[21:21] {
+         bins legal_values[] = {0};
+         // issue#2228 illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      // TODO : need configuration on these coverpoints
+      TVM: coverpoint data[20:20] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      MXR: coverpoint data[19:19] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      SUM: coverpoint data[18:18] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
+      MPRV: coverpoint data[17:17] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       XS: coverpoint data[16:15] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
       FS: coverpoint data[14:13] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
-      MPP: coverpoint data[12:11];
+      MPP: coverpoint data[12:11] {
+         bins legal_values[] = {3};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {3}));
+      }
       VS: coverpoint data[10:9] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
-      SPP: coverpoint data[8:8];
+      SPP: coverpoint data[8:8] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       MPIE: coverpoint data[7:7];
       UBE: coverpoint data[6:6] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
       }
-      SPIE: coverpoint data[5:5];
+      SPIE: coverpoint data[5:5] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
       MIE: coverpoint data[3:3];
-      SIE: coverpoint data[1:1];
+      SIE: coverpoint data[1:1] {
+         bins legal_values[] = {0};
+         ignore_bins illegal_values = {[0:$]} with (!(item inside {0}));
+      }
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
@@ -471,8 +502,8 @@ class reg_mtvec extends csr_reg;
          bins other_values[3] = {[1:$]};
       }
       MODE: coverpoint data[1:0] {
-         bins legal_values[] = {0,1};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0,1}));
+         bins legal_values[] = {0};
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
       } 
   endgroup
 
@@ -2613,11 +2644,11 @@ class reg_mtval extends csr_reg;
   endgroup
 
   covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_mtval.mtval__write_cp";
+      option.name = "csr_mtval__write_cg";
       option.per_instance = 1;
-      mtval: coverpoint data[31:0]{
-         bins ZERO[]  = {0};
-         bins other_values[3]  = {[1:$]};
+      mtval: coverpoint data[31:0] {
+         bins reset_value = {0};
+         bins other_values[3] = {[1:$]};
       }
   endgroup
 
@@ -8092,266 +8123,6 @@ class reg_mhpmcounterh31 extends csr_reg;
 endclass
 
 
-class reg_cycle extends csr_reg;
-  `uvm_object_utils(reg_cycle)
-
-  //---------------------------------------
-  // fields instance 
-  //--------------------------------------- 
-  rand uvm_reg_field count;
-   
-
-  covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_cycle__read_cg";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {[0:10000]};
-         bins other_values[3] = {[10001:$]};
-      }
-      count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFBFF:$] => [0:10000]);
-      }
-  endgroup
-
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_cycle.cycle__write_cp";
-      option.per_instance = 1;
-      count: coverpoint data[31:0]{
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-  endgroup
-
-  //---------------------------------------
-  // Constructor 
-  //---------------------------------------
-  function new (string name = "reg_cycle");
-    super.new(name);
-    set_privilege_level(U_LEVEL);
-    reg_rd_cg = new();
-    reg_rd_cg.set_inst_name("csr_reg_cov.cycle.cycle__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.cycle.cycle__write_cg");
-  endfunction
-
-  //---------------------------------------
-  // build_phase - 
-  // 1. Create the fields
-  // 2. Configure the fields
-  //---------------------------------------  
-  function void build; 
-   
-    count = uvm_reg_field::type_id::create("count");   
-    count.configure(.parent(this), .size(32), .lsb_pos(0), .access("RO"), .volatile(0), .reset(0), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
-  endfunction
-
-  virtual function void sample(uvm_reg_data_t data, uvm_reg_data_t byte_en,bit is_read, uvm_reg_map map);
-    if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-      if (is_read)
-         reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
-    end     
-  endfunction
-
-endclass
-
-
-class reg_instret extends csr_reg;
-  `uvm_object_utils(reg_instret)
-
-  //---------------------------------------
-  // fields instance 
-  //--------------------------------------- 
-  rand uvm_reg_field count;
-   
-
-  covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_instret__read_cg";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {[0:1000]};
-         bins other_values[3] = {[1001:$]};
-      }
-      count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFC17:$] => [0:100]);
-      }
-  endgroup
-
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_instret.instret__write_cp";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-  endgroup
-
-  //---------------------------------------
-  // Constructor 
-  //---------------------------------------
-  function new (string name = "reg_instret");
-    super.new(name);
-    set_privilege_level(U_LEVEL);
-    reg_rd_cg = new();
-    reg_rd_cg.set_inst_name("csr_reg_cov.instret.instret__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.instret.instret__write_cg");
-  endfunction
-
-  //---------------------------------------
-  // build_phase - 
-  // 1. Create the fields
-  // 2. Configure the fields
-  //---------------------------------------  
-  function void build; 
-   
-    count = uvm_reg_field::type_id::create("count");   
-    count.configure(.parent(this), .size(32), .lsb_pos(0), .access("RO"), .volatile(0), .reset(0), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
-  endfunction
-
-  virtual function void sample(uvm_reg_data_t data, uvm_reg_data_t byte_en,bit is_read, uvm_reg_map map);
-    if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-      if (is_read)
-         reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
-    end     
-  endfunction
-
-endclass
-
-
-class reg_cycleh extends csr_reg;
-  `uvm_object_utils(reg_cycleh)
-
-  //---------------------------------------
-  // fields instance 
-  //--------------------------------------- 
-  rand uvm_reg_field count;
-   
-
-  covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_cycleh__read_cg";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-      count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFBFF:$] => [0:1000]);
-      }
-  endgroup
-
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_cycleh.cycleh__write_cp";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-  endgroup
-
-  //---------------------------------------
-  // Constructor 
-  //---------------------------------------
-  function new (string name = "reg_cycleh");
-    super.new(name);
-    set_privilege_level(U_LEVEL);
-    reg_rd_cg = new();
-    reg_rd_cg.set_inst_name("csr_reg_cov.cycleh.cycleh__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.cycleh.cycleh__write_cg");
-  endfunction
-
-  //---------------------------------------
-  // build_phase - 
-  // 1. Create the fields
-  // 2. Configure the fields
-  //---------------------------------------  
-  function void build; 
-   
-    count = uvm_reg_field::type_id::create("count");   
-    count.configure(.parent(this), .size(32), .lsb_pos(0), .access("RO"), .volatile(0), .reset(0), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
-  endfunction
-
-  virtual function void sample(uvm_reg_data_t data, uvm_reg_data_t byte_en,bit is_read, uvm_reg_map map);
-    if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-      if (is_read)
-         reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
-    end     
-  endfunction
-
-endclass
-
-
-class reg_instreth extends csr_reg;
-  `uvm_object_utils(reg_instreth)
-
-  //---------------------------------------
-  // fields instance 
-  //--------------------------------------- 
-  rand uvm_reg_field count;
-   
-
-  covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_instreth__read_cg";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-      count_overflow: coverpoint data[31:0] {
-         bins overflow = ([32'hFFFFFFEF:$] => [0:10]);
-      }
-  endgroup
-
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_instreth.instreth__write_cp";
-      option.per_instance = 1;
-      count: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[1:$]};
-      }
-  endgroup
-
-  //---------------------------------------
-  // Constructor 
-  //---------------------------------------
-  function new (string name = "reg_instreth");
-    super.new(name);
-    set_privilege_level(U_LEVEL);
-    reg_rd_cg = new();
-    reg_rd_cg.set_inst_name("csr_reg_cov.instreth.instreth__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.instreth.instreth__write_cg");
-  endfunction
-
-  //---------------------------------------
-  // build_phase - 
-  // 1. Create the fields
-  // 2. Configure the fields
-  //---------------------------------------  
-  function void build; 
-   
-    count = uvm_reg_field::type_id::create("count");   
-    count.configure(.parent(this), .size(32), .lsb_pos(0), .access("RO"), .volatile(0), .reset(0), .has_reset(1), .is_rand(1),  .individually_accessible(0));  
-  endfunction
-
-  virtual function void sample(uvm_reg_data_t data, uvm_reg_data_t byte_en,bit is_read, uvm_reg_map map);
-    if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-      if (is_read)
-         reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
-    end     
-  endfunction
-
-endclass
-
-
 class reg_mvendorid extends csr_reg;
   `uvm_object_utils(reg_mvendorid)
 
@@ -8373,19 +8144,6 @@ class reg_mvendorid extends csr_reg;
       }
   endgroup
 
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_mvendorid.mvendorid__write_cp";
-      option.per_instance = 1;
-      bank: coverpoint data[31:7] {
-         bins reset_value  = {'hC};
-         bins other_values[3] = {[0:$]} with (!(item inside {'hC0}));
-      }
-      offset: coverpoint data[6:0]{
-         bins reset_value  = {'h2};
-         bins other_values[3] = {[0:$]} with (!(item inside {'h20}));
-      }
-  endgroup
-
   //---------------------------------------
   // Constructor 
   //---------------------------------------
@@ -8394,8 +8152,6 @@ class reg_mvendorid extends csr_reg;
     set_privilege_level(M_LEVEL);
     reg_rd_cg = new();
     reg_rd_cg.set_inst_name("csr_reg_cov.mvendorid.mvendorid__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.mvendorid.mvendorid__write_cg");
   endfunction
 
   //---------------------------------------
@@ -8416,8 +8172,6 @@ class reg_mvendorid extends csr_reg;
     if (get_coverage(UVM_CVR_FIELD_VALS)) begin
       if (is_read)
          reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
     end     
   endfunction
 
@@ -8441,15 +8195,6 @@ class reg_marchid extends csr_reg;
       }
   endgroup
 
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_marchid.marchid__write_cp";
-      option.per_instance = 1;
-      architecture_id: coverpoint data[31:0] {
-         bins reset_value  = {'h3};
-         bins other_values[3] = {[0:$]} with (!(item inside {'h3}));
-      }
-  endgroup
-
   //---------------------------------------
   // Constructor 
   //---------------------------------------
@@ -8458,8 +8203,6 @@ class reg_marchid extends csr_reg;
     set_privilege_level(M_LEVEL);
     reg_rd_cg = new();
     reg_rd_cg.set_inst_name("csr_reg_cov.marchid.marchid__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.marchid.marchid__write_cg");
   endfunction
 
   //---------------------------------------
@@ -8477,8 +8220,6 @@ class reg_marchid extends csr_reg;
     if (get_coverage(UVM_CVR_FIELD_VALS)) begin
       if (is_read)
          reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
     end     
   endfunction
 
@@ -8502,15 +8243,6 @@ class reg_mimpid extends csr_reg;
       }
   endgroup
 
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_mimpid.mimpid__write_cp";
-      option.per_instance = 1;
-      implementation: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[0:$]} with (!(item inside {0}));
-      }
-  endgroup
-
   //---------------------------------------
   // Constructor 
   //---------------------------------------
@@ -8519,8 +8251,6 @@ class reg_mimpid extends csr_reg;
     set_privilege_level(M_LEVEL);
     reg_rd_cg = new();
     reg_rd_cg.set_inst_name("csr_reg_cov.mimpid.mimpid__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.mimpid.mimpid__write_cg");
   endfunction
 
   //---------------------------------------
@@ -8538,8 +8268,6 @@ class reg_mimpid extends csr_reg;
     if (get_coverage(UVM_CVR_FIELD_VALS)) begin
       if (is_read)
          reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
     end     
   endfunction
 
@@ -8563,15 +8291,6 @@ class reg_mhartid extends csr_reg;
       }
   endgroup
 
-  covergroup reg_wr_cg with function sample(uvm_reg_data_t data);
-      option.name = "csr_mhartid.mhartid__write_cp";
-      option.per_instance = 1;
-      hart_id: coverpoint data[31:0] {
-         bins reset_value  = {0};
-         bins other_values[3] = {[0:$]} with (!(item inside {0}));
-      }
-  endgroup
-
   //---------------------------------------
   // Constructor 
   //---------------------------------------
@@ -8580,8 +8299,6 @@ class reg_mhartid extends csr_reg;
     set_privilege_level(M_LEVEL);
     reg_rd_cg = new();
     reg_rd_cg.set_inst_name("csr_reg_cov.mhartid.mhartid__read_cg");
-    reg_wr_cg = new();
-    reg_wr_cg.set_inst_name("csr_reg_cov.mhartid.mhartid__write_cg");
   endfunction
 
   //---------------------------------------
@@ -8599,8 +8316,6 @@ class reg_mhartid extends csr_reg;
     if (get_coverage(UVM_CVR_FIELD_VALS)) begin
       if (is_read)
          reg_rd_cg.sample(data);
-      else
-         reg_wr_cg.sample(data);
     end     
   endfunction
 

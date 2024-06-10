@@ -144,10 +144,6 @@ class cva6_csr_reg_block extends uvm_reg_block;
   rand reg_mhpmcounterh29  mhpmcounterh29; 
   rand reg_mhpmcounterh30  mhpmcounterh30; 
   rand reg_mhpmcounterh31  mhpmcounterh31; 
-  rand reg_cycle  cycle; 
-  rand reg_instret  instret; 
-  rand reg_cycleh  cycleh; 
-  rand reg_instreth  instreth; 
   rand reg_mvendorid  mvendorid; 
   rand reg_marchid  marchid; 
   rand reg_mimpid  mimpid; 
@@ -656,22 +652,6 @@ class cva6_csr_reg_block extends uvm_reg_block;
     mhpmcounterh31.configure(this, null, "mhpmcounterh31");
     mhpmcounterh31.build();
 
-    cycle = reg_cycle::type_id::create("cycle", null, get_full_name());
-    cycle.configure(this, null, "cycle");
-    cycle.build();
-
-    instret = reg_instret::type_id::create("instret", null, get_full_name());
-    instret.configure(this, null, "instret");
-    instret.build();
-
-    cycleh = reg_cycleh::type_id::create("cycleh", null, get_full_name());
-    cycleh.configure(this, null, "cycleh");
-    cycleh.build();
-
-    instreth = reg_instreth::type_id::create("instreth", null, get_full_name());
-    instreth.configure(this, null, "instreth");
-    instreth.build();
-
     mvendorid = reg_mvendorid::type_id::create("mvendorid", null, get_full_name());
     mvendorid.configure(this, null, "mvendorid");
     mvendorid.build();
@@ -815,11 +795,7 @@ class cva6_csr_reg_block extends uvm_reg_block;
     default_map.add_reg(mhpmcounterh28, 'hb9c, "RW");  
     default_map.add_reg(mhpmcounterh29, 'hb9d, "RW");  
     default_map.add_reg(mhpmcounterh30, 'hb9e, "RW");  
-    default_map.add_reg(mhpmcounterh31, 'hb9f, "RW");  
-    default_map.add_reg(cycle, 'hC00, "RO");  
-    default_map.add_reg(instret, 'hC02, "RO");  
-    default_map.add_reg(cycleh, 'hC80, "RO");  
-    default_map.add_reg(instreth, 'hC82, "RO");  
+    default_map.add_reg(mhpmcounterh31, 'hb9f, "RW");   
     default_map.add_reg(mvendorid, 'hF11, "RO");  
     default_map.add_reg(marchid, 'hF12, "RO");  
     default_map.add_reg(mimpid, 'hF13, "RO");  

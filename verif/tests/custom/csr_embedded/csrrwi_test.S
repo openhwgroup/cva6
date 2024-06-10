@@ -308,7 +308,7 @@ csrrwi:
     csrr x14, 0x3bc
 
     ##########################
-    #PMPADDR11 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h16} 
+    #PMPADDR11 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h16}
     ##########################
     #PMPADDR11 Write immediate value 0x1f
     csrrwi x14, 0x3bb, 0x1f
@@ -339,6 +339,39 @@ csrrwi:
 
     #PMPADDR11 read value
     csrr x14, 0x3bb
+
+    ##########################
+    #MTVAL testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h18}
+    ##########################
+    #MTVAL Write immediate value 0x1f
+    csrrwi x14, 0x343, 0x1f
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write immediate value 0x0
+    csrrwi x14, 0x343, 0x0
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write immediate value 0x15
+    csrrwi x14, 0x343, 0x15
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write immediate value 0xa
+    csrrwi x14, 0x343, 0xa
+
+    #MTVAL read value
+    csrr x14, 0x343
+
+    #MTVAL Write immediate value 0x18
+    csrrwi x14, 0x343, 0x18
+
+    #MTVAL read value
+    csrr x14, 0x343
 
     ##########################
     #MHPMCOUNTERH11 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h18} 
