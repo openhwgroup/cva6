@@ -20,8 +20,10 @@ module ex_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
@@ -197,9 +199,9 @@ module ex_stage
     // fetch translation response - FETCH
     output fetch_arsp_t fetch_arsp_o,
     // Data cache request ouput - CACHE
-    input dcache_req_o_t [2:0] dcache_req_ports_i,
+    input dbus_rsp_t [2:0] dcache_req_ports_i,
     // Data cache request input - CACHE
-    output dcache_req_i_t [2:0] dcache_req_ports_o,
+    output dbus_req_t [2:0] dcache_req_ports_o,
     // Write buffer is empty - CACHE
     input logic dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - CACHE
@@ -411,8 +413,8 @@ module ex_stage
 
   load_store_unit #(
       .CVA6Cfg   (CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .exception_t(exception_t),
       .fu_data_t (fu_data_t),
       .fetch_areq_t(fetch_areq_t),

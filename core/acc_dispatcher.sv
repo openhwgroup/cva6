@@ -18,8 +18,8 @@ module acc_dispatcher
   import riscv::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
@@ -87,7 +87,7 @@ module acc_dispatcher
     // Interface with the load/store unit
     output logic acc_stall_st_pending_o,
     input logic acc_no_st_pending_i,
-    input dcache_req_i_t [2:0] dcache_req_ports_i,
+    input dbus_req_t [2:0] dcache_req_ports_i,
     // Interface with the controller
     output logic ctrl_halt_o,
     input logic [11:0] csr_addr_i,
@@ -96,8 +96,8 @@ module acc_dispatcher
     output logic flush_pipeline_o,
     output logic single_step_o,
     // Interface with cache subsystem
-    output dcache_req_i_t [1:0] acc_dcache_req_ports_o,
-    input dcache_req_o_t [1:0] acc_dcache_req_ports_i,
+    output dbus_req_t [1:0] acc_dcache_req_ports_o,
+    input dbus_rsp_t [1:0] acc_dcache_req_ports_i,
     input logic inval_ready_i,
     output logic inval_valid_o,
     output logic [63:0] inval_addr_o,

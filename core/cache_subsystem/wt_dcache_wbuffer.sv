@@ -55,8 +55,8 @@ module wt_dcache_wbuffer
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter DCACHE_CL_IDX_WIDTH = 0,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter type wbuffer_t = logic
 ) (
     input logic clk_i,  // Clock
@@ -66,8 +66,8 @@ module wt_dcache_wbuffer
     output logic empty_o,  // asserted if no data is present in write buffer
     output logic not_ni_o,  // asserted if no ni data is present in write buffer
     // core request ports
-    input dcache_req_i_t req_port_i,
-    output dcache_req_o_t req_port_o,
+    input dbus_req_t req_port_i,
+    output dbus_rsp_t req_port_o,
     // interface to miss handler
     input logic miss_ack_i,
     output logic [CVA6Cfg.PLEN-1:0] miss_paddr_o,

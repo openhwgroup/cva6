@@ -26,8 +26,8 @@ module cva6_ptw
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter int unsigned HYP_EXT = 0
 ) (
     input logic clk_i,  // Clock
@@ -49,10 +49,10 @@ module cva6_ptw
     input logic ld_st_v_i,  // load/store virtualization mode bit
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
 
-    input  logic          lsu_is_store_i,  // this translation was triggered by a store
+    input  logic      lsu_is_store_i,  // this translation was triggered by a store
     // PTW memory interface
-    input  dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o,
+    input  dbus_rsp_t req_port_i,
+    output dbus_req_t req_port_o,
 
 
     // to TLBs, update logic
