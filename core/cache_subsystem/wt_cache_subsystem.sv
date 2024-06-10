@@ -28,8 +28,10 @@ module wt_cache_subsystem
     parameter type                   fetch_drsp_t    = logic,
     parameter type                   obi_fetch_req_t = logic,
     parameter type                   obi_fetch_rsp_t = logic,
-    parameter type                   dcache_req_i_t  = logic,
-    parameter type                   dcache_req_o_t  = logic,
+    parameter type                   dbus_req_t      = logic,
+    parameter type                   dbus_rsp_t      = logic,
+    parameter type                   obi_dbus_req_t  = logic,
+    parameter type                   obi_dbus_rsp_t  = logic,
     parameter type                   icache_req_t    = logic,
     parameter type                   icache_rtrn_t   = logic,
     parameter int unsigned           NumPorts        = 4,
@@ -63,8 +65,8 @@ module wt_cache_subsystem
     input amo_req_t dcache_amo_req_i,
     output amo_resp_t dcache_amo_resp_o,
     // Request ports
-    input dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
-    output dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
+    input dbus_req_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
+    output dbus_rsp_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
     // writebuffer status
     output logic wbuffer_empty_o,
     output logic wbuffer_not_ni_o,
@@ -149,8 +151,8 @@ module wt_cache_subsystem
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .dcache_req_t(dcache_req_t),
       .dcache_rtrn_t(dcache_rtrn_t),
       // use ID 1 for dcache reads and amos. note that the writebuffer

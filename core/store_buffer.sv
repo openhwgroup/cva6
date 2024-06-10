@@ -18,8 +18,10 @@ module store_buffer
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -47,8 +49,8 @@ module store_buffer
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    input  dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o
+    input  dbus_rsp_t req_port_i,
+    output dbus_req_t req_port_o
 );
 
   // the store queue has two parts:

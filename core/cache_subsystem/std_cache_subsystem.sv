@@ -26,8 +26,10 @@ module std_cache_subsystem
     parameter type obi_fetch_rsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic,
     parameter int unsigned NumPorts = 4,
     parameter type axi_ar_chan_t = logic,
     parameter type axi_aw_chan_t = logic,
@@ -62,8 +64,8 @@ module std_cache_subsystem
     output logic dcache_miss_o,  // we missed on a ld/st
     output logic                           wbuffer_empty_o,        // statically set to 1, as there is no wbuffer in this cache system
     // Request ports
-    input dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
-    output dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
+    input dbus_req_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
+    output dbus_rsp_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
     // memory side
     output axi_req_t axi_req_o,
     input axi_rsp_t axi_resp_i
@@ -110,8 +112,8 @@ module std_cache_subsystem
   // Port 3: Store Unit
   std_nbdcache #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
       .NumPorts(NumPorts),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)

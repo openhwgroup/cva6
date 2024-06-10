@@ -179,7 +179,7 @@ module cva6
     },
 
     // D$ data requests
-    localparam type dcache_req_i_t = struct packed {
+    localparam type dbus_req_t = struct packed {
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [CVA6Cfg.XLEN-1:0]               data_wdata;
@@ -193,7 +193,7 @@ module cva6
       logic                                  tag_valid;
     },
 
-    localparam type dcache_req_o_t = struct packed {
+    localparam type dbus_rsp_t = struct packed {
       logic                                 data_gnt;
       logic                                 data_rvalid;
       logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
@@ -303,7 +303,7 @@ module cva6
   //OBI FETCH
   `OBI_TYPEDEF_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg)
   //OBI DATA
-  `OBI_TYPEDEF_ALL(obi_data, CVA6Cfg.ObiDatabusCfg)
+  `OBI_TYPEDEF_ALL(obi_dbus, CVA6Cfg.ObiDatabusCfg)
 
   localparam type interrupts_t = struct packed {
     logic [CVA6Cfg.XLEN-1:0] S_SW;
@@ -574,10 +574,10 @@ module cva6
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
-  dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
-  dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
-  dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
+  dbus_req_t [2:0] dcache_req_ports_ex_cache;
+  dbus_rsp_t [2:0] dcache_req_ports_cache_ex;
+  dbus_req_t [1:0] dcache_req_ports_acc_cache;
+  dbus_rsp_t [1:0] dcache_req_ports_cache_acc;
   logic dcache_commit_wbuffer_empty;
   logic dcache_commit_wbuffer_not_ni;
 
@@ -827,8 +827,10 @@ module cva6
       .CVA6Cfg   (CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t),
+      .obi_dbus_req_t(obi_dbus_req_t),
+      .obi_dbus_rsp_t(obi_dbus_rsp_t),
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .fetch_areq_t(fetch_areq_t),
@@ -1095,8 +1097,8 @@ module cva6
         .exception_t(exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .fetch_dreq_t(fetch_dreq_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
+        .dbus_req_t(dbus_req_t),
+        .dbus_rsp_t(dbus_rsp_t),
         .NumPorts(NumPorts)
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1182,8 +1184,8 @@ module cva6
 
   // Acc dispatcher and store buffer share a dcache request port.
   // Store buffer always has priority access over acc dipsatcher.
-  dcache_req_i_t [NumPorts-1:0] dcache_req_to_cache;
-  dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
+  dbus_req_t [NumPorts-1:0] dcache_req_to_cache;
+  dbus_rsp_t [NumPorts-1:0] dcache_req_from_cache;
 
   // D$ request
   assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
@@ -1215,8 +1217,10 @@ module cva6
         .obi_fetch_req_t(obi_fetch_req_t),
         .obi_fetch_rsp_t(obi_fetch_rsp_t),
         .icache_rtrn_t(icache_rtrn_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
+        .dbus_req_t(dbus_req_t),
+        .dbus_rsp_t(dbus_rsp_t),
+        .obi_dbus_req_t(obi_dbus_req_t),
+        .obi_dbus_rsp_t(obi_dbus_rsp_t),
         .NumPorts  (NumPorts),
         .noc_req_t (noc_req_t),
         .noc_resp_t(noc_resp_t)
@@ -1261,10 +1265,12 @@ module cva6
         .fetch_drsp_t(fetch_drsp_t),
         .icache_req_t(icache_req_t),
         .icache_rtrn_t(icache_rtrn_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
+        .dbus_req_t(dbus_req_t),
+        .dbus_rsp_t(dbus_rsp_t),
         .obi_fetch_req_t(obi_fetch_req_t),
         .obi_fetch_rsp_t(obi_fetch_rsp_t),
+        .obi_dbus_req_t(obi_dbus_req_t),
+        .obi_dbus_rsp_t(obi_dbus_rsp_t),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
@@ -1331,8 +1337,10 @@ module cva6
         .icache_rtrn_t  (icache_rtrn_t),
         .obi_fetch_req_t(obi_fetch_req_t),
         .obi_fetch_rsp_t(obi_fetch_rsp_t),
-        .dcache_req_i_t (dcache_req_i_t),
-        .dcache_req_o_t (dcache_req_o_t),
+        .dbus_req_t     (dbus_req_t),
+        .dbus_rsp_t     (dbus_rsp_t),
+        .obi_dbus_req_t (obi_dbus_req_t),
+        .obi_dbus_rsp_t (obi_dbus_rsp_t),
         .NumPorts       (NumPorts),
         .axi_ar_chan_t  (axi_ar_chan_t),
         .axi_aw_chan_t  (axi_aw_chan_t),
@@ -1381,8 +1389,8 @@ module cva6
     acc_dispatcher #(
         .CVA6Cfg           (CVA6Cfg),
         .fu_data_t         (fu_data_t),
-        .dcache_req_i_t    (dcache_req_i_t),
-        .dcache_req_o_t    (dcache_req_o_t),
+        .dbus_req_t        (dbus_req_t),
+        .dbus_rsp_t        (dbus_rsp_t),
         .exception_t       (exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
         .acc_cfg_t         (acc_cfg_t),
