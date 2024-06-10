@@ -18,8 +18,8 @@ module cva6_hpdcache_wrapper
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter hpdcache_pkg::hpdcache_cfg_t HPDcacheCfg = '0,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
     parameter int NumPorts = 4,
     parameter int NrHwPrefetchers = 4,
 
@@ -77,9 +77,9 @@ module cva6_hpdcache_wrapper
     // CMO interface response - TO_BE_COMPLETED
     output cmo_rsp_t                             dcache_cmo_resp_o,
     // Data cache input request ports - EX_STAGE
-    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
+    input  dbus_req_t             [NumPorts-1:0] dcache_req_ports_i,
     // Data cache output request ports - EX_STAGE
-    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
+    output dbus_rsp_t             [NumPorts-1:0] dcache_req_ports_o,
     // Write buffer status to know if empty - EX_STAGE
     output logic                                 wbuffer_empty_o,
     // Write buffer status to know if not non idempotent - EX_STAGE
@@ -173,7 +173,7 @@ module cva6_hpdcache_wrapper
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   generate
-    dcache_req_i_t dcache_req_ports[NumPorts - 1];
+    dbus_req_t dcache_req_ports[NumPorts - 1];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : gen_cva6_hpdcache_load_if_adapter
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
@@ -186,8 +186,8 @@ module cva6_hpdcache_wrapper
           .hpdcache_req_sid_t   (hpdcache_req_sid_t),
           .hpdcache_req_t       (hpdcache_req_t),
           .hpdcache_rsp_t       (hpdcache_rsp_t),
-          .dcache_req_i_t       (dcache_req_i_t),
-          .dcache_req_o_t       (dcache_req_o_t),
+          .dbus_req_t           (dbus_req_t),
+          .dbus_rsp_t           (dbus_rsp_t),
           .is_load_port         (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
@@ -220,8 +220,8 @@ module cva6_hpdcache_wrapper
         .hpdcache_req_sid_t   (hpdcache_req_sid_t),
         .hpdcache_req_t       (hpdcache_req_t),
         .hpdcache_rsp_t       (hpdcache_rsp_t),
-        .dcache_req_i_t       (dcache_req_i_t),
-        .dcache_req_o_t       (dcache_req_o_t),
+        .dbus_req_t           (dbus_req_t),
+        .dbus_rsp_t           (dbus_rsp_t),
         .is_load_port         (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,

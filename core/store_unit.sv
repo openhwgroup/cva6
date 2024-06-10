@@ -17,8 +17,10 @@ module store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
@@ -81,15 +83,15 @@ module store_unit
     // AMO response - CACHES
     input amo_resp_t amo_resp_i,
     // Data cache request - CACHES
-    input dcache_req_o_t req_port_i,
+    input dbus_rsp_t req_port_i,
     // Data cache response - CACHES
-    output dcache_req_i_t req_port_o
+    output dbus_req_t req_port_o
 );
 
   // align data to address e.g.: shift data to be naturally 64
   function automatic [CVA6Cfg.XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
     // Set addr[2] to 1'b0 when 32bits
-    logic [2:0] addr_tmp = {(addr[2] && CVA6Cfg.IS_XLEN64), addr[1:0]};
+    logic [ 2:0] addr_tmp = {(addr[2] && CVA6Cfg.IS_XLEN64), addr[1:0]};
     logic [63:0] data_tmp = {64{1'b0}};
     case (addr_tmp)
       3'b000: data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-1:0]};
@@ -289,8 +291,8 @@ module store_unit
   // ---------------
   store_buffer #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dbus_req_t(dbus_req_t),
+      .dbus_rsp_t(dbus_rsp_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,

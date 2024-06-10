@@ -22,8 +22,10 @@ module load_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type dbus_req_t = logic,
+    parameter type dbus_rsp_t = logic,
+    parameter type obi_dbus_req_t = logic,
+    parameter type obi_dbus_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
@@ -74,9 +76,9 @@ module load_unit
     // Transaction ID of the committing instruction - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
-    input dcache_req_o_t req_port_i,
+    input dbus_rsp_t req_port_i,
     // Data cache request in - CACHES
-    output dcache_req_i_t req_port_o,
+    output dbus_req_t req_port_o,
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i
 );
