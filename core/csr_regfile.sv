@@ -531,7 +531,9 @@ module csr_regfile
         riscv::CSR_MSCRATCH: csr_rdata = mscratch_q;
         riscv::CSR_MEPC: csr_rdata = mepc_q;
         riscv::CSR_MCAUSE: csr_rdata = mcause_q;
-        riscv::CSR_MTVAL: csr_rdata = mtval_q;
+        riscv::CSR_MTVAL:
+        if (CVA6Cfg.TvalEn) csr_rdata = mtval_q;
+        else csr_rdata = '0;
         riscv::CSR_MTINST:
         if (CVA6Cfg.RVH) csr_rdata = mtinst_q;
         else read_access_exception = 1'b1;
@@ -1384,7 +1386,6 @@ module csr_regfile
         riscv::CSR_MCAUSE: mcause_d = csr_wdata;
         riscv::CSR_MTVAL: begin
           if (CVA6Cfg.TvalEn) mtval_d = csr_wdata;
-          else update_access_exception = 1'b1;
         end
         riscv::CSR_MTINST:
         if (CVA6Cfg.RVH) mtinst_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
