@@ -334,9 +334,9 @@ hart0:
                 lsb: 23
         rv64:
             accessible: false
-        description: The mstatus register keeps track of and controls the hart’s current
+        description: The mstatus register keeps track of and controls the hart's current
             operating state.
-        address: 768
+        address: 0x300
         priv_mode: M
     mip:
         reset-val: 0
@@ -3515,7 +3515,7 @@ hart0:
             accessible: false
         description: The mstatush register keeps track of and controls the hart’s
             current operating state.
-        address: 768
+        address: 0x310
         priv_mode: M
         reset-val: 0
     mideleg:
