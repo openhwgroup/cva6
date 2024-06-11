@@ -1280,6 +1280,7 @@ module csr_regfile
             mstatus_d.tsr  = riscv::Off;
           end
           if (!CVA6Cfg.RVU) begin
+            mstatus_d.tw   = riscv::Off;
             mstatus_d.mprv = riscv::Off;
           end
           // If h-extension is not enabled, priv level HS is reserved
