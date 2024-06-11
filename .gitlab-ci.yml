@@ -181,7 +181,7 @@ hwconfig:
     DASHBOARD_SORT_INDEX: 1
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "veri-testharness,spike"
-    DV_HWCONFIG_OPTS: "cv32a60x"
+    DV_HWCONFIG_OPTS: "cv32a6_imac_sv32"
   script:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
@@ -255,7 +255,7 @@ fpga-build:
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
     DASHBOARD_SORT_INDEX: 9
     DASHBOARD_JOB_CATEGORY: "Synthesis"
-    TARGET: cv32a60x
+    TARGET: cv32a6_imac_sv32
   script:
     - source $VIVADO_SETUP
     - source ./verif/sim/setup-env.sh
@@ -361,7 +361,7 @@ mmu_sv32_tests:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv32a60x
+    DV_TARGET: cv32a6_imac_sv32
   script: source verif/regress/dv-riscv-mmu-sv32-test.sh
   after_script: *simu_after_script
 
@@ -507,7 +507,7 @@ fpga-boot:
     - source ./verif/sim/setup-env.sh
     - source $VIVADO2022_SETUP
     - mkdir -p corev_apu/fpga/work-fpga
-    - mv artifacts/ariane_xilinx_cv32a60x.bit corev_apu/fpga/work-fpga/ariane_xilinx.bit
+    - mv artifacts/ariane_xilinx_cv32a6_imac_sv32.bit corev_apu/fpga/work-fpga/ariane_xilinx.bit
     - cd corev_apu/fpga/scripts
     - source check_fpga_boot.sh
     - cd -
