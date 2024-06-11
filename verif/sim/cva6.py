@@ -388,7 +388,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
       cmd = ("%s %s \
              -I%s/../env/corev-dv/user_extension \
              -T%s %s -o %s " % \
-             (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, linker, opts, elf))
+             (get_env_var("RISCV_CC", debug_cmd = debug_cmd), asm, cwd, linker, opts, elf))
       if 'gcc_opts' in test:
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
@@ -449,7 +449,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   cmd = ("%s %s \
          -I%s/../env/corev-dv/user_extension \
          -T%s %s -o %s " % \
-         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd, linker,
+         (get_env_var("RISCV_CC", debug_cmd = debug_cmd), asm_test, cwd, linker,
                       gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
@@ -612,7 +612,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   cmd = ("%s %s \
          -I%s/dv/user_extension \
           -T%s %s -o %s " % \
-         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
+         (get_env_var("RISCV_CC", debug_cmd = debug_cmd), c_test, cwd,
 					  linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
@@ -961,11 +961,6 @@ def load_config(args, cwd):
       Loaded configuration dictionary.
   """
 
-  global isa_extension_list
-  isa_extension_list = args.isa_extension.split(",")
-  isa_extension_list.append("zicsr")
-  isa_extension_list.append("zifencei")
-
   if args.debug:
     args.debug = open(args.debug, "w")
   if not args.csr_yaml:
@@ -1066,6 +1061,12 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = args.custom_target + "/testlist.yaml"
 
+  global isa_extension_list
+  isa_extension_list = args.isa_extension.split(",")
+  if not "g" in args.isa: # LLVM complains if we add zicsr and zifencei when g is set.
+    isa_extension_list.append("zicsr")
+    isa_extension_list.append("zifencei")
+
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 
 
@@ -1076,17 +1077,18 @@ def incorrect_version_exit(tool, tool_version, required_version):
   sys.exit(RET_FAIL)
 
 
-def check_gcc_version():
+def check_cc_version():
   REQUIRED_GCC_VERSION = 11
 
-  gcc_path = get_env_var("RISCV_GCC")
-  gcc_version = run_cmd(f"{gcc_path} --version")
-  gcc_version_string = re.match(r".*\s(\d+\.\d+\.\d+).*", gcc_version).group(1)
-  gcc_version_number = gcc_version_string.split('.')
-  logging.info(f"GCC Version: {gcc_version_string}")
+  cc_path = get_env_var("RISCV_CC")
+  cc_version = run_cmd(f"{cc_path} --version")
+  cc_version_string = cc_version.split("\n")[0].split(" ")[2]
+  cc_version_number = re.split(r'\D+', cc_version_string)
 
-  if int(gcc_version_number[0]) < REQUIRED_GCC_VERSION:
-    incorrect_version_exit("GCC", gcc_version_string, f">={REQUIRED_GCC_VERSION}")
+  logging.info(f"GCC Version: {cc_version_string}")
+
+  if int(cc_version_number[0]) < REQUIRED_GCC_VERSION:
+    incorrect_version_exit("GCC", cc_version_string, f">={REQUIRED_GCC_VERSION}")
 
 
 def check_spike_version():
@@ -1120,7 +1122,7 @@ def check_verilator_version():
 
 
 def check_tools_version():
-  check_gcc_version()
+  check_cc_version()
   check_spike_version()
   check_verilator_version()
 
