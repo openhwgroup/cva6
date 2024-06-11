@@ -8,4 +8,4 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-.. include:: ../../csr-from-ip-xact/cv32a60x/csr_list.rst
+.. include:: ../../../01_cva6_user/CVX_Interface_Coprocessor.rst
