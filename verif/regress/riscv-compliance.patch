@@ -1,8 +1,49 @@
+diff --git a/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h b/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
+index 318b7498..4d6dd039 100644
+--- a/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
++++ b/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
+@@ -63,10 +63,10 @@
+   .align 2;                                                             \
+ 1:
+ 
+-#define INIT_SPTBR                                                      \
++#define INIT_SATP                                                       \
+   la t0, 1f;                                                            \
+   csrw mtvec, t0;                                                       \
+-  csrwi sptbr, 0;                                                       \
++  csrwi satp, 0;                                                        \
+   .align 2;                                                             \
+ 1:
+ 
 diff --git a/riscv-test-env/p/riscv_test.h b/riscv-test-env/p/riscv_test.h
-index eaa6758..887408a 100644
+index eaa67585..966e2ac0 100644
 --- a/riscv-test-env/p/riscv_test.h
 +++ b/riscv-test-env/p/riscv_test.h
-@@ -162,7 +162,7 @@ handle_exception:                                                       \
+@@ -63,10 +63,10 @@
+   .align 2;                                                             \
+ 1:
+ 
+-#define INIT_SPTBR                                                      \
++#define INIT_SATP                                                       \
+   la t0, 1f;                                                            \
+   csrw mtvec, t0;                                                       \
+-  csrwi sptbr, 0;                                                       \
++  csrwi satp, 0;                                                        \
+   .align 2;                                                             \
+ 1:
+ 
+@@ -108,8 +108,8 @@
+ //
+ #if defined(PRIV_MISA_S)
+ #  if (PRIV_MISA_S==0)
+-#    undef  INIT_SPTBR
+-#    define INIT_SPTBR
++#    undef  INIT_SATP
++#    define INIT_SATP
+ #    undef  INIT_PMP
+ #    define INIT_PMP
+ #    undef  DELEGATE_NO_TRAPS
+@@ -162,10 +162,10 @@ handle_exception:                                                       \
    1:    ori TESTNUM, TESTNUM, 1337;                                     \
    write_tohost:                                                         \
          sw TESTNUM, tohost, t5;                                         \
@@ -10,7 +51,11 @@ index eaa6758..887408a 100644
 +  2:    j 2b;                                                           \
  reset_vector:                                                           \
          RISCV_MULTICORE_DISABLE;                                        \
-         INIT_SPTBR;                                                     \
+-        INIT_SPTBR;                                                     \
++        INIT_SATP;                                                      \
+         INIT_PMP;                                                       \
+         DELEGATE_NO_TRAPS;                                              \
+         li TESTNUM, 0;                                                  \
 @@ -215,7 +215,7 @@ end_testcode:                                                           \
          RVTEST_SYNC;                                                    \
          li TESTNUM, 1;                                                  \
@@ -29,8 +74,21 @@ index eaa6758..887408a 100644
  
  //-----------------------------------------------------------------------
  // Data Section Macro
+diff --git a/riscv-test-env/v/entry.S b/riscv-test-env/v/entry.S
+index 97196620..37a68ba1 100644
+--- a/riscv-test-env/v/entry.S
++++ b/riscv-test-env/v/entry.S
+@@ -116,7 +116,7 @@ trap_entry:
+   STORE  t0,32*REGBYTES(sp)
+   csrr   t0,sepc
+   STORE  t0,33*REGBYTES(sp)
+-  csrr   t0,sbadaddr
++  csrr   t0,stval
+   STORE  t0,34*REGBYTES(sp)
+   csrr   t0,scause
+   STORE  t0,35*REGBYTES(sp)
 diff --git a/riscv-test-env/v/vm.c b/riscv-test-env/v/vm.c
-index 6ab7fd1..fc01b94 100644
+index 6ab7fd15..1b365a9f 100644
 --- a/riscv-test-env/v/vm.c
 +++ b/riscv-test-env/v/vm.c
 @@ -9,8 +9,8 @@
@@ -44,8 +102,26 @@ index 6ab7fd1..fc01b94 100644
  
  static void do_tohost(uint64_t tohost_value)
  {
+@@ -225,13 +225,13 @@ void vm_boot(uintptr_t test_addr)
+   l1pt[PTES_PER_PT-1] = ((pte_t)kernel_l2pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+   kernel_l2pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
+   user_l2pt[0] = ((pte_t)user_l3pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+-  uintptr_t vm_choice = SPTBR_MODE_SV39;
++  uintptr_t vm_choice = SATP_MODE_SV39;
+ #else
+   l1pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
+-  uintptr_t vm_choice = SPTBR_MODE_SV32;
++  uintptr_t vm_choice = SATP_MODE_SV32;
+ #endif
+-  write_csr(sptbr, ((uintptr_t)l1pt >> PGSHIFT) |
+-                   (vm_choice * (SPTBR_MODE & ~(SPTBR_MODE<<1))));
++  write_csr(satp, ((uintptr_t)l1pt >> PGSHIFT) |
++                   (vm_choice * (SATP_MODE & ~(SATP_MODE<<1))));
+ 
+   // Set up PMPs if present, ignoring illegal instruction trap if not.
+   uintptr_t pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
 diff --git a/riscv-test-suite/rv32i/src/I-EBREAK-01.S b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
-index 958eebc..b84559f 100644
+index 958eebcf..b84559ff 100644
 --- a/riscv-test-suite/rv32i/src/I-EBREAK-01.S
 +++ b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
 @@ -71,6 +71,7 @@ RV_COMPLIANCE_CODE_BEGIN
@@ -57,7 +133,7 @@ index 958eebc..b84559f 100644
      # increment return address
      csrr    x30, mepc
 diff --git a/riscv-test-suite/rv32i/src/I-ECALL-01.S b/riscv-test-suite/rv32i/src/I-ECALL-01.S
-index 5278207..d181526 100644
+index 52782074..d1815268 100644
 --- a/riscv-test-suite/rv32i/src/I-ECALL-01.S
 +++ b/riscv-test-suite/rv32i/src/I-ECALL-01.S
 @@ -73,6 +73,7 @@ RV_COMPLIANCE_CODE_BEGIN
@@ -69,22 +145,33 @@ index 5278207..d181526 100644
      # increment return address
      csrr    x30, mepc
 diff --git a/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S b/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
-index 8f54534..a09cf76 100644
+index 8f54534d..79461b86 100644
 --- a/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
 +++ b/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
-@@ -277,6 +277,7 @@ RV_COMPLIANCE_CODE_BEGIN
+@@ -277,14 +277,15 @@ RV_COMPLIANCE_CODE_BEGIN
  
      # ---------------------------------------------------------------------------------------------
      # Exception handler
 +    .align 2
  _trap_handler:
      # increment return address
-     csrr    x30, mbadaddr
+-    csrr    x30, mbadaddr
++    csrr    x30, mtval
+     addi    x30, x30, -2
+     csrw    mepc, x30
+ 
+-    # store low bits of mbadaddr
+-    csrr    x30, mbadaddr
++    # store low bits of mtval
++    csrr    x30, mtval
+     andi    x30, x30, 3
+     sw      x30, 0(x1)
+ 
 diff --git a/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S b/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
-index 5a20187..0eeb9d1 100644
+index 5a201878..9d3f6680 100644
 --- a/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
 +++ b/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
-@@ -188,6 +188,7 @@ RV_COMPLIANCE_CODE_BEGIN
+@@ -188,14 +188,15 @@ RV_COMPLIANCE_CODE_BEGIN
  
      # ---------------------------------------------------------------------------------------------
      # Exception handler
@@ -92,3 +179,135 @@ index 5a20187..0eeb9d1 100644
  _trap_handler:
      # increment return address
      csrr    x30, mepc
+     addi    x30, x30, 4
+     csrw    mepc, x30
+ 
+-    # store low bits of mbadaddr
+-    csrr    x30, mbadaddr
++    # store low bits of mtval
++    csrr    x30, mtval
+     andi    x30, x30, 3
+     sw      x30, 0(x1)
+ 
+diff --git a/riscv-test-suite/rv32mi/rv64mi/illegal.S b/riscv-test-suite/rv32mi/rv64mi/illegal.S
+index 4d859a88..c78a6fc0 100644
+--- a/riscv-test-suite/rv32mi/rv64mi/illegal.S
++++ b/riscv-test-suite/rv32mi/rv64mi/illegal.S
+@@ -72,19 +72,19 @@ bad4:
+   wfi
+   j fail
+ 
+-  # Make sure SFENCE.VMA and sptbr don't trap when TVM=0.
++  # Make sure SFENCE.VMA and satp don't trap when TVM=0.
+   sfence.vma
+-  csrr t0, sptbr
++  csrr t0, satp
+ bad5:
+   .word 0
+   j fail
+ 
+ bad6:
+-  # Make sure SFENCE.VMA and sptbr do trap when TVM=1.
++  # Make sure SFENCE.VMA and satp do trap when TVM=1.
+   sfence.vma
+   j fail
+ bad7:
+-  csrr t0, sptbr
++  csrr t0, satp
+   j fail
+ 
+   # Make sure SRET doesn't trap when TSR=0.
+@@ -135,8 +135,8 @@ synchronous_exception:
+   bne t0, t1, fail
+   csrr t0, mepc
+ 
+-  # Make sure mbadaddr contains either 0 or the instruction word.
+-  csrr t2, mbadaddr
++  # Make sure mtval contains either 0 or the instruction word.
++  csrr t2, mtval
+   beqz t2, 1f
+   lhu t3, 0(t0)
+   lhu t4, 2(t0)
+diff --git a/riscv-test-suite/rv32mi/rv64mi/ma_addr.S b/riscv-test-suite/rv32mi/rv64mi/ma_addr.S
+index c35f147b..34283236 100644
+--- a/riscv-test-suite/rv32mi/rv64mi/ma_addr.S
++++ b/riscv-test-suite/rv32mi/rv64mi/ma_addr.S
+@@ -102,7 +102,7 @@ mtvec_handler:
+   csrr t0, mcause
+   bne t0, s1, fail
+ 
+-  csrr t0, mbadaddr
++  csrr t0, mtval
+   bne t0, t1, fail
+ 
+   lb t0, (t0)
+diff --git a/riscv-test-suite/rv32mi/rv64si/dirty.S b/riscv-test-suite/rv32mi/rv64si/dirty.S
+index 26f185f8..6390bfe6 100644
+--- a/riscv-test-suite/rv32mi/rv64si/dirty.S
++++ b/riscv-test-suite/rv32mi/rv64si/dirty.S
+@@ -18,7 +18,7 @@ RV_COMPLIANCE_CODE_BEGIN
+   la a1, page_table_1
+   srl a1, a1, RISCV_PGSHIFT
+   or a1, a1, a0
+-  csrw sptbr, a1
++  csrw satp, a1
+   sfence.vma
+ 
+   # Set up MPRV with MPP=S, so loads and stores use S-mode
+diff --git a/riscv-test-suite/rv32mi/rv64si/ma_fetch.S b/riscv-test-suite/rv32mi/rv64si/ma_fetch.S
+index e52ab838..75c34afc 100644
+--- a/riscv-test-suite/rv32mi/rv64si/ma_fetch.S
++++ b/riscv-test-suite/rv32mi/rv64si/ma_fetch.S
+@@ -19,7 +19,7 @@ RV_COMPLIANCE_CODE_BEGIN
+   #define sscratch mscratch
+   #define sstatus mstatus
+   #define scause mcause
+-  #define sbadaddr mbadaddr
++  #define stval mtval
+   #define sepc mepc
+   #define sret mret
+   #define stvec_handler mtvec_handler
+@@ -193,7 +193,7 @@ stvec_handler:
+   bne t0, a1, fail
+ 
+   # verify that badaddr == 0 or badaddr == t0+2.
+-  csrr a0, sbadaddr
++  csrr a0, stval
+   beqz a0, 1f
+   addi a0, a0, -2
+   bne a0, t0, fail
+diff --git a/riscv-test-suite/rv32si/rv64si/dirty.S b/riscv-test-suite/rv32si/rv64si/dirty.S
+index 1a324a86..2d684a46 100644
+--- a/riscv-test-suite/rv32si/rv64si/dirty.S
++++ b/riscv-test-suite/rv32si/rv64si/dirty.S
+@@ -21,7 +21,7 @@ RV_COMPLIANCE_CODE_BEGIN
+   la a1, page_table_1
+   srl a1, a1, RISCV_PGSHIFT
+   or a1, a1, a0
+-  csrw sptbr, a1
++  csrw satp, a1
+   sfence.vma
+ 
+   # Set up MPRV with MPP=S, so loads and stores use S-mode
+diff --git a/riscv-test-suite/rv32si/rv64si/ma_fetch.S b/riscv-test-suite/rv32si/rv64si/ma_fetch.S
+index e52ab838..75c34afc 100644
+--- a/riscv-test-suite/rv32si/rv64si/ma_fetch.S
++++ b/riscv-test-suite/rv32si/rv64si/ma_fetch.S
+@@ -19,7 +19,7 @@ RV_COMPLIANCE_CODE_BEGIN
+   #define sscratch mscratch
+   #define sstatus mstatus
+   #define scause mcause
+-  #define sbadaddr mbadaddr
++  #define stval mtval
+   #define sepc mepc
+   #define sret mret
+   #define stvec_handler mtvec_handler
+@@ -193,7 +193,7 @@ stvec_handler:
+   bne t0, a1, fail
+ 
+   # verify that badaddr == 0 or badaddr == t0+2.
+-  csrr a0, sbadaddr
++  csrr a0, stval
+   beqz a0, 1f
+   addi a0, a0, -2
+   bne a0, t0, fail

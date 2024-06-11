@@ -20,6 +20,7 @@ mkdir -p verif/tests
 if ! [ -d verif/tests/riscv-tests ]; then
   git clone $TESTS_REPO -b $TESTS_BRANCH verif/tests/riscv-tests
   cd verif/tests/riscv-tests; git checkout $TESTS_HASH;
+  git apply ../../../verif/regress/riscv-tests.patch
   git submodule update --init --recursive
   git apply --directory=env ../../../verif/regress/riscv-tests-env.patch
   cd -
