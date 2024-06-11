@@ -1560,8 +1560,8 @@ module csr_regfile
         riscv::CSR_PMPCFG3: begin
           if (CVA6Cfg.XLEN == 32) begin
             for (int i = 0; i < 4; i++)
-              if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+12] = '0;
-              else if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12] = csr_wdata[i*8+:8];
+            if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+12] = '0;
+            else if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12] = csr_wdata[i*8+:8];
           end else begin
             update_access_exception = 1'b1;
           end
