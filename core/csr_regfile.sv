@@ -1555,8 +1555,8 @@ module csr_regfile
         end
         riscv::CSR_PMPCFG2:
         for (int i = 0; i < (CVA6Cfg.XLEN / 8); i++)
-          if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+8] = '0;
-          else if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8] = csr_wdata[i*8+:8];
+        if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+8] = '0;
+        else if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8] = csr_wdata[i*8+:8];
         riscv::CSR_PMPCFG3: begin
           if (CVA6Cfg.XLEN == 32) begin
             for (int i = 0; i < 4; i++)
