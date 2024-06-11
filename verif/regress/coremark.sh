@@ -78,7 +78,7 @@ cflags=(
         -DNOPRINT
 )
 
-default_config="cv32a6_embedded"
+default_config="cv32a65x"
 isa="rv32imc_zba_zbb_zbc_zbs"
 
 set -x
