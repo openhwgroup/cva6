@@ -7,4 +7,5 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-.. include:: ../../01_cva6_user/AXI_Interface.rst
+
+.. include:: ../../../01_cva6_user/Traps_Interrupts_Exceptions.rst

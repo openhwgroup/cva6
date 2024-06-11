@@ -56,7 +56,7 @@ The target audience of this document is current and existing members of the Open
 
 The :doc:`CVA6 Design Document <03_cva6_design/index>` describes in detail the **CVA6**, the code base that can be used to compile/synthesize a specific core instance (e.g. cv32a65x).
 
-The :doc:`CV32A65X Design Document <04_cv32a65x_design/source/index>` describes in detail the **CV32A65X**, a specific core based on the CVA6 and the first production quality 32-bit application processor derived from the CVA6.
+The :doc:`CV32A65X Design Document <04_cv32a65x/design/source/index>` describes in detail the **CV32A65X**, a specific core based on the CVA6 and the first production quality 32-bit application processor derived from the CVA6.
 The primary audience for this documentation are design and verification engineers working to bring the CV32A65X to TRL-5.
 
 The :doc:`CVA6 APU <05_cva6_apu/index>` describes an Application Processor Unit built around the CVA6.
@@ -68,7 +68,6 @@ The :doc:`CVA6 APU <05_cva6_apu/index>` describes an Application Processor Unit 
    02_cva6_requirements/cva6_requirements_specification.rst
    01_cva6_user/index.rst
    03_cva6_design/index.rst
-   06_cv32a65x_riscv/index.rst
-   04_cv32a65x_design/source/index.rst
+   04_cv32a65x/index.rst
    05_cva6_apu/index.rst
 
