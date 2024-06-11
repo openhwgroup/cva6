@@ -764,9 +764,12 @@ module csr_regfile
         riscv::CSR_PMPCFG1:
         if (CVA6Cfg.XLEN == 32) csr_rdata = pmpcfg_q[7:4];
         else read_access_exception = 1'b1;
-        riscv::CSR_PMPCFG2: csr_rdata = pmpcfg_q[8+:CVA6Cfg.XLEN/8];
+        riscv::CSR_PMPCFG2:
+        if (CVA6Cfg.NrPMPEntries == 8) csr_rdata = '0;
+        else csr_rdata = pmpcfg_q[8+:CVA6Cfg.XLEN/8];
         riscv::CSR_PMPCFG3:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = pmpcfg_q[15:12];
+        if (CVA6Cfg.NrPMPEntries == 8) csr_rdata = '0;
+        else if (CVA6Cfg.XLEN == 32) csr_rdata = pmpcfg_q[15:12];
         else read_access_exception = 1'b1;
         // PMPADDR
         riscv::CSR_PMPADDR0,
@@ -791,7 +794,8 @@ module csr_regfile
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (pmpcfg_q[index].addr_mode[1] == 1'b1 || pmpcfg_q[index].addr_mode == 'h0)
+          if (CVA6Cfg.NrPMPEntries == 8 & index > 7) csr_rdata = '0;
+          else if (pmpcfg_q[index].addr_mode[1] == 1'b1 || pmpcfg_q[index].addr_mode == 'h0)
             csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
           else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
@@ -1551,11 +1555,13 @@ module csr_regfile
         end
         riscv::CSR_PMPCFG2:
         for (int i = 0; i < (CVA6Cfg.XLEN / 8); i++)
-        if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8] = csr_wdata[i*8+:8];
+          if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+8] = '0;
+          else if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8] = csr_wdata[i*8+:8];
         riscv::CSR_PMPCFG3: begin
           if (CVA6Cfg.XLEN == 32) begin
             for (int i = 0; i < 4; i++)
-            if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12] = csr_wdata[i*8+:8];
+              if (CVA6Cfg.NrPMPEntries == 8) pmpcfg_d[i+12] = '0;
+              else if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12] = csr_wdata[i*8+:8];
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1579,7 +1585,8 @@ module csr_regfile
           // index is specified by the last byte in the address
           automatic logic [3:0] index = csr_addr.csr_decode.address[3:0];
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
+          if (CVA6Cfg.NrPMPEntries == 8 & index > 7) pmpaddr_d[index] = '0;
+          else if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
             pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
           end
         end
