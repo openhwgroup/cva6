@@ -154,7 +154,7 @@ void _init(int cid, int nc)
   char* pbuf = buf;
   for (int i = 0; i < NUM_COUNTERS; i++)
     if (counters[i])
-      pbuf += sprintf(pbuf, "%s = %d\n", counter_names[i], counters[i]);
+      pbuf += sprintf(pbuf, "%s = %zu\n", counter_names[i], counters[i]);
   if (pbuf != buf)
     printstr(buf);
 
