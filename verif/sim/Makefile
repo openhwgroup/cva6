@@ -174,6 +174,7 @@ export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_MEM_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_mem
 export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
+export DV_UVMA_OBI_MEMORY_PATH= $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi_memory
 export CV_CORE_PKG            = $(CORE_V_VERIF)/core-v-cores/$(CV_CORE_LC)
 export DESIGN_RTL_DIR         = $(CV_CORE_PKG)/rtl
 

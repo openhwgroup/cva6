@@ -44,6 +44,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_cvxif_agent_c     cvxif_agent;
    uvma_axi_agent_c       axi_agent;
+   uvma_obi_memory_agent_c  obi_agent;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
    uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
@@ -247,6 +248,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
 
+   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "*obi_agent", "cfg", cfg.obi_cfg);
+
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
 
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "*rvfi_agent", "cfg", cfg.rvfi_cfg);
@@ -264,6 +267,7 @@ function void uvme_cva6_env_c::assign_cntxt();
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
+   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_agent", "cntxt", cntxt.obi_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
 
 endfunction: assign_cntxt
@@ -274,6 +278,7 @@ function void uvme_cva6_env_c::create_agents();
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
    axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
+   obi_agent     = uvma_obi_memory_agent_c::type_id::create("obi_agent", this);
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
    rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    isacov_agent  = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
