@@ -73,10 +73,11 @@ module instr_realign
       instr_o[0] = unaligned_q ? {data_i[15:0], unaligned_instr_q} : data_i[31:0];
       addr_o[0] = unaligned_q ? unaligned_address_q : address_i;
 
-      valid_o[1] = 1'b0;
-      instr_o[1] = '0;
-      addr_o[1] = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
-
+		if (CVA6Cfg.INSTR_PER_FETCH != 1) begin
+			valid_o[CVA6Cfg.INSTR_PER_FETCH-1] = 1'b0;
+			instr_o[CVA6Cfg.INSTR_PER_FETCH-1] = '0;
+			addr_o[CVA6Cfg.INSTR_PER_FETCH-1] = {address_i[CVA6Cfg.VLEN-1:2], 2'b10};
+		end
       // this instruction is compressed or the last instruction was unaligned
       if (instr_is_compressed[0] || unaligned_q) begin
         // check if this is instruction is still unaligned e.g.: it is not compressed
@@ -85,10 +86,10 @@ module instr_realign
         // if it is compressed the next fetch will contain an aligned instruction
         // is instruction 1 also compressed
         // yes? -> no problem, no -> we've got an unaligned instruction
-        if (instr_is_compressed[1]) begin
+        if (instr_is_compressed[CVA6Cfg.INSTR_PER_FETCH-1 && CVA6Cfg.RVC]) begin
           unaligned_d = 1'b0;
-          valid_o[1]  = valid_i;
-          instr_o[1]  = {16'b0, data_i[31:16]};
+          valid_o[CVA6Cfg.INSTR_PER_FETCH-1]  = valid_i;
+          instr_o[CVA6Cfg.INSTR_PER_FETCH-1]  = {16'b0, data_i[31:16]};
         end else begin
           // save the upper bits for next cycle
           unaligned_d = 1'b1;
