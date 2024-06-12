@@ -17,6 +17,30 @@
 
 ###### This file is based on <cwd>/cva6-simuator.yaml
 
+- tool: xrun
+  compile:
+    cmd: 
+      - "xrun -elaborate
+              -messages
+              -sv
+              -uvm 
+              -uvmhome CDNS-1.2
+              -64
+              +incdir+<setting>
+              +incdir+<user_extension>
+              -f <cwd>/../env/corev-dv/cva6-files.f
+              +define+UVM_REGEX_NO_DPI
+              -timescale 1ns/10ps
+	      -status
+	      -access +rwc
+              -log <out>/compile.log  <cmp_opts> <cov_opts> "
+    cov_opts: >
+  sim:
+    cmd: >
+      xrun -R -messages -licqueue +gen="true" <sim_opts> -svseed <seed>  <cov_opts> 
+      
+    cov_opts: >
+
 - tool: vcs
   compile:
     cmd:
@@ -36,3 +60,4 @@
       <out>/vcs_simv +vcs+lic+wait gen="true" <sim_opts> +ntb_random_seed=<seed> <cov_opts>
     cov_opts: >
       -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>_<test_id>
+
