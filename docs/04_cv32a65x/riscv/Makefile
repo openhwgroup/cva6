@@ -23,7 +23,7 @@ priv-html: setup
 
 unpriv-pdf: setup
 	cd build/riscv-isa-manual/build; make unpriv-pdf
-	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.html unpriv-isa-cv32a65x.html
+	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.pdf unpriv-isa-cv32a65x.pdf
 
 unpriv-html: setup
 	cd build/riscv-isa-manual/build; make unpriv-html
