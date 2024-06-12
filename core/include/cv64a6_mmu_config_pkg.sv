@@ -67,7 +67,7 @@ package cva6_config_pkg;
       DmBaseAddress: 64'h0,
       TvalEn: bit'(0),
       DirectVecOnly: bit'(1),
-      NrPMPEntries: unsigned'(64),
+      NrPMPEntries: unsigned'(16),
       PMPCfgRstVal: {16{64'h0}},
       PMPAddrRstVal: {16{64'h0}},
       PMPEntryReadOnly: 16'd0,
