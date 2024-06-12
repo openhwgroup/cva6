@@ -86,7 +86,7 @@ module instr_realign
         // if it is compressed the next fetch will contain an aligned instruction
         // is instruction 1 also compressed
         // yes? -> no problem, no -> we've got an unaligned instruction
-        if (instr_is_compressed[CVA6Cfg.INSTR_PER_FETCH-1&&CVA6Cfg.RVC]) begin
+        if (instr_is_compressed[CVA6Cfg.INSTR_PER_FETCH-1] && CVA6Cfg.RVC) begin
           unaligned_d = 1'b0;
           valid_o[CVA6Cfg.INSTR_PER_FETCH-1] = valid_i;
           instr_o[CVA6Cfg.INSTR_PER_FETCH-1] = {16'b0, data_i[31:16]};
