@@ -26,7 +26,8 @@ if __name__ == "__main__":
     print(spec_number, target)
     parameters = parameters_extractor(spec_number, target)
 
-    fileout = f"./{spec_number}_{target}_design/source/parameters_{target}.rst"
+    pathout = f"./{spec_number}_{target}/design/source"
+    fileout = f"{pathout}/parameters_{target}.rst"
     writeout_parameter_table(fileout, parameters, target)
 
     file = []
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         comments = []
         a = re.match(r".*\/(.*).sv", filein)
         module = a.group(1)
-        fileout = "./04_cv32a65x_design/source/port_" + module + ".rst"
+        fileout = f"{pathout}/port_{module}.rst"
         print("Input file " + filein)
         print("Output file " + fileout)
         ports = []
