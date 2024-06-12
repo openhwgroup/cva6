@@ -27,7 +27,7 @@ import uvm_pkg::*;
 `define READ_ELF_T
 import "DPI-C" function void read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
 `endif
 
 module ariane_tb;
@@ -132,7 +132,7 @@ module ariane_tb;
         if (binary != "") begin
             `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
 
-            void'(read_elf(binary));
+            read_elf(binary);
             // wait with preloading, otherwise randomization will overwrite the existing value
             wait(clk_i);
 
@@ -142,7 +142,7 @@ module ariane_tb;
                 automatic int num_words = (len+7)/8;
                 `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_NONE)
                 buffer = new [num_words*8];
-                void'(read_section_sv(address, buffer));
+                read_section_sv(address, buffer);
                 // preload memories
                 // 64-bit
                 for (int i = 0; i < num_words; i++) begin

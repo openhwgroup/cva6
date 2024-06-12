@@ -51,14 +51,14 @@ task uvme_axi_fw_preload_seq_c::body();
    void'(uvcl.get_arg_value("+elf_file=", binary));
 
    if (binary != "") begin
-      void'(read_elf(binary));
+      read_elf(binary);
       wait(p_sequencer.cntxt.axi_vi.clk);
       // while there are more sections to process
       while (get_section(address, len)) begin
          automatic int num_words0 = (len+7)/8;
          `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_HIGH)
          buffer = new [num_words0*8];
-         void'(read_section_sv(address, buffer));
+         read_section_sv(address, buffer);
          // preload memories
          // 64-bit
          for (int i = 0; i < num_words0; i++) begin
