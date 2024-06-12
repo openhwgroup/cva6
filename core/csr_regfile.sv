@@ -852,13 +852,17 @@ module csr_regfile
     priv_lvl_d                      = priv_lvl_q;
     v_d                             = v_q;
     debug_mode_d                    = debug_mode_q;
-    dcsr_d                          = dcsr_q;
-    dpc_d                           = dpc_q;
-    dscratch0_d                     = dscratch0_q;
-    dscratch1_d                     = dscratch1_q;
+    if (CVA6Cfg.DebugEn) begin
+      dcsr_d                          = dcsr_q;
+      dpc_d                           = dpc_q;
+      dscratch0_d                     = dscratch0_q;
+      dscratch1_d                     = dscratch1_q;
+    end
     mstatus_d                       = mstatus_q;
-    hstatus_d                       = hstatus_q;
-    vsstatus_d                      = vsstatus_q;
+    if (CVA6Cfg.RVH) begin
+      hstatus_d                       = hstatus_q;
+      vsstatus_d                      = vsstatus_q;
+    end
 
     // check whether we come out of reset
     // this is a workaround. some tools have issues
@@ -888,28 +892,31 @@ module csr_regfile
     icache_d                 = icache_q;
     acc_cons_d               = acc_cons_q;
 
-    vsstatus_d               = vsstatus_q;
-    vstvec_d                 = vstvec_q;
-    vsscratch_d              = vsscratch_q;
-    vsepc_d                  = vsepc_q;
-    vscause_d                = vscause_q;
-    vstval_d                 = vstval_q;
-    vsatp_d                  = vsatp_q;
+    if (CVA6Cfg.RVH) begin 
+      vstvec_d                 = vstvec_q;
+      vsscratch_d              = vsscratch_q;
+      vsepc_d                  = vsepc_q;
+      vscause_d                = vscause_q;
+      vstval_d                 = vstval_q;
+      vsatp_d                  = vsatp_q;
+      hgatp_d                  = hgatp_q;
+    end
 
-    sepc_d                   = sepc_q;
-    scause_d                 = scause_q;
-    stvec_d                  = stvec_q;
-    scounteren_d             = scounteren_q;
-    sscratch_d               = sscratch_q;
-    stval_d                  = stval_q;
-    satp_d                   = satp_q;
-    hedeleg_d                = hedeleg_q;
-    hideleg_d                = hideleg_q;
-    hgeie_d                  = hgeie_q;
-    hgatp_d                  = hgatp_q;
-    hcounteren_d             = hcounteren_q;
-    htinst_d                 = htinst_q;
-    htval_d                  = htval_q;
+    if (CVA6Cfg.RVS) begin
+      sepc_d                   = sepc_q;
+      scause_d                 = scause_q;
+      stvec_d                  = stvec_q;
+      scounteren_d             = scounteren_q;
+      sscratch_d               = sscratch_q;
+      stval_d                  = stval_q;
+      satp_d                   = satp_q;
+      hedeleg_d                = hedeleg_q;
+      hideleg_d                = hideleg_q;
+      hgeie_d                  = hgeie_q;
+      hcounteren_d             = hcounteren_q;
+      htinst_d                 = htinst_q;
+      htval_d                  = htval_q;
+    end
 
     en_ld_st_translation_d   = en_ld_st_translation_q;
     en_ld_st_g_translation_d = en_ld_st_g_translation_q;
@@ -2068,7 +2075,9 @@ module csr_regfile
 
   assign irq_ctrl_o.mie = mie_q;
   assign irq_ctrl_o.mip = mip_q;
-  assign irq_ctrl_o.sie = (CVA6Cfg.RVH && v_q) ? vsstatus_q.sie : mstatus_q.sie;
+  if (CVA6Cfg.RVH) begin
+    assign irq_ctrl_o.sie = (v_q) ? vsstatus_q.sie : mstatus_q.sie;
+  end
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
   assign irq_ctrl_o.global_enable = (~debug_mode_q)
