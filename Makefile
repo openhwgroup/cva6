@@ -447,19 +447,11 @@ XRUN_INCDIR :=+incdir+$(CVA6_HOME)/core/include 			\
 
 XRUN_TB := $(addprefix $(CVA6_HOME)/, corev_apu/tb/ariane_tb.sv)
 
-##XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc 			\
-##		    -sv -v93 -uvm -uvmhome $(XRUN_UVMHOME_ARG) 			\
-##		    -sv_lib $(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so		\
-##		    -smartorder -sv -top worklib.$(top_level)			\
-##		    -xceligen on=1903 +define+$(defines) -timescale 1ns/1ps	
 XRUN_COMP_FLAGS  ?= -64bit -v200x -disable_sem2009 -access +rwc 			\
 		    -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) 			\
 		    -sv_lib $(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so		\
 		    -smartorder -sv -top worklib.$(top_level)			\
-		    -timescale 1ns/1ps	
-
-##XRUN_RUN_FLAGS := -R -64bit -disable_sem2009 -access +rwc -timescale 1ns/1ps		\
-##		-sv_lib	$(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so -xceligen on=1903	
+		    -timescale 1ns/1ps
 
 XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -uvmhome CDNS-1.2 -sv_lib $(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so +UVM_VERBOSITY=UVM_LOW  		
 
@@ -513,9 +505,6 @@ xrun_sim: xrun_comp
 		+permissive-off			\
 		+elf_file=$(elf)           \
 		++$(elf)
-
-##		+tohost_addr=80001000           \
-#-e "set_severity_pack_assert_off {warning}; set_pack_assert_off {numeric_std}" TODO: This will remove assertion warning at the beginning of the simulation.
 
 xrun_all: xrun_clean xrun_comp xrun_sim
 
