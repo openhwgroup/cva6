@@ -142,7 +142,7 @@ CFLAGS += -I$(QUESTASIM_HOME)/include         \
           -I$(VL_INC_DIR)/vltstd              \
           -I$(RISCV)/include                  \
           -I$(SPIKE_INSTALL_DIR)/include      \
-          -std=c++17 -Icorev_apu/tb/dpi -O3
+          -std=c++17 -I$(CVA6_REPO_DIR)/corev_apu/tb/dpi -O3
 
 ifdef XCELIUM_HOME
 CFLAGS += -I$(XCELIUM_HOME)/tools/include
