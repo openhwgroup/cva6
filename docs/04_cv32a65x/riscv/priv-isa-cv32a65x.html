@@ -440,7 +440,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>The RISC-V Instruction Set Manual for CV32A65X: Volume II: Privileged Architecture</h1>
 <div class="details">
-<span id="revnumber">version 20240528</span>
+<span id="revnumber">version 20240612</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -482,12 +482,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_machine_status_mstatus_and_mstatush_registers">3.1.6. Machine Status (<code>mstatus</code> and <code>mstatush</code>) Registers</a>
 <ul class="sectlevel4">
 <li><a href="#privstack">3.1.6.1. Privilege and Global Interrupt-Enable Stack in <code>mstatus</code> register</a></li>
-<li><a href="#xlen-control">3.1.6.2. Base ISA Control in <code>mstatus</code> Register</a></li>
-<li><a href="#_memory_privilege_in_mstatus_register">3.1.6.3. Memory Privilege in <code>mstatus</code> Register</a></li>
-<li><a href="#_endianness_control_in_mstatus_and_mstatush_registers">3.1.6.4. Endianness Control in <code>mstatus</code> and <code>mstatush</code> Registers</a></li>
-<li><a href="#virt-control">3.1.6.5. Virtualization Support in <code>mstatus</code> Register</a></li>
-<li><a href="#_extension_context_status_in_mstatus_register">3.1.6.6. Extension Context Status in <code>mstatus</code> Register</a></li>
-<li><a href="#_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.7. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</a></li>
+<li><a href="#machine-double-trap">3.1.6.2. Double Trap Control in <code>mstatus</code> Register</a></li>
+<li><a href="#xlen-control">3.1.6.3. Base ISA Control in <code>mstatus</code> Register</a></li>
+<li><a href="#_memory_privilege_in_mstatus_register">3.1.6.4. Memory Privilege in <code>mstatus</code> Register</a></li>
+<li><a href="#_endianness_control_in_mstatus_and_mstatush_registers">3.1.6.5. Endianness Control in <code>mstatus</code> and <code>mstatush</code> Registers</a></li>
+<li><a href="#virt-control">3.1.6.6. Virtualization Support in <code>mstatus</code> Register</a></li>
+<li><a href="#_extension_context_status_in_mstatus_register">3.1.6.7. Extension Context Status in <code>mstatus</code> Register</a></li>
+<li><a href="#_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.8. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</a></li>
 </ul>
 </li>
 <li><a href="#_machine_trap_vector_base_address_mtvec_register">3.1.7. Machine Trap-Vector Base-Address (<code>mtvec</code>) Register</a></li>
@@ -556,15 +557,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#smcntrpmf">7. "Smcntrpmf" Cycle and Instret Privilege Mode Filtering, Version 1.0</a></li>
 <li><a href="#rnmi">8. "Smrnmi" Extension for Resumable Non-Maskable Interrupts, Version 0.5</a></li>
 <li><a href="#smcdeleg">9. "Smcdeleg" Counter Delegation Extension, Version 1.0</a></li>
-<li><a href="#supervisor">10. Supervisor-Level ISA, Version 1.13</a></li>
-<li><a href="#Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</a></li>
-<li><a href="#Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</a></li>
-<li><a href="#hypervisor">13. "H" Extension for Hypervisor Support, Version 1.0</a></li>
-<li><a href="#priv-cfi">14. Control-flow Integrity (CFI)</a></li>
-<li><a href="#_risc_v_privileged_instruction_set_listings">15. RISC-V Privileged Instruction Set Listings</a></li>
-<li><a href="#_history">16. History</a>
+<li><a href="#smdbltrp">10. "Smdbltrp" Double Trap Extension, Version 1.0</a></li>
+<li><a href="#supervisor">11. Supervisor-Level ISA, Version 1.13</a></li>
+<li><a href="#Sstc">12. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</a></li>
+<li><a href="#Sscofpmf">13. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</a></li>
+<li><a href="#hypervisor">14. "H" Extension for Hypervisor Support, Version 1.0</a></li>
+<li><a href="#priv-cfi">15. Control-flow Integrity (CFI)</a></li>
+<li><a href="#ssdbltrp">16. "Ssdbltrp" Double Trap Extension, Version 1.0</a></li>
+<li><a href="#_risc_v_privileged_instruction_set_listings">17. RISC-V Privileged Instruction Set Listings</a></li>
+<li><a href="#_history">18. History</a>
 <ul class="sectlevel2">
-<li><a href="#_research_funding_at_uc_berkeley">16.1. Research Funding at UC Berkeley</a></li>
+<li><a href="#_research_funding_at_uc_berkeley">18.1. Research Funding at UC Berkeley</a></li>
 </ul>
 </li>
 <li><a href="#_bibliography">Bibliography</a></li>
@@ -620,11 +623,11 @@ Jean-Roch Coulon, André Sintzoff.</em></p>
 OpenHW Group CV32A65X.</p>
 </div>
 <div class="paragraph">
-<p><strong class="big"><em>Preface to Version 20240528</em></strong></p>
+<p><strong class="big"><em>Preface to Version 20240612</em></strong></p>
 </div>
 <div class="paragraph">
 <p>This document describes the RISC-V privileged architecture. This
-release, version 20240528, contains the following versions of the RISC-V ISA
+release, version 20240612, contains the following versions of the RISC-V ISA
 modules:</p>
 </div>
 <table class="tableblock frame-all grid-all fit-content center">
@@ -649,6 +652,7 @@ modules:</p>
 <strong>*Smcntrpmf</strong><br>
 <strong>Smrnmi Extension</strong><br>
 <strong>Smcdeleg</strong><br>
+<strong>Smdbltrp</strong><br>
 <em>Supervisor ISA</em><br>
 <strong>Svade Extension</strong><br>
 <strong>Svnapot Extension</strong><br>
@@ -657,8 +661,11 @@ modules:</p>
 <strong>Svadu Extension</strong><br>
 <strong>Sstc</strong><br>
 <strong>Sscofpmf</strong><br>
-<strong>Hypervisor ISA</strong></p></td>
+<strong>Ssdbltrp</strong><br>
+<strong>Hypervisor ISA</strong><br>
+<em>Shlcofideleg</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>1.13</em><br>
+<strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
@@ -673,7 +680,9 @@ modules:</p>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
-<strong>1.0</strong></p></td>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<em>0.1</em></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><em>Draft</em><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
@@ -682,6 +691,7 @@ modules:</p>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <em>Draft</em><br>
+<em>Draft</em><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
@@ -689,7 +699,9 @@ modules:</p>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
-<strong>Ratified</strong></p></td>
+<em>Draft</em><br>
+<strong>Ratified</strong><br>
+<em>Draft</em></p></td>
 </tr>
 </tbody>
 </table>
@@ -715,6 +727,10 @@ made to the Machine and Supervisor ISAs since version 1.12:</p>
 <div class="ulist">
 <ul>
 <li>
+<p>Defined the <code>misa</code>.B field to reflect that the B extension has been
+implemented.</p>
+</li>
+<li>
 <p>Defined the <code>misa</code>.V field to reflect that the V extension has been
 implemented.</p>
 </li>
@@ -736,7 +752,7 @@ extension.</p>
 in <code>menvcfg</code> and <code>henvcfg</code>.</p>
 </li>
 <li>
-<p>Exposed count-overflow interrups to VS-mode.</p>
+<p>Exposed count-overflow interrups to VS-mode via the Shlcofideleg extension.</p>
 </li>
 </ul>
 </div>
@@ -1453,7 +1469,7 @@ usage respectively.</p>
 optional extensions and variants. For example, machine-mode supports an
 optional standard extension for memory protection. Also, supervisor mode
 can be extended to support Type-2 hypervisor execution as described in
-<a href="#hypervisor">Chapter 13</a>.</p>
+<a href="#hypervisor">Chapter 14</a>.</p>
 </div>
 <div class="paragraph">
 <p>Implementations might provide anywhere from 1 to 3 privilege modes
@@ -2957,7 +2973,7 @@ mode.</p>
 <h3 id="csrwidthmodulation">2.6. CSR Width Modulation</h3>
 <div class="paragraph">
 <p>If the width of a CSR is changed (for example, by changing SXLEN or
-UXLEN, as described in <a href="#xlen-control">Section 3.1.6.2</a>), the
+UXLEN, as described in <a href="#xlen-control">Section 3.1.6.3</a>), the
 values of the <em>writable</em> fields and bits of the new-width CSR are,
 unless specified otherwise, determined from the previous-width CSR as
 though by this algorithm:</p>
@@ -3279,7 +3295,7 @@ shown in <a href="#mstatushreg">Figure 8</a>.</p>
 </div>
 <div id="mstatushreg" class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNTYnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCAxMDI0IDU2JyB3aWR0aD0nMTAyNCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48ZyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZm9udC1zaXplPScxNCcgZm9udC13ZWlnaHQ9J25vcm1hbCcgdGV4dC1hbmNob3I9J21pZGRsZScgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMC41LDAuNSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQsMjEpJz48ZyBzdHJva2U9J2JsYWNrJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS13aWR0aD0nMSc+PGxpbmUgeDI9JzEwMTUnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nMTAxNScgeTE9JzMxJyB5Mj0nMzEnLz48bGluZSB4MT0nMTAxNScgeDI9JzEwMTUnIHkyPSczMScvPjxsaW5lIHgxPSc5ODMnIHgyPSc5ODMnIHkyPSczJy8+PGxpbmUgeDE9Jzk4MycgeDI9Jzk4MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTUyJyB4Mj0nOTUyJyB5Mj0nMycvPjxsaW5lIHgxPSc5NTInIHgyPSc5NTInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzkyMCcgeDI9JzkyMCcgeTI9JzMnLz48bGluZSB4MT0nOTIwJyB4Mj0nOTIwJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc4ODgnIHgyPSc4ODgnIHkyPSczMScvPjxsaW5lIHgxPSc4NTYnIHgyPSc4NTYnIHkyPSczMScvPjxsaW5lIHgxPSc4MjUnIHgyPSc4MjUnIHkyPSczMScvPjxsaW5lIHgxPSc3OTMnIHgyPSc3OTMnIHkyPSczJy8+PGxpbmUgeDE9Jzc5MycgeDI9Jzc5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzYxJyB4Mj0nNzYxJyB5Mj0nMycvPjxsaW5lIHgxPSc3NjEnIHgyPSc3NjEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzczMCcgeDI9JzczMCcgeTI9JzMnLz48bGluZSB4MT0nNzMwJyB4Mj0nNzMwJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTgnIHgyPSc2OTgnIHkyPSczJy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY2JyB4Mj0nNjY2JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjYnIHgyPSc2NjYnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTI9JzMnLz48bGluZSB4MT0nNjM0JyB4Mj0nNjM0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MDMnIHgyPSc2MDMnIHkyPSczJy8+PGxpbmUgeDE9JzYwMycgeDI9JzYwMycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTcxJyB4Mj0nNTcxJyB5Mj0nMycvPjxsaW5lIHgxPSc1NzEnIHgyPSc1NzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzUzOScgeDI9JzUzOScgeTI9JzMnLz48bGluZSB4MT0nNTM5JyB4Mj0nNTM5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MDgnIHgyPSc1MDgnIHkyPSczJy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDc2JyB4Mj0nNDc2JyB5Mj0nMycvPjxsaW5lIHgxPSc0NzYnIHgyPSc0NzYnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTI9JzMnLz48bGluZSB4MT0nNDQ0JyB4Mj0nNDQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MTInIHgyPSc0MTInIHkyPSczJy8+PGxpbmUgeDE9JzQxMicgeDI9JzQxMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzgxJyB4Mj0nMzgxJyB5Mj0nMycvPjxsaW5lIHgxPSczODEnIHgyPSczODEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0OScgeDI9JzM0OScgeTI9JzMnLz48bGluZSB4MT0nMzQ5JyB4Mj0nMzQ5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMTcnIHgyPSczMTcnIHkyPSczJy8+PGxpbmUgeDE9JzMxNycgeDI9JzMxNycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjg1JyB4Mj0nMjg1JyB5Mj0nMycvPjxsaW5lIHgxPScyODUnIHgyPScyODUnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTI9JzMnLz48bGluZSB4MT0nMjU0JyB4Mj0nMjU0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTkwJyB4Mj0nMTkwJyB5Mj0nMycvPjxsaW5lIHgxPScxOTAnIHgyPScxOTAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE1OScgeDI9JzE1OScgeTI9JzMnLz48bGluZSB4MT0nMTU5JyB4Mj0nMTU5JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjcnIHgyPScxMjcnIHkyPSczJy8+PGxpbmUgeDE9JzEyNycgeDI9JzEyNycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTUnIHgyPSc5NScgeTI9JzMnLz48bGluZSB4MT0nOTUnIHgyPSc5NScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjMnIHgyPSc2MycgeTI9JzMnLz48bGluZSB4MT0nNjMnIHgyPSc2MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzInIHgyPSczMicgeTI9JzMnLz48bGluZSB4MT0nMzInIHgyPSczMicgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE2LC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDk4MyknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDg4OCknPjx0ZXh0IHk9JzYnPjM8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDg1NiknPjx0ZXh0IHk9JzYnPjQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDgyNSknPjx0ZXh0IHk9JzYnPjU8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc5MyknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4zMTwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE2LDE1KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTM2KSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODU2KSc+PHRleHQgeT0nNic+PHRzcGFuPlNCRTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg4MjUpJz48dGV4dCB5PSc2Jz48dHNwYW4+TUJFPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5XUFJJPC90c3Bhbj48L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNiwzOSknLz48L2c+PC9nPjwvZz48L3N2Zz4=" alt="Diagram" width="1024" height="56">
+<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nMTEyJyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSd4TWlkWU1pZCBtZWV0JyB2aWV3Qm94PScwIDAgMTAyNCAxMTInIHdpZHRoPScxMDI0JyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmb250LXNpemU9JzE0JyBmb250LXdlaWdodD0nbm9ybWFsJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgwLjUsMC41KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNCw3NyknPjxnIHN0cm9rZT0nYmxhY2snIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLXdpZHRoPScxJz48bGluZSB4Mj0nMTAxNScvPjxsaW5lIHkyPSczMScvPjxsaW5lIHgyPScxMDE1JyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPScxMDE1JyB4Mj0nMTAxNScgeTI9JzMxJy8+PGxpbmUgeDE9Jzk1MicgeDI9Jzk1MicgeTI9JzMnLz48bGluZSB4MT0nOTUyJyB4Mj0nOTUyJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc4ODgnIHgyPSc4ODgnIHkyPSczJy8+PGxpbmUgeDE9Jzg4OCcgeDI9Jzg4OCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nODI1JyB4Mj0nODI1JyB5Mj0nMycvPjxsaW5lIHgxPSc4MjUnIHgyPSc4MjUnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9Jzc2MScgeDI9Jzc2MScgeTI9JzMxJy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTI9JzMxJy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTI9JzMxJy8+PGxpbmUgeDE9JzU3MScgeDI9JzU3MScgeTI9JzMxJy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTI9JzMxJy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTI9JzMxJy8+PGxpbmUgeDE9JzM4MScgeDI9JzM4MScgeTI9JzMxJy8+PGxpbmUgeDE9JzMxNycgeDI9JzMxNycgeTI9JzMxJy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTI9JzMnLz48bGluZSB4MT0nMjU0JyB4Mj0nMjU0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxOTAnIHgyPScxOTAnIHkyPSczJy8+PGxpbmUgeDE9JzE5MCcgeDI9JzE5MCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTI3JyB4Mj0nMTI3JyB5Mj0nMycvPjxsaW5lIHgxPScxMjcnIHgyPScxMjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzYzJyB4Mj0nNjMnIHkyPSczJy8+PGxpbmUgeDE9JzYzJyB4Mj0nNjMnIHkxPSczMScgeTI9JzI4Jy8+PC9nPjxnPjxnLz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzMiwtMTEpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5NTIpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjEpJz48dGV4dCB5PSc2Jz4zPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTgpJz48dGV4dCB5PSc2Jz40PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MzQpJz48dGV4dCB5PSc2Jz41PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg1NzEpJz48dGV4dCB5PSc2Jz42PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg1MDgpJz48dGV4dCB5PSc2Jz43PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NDQpJz48dGV4dCB5PSc2Jz44PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzODEpJz48dGV4dCB5PSc2Jz45PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzMTcpJz48dGV4dCB5PSc2Jz4xMDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjU0KSc+PHRleHQgeT0nNic+MTE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4xNTwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyLDE1KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODU2KSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjk4KSc+PHRleHQgeT0nNic+PHRzcGFuPlNCRTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MzQpJz48dGV4dCB5PSc2Jz48dHNwYW4+TUJFPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU3MSknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5HVkE8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTA4KSc+PHRleHQgeT0nNic+PHRzcGFuPk1QVjwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NDQpJz48dGV4dCB5PSc2Jz48dHNwYW4+V1BSSTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzODEpJz48dGV4dCB5PSc2Jz48dHNwYW4+TVBFTFA8L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzE3KSc+PHRleHQgeT0nNic+PHRzcGFuPk1EVDwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjcpJz48dGV4dCB5PSc2Jz48dHNwYW4+V1BSSTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsMzkpJy8+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDIxKSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPScxMDE1Jy8+PGxpbmUgeTI9JzMxJy8+PGxpbmUgeDI9JzEwMTUnIHkxPSczMScgeTI9JzMxJy8+PGxpbmUgeDE9JzEwMTUnIHgyPScxMDE1JyB5Mj0nMzEnLz48bGluZSB4MT0nOTUyJyB4Mj0nOTUyJyB5Mj0nMycvPjxsaW5lIHgxPSc5NTInIHgyPSc5NTInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9Jzg4OCcgeDI9Jzg4OCcgeTI9JzMnLz48bGluZSB4MT0nODg4JyB4Mj0nODg4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc4MjUnIHgyPSc4MjUnIHkyPSczJy8+PGxpbmUgeDE9JzgyNScgeDI9JzgyNScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzYxJyB4Mj0nNzYxJyB5Mj0nMycvPjxsaW5lIHgxPSc3NjEnIHgyPSc3NjEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzY5OCcgeDI9JzY5OCcgeTI9JzMnLz48bGluZSB4MT0nNjk4JyB4Mj0nNjk4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MzQnIHgyPSc2MzQnIHkyPSczJy8+PGxpbmUgeDE9JzYzNCcgeDI9JzYzNCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTcxJyB4Mj0nNTcxJyB5Mj0nMycvPjxsaW5lIHgxPSc1NzEnIHgyPSc1NzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzUwOCcgeDI9JzUwOCcgeTI9JzMnLz48bGluZSB4MT0nNTA4JyB4Mj0nNTA4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0NDQnIHgyPSc0NDQnIHkyPSczJy8+PGxpbmUgeDE9JzQ0NCcgeDI9JzQ0NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzgxJyB4Mj0nMzgxJyB5Mj0nMycvPjxsaW5lIHgxPSczODEnIHgyPSczODEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzMxNycgeDI9JzMxNycgeTI9JzMnLz48bGluZSB4MT0nMzE3JyB4Mj0nMzE3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyNTQnIHgyPScyNTQnIHkyPSczJy8+PGxpbmUgeDE9JzI1NCcgeDI9JzI1NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTkwJyB4Mj0nMTkwJyB5Mj0nMycvPjxsaW5lIHgxPScxOTAnIHgyPScxOTAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzEyNycgeDI9JzEyNycgeTI9JzMnLz48bGluZSB4MT0nMTI3JyB4Mj0nMTI3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MycgeDI9JzYzJyB5Mj0nMycvPjxsaW5lIHgxPSc2MycgeDI9JzYzJyB5MT0nMzEnIHkyPScyOCcvPjwvZz48Zz48Zy8+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzIsLTExKSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoOTUyKSc+PHRleHQgeT0nNic+MTY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4zMTwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyLDE1KSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDc2KSc+PHRleHQgeT0nNic+PHRzcGFuPldQUkk8L3RzcGFuPjwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyLDM5KScvPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="1024" height="112">
 </div>
 <div class="title">Figure 8. Additional machine-mode status (<code>mstatush</code>) register  for RV32.</div>
 </div>
@@ -3311,13 +3327,17 @@ and UPP are read-only 0.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="xlen-control">3.1.6.2. Base ISA Control in <code>mstatus</code> Register</h5>
+<h5 id="machine-double-trap">3.1.6.2. Double Trap Control in <code>mstatus</code> Register</h5>
+
+</div>
+<div class="sect4">
+<h5 id="xlen-control">3.1.6.3. Base ISA Control in <code>mstatus</code> Register</h5>
 <div class="paragraph">
 <p>[CV32A65X] The SXL and UXL fields do not exist.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_memory_privilege_in_mstatus_register">3.1.6.3. Memory Privilege in <code>mstatus</code> Register</h5>
+<h5 id="_memory_privilege_in_mstatus_register">3.1.6.4. Memory Privilege in <code>mstatus</code> Register</h5>
 <div class="paragraph">
 <p>[CV32A65X] As U-Mode is not implemented, the MPRV (Modify PRiVilege) bit is read-only 0.
 Loads and stores behave as normal, using the translation and protection
@@ -3328,7 +3348,7 @@ mechanisms of the current privilege mode.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_endianness_control_in_mstatus_and_mstatush_registers">3.1.6.4. Endianness Control in <code>mstatus</code> and <code>mstatush</code> Registers</h5>
+<h5 id="_endianness_control_in_mstatus_and_mstatush_registers">3.1.6.5. Endianness Control in <code>mstatus</code> and <code>mstatush</code> Registers</h5>
 <div class="paragraph">
 <p>The MBE, SBE, and UBE bits in <code>mstatus</code> and <code>mstatush</code> are <strong>WARL</strong> fields that
 control the endianness of memory accesses other than instruction
@@ -3347,7 +3367,7 @@ big-endian (MBE=1).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="virt-control">3.1.6.5. Virtualization Support in <code>mstatus</code> Register</h5>
+<h5 id="virt-control">3.1.6.6. Virtualization Support in <code>mstatus</code> Register</h5>
 <div class="paragraph">
 <p>The TVM (Trap Virtual Memory) bit is a <strong>WARL</strong> field that supports intercepting
 supervisor virtual-memory management operations.</p>
@@ -3372,7 +3392,7 @@ supervisor exception return instruction, SRET.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_extension_context_status_in_mstatus_register">3.1.6.6. Extension Context Status in <code>mstatus</code> Register</h5>
+<h5 id="_extension_context_status_in_mstatus_register">3.1.6.7. Extension Context Status in <code>mstatus</code> Register</h5>
 <div class="paragraph">
 <p>Supporting substantial extensions is one of the primary goals of RISC-V,
 and hence we define a standard interface to allow unchanged
@@ -3413,7 +3433,7 @@ illegal-instruction exception.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.7. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</h5>
+<h5 id="_previous_expected_landing_pad_elp_state_in_mstatus_register">3.1.6.8. Previous Expected Landing Pad (ELP) State in <code>mstatus</code> Register</h5>
 <div class="paragraph">
 <p>[CV32A65X] As the Zicfilp extension is not supported,
 the <code>SPELP</code> and <code>MPELP</code> fields are read-only zero.</p>
@@ -3816,6 +3836,7 @@ Counter-overflow interrupt<br>
 0<br>
 0<br>
 0<br>
+0<br>
 0</p></td>
 <td class="tableblock halign-right valign-top"><p class="tableblock">0<br>
 1<br>
@@ -3833,7 +3854,8 @@ Counter-overflow interrupt<br>
 13<br>
 14<br>
 15<br>
-16-17<br>
+16<br>
+17<br>
 18<br>
 19<br>
 20-23<br>
@@ -3857,6 +3879,7 @@ Instruction page fault<br>
 Load page fault<br>
 <em>Reserved</em><br>
 Store/AMO page fault<br>
+Double trap<br>
 <em>Reserved</em><br>
 Software check<br>
 Hardware error<br>
@@ -4111,7 +4134,7 @@ MRET sets the <code>pc</code> to the value stored in the <code>mepc</code> regis
 implementation that the current hart can be stalled until an interrupt
 might need servicing. This instruction
 cannot raise an illegal-instruction exception because TW=0 in <code>mstatus</code>, as
-described in <a href="#virt-control">Section 3.1.6.5</a>.</p>
+described in <a href="#virt-control">Section 3.1.6.6</a>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -4597,7 +4620,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="supervisor">10. Supervisor-Level ISA, Version 1.13</h2>
+<h2 id="smdbltrp">10. "Smdbltrp" Double Trap Extension, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4605,7 +4628,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="Sstc">11. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</h2>
+<h2 id="supervisor">11. Supervisor-Level ISA, Version 1.13</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4613,7 +4636,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="Sscofpmf">12. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</h2>
+<h2 id="Sstc">12. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4621,7 +4644,7 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="hypervisor">13. "H" Extension for Hypervisor Support, Version 1.0</h2>
+<h2 id="Sscofpmf">13. "Sscofpmf" Extension for Count Overflow and Mode-Based Filtering, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -4629,7 +4652,15 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="priv-cfi">14. Control-flow Integrity (CFI)</h2>
+<h2 id="hypervisor">14. "H" Extension for Hypervisor Support, Version 1.0</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CV32A65X: This extension is not supported.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="priv-cfi">15. Control-flow Integrity (CFI)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: The Zicfiss extension is not supported.</p>
@@ -4640,7 +4671,15 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_risc_v_privileged_instruction_set_listings">15. RISC-V Privileged Instruction Set Listings</h2>
+<h2 id="ssdbltrp">16. "Ssdbltrp" Double Trap Extension, Version 1.0</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CV32A65X: This extension is not supported.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_risc_v_privileged_instruction_set_listings">17. RISC-V Privileged Instruction Set Listings</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This chapter presents instruction-set listings for all instructions
@@ -4660,10 +4699,10 @@ manual.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_history">16. History</h2>
+<h2 id="_history">18. History</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_research_funding_at_uc_berkeley">16.1. Research Funding at UC Berkeley</h3>
+<h3 id="_research_funding_at_uc_berkeley">18.1. Research Funding at UC Berkeley</h3>
 <div class="paragraph">
 <p>Development of the RISC-V architecture and implementations has been
 partially funded by the following sponsors.</p>
@@ -4708,7 +4747,7 @@ inferred.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 20240528<br>
+Version 20240612<br>
 </div>
 </div>
 </body>

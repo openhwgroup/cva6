@@ -194,6 +194,7 @@ endif::[]
 
 <<<
 ifeval::[{RVA} == true]
+
 [%autowidth.stretch,float="center",align="center",cols="^2m,^2m,^2m,^2m,<2m,>3m, <4m, >4m, <4m, >4m, <4m, >4m, <4m, >4m, <6m"]
 |===
 15+^|

@@ -7,7 +7,7 @@
 This document describes the RISC-V unprivileged architecture tailored for
 OpenHW Group {ohg-config}.
 
-[.big]*_Preface to Document Version 20240528_*
+[.big]*_Preface to Document Version 20240612_*
 
 This document describes the RISC-V unprivileged architecture.
 

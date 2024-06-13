@@ -6,10 +6,10 @@
 This document describes the RISC-V privileged architecture tailored for
 OpenHW Group {ohg-config}.
 
-[.big]*_Preface to Version 20240528_*
+[.big]*_Preface to Version 20240612_*
 
 This document describes the RISC-V privileged architecture. This
-release, version 20240528, contains the following versions of the RISC-V ISA
+release, version 20240612, contains the following versions of the RISC-V ISA
 modules:
 
 [%autowidth,float="center",align="center",cols="^,<,^",options="header",]
@@ -22,6 +22,7 @@ modules:
 **Smcntrpmf* +
 *Smrnmi Extension* +
 *Smcdeleg* +
+*Smdbltrp* +
 _Supervisor ISA_ +
 *Svade Extension* +
 *Svnapot Extension* +
@@ -30,9 +31,12 @@ _Supervisor ISA_ +
 *Svadu Extension* +
 *Sstc* +
 *Sscofpmf* +
-*Hypervisor ISA*
+*Ssdbltrp* +
+*Hypervisor ISA* +
+_Shlcofideleg_
 
 |_1.13_ +
+*1.0* +
 *1.0* +
 *1.0* +
 *1.0* +
@@ -47,7 +51,9 @@ _1.13_ +
 *1.0* +
 *1.0* +
 *1.0* +
-*1.0*
+*1.0* +
+*1.0* +
+_0.1_
 
 |_Draft_ +
 *Ratified* +
@@ -57,6 +63,7 @@ _1.13_ +
 *Ratified* +
 *Ratified* +
 _Draft_ +
+_Draft_ +
 *Ratified* +
 *Ratified* +
 *Ratified* +
@@ -64,7 +71,9 @@ _Draft_ +
 *Ratified* +
 *Ratified* +
 *Ratified* +
-*Ratified*
+_Draft_ +
+*Ratified* +
+_Draft_
 |===
 
 The following changes have been made since version 1.12 of the Machine and
@@ -77,6 +86,8 @@ anticipated to cause software portability problems in practice:
 Additionally, the following compatible changes have been
 made to the Machine and Supervisor ISAs since version 1.12:
 
+* Defined the `misa`.B field to reflect that the B extension has been
+implemented.
 * Defined the `misa`.V field to reflect that the V extension has been
 implemented.
 * Defined the RV32-only `medelegh` and `hedelegh` CSRs.
@@ -86,7 +97,7 @@ implemented.
 * Defined hardware error and software check exception codes.
 * Specified synchronization requirements when changing the PBMTE fields
 in `menvcfg` and `henvcfg`.
-* Exposed count-overflow interrups to VS-mode.
+* Exposed count-overflow interrups to VS-mode via the Shlcofideleg extension.
 
 Finally, the following clarifications and document improvments have been made
 since the last document release:

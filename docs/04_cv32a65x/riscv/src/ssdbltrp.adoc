@@ -1,0 +1,6 @@
+[[ssdbltrp]]
+== "Ssdbltrp" Double Trap Extension, Version 1.0
+
+ifeval::[{RVZssdbltrp} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

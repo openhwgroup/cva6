@@ -15,19 +15,19 @@ setup:
 
 priv-pdf: setup
 	cd build/riscv-isa-manual/build; make priv-pdf
-	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.pdf priv-isa-cv32a65x.pdf
+	cp ./build/riscv-isa-manual/build/riscv-privileged.pdf priv-isa-cv32a65x.pdf
 
 priv-html: setup
 	cd build/riscv-isa-manual/build; make priv-html
-	cp ./build/riscv-isa-manual/build/priv-isa-asciidoc.html priv-isa-cv32a65x.html
+	cp ./build/riscv-isa-manual/build/riscv-privileged.html priv-isa-cv32a65x.html
 
 unpriv-pdf: setup
 	cd build/riscv-isa-manual/build; make unpriv-pdf
-	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.pdf unpriv-isa-cv32a65x.pdf
+	cp ./build/riscv-isa-manual/build/riscv-unprivileged.pdf unpriv-isa-cv32a65x.pdf
 
 unpriv-html: setup
 	cd build/riscv-isa-manual/build; make unpriv-html
-	cp ./build/riscv-isa-manual/build/unpriv-isa-asciidoc.html unpriv-isa-cv32a65x.html
+	cp ./build/riscv-isa-manual/build/riscv-unprivileged.html unpriv-isa-cv32a65x.html
 
 clean:
 	rm -rf build

@@ -1,0 +1,6 @@
+[[smdbltrp]]
+== "Smdbltrp" Double Trap Extension, Version 1.0
+
+ifeval::[{RVZsmdbltrp} == false]
+{ohg-config}: This extension is not supported.
+endif::[]

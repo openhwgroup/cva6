@@ -1,0 +1,10 @@
+[[unpriv-cfi]]
+== Control-flow Integrity (CFI)
+
+ifeval::[{RVZicfiss} == false]
+{ohg-config}: The Zicfiss extension is not supported.
+endif::[]
+
+ifeval::[{RVZicfilp} == false]
+{ohg-config}: The Zicfilp extension is not supported.
+endif::[]

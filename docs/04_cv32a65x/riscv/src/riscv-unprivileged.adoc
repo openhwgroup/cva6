@@ -2,7 +2,7 @@
 = The RISC-V Instruction Set Manual for CV32A65X: Volume I - Unprivileged Architecture
 :description: Volume I - Unprivileged Architecture
 :company: RISC-V.org
-:revnumber: 20240528
+:revnumber: 20240612
 //:revremark: Pre-release version
 :url-riscv: http://riscv.org
 :doctype: book
@@ -29,7 +29,8 @@
 :bibtex-throw: false
 :icons: font
 :lang: en
-:listing-caption: Example
+:example-caption: Example
+:listing-caption: Listing
 :sectnums:
 :toc: left
 :toclevels: 5
@@ -43,6 +44,8 @@ endif::[]
 :chapter-refsig: Chapter
 :section-refsig: Section
 :appendix-refsig: Appendix
+// Uncomment :data-uri: if your eBook reader is not capable of rendering
+// embedded images. One known affected device is PocketBook InkPad 3.
 :data-uri:
 :hide-uri-scheme:
 :stem: latexmath
@@ -181,6 +184,7 @@ include::m-st-ext.adoc[]
 include::a-st-ext.adoc[]
 include::zawrs.adoc[]
 include::zacas.adoc[]
+include::zabha.adoc[]
 include::rvwmo.adoc[]
 include::ztso-st-ext.adoc[]
 include::cmo.adoc[]
@@ -188,6 +192,7 @@ include::f-st-ext.adoc[]
 include::d-st-ext.adoc[]
 include::q-st-ext.adoc[]
 include::zfh.adoc[]
+include::bfloat16.adoc[]
 include::zfa.adoc[]
 include::zfinx.adoc[]
 include::c-st-ext.adoc[]
@@ -198,6 +203,7 @@ include::p-st-ext.adoc[]
 include::v-st-ext.adoc[]
 include::scalar-crypto.adoc[]
 include::vector-crypto.adoc[]
+include::unpriv-cfi.adoc[]
 include::rv-32-64g.adoc[]
 include::extending.adoc[]
 include::naming.adoc[]
