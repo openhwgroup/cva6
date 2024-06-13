@@ -188,7 +188,7 @@ hwconfig:
 
 spyglass:
   extends:
-    - .fe_smoke_test
+    - .synthesis_test
   variables:
     DV_TARGET: cv32a65x
     DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors"
