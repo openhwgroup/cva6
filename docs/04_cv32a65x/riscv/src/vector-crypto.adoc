@@ -1,5 +1,5 @@
 [[vector-crypto]]
-== Cryptography Extensions: Vector Instructions, Version 1.0.0
+== Cryptography Extensions: Vector Instructions, Version 1.0
 
 ifeval::[{RVZvk} == false]
 {ohg-config}: These extensions are not supported.

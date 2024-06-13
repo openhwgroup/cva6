@@ -1,0 +1,6 @@
+[[zabha]]
+== "Zabha" Extension for Byte and Halfword Atomic Memory Operations, Version 1.0.0
+
+ifeval::[{RVZabha} == false]
+{ohg-config}: This extension is not supported.
+endif::[]
