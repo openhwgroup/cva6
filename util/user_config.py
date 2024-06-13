@@ -253,15 +253,9 @@ def write_file(path, lines):
 # Command line interface
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        target = sys.argv[1]
-        config = get_config(f"core/include/{target}_config_pkg.sv")
-        for k, v in config.items():
-            print(f"{k} = {v}")
-    elif len(sys.argv) > 1:
-        base, changes = parse_derive_args(sys.argv[1:])
+    base, changes = parse_derive_args(sys.argv[1:])
 
-        input_file = f"core/include/{base}_config_pkg.sv"
-        output_file = "core/include/gen_config_pkg.sv"
+    input_file = f"core/include/{base}_config_pkg.sv"
+    output_file = "core/include/gen_config_pkg.sv"
 
-        derive_config(input_file, output_file, changes)
+    derive_config(input_file, output_file, changes)
