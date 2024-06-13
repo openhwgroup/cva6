@@ -3,17 +3,38 @@
 #   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #   Author: Abdessamii Oukalrazqou
 
+misa:
+    rv32:
+        mxl:
+            type:
+                ro_constant: 0x1
+mip:
+    rv32:
+        meip:
+            type:
+                ro_variable:
+                      - 0:1    
+        mtip:
+            type:
+                ro_variable:
+                      - 0:1              
+mstatush:
+    address: 784      
+
+mcountinhibit: 
+    rv32 : 
+        accessible : false
+      
 #  Range control
 pmpaddr : 
-    range : 16
+    range: 16
+    
 pmpcfg :
     range : 4
- #  Exclude mode 
+ # Exclude mode 
 exclude :         
-    key : priv_mode       
-    cond : S
+   key : priv_mode       
+   cond : S
 exclude :         
     key : priv_mode       
     cond : U
-    
-
