@@ -30,15 +30,18 @@ class uvme_cva6_cntxt_c extends uvm_object;
   typedef uvml_mem_c#(cva6_config_pkg::CVA6ConfigAxiAddrWidth)   uvml_mem_cva6;
 
    // Agent context handles
-   uvma_clknrst_cntxt_c          clknrst_cntxt;
-   uvma_axi_cntxt_c              axi_cntxt;
+   uvma_clknrst_cntxt_c    clknrst_cntxt;
+   uvma_axi_cntxt_c        axi_cntxt;
+   uvma_obi_memory_cntxt_c        obi_memory_instr_cntxt;
+   //TODO :uvma_obi_memory_cntxt_c        obi_memory_data_cntxt;
    uvma_cva6_core_cntrl_cntxt_c  core_cntrl_cntxt;
    uvma_rvfi_cntxt_c             rvfi_cntxt;
    uvma_interrupt_cntxt_c        interrupt_cntxt;
    uvma_cvxif_cntxt_c            cvxif_cntxt;
 
    // Memory modelling
-   rand uvml_mem_cva6      mem;
+   rand uvml_mem_cva6   mem;
+   rand uvml_mem_c      mem_obi;
 
    // Handle to debug_req interface
    virtual uvma_debug_if   debug_vif;
@@ -51,6 +54,8 @@ class uvme_cva6_cntxt_c extends uvm_object;
    `uvm_object_utils_begin(uvme_cva6_cntxt_c)
       `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
       `uvm_field_object(axi_cntxt,     UVM_DEFAULT)
+      `uvm_field_object(obi_memory_instr_cntxt,     UVM_DEFAULT)
+      //TODO :`uvm_field_object(obi_memory_data_cntxt,     UVM_DEFAULT)
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
       `uvm_field_object(rvfi_cntxt,      UVM_DEFAULT)
       `uvm_field_object(interrupt_cntxt,      UVM_DEFAULT)
@@ -58,10 +63,12 @@ class uvme_cva6_cntxt_c extends uvm_object;
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
       `uvm_field_object(mem, UVM_DEFAULT)
+      `uvm_field_object(mem_obi, UVM_DEFAULT)
    `uvm_object_utils_end
 
    constraint mem_cfg_cons {
       mem.mem_default == MEM_DEFAULT_0;
+      mem_obi.mem_default == MEM_DEFAULT_0;
    }
 
    /**
@@ -79,6 +86,8 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    clknrst_cntxt      = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
    core_cntrl_cntxt   = uvma_cva6_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    axi_cntxt          = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
+   obi_memory_instr_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
+   // TODO:obi_memory_data_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt");
    mem = uvml_mem_cva6::type_id::create("mem");
    rvfi_cntxt         = uvma_rvfi_cntxt_c#()::type_id::create("rvfi_cntxt");
    interrupt_cntxt    = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
@@ -88,6 +97,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    sample_cntxt_e = new("sample_cntxt_e");
 
    mem.mem_default = MEM_DEFAULT_0;
+   mem_obi.mem_default = MEM_DEFAULT_0;
 
 endfunction : new
 
