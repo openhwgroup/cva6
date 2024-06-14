@@ -18,8 +18,8 @@ all: priv-pdf priv-html unpriv-pdf unpriv-html
 setup:
 	mkdir -p build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/riscv-isa-manual/* build/riscv-isa-manual
-	cp -r src build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/src build/riscv-isa-manual
+	cp -r src build/riscv-isa-manual
 
 priv-pdf: setup
 	cd build/riscv-isa-manual/build; make priv-pdf
