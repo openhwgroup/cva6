@@ -194,6 +194,7 @@ module csr_regfile
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
 
+  
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
   logic virtual_read_access_exception, virtual_update_access_exception, virtual_privilege_violation;
@@ -306,7 +307,8 @@ module csr_regfile
       (riscv::csr_t'(csr_addr_i)), v_q
   ) : csr_addr;
   assign fs_o = mstatus_q.fs;
-  assign vfs_o = (CVA6Cfg.RVH) ? vsstatus_q.fs : riscv::Off;
+  assign vsstatus_q.fs = CVA6Cfg.RVH ? riscv::Off : 2'b00;
+  assign vfs_o = (vsstatus_q.fs) ? vsstatus_q.fs : riscv::Off;
   assign vs_o = mstatus_q.vs;
   // ----------------
   // CSR Read logic
@@ -811,10 +813,13 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
-
-    satp            = satp_q;
-    hgatp           = hgatp_q;
-    vsatp           = vsatp_q;
+    if (CVA6Cfg.RVS) begin
+      satp            = satp_q;
+    end
+    if (CVA6Cfg.RVH) begin
+      hgatp           = hgatp_q;
+      vsatp           = vsatp_q;
+    end
     instret         = instret_q;
 
     mcountinhibit_d = mcountinhibit_q;
@@ -876,17 +881,21 @@ module csr_regfile
       mtvec_d = mtvec_q;
     end
 
-    medeleg_d                = medeleg_q;
-    mideleg_d                = mideleg_q;
+    if (CVA6Cfg.RVS) begin
+      medeleg_d                = medeleg_q;
+      mideleg_d                = mideleg_q;
+    end
     mip_d                    = mip_q;
     mie_d                    = mie_q;
     mepc_d                   = mepc_q;
     mcause_d                 = mcause_q;
     mcounteren_d             = mcounteren_q;
     mscratch_d               = mscratch_q;
+    if (CVA6Cfg.RVH) begin
+      mtinst_d                 = mtinst_q;
+      mtval2_d                 = mtval2_q;
+    end
     mtval_d                  = mtval_q;
-    mtinst_d                 = mtinst_q;
-    mtval2_d                 = mtval2_q;
     fiom_d                   = fiom_q;
     dcache_d                 = dcache_q;
     icache_d                 = icache_q;
@@ -902,6 +911,8 @@ module csr_regfile
       hgatp_d                  = hgatp_q;
     end
 
+      hedeleg_d                = hedeleg_q;
+
     if (CVA6Cfg.RVS) begin
       sepc_d                   = sepc_q;
       scause_d                 = scause_q;
@@ -910,16 +921,14 @@ module csr_regfile
       sscratch_d               = sscratch_q;
       stval_d                  = stval_q;
       satp_d                   = satp_q;
-      hedeleg_d                = hedeleg_q;
-      hideleg_d                = hideleg_q;
       hgeie_d                  = hgeie_q;
       hcounteren_d             = hcounteren_q;
       htinst_d                 = htinst_q;
       htval_d                  = htval_q;
+      en_ld_st_g_translation_d = en_ld_st_g_translation_q;
     end
 
     en_ld_st_translation_d   = en_ld_st_translation_q;
-    en_ld_st_g_translation_d = en_ld_st_g_translation_q;
     dirty_fp_state_csr       = 1'b0;
 
     pmpcfg_d                 = pmpcfg_q;
@@ -1999,31 +2008,35 @@ module csr_regfile
       end
     end
 
-    if (CVA6Cfg.RVH && sret && v_q) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o          = 1'b1;
-      // return the previous supervisor interrupt enable flag
-      vsstatus_d.sie  = vsstatus_q.spie;
-      // restore the previous privilege level
-      priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
-      // set spp to user mode
-      vsstatus_d.spp  = 1'b0;
-      // set spie to 1
-      vsstatus_d.spie = 1'b1;
+    if (CVA6Cfg.RVH) begin
+      if (sret && v_q) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o          = 1'b1;
+        // return the previous supervisor interrupt enable flag
+        vsstatus_d.sie  = vsstatus_q.spie;
+        // restore the previous privilege level
+        priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
+        // set spp to user mode
+        vsstatus_d.spp  = 1'b0;
+        // set spie to 1
+        vsstatus_d.spie = 1'b1;
+      end
     end
 
     // return from debug mode
-    if (CVA6Cfg.DebugEn && dret) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o     = 1'b1;
-      // restore the previous privilege level
-      priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
-      if (CVA6Cfg.RVH) begin
-        // restore the previous virtualization mode
-        v_d = dcsr_q.v;
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o     = 1'b1;
+        // restore the previous privilege level
+        priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
+        if (CVA6Cfg.RVH) begin
+          // restore the previous virtualization mode
+          v_d = dcsr_q.v;
+        end
+        // actually return from debug mode
+        debug_mode_d = 1'b0;
       end
-      // actually return from debug mode
-      debug_mode_d = 1'b0;
     end
   end
 
@@ -2075,9 +2088,8 @@ module csr_regfile
 
   assign irq_ctrl_o.mie = mie_q;
   assign irq_ctrl_o.mip = mip_q;
-  if (CVA6Cfg.RVH) begin
-    assign irq_ctrl_o.sie = (v_q) ? vsstatus_q.sie : mstatus_q.sie;
-  end
+  assign vsstatus_q.sie = CVA6Cfg.RVH ? 1'b1 : 1'b0;
+  assign irq_ctrl_o.sie = (vsstatus_q.sie && v_q) ? vsstatus_q.sie : mstatus_q.sie;
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
   assign irq_ctrl_o.global_enable = (~debug_mode_q)
@@ -2277,8 +2289,10 @@ module csr_regfile
       epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
     end
     // we are returning from debug mode, to take the dpc register
-    if (CVA6Cfg.DebugEn && dret) begin
-      epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+      end
     end
   end
 
@@ -2313,7 +2327,7 @@ module csr_regfile
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
   // MMU outputs
-  assign satp_ppn_o = satp_q.ppn;
+  assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
   assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
@@ -2341,10 +2355,12 @@ module csr_regfile
   end
   assign mxr_o = mstatus_q.mxr;
   assign vmxr_o = CVA6Cfg.RVH ? vsstatus_q.mxr : '0;
-  assign tvm_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
+  assign hstatus_q.vtvm = CVA6Cfg.RVH ? 1'b1 : 1'b0;
+  assign tvm_o = (hstatus_q.vtvm && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
   assign tw_o = mstatus_q.tw;
   assign vtw_o = CVA6Cfg.RVH ? hstatus_q.vtw : '0;
-  assign tsr_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  assign hstatus_q.vtsr = CVA6Cfg.RVH ? 1'b1 : 1'b0;
+  assign tsr_o = (hstatus_q.vtsr && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
   assign halt_csr_o = wfi_q;
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];
@@ -2357,7 +2373,7 @@ module csr_regfile
   // determine if mprv needs to be considered if in debug mode
   assign mprv = (CVA6Cfg.DebugEn && debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
   assign debug_mode_o = debug_mode_q;
-  assign single_step_o = dcsr_q.step;
+  assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : '0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
   // sequential process
