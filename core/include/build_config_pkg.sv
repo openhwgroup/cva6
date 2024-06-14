@@ -160,6 +160,8 @@ package build_config_pkg;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
 
+    cfg.PmpPresent = CVA6Cfg.PmpPresent;
+
     return cfg;
   endfunction
 

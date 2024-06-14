@@ -196,6 +196,8 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    /// Enable PMP without MMU
+    bit                          PmpPresent;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -334,6 +336,8 @@ package config_pkg;
     vm_mode_t MODE_SV;
     int unsigned SV;
     int unsigned SVX;
+
+    bit PmpPresent;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
