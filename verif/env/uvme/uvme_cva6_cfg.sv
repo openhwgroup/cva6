@@ -38,11 +38,12 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand int unsigned             sys_clk_period;
 
    // Agent cfg handles
-   rand uvma_clknrst_cfg_c    clknrst_cfg;
-   rand uvma_axi_cfg_c        axi_cfg;
-   rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
-   rand uvma_isacov_cfg_c                 isacov_cfg;
-   rand uvma_interrupt_cfg_c              interrupt_cfg;
+   rand uvma_clknrst_cfg_c          clknrst_cfg;
+   rand uvma_axi_cfg_c              axi_cfg;
+   rand uvma_obi_memory_cfg_c       obi_cfg;
+   rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
+   rand uvma_isacov_cfg_c           isacov_cfg;
+   rand uvma_interrupt_cfg_c        interrupt_cfg;
 
    // Zicond extension
    rand bit                      ext_zicond_supported;
@@ -79,6 +80,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
 
       `uvm_field_object(axi_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(obi_cfg, UVM_DEFAULT)
 
       `uvm_field_object(rvfi_cfg,    UVM_DEFAULT)
 
@@ -203,6 +206,26 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       rvfi_cfg.nret                         == CVA6Cfg.NrCommitPorts;
       unified_traps                         == 0;
       axi_cfg.rand_channel_delay_enabled    == 0;
+      obi_cfg.drv_mode                      == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_cfg.version                       == UVMA_OBI_MEMORY_VERSION_1P2;
+      //AZ: Issue in CVA6Cfg.ObiFetchbusCfg values, to be fixed
+      //obi_cfg.auser_width                   == CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth;
+      //obi_cfg.wuser_width                   == CVA6Cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth;
+      //obi_cfg.ruser_width                   == CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth;
+      //obi_cfg.addr_width                    == CVA6Cfg.ObiFetchbusCfg.AddrWidth ;
+      //obi_cfg.data_width                    == CVA6Cfg.ObiFetchbusCfg.DataWidth ;
+      //obi_cfg.id_width                      == CVA6Cfg.ObiFetchbusCfg.IdWidth   ;
+      //obi_cfg.achk_width                    == CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth ;
+      //obi_cfg.rchk_width                    == CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth ;
+
+      obi_cfg.auser_width                   == 1;
+      obi_cfg.wuser_width                   == 32;
+      obi_cfg.ruser_width                   == 32;
+      obi_cfg.addr_width                    == 34;
+      obi_cfg.data_width                    == 32;
+      obi_cfg.id_width                      == 4;
+      obi_cfg.achk_width                    == 1;
+      obi_cfg.rchk_width                    == 1;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active        == UVM_ACTIVE;
@@ -214,6 +237,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled   == 0;
          axi_cfg.trn_log_enabled       == 1;
+         obi_cfg.trn_log_enabled       == 1;
          rvfi_cfg.trn_log_enabled      == 1;
          isacov_cfg.trn_log_enabled    == 1;
       }
@@ -221,6 +245,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled    == 1;
          axi_cfg.cov_model_enabled       == 1;
+         obi_cfg.cov_model_enabled == 1;
          interrupt_cfg.cov_model_enabled == 1;
       }
 
@@ -250,6 +275,7 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
 
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
+   obi_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    interrupt_cfg   = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
