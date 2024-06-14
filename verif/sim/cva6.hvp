@@ -725,34 +725,14 @@ plan "CVA6 Verification Master Plan";
         endfeature
         feature "CSR access";
             description = "CSR registers access.\nSpecification: Done, Dvplan: Done, Verification execution: Done";
-            feature CYCLE;
-                measure Group CYCLE;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.cycle.cycle__write_cg";
-                endmeasure
-            endfeature
-            feature CYCLEH;
-                measure Group CYCLEH;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.cycleh.cycleh__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.cycleh.cycleh__write_cg";
-                endmeasure
-            endfeature
             feature ICACHE;
                 measure Group ICACHE;
                     source = "group instance: uvme_cva6_pkg.csr_reg_cov.icache.icache__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.icache.icache__write_cg";
                 endmeasure
             endfeature
-            feature INSTRET;
-                measure Group INSTRET;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.instret.instret__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.instret.instret__write_cg";
-                endmeasure
-            endfeature
-            feature INSTRETH;
-                measure Group INSTRETH;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.instreth.instreth__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.instreth.instreth__write_cg";
-                endmeasure
-            endfeature
             feature MARCHID;
                 measure Group MARCHID;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.marchid.marchid__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.marchid.marchid__write_cg";
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.marchid.marchid__read_cg";
                 endmeasure
             endfeature
             feature MCAUSE;
@@ -767,7 +747,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature MHARTID;
                 measure Group MHARTID;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhartid.mhartid__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.mhartid.mhartid__write_cg";
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mhartid.mhartid__read_cg";
                 endmeasure
             endfeature
             feature MIE;
@@ -777,7 +757,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature MIMPID;
                 measure Group MIMPID;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mimpid.mimpid__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.mimpid.mimpid__write_cg";
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mimpid.mimpid__read_cg";
                 endmeasure
             endfeature
             feature MIP;
@@ -817,7 +797,7 @@ plan "CVA6 Verification Master Plan";
             endfeature
             feature MVENDORID;
                 measure Group MVENDORID;
-                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mvendorid.mvendorid__read_cg", "group instance: uvme_cva6_pkg.csr_reg_cov.mvendorid.mvendorid__write_cg";
+                    source = "group instance: uvme_cva6_pkg.csr_reg_cov.mvendorid.mvendorid__read_cg";
                 endmeasure
             endfeature
             feature PMPADDR0;

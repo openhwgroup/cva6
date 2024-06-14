@@ -48,10 +48,18 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Zicond extension
    rand bit                      ext_zicond_supported;
+
+   // HPDcache support
    rand bit                      HPDCache_supported;
 
-   //pmp entries
+   // pmp entries
    rand int                      nr_pmp_entries;
+
+   // Zihpm extension
+   rand bit                      ext_zihpm_supported;
+
+   // hypervisor mode
+   rand bit                      mode_h_supported;
 
    // Handle to RTL configuration
    rand cva6_cfg_t         CVA6Cfg;
@@ -66,6 +74,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
       `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
+      `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
+      `uvm_field_int (                         mode_h_supported            , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -125,9 +135,12 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zicsr_supported    == 1;
       ext_zicond_supported   == CVA6Cfg.RVZiCond;
       ext_zcb_supported      == CVA6Cfg.RVZCB;
+      ext_zihpm_supported    == 0;
+      ext_zicntr_supported   == 0;
 
       mode_s_supported       == CVA6Cfg.RVS;
       mode_u_supported       == CVA6Cfg.RVU;
+      mode_h_supported       == CVA6Cfg.RVH;
 
       pmp_supported          == (CVA6Cfg.NrPMPEntries > 0);
       nr_pmp_entries         == 16;
@@ -284,7 +297,6 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    super.set_unsupported_csr_mask();
 
    // Remove unsupported CSRs for Embedded configuration
-   unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL] = 1;
    unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL2] = 1;
    unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
    unsupported_csr_mask[uvma_core_cntrl_pkg::MTINST] = 1;
@@ -292,15 +304,46 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    // Add supported CSRs for Embedded configuration
    for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
       unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMEVENT3+i] = 0;
-      unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3+i] = 0;
-      unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3H+i] = 0;
+      if (xlen == 32) begin
+         unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3+i] = 0;
+         unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3H+i] = 0;
+      end
+      else if (xlen == 64) begin
+         unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3+i] = 1;
+         unsupported_csr_mask[uvma_core_cntrl_pkg::MHPMCOUNTER3H+i] = 1;
+      end
    end
 
-   unsupported_csr_mask[uvma_core_cntrl_pkg::MSTATUSH] = 0;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::CYCLE] = 0;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::INSTRET] = 0;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::CYCLEH] = 0;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::INSTRETH] = 0;
+   // Zihpm extension CSRs
+   if (ext_zihpm_supported) begin
+      for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
+         unsupported_csr_mask[uvma_core_cntrl_pkg::HPMCOUNTER3+i] = 0;
+         if (xlen == 32) begin
+            unsupported_csr_mask[uvma_core_cntrl_pkg::HPMCOUNTER3H+i] = 0;
+         end
+         else if (xlen ==64) begin
+            unsupported_csr_mask[uvma_core_cntrl_pkg::HPMCOUNTER3H+i] = 1;
+         end
+      end
+   end
+   else begin
+      for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
+         unsupported_csr_mask[uvma_core_cntrl_pkg::HPMCOUNTER3+i] = 1;
+         unsupported_csr_mask[uvma_core_cntrl_pkg::HPMCOUNTER3H+i] = 1;
+      end
+   end
+
+   // Upper Machine mode CSRs
+   if (xlen == 32) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MSTATUSH] = 0;
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MCYCLEH] = 0;
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MINSTRETH] = 0;
+   end
+   else if (xlen == 64) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MSTATUSH] = 1;
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MCYCLEH] = 1;
+      unsupported_csr_mask[uvma_core_cntrl_pkg::MINSTRETH] = 1;
+   end
 
    // Remove unsupported pmp CSRs
    if (nr_pmp_entries == 0) begin

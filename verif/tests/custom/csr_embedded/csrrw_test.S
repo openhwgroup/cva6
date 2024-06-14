@@ -3985,6 +3985,44 @@ csrrw:
     #CYCLE WR skipped since it's a RO register
 
     ##########################
+    #MTVAL testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h162b0d42}
+    ##########################
+    #MTVAL Write value 0xffffffff
+    li x3, 0xffffffff
+    csrw 0X343, x3
+
+    #MTVAL read value
+    csrr x14, 0X343
+
+    #MTVAL Write value 0x0
+    li x3, 0x0
+    csrw 0X343, x3
+
+    #MTVAL read value
+    csrr x14, 0X343
+
+    #MTVAL Write value 0x55555555
+    li x3, 0x55555555
+    csrw 0X343, x3
+
+    #MTVAL read value
+    csrr x14, 0X343
+
+    #MTVAL Write value 0xaaaaaaaa
+    li x3, 0xaaaaaaaa
+    csrw 0X343, x3
+
+    #MTVAL read value
+    csrr x14, 0X343
+
+    #MTVAL Write value 0x162b0d42
+    li x3, 0x162b0d42
+    csrw 0X343, x3
+
+    #MTVAL read value
+    csrr x14, 0X343
+
+    ##########################
     #MHPMCOUNTERH10 testing W/R values '{'hffffffff, 'h0, 'h55555555, 'haaaaaaaa, 'h162b0d42} 
     ##########################
     #MHPMCOUNTERH10 Write value 0xffffffff

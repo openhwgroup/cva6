@@ -35,14 +35,13 @@ covergroup cg_exception(
 
 `ifndef QUESTA
   cp_exception: coverpoint instr.cause {
-    bins NO_EXCEPTION = {0} iff (!instr.trap);
 
     bins BREAKPOINT = {3} iff (instr.trap);
 
     bins ILLEGAL_INSTR = {2} iff (instr.trap);
 
     ignore_bins IGN_ADDR_MISALIGNED_EXC = {0, 4, 6} iff (unaligned_access_supported);
-    ignore_bins IGN_INSTR_ADDR_MISALIGNED_EXC = {0} iff (ext_c_supported && instr.trap);
+    ignore_bins IGN_INSTR_ADDR_MISALIGNED_EXC = {0} iff (ext_c_supported);
     bins INSTR_ADDR_MISALIGNED = {0} iff (instr.trap);
 
     bins LD_ADDR_MISALIGNED    = {4} iff (instr.trap);
@@ -75,6 +74,11 @@ covergroup cg_exception(
 
   }
 
+  cp_trap: coverpoint instr.trap {
+    bins is_trap = {1};
+    bins no_trap = {0};
+  }
+
   cp_is_ebreak: coverpoint instr.name {
     bins is_ebreak = {uvma_isacov_pkg::EBREAK,
                       uvma_isacov_pkg::C_EBREAK};
@@ -96,14 +100,16 @@ covergroup cg_exception(
     bins is_csr_write = {1};
   }
 
+  cp_is_not_write_csr: coverpoint instr.is_csr_write() {
+    bins is_not_csr_write = {0};
+  }
+
   cp_illegal_csr: coverpoint instr.csr {
-    bins UNSUPPORTED_CSR[] = {[uvma_isacov_pkg::USTATUS:uvma_isacov_pkg::VLENB]} with (cfg_illegal_csr[item] == 1) iff(instr.trap);
+    bins UNSUPPORTED_CSR[] = {[uvma_isacov_pkg::USTATUS:uvma_isacov_pkg::MCONFIGPTR]} with (cfg_illegal_csr[item] == 1);
   }
 
   cp_ro_csr: coverpoint instr.csr {
-    bins ONLY_READ_CSR[] = {[uvma_isacov_pkg::CYCLE:uvma_isacov_pkg::HPMCOUNTER31],
-                            [uvma_isacov_pkg::CYCLEH:uvma_isacov_pkg::HPMCOUNTER31H],
-                            [uvma_isacov_pkg::MVENDORID:uvma_isacov_pkg::MHARTID]}  with (cfg_illegal_csr[item] == 0) iff(instr.trap);
+    bins ONLY_READ_CSR[] = {[uvma_isacov_pkg::USTATUS:uvma_isacov_pkg::MCONFIGPTR]} with ((cfg_illegal_csr[item] == 0) && (item[11:10] == 2'b11));
   }
 
   cp_misalign_load: coverpoint instr.group {
@@ -130,7 +136,7 @@ covergroup cg_exception(
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 
-  cross_illegal_csr : cross cp_exception, cp_illegal_csr, cp_is_csr {
+  cross_illegal_csr : cross cp_exception, cp_illegal_csr, cp_is_csr, cp_is_not_write_csr {
     ignore_bins IGN = !binsof(cp_exception) intersect{2};
   }
 

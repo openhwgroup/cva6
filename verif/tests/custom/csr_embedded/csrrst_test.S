@@ -34,9 +34,6 @@ csrrst:
     #MHPMEVENT28 read value
     csrr x14, 0x33c
 
-    #INSTRETH read value
-    csrr x14, 0xc82
-
     #MHPMCOUNTERH9 read value
     csrr x14, 0xb89
 
@@ -85,9 +82,6 @@ csrrst:
     #MHPMCOUNTER13 read value
     csrr x14, 0xb0d
 
-    #INSTRET read value
-    csrr x14, 0xc02
-
     #MHPMCOUNTERH19 read value
     csrr x14, 0xb93
 
@@ -114,9 +108,6 @@ csrrst:
 
     #MHPMCOUNTERH15 read value
     csrr x14, 0xb8f
-
-    #CYCLE read value
-    csrr x14, 0xc00
 
     #MHPMEVENT27 read value
     csrr x14, 0x33b
@@ -180,9 +171,6 @@ csrrst:
 
     #MHPMEVENT17 read value
     csrr x14, 0x331
-
-    #CYCLEH read value
-    csrr x14, 0xc80
 
     #PMPADDR10 read value
     csrr x14, 0x3ba
