@@ -47,5 +47,5 @@
 	path = verif/sim/dv
 	url = https://github.com/google/riscv-dv.git
 [submodule "docs/06_cv32a65x_riscv/riscv-isa-manual"]
-	path = docs/04_cv32a65x/riscv/riscv-isa-manual
+	path = docs/riscv-isa/riscv-isa-manual
 	url = https://github.com/riscv/riscv-isa-manual.git
