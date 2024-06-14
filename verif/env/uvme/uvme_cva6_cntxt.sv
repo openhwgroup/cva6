@@ -31,6 +31,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    uvma_clknrst_cntxt_c    clknrst_cntxt;
    uvma_cvxif_cntxt_c      cvxif_cntxt;
    uvma_axi_cntxt_c        axi_cntxt;
+   uvma_obi_memory_cntxt_c        obi_cntxt;
    uvma_cva6_core_cntrl_cntxt_c  core_cntrl_cntxt;
    uvma_rvfi_cntxt_c       rvfi_cntxt;
 
@@ -45,6 +46,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    `uvm_object_utils_begin(uvme_cva6_cntxt_c)
       `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
       `uvm_field_object(axi_cntxt,     UVM_DEFAULT)
+      `uvm_field_object(obi_cntxt,     UVM_DEFAULT)
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
       `uvm_field_object(rvfi_cntxt,      UVM_DEFAULT)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
@@ -71,6 +73,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    clknrst_cntxt   = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
    core_cntrl_cntxt   = uvma_cva6_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    axi_cntxt       = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
+   obi_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_cntxt");
    mem = uvml_mem_c#()::type_id::create("mem");
    rvfi_cntxt      = uvma_rvfi_cntxt_c#()::type_id::create("rvfi_cntxt");
 
