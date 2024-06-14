@@ -186,23 +186,6 @@ hwconfig:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
 
-spyglass:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DV_TARGET: cv32a65x
-    DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors"
-    DASHBOARD_JOB_DESCRIPTION: "Report lint errors and warnings detected by Spyglass"
-    DASHBOARD_SORT_INDEX: 5
-    DASHBOARD_JOB_CATEGORY: "Lint Check"
-  script:
-    - echo $SYN_SG_BASHRC; source $SYN_SG_BASHRC
-    - mkdir -p artifacts/lint_reports
-    - make -C spyglass design_read
-    - make -C spyglass lint_check
-    - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
-    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
-
 .synthesis_test:
   stage: heavy tests
   timeout: 2 hours
@@ -219,6 +202,23 @@ spyglass:
         compare_to: master
     - when: manual
       allow_failure: true
+
+spyglass:
+  extends:
+    - .synthesis_test
+  variables:
+    DV_TARGET: cv32a65x
+    DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors"
+    DASHBOARD_JOB_DESCRIPTION: "Report lint errors and warnings detected by Spyglass"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Lint Check"
+  script:
+    - echo $SYN_SG_BASHRC; source $SYN_SG_BASHRC
+    - mkdir -p artifacts/lint_reports
+    - make -C spyglass design_read
+    - make -C spyglass lint_check
+    - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
+    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
 
 asic-synthesis:
   extends:
