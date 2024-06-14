@@ -207,11 +207,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       obi_cfg.auser_width                   == 1;
       obi_cfg.wuser_width                   == 32;
       obi_cfg.ruser_width                   == 32;
-      obi_cfg.addr_width                    == 34 ;
-      obi_cfg.data_width                    == 32 ;
-      obi_cfg.id_width                      == 4   ;
-      obi_cfg.achk_width                    == 1 ;
-      obi_cfg.rchk_width                    == 1 ;
+      obi_cfg.addr_width                    == 34;
+      obi_cfg.data_width                    == 32;
+      obi_cfg.id_width                      == 4;
+      obi_cfg.achk_width                    == 1;
+      obi_cfg.rchk_width                    == 1;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
