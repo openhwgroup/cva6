@@ -17,6 +17,7 @@
     a specific format of registers """
 
 import argparse
+
 from libs.utils import CsrParser
 from libs.utils import IsaParser
 from libs.utils import IsaGenerator
@@ -27,22 +28,26 @@ from libs.utils import InstrstBlock
 from libs.utils import InstmdBlock
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ipxact2rst")
+    parser = argparse.ArgumentParser(description="GEN From RISC-V Config")
     parser.add_argument("-s", "--srcFile", help="yaml input file")
     parser.add_argument("-d", "--destDir", help="write generated file to dir")
     parser.add_argument("-m", "--modif", help="ISA /CSR Formatter if exist")
-    parser.add_argument("-i", "--temp", help="Full ISA Template")
+    parser.add_argument("-i", "--temp", help="Full ISA /SPIKETemplate")
     parser.add_argument("-t", "--target", help="Specifiy Config Name")
     args, unknown_args = parser.parse_known_args()
     if args.temp:
-        e = IsaParser(args.srcFile, args.temp, args.target, args.modif)
-        document = e.returnDocument()
-        generator = IsaGenerator(args.target)
-        generator.generateISA(InstrstBlock, document)
-        generator.generateISA(InstmdBlock, document)
+        if "isa" in args.temp:
+            e = IsaParser(args.srcFile, args.temp, args.target, args.modif)
+            document = e.returnDocument()
+            generator = IsaGenerator(args.target)
+            generator.generateISA(InstrstBlock, document)
+        elif "spike" in args.temp:
+            e = SpikeParser(args.srcFile, args.target)
+            document = e.returnDocument()
+            spike_generator = SpikeGenerator(args.target, args.temp, args.modif)
+            spike_generator.generateSpike(document)
     else:
         e = CsrParser(args.srcFile, args.target, args.modif)
         document = e.returnDocument()
         generator = CsrGenerator(args.target)
         generator.generateCSR(RstAddressBlock, document)
-        generator.generateCSR(MdAddressBlock, document)
