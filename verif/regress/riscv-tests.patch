@@ -1,0 +1,117 @@
+diff --git a/benchmarks/pmp/pmp.c b/benchmarks/pmp/pmp.c
+index 2ccd769..f401b1f 100644
+--- a/benchmarks/pmp/pmp.c
++++ b/benchmarks/pmp/pmp.c
+@@ -42,7 +42,7 @@ static void init_pt()
+ #else
+   uintptr_t vm_choice = SATP_MODE_SV32;
+ #endif
+-  write_csr(sptbr, ((uintptr_t)l1pt >> RISCV_PGSHIFT) |
++  write_csr(satp, ((uintptr_t)l1pt >> RISCV_PGSHIFT) |
+                    (vm_choice * (SATP_MODE & ~(SATP_MODE<<1))));
+   write_csr(pmpaddr2, -1);
+   write_csr(pmpcfg0, (PMP_NAPOT | PMP_R) << 16);
+diff --git a/env b/env
+--- a/env
++++ b/env
+@@ -1 +1 @@
+-Subproject commit 2f75dc2940f1f780b1f2d12f41daec9c92fc445a
++Subproject commit 2f75dc2940f1f780b1f2d12f41daec9c92fc445a-dirty
+diff --git a/isa/rv64mi/illegal.S b/isa/rv64mi/illegal.S
+index 5531570..e8a0317 100644
+--- a/isa/rv64mi/illegal.S
++++ b/isa/rv64mi/illegal.S
+@@ -68,19 +68,19 @@ bad4:
+   wfi
+   j fail
+ 
+-  # Make sure SFENCE.VMA and sptbr don't trap when TVM=0.
++  # Make sure SFENCE.VMA and satp don't trap when TVM=0.
+   sfence.vma
+-  csrr t0, sptbr
++  csrr t0, satp
+ bad5:
+   .word 0
+   j fail
+ 
+ bad6:
+-  # Make sure SFENCE.VMA and sptbr do trap when TVM=1.
++  # Make sure SFENCE.VMA and satp do trap when TVM=1.
+   sfence.vma
+   j fail
+ bad7:
+-  csrr t0, sptbr
++  csrr t0, satp
+   j fail
+ 
+   # Make sure SRET doesn't trap when TSR=0.
+@@ -132,7 +132,7 @@ synchronous_exception:
+   csrr t0, mepc
+ 
+   # Make sure mtval contains either 0 or the instruction word.
+-  csrr t2, mbadaddr
++  csrr t2, mtval
+   beqz t2, 1f
+   lhu t1, 0(t0)
+   xor t2, t2, t1
+diff --git a/isa/rv64mi/ma_addr.S b/isa/rv64mi/ma_addr.S
+index 721ac6a..a4bad79 100644
+--- a/isa/rv64mi/ma_addr.S
++++ b/isa/rv64mi/ma_addr.S
+@@ -98,7 +98,7 @@ mtvec_handler:
+   csrr t0, mcause
+   bne t0, s1, fail
+ 
+-  csrr t0, mbadaddr
++  csrr t0, mtval
+   bne t0, t1, fail
+ 
+   lb t0, (t0)
+diff --git a/isa/rv64si/dirty.S b/isa/rv64si/dirty.S
+index 15f3163..8a64e25 100644
+--- a/isa/rv64si/dirty.S
++++ b/isa/rv64si/dirty.S
+@@ -22,7 +22,7 @@ RVTEST_CODE_BEGIN
+   la a1, page_table_1
+   srl a1, a1, RISCV_PGSHIFT
+   or a1, a1, a0
+-  csrw sptbr, a1
++  csrw satp, a1
+   sfence.vma
+ 
+   # Set up MPRV with MPP=S, so loads and stores use S-mode
+diff --git a/isa/rv64si/icache-alias.S b/isa/rv64si/icache-alias.S
+index dbc934e..d2468eb 100644
+--- a/isa/rv64si/icache-alias.S
++++ b/isa/rv64si/icache-alias.S
+@@ -48,7 +48,7 @@ RVTEST_CODE_BEGIN
+   la a1, page_table_1
+   srl a1, a1, RISCV_PGSHIFT
+   or a1, a1, a0
+-  csrw sptbr, a1
++  csrw satp, a1
+   sfence.vma
+ 
+   # Enter supervisor mode and make sure correct page is accessed
+diff --git a/isa/rv64si/ma_fetch.S b/isa/rv64si/ma_fetch.S
+index 7d2adec..151aa4d 100644
+--- a/isa/rv64si/ma_fetch.S
++++ b/isa/rv64si/ma_fetch.S
+@@ -17,7 +17,7 @@ RVTEST_CODE_BEGIN
+   #define sscratch mscratch
+   #define sstatus mstatus
+   #define scause mcause
+-  #define sbadaddr mbadaddr
++  #define stval mtval
+   #define sepc mepc
+   #define sret mret
+   #define stvec_handler mtvec_handler
+@@ -184,7 +184,7 @@ stvec_handler:
+   bne t0, a1, fail
+ 
+   # verify that badaddr == 0 or badaddr == t0+2.
+-  csrr a0, sbadaddr
++  csrr a0, stval
+   beqz a0, 1f
+   addi a0, a0, -2
+   bne a0, t0, fail

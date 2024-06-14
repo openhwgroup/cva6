@@ -29,11 +29,11 @@ export CPLUS_INCLUDE_PATH="$RISCV/include"
 
 # Auto-detect RISC-V tool name prefix if not explicitly given.
 if [ -z "$CV_SW_PREFIX" ]; then
-    export CV_SW_PREFIX="$(ls -1 -r $RISCV/bin/riscv*-gcc | head -n 1| grep gcc | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
+    export CV_SW_PREFIX="$(ls -1 $RISCV/bin/riscv* | head -n 1 | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
 fi
-# Default to auto-detected GCC name if not explicitly given.
-if [ -z "$RISCV_GCC" ]; then
-    export RISCV_GCC="$RISCV/bin/${CV_SW_PREFIX}gcc"
+# Default to auto-detected CC name if not explicitly given.
+if [ -z "$RISCV_CC" ]; then
+    export RISCV_CC="$RISCV/bin/${CV_SW_PREFIX}gcc"
 fi
 # Default to auto-detected OBJCOPY name if not explicitly given.
 if [ -z "$RISCV_OBJCOPY" ]; then

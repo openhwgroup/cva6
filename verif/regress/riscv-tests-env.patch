@@ -1,7 +1,16 @@
 diff --git a/p/riscv_test.h b/p/riscv_test.h
-index 88ca6c1..61c53ca 100644
+index 88ca6c1..b7eb1c2 100644
 --- a/p/riscv_test.h
 +++ b/p/riscv_test.h
+@@ -110,7 +110,7 @@
+ #define INIT_SATP                                                      \
+   la t0, 1f;                                                            \
+   csrw mtvec, t0;                                                       \
+-  csrwi sptbr, 0;                                                       \
++  csrwi satp, 0;                                                       \
+   .align 2;                                                             \
+ 1:
+ 
 @@ -236,9 +236,8 @@ reset_vector:                                                           \
  #define RVTEST_PASS                                                     \
          fence;                                                          \
@@ -26,8 +35,21 @@ index 88ca6c1..61c53ca 100644
  
  //-----------------------------------------------------------------------
  // Data Section Macro
+diff --git a/v/entry.S b/v/entry.S
+index fa492e6..49b2d3e 100644
+--- a/v/entry.S
++++ b/v/entry.S
+@@ -153,7 +153,7 @@ trap_entry:
+   STORE  t0,32*REGBYTES(sp)
+   csrr   t0,sepc
+   STORE  t0,33*REGBYTES(sp)
+-  csrr   t0,sbadaddr
++  csrr   t0,stval
+   STORE  t0,34*REGBYTES(sp)
+   csrr   t0,scause
+   STORE  t0,35*REGBYTES(sp)
 diff --git a/v/vm.c b/v/vm.c
-index 6bf05f7..71700f5 100644
+index 6bf05f7..01a8283 100644
 --- a/v/vm.c
 +++ b/v/vm.c
 @@ -17,8 +17,8 @@
@@ -41,3 +63,29 @@ index 6bf05f7..71700f5 100644
  
  static void do_tohost(uint64_t tohost_value)
  {
+@@ -172,7 +172,11 @@ void handle_fault(uintptr_t addr, uintptr_t cause)
+   user_llpt[addr/PGSIZE] = new_pte;
+   flush_page(addr);
+ 
++  // LLVM doesn't know __builtin___clear_cache
++  // Getting compiler-rt working might solve this
++#ifndef __clang__
+   __builtin___clear_cache(0,0);
++#endif
+ }
+ 
+ void handle_trap(trapframe_t* tf)
+@@ -253,10 +257,10 @@ void vm_boot(uintptr_t test_addr)
+ # error
+ #endif
+   uintptr_t vm_choice = SATP_MODE_CHOICE;
+-  uintptr_t sptbr_value = ((uintptr_t)l1pt >> PGSHIFT)
++  uintptr_t satp_value = ((uintptr_t)l1pt >> PGSHIFT)
+                         | (vm_choice * (SATP_MODE & ~(SATP_MODE<<1)));
+-  write_csr(sptbr, sptbr_value);
+-  if (read_csr(sptbr) != sptbr_value)
++  write_csr(satp, satp_value);
++  if (read_csr(satp) != satp_value)
+     assert(!"unsupported satp mode");
+ 
+   // Set up PMPs if present, ignoring illegal instruction trap if not.

@@ -110,7 +110,7 @@
 #define INIT_SATP                                                       \
   la t0, 1f;                                                            \
   csrw mtvec, t0;                                                       \
-  csrwi sptbr, 0;                                                       \
+  csrwi satp, 0;                                                        \
   .align 2;                                                             \
 1:
 
