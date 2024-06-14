@@ -46,6 +46,7 @@ package uvme_cva6_pkg;
    import uvml_trn_pkg    ::*;
    import uvma_clknrst_pkg::*;
    import uvma_axi_pkg::*;
+   import uvma_obi_memory_pkg::*;
    import uvml_mem_pkg  ::*;
    import uvma_core_cntrl_pkg::*;
    import uvma_rvfi_pkg::*;
