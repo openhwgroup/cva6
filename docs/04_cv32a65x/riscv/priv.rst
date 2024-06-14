@@ -7,8 +7,8 @@
 
    Original Author: Jean-Roch COULON - Thales
 
-Privileged RISC-V ISA for CV32A65X
-==================================
+Privileged RISC-V ISA
+=====================
 
 .. raw:: html
    :file: priv-isa-cv32a65x.html

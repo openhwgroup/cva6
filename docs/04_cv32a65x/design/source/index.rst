@@ -8,8 +8,8 @@
    Original Author: Jean-Roch COULON - Thales
 
 
-Design Document for CV32A65X
-============================
+Design Document
+===============
 Editor: **Jean Roch Coulon**
 
 .. toctree::
