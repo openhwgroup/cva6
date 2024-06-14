@@ -78,14 +78,14 @@ cflags=(
         -DNOPRINT
 )
 
-default_config="cv32a6_embedded"
+default_config="cv32a65x"
 isa="rv32imc_zba_zbb_zbc_zbs"
 
 set -x
 python3 cva6.py \
         --target hwconfig \
         --isa "$isa" \
-        --hwconfig_opts="$default_config +CVA6ConfigNrLoadPipeRegs=0" \
+        --hwconfig_opts="$default_config" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
