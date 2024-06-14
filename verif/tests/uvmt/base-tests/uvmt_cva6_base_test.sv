@@ -263,6 +263,8 @@ function void uvmt_cva6_base_test_c::build_phase(uvm_phase phase);
 
    if(!env_cfg.axi_cfg.preload_mem) begin
       factory.set_type_override_by_name("uvma_axi_fw_preload_seq_c", "uvme_axi_fw_preload_seq_c");
+      factory.set_type_override_by_name("uvma_obi_memory_fw_preload_seq_c", "uvme_obi_fw_preload_seq_c");
+      factory.set_type_override_by_name("uvma_obi_memory_slv_seq_c", "uvme_obi_slv_seq_c");
    end
 
 endfunction : build_phase

@@ -43,6 +43,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Agent cfg handles
    rand uvma_clknrst_cfg_c                clknrst_cfg;
    rand uvma_axi_cfg_c                    axi_cfg;
+   rand uvma_obi_memory_cfg_c       obi_memory_instr_cfg;
+   //rand uvma_obi_memory_cfg_c       obi_memory_data_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
    rand uvma_interrupt_cfg_c              interrupt_cfg;
@@ -66,6 +68,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Software interrupt supported
    rand bit                      sw_int_supported;
 
+   //OBI stall gnt and rvalid
+   rand bit zero_stall_sim;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -86,6 +91,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
 
       `uvm_field_object(axi_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(obi_memory_instr_cfg, UVM_DEFAULT)
+
+      // TODO:`uvm_field_object(obi_memory_data_cfg, UVM_DEFAULT)
 
       `uvm_field_object(rvfi_cfg,    UVM_DEFAULT)
 
@@ -169,6 +178,36 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
    }
 
+   constraint obi_zero_stall_sim_dist_cons {
+      //zero_stall_sim dist { 0 :/ 2,  1 :/ 1}; // TODO: Randomize
+      zero_stall_sim == 0;
+   }
+
+   constraint zero_stall_sim_cons {
+      if (zero_stall_sim) {
+         obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         //obi_memory_data_cfg.drv_slv_gnt_mode     == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         //obi_memory_data_cfg.drv_slv_rvalid_mode  == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+      }
+   }
+
+   // TODO FIX
+   //constraint max_data_zero_instr_stall_sim_cons {
+      //if (max_data_zero_instr_stall) {
+         //obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         //obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+
+         //obi_memory_data_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
+         //obi_memory_data_cfg.drv_slv_gnt_random_latency_min == 0;
+         //obi_memory_data_cfg.drv_slv_gnt_random_latency_max == 8;
+
+         //obi_memory_data_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
+         //obi_memory_data_cfg.drv_slv_rvalid_random_latency_min == 0;
+         //obi_memory_data_cfg.drv_slv_rvalid_random_latency_max == 8;
+      //}
+   //}
+
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled    == 1;
@@ -188,21 +227,51 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       axi_cfg.zero_delay_mode               == 1;
       axi_cfg.disable_trs_randomization     == 1;
 
+      obi_memory_instr_cfg.drv_mode                      == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_memory_instr_cfg.version                       == UVMA_OBI_MEMORY_VERSION_1P2;
+      
+      obi_memory_instr_cfg.auser_width                   == RTLCVA6Cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth;
+      obi_memory_instr_cfg.wuser_width                   == RTLCVA6Cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth;
+      obi_memory_instr_cfg.ruser_width                   == RTLCVA6Cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth;
+      obi_memory_instr_cfg.addr_width                    == RTLCVA6Cfg.ObiFetchbusCfg.AddrWidth ;
+      obi_memory_instr_cfg.data_width                    == RTLCVA6Cfg.ObiFetchbusCfg.DataWidth ;
+      obi_memory_instr_cfg.id_width                      == RTLCVA6Cfg.ObiFetchbusCfg.IdWidth   ;
+      obi_memory_instr_cfg.achk_width                    == RTLCVA6Cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth ;
+      obi_memory_instr_cfg.rchk_width                    == RTLCVA6Cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth ;
+
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max    <= 2;
+      soft obi_memory_instr_cfg.drv_slv_gnt_fixed_latency         <= 2;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max <= 3;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+
+      // TODO: obi_memory_data_cfg ...
+
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active        == UVM_ACTIVE;
          isacov_cfg.is_active         == UVM_PASSIVE;
          rvfi_cfg.is_active           == UVM_PASSIVE;
          interrupt_cfg.is_active      == UVM_ACTIVE;
+         if (RTLCVA6Cfg.PipelineOnly) {
+            obi_memory_instr_cfg.is_active == UVM_ACTIVE;
+            //TODO :obi_memory_data_cfg.is_active == UVM_ACTIVE;
+         } else {
+            obi_memory_instr_cfg.is_active == UVM_PASSIVE;
+            //TODO :obi_memory_data_cfg.is_active == UVM_PASSIVE;
+         }
       }
 
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled   == 0;
          axi_cfg.trn_log_enabled       == 1;
+         obi_memory_instr_cfg.trn_log_enabled       == 1;
+         //obi_memory_data_cfg.trn_log_enabled       == 1;
          rvfi_cfg.trn_log_enabled      == 1;
          isacov_cfg.trn_log_enabled    == 1;
       } else {
          clknrst_cfg.trn_log_enabled   == 0;
          axi_cfg.trn_log_enabled       == 0;
+         obi_memory_instr_cfg.trn_log_enabled     == 0;
+         //obi_memory_data_cfg.trn_log_enabled     == 0;
          rvfi_cfg.trn_log_enabled      == 0;
          isacov_cfg.trn_log_enabled    == 0;
       }
@@ -210,10 +279,14 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled    == 1;
          axi_cfg.cov_model_enabled       == 1;
+         obi_memory_instr_cfg.cov_model_enabled == 1;
+         //obi_memory_data_cfg.cov_model_enabled == 1; //TODO 
          interrupt_cfg.cov_model_enabled == 1;
       } else {
          isacov_cfg.cov_model_enabled    == 0;
          axi_cfg.cov_model_enabled       == 0;
+         obi_memory_instr_cfg.cov_model_enabled == 0;
+         //obi_memory_data_cfg.cov_model_enabled == 1; //TODO 
          interrupt_cfg.cov_model_enabled == 0;
       }
 
@@ -250,6 +323,8 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
 
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
+   obi_memory_instr_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_instr_cfg");
+   // TODO:obi_memory_data_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_data_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    interrupt_cfg   = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");

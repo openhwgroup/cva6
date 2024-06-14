@@ -76,6 +76,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
   uvma_cvxif_intf                      cvxif_if,
+  uvma_obi_memory_if                   obi_fetch_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
 );
@@ -256,6 +257,66 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
    assign cvxif_if.commit_req          = cvxif_req.commit;
    assign cvxif_if.result_ready        = cvxif_req.result_ready;
 
+   //Obi Interface
+   if (CVA6Cfg.PipelineOnly) begin
+      assign obi_fetch_slave.req        = i_cva6.obi_fetch_req_if_cache.req;
+      assign obi_fetch_slave.addr       = i_cva6.obi_fetch_req_if_cache.a.addr;
+      assign obi_fetch_slave.we         = i_cva6.obi_fetch_req_if_cache.a.we;
+      assign obi_fetch_slave.be         = i_cva6.obi_fetch_req_if_cache.a.be;
+      assign obi_fetch_slave.wdata      = i_cva6.obi_fetch_req_if_cache.a.wdata;
+      assign obi_fetch_slave.auser      = i_cva6.obi_fetch_req_if_cache.a.a_optional.auser;
+      assign obi_fetch_slave.wuser      = i_cva6.obi_fetch_req_if_cache.a.a_optional.wuser;
+      assign obi_fetch_slave.aid        = i_cva6.obi_fetch_req_if_cache.a.aid;
+      assign obi_fetch_slave.atop       = i_cva6.obi_fetch_req_if_cache.a.a_optional.atop;
+      assign obi_fetch_slave.memtype    = i_cva6.obi_fetch_req_if_cache.a.a_optional.memtype;
+      assign obi_fetch_slave.prot       = i_cva6.obi_fetch_req_if_cache.a.a_optional.prot;
+      assign obi_fetch_slave.reqpar     = i_cva6.obi_fetch_req_if_cache.reqpar;
+      assign obi_fetch_slave.achk       = i_cva6.obi_fetch_req_if_cache.a.a_optional.achk;
+      assign obi_fetch_slave.rready     = i_cva6.obi_fetch_req_if_cache.rready;
+      assign obi_fetch_slave.rreadypar  = i_cva6.obi_fetch_req_if_cache.rreadypar;
+      assign i_cva6.obi_fetch_rsp_cache_if.gnt                  = obi_fetch_slave.gnt;
+      assign i_cva6.obi_fetch_rsp_cache_if.gntpar               = obi_fetch_slave.gntpar;
+      assign i_cva6.obi_fetch_rsp_cache_if.rvalid               = obi_fetch_slave.rvalid;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.rdata              = obi_fetch_slave.rdata;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.err                = obi_fetch_slave.err;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.r_optional.ruser   = obi_fetch_slave.ruser;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.rid                = obi_fetch_slave.rid;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.r_optional.exokay  = obi_fetch_slave.exokay;
+      assign i_cva6.obi_fetch_rsp_cache_if.rvalidpar            = obi_fetch_slave.rvalidpar;
+      assign i_cva6.obi_fetch_rsp_cache_if.r.r_optional.rchk    = obi_fetch_slave.rchk;
+      initial begin // TODO: workaround, need to emulate with OBI agent
+         force i_cva6.fetch_dreq_cache_if.ready = 1;
+         force i_cva6.fetch_dreq_cache_if.invalid_data = 0;
+      end
+   end else begin //OBI in PASSIVE mode
+      assign obi_fetch_slave.req        = i_cva6.obi_fetch_req_if_cache.req;
+      assign obi_fetch_slave.addr       = i_cva6.obi_fetch_req_if_cache.a.addr;
+      assign obi_fetch_slave.we         = i_cva6.obi_fetch_req_if_cache.a.we;
+      assign obi_fetch_slave.be         = i_cva6.obi_fetch_req_if_cache.a.be;
+      assign obi_fetch_slave.wdata      = i_cva6.obi_fetch_req_if_cache.a.wdata;
+      assign obi_fetch_slave.auser      = i_cva6.obi_fetch_req_if_cache.a.a_optional.auser;
+      assign obi_fetch_slave.wuser      = i_cva6.obi_fetch_req_if_cache.a.a_optional.wuser;
+      assign obi_fetch_slave.aid        = i_cva6.obi_fetch_req_if_cache.a.aid;
+      assign obi_fetch_slave.atop       = i_cva6.obi_fetch_req_if_cache.a.a_optional.atop;
+      assign obi_fetch_slave.memtype    = i_cva6.obi_fetch_req_if_cache.a.a_optional.memtype;
+      assign obi_fetch_slave.prot       = i_cva6.obi_fetch_req_if_cache.a.a_optional.prot;
+      assign obi_fetch_slave.reqpar     = i_cva6.obi_fetch_req_if_cache.reqpar;
+      assign obi_fetch_slave.achk       = i_cva6.obi_fetch_req_if_cache.a.a_optional.achk;
+      assign obi_fetch_slave.rready     = i_cva6.obi_fetch_req_if_cache.rready;
+      assign obi_fetch_slave.rreadypar  = i_cva6.obi_fetch_req_if_cache.rreadypar;
+      assign obi_fetch_slave.gnt        = i_cva6.obi_fetch_rsp_cache_if.gnt;
+      assign obi_fetch_slave.gntpar     = i_cva6.obi_fetch_rsp_cache_if.gntpar;
+      assign obi_fetch_slave.rvalid     = i_cva6.obi_fetch_rsp_cache_if.rvalid;
+      assign obi_fetch_slave.rdata      = i_cva6.obi_fetch_rsp_cache_if.r.rdata;
+      assign obi_fetch_slave.err        = i_cva6.obi_fetch_rsp_cache_if.r.err;
+      assign obi_fetch_slave.ruser      = i_cva6.obi_fetch_rsp_cache_if.r.r_optional.ruser;
+      assign obi_fetch_slave.rid        = i_cva6.obi_fetch_rsp_cache_if.r.rid;
+      assign obi_fetch_slave.exokay     = i_cva6.obi_fetch_rsp_cache_if.r.r_optional.exokay;
+      assign obi_fetch_slave.rvalidpar  = i_cva6.obi_fetch_rsp_cache_if.rvalidpar;
+      assign obi_fetch_slave.rchk       = i_cva6.obi_fetch_rsp_cache_if.r.r_optional.rchk;
+   end
+   ///assign obi_fetch_slave.mid    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.mid;
+   ///assign obi_fetch_slave.dbg    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.dbg;
 
 
   AXI_BUS #(
