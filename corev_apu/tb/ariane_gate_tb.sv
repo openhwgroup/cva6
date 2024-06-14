@@ -26,7 +26,7 @@ import uvm_pkg::*;
 
 import "DPI-C" function void read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
 import "DPI-C" function string getenv(input string env_name);
 
 module ariane_gate_tb;
