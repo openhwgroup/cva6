@@ -1,5 +1,7 @@
+include::config.adoc[]
+
 [[risc-v-isa]]
-= The RISC-V Instruction Set Manual for CV32A65X: Volume II: Privileged Architecture
+= The RISC-V Instruction Set Manual for {ohg-config}: Volume II: Privileged Architecture
 :description: Volume II - Privileged Architecture
 :company: RISC-V.org
 :revnumber: 20240612
@@ -59,8 +61,6 @@ endif::[]
 :ne: &#8800;
 :approx: &#8776;
 :inf: &#8734;
-
-include::config.adoc[]
 
 This document describes the RISC-V privileged architecture tailored for
 OpenHW Group {ohg-config}.
