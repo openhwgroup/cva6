@@ -36,7 +36,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_zcb_supported = CVA6Cfg.RVZCB;
     cfg.ext_zifencei_supported = 1;
     cfg.ext_zicsr_supported = 1;
-    cfg.ext_zicntr_supported = 1;
+    cfg.ext_zicntr_supported = 0;
 
     cfg.ext_cv32a60x_supported = 1;
 
@@ -71,8 +71,9 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     void'(spike_set_param_uint64_t(base, "mtvec_vectored_alignment", 64 * 4));
     void'(spike_set_param_str(base, "extensions", "cv32a60x"));
 
-    void'(spike_set_param_bool(base, "status_xs_field_we_enable", 1'b1));
-    void'(spike_set_param_bool(base, "status_xs_field_we", 1'b0));
+    // All enabled except XS and TW bits
+    void'(spike_set_param_uint64_t(base, "mstatus_write_mask", 'hFDFE_7FFF));
+
     void'(spike_set_param_uint64_t(base, "misa_override_value", get_misa(cfg)));
     void'(spike_set_param_uint64_t(base, "misa_override_mask", 64'h0FFF_FFFF));
     void'(spike_set_param_bool    (base, "misa_we_enable", 1'b1));
