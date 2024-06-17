@@ -183,7 +183,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                       \
         vendor/pulp-platform/common_cells/src/rstgen.sv                              \
         vendor/pulp-platform/common_cells/src/addr_decode.sv                         \
-	vendor/pulp-platform/common_cells/src/stream_register.sv                     \
+        vendor/pulp-platform/common_cells/src/stream_register.sv                     \
         vendor/pulp-platform/axi/src/axi_cut.sv                                      \
         vendor/pulp-platform/axi/src/axi_join.sv                                     \
         vendor/pulp-platform/axi/src/axi_delayer.sv                                  \
@@ -217,8 +217,23 @@ copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
              $(wildcard core/cvxif_example/*.sv)
 copro_src := $(addprefix $(root-dir), $(copro_src))
 
-uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
+uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/vhdl_orig/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
+
+uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
+              corev_apu/fpga/src/apb_uart/src/slib_counter.sv       \
+              corev_apu/fpga/src/apb_uart/src/slib_edge_detect.sv   \
+              corev_apu/fpga/src/apb_uart/src/slib_fifo.sv          \
+              corev_apu/fpga/src/apb_uart/src/slib_input_filter.sv  \
+              corev_apu/fpga/src/apb_uart/src/slib_input_sync.sv    \
+              corev_apu/fpga/src/apb_uart/src/slib_mv_filter.sv     \
+              corev_apu/fpga/src/apb_uart/src/uart_baudgen.sv       \
+              corev_apu/fpga/src/apb_uart/src/uart_interrupt.sv     \
+              corev_apu/fpga/src/apb_uart/src/uart_receiver.sv      \
+              corev_apu/fpga/src/apb_uart/src/uart_transmitter.sv   \
+              corev_apu/fpga/src/apb_uart/src/apb_uart.sv           \
+              corev_apu/fpga/src/apb_uart/src/apb_uart_wrap.sv
+uart_src_sv := $(addprefix $(root-dir), $(uart_src_sv))
 
 fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv
 fpga_src := $(addprefix $(root-dir), $(fpga_src)) src/bootrom/bootrom_$(XLEN).sv
@@ -307,7 +322,7 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 	cd $(vcs-library) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) -assert svaext -f $(flist) $(list_incdir) ../corev_apu/tb/common/mock_uart.sv -timescale=1ns/1ns &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog +define+$(defines) $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
-	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog $(uart_src_sv) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) +incdir+$(VCS_HOME)/etc/uvm/src $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv  $(filter %.sv,$(src)) $(list_incdir) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) $(list_incdir) &&\
@@ -453,7 +468,7 @@ XRUN_COMP_FLAGS  ?= -64bit -v200x -disable_sem2009 -access +rwc 			\
 		    -smartorder -sv -top worklib.$(top_level)			\
 		    -timescale 1ns/1ps
 
-XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -uvmhome CDNS-1.2 -sv_lib $(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so +UVM_VERBOSITY=UVM_LOW  		
+XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -uvmhome CDNS-1.2 -sv_lib $(CVA6_HOME)/$(dpi-library)/xrun_ariane_dpi.so +UVM_VERBOSITY=UVM_LOW
 
 XRUN_DISABLED_WARNINGS := BIGWIX 	\
 			ZROMCW 		\
@@ -471,10 +486,10 @@ XRUN_COMP = $(XRUN_COMP_FLAGS)		\
 	$(filter %.sv, $(ariane_pkg)) 	\
 	$(filter %.sv, $(src))	      	\
 	$(filter %.vhd, $(uart_src))  	\
-	$(filter %.sv, $(XRUN_TB))	
+	$(filter %.sv, $(XRUN_TB))
 
 XRUN_RUN = $(XRUN_RUN_FLAGS) 		\
-	$(XRUN_DISABLED_WARNINGS)	
+	$(XRUN_DISABLED_WARNINGS)
 
 xrun_clean:
 	@echo "[XRUN] clean up"
