@@ -1962,50 +1962,60 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 
    b. If the PTE is valid, by default, the state advances to the "LATENCY" state, indicating a period of processing latency. Additionally, if the "read" flag (pte.r) or the "execute" flag (pte.x) is set, the PTE is considered valid.
 
-5. Within the Valid PTE scenario, the ptw_stage is checked to decide the next state. When no Hypervisor Extension is used, the stage is always S_STAGE and has no impact on the progress of the table walk. However, when the Hypervisor Extension is used, if the stage is not the G_FINAL_STAGE, it has to continue advancing the different stages before proceeding with the translation. In this case, the state machine goes back to WAIT_GRANT state. Afterwards, the state performs further checks based on whether the translation is intended for instruction fetching or data access:
+5. Within the Valid PTE scenario, the ptw_stage is checked to decide the next state. When no Hypervisor Extension is used, the stage is always S_STAGE and has no impact on the progress of the table walk. However, when the Hypervisor Extension is used, if the stage is not the G_FINAL_STAGE, it has to continue advancing the different stages before proceeding with the translation (nested translation). The next diagram shows the evolution of ptw_stage through the nested translation process:
+
+.. figure:: _static/nested_translation.png
+   :name: **Figure 23:** Nested translation: ptw_stage
+   :align: center
+   :width: 90%
+   :alt: ptw_stage
+
+   **Figure 23:** Nested translation: ptw_stage
+
+   In this case (valid PTE), the state machine goes back to WAIT_GRANT state. Afterwards, the state performs further checks based on whether the translation is intended for instruction fetching or data access:
 
    a. For instruction page table walk, if the page is not executable (pte.x is not set) or not marked as accessible (pte.a is not set), the state transitions to the "PROPAGATE_ERROR" state. Otherwise, the translation is valid. In case that the Hypervisor Extension is enabled, a valid translation requires being in the G_FINAL_STAGE, or the G stage being disabled.
 
 .. figure:: _static/ptw_iptw.png
-   :name: **Figure 23:** For Instruction Page Table Walk
+   :name: **Figure 24:** For Instruction Page Table Walk
    :align: center
    :width: 70%
    :alt: ptw_iptw
 
-   **Figure 23:** For Instruction Page Table Walk
+   **Figure 24:** For Instruction Page Table Walk
 
 .. _example2:
 
    b. For data page table walk, the state checks if the page is readable (pte.r is set) or if the page is executable only but made readable by setting the MXR bit in xSTATUS CSR register. If either condition is met, it indicates a valid translation. If not, the state transitions to the "PROPAGATE_ERROR" state. When Hypervisor Extension is enabled, a valid translation also requires that it is in the G_FINAL_STAGE or the G stage is not enabled.
 
 .. figure:: _static/ptw_dptw.png
-   :name: **Figure 24:** Data Access Page Table Walk
+   :name: **Figure 25:** Data Access Page Table Walk
    :width: 70%
    :alt: ptw_dptw
 
-   **Figure 24:** Data Access Page Table Walk
+   **Figure 25:** Data Access Page Table Walk
 
 .. _example3:
 
    c. If the access is intended for storing data, additional checks are performed: If the page is not writable (pte.w is not set) or if it is not marked as dirty (pte.d is not set), the state transitions to the "PROPAGATE_ERROR" state.
 
 .. figure:: _static/ptw_dptw_s.png
-   :name: **Figure 25:** Data Access Page Table Walk, Store requested
+   :name: **Figure 26:** Data Access Page Table Walk, Store requested
    :align: center
    :width: 70%
    :alt: ptw_dptw_s
 
-   **Figure 25:** Data Access Page Table Walk, Store requested
+   **Figure 26:** Data Access Page Table Walk, Store requested
 
 6. The state also checks for potential misalignment issues in the translation: If the current page table level is the first level and if the PPN in PTE is not zero, it indicates a misaligned superpage, leading to a transition to the "PROPAGATE_ERROR" state.
 
 .. figure:: _static/ptw_mis_sup.png
-   :name: **Figure 26:** Misaligned Superpage Check
+   :name: **Figure 27:** Misaligned Superpage Check
    :align: center
    :width: 70%
    :alt: ptw_mis_sup
 
-   **Figure 26:** Misaligned Superpage Check
+   **Figure 27:** Misaligned Superpage Check
 
 7. If the PTE is valid but the page is neither readable nor executable, the PTW recognizes the PTE as a pointer to the next level of the page table, indicating that additional translation information can be found in the referenced page table at a lower level.
 8. If the current page table level is not the last level, the PTW proceeds to switch to the next level page table, updating the next level pointer and calculating the address for the next page table entry using the Physical Page Number from the PTE and the index from virtual address. Depending on the level and ptw_stage, the pptr is updated accordingly.
@@ -2015,11 +2025,11 @@ In the **PTE_LOOKUP** state of the Page Table Walker (PTW) finite state machine,
 12. Lastly, if the data request for the page table entry was granted, the state indicates to the cache subsystem that the tag associated with the data is now valid.
 
 .. figure:: _static/ptw_pte_flowchart.png
-   :name: **27:** Flow Chart of PTE LOOKUP State
+   :name: **28:** Flow Chart of PTE LOOKUP State
    :align: center
    :alt: ptw_pte_flowchart
 
-   **Figure 27:** Flow Chart of PTE LOOKUP State
+   **Figure 28:** Flow Chart of PTE LOOKUP State
 
 .. raw:: html
 
