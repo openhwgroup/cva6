@@ -691,7 +691,6 @@ class CsrParser:
                     )
                     fieldaccess = ""
                     legal = registerElem.get("rv32", "")[item].get("type", None)
-                    print(legal)
                     if legal is None:
                         bitlegal = ""
                         fieldaccess = "ROCST"
@@ -765,7 +764,7 @@ class CsrParser:
                         legal = ""
                         fieldaccess = "WPRI"
                         bitWidth = int(item_[len(item_) - 1]) - int(item_[0]) + 1
-                        fieldDesc = "Reserved"
+                        fieldDesc = "*Reserved*"
                         bitlegal = legal
                         fieldreset = hex(
                             int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
@@ -823,7 +822,6 @@ class CsrParser:
                     if legal_2 is None:
                         bitlegal = "No Legal values"
                     else:
-                        print(legal_2)
                         if isinstance(legal_2, dict):
                             pattern = r"([\w\[\]:]+\s*(\w+)\s*)(\[\s*((?:0x)?[0-9A-Fa-f]+)\s*\D+\s*(?:((?:0x)?[0-9A-Fa-f]+))?\s*])"
                             matches = re.search(pattern, str(legal_2["legal"][0]))
