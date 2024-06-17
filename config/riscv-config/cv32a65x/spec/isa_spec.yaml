@@ -57,7 +57,7 @@ hart0: &hart0
            dependency_fields: []
            legal:
              # All bits writable (first value of bitmask w/o cleared bits)
-             - base[29:0] bitmask [0x3FFFFFFF, 0x00000000]
+             - base[29:0] bitmask [0x3FFFFFFE, 0x00000000]
            wr_illegal:
              - Unchanged
      mode:
@@ -250,6 +250,14 @@ hart0: &hart0
     rv64:
       accessible: false
     reset-val: 0x00
+  mconfigptr:
+    rv32:
+      accessible: true
+      type:
+         ro_constant: 0x0
+    rv64:
+      accessible: false
+    reset-val: 0x0
   mscratch:
     rv32:
       accessible: true
@@ -729,9 +737,7 @@ hart0: &hart0
     reset-val: 0x0
   mcountinhibit:
     rv32:
-      accessible: true
-      type:
-        ro_constant: 0x0
+      accessible: false
     rv64:
       accessible: false
     reset-val: 0x0
