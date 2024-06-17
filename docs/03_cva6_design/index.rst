@@ -30,6 +30,7 @@ Editor: **Florian Zaruba**
    id_stage
    issue_stage
    ex_stage
+   MMU
    commit_stage
 
 Indices and tables
