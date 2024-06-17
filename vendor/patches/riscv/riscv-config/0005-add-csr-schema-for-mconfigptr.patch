@@ -1,0 +1,60 @@
+diff --git a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+index 27e88d16f..9c67bbcb7 100644
+--- a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
++++ b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+@@ -1819,6 +1819,55 @@ hart_schema:
+               default: true
+               check_with: rv64_check
+           default: {accessible: false}
++    mconfigptr:
++      type: dict
++      schema:
++        description:
++          type: string
++          default: MXLEN-bit read-only register that holds the physical address
++            of a configuration data structure.
++        address: {type: integer, default: 0xF15, allowed: [0xF15]}
++        priv_mode: {type: string, default: M, allowed: [M]}
++        reset-val:
++          type: integer
++          default: 0
++          check_with: max_length
++        rv32:
++          type: dict
++          schema:
++            fields: {type: list, default: []}
++            shadow: {type: string, default: , nullable: True}
++            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
++            msb: {type: integer, default: 31, allowed: [31]}
++            lsb: {type: integer, default: 0, allowed: [0]}
++            type:
++              type: dict
++              schema: {ro_constant: {type: integer, max:  0xFFFFFFFF}}
++              default:
++                ro_constant: 0
++            accessible:
++              type: boolean
++              default: true
++              check_with: rv32_check
++          default: {accessible: false}
++        rv64:
++          type: dict
++          schema:
++            fields: {type: list, default: []}
++            shadow: {type: string, default: , nullable: True}
++            shadow_type: {type: string, default: rw, nullable: True, allowed: ['rw','ro']}
++            msb: {type: integer, default: 63, allowed: [63]}
++            lsb: {type: integer, default: 0, allowed: [0]}
++            type:
++              type: dict
++              schema: {ro_constant: {type: integer, max:  0xFFFFFFFFFFFFFFFF}}
++              default:
++                ro_constant: 0
++            accessible:
++              type: boolean
++              default: true
++              check_with: rv64_check
++          default: {accessible: false}
+     mtvec:
+       type: dict
+       schema:
