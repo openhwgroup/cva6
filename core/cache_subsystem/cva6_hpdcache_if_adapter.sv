@@ -14,7 +14,7 @@ module cva6_hpdcache_if_adapter
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg = '0,
+    parameter hpdcache_pkg::hpdcache_cfg_t HPDcacheCfg = '0,
     parameter type hpdcache_tag_t = logic,
     parameter type hpdcache_req_offset_t = logic,
     parameter type hpdcache_req_sid_t = logic,
@@ -120,8 +120,8 @@ module cva6_hpdcache_if_adapter
       //  {{{
       always_comb begin : amo_op_comb
         amo_addr = cva6_amo_req_i.operand_a;
-        amo_addr_offset = amo_addr[0+:hpdcacheCfg.reqOffsetWidth];
-        amo_tag = amo_addr[hpdcacheCfg.reqOffsetWidth+:hpdcacheCfg.tagWidth];
+        amo_addr_offset = amo_addr[0+:HPDcacheCfg.reqOffsetWidth];
+        amo_tag = amo_addr[HPDcacheCfg.reqOffsetWidth+:HPDcacheCfg.tagWidth];
         unique case (cva6_amo_req_i.amo_op)
           ariane_pkg::AMO_LR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_LR;
           ariane_pkg::AMO_SC:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SC;

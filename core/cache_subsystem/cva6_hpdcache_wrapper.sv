@@ -8,9 +8,7 @@
 //
 // Authors: Cesar Fuguet
 // Date: February, 2023
-// Description: CVA6 cache subsystem integrating standard CVA6's
-//              instruction cache and the Core-V High-Performance L1
-//              data cache (CV-HPDcache).
+// Description: Wrapper for the Core-V High-Performance L1 data cache (CV-HPDcache)
 
 `include "hpdcache_typedef.svh"
 
@@ -19,7 +17,7 @@ module cva6_hpdcache_wrapper
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter hpdcache_pkg::hpdcache_cfg_t hpdcacheCfg,  // TODO
+    parameter hpdcache_pkg::hpdcache_cfg_t HPDcacheCfg,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter int NumPorts = 4,
@@ -153,14 +151,14 @@ module cva6_hpdcache_wrapper
 
   typedef logic [63:0] hwpf_stride_param_t;
 
-  logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
+  logic                        dcache_req_valid[HPDCACHE_NREQUESTERS];
+  logic                        dcache_req_ready[HPDCACHE_NREQUESTERS];
+  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS];
+  logic                        dcache_req_abort[HPDCACHE_NREQUESTERS];
+  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS];
+  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS];
+  logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS];
+  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS];
   logic dcache_read_miss, dcache_write_miss;
 
   logic                                   [                2:0] snoop_valid;
@@ -175,14 +173,14 @@ module cva6_hpdcache_wrapper
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   generate
-    dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
+    dcache_req_i_t dcache_req_ports[NumPorts - 1];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : gen_cva6_hpdcache_load_if_adapter
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
 
       cva6_hpdcache_if_adapter #(
           .CVA6Cfg              (CVA6Cfg),
-          .hpdcacheCfg          (hpdcacheCfg),
+          .HPDcacheCfg          (HPDcacheCfg),
           .hpdcache_tag_t       (hpdcache_tag_t),
           .hpdcache_req_offset_t(hpdcache_req_offset_t),
           .hpdcache_req_sid_t   (hpdcache_req_sid_t),
@@ -216,7 +214,7 @@ module cva6_hpdcache_wrapper
 
     cva6_hpdcache_if_adapter #(
         .CVA6Cfg              (CVA6Cfg),
-        .hpdcacheCfg          (hpdcacheCfg),
+        .HPDcacheCfg          (HPDcacheCfg),
         .hpdcache_tag_t       (hpdcache_tag_t),
         .hpdcache_req_offset_t(hpdcache_req_offset_t),
         .hpdcache_req_sid_t   (hpdcache_req_sid_t),
@@ -315,13 +313,13 @@ module cva6_hpdcache_wrapper
 
   generate
     for (genvar h = 0; h < NrHwPrefetchers; h++) begin : gen_hwpf_throttle
-      assign hwpf_throttle_in[h] = hwpf_stride_pkg::hwpf_stride_throttle_t'(hwpf_throttle_i[h]),
-          hwpf_throttle_o[h] = hwpf_stride_pkg::hwpf_stride_param_t'(hwpf_throttle_out[h]);
+      assign hwpf_throttle_in[h] = hwpf_stride_pkg::hwpf_stride_throttle_t'(hwpf_throttle_i[h]);
+      assign hwpf_throttle_o[h]  = hwpf_stride_pkg::hwpf_stride_param_t'(hwpf_throttle_out[h]);
     end
   endgenerate
 
   hwpf_stride_wrapper #(
-      .hpdcacheCfg          (hpdcacheCfg),
+      .HPDcacheCfg          (HPDcacheCfg),
       .NUM_HW_PREFETCH      (NrHwPrefetchers),
       .NUM_SNOOP_PORTS      (3),
       .hpdcache_tag_t       (hpdcache_tag_t),
@@ -366,7 +364,7 @@ module cva6_hpdcache_wrapper
   );
 
   hpdcache #(
-      .hpdcacheCfg          (hpdcacheCfg),
+      .HPDcacheCfg          (HPDcacheCfg),
       .wbuf_timecnt_t       (hpdcache_wbuf_timecnt_t),
       .hpdcache_tag_t       (hpdcache_tag_t),
       .hpdcache_data_word_t (hpdcache_data_word_t),
