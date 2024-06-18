@@ -20,11 +20,26 @@ int is_transmit_empty()
     return read_reg_u8(UART_LINE_STATUS) & 0x20;
 }
 
+int is_receive_empty()
+{
+    return !(read_reg_u8(UART_LINE_STATUS) & 0x1);
+}
+
 void write_serial(char a)
 {
     while (is_transmit_empty() == 0) {};
 
     write_reg_u8(UART_THR, a);
+}
+
+int read_serial(uint8_t *res)
+{
+    if(is_receive_empty()) {
+        return 0;
+    }
+
+    *res = read_reg_u8(UART_RBR);
+    return 1;
 }
 
 void init_uart(uint32_t freq, uint32_t baud)
