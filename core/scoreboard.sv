@@ -109,24 +109,29 @@ module scoreboard #(
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
-  logic                             issue_full;
+  logic [ariane_pkg::SUPERSCALAR:0] issue_full;
+  logic [1:0][CVA6Cfg.NR_SB_ENTRIES/2-1:0] issued_instrs_even_odd;
+
   logic [ariane_pkg::SUPERSCALAR:0] num_issue;
-  logic [CVA6Cfg.TRANS_ID_BITS:0] issue_cnt_n, issue_cnt_q;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_n, issue_pointer_q;
   logic [ariane_pkg::SUPERSCALAR+1:0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_n, commit_pointer_q;
   logic [$clog2(CVA6Cfg.NrCommitPorts):0] num_commit;
 
-  // the issue queue is full don't issue any new instructions
-  // works since aligned to power of 2
-  if (ariane_pkg::SUPERSCALAR) begin
-    assign issue_full = (issue_cnt_q[CVA6Cfg.TRANS_ID_BITS] == 1'b1) || &issue_cnt_q[CVA6Cfg.TRANS_ID_BITS-1:0];
-  end else begin
-    assign issue_full = (issue_cnt_q[CVA6Cfg.TRANS_ID_BITS] == 1'b1);
+  for (genvar i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
+    assign issued_instrs_even_odd[i%2][i/2] = mem_q[i].issued;
   end
 
-  assign sb_full_o = issue_full;
+  // the issue queue is full don't issue any new instructions
+  assign issue_full[0] = &issued_instrs_even_odd[0] && &issued_instrs_even_odd[1];
+  if (ariane_pkg::SUPERSCALAR) begin : assign_issue_full
+    // Need two slots available to issue two instructions.
+    // They are next to each other so one must be even and one odd
+    assign issue_full[1] = &issued_instrs_even_odd[0] || &issued_instrs_even_odd[1];
+  end
+
+  assign sb_full_o = issue_full[0];
 
   // output commit instruction directly
   always_comb begin : commit_ports
@@ -150,8 +155,8 @@ module scoreboard #(
       // make sure we assign the correct trans ID
       issue_instr_o[i].trans_id = issue_pointer[i];
 
-      issue_instr_valid_o[i]    = decoded_instr_valid_i[i] & ~issue_full;
-      decoded_instr_ack_o[i]    = issue_ack_i[i] & ~issue_full;
+      issue_instr_valid_o[i]    = decoded_instr_valid_i[i] & ~issue_full[i];
+      decoded_instr_ack_o[i]    = issue_ack_i[i] & ~issue_full[i];
     end
   end
 
@@ -252,9 +257,6 @@ module scoreboard #(
     assign num_commit = commit_ack_i[0];
   end
 
-  assign issue_cnt_n = (flush_i) ? '0 : issue_cnt_q - {{CVA6Cfg.TRANS_ID_BITS - $clog2(
-      CVA6Cfg.NrCommitPorts
-  ) {1'b0}}, num_commit} + num_issue;
   assign commit_pointer_n[0] = (flush_i) ? '0 : commit_pointer_q[0] + num_commit;
   assign issue_pointer_n = (flush_i) ? '0 : issue_pointer[num_issue];
 
@@ -455,11 +457,9 @@ module scoreboard #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs
     if (!rst_ni) begin
       mem_q            <= '{default: sb_mem_t'(0)};
-      issue_cnt_q      <= '0;
       commit_pointer_q <= '0;
       issue_pointer_q  <= '0;
     end else begin
-      issue_cnt_q      <= issue_cnt_n;
       issue_pointer_q  <= issue_pointer_n;
       mem_q            <= mem_n;
       commit_pointer_q <= commit_pointer_n;
