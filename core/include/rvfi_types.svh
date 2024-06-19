@@ -112,6 +112,7 @@
   logic [Cfg.NrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rd; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.XLEN-1:0] commit_instr_result; \
   logic [Cfg.NrCommitPorts-1:0] commit_instr_valid; \
+  logic [Cfg.NrCommitPorts-1:0] commit_drop; \
   logic [Cfg.XLEN-1:0] ex_commit_cause; \
   logic ex_commit_valid; \
   riscv::priv_lvl_t priv_lvl; \

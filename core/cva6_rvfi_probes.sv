@@ -39,6 +39,7 @@ module cva6_rvfi_probes
     input logic [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
 
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_i,
     input exception_t ex_commit_i,
     input riscv::priv_lvl_t priv_lvl_i,
 
@@ -103,6 +104,7 @@ module cva6_rvfi_probes
       instr.commit_instr_valid[i] = commit_instr_i[i].valid;
     end
 
+    instr.commit_drop = commit_drop_i;
     instr.commit_ack = commit_ack_i;
     instr.wdata = wdata_i;
 

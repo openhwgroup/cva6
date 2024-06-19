@@ -1617,6 +1617,7 @@ module cva6
       .rs2_forwarding_i(rs2_forwarding_id_ex),
 
       .commit_instr_i(commit_instr_id_commit),
+      .commit_drop_i (commit_drop_id_commit),
       .ex_commit_i   (ex_commit),
       .priv_lvl_i    (priv_lvl),
 
