@@ -22,6 +22,8 @@
 
 void init_uart();
 
+int read_serial(uint8_t *res);
+
 void print_uart(const char* str);
 
 void print_uart_int(uint32_t addr);
