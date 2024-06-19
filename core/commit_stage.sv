@@ -210,7 +210,7 @@ module commit_stage
           if (!commit_drop_i[0]) begin
             if (!csr_exception_i.valid) begin
               commit_csr_o = 1'b1;
-              wdata_o[0] = csr_rdata_i;
+              wdata_o[0]   = csr_rdata_i;
             end else begin
               commit_ack_o[0] = 1'b0;
               we_gpr_o[0] = 1'b0;
@@ -328,7 +328,8 @@ module commit_stage
           commit_ack_o[1] = 1'b1;
 
           if (!commit_drop_i[1]) begin
-            if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op)) we_fpr_o[1] = 1'b1;
+            if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op))
+              we_fpr_o[1] = 1'b1;
             else we_gpr_o[1] = 1'b1;
 
             // additionally check if we are retiring an FPU instruction because we need to make sure that we write all

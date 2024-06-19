@@ -187,10 +187,10 @@ module scoreboard #(
         // increase the issue counter and advance issue pointer
         num_issue += 'd1;
         mem_n[issue_pointer[i]] = '{
-          issued: 1'b1,
-          cancelled: 1'b0,
-          is_rd_fpr_flag: CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(decoded_instr_i[i].op),
-          sbe: decoded_instr_i[i]
+            issued: 1'b1,
+            cancelled: 1'b0,
+            is_rd_fpr_flag: CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(decoded_instr_i[i].op),
+            sbe: decoded_instr_i[i]
         };
       end
     end
