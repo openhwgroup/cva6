@@ -111,8 +111,8 @@ class Field:
         bitWidth,
         fieldDesc,
         fieldaccess,
-        andMask = None,
-        orMask = None,
+        andMask=None,
+        orMask=None,
     ):
         self.name = name
         self.bitlegal = bitlegal
@@ -127,7 +127,7 @@ class Field:
 
 
 # --------------------------------------------------------------#
-class Render():
+class Render:
     """Collection of general rendering methods which can be overridden if needed
     for a specific output format."""
 
@@ -146,7 +146,8 @@ class Render():
     @staticmethod
     def bitmask(andMask, orMask):
         """Return a string representing the masking pattern defined by ANDMASK and ORMASK.
-        ANDMASK and ORMASK are strings representing AND and OR mask values, respectively."""
+        ANDMASK and ORMASK are strings representing AND and OR mask values, respectively.
+        """
         return f"masked: & {andMask} | {orMask}"
 
     @staticmethod
@@ -159,6 +160,7 @@ class Render():
             return "ROVAR"
         else:
             return upcased
+
 
 # --------------------------------------------------------------#
 class ISAdocumentClass:
@@ -252,7 +254,7 @@ class RstAddressBlock(AddressBlockClass):
         """Registers with address bits [11:10] == 2'b11 are Read-Only
         as per privileged ISA spec."""
         # Handle register address ranges separated by dashes.
-        if (int(reg.address.split("-")[0], 0) & 0xc00) == 0xc00:
+        if (int(reg.address.split("-")[0], 0) & 0xC00) == 0xC00:
             return "RO"
         else:
             return "RW"
@@ -365,9 +367,11 @@ This allows to clearly represent read-write registers holding a single legal val
                         field.name.upper(),
                         field.fieldreset,
                         field.fieldaccess,
-                        Render.bitmask(field.andMask, field.orMask) \
-                            if field.andMask and field.orMask \
-                            else field.bitlegal,
+                        (
+                            Render.bitmask(field.andMask, field.orMask)
+                            if field.andMask and field.orMask
+                            else field.bitlegal
+                        ),
                     ]
                     _line.append(field.fieldDesc)
                     reg_table.append(_line)
@@ -567,7 +571,9 @@ class MdAddressBlock(AddressBlockClass):
         regAddressList = [reg.address for reg in registerlist if reg.RV32 | reg.RV64]
         regDescrList = [reg.desc for reg in registerlist if reg.RV32 | reg.RV64]
         regAccessList = [
-            self.get_access_privilege(reg) for reg in registerlist if reg.RV32 | reg.RV64
+            self.get_access_privilege(reg)
+            for reg in registerlist
+            if reg.RV32 | reg.RV64
         ]
         regPrivModeList = [reg.access for reg in registerlist if reg.RV32 | reg.RV64]
         licence = [
@@ -687,7 +693,7 @@ class CsrParser:
         if len(fieldList) > 0:
             for item in fieldList:
                 andMask = None
-                orMask  = None
+                orMask = None
                 if not isinstance(item, list):
                     fieldDesc = registerElem.get("rv32", "")[item].get(
                         "description", ""
@@ -704,7 +710,9 @@ class CsrParser:
                     )
                     fieldaccess = ""
                     legal = registerElem.get("rv32", "")[item].get("type", None)
-                    implemented = registerElem.get("rv32", "")[item].get("implemented", None)
+                    implemented = registerElem.get("rv32", "")[item].get(
+                        "implemented", None
+                    )
                     if legal is None:
                         if not implemented:
                             bitlegal = "0x0"
@@ -739,14 +747,24 @@ class CsrParser:
                                         elif expr_type == "in":
                                             if matches.group(3).find(",") >= 0:
                                                 # list ==> set of values
-                                                legal_value = Render.value_set(matches.group(3).strip("[]").split(","))
+                                                legal_value = Render.value_set(
+                                                    matches.group(3)
+                                                    .strip("[]")
+                                                    .split(",")
+                                                )
                                             elif matches.group(3).find(":") >= 0:
                                                 # Range
-                                                (start, end) = matches.group(3).strip("[]").split(":")
+                                                (start, end) = (
+                                                    matches.group(3)
+                                                    .strip("[]")
+                                                    .split(":")
+                                                )
                                                 legal_value = Render.range(start, end)
                                             else:
                                                 # Singleton
-                                                legal_value = matches.group(3).strip("[]")
+                                                legal_value = matches.group(3).strip(
+                                                    "[]"
+                                                )
                                         else:
                                             legal_value = matches.group(3)
                                         bitlegal = legal_value
@@ -755,7 +773,9 @@ class CsrParser:
                                     matches = re.search(pattern, legal_2[0])
                                     if matches:
                                         legal_value = (
-                                            Render.range(matches.group(1), matches.group(3))
+                                            Render.range(
+                                                matches.group(1), matches.group(3)
+                                            )
                                             if matches.group(2) == ":"
                                             else Render.value_set(legal_2[0].split(","))
                                         )
@@ -858,8 +878,8 @@ class CsrParser:
                             pattern = r"([\w\[\]:]+\s*(\w+)\s*)(\[\s*((?:0x)?[0-9A-Fa-f]+)\s*\D+\s*(?:((?:0x)?[0-9A-Fa-f]+))?\s*])"
                             matches = re.search(pattern, str(legal_2["legal"][0]))
                             if matches:
-                                legal_value = (
-                                    Render.range(matches.group(4), matches.group(5))
+                                legal_value = Render.range(
+                                    matches.group(4), matches.group(5)
                                 )
                                 expr_type = str(matches.group(2))
                                 mask = matches.group(5)
@@ -871,10 +891,14 @@ class CsrParser:
                                 elif expr_type == "in":
                                     if matches.group(3).find(",") >= 0:
                                         # list ==> set of values
-                                        legal_value = Render.value_set(matches.group(3).strip("[]").split(","))
+                                        legal_value = Render.value_set(
+                                            matches.group(3).strip("[]").split(",")
+                                        )
                                     elif matches.group(3).find(":") >= 0:
                                         # Range
-                                        (start, end) = matches.group(3).strip("[]").split(":")
+                                        (start, end) = (
+                                            matches.group(3).strip("[]").split(":")
+                                        )
                                         legal_value = Render.range(start, end)
                                     else:
                                         # Singleton
