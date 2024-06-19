@@ -601,7 +601,7 @@ module load_store_unit
     if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception.cause = riscv::LD_ACCESS_FAULT;
+        misaligned_exception.cause = riscv::LOAD_PAGE_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
           misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
@@ -612,7 +612,7 @@ module load_store_unit
         end
 
       end else if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception.cause = riscv::ST_ACCESS_FAULT;
+        misaligned_exception.cause = riscv::STORE_PAGE_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
           misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
