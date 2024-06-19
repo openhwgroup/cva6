@@ -56,8 +56,9 @@ hart0: &hart0
          warl:
            dependency_fields: []
            legal:
-             # All bits writable (first value of bitmask w/o cleared bits)
-             - base[29:0] bitmask [0x3FFFFFFE, 0x00000000]
+             # The 30 bits of 'base' are suffixed with 2'b00
+             # ==> all values are legal, alignment 4 bytes is implied
+             - base[29:0] in [0x00000000:0x3FFFFFFF]
            wr_illegal:
              - Unchanged
      mode:
@@ -66,6 +67,7 @@ hart0: &hart0
          warl:
            dependency_fields: []
            legal:
+             # Only Direct mode.
              - mode[1:0] in [0x0]
            wr_illegal:
              - Unchanged
