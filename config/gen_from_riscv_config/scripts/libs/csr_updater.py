@@ -1,6 +1,7 @@
 import re
 import yaml
 
+
 def csr_recursive_update(original_dict, csr_update):
     """
     Gets the data of the RISC-V Config Yaml file and
@@ -14,7 +15,7 @@ def csr_recursive_update(original_dict, csr_update):
         if key in original_dict:
             if isinstance(value, dict) and isinstance(original_dict[key], dict):
                 # If both are dicts, recurse
-                if key == 'type':
+                if key == "type":
                     # Replace the entire type dictionary
                     original_dict[key] = value
                 else:
@@ -22,6 +23,8 @@ def csr_recursive_update(original_dict, csr_update):
             else:
                 # Replace the original value with the update value
                 original_dict[key] = value
+
+
 def csr_formatter(srcfile, modifile):
     # Read original dictionary from YAML source file
     with open(srcfile, "r", encoding="utf-8") as file:
@@ -31,7 +34,7 @@ def csr_formatter(srcfile, modifile):
     if modifile is not None:
         with open(modifile, "r", encoding="utf-8") as file:
             updated_values = yaml.safe_load(file)
-    
+
     # Update original_dict with values from updated_values recursively
     csr_recursive_update(original_dict["hart0"], updated_values)
 

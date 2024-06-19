@@ -90,8 +90,9 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-             # All bits writable (first value of bitmask w/o cleared bits)
-                          - base[29:0] bitmask [0x3FFFFFFF, 0x00000000]
+             # The 30 bits of 'base' are suffixed with 2'b00
+             # ==> all values are legal, alignment 4 bytes is implied
+                          - base[29:0] in [0x00000000:0x3FFFFFFF]
                         wr_illegal:
                           - Unchanged
                 description: Vector base address.
@@ -105,6 +106,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
+             # Only Direct mode.
                           - mode[1:0] in [0x0]
                         wr_illegal:
                           - Unchanged
@@ -334,9 +336,9 @@ hart0:
                 lsb: 23
         rv64:
             accessible: false
-        description: The mstatus register keeps track of and controls the hart’s current
+        description: The mstatus register keeps track of and controls the hart's current
             operating state.
-        address: 768
+        address: 0x300
         priv_mode: M
     mip:
         reset-val: 0
@@ -710,6 +712,23 @@ hart0:
         description: MXLEN-bit read-only register containing the integer ID of the
             hardware thread running the code.
         address: 3860
+        priv_mode: M
+    mconfigptr:
+        rv32:
+            accessible: true
+            type:
+                ro_constant: 0x0
+            fields: []
+            shadow:
+            shadow_type: rw
+            msb: 31
+            lsb: 0
+        rv64:
+            accessible: false
+        reset-val: 0x0
+        description: MXLEN-bit read-only register that holds the physical address
+            of a configuration data structure.
+        address: 0xF15
         priv_mode: M
     mscratch:
         rv32:
@@ -1692,14 +1711,7 @@ hart0:
         priv_mode: M
     mcountinhibit:
         rv32:
-            accessible: true
-            type:
-                ro_constant: 0x0
-            fields: []
-            shadow:
-            shadow_type: rw
-            msb: 31
-            lsb: 0
+            accessible: false
         rv64:
             accessible: false
         reset-val: 0x0
@@ -3515,7 +3527,7 @@ hart0:
             accessible: false
         description: The mstatush register keeps track of and controls the hart’s
             current operating state.
-        address: 768
+        address: 0x310
         priv_mode: M
         reset-val: 0
     mideleg:

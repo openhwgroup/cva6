@@ -1,0 +1,25 @@
+diff --git a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+index a7536375f..27e88d16f 100644
+--- a/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
++++ b/vendor/riscv/riscv-config/riscv_config/schemas/schema_isa.yaml
+@@ -523,9 +523,9 @@ hart_schema:
+       schema:
+         description:
+           type: string
+-          default: The mstatus register keeps track of and controls the hart’s current
++          default: The mstatus register keeps track of and controls the hart's current
+             operating state.
+-        address: {type: integer, default: 768, allowed: [768]}
++        address: {type: integer, default: 0x300, allowed: [0x300]}
+         priv_mode: {type: string, default: M, allowed: [M]}
+         reset-val:
+           type: integer
+@@ -1506,7 +1506,7 @@ hart_schema:
+           type: string
+           default: The mstatush register keeps track of and controls the hart’s current
+             operating state.
+-        address: {type: integer, default: 768, allowed: [768]}
++        address: {type: integer, default: 0x310, allowed: [0x310]}
+         priv_mode: {type: string, default: M, allowed: [M]}
+         reset-val:
+           type: integer
