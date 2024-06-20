@@ -861,7 +861,7 @@ module csr_regfile
       dscratch0_d = dscratch0_q;
       dscratch1_d = dscratch1_q;
     end
-    mstatus_d                       = mstatus_q;
+    mstatus_d = mstatus_q;
     if (CVA6Cfg.RVH) begin
       hstatus_d                       = hstatus_q;
       vsstatus_d                      = vsstatus_q;
