@@ -863,8 +863,8 @@ module csr_regfile
     end
     mstatus_d = mstatus_q;
     if (CVA6Cfg.RVH) begin
-      hstatus_d                       = hstatus_q;
-      vsstatus_d                      = vsstatus_q;
+      hstatus_d  = hstatus_q;
+      vsstatus_d = vsstatus_q;
     end
 
     // check whether we come out of reset
