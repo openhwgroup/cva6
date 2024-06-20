@@ -909,7 +909,7 @@ module csr_regfile
       hgatp_d                  = hgatp_q;
     end
 
-      hedeleg_d                = hedeleg_q;
+    hedeleg_d = hedeleg_q;
 
     if (CVA6Cfg.RVS) begin
       sepc_d                   = sepc_q;
