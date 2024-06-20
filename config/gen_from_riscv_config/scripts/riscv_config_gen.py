@@ -29,7 +29,8 @@ from libs.utils import InstmdBlock
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GEN From RISC-V Config")
-    parser.add_argument("-s", "--srcFile", help="yaml input file")
+    parser.add_argument("-s", "--srcFile", help="isa_gen yaml input file")
+    parser.add_argument("-c", "--customFile", help=" custom_gen yaml input file")
     parser.add_argument("-d", "--destDir", help="write generated file to dir")
     parser.add_argument("-m", "--modif", help="ISA /CSR Formatter if exist")
     parser.add_argument("-i", "--temp", help="Full ISA /SPIKETemplate")
@@ -47,7 +48,7 @@ if __name__ == "__main__":
             spike_generator = SpikeGenerator(args.target, args.temp, args.modif)
             spike_generator.generateSpike(document)
     else:
-        e = CsrParser(args.srcFile, args.target, args.modif)
+        e = CsrParser(args.srcFile, args.customFile, args.target, args.modif)
         document = e.returnDocument()
         generator = CsrGenerator(args.target)
         generator.generateCSR(RstAddressBlock, document)

@@ -33,21 +33,23 @@ pip3 install -r requirements.txt
 ##  Usage 
 
 ```bash
-#Generate the Markdown-text /Restructred-text documentation for Control and Status Registers (CSR)
-python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
+#Generate Restructred-text documentation for Control and Status Registers (CSR)
+python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -c <../riscv-config/Config_Name/generated/custom_gen>.yaml-m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
 
-#Generate the Markdown-text /Restructred-text documentation for ISA extensions
+#Generate Restructred-text documentation for ISA extensions
 python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
+
 ```
 
 ##  Usage with cv32a65x 
 
 ```bash
-#Generate the Markdown-text /Restructred-text documentation for Control and Status Registers (CSR)
-python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
+#Generate  the Restructred-text documentation for Control and Status Registers (CSR)
+python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
 
-#Generate the Markdown-text /Restructred-text documentation for ISA extensions
+#Generate  the Restructred-text documentation for ISA extensions
 python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/cv32a65x/isa_updater.yaml -t cv32a65x
+
 ```
  
 You could find your output files in this directory : 
@@ -57,11 +59,13 @@ if the output is ISA Documentation:
                 
 if the output is CSR Documentation :
                 `<Config_Name>/csr/`
+               
                 
                 
 for more details about How to write CSR or ISA Updater,see [UPDATERS](##Updaters) section
 
 for more details about How to write ISA template ,see [Annexes2](##Annexes2) section
+
 
 
              
