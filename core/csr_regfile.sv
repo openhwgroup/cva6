@@ -812,7 +812,7 @@ module csr_regfile
     automatic logic [63:0] instret;
 
     if (CVA6Cfg.RVS) begin
-      satp            = satp_q;
+      satp = satp_q;
     end
     if (CVA6Cfg.RVH) begin
       hgatp           = hgatp_q;
