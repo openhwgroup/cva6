@@ -890,8 +890,8 @@ module csr_regfile
     mcounteren_d = mcounteren_q;
     mscratch_d   = mscratch_q;
     if (CVA6Cfg.RVH) begin
-      mtinst_d                 = mtinst_q;
-      mtval2_d                 = mtval2_q;
+      mtinst_d = mtinst_q;
+      mtval2_d = mtval2_q;
     end
     mtval_d                  = mtval_q;
     fiom_d                   = fiom_q;
