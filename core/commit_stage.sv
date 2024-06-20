@@ -36,6 +36,8 @@ module commit_stage
     input logic single_step_i,
     // The instruction we want to commit - ISSUE_STAGE
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    // The instruction is cancelled - ISSUE_STAGE
+    input logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_i,
     // Acknowledge that we are indeed committing - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_o,
     // Acknowledge that we are indeed committing - CSR_REGFILE
@@ -149,128 +151,151 @@ module commit_stage
     csr_write_fflags_o = 1'b0;
     flush_commit_o = 1'b0;
 
-    // we will not commit the instruction if we took an exception
-    // and we do not commit the instruction if we requested a halt
-    if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i) begin
-      if (CVA6Cfg.RVZCMP && commit_instr_i[0].is_macro_instr && commit_instr_i[0].is_last_macro_instr)
-        commit_macro_ack[0] = 1'b1;
-      else commit_macro_ack[0] = 1'b0;
-      // we can definitely write the register file
-      // if the instruction is not committing anything the destination
-      commit_ack_o[0] = 1'b1;
-      if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[0].op)) begin
-        we_fpr_o[0] = 1'b1;
+    // we do not commit the instruction yet if we requested a halt
+    if (commit_instr_i[0].valid && !halt_i) begin
+      // we will not commit the instruction if we took an exception
+      if (commit_instr_i[0].ex.valid) begin
+        // However we can drop it (with its exception)
+        if (commit_drop_i[0]) begin
+          commit_ack_o[0] = 1'b1;
+        end
       end else begin
-        we_gpr_o[0] = 1'b1;
-      end
-      // check whether the instruction we retire was a store
-      if ((!CVA6Cfg.RVA && commit_instr_i[0].fu == STORE) || (CVA6Cfg.RVA && commit_instr_i[0].fu == STORE && !instr_0_is_amo)) begin
-        // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
-        if (commit_lsu_ready_i) begin
-          commit_ack_o[0] = 1'b1;
-          commit_lsu_o = 1'b1;
-          // stall in case the store buffer is not able to accept anymore instructions
-        end else begin
-          commit_ack_o[0] = 1'b0;
+        commit_ack_o[0] = 1'b1;
+
+        if (CVA6Cfg.RVZCMP && commit_instr_i[0].is_macro_instr && commit_instr_i[0].is_last_macro_instr)
+          commit_macro_ack[0] = 1'b1;
+        else commit_macro_ack[0] = 1'b0;
+
+        if (!commit_drop_i[0]) begin
+          // we can definitely write the register file
+          // if the instruction is not committing anything the destination
+          if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[0].op)) begin
+            we_fpr_o[0] = 1'b1;
+          end else begin
+            we_gpr_o[0] = 1'b1;
+          end
         end
-      end
-      // ---------
-      // FPU Flags
-      // ---------
-      if (CVA6Cfg.FpPresent) begin
-        if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
-          // write the CSR with potential exception flags from retiring floating point instruction
-          csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
-          csr_write_fflags_o = 1'b1;
-          commit_ack_o[0] = 1'b1;
+
+        // check whether the instruction we retire was a store
+        if (commit_instr_i[0].fu == STORE && !(CVA6Cfg.RVA && instr_0_is_amo)) begin
+          // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
+          if (commit_lsu_ready_i) begin
+            commit_lsu_o = 1'b1;
+            // stall in case the store buffer is not able to accept anymore instructions
+          end else begin
+            commit_ack_o[0] = 1'b0;
+          end
         end
-      end
-      // ---------
-      // CSR Logic
-      // ---------
-      // check whether the instruction we retire was a CSR instruction and it did not
-      // throw an exception
-      if (commit_instr_i[0].fu == CSR) begin
-        // write the CSR file
-        csr_op_o    = commit_instr_i[0].op;
-        csr_wdata_o = commit_instr_i[0].result;
-        if (!csr_exception_i.valid) begin
-          commit_csr_o = 1'b1;
-          wdata_o[0] = csr_rdata_i;
-          commit_ack_o[0] = 1'b1;
-        end else begin
-          commit_ack_o[0] = 1'b0;
-          we_gpr_o[0] = 1'b0;
+        // ---------
+        // FPU Flags
+        // ---------
+        if (CVA6Cfg.FpPresent) begin
+          if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
+            if (!commit_drop_i[0]) begin
+              // write the CSR with potential exception flags from retiring floating point instruction
+              csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
+              csr_write_fflags_o = 1'b1;
+            end
+          end
         end
-      end
-      // ------------------
-      // SFENCE.VMA Logic
-      // ------------------
-      // sfence.vma is idempotent so we can safely re-execute it after returning
-      // from interrupt service routine
-      // check if this instruction was a SFENCE_VMA
-      if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_VMA) begin
-        // no store pending so we can flush the TLBs and pipeline
-        sfence_vma_o = no_st_pending_i;
-        // wait for the store buffer to drain until flushing the pipeline
-        commit_ack_o[0] = no_st_pending_i;
-      end
-      // ------------------
-      // HFENCE.VVMA Logic
-      // ------------------
-      // hfence.vvma is idempotent so we can safely re-execute it after returning
-      // from interrupt service routine
-      // check if this instruction was a HFENCE_VVMA
-      if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_VVMA) begin
-        // no store pending so we can flush the TLBs and pipeline
-        hfence_vvma_o   = no_st_pending_i;
-        // wait for the store buffer to drain until flushing the pipeline
-        commit_ack_o[0] = no_st_pending_i;
-      end
-      // ------------------
-      // HFENCE.GVMA Logic
-      // ------------------
-      // hfence.gvma is idempotent so we can safely re-execute it after returning
-      // from interrupt service routine
-      // check if this instruction was a HFENCE_GVMA
-      if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_GVMA) begin
-        // no store pending so we can flush the TLBs and pipeline
-        hfence_gvma_o   = no_st_pending_i;
-        // wait for the store buffer to drain until flushing the pipeline
-        commit_ack_o[0] = no_st_pending_i;
-      end
-      // ------------------
-      // FENCE.I Logic
-      // ------------------
-      // fence.i is idempotent so we can safely re-execute it after returning
-      // from interrupt service routine
-      // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
-      // and the private dcache. This is the most expensive instruction.
-      if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && CVA6Cfg.DCacheType == config_pkg::WB && commit_instr_i[0].fu != STORE)) begin
-        commit_ack_o[0] = no_st_pending_i;
-        // tell the controller to flush the I$
-        fence_i_o = no_st_pending_i;
-      end
-      // ------------------
-      // FENCE Logic
-      // ------------------
-      // fence is idempotent so we can safely re-execute it after returning
-      // from interrupt service routine
-      if (commit_instr_i[0].op == FENCE) begin
-        commit_ack_o[0] = no_st_pending_i;
-        // tell the controller to flush the D$
-        fence_o = no_st_pending_i;
-      end
-      // ------------------
-      // AMO
-      // ------------------
-      if (CVA6Cfg.RVA && instr_0_is_amo) begin
-        // AMO finished
-        commit_ack_o[0] = amo_resp_i.ack;
-        // flush the pipeline
-        flush_commit_o = amo_resp_i.ack;
-        amo_valid_commit_o = 1'b1;
-        we_gpr_o[0] = amo_resp_i.ack;
+        // ---------
+        // CSR Logic
+        // ---------
+        // check whether the instruction we retire was a CSR instruction and it did not
+        // throw an exception
+        if (commit_instr_i[0].fu == CSR) begin
+          // write the CSR file
+          csr_op_o    = commit_instr_i[0].op;
+          csr_wdata_o = commit_instr_i[0].result;
+          if (!commit_drop_i[0]) begin
+            if (!csr_exception_i.valid) begin
+              commit_csr_o = 1'b1;
+              wdata_o[0]   = csr_rdata_i;
+            end else begin
+              commit_ack_o[0] = 1'b0;
+              we_gpr_o[0] = 1'b0;
+            end
+          end
+        end
+        // ------------------
+        // SFENCE.VMA Logic
+        // ------------------
+        // sfence.vma is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        // check if this instruction was a SFENCE_VMA
+        if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_VMA) begin
+          if (!commit_drop_i[0]) begin
+            // no store pending so we can flush the TLBs and pipeline
+            sfence_vma_o = no_st_pending_i;
+            // wait for the store buffer to drain until flushing the pipeline
+            commit_ack_o[0] = no_st_pending_i;
+          end
+        end
+        // ------------------
+        // HFENCE.VVMA Logic
+        // ------------------
+        // hfence.vvma is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        // check if this instruction was a HFENCE_VVMA
+        if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_VVMA) begin
+          if (!commit_drop_i[0]) begin
+            // no store pending so we can flush the TLBs and pipeline
+            hfence_vvma_o   = no_st_pending_i;
+            // wait for the store buffer to drain until flushing the pipeline
+            commit_ack_o[0] = no_st_pending_i;
+          end
+        end
+        // ------------------
+        // HFENCE.GVMA Logic
+        // ------------------
+        // hfence.gvma is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        // check if this instruction was a HFENCE_GVMA
+        if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_GVMA) begin
+          if (!commit_drop_i[0]) begin
+            // no store pending so we can flush the TLBs and pipeline
+            hfence_gvma_o   = no_st_pending_i;
+            // wait for the store buffer to drain until flushing the pipeline
+            commit_ack_o[0] = no_st_pending_i;
+          end
+        end
+        // ------------------
+        // FENCE.I Logic
+        // ------------------
+        // fence.i is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
+        // and the private dcache. This is the most expensive instruction.
+        if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && CVA6Cfg.DCacheType == config_pkg::WB && commit_instr_i[0].fu != STORE)) begin
+          if (!commit_drop_i[0]) begin
+            commit_ack_o[0] = no_st_pending_i;
+            // tell the controller to flush the I$
+            fence_i_o = no_st_pending_i;
+          end
+        end
+        // ------------------
+        // FENCE Logic
+        // ------------------
+        // fence is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        if (commit_instr_i[0].op == FENCE) begin
+          if (!commit_drop_i[0]) begin
+            commit_ack_o[0] = no_st_pending_i;
+            // tell the controller to flush the D$
+            fence_o = no_st_pending_i;
+          end
+        end
+        // ------------------
+        // AMO
+        // ------------------
+        if (CVA6Cfg.RVA && instr_0_is_amo) begin
+          // AMO finished
+          commit_ack_o[0] = amo_resp_i.ack;
+          // flush the pipeline
+          flush_commit_o = amo_resp_i.ack;
+          amo_valid_commit_o = 1'b1;
+          we_gpr_o[0] = amo_resp_i.ack;
+        end
       end
     end
 
@@ -296,26 +321,29 @@ module commit_stage
         if (!exception_o.valid && !commit_instr_i[1].ex.valid
                                        && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-          if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op)) we_fpr_o[1] = 1'b1;
-          else we_gpr_o[1] = 1'b1;
-
           if (commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
             commit_macro_ack[1] = 1'b1;
           else commit_macro_ack[1] = 1'b0;
 
           commit_ack_o[1] = 1'b1;
 
-          // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
-          // exception flags
-          if (CVA6Cfg.FpPresent && commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
-            if (csr_write_fflags_o)
-              csr_wdata_o = {
-                {CVA6Cfg.XLEN - 5{1'b0}},
-                (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
-              };
-            else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
+          if (!commit_drop_i[1]) begin
+            if (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(commit_instr_i[1].op))
+              we_fpr_o[1] = 1'b1;
+            else we_gpr_o[1] = 1'b1;
 
-            csr_write_fflags_o = 1'b1;
+            // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
+            // exception flags
+            if (CVA6Cfg.FpPresent && commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+              if (csr_write_fflags_o)
+                csr_wdata_o = {
+                  {CVA6Cfg.XLEN - 5{1'b0}},
+                  (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
+                };
+              else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
+
+              csr_write_fflags_o = 1'b1;
+            end
           end
         end
       end
@@ -344,7 +372,7 @@ module commit_stage
     exception_o.gva   = 1'b0;
 
     // we need a valid instruction in the commit stage
-    if (commit_instr_i[0].valid) begin
+    if (commit_instr_i[0].valid && !commit_drop_i[0]) begin
       // ------------------------
       // check for CSR exception
       // ------------------------

@@ -74,6 +74,7 @@ module cva6_rvfi
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rd;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] commit_instr_result;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_instr_valid;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop;
 
   logic [CVA6Cfg.XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
@@ -139,6 +140,7 @@ module cva6_rvfi
   assign commit_instr_rd = instr.commit_instr_rd;
   assign commit_instr_result = instr.commit_instr_result;
   assign commit_instr_valid = instr.commit_instr_valid;
+  assign commit_drop = instr.commit_drop;
 
   assign ex_commit_cause = instr.ex_commit_cause;
   assign ex_commit_valid = instr.ex_commit_valid;
@@ -253,7 +255,7 @@ module cva6_rvfi
     end else if (lsu_wmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
       mem_n[lsu_addr_trans_id].lsu_wmask = lsu_wmask;
-      mem_n[lsu_addr_trans_id].lsu_wdata = wbdata[1];
+      mem_n[lsu_addr_trans_id].lsu_wdata = wbdata[STORE_WB];
     end
   end
 
@@ -272,8 +274,8 @@ module cva6_rvfi
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
-      exception = commit_instr_valid[i] && ex_commit_valid;
-      rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid) ||
+      exception = commit_instr_valid[i] && ex_commit_valid && !commit_drop[i];
+      rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid && !commit_drop[i]) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));

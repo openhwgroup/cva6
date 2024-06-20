@@ -459,6 +459,9 @@ module cva6
   // ID <-> COMMIT
   // --------------
   scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_id_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_id_commit;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_commit_id;
+
   // --------------
   // RVFI
   // --------------
@@ -668,59 +671,36 @@ module cva6
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
+  assign trans_id_ex_id[FLU_WB] = flu_trans_id_ex_id;
+  assign wbdata_ex_id[FLU_WB]   = flu_result_ex_id;
+  assign ex_ex_ex_id[FLU_WB]    = flu_exception_ex_id;
+  assign wt_valid_ex_id[FLU_WB] = flu_valid_ex_id;
+
+  assign trans_id_ex_id[STORE_WB] = store_trans_id_ex_id;
+  assign wbdata_ex_id[STORE_WB]   = store_result_ex_id;
+  assign ex_ex_ex_id[STORE_WB]    = store_exception_ex_id;
+  assign wt_valid_ex_id[STORE_WB] = store_valid_ex_id;
+
+  assign trans_id_ex_id[LOAD_WB] = load_trans_id_ex_id;
+  assign wbdata_ex_id[LOAD_WB]   = load_result_ex_id;
+  assign ex_ex_ex_id[LOAD_WB]    = load_exception_ex_id;
+  assign wt_valid_ex_id[LOAD_WB] = load_valid_ex_id;
+
+  assign trans_id_ex_id[FPU_WB] = fpu_trans_id_ex_id;
+  assign wbdata_ex_id[FPU_WB]   = fpu_result_ex_id;
+  assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
+  assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
+
   if (CVA6Cfg.CvxifEn) begin
-    assign trans_id_ex_id = {
-      x_trans_id_ex_id,
-      flu_trans_id_ex_id,
-      load_trans_id_ex_id,
-      store_trans_id_ex_id,
-      fpu_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      x_exception_ex_id,
-      flu_exception_ex_id,
-      load_exception_ex_id,
-      store_exception_ex_id,
-      fpu_exception_ex_id
-    };
-    assign wt_valid_ex_id = {
-      x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id
-    };
+    assign trans_id_ex_id[X_WB] = x_trans_id_ex_id;
+    assign wbdata_ex_id[X_WB]   = x_result_ex_id;
+    assign ex_ex_ex_id[X_WB]    = x_exception_ex_id;
+    assign wt_valid_ex_id[X_WB] = x_valid_ex_id;
   end else if (CVA6Cfg.EnableAccelerator) begin
-    assign trans_id_ex_id = {
-      flu_trans_id_ex_id,
-      load_trans_id_ex_id,
-      store_trans_id_ex_id,
-      fpu_trans_id_ex_id,
-      acc_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id, acc_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      flu_exception_ex_id,
-      load_exception_ex_id,
-      store_exception_ex_id,
-      fpu_exception_ex_id,
-      acc_exception_ex_id
-    };
-    assign wt_valid_ex_id = {
-      flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id, acc_valid_ex_id
-    };
-  end else begin
-    assign trans_id_ex_id = {
-      flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id
-    };
-    assign wbdata_ex_id = {
-      flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id
-    };
-    assign ex_ex_ex_id = {
-      flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id
-    };
-    assign wt_valid_ex_id = {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id};
+    assign trans_id_ex_id[ACC_WB] = acc_trans_id_ex_id;
+    assign wbdata_ex_id[ACC_WB]   = acc_result_ex_id;
+    assign ex_ex_ex_id[ACC_WB]    = acc_exception_ex_id;
+    assign wt_valid_ex_id[ACC_WB] = acc_valid_ex_id;
   end
 
   if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
@@ -797,7 +777,8 @@ module cva6
       .we_gpr_i             (we_gpr_commit_id),
       .we_fpr_i             (we_fpr_commit_id),
       .commit_instr_o       (commit_instr_id_commit),
-      .commit_ack_i         (commit_ack),
+      .commit_drop_o        (commit_drop_id_commit),
+      .commit_ack_i         (commit_ack_commit_id),
       // Performance Counters
       .stall_issue_o        (stall_issue),
       //RVFI
@@ -960,7 +941,8 @@ module cva6
       .dirty_fp_state_o  (dirty_fp_state),
       .single_step_i     (single_step_csr_commit || single_step_acc_commit),
       .commit_instr_i    (commit_instr_id_commit),
-      .commit_ack_o      (commit_ack),
+      .commit_drop_i     (commit_drop_id_commit),
+      .commit_ack_o      (commit_ack_commit_id),
       .commit_macro_ack_o(commit_macro_ack),
       .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
@@ -987,6 +969,8 @@ module cva6
       .flush_commit_o    (flush_commit),
       .*
   );
+
+  assign commit_ack = commit_ack_commit_id & ~commit_drop_id_commit;
 
   // ---------
   // CSR
@@ -1633,6 +1617,7 @@ module cva6
       .rs2_forwarding_i(rs2_forwarding_id_ex),
 
       .commit_instr_i(commit_instr_id_commit),
+      .commit_drop_i (commit_drop_id_commit),
       .ex_commit_i   (ex_commit),
       .priv_lvl_i    (priv_lvl),
 
