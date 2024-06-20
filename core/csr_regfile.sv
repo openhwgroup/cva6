@@ -2355,12 +2355,10 @@ module csr_regfile
   end
   assign mxr_o = mstatus_q.mxr;
   assign vmxr_o = CVA6Cfg.RVH ? vsstatus_q.mxr : '0;
-  assign hstatus_q.vtvm = CVA6Cfg.RVH ? 1'b1 : 1'b0;
-  assign tvm_o = (hstatus_q.vtvm && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
+  assign tvm_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
   assign tw_o = mstatus_q.tw;
   assign vtw_o = CVA6Cfg.RVH ? hstatus_q.vtw : '0;
-  assign hstatus_q.vtsr = CVA6Cfg.RVH ? 1'b1 : 1'b0;
-  assign tsr_o = (hstatus_q.vtsr && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  assign tsr_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
   assign halt_csr_o = wfi_q;
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];
