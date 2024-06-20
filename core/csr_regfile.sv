@@ -307,8 +307,7 @@ module csr_regfile
       (riscv::csr_t'(csr_addr_i)), v_q
   ) : csr_addr;
   assign fs_o = mstatus_q.fs;
-  assign vsstatus_q.fs = CVA6Cfg.RVH ? riscv::Off : 2'b00;
-  assign vfs_o = (vsstatus_q.fs) ? vsstatus_q.fs : riscv::Off;
+  assign vfs_o = (CVA6Cfg.RVH) ? vsstatus_q.fs : riscv::Off;
   assign vs_o = mstatus_q.vs;
   // ----------------
   // CSR Read logic
