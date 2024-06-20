@@ -880,8 +880,8 @@ module csr_regfile
     end
 
     if (CVA6Cfg.RVS) begin
-      medeleg_d                = medeleg_q;
-      mideleg_d                = mideleg_q;
+      medeleg_d = medeleg_q;
+      mideleg_d = mideleg_q;
     end
     mip_d        = mip_q;
     mie_d        = mie_q;
