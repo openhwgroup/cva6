@@ -169,7 +169,7 @@ package ariane_pkg;
   localparam int unsigned FETCH_FIFO_DEPTH = 4;
 
   localparam int unsigned SUPERSCALAR = cva6_config_pkg::CVA6ConfigSuperscalarEn;
-  localparam int unsigned SPECULATIVE_SB = cva6_config_pkg::CVA6ConfigSpeculativeScoreboard;
+  localparam int unsigned SPECULATIVE_SB = SUPERSCALAR;
 
   typedef enum logic [2:0] {
     NoCF,    // No control flow prediction

@@ -19,7 +19,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
-  localparam CVA6ConfigSpeculativeScoreboard = 0;
 
   localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 

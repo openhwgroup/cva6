@@ -23,7 +23,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigWtDcacheWbufDepth = 2;  // wtcache
 
   localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
-  localparam CVA6ConfigSpeculativeScoreboard = 0;
 
   localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
