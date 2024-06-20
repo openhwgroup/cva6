@@ -883,12 +883,12 @@ module csr_regfile
       medeleg_d                = medeleg_q;
       mideleg_d                = mideleg_q;
     end
-    mip_d                    = mip_q;
-    mie_d                    = mie_q;
-    mepc_d                   = mepc_q;
-    mcause_d                 = mcause_q;
-    mcounteren_d             = mcounteren_q;
-    mscratch_d               = mscratch_q;
+    mip_d        = mip_q;
+    mie_d        = mie_q;
+    mepc_d       = mepc_q;
+    mcause_d     = mcause_q;
+    mcounteren_d = mcounteren_q;
+    mscratch_d   = mscratch_q;
     if (CVA6Cfg.RVH) begin
       mtinst_d                 = mtinst_q;
       mtval2_d                 = mtval2_q;
