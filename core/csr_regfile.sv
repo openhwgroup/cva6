@@ -2330,7 +2330,7 @@ module csr_regfile
   assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
-  assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  assign asid_o = CVA6Cfg.RVS ? satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vs_asid_o = CVA6Cfg.RVH ? vsatp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vmid_o = CVA6Cfg.RVH ? hgatp_q.vmid[CVA6Cfg.VMID_WIDTH-1:0] : '0;
   assign sum_o = mstatus_q.sum;
