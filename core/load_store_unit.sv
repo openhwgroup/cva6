@@ -147,9 +147,9 @@ module load_store_unit
     // AMO response - CACHE
     input  amo_resp_t                               amo_resp_i,
     // PMP configuration - CSR_REGFILE
-    input  riscv::pmpcfg_t [15:0]                   pmpcfg_i,
+    input  riscv::pmpcfg_t [63:0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE
-    input  logic           [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input  logic           [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
     // RVFI inforamtion - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,

@@ -162,10 +162,10 @@ module csr_regfile
     input logic [CVA6Cfg.XLEN-1:0] perf_data_i,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic perf_we_o,
-    // PMP configuration containing pmpcfg for max 16 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [15:0] pmpcfg_o,
+    // PMP configuration containing pmpcfg for max 64 PMPs - ACC_DISPATCHER
+    output riscv::pmpcfg_t [63:0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
+    output logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -274,10 +274,9 @@ module csr_regfile
   logic [63:0] cycle_q, cycle_d;
   logic [63:0] instret_q, instret_d;
 
-  riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d, pmpcfg_next;
-  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
+  riscv::pmpcfg_t [63:0] pmpcfg_q, pmpcfg_d, pmpcfg_next;
+  logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
-  logic [3:0] index;
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
@@ -294,7 +293,7 @@ module csr_regfile
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
-  assign pmpcfg_o  = pmpcfg_q[15:0];
+  assign pmpcfg_o  = pmpcfg_q[63:0];
   assign pmpaddr_o = pmpaddr_q;
 
   riscv::fcsr_t fcsr_q, fcsr_d;
@@ -329,7 +328,6 @@ module csr_regfile
     virtual_read_access_exception = 1'b0;
     csr_rdata = '0;
     perf_addr_o = csr_addr.address[11:0];
-    index = '0;
 
     if (csr_read) begin
       unique case (conv_csr_addr.address)
@@ -762,14 +760,31 @@ module csr_regfile
           end
         end
         // PMPs
-        riscv::CSR_PMPCFG0: csr_rdata = pmpcfg_q[CVA6Cfg.XLEN/8-1:0];
-        riscv::CSR_PMPCFG1:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = pmpcfg_q[7:4];
-        else read_access_exception = 1'b1;
-        riscv::CSR_PMPCFG2: csr_rdata = pmpcfg_q[8+:CVA6Cfg.XLEN/8];
-        riscv::CSR_PMPCFG3:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = pmpcfg_q[15:12];
-        else read_access_exception = 1'b1;
+        riscv::CSR_PMPCFG0,
+                riscv::CSR_PMPCFG1,
+                riscv::CSR_PMPCFG2,
+                riscv::CSR_PMPCFG3,
+                riscv::CSR_PMPCFG4,
+                riscv::CSR_PMPCFG5,
+                riscv::CSR_PMPCFG6,
+                riscv::CSR_PMPCFG7,
+                riscv::CSR_PMPCFG8,
+                riscv::CSR_PMPCFG9,
+                riscv::CSR_PMPCFG10,
+                riscv::CSR_PMPCFG11,
+                riscv::CSR_PMPCFG12,
+                riscv::CSR_PMPCFG13,
+                riscv::CSR_PMPCFG14,
+                riscv::CSR_PMPCFG15: begin
+          // index is calculated using PMPCFG0 as the offset
+          automatic logic [11:0] index = csr_addr.csr_decode.address[7:0] - riscv::CSR_PMPCFG0;
+
+          // if index is not even and XLEN==64, raise exception
+          if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) read_access_exception = 1'b1;
+          else begin
+            csr_rdata = pmpcfg_q[index*4+:CVA6Cfg.XLEN/8];
+          end
+        end
         // PMPADDR
         riscv::CSR_PMPADDR0,
                 riscv::CSR_PMPADDR1,
@@ -786,9 +801,57 @@ module csr_regfile
                 riscv::CSR_PMPADDR12,
                 riscv::CSR_PMPADDR13,
                 riscv::CSR_PMPADDR14,
-                riscv::CSR_PMPADDR15: begin
-          // index is specified by the last byte in the address
-          index = csr_addr.csr_decode.address[3:0];
+                riscv::CSR_PMPADDR15,
+                riscv::CSR_PMPADDR16,
+                riscv::CSR_PMPADDR17,
+                riscv::CSR_PMPADDR18,
+                riscv::CSR_PMPADDR19,
+                riscv::CSR_PMPADDR20,
+                riscv::CSR_PMPADDR21,
+                riscv::CSR_PMPADDR22,
+                riscv::CSR_PMPADDR23,
+                riscv::CSR_PMPADDR24,
+                riscv::CSR_PMPADDR25,
+                riscv::CSR_PMPADDR26,
+                riscv::CSR_PMPADDR27,
+                riscv::CSR_PMPADDR28,
+                riscv::CSR_PMPADDR29,
+                riscv::CSR_PMPADDR30,
+                riscv::CSR_PMPADDR31,
+                riscv::CSR_PMPADDR32,
+                riscv::CSR_PMPADDR33,
+                riscv::CSR_PMPADDR34,
+                riscv::CSR_PMPADDR35,
+                riscv::CSR_PMPADDR36,
+                riscv::CSR_PMPADDR37,
+                riscv::CSR_PMPADDR38,
+                riscv::CSR_PMPADDR39,
+                riscv::CSR_PMPADDR40,
+                riscv::CSR_PMPADDR41,
+                riscv::CSR_PMPADDR42,
+                riscv::CSR_PMPADDR43,
+                riscv::CSR_PMPADDR44,
+                riscv::CSR_PMPADDR45,
+                riscv::CSR_PMPADDR46,
+                riscv::CSR_PMPADDR47,
+                riscv::CSR_PMPADDR48,
+                riscv::CSR_PMPADDR49,
+                riscv::CSR_PMPADDR50,
+                riscv::CSR_PMPADDR51,
+                riscv::CSR_PMPADDR52,
+                riscv::CSR_PMPADDR53,
+                riscv::CSR_PMPADDR54,
+                riscv::CSR_PMPADDR55,
+                riscv::CSR_PMPADDR56,
+                riscv::CSR_PMPADDR57,
+                riscv::CSR_PMPADDR58,
+                riscv::CSR_PMPADDR59,
+                riscv::CSR_PMPADDR60,
+                riscv::CSR_PMPADDR61,
+                riscv::CSR_PMPADDR62,
+                riscv::CSR_PMPADDR63: begin
+          // index is calculated using PMPADDR0 as the offset
+          automatic logic [11:0] index = csr_addr.csr_decode.address[7:0] - riscv::CSR_PMPADDR0;
           // Important: we only support granularity 8 bytes (G=1)
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
@@ -810,7 +873,6 @@ module csr_regfile
     automatic satp_t vsatp;
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
-
 
     satp            = satp_q;
     hgatp           = hgatp_q;
@@ -1540,26 +1602,30 @@ module csr_regfile
         // 1. refuse to update any locked entry
         // 2. also refuse to update the entry below a locked TOR entry
         // Note that writes to pmpcfg below a locked TOR entry are valid
-        riscv::CSR_PMPCFG0:
-        for (int i = 0; i < (CVA6Cfg.XLEN / 8); i++)
-        if (!pmpcfg_q[i].locked) pmpcfg_d[i] = csr_wdata[i*8+:8];
-        riscv::CSR_PMPCFG1: begin
-          if (CVA6Cfg.XLEN == 32) begin
-            for (int i = 0; i < 4; i++)
-            if (!pmpcfg_q[i+4].locked) pmpcfg_d[i+4] = csr_wdata[i*8+:8];
-          end else begin
-            update_access_exception = 1'b1;
-          end
-        end
-        riscv::CSR_PMPCFG2:
-        for (int i = 0; i < (CVA6Cfg.XLEN / 8); i++)
-        if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8] = csr_wdata[i*8+:8];
-        riscv::CSR_PMPCFG3: begin
-          if (CVA6Cfg.XLEN == 32) begin
-            for (int i = 0; i < 4; i++)
-            if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12] = csr_wdata[i*8+:8];
-          end else begin
-            update_access_exception = 1'b1;
+        riscv::CSR_PMPCFG0,
+                riscv::CSR_PMPCFG1,
+                riscv::CSR_PMPCFG2,
+                riscv::CSR_PMPCFG3,
+                riscv::CSR_PMPCFG4,
+                riscv::CSR_PMPCFG5,
+                riscv::CSR_PMPCFG6,
+                riscv::CSR_PMPCFG7,
+                riscv::CSR_PMPCFG8,
+                riscv::CSR_PMPCFG9,
+                riscv::CSR_PMPCFG10,
+                riscv::CSR_PMPCFG11,
+                riscv::CSR_PMPCFG12,
+                riscv::CSR_PMPCFG13,
+                riscv::CSR_PMPCFG14,
+                riscv::CSR_PMPCFG15: begin
+          // index is calculated using PMPCFG0 as the offset
+          automatic logic [11:0] index = csr_addr.csr_decode.address[7:0] - riscv::CSR_PMPCFG0;
+
+          // if index is not even and XLEN==64, raise exception
+          if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) update_access_exception = 1'b1;
+          else begin
+            for (int i = index; i < index + (CVA6Cfg.XLEN / 8); i++) 
+              if (!pmpcfg_q[i].locked) pmpcfg_d[i] = csr_wdata[i*8+:8];
           end
         end
         riscv::CSR_PMPADDR0,
@@ -1577,9 +1643,57 @@ module csr_regfile
                 riscv::CSR_PMPADDR12,
                 riscv::CSR_PMPADDR13,
                 riscv::CSR_PMPADDR14,
-                riscv::CSR_PMPADDR15:  begin
-          // index is specified by the last byte in the address
-          automatic logic [3:0] index = csr_addr.csr_decode.address[3:0];
+                riscv::CSR_PMPADDR15,
+                riscv::CSR_PMPADDR16,
+                riscv::CSR_PMPADDR17,
+                riscv::CSR_PMPADDR18,
+                riscv::CSR_PMPADDR19,
+                riscv::CSR_PMPADDR20,
+                riscv::CSR_PMPADDR21,
+                riscv::CSR_PMPADDR22,
+                riscv::CSR_PMPADDR23,
+                riscv::CSR_PMPADDR24,
+                riscv::CSR_PMPADDR25,
+                riscv::CSR_PMPADDR26,
+                riscv::CSR_PMPADDR27,
+                riscv::CSR_PMPADDR28,
+                riscv::CSR_PMPADDR29,
+                riscv::CSR_PMPADDR30,
+                riscv::CSR_PMPADDR31,
+                riscv::CSR_PMPADDR32,
+                riscv::CSR_PMPADDR33,
+                riscv::CSR_PMPADDR34,
+                riscv::CSR_PMPADDR35,
+                riscv::CSR_PMPADDR36,
+                riscv::CSR_PMPADDR37,
+                riscv::CSR_PMPADDR38,
+                riscv::CSR_PMPADDR39,
+                riscv::CSR_PMPADDR40,
+                riscv::CSR_PMPADDR41,
+                riscv::CSR_PMPADDR42,
+                riscv::CSR_PMPADDR43,
+                riscv::CSR_PMPADDR44,
+                riscv::CSR_PMPADDR45,
+                riscv::CSR_PMPADDR46,
+                riscv::CSR_PMPADDR47,
+                riscv::CSR_PMPADDR48,
+                riscv::CSR_PMPADDR49,
+                riscv::CSR_PMPADDR50,
+                riscv::CSR_PMPADDR51,
+                riscv::CSR_PMPADDR52,
+                riscv::CSR_PMPADDR53,
+                riscv::CSR_PMPADDR54,
+                riscv::CSR_PMPADDR55,
+                riscv::CSR_PMPADDR56,
+                riscv::CSR_PMPADDR57,
+                riscv::CSR_PMPADDR58,
+                riscv::CSR_PMPADDR59,
+                riscv::CSR_PMPADDR60,
+                riscv::CSR_PMPADDR61,
+                riscv::CSR_PMPADDR62,
+                riscv::CSR_PMPADDR63: begin
+          // index is calculated using PMPADDR0 as the offset
+          automatic logic [11:0] index = csr_addr.csr_decode.address[7:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
             pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
@@ -2427,7 +2541,7 @@ module csr_regfile
       // wait for interrupt
       wfi_q                  <= 1'b0;
       // pmp
-      for (int i = 0; i < 16; i++) begin
+      for (int i = 0; i < 64; i++) begin
         if (i < CVA6Cfg.NrPMPEntries) begin
           pmpcfg_q[i]  <= riscv::pmpcfg_t'(CVA6Cfg.PMPCfgRstVal[i]);
           pmpaddr_q[i] <= CVA6Cfg.PMPAddrRstVal[i][CVA6Cfg.PLEN-3:0];
@@ -2514,7 +2628,7 @@ module csr_regfile
 
   // write logic pmp
   always_comb begin : write
-    for (int i = 0; i < 16; i++) begin
+    for (int i = 0; i < 64; i++) begin
       if (i < CVA6Cfg.NrPMPEntries) begin
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
           // PMP locked logic is handled in the CSR write process above

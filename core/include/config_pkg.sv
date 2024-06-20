@@ -103,11 +103,11 @@ package config_pkg;
     // PMP entries number
     int unsigned                 NrPMPEntries;
     // PMP CSR configuration reset values
-    logic [15:0][63:0]           PMPCfgRstVal;
+    logic [63:0][63:0]           PMPCfgRstVal;
     // PMP CSR address reset values
-    logic [15:0][63:0]           PMPAddrRstVal;
+    logic [63:0][63:0]           PMPAddrRstVal;
     // PMP CSR read-only bits
-    bit [15:0]                   PMPEntryReadOnly;
+    bit [63:0]                   PMPEntryReadOnly;
     // PMA non idempotent rules number
     int unsigned                 NrNonIdempotentRules;
     // PMA NonIdempotent region base address
@@ -277,9 +277,9 @@ package config_pkg;
     bit                          TvalEn;
     bit                          DirectVecOnly;
     int unsigned                 NrPMPEntries;
-    logic [15:0][63:0]           PMPCfgRstVal;
-    logic [15:0][63:0]           PMPAddrRstVal;
-    bit [15:0]                   PMPEntryReadOnly;
+    logic [63:0][63:0]           PMPCfgRstVal;
+    logic [63:0][63:0]           PMPAddrRstVal;
+    bit [63:0]                   PMPEntryReadOnly;
     noc_type_e                   NOCType;
     int unsigned                 NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
@@ -351,7 +351,7 @@ package config_pkg;
     assert (Cfg.NrNonIdempotentRules <= NrMaxRules);
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
-    assert (Cfg.NrPMPEntries <= 16);
+    assert (Cfg.NrPMPEntries <= 64);
 `endif
     // pragma translate_on
   endfunction

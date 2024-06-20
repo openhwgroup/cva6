@@ -158,8 +158,8 @@
   logic [Cfg.XLEN-1:0] dcache_q; \
   logic [Cfg.XLEN-1:0] icache_q; \
   logic [Cfg.XLEN-1:0] acc_cons_q; \
-  riscv::pmpcfg_t [15:0] pmpcfg_q; \
-  logic [15:0][Cfg.PLEN-3:0] pmpaddr_q; \
+  riscv::pmpcfg_t [63:0] pmpcfg_q; \
+  logic [63:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
 
 `endif  // RVFI_TYPES_SVH

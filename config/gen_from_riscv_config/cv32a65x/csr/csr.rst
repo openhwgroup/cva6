@@ -65,9 +65,9 @@ Register Summary
 +-------------+---------------------+-------------+----------------------------------------------------------------------------------------------------+
 | 0x344       | MIP_                | MRW         | The mip register is an MXLEN-bit read/write register containing information on pending interrupts. |
 +-------------+---------------------+-------------+----------------------------------------------------------------------------------------------------+
-| 0x3a0-0x3a3 | PMPCFG[0-3]_        | MRW         | PMP configuration register                                                                         |
+| 0x3a0-0x3af | PMPCFG[0-15]_        | MRW         | PMP configuration register                                                                         |
 +-------------+---------------------+-------------+----------------------------------------------------------------------------------------------------+
-| 0x3b0-0x3bf | PMPADDR[0-15]_      | MRW         | Physical memory protection address register                                                        |
+| 0x3b0-0x3ef | PMPADDR[0-63]_      | MRW         | Physical memory protection address register                                                        |
 +-------------+---------------------+-------------+----------------------------------------------------------------------------------------------------+
 | 0xb00       | MCYCLE_             | MRW         | Counts the number of clock cycles executed from an arbitrary point in time.                        |
 +-------------+---------------------+-------------+----------------------------------------------------------------------------------------------------+
@@ -375,10 +375,10 @@ MIP
 | [31:13] | RESERVED_13  | 0x0           | WPRI   |                | *Reserved*                             |
 +---------+--------------+---------------+--------+----------------+----------------------------------------+
 
-PMPCFG[0-3]
+PMPCFG[0-15]
 -----------
 
-:Address: 0x3a0-0x3a3
+:Address: 0x3a0-0x3af
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: PMP configuration register
@@ -395,10 +395,10 @@ PMPCFG[0-3]
 | [31:24] | PMP[I*4 + 3]CFG | 0x0           | WARL   | 0x00 - 0xFF    | pmp configuration bits |
 +---------+-----------------+---------------+--------+----------------+------------------------+
 
-PMPADDR[0-15]
+PMPADDR[0-63]
 -------------
 
-:Address: 0x3b0-0x3bf
+:Address: 0x3b0-0x3ef
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: Physical memory protection address register
