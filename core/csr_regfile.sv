@@ -815,8 +815,8 @@ module csr_regfile
       satp = satp_q;
     end
     if (CVA6Cfg.RVH) begin
-      hgatp           = hgatp_q;
-      vsatp           = vsatp_q;
+      hgatp = hgatp_q;
+      vsatp = vsatp_q;
     end
     instret         = instret_q;
 
