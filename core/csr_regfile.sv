@@ -194,7 +194,6 @@ module csr_regfile
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
 
-  
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
   logic virtual_read_access_exception, virtual_update_access_exception, virtual_privilege_violation;
