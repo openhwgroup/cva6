@@ -2087,8 +2087,7 @@ module csr_regfile
 
   assign irq_ctrl_o.mie = mie_q;
   assign irq_ctrl_o.mip = mip_q;
-  assign vsstatus_q.sie = CVA6Cfg.RVH ? 1'b1 : 1'b0;
-  assign irq_ctrl_o.sie = (vsstatus_q.sie && v_q) ? vsstatus_q.sie : mstatus_q.sie;
+  assign irq_ctrl_o.sie = (CVA6Cfg.RVH && v_q) ? vsstatus_q.sie : mstatus_q.sie;
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
   assign irq_ctrl_o.global_enable = (~debug_mode_q)
