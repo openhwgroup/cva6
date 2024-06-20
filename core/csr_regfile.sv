@@ -856,10 +856,10 @@ module csr_regfile
     v_d                             = v_q;
     debug_mode_d                    = debug_mode_q;
     if (CVA6Cfg.DebugEn) begin
-      dcsr_d                          = dcsr_q;
-      dpc_d                           = dpc_q;
-      dscratch0_d                     = dscratch0_q;
-      dscratch1_d                     = dscratch1_q;
+      dcsr_d      = dcsr_q;
+      dpc_d       = dpc_q;
+      dscratch0_d = dscratch0_q;
+      dscratch1_d = dscratch1_q;
     end
     mstatus_d                       = mstatus_q;
     if (CVA6Cfg.RVH) begin
