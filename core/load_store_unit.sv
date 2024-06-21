@@ -145,7 +145,7 @@ module load_store_unit
     // AMO request - CACHE
     output amo_req_t                                amo_req_o,
     // AMO response - CACHE
-    input  amo_resp_t                               amo_resp_i,
+    input  amo_resp_t                                                 amo_resp_i,
     // PMP configuration - CSR_REGFILE
     input  riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE
