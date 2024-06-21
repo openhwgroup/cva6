@@ -9,7 +9,7 @@ spike_param_tree:
   max_steps: 200000
   max_steps_enabled: false
   isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
-  priv: MSU
+  priv: M
   core_configs:
     - isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
       marchid: 0x3
@@ -21,8 +21,8 @@ spike_param_tree:
       pmpaddr0: 0x0
       pmpcfg0: 0x0
       pmpregions: 0x0
-      priv: MSU
-      status_fs_field_we: false
-      status_fs_field_we_enable: false
-      status_vs_field_we: false
-      status_vs_field_we_enable: false
+      priv: M
+      misa_we: false
+      mstatus_write_mask: 0x00000088
+      mstatus_override_mask: 0x00001800
+
