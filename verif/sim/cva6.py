@@ -158,6 +158,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
       else:
         cmd = re.sub(r"\<variant\>", isa, cmd)
         cmd = re.sub(r"\<priv\>", priv, cmd)
+        cmd = re.sub(r"\<target\>", target, cmd)
       return cmd
   logging.error("Cannot find ISS %0s" % iss)
   sys.exit(RET_FAIL)

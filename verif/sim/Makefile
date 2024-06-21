@@ -63,8 +63,9 @@ endif
 spike_yaml ?= $(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 
 # Set up flags for Spike solo and tandem invocations, but only if parameter file exists.
+spike_params_final = $(spike_params)
 ifneq ($(wildcard $(spike_yaml)),)
-  spike_params += --yaml-param $(spike_yaml)
+  spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
   spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 endif
 
@@ -139,7 +140,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params) -l $(elf)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
 	cp $(log).iss $(log)
 
 ###############################################################################
@@ -193,7 +194,6 @@ COMMON_PLUS_ARGS = \
         $(spike-yaml-plusarg) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
-	$(spike-yaml-plusarg) \
 	+report_file=$(log).yaml +core_name=$(target)
 
 ifneq ($(UVM_VERBOSITY),)
@@ -437,7 +437,7 @@ questa-testharness:
 # Common targets and rules
 ###############################################################################
 
-clean_all: vcs_clean_all 
+clean_all: vcs_clean_all
 	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
