@@ -257,11 +257,11 @@ ifneq ($(DEBUG),)               # If RTL DEBUG support requested
 endif
 
 ifneq ($(SPIKE_TANDEM),)
-ALL_SIMV_UVM_FLAGS += +scoreboard_enabled=1
-ALL_XRUN_SIMV_UVM_FLAGS += +scoreboard_enabled=1
+ALL_SIMV_UVM_FLAGS += +tandem_enabled=1
+ALL_XRUN_SIMV_UVM_FLAGS += +tandem_enabled=1
 else
-ALL_SIMV_UVM_FLAGS += +scoreboard_enabled=0
-ALL_XRUN_SIMV_UVM_FLAGS += +scoreboard_enabled=0
+ALL_SIMV_UVM_FLAGS += +tandem_enabled=0
+ALL_XRUN_SIMV_UVM_FLAGS += +tandem_enabled=0
 endif
 
 ### VCS UVM rules
