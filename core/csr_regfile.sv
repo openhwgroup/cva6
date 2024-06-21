@@ -1624,8 +1624,8 @@ module csr_regfile
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) update_access_exception = 1'b1;
           else begin
-            for (int i = index; i < index + (CVA6Cfg.XLEN / 8); i++) 
-              if (!pmpcfg_q[i].locked) pmpcfg_d[i] = csr_wdata[i*8+:8];
+            for (int i = index; i < index + (CVA6Cfg.XLEN / 8); i++)
+            if (!pmpcfg_q[i].locked) pmpcfg_d[i] = csr_wdata[i*8+:8];
           end
         end
         riscv::CSR_PMPADDR0,
