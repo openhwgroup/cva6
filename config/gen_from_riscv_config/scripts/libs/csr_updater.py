@@ -25,18 +25,22 @@ def csr_recursive_update(original_dict, csr_update):
                 original_dict[key] = value
 
 
-def csr_formatter(srcfile, modifile):
+def csr_formatter(srcfile, customfile, modifile):
     # Read original dictionary from YAML source file
     with open(srcfile, "r", encoding="utf-8") as file:
         original_dict = yaml.safe_load(file)
-
+    with open(customfile, "r", encoding="utf-8") as file:
+        custom_dict = yaml.safe_load(file)
+    
+    isa_data = original_dict.copy()
+    isa_data['hart0'].update(custom_dict["hart0"])
     updated_values = {}
     if modifile is not None:
         with open(modifile, "r", encoding="utf-8") as file:
             updated_values = yaml.safe_load(file)
 
     # Update original_dict with values from updated_values recursively
-    csr_recursive_update(original_dict["hart0"], updated_values)
+    csr_recursive_update(isa_data["hart0"], updated_values)
 
     # Identify and remove keys within the range specified for each register
     keys_to_remove = []
@@ -71,12 +75,12 @@ def csr_formatter(srcfile, modifile):
             for k in keys_to_remove:
                 dictionary.pop(k)
 
-        remove_keys_recursive(original_dict["hart0"])
-        remove_keys_recursive(original_dict["hart0"])
+        remove_keys_recursive(isa_data["hart0"])
+        remove_keys_recursive(isa_data["hart0"])
     # Remove keys from original_dict
     for k in keys_to_remove:
-        original_dict["hart0"].pop(k, None)
+        isa_data["hart0"].pop(k, None)
     # Remove keys from original_dict
     for k in keys_to_remove:
-        original_dict.pop(k, None)
-    return original_dict
+        isa_data.pop(k, None)
+    return isa_data
