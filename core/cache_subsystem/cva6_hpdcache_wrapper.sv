@@ -180,14 +180,14 @@ module cva6_hpdcache_wrapper
 
       cva6_hpdcache_if_adapter #(
           .CVA6Cfg              (CVA6Cfg),
-          .HPDcacheCfg          (HPDcacheCfg),
+          .hpdcacheCfg          (HPDcacheCfg),
           .hpdcache_tag_t       (hpdcache_tag_t),
           .hpdcache_req_offset_t(hpdcache_req_offset_t),
           .hpdcache_req_sid_t   (hpdcache_req_sid_t),
           .hpdcache_req_t       (hpdcache_req_t),
           .hpdcache_rsp_t       (hpdcache_rsp_t),
-          .dcache_req_i_t       (dcache_req_i_t),
-          .dcache_req_o_t       (dcache_req_o_t),
+          .dbus_req_t           (dcache_req_i_t),
+          .dbus_rsp_t           (dcache_req_o_t),
           .is_load_port         (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
@@ -214,14 +214,14 @@ module cva6_hpdcache_wrapper
 
     cva6_hpdcache_if_adapter #(
         .CVA6Cfg              (CVA6Cfg),
-        .HPDcacheCfg          (HPDcacheCfg),
+        .hpdcacheCfg          (HPDcacheCfg),
         .hpdcache_tag_t       (hpdcache_tag_t),
         .hpdcache_req_offset_t(hpdcache_req_offset_t),
         .hpdcache_req_sid_t   (hpdcache_req_sid_t),
         .hpdcache_req_t       (hpdcache_req_t),
         .hpdcache_rsp_t       (hpdcache_rsp_t),
-        .dcache_req_i_t       (dcache_req_i_t),
-        .dcache_req_o_t       (dcache_req_o_t),
+        .dbus_req_t           (dcache_req_i_t),
+        .dbus_rsp_t           (dcache_req_o_t),
         .is_load_port         (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,
@@ -319,7 +319,7 @@ module cva6_hpdcache_wrapper
   endgenerate
 
   hwpf_stride_wrapper #(
-      .HPDcacheCfg          (HPDcacheCfg),
+      .hpdcacheCfg          (HPDcacheCfg),
       .NUM_HW_PREFETCH      (NrHwPrefetchers),
       .NUM_SNOOP_PORTS      (3),
       .hpdcache_tag_t       (hpdcache_tag_t),
@@ -364,7 +364,7 @@ module cva6_hpdcache_wrapper
   );
 
   hpdcache #(
-      .HPDcacheCfg          (HPDcacheCfg),
+      .hpdcacheCfg          (HPDcacheCfg),
       .wbuf_timecnt_t       (hpdcache_wbuf_timecnt_t),
       .hpdcache_tag_t       (hpdcache_tag_t),
       .hpdcache_data_word_t (hpdcache_data_word_t),
