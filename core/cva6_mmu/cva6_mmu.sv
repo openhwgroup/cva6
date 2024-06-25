@@ -95,7 +95,7 @@ module cva6_mmu
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
     // PTW memory interface
-    input  dcache_req_o_t req_port_i,
+    input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
 
     // PMP
