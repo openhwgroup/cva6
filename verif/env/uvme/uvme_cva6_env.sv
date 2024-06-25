@@ -2,6 +2,7 @@
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,6 +43,8 @@ class uvme_cva6_env_c extends uvm_env;
 
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
+   uvma_interrupt_agent_c interrupt_agent;
+   uvma_debug_agent_c     debug_agent;
    uvma_cvxif_agent_c     cvxif_agent;
    uvma_axi_agent_c       axi_agent;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
@@ -243,6 +246,10 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
+   uvm_config_db#(uvma_interrupt_cfg_c) ::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+
+   uvm_config_db#(uvma_debug_cfg_c)     ::set(this, "debug_agent", "cfg", cfg.debug_cfg);
+
    uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
 
    uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
@@ -263,6 +270,8 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
+   uvm_config_db#(uvma_interrupt_cntxt_c) ::set(this, "interrupt_agent",        "cntxt", cntxt.interrupt_cntxt);
+   uvm_config_db#(uvma_debug_cntxt_c)     ::set(this, "debug_agent",            "cntxt", cntxt.debug_cntxt);
    uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
 
@@ -272,6 +281,8 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
+   interrupt_agent = uvma_interrupt_agent_c ::type_id::create("interrupt_agent", this);
+   debug_agent     = uvma_debug_agent_c     ::type_id::create("debug_agent",     this);
    cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
    axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
@@ -354,6 +365,8 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
+   vsequencer.interrupt_sequencer = interrupt_agent.sequencer;
+   vsequencer.debug_sequencer     = debug_agent.sequencer;
    vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
    vsequencer.axi_vsequencer      = axi_agent.vsequencer;
 
@@ -406,6 +419,7 @@ function void uvme_cva6_env_c::connect_coverage_model();
       axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
    end
 
+   // interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);
 endfunction: connect_coverage_model
 
 `endif // __UVME_CVA6_ENV_SV__

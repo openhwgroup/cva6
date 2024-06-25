@@ -2,6 +2,7 @@
 //
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +59,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   output rvfi_csr_t                    rvfi_csr_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
+  uvma_interrupt_if                    interrupt_if,
+  uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
@@ -85,10 +88,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .rst_ni               ( rst_ni                    ),
     .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
     .hart_id_i            ( default_inputs_vif.hart_id   ),
-    .irq_i                ( default_inputs_vif.irq       ),
+    .irq_i                ( interrupt_if.irq             ),
     .ipi_i                ( default_inputs_vif.ipi       ),
     .time_irq_i           ( default_inputs_vif.time_irq  ),
-    .debug_req_i          ( default_inputs_vif.debug_req ),
+    .debug_req_i          ( debug_if.debug_req           ),
     .rvfi_probes_o        ( rvfi_probes                  ),
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),

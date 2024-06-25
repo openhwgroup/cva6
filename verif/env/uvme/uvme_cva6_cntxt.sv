@@ -2,6 +2,7 @@
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +30,8 @@ class uvme_cva6_cntxt_c extends uvm_object;
 
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
+   uvma_interrupt_cntxt_c  interrupt_cntxt;
+   uvma_debug_cntxt_c      debug_cntxt;
    uvma_cvxif_cntxt_c      cvxif_cntxt;
    uvma_axi_cntxt_c        axi_cntxt;
    uvma_cva6_core_cntrl_cntxt_c  core_cntrl_cntxt;
@@ -44,6 +47,8 @@ class uvme_cva6_cntxt_c extends uvm_object;
 
    `uvm_object_utils_begin(uvme_cva6_cntxt_c)
       `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
+      `uvm_field_object(interrupt_cntxt, UVM_DEFAULT)
+      `uvm_field_object(debug_cntxt,     UVM_DEFAULT)
       `uvm_field_object(axi_cntxt,     UVM_DEFAULT)
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
       `uvm_field_object(rvfi_cntxt,      UVM_DEFAULT)
@@ -69,6 +74,8 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    super.new(name);
 
    clknrst_cntxt   = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
+   interrupt_cntxt = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
+   debug_cntxt     = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
    core_cntrl_cntxt   = uvma_cva6_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    axi_cntxt       = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
    mem = uvml_mem_c#()::type_id::create("mem");

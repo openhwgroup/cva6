@@ -2,6 +2,7 @@
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +42,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
+   rand uvma_interrupt_cfg_c  interrupt_cfg;
+   rand uvma_debug_cfg_c      debug_cfg;
    rand uvma_cvxif_cfg_c      cvxif_cfg;
    rand uvma_axi_cfg_c        axi_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
@@ -79,6 +82,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
+
+      `uvm_field_object(debug_cfg, UVM_DEFAULT)
 
       `uvm_field_object(cvxif_cfg, UVM_DEFAULT)
 
@@ -189,6 +196,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled   == 1;
+         interrupt_cfg.enabled == 1;
+         debug_cfg.enabled     == 1;
          isacov_cfg.enabled    == 1;
          rvfi_cfg.enabled      == 1;
       }
@@ -205,12 +214,16 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
+         interrupt_cfg.is_active == UVM_ACTIVE;
+         debug_cfg.is_active     == UVM_ACTIVE;
          isacov_cfg.is_active    == UVM_PASSIVE;
          rvfi_cfg.is_active      == UVM_PASSIVE;
       }
 
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled   == 0;
+         interrupt_cfg.trn_log_enabled == 1;
+         debug_cfg.trn_log_enabled     == 1;
          axi_cfg.trn_log_enabled       == 1;
          rvfi_cfg.trn_log_enabled      == 1;
          isacov_cfg.trn_log_enabled    == 1;
@@ -250,6 +263,8 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    super.new(name);
 
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
+   interrupt_cfg= uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
+   debug_cfg    = uvma_debug_cfg_c::type_id::create("debug_cfg");
    cvxif_cfg    = uvma_cvxif_cfg_c::type_id::create("cvxif_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
