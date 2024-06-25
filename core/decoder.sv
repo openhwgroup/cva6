@@ -904,11 +904,12 @@ module decoder
             unique case (instr.itype.funct3)
               3'b001: begin
                 if (instr.instr[31:25] == 7'b0110000) begin
-                  if (instr.instr[22:20] == 3'b100) instruction_o.op = ariane_pkg::SEXTB;
-                  else if (instr.instr[22:20] == 3'b101) instruction_o.op = ariane_pkg::SEXTH;
-                  else if (instr.instr[22:20] == 3'b010) instruction_o.op = ariane_pkg::CPOP;
-                  else if (instr.instr[22:20] == 3'b000) instruction_o.op = ariane_pkg::CLZ;
-                  else if (instr.instr[22:20] == 3'b001) instruction_o.op = ariane_pkg::CTZ;
+                  if (instr.instr[24:20] == 5'b00100) instruction_o.op = ariane_pkg::SEXTB;
+                  else if (instr.instr[24:20] == 5'b00101) instruction_o.op = ariane_pkg::SEXTH;
+                  else if (instr.instr[24:20] == 5'b00010) instruction_o.op = ariane_pkg::CPOP;
+                  else if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::CLZ;
+                  else if (instr.instr[24:20] == 5'b00001) instruction_o.op = ariane_pkg::CTZ;
+                  else illegal_instr_bm = 1'b1;
                 end else if (instr.instr[31:26] == 6'b010010) instruction_o.op = ariane_pkg::BCLRI;
                 else if (instr.instr[31:26] == 6'b011010) instruction_o.op = ariane_pkg::BINVI;
                 else if (instr.instr[31:26] == 6'b001010) instruction_o.op = ariane_pkg::BSETI;

@@ -8,12 +8,31 @@ mip:
         meip:
             type:
                 ro_variable:
-                      - 0:1    
+                      - 0x0:0x1    
         mtip:
             type:
                 ro_variable:
-                      - 0:1              
-
+                      - 0x0:0x1              
+mie:
+    rv32:
+        meie:
+            type:
+                ro_variable:
+                      - 0x0:0x1    
+        mtie:
+            type:
+                ro_variable:
+                      - 0x0:0x1 
+mstatus :
+    rv32 : 
+        mie : 
+            type :
+                    wlrl:
+                      - 0x0:0x1
+        mpie :
+            type:
+                    wlrl:
+                      - 0x0:0x1
  # Exclude mode 
 exclude :         
    key : priv_mode       

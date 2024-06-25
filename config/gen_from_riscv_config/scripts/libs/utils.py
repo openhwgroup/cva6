@@ -31,7 +31,7 @@ from libs.csr_updater import csr_formatter
 from libs.csr_factorizer import factorizer
 
 pattern_warl = (
-    r"\b(?:warl|wlrl|ro_constant|ro_variable)\b"  # pattern to detect warl in field
+    r"\b(?:warl|wlrl|ro_constant|ro_variable|rw|ro)\b"  # pattern to detect warl in field
 )
 pattern_legal_dict = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is dict
 pattern_legal_list = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is a list
@@ -262,7 +262,7 @@ class RstAddressBlock(AddressBlockClass):
     def returnAsString(self):
         registerlist = sorted(self.registerList, key=lambda reg: reg.address)
         r = RstCloth(io.StringIO())  # with default parameter, sys.stdout is used
-        regNameList = [reg.name for reg in registerlist]
+        regNameList = [reg.name.upper() for reg in registerlist]
         regAddressList = [reg.address for reg in registerlist]
         regPrivModeList = [reg.access for reg in registerlist]
         regPrivAccessList = [self.get_access_privilege(reg) for reg in registerlist]
@@ -328,7 +328,7 @@ This allows to clearly represent read-write registers holding a single legal val
                 summary_table.append(
                     [
                         regAddressList[i],
-                        str(regNameList[i]).upper() + "_",
+                        f"`{regNameList[i]} <#{regNameList[i]}>`_",
                         # RW or RO privileges are set in the official RISC-V specification
                         # and are encoded in bits [11:10] of the reg's address (2'b11 == "RO").
                         # See Tables 4 through 8 in section 2.2 of the Priv spec v20240411.
@@ -345,7 +345,9 @@ This allows to clearly represent read-write registers holding a single legal val
         for reg in registerlist:
             if reg.RV32 | reg.RV64:
                 reg_table = []
-                r.h2(reg.name.upper())
+                r.newline()
+                r.directive(".. _" + reg.name.upper() + ":")
+                r.h3(reg.name.upper())
                 r.newline()
                 r.field("Address", (reg.address))
                 if reg.resetValue:
@@ -670,8 +672,9 @@ class MdAddressBlock(AddressBlockClass):
 class CsrParser:
     """parse CSR RISC-V config yaml file"""
 
-    def __init__(self, srcFile, target, modiFile=None):
+    def __init__(self, srcFile,customFile, target, modiFile=None):
         self.srcFile = srcFile
+        self.customFile = customFile
         self.modiFile = modiFile
         self.target = target
 
@@ -947,7 +950,7 @@ class CsrParser:
     def returnDocument(self):
         with open(self.srcFile, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        data = csr_formatter(self.srcFile, self.modiFile)
+        data = csr_formatter(self.srcFile,self.customFile, self.modiFile)
         Registers = factorizer(data)
         docName = data["hart0"]
         d = DocumentClass(docName)
