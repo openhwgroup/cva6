@@ -326,7 +326,7 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -assert svaext +define+$(defines) +incdir+$(VCS_HOME)/etc/uvm/src $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv  $(filter %.sv,$(src)) $(list_incdir) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) $(list_incdir) &&\
-	vcs $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb),) $(if $(TRACE_COMPACT),+vcs+fsdbon) -ignore initializer_driver_checks -timescale=1ns/1ns -ntb_opts uvm-1.2 work.$(top_level) -error="IWNF" \
+	vcs -full64 $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb),) $(if $(TRACE_COMPACT),+vcs+fsdbon) -ignore initializer_driver_checks -timescale=1ns/1ns -ntb_opts uvm-1.2 work.$(top_level) -error="IWNF" \
 	$(if $(gate), -sdf Max:ariane_gate_tb.i_ariane.i_cva6:$(CVA6_REPO_DIR)/pd/synth/cva6_$(TARGET)_synth.sdf +neg_tchk, +notimingcheck)
 
 vcs: vcs_build
