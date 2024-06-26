@@ -178,6 +178,8 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
+      cntxt.axi_cntxt.mem = cntxt.mem;
+
       if ($test$plusargs("tandem_enabled"))
           $value$plusargs("tandem_enabled=%b",cfg.tandem_enabled);
 
