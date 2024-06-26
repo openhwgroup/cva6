@@ -41,8 +41,6 @@ endclass : uvme_axi_fw_preload_seq_c
 function uvme_axi_fw_preload_seq_c::new(string name="uvma_axi_fw_preload_seq");
 
    super.new(name);
-   mem = uvml_mem_c#()::type_id::create("mem");
-   mem.mem_default = MEM_DEFAULT_0;
 
 endfunction : new
 
@@ -66,16 +64,15 @@ task uvme_axi_fw_preload_seq_c::body();
             for (int j = 0; j < 8; j++) begin
                 mem_row[j] = buffer[i*8 + j];
             end
-            mem.write(address + i*8 + 0, mem_row[0]);
-            mem.write(address + i*8 + 1, mem_row[1]);
-            mem.write(address + i*8 + 2, mem_row[2]);
-            mem.write(address + i*8 + 3, mem_row[3]);
-            mem.write(address + i*8 + 4, mem_row[4]);
-            mem.write(address + i*8 + 5, mem_row[5]);
-            mem.write(address + i*8 + 6, mem_row[6]);
-            mem.write(address + i*8 + 7, mem_row[7]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 0, mem_row[0]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 1, mem_row[1]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 2, mem_row[2]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 3, mem_row[3]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 4, mem_row[4]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 5, mem_row[5]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 6, mem_row[6]);
+            p_sequencer.cntxt.mem.write(address + i*8 + 7, mem_row[7]);
          end
-          p_sequencer.cntxt.mem = mem;
       end
    end
 

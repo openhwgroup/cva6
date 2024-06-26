@@ -27,6 +27,8 @@
 `include "uvml_hrtbt_macros.sv"
 `include "uvml_sb_macros.sv"
 
+`include "uvml_mem_macros.sv"
+`include "uvma_axi_macros.sv"
 `include "uvma_clknrst_macros.sv"
 `include "uvma_cvxif_macros.sv"
 `include "uvma_isacov_macros.sv"

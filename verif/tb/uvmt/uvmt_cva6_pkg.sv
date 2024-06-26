@@ -44,6 +44,8 @@ package uvmt_cva6_pkg;
    import uvma_cva6pkg_utils_pkg::*;
    import uvml_hrtbt_pkg::*;
    import uvml_logs_pkg::*;
+   import uvml_mem_pkg::*;
+   import uvma_axi_pkg::*;
 
    // Constants / Structs / Enums
    `include "uvmt_cva6_constants.sv"
