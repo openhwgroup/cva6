@@ -12,7 +12,7 @@
 //              instruction cache and the Core-V High-Performance L1
 //              data cache (CV-HPDcache).
 
-module cva6_hpdcache_subsystem
+module extended_hpdcache_subsystem
 //  Parameters
 //  {{{
 #(
@@ -137,41 +137,16 @@ module cva6_hpdcache_subsystem
     return y < x ? x : y;
   endfunction
 
-  //  I$ instantiation
-  //  {{{
-  logic icache_miss_valid, icache_miss_ready;
-  icache_req_t icache_miss;
+  // //  I$ instantiation
+  // //  {{{
+  // logic icache_miss_valid, icache_miss_ready;
+  // icache_req_t icache_miss;
 
-  logic icache_miss_resp_valid;
-  icache_rtrn_t icache_miss_resp;
+  // logic icache_miss_resp_valid;
+  // icache_rtrn_t icache_miss_resp;
 
-  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
+  // localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
-  cva6_icache #(
-      .CVA6Cfg(CVA6Cfg),
-      .fetch_dreq_t(fetch_dreq_t),
-      .fetch_drsp_t(fetch_drsp_t),
-      .obi_fetch_req_t(obi_fetch_req_t),
-      .obi_fetch_rsp_t(obi_fetch_rsp_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId(ICACHE_RDTXID)
-  ) i_cva6_icache (
-      .clk_i          (clk_i),
-      .rst_ni         (rst_ni),
-      .flush_i        (icache_flush_i),
-      .en_i           (icache_en_i),
-      .miss_o         (icache_miss_o),
-      .dreq_i         (fetch_dreq_i),
-      .dreq_o         (fetch_dreq_o),
-      .fetch_obi_req_i(fetch_obi_req_i),
-      .fetch_obi_rsp_o(fetch_obi_rsp_o),
-      .mem_rtrn_vld_i (icache_miss_resp_valid),
-      .mem_rtrn_i     (icache_miss_resp),
-      .mem_data_req_o (icache_miss_valid),
-      .mem_data_ack_i (icache_miss_ready),
-      .mem_data_o     (icache_miss)
-  );
   //  }}}
 
   //  D$ instantiation
@@ -244,6 +219,125 @@ module cva6_hpdcache_subsystem
                           hpdcache_req_tid_t);
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
+  ////////////////////////////
+  logic                 icache_miss_ready;
+  logic                 icache_miss_valid;
+  hpdcache_mem_req_t    icache_miss;
+
+  logic                 icache_miss_resp_ready;
+  logic                 icache_miss_resp_valid;
+  hpdcache_mem_resp_r_t icache_miss_resp;
+
+  logic                 icache_uc_read_ready;
+  logic                 icache_uc_read_valid;
+  hpdcache_mem_req_t    icache_uc_read;
+
+  logic                 icache_uc_read_resp_ready;
+  logic                 icache_uc_read_resp_valid;
+  hpdcache_mem_resp_r_t icache_uc_read_resp;
+
+  hpdcache_icache_wrapper #(
+      .CVA6Cfg(CVA6Cfg),
+      .HPDcacheCfg(hpdcacheCfg),
+      .fetch_dreq_t(fetch_dreq_t),
+      .fetch_drsp_t(fetch_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
+      .NumPorts(4),
+      .NrHwPrefetchers(6),
+      // .cmo_req_t(cmo_req_t),
+      // .cmo_rsp_t(cmo_rsp_t),
+      .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
+      .hpdcache_mem_id_t(hpdcache_mem_id_t),
+      .hpdcache_mem_data_t(hpdcache_mem_data_t),
+      .hpdcache_mem_be_t(hpdcache_mem_be_t),
+      .hpdcache_mem_req_t(hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t(hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .hpdcache_req_offset_t(hpdcache_req_offset_t),
+      .hpdcache_data_word_t(hpdcache_data_word_t),
+      .hpdcache_req_data_t(hpdcache_req_data_t),
+      .hpdcache_req_be_t(hpdcache_req_be_t),
+      .hpdcache_req_sid_t(hpdcache_req_sid_t),
+      .hpdcache_req_tid_t(hpdcache_req_tid_t),
+      .hpdcache_tag_t(hpdcache_tag_t),
+      .hpdcache_req_t(hpdcache_req_t),
+      .hpdcache_rsp_t(hpdcache_rsp_t),
+      // .hpdcache_wbuf_timecnt_t(hpdcache_wbuf_timecnt_t),
+      .hpdcache_data_be_t(hpdcache_data_be_t)
+  ) i_icache (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .dcache_enable_i(icache_en_i),
+      .dcache_flush_i(icache_flush_i),
+      .dcache_flush_ack_o(  /* TODO */),
+      .dcache_miss_o(icache_miss_o),
+      .dcache_amo_req_i('0),
+      .dcache_amo_resp_o(  /* unused */),
+      .dcache_cmo_req_i('0),
+      .dcache_cmo_resp_o(  /* unused */),
+      .fetch_dreq_i(fetch_dreq_i),
+      .fetch_dreq_o(fetch_dreq_o),
+      .fetch_obi_req_i(fetch_obi_req_i),
+      .fetch_obi_rsp_o(fetch_obi_rsp_o),
+      .wbuffer_empty_o(  /* unused */),
+      .wbuffer_not_ni_o(  /* unused */),
+      .hwpf_base_set_i('0),
+      .hwpf_base_i('0),
+      .hwpf_base_o(  /* unused */),
+      .hwpf_param_set_i('0),
+      .hwpf_param_i('0),
+      .hwpf_param_o(  /* unused */),
+      .hwpf_throttle_set_i('0),
+      .hwpf_throttle_i('0),
+      .hwpf_throttle_o(  /* unused */),
+      .hwpf_status_o(  /* unused */),
+
+      .dcache_mem_req_miss_read_ready_i(icache_miss_ready),
+      .dcache_mem_req_miss_read_valid_o(icache_miss_valid),
+      .dcache_mem_req_miss_read_o(icache_miss),
+
+      .dcache_mem_resp_miss_read_ready_o(icache_miss_resp_ready),
+      .dcache_mem_resp_miss_read_valid_i(icache_miss_resp_valid),
+      .dcache_mem_resp_miss_read_i(icache_miss_resp),
+
+      .dcache_mem_req_wbuf_write_ready_i('0),
+      .dcache_mem_req_wbuf_write_valid_o(  /* unused */),
+      .dcache_mem_req_wbuf_write_o(  /* unused */),
+
+      .dcache_mem_req_wbuf_write_data_ready_i('0),
+      .dcache_mem_req_wbuf_write_data_valid_o(  /* unused */),
+      .dcache_mem_req_wbuf_write_data_o(  /* unused */),
+
+      .dcache_mem_resp_wbuf_write_ready_o(  /* unused */),
+      .dcache_mem_resp_wbuf_write_valid_i('0),
+      .dcache_mem_resp_wbuf_write_i(  /* unused */),
+
+      .dcache_mem_req_uc_read_ready_i(icache_uc_read_ready),
+      .dcache_mem_req_uc_read_valid_o(icache_uc_read_valid),
+      .dcache_mem_req_uc_read_o(icache_uc_read),
+
+      .dcache_mem_resp_uc_read_ready_o(icache_uc_read_resp_ready),
+      .dcache_mem_resp_uc_read_valid_i(icache_uc_read_resp_valid),
+      .dcache_mem_resp_uc_read_i(icache_uc_read_resp),
+
+      .dcache_mem_req_uc_write_ready_i('0),
+      .dcache_mem_req_uc_write_valid_o(  /* unused */),
+      .dcache_mem_req_uc_write_o(  /* unused */),
+
+      .dcache_mem_req_uc_write_data_ready_i('0),
+      .dcache_mem_req_uc_write_data_valid_o(  /* unused */),
+      .dcache_mem_req_uc_write_data_o(  /* unused */),
+
+      .dcache_mem_resp_uc_write_ready_o(  /* unused */),
+      .dcache_mem_resp_uc_write_valid_i('0),
+      .dcache_mem_resp_uc_write_i(  /* unused */)
+
+  );
+
+
+  ////////////////////////////
 
   logic                 dcache_miss_ready;
   logic                 dcache_miss_valid;
@@ -380,10 +474,11 @@ module cva6_hpdcache_subsystem
       .dcache_mem_resp_uc_write_i(dcache_uc_write_resp)
 
   );
+  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   //  AXI arbiter instantiation
   //  {{{
-  cva6_hpdcache_subsystem_axi_arbiter #(
+  extended_hpdcache_subsystem_axi_arbiter #(
       .CVA6Cfg              (CVA6Cfg),
       .hpdcache_mem_id_t    (hpdcache_mem_id_t),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
@@ -408,13 +503,24 @@ module cva6_hpdcache_subsystem
       .clk_i,
       .rst_ni,
 
-      .icache_miss_valid_i(icache_miss_valid),
       .icache_miss_ready_o(icache_miss_ready),
-      .icache_miss_i      (icache_miss),
+      .icache_miss_valid_i(icache_miss_valid),
+      .icache_miss_i(icache_miss),
       .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
 
+      .icache_miss_resp_ready_i(icache_miss_resp_ready),
       .icache_miss_resp_valid_o(icache_miss_resp_valid),
-      .icache_miss_resp_o      (icache_miss_resp),
+      .icache_miss_resp_o(icache_miss_resp),
+
+      //      Uncached read interface
+      .icache_uc_read_ready_o(icache_uc_read_ready),
+      .icache_uc_read_valid_i(icache_uc_read_valid),
+      .icache_uc_read_i(icache_uc_read),
+      .icache_uc_read_id_i(3),  // TODO
+
+      .icache_uc_read_resp_ready_i(icache_uc_read_resp_ready),
+      .icache_uc_read_resp_valid_o(icache_uc_read_resp_valid),
+      .icache_uc_read_resp_o(icache_uc_read_resp),
 
       .dcache_miss_ready_o(dcache_miss_ready),
       .dcache_miss_valid_i(dcache_miss_valid),
@@ -517,4 +623,4 @@ module cva6_hpdcache_subsystem
   //  pragma translate_on
   //  }}}
 
-endmodule : cva6_hpdcache_subsystem
+endmodule : extended_hpdcache_subsystem
