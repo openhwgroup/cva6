@@ -1624,7 +1624,7 @@ module csr_regfile
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) update_access_exception = 1'b1;
           else begin
             for (int i = 0; i < CVA6Cfg.XLEN / 8; i++) begin
-              if (!pmpcfg_q[index + i].locked) pmpcfg_d[index + i] = csr_wdata[i*8+:8];
+              if (!pmpcfg_q[index+i].locked) pmpcfg_d[index+i] = csr_wdata[i*8+:8];
             end
           end
         end
