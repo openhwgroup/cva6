@@ -1,3 +1,5 @@
+include::config_define.adoc[]
+
 [[machine]]
 == Machine-Level ISA, Version 1.13
 
@@ -12,7 +14,7 @@ other details of the hardware implementation.
 
 === Machine-Level CSRs
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 In addition to the machine-level CSRs described in this section, M-mode
 code can access all CSRs at lower privilege levels.
 endif::[]
@@ -21,14 +23,14 @@ endif::[]
 ==== Machine ISA (`misa`) Register
 
 The `misa` CSR is a *WARL* read-write register reporting the ISA supported by the hart.
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 This register must be readable in any implementation, but a value of zero can be returned to indicate the `misa` register has not been implemented, requiring that CPU capabilities be determined through a separate non-standard mechanism.
 endif::[]
 
 .Machine ISA register (misa)
 include::images/bytefield/misareg.edn[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The MXL (Machine XLEN) field encodes the native base integer ISA width as
 shown in <<misabase>>. The MXL field is read-only.  If `misa` is nonzero, the
 MXL field indicates the effective XLEN in M-mode, a constant termed _MXLEN_.
@@ -36,7 +38,7 @@ XLEN is never greater than MXLEN, but XLEN might be smaller than MXLEN in
 less-privileged modes.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [CVA6] The MXL (Machine XLEN) field encodes the native base integer ISA width as
 shown in <<misabase>>. The MXL field is read-only.
 In CVA6, the `misa` register returns the MXL field which indicates the
@@ -74,7 +76,7 @@ two shifts, then the hart is RV64, else RV128.
 ====
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The Extensions field encodes the presence of the standard extensions,
 with a single bit per letter of the alphabet (bit 0 encodes presence of
 extension "A" , bit 1 encodes presence of extension "B", through to
@@ -91,7 +93,7 @@ their defined or reserved behaviors as if the extension is not
 implemented.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [CVA6] The Extensions field encodes the presence of the standard extensions,
 with a single bit per letter of the alphabet (bit 0 encodes presence of
 extension "A" , bit 1 encodes presence of extension "B", through to
@@ -215,7 +217,7 @@ _Reserved_ +
 _Reserved_
 |===
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The design of the RV128I base ISA is not yet complete, and while much of
 the remainder of this specification is expected to apply to RV128, this
 version of the document focuses only on RV32 and RV64.
@@ -246,7 +248,7 @@ without burdening hardware designs.
 ====
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The "E" bit is read-only. Unless `misa` is all read-only zero, the
 "E" bit always reads as the complement of the "I" bit. If an
 execution environment supports both RV32E and RV32I, software can select
@@ -281,7 +283,7 @@ endif::[]
 
 ==== Machine Vendor ID (`mvendorid`) Register
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mvendorid` CSR is a 32-bit read-only register providing the JEDEC
 manufacturer ID of the provider of the core. This register must be
 readable in any implementation, but a value of 0 can be returned to
@@ -289,7 +291,7 @@ indicate the field is not implemented or that this is a non-commercial
 implementation.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [CVA6] The `mvendorid` CSR is a 32-bit read-only register providing the JEDEC
 manufacturer ID of the provider of the core.
 In CVA6, `mvendorid` is implemented and returns the commercial implementation
@@ -302,7 +304,7 @@ endif::[]
 .Vendor ID register (`mvendorid`)
 include::images/bytefield/mvendorid.adoc[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 JEDEC manufacturer IDs are ordinarily encoded as a sequence of one-byte
 continuation codes `0x7f`, terminated by a one-byte ID not equal to
 `0x7f`, with an odd parity bit in the most-significant bit of each byte.
@@ -331,7 +333,7 @@ endif::[]
 
 ==== Machine Architecture ID (`marchid`) Register
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `marchid` CSR is an MXLEN-bit read-only register encoding the base
 microarchitecture of the hart. This register must be readable in any
 implementation, but a value of 0 can be returned to indicate the field
@@ -340,7 +342,7 @@ uniquely identify the type of hart microarchitecture that is
 implemented.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [CVA6] The `marchid` CSR is an MXLEN-bit read-only register encoding the base
 microarchitecture of the hart.
 In CVA6, `marchid` is implemented and returns the base microarchitecture
@@ -350,7 +352,7 @@ endif::[]
 .Machine Architecture ID (`marchid`) register
 include::images/bytefield/marchid.adoc[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Open-source project architecture IDs are allocated globally by RISC-V
 International, and have non-zero architecture IDs with a zero
 most-significant-bit (MSB). Commercial architecture IDs are allocated by
@@ -383,7 +385,7 @@ endif::[]
 
 ==== Machine Implementation ID (`mimpid`) Register
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mimpid` CSR provides a unique encoding of the version of the
 processor implementation. This register must be readable in any
 implementation, but a value of 0 can be returned to indicate that the
@@ -391,7 +393,16 @@ field is not implemented. The Implementation value should reflect the
 design of the RISC-V processor itself and not any surrounding system.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifeval::["{ohg-config}" == "CV32A65X"]
+The `mimpid` CSR provides a unique encoding of the version of the
+processor implementation.
+
+[CVA6] The `mimpid` register is implemented and the return value is TODO.
+The Implementation value should reflect the design of the RISC-V
+processor itself and not any surrounding system.
+endif::[]
+
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
 The `mimpid` CSR provides a unique encoding of the version of the
 processor implementation.
 
@@ -417,7 +428,7 @@ endif::[]
 
 ==== Hart ID (`mhartid`) Register
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mhartid` CSR is an MXLEN-bit read-only register containing the
 integer ID of the hardware thread running the code. This register must
 be readable in any implementation. Hart IDs might not necessarily be
@@ -426,7 +437,7 @@ must have a hart ID of zero. Hart IDs must be unique within the
 execution environment.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] The `mhartid` CSR is an MXLEN-bit read-only register containing the
 integer ID of the hardware thread running the code. This register is
 readable. In {ohg-config}-based system, only one hart is implemented.
@@ -447,9 +458,14 @@ of the largest hart ID used in a system.
 ====
 endif::[]
 
+ifdef::archi-default,XLEN-32[]
 ==== Machine Status (`mstatus` and `mstatush`) Registers
+endif::[]
+ifdef::archi-not-default+XLEN-64[]
+==== Machine Status (`mstatus`) Register
+endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mstatus` register is an MXLEN-bit read/write register formatted as
 shown in <<mstatusreg-rv32>> for RV32 and
 <<mstatusreg>> for RV64. The `mstatus` register
@@ -458,12 +474,19 @@ restricted view of `mstatus` appears as the `sstatus` register in the
 S-level ISA.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-not-default+XLEN-32[]
 [{ohg-config}] The `mstatus` register is an MXLEN-bit read/write register formatted as
 shown in <<mstatusreg-rv32>>. The `mstatus` register
 keeps track of and controls the hart’s current operating state.
 endif::[]
 
+ifdef::archi-not-default+XLEN-64[]
+[{ohg-config}] The `mstatus` register is an MXLEN-bit read/write register formatted as
+shown in <<mstatusreg>>. The `mstatus` register
+keeps track of and controls the hart’s current operating state.
+endif::[]
+
+ifdef::archi-default,XLEN-32[]
 [[mstatusreg-rv32]]
 .Machine-mode status (`mstatus`) register for RV32
 [wavedrom, ,svg]
@@ -493,8 +516,9 @@ endif::[]
   {bits:  1, name: 'SD'},
 ], config:{lanes: 2, hspace:1024}}
 ....
+endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default,XLEN-64[]
 [[mstatusreg]]
 .Machine-mode status (`mstatus`) register for RV64
 [wavedrom, ,svg]
@@ -529,23 +553,23 @@ ifeval::[{ohg-config} != CV32A65X]
   {bits:  1, name: 'MPV'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 20, name: 'WPRI'},
+  {bits: 21, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 For RV32 only, `mstatush` is a 32-bit read/write register formatted as
 shown in <<mstatushreg>>. Bits 30:4 of `mstatush` generally contain the same fields found in bits 62:36 of `mstatus` for RV64. Fields SD, SXL, and UXL do not exist in `mstatush`.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] `mstatush` is a 32-bit read/write register formatted as
 shown in <<mstatushreg>>.
 endif::[]
 
+ifdef::archi-default,XLEN-32[]
 [[mstatushreg]]
 .Additional machine-mode status (`mstatush`) register  for RV32.
 [wavedrom, ,svg]
@@ -554,26 +578,22 @@ endif::[]
   {bits:  4, name: 'WPRI'},
   {bits:  1, name: 'SBE'},
   {bits:  1, name: 'MBE'},
-  {bits:  1, name: 'GVA'},
-  {bits:  1, name: 'MPV'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 21, name: 'WPRI'},
-], config:{lanes: 2, hspace:1024}}
+  {bits: 26, name: 'WPRI'},
+], config:{lanes: 1, hspace:1024}}
 ....
+endif::[]
 
 [[privstack]]
 ===== Privilege and Global Interrupt-Enable Stack in `mstatus` register
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 Global interrupt-enable bits, MIE and SIE, are provided for M-mode and
 S-mode respectively. These bits are primarily used to guarantee
 atomicity with respect to interrupt handlers in the current privilege
 mode.
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] As only M-mode is implemented, the instructions and
 registers related to less privilege modes are not implemented.
 Global interrupt-enable bit, MIE, is provided for M-mode.
@@ -590,7 +610,7 @@ instruction.
 ====
 endif::[]
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 When a hart is executing in privilege mode _x_, interrupts are globally
 enabled when __x__IE=1 and globally disabled when __x__IE=0. Interrupts for
 lower-privilege modes, __w__<__x__, are always globally
@@ -613,7 +633,7 @@ means to regain control of the hart.
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] When a hart is executing in privilege mode M, interrupts are globally
 enabled when MIE=1 and globally disabled when MIE=0.
 endif::[]
@@ -640,7 +660,7 @@ re-enabling interrupts, so only one entry per stack is required.
 ////
 TODO
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 An MRET or SRET instruction is used to return from a trap in M-mode or
 S-mode respectively. When executing an __x__RET instruction, supposing
 __x__PP holds the value _y_, __x__IE is set to __x__PIE; the privilege mode is
@@ -656,7 +676,7 @@ Setting __x__PP to the least-privileged supported mode on an __x__RET helps iden
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] An MRET instruction is used to return from a trap in M-mode. When
 executing an MRET instruction, MIE is set to MPIE; MPIE is set to 1;
 and MPP keeps M value.
@@ -677,7 +697,7 @@ and safely manage exceptions within their operational flow.
 ====
 endif::[]
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 __x__PP fields are *WARL* fields that can hold only privilege mode _x_ and any implemented privilege mode lower than _x_. If privilege mode _x_ is not implemented, then __x__PP must be read-only 0.
 endif::[]
 
@@ -692,88 +712,16 @@ storage bit is required to represent either 00 or 11 in MPP.
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] Privilege mode S and U are not implemented, MPP field is
 *WARL* field that can hold only privilege mode M, 11 read only, and SPP
 and UPP are read-only 0.
 endif::[]
 
-[[machine-double-trap]]
-===== Double Trap Control in `mstatus` Register
-
-ifeval::[{RVZsmdbltrp} == true]
-A double trap typically arises during a sensitive phase in trap handling
-operations -- when an exception or interrupt occurs while the trap handler (the
-component responsible for managing these events) is in a non-reentrant state.
-This non-reentrancy usually occurs in the early phase of trap handling, wherein
-the trap handler has not yet preserved the necessary state to handle and resume
-from the trap. The occurrence of a trap during this phase can lead to an
-overwrite of critical state information, resulting in the loss of data needed to
-recover from the initial trap. The trap that caused this critical error
-condition is henceforth called the _unexpected trap_. Trap handlers are designed
-to neither enable interrupts nor cause exceptions during this phase of handling.
-However, managing Hardware-Error exceptions,  which may occur unpredictably,
-presents significant challenges in trap handler implementation due to the
-potential risk of a double trap.
-
-The M-mode-disable-trap (`MDT`) bit is a WARL field introduced by the Smdbltrp
-extension. Upon reset, the `MDT` field is set to 1. When the `MDT` bit is set to
-1 by an explicit CSR write, the `MIE` (Machine Interrupt Enable) bit is cleared
-to 0. For RV64, this clearing occurs regardless of the value written, if any, to
-the `MIE` bit by the same write. The `MIE` bit can only be set to 1 by an
-explicit CSR write if the `MDT` bit is already 0 or, for RV64, is being set to 0
-by the same write (For RV32, the `MDT` bit is in `mstatush` and the `MIE` bit in
-`mstatus` register).
-
-When a trap is to be taken into M-mode, if the `MDT` bit is currently 0, it is
-then set to 1, and the trap is delivered as expected. However, if `MDT` is
-already set to 1, then this is an _unexpected trap_. Additionally, when the
-Smrnmi extension is implemented, a trap that occurs when executing in M-mode
-with the `mnstatus.NMIE` set to 0 is an _unexpected trap_.
-
-In the event of a _unexpected trap_, the handling is as follows:
-
-* When the Smrnmi extension is implemented and `mnstatus.NMIE` is 1, the hart
-  traps to the RNMI handler. To deliver this trap, the `mnepc` and `mncause`
-  registers are written with the values that the _unexpected trap_ would have
-  written to the `mepc` and `mcause` registers respectively. The privilege
-  mode information fields in the `mnstatus` register are written to indicate
-  M-mode and its `NMIE` field is set to 0.
-
-[NOTE]
-====
-The consequence of this specification is that on occurrence of double trap the
-RNMI handler is not provided with information that a trap would report in the
-`mtval` and the `mtval2` registers. This information, if needed, may be obtained
-by the RNMI handler by decoding the instruction at the address in `mnepc` and
-examining its source register contents.
-====
-
-* When the Smrnmi extension is not implemented, or if the Smrnmi extension is
-  implemented and `mnstatus.NMIE` is 0, the hart enters a critical-error state
-  without updating any architectural state including the `pc`. This state
-  involves ceasing execution, disabling all interrupts (including NMIs), and
-  asserting a `critical-error` signal to the platform.
-
-[NOTE]
-====
-The actions performed by the platform on assertion of a `critical-error` signal
-by a hart are platform specific. The range of possible actions include restarting
-the affected hart or restarting the entire platform among others.
-====
-
-An `MRET` instruction sets the `MDT` bit to 0.
-endif::[]
-
-ifeval::[{RVZsmdbltrp} == true]
-[{ohg-config}] As Double Trap Control (Smdbltrp extension) is not implemented,
-MDT field is read-only 0.
-endif::[]
-
 [[xlen-control]]
 ===== Base ISA Control in `mstatus` Register
 
-ifeval::[{RVS} == true]
+ifdef::archi-default[]
 For RV64 harts, the SXL and UXL fields are *WARL* fields that control the
 value of XLEN for S-mode and U-mode, respectively. The encoding of these
 fields is the same as the MXL field of `misa`, shown in
@@ -802,7 +750,17 @@ above the configured XLEN, and must sign-extend results to fill the
 entire widest supported XLEN in the destination register. Similarly,
 `pc` bits above XLEN are ignored, and when the `pc` is written, it is
 sign-extended to fill the widest supported XLEN.
+endif::[]
 
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
+[{ohg-config}] The SXL and UXL fields are read-only fields that encode the
+value of XLEN for S-mode and U-mode, respectively. The encoding of these
+fields is the same as the MXL field of `misa`, shown in <<misabase>>. 
+The effective XLEN in S-mode and U-mode are termed _SXLEN_ and _UXLEN_, respectively.
+Their values are set to UXLEN=SXLEN=MXLEN.
+endif::[]
+
+ifeval::[{note} == true]
 [NOTE]
 ====
 We require that operations always fill the entire underlying hardware
@@ -816,14 +774,14 @@ this case.
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] The SXL and UXL fields do not exist.
 endif::[]
 
 
 ===== Memory Privilege in `mstatus` Register
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The MPRV (Modify PRiVilege) bit modifies the _effective privilege mode_,
 i.e., the privilege level at which loads and stores execute. When
 MPRV=0, loads and stores behave as normal, using the translation and
@@ -831,18 +789,32 @@ protection mechanisms of the current privilege mode. When MPRV=1, load
 and store memory addresses are translated and protected, and endianness
 is applied, as though the current privilege mode were set to MPP.
 Instruction address-translation and protection are unaffected by the
-setting of MPRV. MPRV is read-only 0 if U-mode is not supported.
+setting of MPRV. 
+endif::[]
 
+ifdef::archi-default[]
+MPRV is read-only 0 if U-mode is not supported.
+endif::[]
+
+ifdef::archi-default,RVU-true[]
 An MRET or SRET instruction that changes the privilege mode to a mode
 less privileged than M also sets MPRV=0.
+endif::[]
 
+ifdef::archi-default,RVS-true[]
 The MXR (Make eXecutable Readable) bit modifies the privilege with which
 loads access virtual memory. When MXR=0, only loads from pages marked
 readable (R=1 in <<sv32pte>>) will succeed. When
 MXR=1, loads from pages marked either readable or executable (R=1 or
 X=1) will succeed. MXR has no effect when page-based virtual memory is
-not in effect. MXR is read-only 0 if S-mode is not supported.
+not in effect. 
+endif::[]
 
+ifdef::archi-default[]
+MXR is read-only 0 if S-mode is not supported.
+endif::[]
+
+ifeval::[{note} == true]
 [NOTE]
 ====
 The MPRV and MXR mechanisms were conceived to improve the efficiency of
@@ -856,55 +828,84 @@ have different XLEN settings. When MPRV=1, load and store memory
 addresses are treated as though the current XLEN were set to MPP’s XLEN,
 following the rules in <<xlen-control>>.
 ====
+endif::[]
+
+ifdef::archi-default,RVS-true[]
 The SUM (permit Supervisor User Memory access) bit modifies the
 privilege with which S-mode loads and stores access virtual memory. When
 SUM=0, S-mode memory accesses to pages that are accessible by U-mode
 (U=1 in <<sv32pte>>) will fault. When SUM=1, these
 accesses are permitted. SUM has no effect when page-based virtual memory
 is not in effect. Note that, while SUM is ordinarily ignored when not
-executing in S-mode, it _is_ in effect when MPRV=1 and MPP=S. SUM is
-read-only 0 if S-mode is not supported or if `satp`.MODE is read-only 0.
+executing in S-mode, it _is_ in effect when MPRV=1 and MPP=S. 
+endif::[]
 
+ifdef::archi-default[]
+SUM is 
+read-only 0 if S-mode is not supported or if `satp`.MODE is read-only 0.
+endif::[]
+
+ifdef::archi-default,RVS-true[]
 The MXR and SUM mechanisms only affect the interpretation of permissions
 encoded in page-table entries. In particular, they have no impact on
 whether access-fault exceptions are raised due to PMAs or PMP.
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] As U-Mode is not implemented, the MPRV (Modify PRiVilege) bit is read-only 0.
 Loads and stores behave as normal, using the translation and protection
 mechanisms of the current privilege mode.
+endif::[]
 
+ifndef::archi-default,RVS-true[]
 [{ohg-config}] As S-mode is not implemented, MXR and SUM are read-only 0.
 
 endif::[]
 
+ifdef::archi-default[]
 ===== Endianness Control in `mstatus` and `mstatush` Registers
 
 The MBE, SBE, and UBE bits in `mstatus` and `mstatush` are *WARL* fields that
 control the endianness of memory accesses other than instruction
 fetches. Instruction fetches are always little-endian.
+endif::[]
 
 MBE controls whether non-instruction-fetch memory accesses made from
 M-mode (assuming `mstatus`.MPRV=0) are little-endian (MBE=0) or
 big-endian (MBE=1).
 
-ifeval::[{RVS} == true]
+ifdef::archi-default[]
 If S-mode is not supported, SBE is read-only 0. Otherwise, SBE controls
 whether explicit load and store memory accesses made from S-mode are
 little-endian (SBE=0) or big-endian (SBE=1).
+endif::[]
 
+ifdef::archi-not-default+RVS-true[]
+SBE controls whether explicit load and store memory accesses made from S-mode are
+little-endian (SBE=0) or big-endian (SBE=1).
+endif::[]
+
+ifdef::archi-default[]
 If U-mode is not supported, UBE is read-only 0. Otherwise, UBE controls
 whether explicit load and store memory accesses made from U-mode are
 little-endian (UBE=0) or big-endian (UBE=1).
+endif::[]
 
+ifdef::archi-not-default+RVU-true[]
+UBE controls whether explicit load and store memory accesses made from U-mode are
+little-endian (UBE=0) or big-endian (UBE=1).
+endif::[]
+
+ifdef::archi-default[]
 For _implicit_ accesses to supervisor-level memory management data
 structures, such as page tables, endianness is always controlled by SBE.
 Since changing SBE alters the implementation’s interpretation of these
 data structures, if any such data structures remain in use across a
 change to SBE, M-mode software must follow such a change to SBE by
 executing an SFENCE.VMA instruction with _rs1_=`x0` and _rs2_=`x0`.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Only in contrived scenarios will a given memory-management data
@@ -915,18 +916,36 @@ be reinterpreted in a different endianness. In this case, no additional
 SFENCE.VMA is necessary, beyond what would ordinarily be required for a
 world switch.
 ====
+endif::[]
 
+ifdef::archi-default[]
 If S-mode is supported, an implementation may make SBE be a read-only
 copy of MBE. If U-mode is supported, an implementation may make UBE be a
 read-only copy of either MBE or SBE.
 endif::[]
 
-ifeval::[{RVS} == false]
+ifdef::archi-CVA6[]
 [{ohg-config}]
 It is always little-endian in M-Mode, the MBE is read-only zero.
 
+ifndef::archi-default,RVS-true[]
 [{ohg-config}]
-U-Mode and S-Mode are not implemented, UBE and SBE are read-only 0.
+S-Mode is not implemented, SBE is read-only 0.
+endif::[]
+
+ifdef::archi-CVA6+RVS-true[]
+[{ohg-config}]
+It is always little-endian in S-Mode, the SBE is read-only zero.
+endif::[]
+
+ifndef::archi-default,RVU-true[]
+[{ohg-config}]
+U-Mode is not implemented, UBE is read-only 0.
+endif::[]
+
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}]
+It is always little-endian in U-Mode, the UBE is read-only zero.
 endif::[]
 
 ifeval::[{note} == true]
@@ -981,14 +1000,19 @@ endif::[]
 [[virt-control]]
 ===== Virtualization Support in `mstatus` Register
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 The TVM (Trap Virtual Memory) bit is a *WARL* field that supports intercepting
 supervisor virtual-memory management operations. When TVM=1, attempts to
 read or write the `satp` CSR or execute an SFENCE.VMA or SINVAL.VMA
 instruction while executing in S-mode will raise an illegal-instruction
-exception. When TVM=0, these operations are permitted in S-mode. TVM is
+exception. When TVM=0, these operations are permitted in S-mode. 
+endif::[]
+ifdef::archi-default[]
+TVM is 
 read-only 0 when S-mode is not supported.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The TVM mechanism improves virtualization efficiency by permitting guest
@@ -1001,7 +1025,7 @@ provides the hooks necessary to lazily populate shadow page tables.
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 The TVM (Trap Virtual Memory) bit is a *WARL* field that supports intercepting
 supervisor virtual-memory management operations.
 
@@ -1009,7 +1033,7 @@ supervisor virtual-memory management operations.
 S-Mode is not implemented, TVM is read-only 0.
 endif::[]
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 The TW (Timeout Wait) bit is a *WARL* field that supports intercepting the WFI
 instruction (see <<wfi>>). When TW=0, the WFI
 instruction may execute in lower privilege modes when not prevented for
@@ -1019,15 +1043,22 @@ implementation-specific, bounded time limit, the WFI instruction causes
 an illegal-instruction exception. An implementation may have WFI always
 raise an illegal-instruction exception in less-privileged modes when
 TW=1, even if there are pending globally-disabled interrupts when the
-instruction is executed. TW is read-only 0 when there are no modes less
+instruction is executed. 
+endif::[]
+ifdef::archi-default[]
+TW is read-only 0 when there are no modes less
 privileged than M.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Trapping the WFI instruction can trigger a world switch to another guest
 OS, rather than wastefully idling in the current guest.
 ====
+endif::[]
 
+ifdef::archi-default[]
 When S-mode is implemented, then executing WFI in U-mode causes an
 illegal-instruction exception, unless it completes within an
 implementation-specific, bounded time limit. A future revision of this
@@ -1035,7 +1066,7 @@ specification might add a feature that allows S-mode to selectively
 permit WFI in U-mode. Such a feature would only be active when TW=0.
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 The TW (Timeout Wait) bit is a *WARL* field that supports intercepting the WFI
 instruction (see <<wfi>>).
 
@@ -1044,13 +1075,18 @@ TW is read-only 0 because there are no modes less privileged
 than M.
 endif::[]
 
-ifeval::[{RVS} == true]
+ifdef::archi-default,RVS-true[]
 The TSR (Trap SRET) bit is a *WARL* field that supports intercepting the
 supervisor exception return instruction, SRET. When TSR=1, attempts to
 execute SRET while executing in S-mode will raise an illegal-instruction
-exception. When TSR=0, this operation is permitted in S-mode. TSR is
+exception. When TSR=0, this operation is permitted in S-mode. 
+endif::[]
+ifdef::archi-default[]
+TSR is
 read-only 0 when S-mode is not supported.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Trapping SRET is necessary to emulate the hypervisor extension (see
@@ -1059,7 +1095,7 @@ provide it.
 ====
 endif::[]
 
-ifeval::[{RVS} == false]
+ifndef::archi-default,RVS-true[]
 The TSR (Trap SRET) bit is a *WARL* field that supports intercepting the
 supervisor exception return instruction, SRET.
 
@@ -1082,7 +1118,7 @@ additional state beyond the floating-point CSR and data registers.
 ====
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The FS[1:0] and VS[1:0] *WARL* fields and the XS[1:0] read-only field are used
 to reduce the cost of context save and restore by setting and tracking
 the current state of the floating-point unit and any other user-mode
@@ -1097,14 +1133,18 @@ be checked by a context switch routine to quickly determine whether a
 state save or restore is required. If a save or restore is required,
 additional instructions and CSRs are typically required to effect and
 optimize the process.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The design anticipates that most context switches will not need to
 save/restore state in either or both of the floating-point unit or other
 extensions, so provides a fast check via the SD bit.
 ====
+endif::[]
 
+ifdef::archi-default[]
 The FS, VS, and XS fields use the same status encoding as shown in
 <<fsxsencoding>>, with the four possible status
 values being Off, Initial, Clean, and Dirty.
@@ -1134,7 +1174,9 @@ zero.
 If neither the F extension nor S-mode is implemented, then FS is
 read-only zero. If S-mode is implemented but the F extension is not, FS
 may optionally be read-only zero.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Implementations with S-mode but without the F extension are permitted,
@@ -1143,7 +1185,9 @@ implementations will choose _not_ to have the FS field be read-only
 zero, so as to enable emulation of the F extension for both S-mode and
 U-mode via invisible traps into M-mode.
 ====
+endif::[]
 
+ifdef::archi-default[]
 If the `v` registers are implemented, the VS field shall not be
 read-only zero.
 
@@ -1156,7 +1200,9 @@ XS field is read-only zero. Every additional extension with state
 provides a CSR field that encodes the equivalent of the XS states. The
 XS field represents a summary of all extensions' status as shown in
 <<fsxsencoding>>.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The XS field effectively reports the maximum status value across all
@@ -1165,7 +1211,7 @@ different encoding than XS.
 ====
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] The FS[1:0] and VS[1:0] *WARL* fields and the XS[1:0] read-only field are used
 to reduce the cost of context save and restore by setting and tracking
 the current state of the floating-point unit and any other user-mode
@@ -1184,14 +1230,33 @@ As no additional user extensions require new state, the
 XS field is read-only zero. TODO
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
+[{ohg-config}] The FS[1:0] and VS[1:0] *WARL* fields and the XS[1:0] read-only field are used
+to reduce the cost of context save and restore by setting and tracking
+the current state of the floating-point unit and any other user-mode
+extensions respectively.
+
+[{ohg-config}]
+As the F extension is not implemented, then
+FS is read-only zero.
+
+[{ohg-config}]
+As the `v` registers is not implemented, then
+VS is read-only zero.
+
+[{ohg-config}]
+As no additional user extensions require new state, the
+XS field is read-only zero. TODO
+endif::[]
+
+ifdef::archi-default[]
 The SD bit is a read-only bit that summarizes whether either the FS, VS,
 or XS fields signal the presence of some dirty state that will require
 saving extended user context to memory. If FS, XS, and VS are all
 read-only zero, then SD is also always zero.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] The SD bit is a read-only bit that summarizes whether either the FS, VS,
 or XS fields signal the presence of some dirty state that will require
 saving extended user context to memory.
@@ -1200,7 +1265,7 @@ saving extended user context to memory.
 zero.
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 When an extension's status is set to Off, any instruction that attempts
 to read or write the corresponding state will cause an
 illegal-instruction exception. When the status is Initial, the corresponding
@@ -1228,13 +1293,13 @@ also be updated during execution of instructions, regardless of
 privilege mode.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] When an extension's status is set to Off, any instruction that attempts
 to read or write the corresponding state will cause an
 illegal-instruction exception.
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Extensions to the user-mode ISA often include additional user-mode
 state, and this state can be considerably larger than the base integer
 registers. The extensions might only be used for some applications, or
@@ -1268,7 +1333,7 @@ register state. Other extensions, however, might not preserve state when
 set to Off.
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Implementations may choose to track the dirtiness of the floating-point
 register state imprecisely by reporting the state to be dirty even when
 it has not been modified. On some implementations, some instructions
@@ -1277,21 +1342,25 @@ transition from Initial or Clean to Dirty. On other implementations,
 dirtiness might not be tracked at all, in which case the valid FS states
 are Off and Dirty, and an attempt to set FS to Initial or Clean causes
 it to be set to Dirty.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 This definition of FS does not disallow setting FS to Dirty as a result
 of errant speculation. Some platforms may choose to disallow
 speculatively writing FS to close a potential side channel.
 ====
+endif::[]
 
+ifdef::archi-default[]
 If an instruction explicitly or implicitly writes a floating-point
 register or the `fcsr` but does not alter its contents, and FS=Initial
 or FS=Clean, it is implementation-defined whether FS transitions to
 Dirty.
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Implementations may choose to track the dirtiness of the vector register
 state in an analogous imprecise fashion, including possibly setting VS
 to Dirty when software attempts to set VS=Initial or VS=Clean. When
@@ -1300,7 +1369,7 @@ instruction that writes a vector register or vector CSR but does not
 alter its contents causes VS to transition to Dirty.
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 <<fsxsstates>> shows all the possible state
 transitions for the FS, VS, or XS status bits. Note that the standard
 floating-point and vector extensions do not support user-mode
@@ -1308,8 +1377,6 @@ unconfigure or disable/enable instructions.
 
 <<<
 
-[[fsxsstates]]
-.FS, VS, and XS state transitions.
 [width=75,align=center,float=center,cols="<,<,<,<,<"]
 |===
 |Current State +
@@ -1413,7 +1480,9 @@ Off
 Off
 |===
 
+[[fsxsstates]]
 [width=75,align=center,float=center,cols="<,<,<,<,<"]
+.FS, FS, and XS state transitions.
 |===
 5+^|Execute instruction to enable unit
 
@@ -1432,7 +1501,9 @@ Initial
 Standard privileged instructions to initialize, save, and restore
 extension state are provided to insulate privileged code from details of
 the added extension state by treating the state as an opaque object.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Many coprocessor extensions are only used in limited contexts that
@@ -1444,7 +1515,9 @@ a floating-point unit is present the floating-point registers are part
 of the standard calling convention, and so user-mode software cannot
 know when it is safe to disable the floating-point unit.
 ====
+endif::[]
 
+ifdef::archi-default[]
 The XS field provides a summary of all added extension state, but
 additional microarchitectural bits might be maintained in the extension
 to further reduce context save and restore overhead.
@@ -1465,7 +1538,9 @@ directly to record the status with respect to the supervisor-level saved
 context. Machine-level software must be more conservative in saving and
 restoring the extension state in their corresponding version of the
 context.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 In any reasonable use case, the number of context switches between user
@@ -1476,20 +1551,15 @@ interrupts, unless the interrupt results in a user-level context swap.
 ====
 endif::[]
 
+ifdef::archi-default[]
 ===== Previous Expected Landing Pad (ELP) State in `mstatus` Register
 
-ifeval::[{RVZicfilp} == true]
 The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 `ELP`, and are updated as specified in <<ZICFILP_FORWARD_TRAPS>>. The
 *__x__*`PELP` fields are encoded as follows:
 
 * 0 - `NO_LP_EXPECTED` - no landing pad instruction expected.
 * 1 - `LP_EXPECTED` - a landing pad instruction is expected.
-endif::[]
-
-ifeval::[{RVZicfilp} == false]
-[{ohg-config}] As the Zicfilp extension is not supported,
-the `SPELP` and `MPELP` fields are read-only zero.
 endif::[]
 
 ==== Machine Trap-Vector Base-Address (`mtvec`) Register
@@ -1502,13 +1572,15 @@ and a vector mode (MODE).
 .Encoding of mtvec MODE field.
 include::images/bytefield/mtvec.adoc[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mtvec` register must always be implemented, but can contain a
 read-only value. If `mtvec` is writable, the set of values the register
 may hold can vary by implementation. The value in the BASE field must
 always be aligned on a 4-byte boundary, and the MODE setting may impose
 additional alignment constraints on the value in the BASE field.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 We allow for considerable flexibility in implementation of the trap
@@ -1518,7 +1590,7 @@ hand, we wish to allow flexibility for larger systems.
 ====
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] The `mtvec` register is writable. The value in the BASE field must
 always be aligned on a 4-byte boundary. `mtvec` is always accessed in
 Mode=Direct.
@@ -1544,7 +1616,7 @@ The encoding of the MODE field is shown in
 <<mtvec-mode>>. When MODE=Direct, all traps into
 machine mode cause the `pc` to be set to the address in the BASE field.
 
-ifeval::[{MTvecDirectEn} == false]
+ifndef::archi-not-default+MTvecDirectEn-true[]
 When MODE=Vectored, all synchronous exceptions into machine mode cause
 the `pc` to be set to the address in the BASE field, whereas interrupts
 cause the `pc` to be set to the address in the BASE field plus four
@@ -1572,7 +1644,7 @@ endif::[]
 
 ==== Machine Trap Delegation (`medeleg` and `mideleg`) Registers
 
-ifeval::[{RVU} == true]
+ifdef::archi-default[]
 By default, all traps at any privilege level are handled in machine
 mode, though a machine-mode handler can redirect traps back to the
 appropriate level with the MRET instruction
@@ -1589,7 +1661,23 @@ exist, and setting a bit in `medeleg` or `mideleg` will delegate the
 corresponding trap, when occurring in S-mode or U-mode, to the S-mode
 trap handler. In harts without S-mode, the `medeleg` and `mideleg`
 registers should not exist.
+endif::[]
 
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
+By default, all traps at any privilege level are handled in machine
+mode, though a machine-mode handler can redirect traps back to the
+appropriate level with the MRET instruction
+(<<otherpriv>>).
+The machine exception
+delegation register (`medeleg`) is a 64-bit read/write register.
+The machine interrupt delegation (`mideleg`) register is an MXLEN-bit
+read/write register.
+Setting a bit in `medeleg` or `mideleg` will delegate the
+corresponding trap, when occurring in S-mode or U-mode, to the S-mode
+trap handler.
+endif::[]
+
+ifeval::[{note} == true]
 [NOTE]
 ====
 In versions 1.9.1 and earlier , these registers existed but were
@@ -1597,7 +1685,9 @@ hardwired to zero in M-mode only, or M/U without N harts. There is no
 reason to require they return zero in those cases, as the `misa`
 register indicates whether they exist.
 ====
+endif::[]
 
+ifdef::archi-default[]
 When a trap is delegated to S-mode, the `scause` register is written
 with the trap cause; the `sepc` register is written with the virtual
 address of the instruction that took the trap; the `stval` register is
@@ -1618,13 +1708,17 @@ i.e., any synchronous trap that can be delegated must support not being
 delegated. Similarly, an implementation shall not fix as read-only one
 any bits of `mideleg` corresponding to machine-level interrupts (but may
 do so for lower-level interrupts).
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Version 1.11 and earlier prohibited having any bits of `mideleg` be
 read-only one. Platform standards may always add such restrictions.
 ====
+endif::[]
 
+ifdef::archi-default[]
 Traps never transition from a more-privileged mode to a less-privileged
 mode. For example, if M-mode has delegated illegal-instruction
 exceptions to S-mode, and M-mode software later executes an illegal
@@ -1640,7 +1734,9 @@ interrupt (STI) is delegated to S-mode by setting `mideleg`[5], STIs
 will not be taken when executing in M-mode. By contrast, if `mideleg`[5]
 is clear, STIs can be taken in any mode and regardless of current mode
 will transfer control to M-mode.
+endif::[]
 
+ifdef::archi-default,RVS-true[]
 .Machine Exception Delegation (`medeleg`) register.
 include::images/bytefield/medeleg.adoc[]
 
@@ -1649,26 +1745,33 @@ shown in <<mcauses>>, with the index of the
 bit position equal to the value returned in the `mcause` register (i.e.,
 setting bit 8 allows user-mode environment calls to be delegated to a
 lower-privilege trap handler).
+endif::[]
 
+ifdef::archi-default[]
 When XLEN=32, `medelegh` is a 32-bit read/write register
 that aliases bits 63:32 of `medeleg`.
-The `medelegh` register does not exist when XLEN=64.
+endif::[]
 
+ifdef::archi-default,XLEN-64[]
+The `medelegh` register does not exist when XLEN=64.
+endif::[]
+
+ifdef::archi-default,RVS-true[]
 .Machine Interrupt Delegation (`mideleg`) Register.
 include::images/bytefield/mideleg.adoc[]
 
 `mideleg` holds trap delegation bits for individual interrupts, with the
 layout of bits matching those in the `mip` register (i.e., STIP
 interrupt delegation control is located in bit 5).
+endif::[]
 
+ifdef::archi-default[]
 For exceptions that cannot occur in less privileged modes, the
 corresponding `medeleg` bits should be read-only zero. In particular,
 `medeleg`[11] is read-only zero.
-
-The `medeleg`[16] is read-only zero as double trap is not delegatable.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] All traps at any privilege level are handled in machine
 mode.
 
@@ -1697,14 +1800,24 @@ include::images/bytefield/mideleg.adoc[]
 .Machine Interrupt-Enable (`mie`) register
 include::images/bytefield/mideleg.adoc[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default[]
 An interrupt _i_ will trap to M-mode (causing the privilege mode to
 change to M-mode) if all of the following are true: (a) either the
 current privilege mode is M and the MIE bit in the `mstatus` register is
 set, or the current privilege mode has less privilege than M-mode;
 (b) bit _i_ is set in both `mip` and `mie`; and (c) if register
 `mideleg` exists, bit _i_ is not set in `mideleg`.
+endif::[]
 
+ifdef::archi-not-default+RVS-true+RVU-true[]
+An interrupt _i_ will trap to M-mode (causing the privilege mode to
+change to M-mode) if all of the following are true: (a) either the
+current privilege mode is M and the MIE bit in the `mstatus` register is
+set, or the current privilege mode has less privilege than M-mode;
+(b) bit _i_ is set in both `mip` and `mie`; and (c) bit _i_ is not set in `mideleg`.
+endif::[]
+
+ifdef::archi-default,RVS-true,RVU-true[]
 These conditions for an interrupt trap to occur must be evaluated in a
 bounded amount of time from when an interrupt becomes, or ceases to be,
 pending in `mip`, and must also be evaluated immediately following the
@@ -1714,7 +1827,9 @@ which these interrupt trap conditions expressly depend (including `mip`,
 
 Interrupts to M-mode take priority over any interrupts to lower
 privilege modes.
+endif::[]
 
+ifdef::archi-default[]
 Each individual bit in register `mip` may be writable or may be
 read-only. When bit _i_ in `mip` is writable, a pending interrupt _i_
 can be cleared by writing 0 to this bit. If interrupt _i_ can become
@@ -1735,7 +1850,9 @@ include::images/bytefield/mipreg-standard.adoc[]
 [[miereg-standard]]
 .Standard portion (bits 15:0) of `mie`.
 include::images/bytefield/miereg-standard.adoc[]
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The machine-level interrupt registers handle a few root interrupt
@@ -1749,7 +1866,9 @@ are then muxed into the machine-level interrupt sources.
 The non-maskable interrupt is not made visible via the `mip` register as
 its presence is implicitly known when executing the NMI trap handler.
 ====
+endif::[]
 
+ifdef::archi-default[]
 Bits `mip`.MEIP and `mie`.MEIE are the interrupt-pending and
 interrupt-enable bits for machine-level external interrupts. MEIP is
 read-only in `mip`, and is set and cleared by a platform-specific
@@ -1788,7 +1907,9 @@ controller, but the signal from the interrupt controller is not used to
 calculate the value written to SEIP. Only the software-writable SEIP bit
 participates in the read-modify-write sequence of a CSRRS or CSRRC
 instruction.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 For example, if we name the software-writable SEIP bit `B` and the
@@ -1803,7 +1924,9 @@ mimic external interrupts cleanly, without losing any real external
 interrupts. The behavior of the CSR instructions is slightly modified
 from regular CSR accesses as a result.
 ====
+endif::[]
 
+ifdef::archi-default[]
 If supervisor mode is implemented, bits `mip`.STIP and `mie`.STIE are
 the interrupt-pending and interrupt-enable bits for supervisor-level
 timer interrupts. STIP is writable in `mip`, and may be written by
@@ -1825,7 +1948,9 @@ read-only zeros.
 
 Multiple simultaneous interrupts destined for M-mode are handled in the
 following decreasing priority order: MEI, MSI, MTI, SEI, SSI, STI, LCOFI.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The machine-level interrupt fixed-priority ordering rules were developed
@@ -1853,7 +1978,9 @@ interrupts are located in the lowest four bits of `mip` as these are
 often written by software, and this position allows the use of a single
 CSR instruction with a five-bit immediate.
 ====
+endif::[]
 
+ifdef::archi-default[]
 Restricted views of the `mip` and `mie` registers appear as the `sip`
 and `sie` registers for supervisor level. If an interrupt is delegated
 to S-mode by setting a bit in the `mideleg` register, it becomes visible
@@ -1862,7 +1989,7 @@ Otherwise, the corresponding bits in `sip` and `sie` are read-only zero.
 endif::[]
 
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] As only M-Mode is implemented, an interrupt _i_ will trap
 to M-mode (causing the privilege mode to change to M-mode) if all of the
 following are true: (a) the MIE bit in the `mstatus` register is set;
@@ -1874,7 +2001,9 @@ pending in `mip`, and must also be evaluated immediately following the
 execution of an MRET instruction or an explicit write to a CSR on
 which these interrupt trap conditions expressly depend (including `mip`,
 `mie`, `mstatus`, and `mideleg`).
+endif::[]
 
+ifdef::archi-CVA6[]
 [{ohg-config}] Each individual bit in register `mip` is read-only. If interrupt _i_
 can become pending but bit _i_ in `mip` is read-only, the implementation
 must provide some other mechanism for clearing the pending interrupt.
@@ -1909,18 +2038,50 @@ compare register.
 [{ohg-config}]
 As the system has only one hart then `mip`.MSIP and `mie`.MSIE are
 read-only zeros.
+endif::[]
 
+ifndef::archi-default,RVS-true[]
 [{ohg-config}]
 As supervisor mode is not implemented, bits SEIP, STIP, and SSIP of
 `mip` and SEIE, STIE, and SSIE of `mie` are read-only zeros.
+endif::[]
 
+ifdef::archi-not-default+RVS-true[]
+Bits `mip`.SEIP and `mie`.SEIE are
+the interrupt-pending and interrupt-enable bits for supervisor-level
+external interrupts. SEIP is writable in `mip`, and may be written by
+M-mode software to indicate to S-mode that an external interrupt is
+pending.
+
+Bits `mip`.STIP and `mie`.STIE are
+the interrupt-pending and interrupt-enable bits for supervisor-level
+timer interrupts. STIP is writable in `mip`, and may be written by
+M-mode software to deliver timer interrupts to S-mode.
+
+Bits `mip`.SSIP and `mie`.SSIE are
+the interrupt-pending and interrupt-enable bits for supervisor-level
+software interrupts. SSIP is writable in `mip` and may also be set to 1
+by a platform-specific interrupt controller.
+endif::[]
+
+ifdef::archi-CVA6[]
 [{ohg-config}]
 As the Sscofpmf extension is not implemented, `mip`.LCOFIP and `mie`.LCOFIE are read-only zeros.
+endif::[]
 
+ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}]
 Multiple simultaneous interrupts destined for M-mode are handled in the
 following decreasing priority order: MEI, MSI, MTI.
+endif::[]
 
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
+[{ohg-config}]
+Multiple simultaneous interrupts destined for M-mode are handled in the
+following decreasing priority order: MEI, MSI, MTI, SEI, SSI, STI.
+endif::[]
+
+ifndef::archi-default,RVS-true[]
 [{ohg-config}]
 As only S-Mode is not implemented, the corresponding bits in `sip` and `sie` are read-only zero.
 endif::[]
@@ -1940,22 +2101,39 @@ shared between harts on the same core, in which case writes to `mcycle`
 will be visible to those harts. The platform should provide a mechanism
 to indicate which harts share an `mcycle` CSR.
 
-ifeval::[{RVZsmcntrpmf} == true]
+ifdef::archi-default,RVZsmcntrpmf-true[]
 The hardware performance monitor includes 29 additional 64-bit event
 counters, `mhpmcounter3`-`mhpmcounter31`. The event selector CSRs,
 `mhpmevent3`-`mhpmevent31`, are 64-bit *WARL* registers that control which
 event causes the corresponding counter to increment. The meaning of
 these events is defined by the platform, but event 0 is defined to mean
-"no event." All counters should be implemented, but a legal
+"no event." 
+endif::[]
+
+ifdef::archi-default[]
+All counters should be implemented, but a legal
 implementation is to make both the counter and its corresponding event
 selector be read-only 0.
+endif::[]
 
+ifdef::archi-default,RVZsmcntrpmf-true[]
 .Hardware performance monitor counters.
 include::images/bytefield/hpmevents.adoc[]
 
 The `mhpmcounters` are *WARL* registers that support up to 64 bits of
 precision on RV32 and RV64.
+endif::[]
 
+ifeval::[{note} == true]
+[NOTE]
+====
+A future revision of this specification will define a mechanism to
+generate an interrupt when a hardware performance monitor counter
+overflows.
+====
+endif::[]
+
+ifdef::archi-default[]
 When XLEN=32, reads of the `mcycle`, `minstret`, `mhpmcounter__n__`, and `mhpmevent__n__`
 CSRs return bits 31-0 of the corresponding register, and writes change
 only bits 31-0; reads of the `mcycleh`, `minstreth`, `mhpmcounter__n__h`, and `mhpmevent__n__h`
@@ -1964,7 +2142,7 @@ only bits 63-32.
 The `mhpmevent__n__h` CSRs are provided only if the Sscofpmf extension is implemented.
 endif::[]
 
-ifeval::[{RVZsmcntrpmf} == false]
+ifndef::archi-default,RVZsmcntrpmf-true[]
 [{ohg-config}] The hardware performance monitor includes 29 additional 64-bit event
 counters, `mhpmcounter3`-`mhpmcounter31`. The event selector CSRs,
 `mhpmevent3`-`mhpmevent31`, are 64-bit *WARL* registers that control which
@@ -1975,15 +2153,26 @@ selector are read-only 0.
 
 .Hardware performance monitor counters.
 include::images/bytefield/hpmevents.adoc[]
+endif::[]
 
 The `mhpmcounters` are *WARL* registers that support up to 64 bits of
 precision on RV32 and RV64.
 
+ifdef::archi-not-default+XLEN-32[]
 When XLEN=32, reads of the `mcycle`, `minstret`, `mhpmcounter__n__`, and `mhpmevent__n__`
 CSRs return bits 31-0 of the corresponding register, and writes change
 only bits 31-0; reads of the `mcycleh`, `minstreth`, and `mhpmcounter__n__h`
 CSRs return bits 63-32 of the corresponding register, and writes change
 only bits 63-32.
+endif::[]
+
+ifdef::archi-not-default+XLEN-64[]
+[{ohg-config}]
+As XLEN=64, `mcycleh`, `minstreth`, and `mhpmcounter__n__h`
+do not exist.
+endif::[]
+
+ifeval::["{ohg-config}" == "CV32A65X"]
 As the Sscofpmf extension is not implemented, the `mhpmevent__n__h` CSRs
 are not provided.
 endif::[]
@@ -1995,7 +2184,7 @@ The counter-enable `mcounteren` register is a 32-bit register that
 controls the availability of the hardware performance-monitoring
 counters to the next-lower privileged mode.
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 .Counter-enable (`mcounteren`) register.
 include::images/bytefield/counteren.adoc[]
 
@@ -2009,7 +2198,9 @@ clear, attempts to read the `cycle`, `time`, `instret`, or
 illegal-instruction exception. When one of these bits is set, access to
 the corresponding register is permitted in the next implemented
 privilege mode (S-mode if implemented, otherwise U-mode).
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The counter-enable bits support two common use cases with minimal
@@ -2019,7 +2210,9 @@ features in software. For harts that need high-performance timers and
 counters but are not concerned with obfuscating the underlying hardware
 counters, the counters can be directly exposed to lower privilege modes.
 ====
+endif::[]
 
+ifdef::archi-default[]
 The `cycle`, `instret`, and `hpmcountern` CSRs are read-only shadows of
 `mcycle`, `minstret`, and `mhpmcounter n`, respectively. The `time` CSR
 is a read-only shadow of the memory-mapped `mtime` register.
@@ -2028,14 +2221,18 @@ are read-only shadows of `mcycleh`, `minstreth` and `mhpmcounternh`,
 respectively. On RV32I the `timeh` CSR is a read-only shadow of the
 upper 32 bits of the memory-mapped `mtime` register, while `time`
 shadows only the lower 32 bits of `mtime`.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Implementations can convert reads of the `time` and `timeh` CSRs into
 loads to the memory-mapped `mtime` register, or emulate this
 functionality on behalf of less-privileged modes in M-mode software.
 ====
+endif::[]
 
+ifdef::archi-default[]
 In harts with U-mode, the `mcounteren` must be implemented, but all
 fields are *WARL* and may be read-only zero, indicating reads to the
 corresponding counter will cause an illegal-instruction exception when
@@ -2043,7 +2240,7 @@ executing in a less-privileged mode. In harts without U-mode, the
 `mcounteren` register should not exist.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] As U-mode is not implemented, the `mcounteren` register does not exist.
 endif::[]
 
@@ -2052,8 +2249,7 @@ endif::[]
 .Counter-inhibit `mcountinhibit` register
 include::images/bytefield/counterinh.adoc[]
 
-ifeval::[{RVZsmcntrpmf} == true]
-[{ohg-config}]
+ifdef::archi-default,RVZsmcntrpmf-true[]
 The counter-inhibit register `mcountinhibit` is a 32-bit *WARL* register that
 controls which of the hardware performance-monitoring counters
 increment. The settings in this register only control whether the
@@ -2071,7 +2267,9 @@ and so writes to `mcountinhibit.CY` will be visible to those harts.
 
 If the `mcountinhibit` register is not implemented, the implementation
 behaves as though the register were set to zero.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 When the `mcycle` and `minstret` counters are not needed, it is desirable
@@ -2084,7 +2282,7 @@ cannot be inhibited with the `mcountinhibit` mechanism.
 ====
 endif::[]
 
-ifeval::[{RVZsmcntrpmf} == false]
+ifndef::archi-default,RVZsmcntrpmf-true[]
 [{ohg-config}] The `mcountinhibit` register is not implemented, the implementation
 behaves as though the register were set to zero.
 endif::[]
@@ -2124,7 +2322,7 @@ endif::[]
 <<mepcreg>>. The low bit of `mepc` (`mepc[0]`) is
 always zero.
 
-ifeval::[{RVC} == false]
+ifndef::archi-default,RVC-true[]
 On implementations that support only IALIGN=32, the two low
 bits (`mepc[1:0]`) are always zero.
 
@@ -2179,11 +2377,13 @@ the possible machine-level exception codes. The Exception Code is a
 .Machine Cause (`mcause`) register.
 include::images/bytefield/mcausereg.adoc[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 Note that load and load-reserved instructions generate load exceptions,
 whereas store, store-conditional, and AMO instructions generate
 store/AMO exceptions.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Interrupts can be separated from other traps with a single branch on the
@@ -2200,7 +2400,9 @@ implementation. The privilege level servicing the trap can implement a
 policy on whether these need to be distinguished, and if so, whether a
 given opcode should be treated as illegal or privileged.
 ====
+endif::[]
 
+ifdef::archi-default[]
 If an instruction may raise multiple synchronous exceptions, the
 decreasing priority order of
 <<exception-priority>> indicates which
@@ -2208,11 +2410,13 @@ exception is taken and reported in `mcause`. The priority of any custom
 synchronous exceptions is implementation-defined.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default+RVU-true[]
 [{ohg-config}] Note that load and load-reserved instructions generate load exceptions,
 whereas store and store-conditional instructions generate
 store exceptions.
+endif::[]
 
+ifdef::archi-CVA6[]
 [CVA6] If an instruction may raise multiple synchronous exceptions, the
 decreasing priority order of
 <<exception-priority>> indicates which
@@ -2296,7 +2500,6 @@ _Designated for platform use_
 0 +
 0 +
 0 +
-0 +
 0
 |0 +
 1 +
@@ -2314,8 +2517,7 @@ _Designated for platform use_
 13 +
 14 +
 15 +
-16 +
-17 +
+16-17 +
 18 +
 19 +
 20-23 +
@@ -2339,7 +2541,6 @@ Instruction page fault +
 Load page fault +
 _Reserved_ +
 Store/AMO page fault +
-Double trap +
 _Reserved_ +
 Software check +
 Hardware error +
@@ -2383,7 +2584,7 @@ Load/store/AMO access fault
 Load/store/AMO address misaligned
 |===
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 When a virtual address is translated into a physical address, the
 address translation algorithm determines what specific exception may be
 raised.
@@ -2393,7 +2594,7 @@ lower priority than load/store/AMO page-fault and access-fault
 exceptions.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] Load/store address-misaligned exceptions may have either higher or
 lower priority than load/store access-fault
 exceptions. TODO
@@ -2455,7 +2656,7 @@ endif::[]
 
 ==== Machine Trap Value (`mtval`) Register
 
-ifeval::[{MTvalEn} == true]
+ifdef::archi-default,MTvalEn-true[]
 The `mtval` register is an MXLEN-bit read-write register formatted as
 shown in <<mtvalreg>>. When a trap is taken into
 M-mode, `mtval` is either set to zero or written with exception-specific
@@ -2508,7 +2709,9 @@ will contain the shortest of:
 
 The value loaded into `mtval` on an illegal-instruction exception is
 right-justified and all unused upper bits are cleared to zero.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Capturing the faulting instruction in `mtval` reduces the overhead of
@@ -2531,7 +2734,9 @@ instruction memory pointed to by `mepc` can be used to distinguish these
 two cases (or alternatively, the system configuration information can be
 interrogated to install the appropriate trap handling before runtime).
 ====
+endif::[]
 
+ifdef::archi-default,MTvalEn-true[]
 On a trap caused by a software check exception, the `mtval` register holds
 the cause for the exception. The following encodings are defined:
 
@@ -2552,15 +2757,14 @@ be able to hold all values less than 2^__N__^, where
 _N_ is the smaller of MXLEN and ILEN.
 endif::[]
 
-ifeval::[{MTvalEn} == false]
-[{ohg-config}] The `mtval` register is an MXLEN-bit read-write register
-holding constant value zero.
+ifndef::archi-default,MTvalEn-true[]
+[{ohg-config}] The `mtval` register is an MXLEN-bit read-only 0 register.
 endif::[]
 
 ==== Machine Configuration Pointer (`mconfigptr`) Register
 
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The `mconfigptr` register is an MXLEN-bit read-only CSR, formatted as shown in
 <<mconfigptrreg>>, that holds the physical
 address of a configuration data structure. Software can traverse this
@@ -2580,7 +2784,9 @@ must be zero.
 The `mconfigptr` register must be implemented, but it may be zero to indicate the
 configuration data structure does not exist or that an alternative
 mechanism must be used to locate it.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The format and schema of the configuration data structure have yet to be
@@ -2596,7 +2802,7 @@ M-mode software towards the beginning of the boot process.
 ====
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 The `mconfigptr` register is an MXLEN-bit read-only CSR that holds the physical
 address of a configuration data structure.
 
@@ -2607,7 +2813,7 @@ endif::[]
 [[sec:menvcfg]]
 ====  Machine Environment Configuration (`menvcfg`) Register
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The `menvcfg` CSR is a 64-bit read/write register, formatted
 as shown in <<menvcfgreg>>, that controls
 certain characteristics of the execution environment for modes less
@@ -2627,8 +2833,7 @@ privileged than M.
   {bits:  1, name: 'CBZE'},
   {bits: 24, name: 'WPRI'},
   {bits:  2, name: 'PMM'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: 'DTE'},
+  {bits: 26, name: 'WPRI'},
   {bits:  1, name: 'CDE'},
   {bits:  1, name: 'ADUE'},
   {bits:  1, name: 'PBMTE'},
@@ -2665,14 +2870,18 @@ SO
 |Successor device input and memory reads (SR implied) +
 Successor device output and memory writes (SW implied)
 |===
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Bit FIOM is needed in `menvcfg` so M-mode can emulate the hypervisor
 extension of <<hypervisor>>, which has an
 equivalent FIOM bit in the hypervisor CSR `henvcfg`.
 ====
+endif::[]
 
+ifdef::archi-default[]
 The PBMTE bit controls whether the Svpbmt extension is available for use
 in S-mode and G-stage address translation (i.e., for page tables pointed
 to by `satp` or `hgatp`). When PBMTE=1, Svpbmt is available for S-mode
@@ -2687,7 +2896,17 @@ _rs1_=`x0` and _rs2_=`x0` suffices to synchronize address-translation caches
 with respect to the altered interpretation of page-table entries' PBMT fields.
 See <<hyp-mm-fences>> for additional synchronization requirements when the
 hypervisor extension is implemented.
+endif::[]
 
+ifdef::archi-CVA6+RVU-true[]
+The PBMTE bit controls whether the Svpbmt extension is available for use
+in S-mode and G-stage address translation (i.e., for page tables pointed
+to by `satp` or `hgatp`).
+
+[{ohg-config}] As Svpbmt is not implemented, PBMTE is always 0
+endif::[]
+
+ifdef::archi-default[]
 If the Svadu extension is implemented, the ADUE bit controls whether hardware
 updating of PTE A/D bits is enabled for S-mode and G-stage address
 translations.
@@ -2703,22 +2922,56 @@ S-mode and G-stage address translation.
 If Svadu is not implemented, ADUE is read-only zero.
 Furthermore, for implementations with the hypervisor extension, `henvcfg`.ADUE
 is read-only zero if `menvcfg`.ADUE is zero.
+endif::[]
 
+ifdef::archi-CVA6+RVU-true[]
+The ADUE bit controls whether hardware
+updating of PTE A/D bits is enabled for S-mode and G-stage address
+translations.
+
+[{ohg-config}] As Svadu is not implemented, ADUE is always 0
+endif::[]
+
+ifdef::archi-default[]
 NOTE: The Svade extension requires page-fault exceptions be raised when PTE
 A/D bits need be set, hence Svade is implemented when ADUE=0.
 
 If the Smcdeleg extension is implemented, the CDE (Counter Delegation Enable) bit controls whether Zicntr and Zihpm counters can be delegated to S-mode. When CDE=1, the Smcdeleg extension is enabled, see <<smcdeleg>>. When CDE=0, the Smcdeleg and Ssccfg extensions appear to be not implemented. If Smcdeleg is not implemented, CDE is read-only zero.
+endif::[]
+
+ifdef::archi-CVA6+RVU-true[]
+The CDE (Counter Delegation Enable) bit controls whether Zicntr and Zihpm counters can be delegated to S-mode.
+
+[{ohg-config}] As Smcdeleg is not implemented, CDE is always 0
+endif::[]
 
 The definition of the STCE field is furnished by the Sstc extension.
 
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Sstc is not implemented, STCE is always 0
+endif::[]
+
 The definition of the CBZE field is furnished by the Zicboz extension.
 
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Zicboz is not implemented, CBZE is always 0
+endif::[]
+
 The definitions of the CBCFE and CBIE fields are furnished by the Zicbom extension.
+
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Zicbom is not implemented, CBCFE and CBIE fields are always 0
+endif::[]
 
 The definition of the PMM field will be furnished by the forthcoming
 Smnpm extension. Its allocation within `menvcfg` may change prior to the
 ratification of that extension.
 
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Smnpm is not implemented, PMM field is always 0
+endif::[]
+
+ifdef::archi-default[]
 The Zicfilp extension adds the `LPE` field in `menvcfg`. When the `LPE` field is
 set to 1 and S-mode is implemented, the Zicfilp extension is enabled in S-mode.
 If `LPE` field is set to 1 and S-mode is not implemented, the Zicfilp extension
@@ -2728,7 +2981,13 @@ is 0 and S-mode is not implemented, then the same rules apply to U-mode.
 
 * The hart does not update the `ELP` state; it remains as `NO_LP_EXPECTED`.
 * The `LPAD` instruction operates as a no-op.
+endif::[]
 
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Zicfilp is not implemented, LPE field is always 0
+endif::[]
+
+ifdef::archi-default[]
 The Zicfiss extension adds the `SSE` field to `menvcfg`. When the `SSE` field is
 set to 1 the Zicfiss extension is activated in S-mode. When `SSE` field is 0,
 the following rules apply to privilege modes that are less than M:
@@ -2738,12 +2997,13 @@ the following rules apply to privilege modes that are less than M:
 * The `pte.xwr=010b` encoding in VS/S-stage page tables becomes reserved.
 * The `henvcfg.SSE` and `senvcfg.SSE` fields will read as zero and are read-only.
 * `SSAMOSWAP.W/D` raises an illegal-instruction exception.
+endif::[]
 
-The Ssdbltrp extension adds the double-trap-enable (`DTE`) field in `menvcfg`.
-When `menvcfg.DTE` is zero, the implementation behaves as though Ssdbltrp is not
-implemented. When Ssdbltrp is not implemented `sstatus.SDT`, `vsstatus.SDT`, and
-`henvcfg.DTE` bits are read-only zero.
+ifdef::archi-CVA6+RVU-true[]
+[{ohg-config}] As Zicfiss is not implemented, SSE field is always 0
+endif::[]
 
+ifdef::archi-default[]
 When XLEN=32, `menvcfgh` is a 32-bit read/write register
 that aliases bits 63:32 of `menvcfg`.
 The `menvcfgh` register does not exist when XLEN=64.
@@ -2752,25 +3012,19 @@ If U-mode is not supported, then registers `menvcfg` and `menvcfgh` do
 not exist.
 endif::[]
 
-ifeval::[{RVU} == false]
-The `menvcfg` CSR is a 64-bit read/write register that controls
-certain characteristics of the execution environment for modes less
-privileged than M.
-endif::[]
-
-ifeval::[{XLEN} == 32]
-As XLEN=32, `menvcfgh` is a 32-bit read/write register
+ifdef::archi-not-default+XLEN-32[]
+[{ohg-config}] As XLEN=32, `menvcfgh` is a 32-bit read/write register
 that aliases bits 63:32 of `menvcfg`.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] As U-mode is not supported, then registers `menvcfg` and `menvcfgh` do
 not exist.
 endif::[]
 
 ==== Machine Security Configuration (`mseccfg`) Register
 
-ifeval::[{RVZsmepmp} == true]
+ifdef::archi-default,RVZsmepmp-true[]
 `mseccfg` is an optional 64-bit read/write register, formatted as
 shown in <<mseccfg>>, that controls security features.
 
@@ -2815,15 +3069,20 @@ aliases bits 63:32 of `mseccfg`.
 Register `mseccfgh` does not exist when XLEN=64.
 endif::[]
 
-ifeval::[{RVZsmepmp} == false]
+ifndef::archi-default,RVZsmepmp-true[]
 `mseccfg` is an optional 64-bit read/write register,
 that controls security features.
 
-ifeval::[{XLEN} == 32]
+ifdef::archi-not-default+XLEN-32[]
 As XLEN=32, `mseccfgh` is a 32-bit read/write register
 that aliases bits 63:32 of `mseccfg`.
 endif::[]
 
+ifdef::archi-not-default+XLEN-64[]
+As XLEN=64, register `mseccfgh` does not exist.
+endif::[]
+
+ifdef::archi-CVA6[]
 [{ohg-config}] As Zkr, Smepmp, and Smmpm extensions are not implemented,
 `mseccfg` and `mseccfgh` do not exist. TODO.
 endif::[]
@@ -2895,14 +3154,19 @@ occasional spurious timer interrupt than to poll MTIP until it falls.
 ====
 endif::[]
 
+ifdef::archi-default,XLEN-32[]
 In RV32, memory-mapped writes to `mtimecmp` modify only one 32-bit part
 of the register. The following code sequence sets a 64-bit `mtimecmp`
 value without spuriously generating a timer interrupt due to the
 intermediate value of the comparand:
+endif::[]
 
+ifdef::archi-default,XLEN-64[]
 For RV64, naturally aligned 64-bit memory accesses to the `mtime` and
 `mtimecmp` registers are additionally supported and are atomic.
+endif::[]
 
+ifdef::archi-default,XLEN-32[]
 .Sample code for setting the 64-bit time comparand in RV32 assuming a little-endian memory system and that the registers live in a strongly ordered I/O region.  Storing -1 to the low-order bits of `mtimecmp` prevents `mtimecmp` from temporarily becoming smaller than the lesser of the old and new values.
 ....
             # New comparand is in a1:a0.
@@ -2912,6 +3176,7 @@ For RV64, naturally aligned 64-bit memory accesses to the `mtime` and
             sw a1, 4(t1)     # No smaller than new value.
             sw a0, 0(t1)     # New value.
 ....
+endif::[]
 
 
 
@@ -2922,13 +3187,15 @@ For RV64, naturally aligned 64-bit memory accesses to the `mtime` and
 
 include::images/wavedrom/mm-env-call.adoc[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The ECALL instruction is used to make a request to the supporting
 execution environment. When executed in U-mode, S-mode, or M-mode, it
 generates an environment-call-from-U-mode exception,
 environment-call-from-S-mode exception, or environment-call-from-M-mode
 exception, respectively, and performs no other operation.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 ECALL generates a different exception for each originating privilege
@@ -2938,7 +3205,7 @@ S-mode the environment-call-from-U-mode exception but not the others.
 ====
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] The ECALL instruction is used to make a request to the supporting
 execution environment. When executed M-mode, it
 generates an environment-call-from-M-mode
@@ -2973,7 +3240,7 @@ opcode.
 
 include::images/wavedrom/trap-return.adoc[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 To return after handling a trap, there are separate trap return
 instructions per privilege level, MRET and SRET. MRET is always
 provided. SRET must be provided if supervisor mode is supported, and
@@ -2990,7 +3257,9 @@ If the A extension is supported, the __x__RET instruction is allowed to
 clear any outstanding LR address reservation but is not required to.
 Trap handlers should explicitly clear the reservation if required (e.g.,
 by using a dummy SC) before executing the __x__RET.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 If __x__RET instructions always cleared LR reservations, it would be
@@ -2998,7 +3267,7 @@ impossible to single-step through LR/SC sequences using a debugger.
 ====
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] To return after handling a trap, there are separate trap return
 instructions per privilege level, MRET and SRET. MRET is always
 provided. In {ohg-config}, SRET is not provided as supervisor mode is not supported, and
@@ -3018,7 +3287,7 @@ endif::[]
 [[wfi]]
 ==== Wait for Interrupt
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The Wait for Interrupt instruction (WFI) informs the
 implementation that the current hart can be stalled until an interrupt
 might need servicing. Execution of the WFI instruction can also be used
@@ -3029,7 +3298,7 @@ may raise an illegal-instruction exception when TW=1 in `mstatus`, as
 described in <<virt-control>>.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] The Wait for Interrupt instruction (WFI) informs the
 implementation that the current hart can be stalled until an interrupt
 might need servicing. This instruction
@@ -3067,7 +3336,7 @@ the idle loop will resume execution.
 ====
 endif::[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The WFI instruction can also be executed when interrupts are disabled.
 The operation of WFI must be unaffected by the global interrupt bits in
 `mstatus` (MIE and SIE) and the delegation register `mideleg` (i.e.,
@@ -3080,7 +3349,7 @@ execution for locally enabled interrupts pending at any privilege level,
 regardless of the global interrupt enable at each privilege level.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] The WFI instruction can also be executed when interrupts are disabled.
 The operation of WFI must be unaffected by the global interrupt bits in
 `mstatus` (MIE), but should
@@ -3118,6 +3387,12 @@ privilege mode, either immediately on encountering the WFI or after some
 interval to initiate a machine-mode transition to a lower power state,
 for example.
 
+As implementations are free to implement WFI as a NOP, software must
+explicitly check for any relevant pending but disabled interrupts in the
+code following an WFI, and should loop back to the WFI if no suitable
+interrupt was detected. The `mip` register can be interrogated
+to determine the presence of any interrupt in machine.
+
 ***
 
 The same "wait-for-event" template might be used for possible future
@@ -3137,7 +3412,7 @@ include::images/bytefield/cust-sys-instr.adoc[]
 [[reset]]
 === Reset
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Upon reset, a hart’s privilege mode is set to M. The `mstatus` fields
 MIE and MPRV are reset to 0. If little-endian memory accesses are
 supported, the `mstatus`/`mstatush` field MBE is reset to 0. The `misa`
@@ -3158,7 +3433,9 @@ interpretation, but the value 0 should be returned on implementations
 that do not distinguish different reset conditions. Implementations that
 distinguish different reset conditions should only use 0 to indicate the
 most complete reset.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Some designs may have multiple causes of reset (e.g., power-on reset,
@@ -3172,7 +3449,23 @@ the `pc` is typically set to a different value than on other traps.
 ====
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifeval::["{ohg-config}" == "CV64A6_MMU"]
+[{ohg-config}] Upon reset, a hart’s privilege mode is set to M. The `mstatus` fields
+MIE and MPRV are reset to 0
+As little-endian memory accesses are supported,
+the `mstatus` field MBE is reset to 0.
+Upon reset, the `mstatus` fields MIE and MPRV are reset to 0.
+The `misa` register is set as described in <<misa>>.
+The `pc` is set to 0x80000000 reset vector. TODO
+The `mcause` register is set to a value indicating the cause of the reset.
+Writable PMP registers’ A and L fields are set to 0.
+No *WARL* field contains an illegal value. All other hart state is UNSPECIFIED.
+
+As "{ohg-config}" does not distinguished different reset conditions,
+The `mcause` returns 0 after reset.
+endif::[]
+
+ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] Privilege mode is always M.
 As little-endian memory accesses are supported,
 the `mstatus`/`mstatush` field MBE is reset to 0.
@@ -3198,7 +3491,7 @@ the instruction that was interrupted, and `mcause` is set to a value
 indicating the source of the NMI. The NMI can thus overwrite state in an
 active machine-mode interrupt handler.
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The values written to `mcause` on an NMI are implementation-defined. The
 high Interrupt bit of `mcause` should be set to indicate that this was
 an interrupt. An Exception Code of 0 is reserved to mean "unknown
@@ -3210,7 +3503,7 @@ reporting, and possible containment of the hardware error.
 endif::[]
 
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] Upon NMI, the high Interrupt bit of `mcause` is set to indicate
 that this was an interrupt. As {ohg-config} does not distinguish sources
 of NMIs, the `mcause` register returns 0 in the Exception Code.
@@ -3236,7 +3529,7 @@ machine's physical address space are termed _physical memory attributes_
 (PMAs). This section describes RISC-V PMA terminology and how RISC-V
 systems implement and check PMAs.
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 PMAs are inherent properties of the underlying hardware and rarely
 change during system operation. Unlike physical memory protection values
 described in <<pmp>>, PMAs do not vary by execution
@@ -3305,7 +3598,7 @@ available only to machine-mode.
 endif::[]
 
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] PMAs are inherent properties of the underlying hardware. The PMAs of
 some memory regions are fixed at chip design time.
 
@@ -3399,11 +3692,13 @@ endif::[]
 
 ==== Atomicity PMAs
 
-ifeval::[{RVA} == true]
+ifdef::archi-default,RVA-true[]
 Atomicity PMAs describes which atomic instructions are supported in this
 address region. Support for atomic instructions is divided into two
 categories: _LR/SC_ and _AMOs_.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Some platforms might mandate that all of cacheable main memory support
@@ -3411,13 +3706,13 @@ all atomic operations required by the attached processors.
 ====
 endif::[]
 
-ifeval::[{RVA} == false]
+ifndef::archi-default,RVA-true[]
 [{ohg-config}] Atomic extension is not implemented.
 endif::[]
 
 ===== AMO PMA
 
-ifeval::[{RVA} == true]
+ifdef::archi-default,RVA-true[]
 Within AMOs, there are four levels of support: _AMONone_, _AMOSwap_,
 _AMOLogical_, and _AMOArithmetic_. AMONone indicates that no AMO
 operations are supported. AMOSwap indicates that only `amoswap`
@@ -3443,7 +3738,9 @@ above + `amoand`, `amoor`, `amoxor` +
 above + `amoadd`, `amomin`, `amomax`, `amominu`,
 `amomaxu`
 |===
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 We recommend providing at least AMOLogical support for I/O regions where
@@ -3451,13 +3748,13 @@ possible.
 ====
 endif::[]
 
-ifeval::[{RVA} == false]
+ifndef::archi-default,RAV-true[]
 [{ohg-config}] Atomic extension is not implemented.
 endif::[]
 
 ===== Reservability PMA
 
-ifeval::[{RVA} == true]
+ifdef::archi-default,RVA-true[]
 For _LR/SC_, there are three levels of support indicating combinations
 of the reservability and eventuality properties: _RsrvNone_,
 _RsrvNonEventual_, and _RsrvEventual_. RsrvNone indicates that no LR/SC
@@ -3467,7 +3764,9 @@ location is reservable), but without the eventual success guarantee
 described in the unprivileged ISA specification. RsrvEventual indicates
 that the operations are supported and provide the eventual success
 guarantee.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 We recommend providing RsrvEventual support for main memory regions
@@ -3483,14 +3782,14 @@ progress is detected.
 ====
 endif::[]
 
-ifeval::[{RVA} == false]
+ifndef::archi-default,RAV-true[]
 [{ohg-config}] Atomic extension is not implemented.
 endif::[]
 
 
 ==== Misaligned Atomicity Granule PMA
 
-ifeval::[{RVA} == true]
+ifdef::archi-default,RVA-true[]
 The misaligned atomicity granule PMA provides constrained support for
 misaligned AMOs.
 This PMA, if present, specifies the size of a _misaligned atomicity granule_,
@@ -3522,14 +3821,14 @@ might execute non-atomically even when contained within a misaligned atomicity
 granule.  Implicit accesses are similarly unaffected by this PMA.
 endif::[]
 
-ifeval::[{RVA} == false]
+ifndef::archi-default,RAV-true[]
 [{ohg-config}] Atomic extension is not implemented.
 endif::[]
 
 
 ==== Memory-Ordering PMAs
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Regions of the address space are classified as either _main memory_ or
 _I/O_ for the purposes of ordering by the FENCE instruction and
 atomic-instruction ordering bits.
@@ -3573,7 +3872,7 @@ Systems might support dynamic configuration of ordering properties on
 each memory region.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] As {ohg-config} is dedicated to a one hart
 platform without any DMA, no memory-ordering mechanism is implemented.
 endif::[]
@@ -3598,7 +3897,7 @@ endif::[]
 
 ==== Coherence and Cacheability PMAs
 
-ifeval::[{DCacheEn} == true]
+ifdef::archi-default,DCacheEn-true[]
 Coherence is a property defined for a single physical address, and
 indicates that writes to that address by one agent will eventually be
 made visible to other coherent agents in the system. Coherence is not to be
@@ -3620,7 +3919,9 @@ memory region, a platform-specific machine-mode routine will change the
 settings and flush caches if necessary, so the system is only incoherent
 during the transition between cacheability settings. This transitory
 state should not be visible to lower privilege levels.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Coherence is straightforward to provide for a shared memory region that
@@ -3660,10 +3961,14 @@ Most memory regions within a platform will be coherent to software,
 because they will be fixed as either uncached, read-only, hardware
 cache-coherent, or only accessed by one agent.
 ====
+endif::[]
 
+ifdef::archi-default,DCacheEn-true[]
 If a PMA indicates non-cacheability, then accesses to that region must
 be satisfied by the memory itself, not by any caches.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 For implementations with a cacheability-control mechanism, the situation
@@ -3675,7 +3980,7 @@ modes’ uncacheable accesses.
 ====
 endif::[]
 
-ifeval::[{DCacheEn} == false]
+ifndef::archi-default,DCacheEn-true[]
 [{ohg-config}] Write accesses are not cached. No cache-coherence scheme
 is implemented.
 
@@ -3738,20 +4043,24 @@ privileges (read, write, execute) to be specified for each physical
 memory region. The PMP values are checked in parallel with the PMA
 checks described in <<pma>>.
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 The granularity of PMP access control settings are platform-specific,
 but the standard PMP encoding supports regions as small as four bytes.
 Certain regions’ privileges can be hardwired—for example, some regions
 might only ever be visible in machine mode but in no lower-privilege
 layers.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 Platforms vary widely in demands for physical memory protection, and
 some platforms may provide other PMP structures in addition to or
 instead of the scheme described in this section.
 ====
+endif::[]
 
+ifdef::archi-default,RVU-true[]
 PMP checks are applied to all accesses whose effective privilege mode is
 S or U, including instruction fetches and data accesses in S and U mode,
 and data accesses in M-mode when the MPRV bit in `mstatus` is set and
@@ -3765,7 +4074,7 @@ by default have none, and can _revoke_ permissions from M-mode, which by
 default has full permissions.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] The granularity of PMP access control settings are as small as four bytes.
 
 [{ohg-config}] PMP checks applies to M-mode accesses, in which case the PMP registers
@@ -3779,7 +4088,7 @@ PMP violations are always trapped precisely at the processor.
 
 ==== Physical Memory Protection CSRs
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 PMP entries are described by an 8-bit configuration register and one
 MXLEN-bit address register. Some PMP settings additionally use the
 address register associated with the preceding PMP entry. Up to 64 PMP
@@ -3797,7 +4106,9 @@ configurations for the 64 PMP entries, as shown in
 <<pmpcfg-rv64>>. For RV64, the odd-numbered
 configuration registers, `pmpcfg1`, `pmpcfg3`, …, `pmpcfg15`, are
 illegal.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 RV64 harts use `pmpcfg2`, rather than `pmpcfg1`, to hold
@@ -3805,7 +4116,9 @@ configurations for PMP entries 8-15. This design reduces the cost of
 supporting multiple MXLEN values, since the configurations for PMP
 entries 8-11 appear in `pmpcfg2`[31:0] for both RV32 and RV64.
 ====
+endif::[]
 
+ifdef::archi-default[]
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
 include::images/bytefield/pmp-rv32.adoc[]
@@ -3822,7 +4135,9 @@ each PMP address register encodes bits 55-2 of a 56-bit physical
 address, as shown in <<pmpaddr-rv64>>. Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
 are *WARL*.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 The Sv32 page-based virtual-memory scheme described in
@@ -3833,7 +4148,9 @@ The Sv39 and Sv48 page-based virtual-memory schemes described in
 56-bit physical address space, so the RV64 PMP address registers impose
 the same limit.
 ====
+endif::[]
 
+ifdef::archi-default[]
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
 include::images/bytefield/pmpaddr-rv32.adoc[]
@@ -3843,7 +4160,7 @@ include::images/bytefield/pmpaddr-rv32.adoc[]
 include::images/bytefield/pmpaddr-rv64.adoc[]
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [ohg-config]
 PMP entries are described by an 8-bit configuration register and one
 MXLEN-bit address register. Some PMP settings additionally use the
@@ -3853,10 +4170,9 @@ implemented first. All PMP CSR fields are *WARL* and 8 upper entries are
 read-only zero. PMP CSRs are only accessible to M-mode.
 
 [{ohg-config}] The PMP configuration registers are densely packed into CSRs to minimize
-context-switch time. For {ohg-config} with sixteen CSRs, `pmpcfg0`–`pmpcfg3`, hold
+context-switch time. For {ohg-config} with sixteen CSRs, `pmpcfg0`–`pmpcfg15`, hold
 the configurations as shown
 in <<pmpcfg-rv32>>.
-The 2 upper entries are read-only zero.
 
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
@@ -3866,12 +4182,15 @@ include::images/bytefield/pmp-rv32.adoc[]
 PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <<pmpaddr-rv32>>. Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
-are *WARL*.
+are *WARL*. (TODO which bits are implemented)
 
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
 include::images/bytefield/pmpaddr-rv32.adoc[]
 endif::[]
+
+
+
 
 <<pmpcfg>> shows the layout of a PMP configuration
 register. The R, W, and X bits, when set, indicate that the PMP entry
@@ -3905,7 +4224,7 @@ regions (NAPOT), including the special case of naturally aligned
 four-byte regions (NA4); and the top boundary of an arbitrary range
 (TOR). These modes support four-byte granularity.
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 [[pmpcfg-a]]
 .Encoding of A field in PMP configuration registers.
 [%autowidth,float="center",align="center",cols=">,^,<",options="header"]
@@ -3965,7 +4284,7 @@ NAPOT
 |===
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] Two address-matching modes are supported: disabled and TOR.
 endif::[]
 
@@ -3983,7 +4302,7 @@ If  `pmpaddr~i-1~&#8805;``pmpaddr~i~``` and `pmpcfg~i~.A`=TOR, then PMP entry _i
 ====
 endif::[]
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 Although the PMP mechanism supports regions as small as four bytes,
 platforms may specify coarser PMP regions. In general, the PMP grain is
 latexmath:[$2^{G+2}$] bytes and must be the same across all PMP regions.
@@ -4003,7 +4322,7 @@ latexmath:[${\tt pmpcfg}_i$].A is changed from NAPOT to TOR/OFF then
 back to NAPOT.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 [{ohg-config}] Although the PMP mechanism supports regions as small as four bytes,
 platforms may specify coarser PMP regions. In general, the PMP grain is
 latexmath:[$2^{G+2}$] bytes and must be the same across all PMP regions.
@@ -4042,7 +4361,7 @@ OFF.
 ====
 endif::[]
 
-ifeval::[{RVU} == true]
+ifdef::archi-default,RVU-true[]
 In addition to locking the PMP entry, the L bit indicates whether the
 R/W/X permissions are enforced on M-mode accesses. When the L bit is
 set, these permissions are enforced for all privilege modes. When the L
@@ -4050,7 +4369,7 @@ bit is clear, any M-mode access matching the PMP entry will succeed; the
 R/W/X permissions apply only to S and U modes.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] In addition to locking the PMP entry, the L bit indicates whether the
 R/W/X permissions are enforced on M-mode accesses. When the L
 bit is clear, any M-mode access matching the PMP entry will succeed.
@@ -4072,7 +4391,8 @@ If a PMP entry matches all bytes of an access, then the L, R, W, and X
 bits determine whether the access succeeds or fails. If the L bit is
 clear and the privilege mode of the access is M, the access succeeds.
 
-ifeval::[{RVU} == true]
+
+ifdef::archi-default,RVU-true[]
 Otherwise, if the L bit is set or the privilege mode of the access is S
 or U, then the access succeeds only if the R, W, or X bit corresponding
 to the access type is set.
@@ -4080,13 +4400,17 @@ to the access type is set.
 If no PMP entry matches an M-mode access, the access succeeds. If no PMP
 entry matches an S-mode or U-mode access, but at least one PMP entry is
 implemented, the access fails.
+endif::[]
 
+ifeval::[{note} == true]
 [NOTE]
 ====
 If at least one PMP entry is implemented, but all PMP entries’ A fields
 are set to OFF, then all S-mode and U-mode memory accesses will fail.
 ====
+endif::[]
 
+ifdef::archi-default,RVU-true[]
 Failed accesses generate an instruction, load, or store access-fault
 exception. Note that a single instruction may generate multiple
 accesses, which may not be mutually atomic. An access-fault exception is
@@ -4096,7 +4420,7 @@ visible side effects. Notably, instructions that reference virtual
 memory are decomposed into multiple accesses.
 endif::[]
 
-ifeval::[{RVU} == false]
+ifndef::archi-default,RVU-true[]
 [{ohg-config}] If no PMP entry matches an M-mode access, the access succeeds.
 endif::[]
 
@@ -4111,7 +4435,7 @@ in RV32D), even when the store address is naturally aligned.
 [[pmp-vmem]]
 ==== Physical Memory Protection and Paging
 
-ifeval::[{ohg-config} != CV32A65X]
+ifdef::archi-default[]
 The Physical Memory Protection mechanism is designed to compose with the
 page-based virtual memory systems described in
 <<supervisor>>. When paging is enabled,
@@ -4139,7 +4463,7 @@ If page-based virtual memory is not implemented, memory accesses check
 the PMP settings synchronously, so no SFENCE.VMA is needed.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] As page-based virtual memory systems is not implemented, memory accesses
 check the PMP settings synchronously.
 endif::[]
