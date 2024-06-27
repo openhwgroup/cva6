@@ -777,7 +777,7 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = csr_addr.csr_decode.address[11:0] - riscv::CSR_PMPCFG0;
+          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) read_access_exception = 1'b1;
@@ -851,7 +851,7 @@ module csr_regfile
                 riscv::CSR_PMPADDR62,
                 riscv::CSR_PMPADDR63: begin
           // index is calculated using PMPADDR0 as the offset
-          automatic logic [11:0] index = csr_addr.csr_decode.address[11:0] - riscv::CSR_PMPADDR0;
+          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // Important: we only support granularity 8 bytes (G=1)
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
@@ -1618,7 +1618,7 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = conv_csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
+          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) update_access_exception = 1'b1;
@@ -1692,7 +1692,7 @@ module csr_regfile
                 riscv::CSR_PMPADDR62,
                 riscv::CSR_PMPADDR63: begin
           // index is calculated using PMPADDR0 as the offset
-          automatic logic [11:0] index = conv_csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
+          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
             pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
