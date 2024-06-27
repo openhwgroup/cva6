@@ -47,6 +47,7 @@ module extended_hpdcache_subsystem_axi_arbiter
 
     //  Interfaces from/to I$
     //  {{{
+    input  logic              icache_miss_id_i,
     output logic              icache_miss_ready_o,
     input  logic              icache_miss_valid_i,
     input  hpdcache_mem_req_t icache_miss_i,

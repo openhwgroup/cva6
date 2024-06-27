@@ -41,8 +41,8 @@ module cva6_hpdcache_icache_if_adapter
     //  Request/response ports from/to the CVA6 core
     input fetch_dreq_t fetch_dreq_i,
     output fetch_drsp_t fetch_dreq_o,
-    input obi_fetch_req_t obi_fetch_req_i,
-    output obi_fetch_rsp_t obi_fetch_rsp_o,
+    input obi_fetch_req_t fetch_obi_req_i,
+    output obi_fetch_rsp_t fetch_obi_rsp_o,
 
     //  Request port to the L1 Dcache
     output logic                        hpdcache_req_valid_o,
@@ -79,17 +79,17 @@ module cva6_hpdcache_icache_if_adapter
       CVA6Cfg,
       {
         {64 - CVA6Cfg.PLEN{1'b0}},
-        obi_fetch_req_i.a.addrr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
+        fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
         {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}
       }
   );
 
   //    Request forwarding
-  assign hpdcache_req_valid_o = fetch_dreq_i.data_req,
+  assign hpdcache_req_valid_o = fetch_dreq_i.req,
       hpdcache_req_o.addr_offset = fetch_dreq_i.vaddr[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3],
       hpdcache_req_o.wdata = '0,
       hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
-      hpdcache_req_o.be = obi_fetch_req_i.a.data_be,
+      hpdcache_req_o.be = fetch_obi_req_i.a.be,
       hpdcache_req_o.size = hpdcache_req_is_uncacheable ? ICACHE_WORD_SIZE : ICACHE_MEM_REQ_CL_SIZE,
       hpdcache_req_o.sid = '0,
       hpdcache_req_o.tid = RdTxId,  // TODO
@@ -99,15 +99,15 @@ module cva6_hpdcache_icache_if_adapter
       hpdcache_req_o.pma = '0;  // unused on virtually indexed request
 
   assign hpdcache_req_abort_o = fetch_dreq_i.kill_req,
-      hpdcache_req_tag_o = obi_fetch_req_i.a.addrr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
+      hpdcache_req_tag_o = fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
       hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable,
       hpdcache_req_pma_o.io = 1'b0;
 
-  //    Response forwarding
-  assign cva6_req_o.data_rvalid = hpdcache_rsp_valid_i,
-      cva6_req_o.data_rdata = hpdcache_rsp_i.rdata,
-      cva6_req_o.data_rid = hpdcache_rsp_i.tid,
-      cva6_req_o.data_gnt = hpdcache_req_ready_i;
+  //    Response forwarding // TODO
+//   assign fetch_dreq_o.data_rvalid = hpdcache_rsp_valid_i,
+//       fetch_dreq_o.data_rdata = hpdcache_rsp_i.rdata,
+//       fetch_dreq_o.data_rid = hpdcache_rsp_i.tid,
+//       fetch_dreq_o.data_gnt = hpdcache_req_ready_i;
 
   assign fetch_obi_rsp_o.gnt = hpdcache_req_ready_i,  // TODO
       fetch_obi_rsp_o.gntpar = !hpdcache_req_ready_i,  // TODO

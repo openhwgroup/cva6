@@ -1259,7 +1259,7 @@ module cva6
         .inval_ready_o     (inval_ready)
     );
   end else if (CVA6Cfg.DCacheType == config_pkg::HPDCACHE) begin : gen_cache_hpd
-    cva6_hpdcache_subsystem #(
+    extended_hpdcache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
         .fetch_dreq_t(fetch_dreq_t),
         .fetch_drsp_t(fetch_drsp_t),
