@@ -58,9 +58,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Zihpm extension
    rand bit                      ext_zihpm_supported;
 
-   // hypervisor mode
-   rand bit                      mode_h_supported;
-
    // Handle to RTL configuration
    rand cva6_cfg_t         CVA6Cfg;
 
@@ -75,7 +72,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
-      `uvm_field_int (                         mode_h_supported            , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -297,9 +293,7 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    super.set_unsupported_csr_mask();
 
    // Remove unsupported CSRs for Embedded configuration
-   unsupported_csr_mask[uvma_core_cntrl_pkg::MTVAL2] = 1;
    unsupported_csr_mask[uvma_core_cntrl_pkg::MCOUNTINHIBIT] = 1;
-   unsupported_csr_mask[uvma_core_cntrl_pkg::MTINST] = 1;
 
    // Add supported CSRs for Embedded configuration
    for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin

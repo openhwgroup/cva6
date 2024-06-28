@@ -49,6 +49,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.disable_all_csr_checks = 0;
     cfg.mode_s_supported = CVA6Cfg.RVS;
     cfg.mode_u_supported = CVA6Cfg.RVU;
+    cfg.mode_h_supported = CVA6Cfg.RVH;
 
     cfg.pmp_supported = (CVA6Cfg.NrPMPEntries > 0);
     cfg.pmp_regions = CVA6Cfg.NrPMPEntries;
@@ -56,6 +57,11 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
 
     cfg.unsupported_csr_mask['h643] = 1; // HTVAL
     cfg.unsupported_csr_mask['h64A] = 1; // HTINST
+
+    if (!cfg.mode_h_supported) begin
+      cfg.unsupported_csr_mask['h34A] = 1; // MTINST
+      cfg.unsupported_csr_mask['h34B] = 1; // MTVAL2
+    end
 
     // Disable comparison
     cfg.unsupported_csr_mask['h7C0] = 1; // ICACHE
