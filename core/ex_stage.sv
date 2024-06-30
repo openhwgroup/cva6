@@ -448,7 +448,7 @@ module ex_stage
     end
 
     alu #(
-        .CVA6Cfg(CVA6Cfg),
+        .CVA6Cfg  (CVA6Cfg),
         .fu_data_t(fu_data_t)
     ) alu2_i (
         .clk_i,
