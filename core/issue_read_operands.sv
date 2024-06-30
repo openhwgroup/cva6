@@ -96,6 +96,8 @@ module issue_read_operands
     output logic [1:0] fpu_fmt_o,
     // FPU rm field from isntruction - TO_BE_COMPLETED
     output logic [2:0] fpu_rm_o,
+    // ALU output is valid - TO_BE_COMPLETED
+    output logic [SUPERSCALAR:0] alu2_valid_o,
     // CSR result is valid - TO_BE_COMPLETED
     output logic [SUPERSCALAR:0] csr_valid_o,
     // CVXIF result is valid - TO_BE_COMPLETED
@@ -120,7 +122,7 @@ module issue_read_operands
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts >> SUPERSCALAR;
 
   typedef struct packed {
-    logic none, load, store, alu, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
+    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
   } fus_busy_t;
 
   logic [SUPERSCALAR:0] stall;
@@ -140,6 +142,7 @@ module issue_read_operands
   logic [   SUPERSCALAR:0] fpu_valid_q;
   logic [             1:0] fpu_fmt_q;
   logic [             2:0] fpu_rm_q;
+  logic [   SUPERSCALAR:0] alu2_valid_q;
   logic [   SUPERSCALAR:0] lsu_valid_q;
   logic [   SUPERSCALAR:0] csr_valid_q;
   logic [   SUPERSCALAR:0] branch_valid_q;
@@ -171,6 +174,7 @@ module issue_read_operands
   assign fpu_valid_o = fpu_valid_q;
   assign fpu_fmt_o = fpu_fmt_q;
   assign fpu_rm_o = fpu_rm_q;
+  assign alu2_valid_o = alu2_valid_q;
   assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
   assign stall_issue_o = stall[0];
@@ -200,6 +204,7 @@ module issue_read_operands
     if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
       fus_busy[0].fpu = 1'b1;
       fus_busy[0].fpu_vec = 1'b1;
+      if (SUPERSCALAR) fus_busy[0].alu2 = 1'b1;
     end
 
     if (!lsu_ready_i) begin
@@ -238,7 +243,20 @@ module issue_read_operands
             end
           end
         end
-        ALU, CSR: begin
+        ALU: begin
+          if (SUPERSCALAR && !fus_busy[0].alu2) begin
+            fus_busy[1].alu2 = 1'b1;
+            // TODO is there a minimum float execution time?
+            // If so we could issue FPU & ALU2 the same cycle
+            fus_busy[1].fpu = 1'b1;
+            fus_busy[1].fpu_vec = 1'b1;
+          end else begin
+            fus_busy[1].alu = 1'b1;
+            fus_busy[1].ctrl_flow = 1'b1;
+            fus_busy[1].csr = 1'b1;
+          end
+        end
+        CSR: begin
           fus_busy[1].alu = 1'b1;
           fus_busy[1].ctrl_flow = 1'b1;
           fus_busy[1].csr = 1'b1;
@@ -263,7 +281,13 @@ module issue_read_operands
     always_comb begin
       unique case (issue_instr_i[i].fu)
         NONE: fu_busy[i] = fus_busy[i].none;
-        ALU: fu_busy[i] = fus_busy[i].alu;
+        ALU: begin
+          if (SUPERSCALAR && !fus_busy[i].alu2) begin
+            fu_busy[i] = fus_busy[i].alu2;
+          end else begin
+            fu_busy[i] = fus_busy[i].alu;
+          end
+        end
         CTRL_FLOW: fu_busy[i] = fus_busy[i].ctrl_flow;
         CSR: fu_busy[i] = fus_busy[i].csr;
         MULT: fu_busy[i] = fus_busy[i].mult;
@@ -450,6 +474,7 @@ module issue_read_operands
       fpu_valid_q    <= '0;
       fpu_fmt_q      <= '0;
       fpu_rm_q       <= '0;
+      alu2_valid_q   <= '0;
       csr_valid_q    <= '0;
       branch_valid_q <= '0;
     end else begin
@@ -459,6 +484,7 @@ module issue_read_operands
       fpu_valid_q    <= '0;
       fpu_fmt_q      <= '0;
       fpu_rm_q       <= '0;
+      alu2_valid_q   <= '0;
       csr_valid_q    <= '0;
       branch_valid_q <= '0;
       // Exception pass through:
@@ -468,7 +494,11 @@ module issue_read_operands
         if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
           case (issue_instr_i[i].fu)
             ALU: begin
-              alu_valid_q[i] <= 1'b1;
+              if (SUPERSCALAR && !fus_busy[i].alu2) begin
+                alu2_valid_q[i] <= 1'b1;
+              end else begin
+                alu_valid_q[i] <= 1'b1;
+              end
             end
             CTRL_FLOW: begin
               branch_valid_q[i] <= 1'b1;
@@ -503,6 +533,7 @@ module issue_read_operands
         lsu_valid_q    <= '0;
         mult_valid_q   <= '0;
         fpu_valid_q    <= '0;
+        alu2_valid_q   <= '0;
         csr_valid_q    <= '0;
         branch_valid_q <= '0;
       end
@@ -778,6 +809,20 @@ module issue_read_operands
           1,
           "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports."
       );
+  end
+
+  // FPU does not declare that it will return a result the subsequent cycle so
+  // it is not possible for issue stage to know when ALU2 can be used if there
+  // is an FPU.  As there are discussions to change the FPU, I did not explore
+  // its architecture to create this "FPU returns next cycle" signal.  Also, a
+  // "lookahead" optimization should be added to be performant with FPU:  when
+  // issue port 2 is issuing to FPU, issue port 1 should issue to ALU1 instead
+  // of ALU2 so that FPU is not busy.  However, if FPU has a minimum execution
+  // time of 2 cycles, it is possible to simply not raise fus_busy[1].alu2.
+  initial begin
+    assert (!(SUPERSCALAR && CVA6Cfg.FpPresent))
+    else
+      $fatal(1, "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
   end
 
   for (genvar i = 0; i <= SUPERSCALAR; i++) begin
