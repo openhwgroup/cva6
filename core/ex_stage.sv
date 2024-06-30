@@ -130,6 +130,8 @@ module ex_stage
     output logic fpu_valid_o,
     // FPU exception - ISSUE_STAGE
     output exception_t fpu_exception_o,
+    // ALU2 instruction is valid - ISSUE_STAGE
+    input logic [SUPERSCALAR:0] alu2_valid_i,
     // CVXIF instruction is valid - ISSUE_STAGE
     input logic [SUPERSCALAR:0] x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
@@ -386,6 +388,12 @@ module ex_stage
   // ----------------
   // FPU
   // ----------------
+  logic fpu_valid;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id;
+  logic [CVA6Cfg.XLEN-1:0] fpu_result;
+  logic alu2_valid;
+  logic [CVA6Cfg.XLEN-1:0] alu2_result;
+
   generate
     if (CVA6Cfg.FpPresent) begin : fpu_gen
       fu_data_t fpu_data;
@@ -413,19 +421,70 @@ module ex_stage
           .fpu_rm_i,
           .fpu_frm_i,
           .fpu_prec_i,
-          .fpu_trans_id_o,
-          .result_o(fpu_result_o),
-          .fpu_valid_o,
+          .fpu_trans_id_o(fpu_trans_id),
+          .result_o(fpu_result),
+          .fpu_valid_o(fpu_valid),
           .fpu_exception_o
       );
     end else begin : no_fpu_gen
       assign fpu_ready_o     = '0;
-      assign fpu_trans_id_o  = '0;
-      assign fpu_result_o    = '0;
-      assign fpu_valid_o     = '0;
+      assign fpu_trans_id    = '0;
+      assign fpu_result      = '0;
+      assign fpu_valid       = '0;
       assign fpu_exception_o = '0;
     end
   endgenerate
+
+  // ----------------
+  // ALU2
+  // ----------------
+  fu_data_t alu2_data;
+  if (SUPERSCALAR) begin : alu2_gen
+    always_comb begin
+      alu2_data = alu2_valid_i[0] ? fu_data_i[0] : '0;
+      if (alu2_valid_i[1]) begin
+        alu2_data = fu_data_i[1];
+      end
+    end
+
+    alu #(
+        .CVA6Cfg  (CVA6Cfg),
+        .fu_data_t(fu_data_t)
+    ) alu2_i (
+        .clk_i,
+        .rst_ni,
+        .fu_data_i       (alu2_data),
+        .result_o        (alu2_result),
+        .alu_branch_res_o(  /* this ALU does not handle branching */)
+    );
+  end else begin
+    assign alu2_data   = '0;
+    assign alu2_result = '0;
+  end
+
+  // result MUX
+  // This is really explicit so that synthesis tools can elide unused signals
+  if (SUPERSCALAR) begin
+    if (CVA6Cfg.FpPresent) begin
+      assign fpu_valid_o    = fpu_valid || |alu2_valid_i;
+      assign fpu_result_o   = fpu_valid ? fpu_result   : alu2_result;
+      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu2_data.trans_id;
+    end else begin
+      assign fpu_valid_o    = |alu2_valid_i;
+      assign fpu_result_o   = alu2_result;
+      assign fpu_trans_id_o = alu2_data.trans_id;
+    end
+  end else begin
+    if (CVA6Cfg.FpPresent) begin
+      assign fpu_valid_o    = fpu_valid;
+      assign fpu_result_o   = fpu_result;
+      assign fpu_trans_id_o = fpu_trans_id;
+    end else begin
+      assign fpu_valid_o    = '0;
+      assign fpu_result_o   = '0;
+      assign fpu_trans_id_o = '0;
+    end
+  end
 
   // ----------------
   // Load-Store Unit

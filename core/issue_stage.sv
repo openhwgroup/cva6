@@ -82,6 +82,8 @@ module issue_stage
     output logic [1:0] fpu_fmt_o,
     // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
+    // ALU2 FU is valid - EX_STAGE
+    output logic [SUPERSCALAR:0] alu2_valid_o,
     // CSR is valid - EX_STAGE
     output logic [SUPERSCALAR:0] csr_valid_o,
     // CVXIF FU is valid - EX_STAGE
@@ -231,6 +233,7 @@ module issue_stage
       .rd_clobber_gpr_i   (rd_clobber_gpr_sb_iro),
       .rd_clobber_fpr_i   (rd_clobber_fpr_sb_iro),
       .alu_valid_o        (alu_valid_o),
+      .alu2_valid_o       (alu2_valid_o),
       .branch_valid_o     (branch_valid_o),
       .csr_valid_o        (csr_valid_o),
       .cvxif_valid_o      (x_issue_valid_o),
