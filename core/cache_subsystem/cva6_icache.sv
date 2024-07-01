@@ -411,7 +411,14 @@ module cva6_icache
               state_d = READ;
             end
           end
-
+        end else if (dreq_i.req) begin
+          //abort previous index and launch new one
+          state_d = IDLE;
+          if (!mem_rtrn_vld_i) begin
+            cache_rden = 1'b1;
+            dreq_o.ready = 1'b1;
+            state_d = READ;
+          end
         end
       end
 
