@@ -398,7 +398,7 @@ generated_tests:
     - mv verif/sim/seedlist.yaml artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
-generated_xif_tests:
+.generated_xif_tests:
   extends:
     - .verif_test
   variables:
