@@ -551,7 +551,8 @@ ifdef::archi-default,XLEN-64[]
   {bits:  1, name: 'MPV'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
-  {bits: 21, name: 'WPRI'},
+  {bits:  1, name: 'MDT'},
+  {bits: 20, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -576,8 +577,13 @@ ifdef::archi-default,XLEN-32[]
   {bits:  4, name: 'WPRI'},
   {bits:  1, name: 'SBE'},
   {bits:  1, name: 'MBE'},
-  {bits: 26, name: 'WPRI'},
-], config:{lanes: 1, hspace:1024}}
+  {bits:  1, name: 'GVA'},
+  {bits:  1, name: 'MPV'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MPELP'},
+  {bits:  1, name: 'MDT'},
+  {bits: 21, name: 'WPRI'},
+], config:{lanes: 2, hspace:1024}}
 ....
 endif::[]
 
@@ -714,6 +720,86 @@ ifndef::archi-default,RVS-true[]
 [{ohg-config}] Privilege mode S and U are not implemented, MPP field is
 *WARL* field that can hold only privilege mode M, 11 read only, and SPP
 and UPP are read-only 0.
+endif::[]
+
+[[machine-double-trap]]
+===== Double Trap Control in `mstatus` Register
+
+ifdef::archi-default,RVZsmdbltrp-true[]
+A double trap typically arises during a sensitive phase in trap handling
+operations -- when an exception or interrupt occurs while the trap handler (the
+component responsible for managing these events) is in a non-reentrant state.
+This non-reentrancy usually occurs in the early phase of trap handling, wherein
+the trap handler has not yet preserved the necessary state to handle and resume
+from the trap. The occurrence of a trap during this phase can lead to an
+overwrite of critical state information, resulting in the loss of data needed to
+recover from the initial trap. The trap that caused this critical error
+condition is henceforth called the _unexpected trap_. Trap handlers are designed
+to neither enable interrupts nor cause exceptions during this phase of handling.
+However, managing Hardware-Error exceptions,  which may occur unpredictably,
+presents significant challenges in trap handler implementation due to the
+potential risk of a double trap.
+
+The M-mode-disable-trap (`MDT`) bit is a WARL field introduced by the Smdbltrp
+extension. Upon reset, the `MDT` field is set to 1. When the `MDT` bit is set to
+1 by an explicit CSR write, the `MIE` (Machine Interrupt Enable) bit is cleared
+to 0. For RV64, this clearing occurs regardless of the value written, if any, to
+the `MIE` bit by the same write. The `MIE` bit can only be set to 1 by an
+explicit CSR write if the `MDT` bit is already 0 or, for RV64, is being set to 0
+by the same write (For RV32, the `MDT` bit is in `mstatush` and the `MIE` bit in
+`mstatus` register).
+
+When a trap is to be taken into M-mode, if the `MDT` bit is currently 0, it is
+then set to 1, and the trap is delivered as expected. However, if `MDT` is
+already set to 1, then this is an _unexpected trap_. Additionally, when the
+Smrnmi extension is implemented, a trap that occurs when executing in M-mode
+with the `mnstatus.NMIE` set to 0 is an _unexpected trap_.
+
+In the event of a _unexpected trap_, the handling is as follows:
+
+* When the Smrnmi extension is implemented and `mnstatus.NMIE` is 1, the hart
+  traps to the RNMI handler. To deliver this trap, the `mnepc` and `mncause`
+  registers are written with the values that the _unexpected trap_ would have
+  written to the `mepc` and `mcause` registers respectively. The privilege
+  mode information fields in the `mnstatus` register are written to indicate
+  M-mode and its `NMIE` field is set to 0.
+endif::[]
+
+ifeval::[{note} == true]
+[NOTE]
+====
+The consequence of this specification is that on occurrence of double trap the
+RNMI handler is not provided with information that a trap would report in the
+`mtval` and the `mtval2` registers. This information, if needed, may be obtained
+by the RNMI handler by decoding the instruction at the address in `mnepc` and
+examining its source register contents.
+====
+endif::[]
+
+ifdef::archi-default,RVZsmdbltrp-true[]
+* When the Smrnmi extension is not implemented, or if the Smrnmi extension is
+  implemented and `mnstatus.NMIE` is 0, the hart enters a critical-error state
+  without updating any architectural state including the `pc`. This state
+  involves ceasing execution, disabling all interrupts (including NMIs), and
+  asserting a `critical-error` signal to the platform.
+endif::[]
+
+ifeval::[{note} == true]
+[NOTE]
+====
+The actions performed by the platform on assertion of a `critical-error` signal
+by a hart are platform specific. The range of possible actions include restarting
+the affected hart or restarting the entire platform among others.
+====
+endif::[]
+
+ifdef::archi-default,RVZsmdbltrp-true[]
+An `MRET` instruction sets the `MDT` bit to 0.
+endif::[]
+
+ifndef::archi-default,RVZsmdbltrp-true[]
+[{ohg-config}] As Double Trap Control (Smdbltrp extension) is not implemented,
+MDT field is read-only 0.
 endif::[]
 
 [[xlen-control]]
@@ -1373,6 +1459,8 @@ unconfigure or disable/enable instructions.
 
 <<<
 
+[[fsxsstates]]
+.FS, VS, and XS state transitions.
 [width=75,align=center,float=center,cols="<,<,<,<,<"]
 |===
 |Current State +
@@ -1476,9 +1564,7 @@ Off
 Off
 |===
 
-[[fsxsstates]]
 [width=75,align=center,float=center,cols="<,<,<,<,<"]
-.FS, FS, and XS state transitions.
 |===
 5+^|Execute instruction to enable unit
 
@@ -1549,7 +1635,7 @@ endif::[]
 
 ===== Previous Expected Landing Pad (ELP) State in `mstatus` Register
 
-ifdef::archi-default[]
+ifdef::archi-default,RVZicfilp-true[]
 The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 `ELP`, and are updated as specified in <<ZICFILP_FORWARD_TRAPS>>. The
 *__x__*`PELP` fields are encoded as follows:
@@ -1558,7 +1644,7 @@ The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 * 1 - `LP_EXPECTED` - a landing pad instruction is expected.
 endif::[]
 
-ifdef::archi-CVA6[]
+ifndef::archi-default,RVZicfilp-true[]
 [{ohg-config}] As the Zicfilp extension is not supported,
 the `SPELP` and `MPELP` fields are read-only zero.
 endif::[]
@@ -1770,6 +1856,8 @@ ifdef::archi-default[]
 For exceptions that cannot occur in less privileged modes, the
 corresponding `medeleg` bits should be read-only zero. In particular,
 `medeleg`[11] is read-only zero.
+
+The `medeleg`[16] is read-only zero as double trap is not delegatable.
 endif::[]
 
 ifndef::archi-default,RVU-true[]
@@ -2501,6 +2589,7 @@ _Designated for platform use_
 0 +
 0 +
 0 +
+0 +
 0
 |0 +
 1 +
@@ -2518,7 +2607,8 @@ _Designated for platform use_
 13 +
 14 +
 15 +
-16-17 +
+16 +
+17 +
 18 +
 19 +
 20-23 +
@@ -2542,6 +2632,7 @@ Instruction page fault +
 Load page fault +
 _Reserved_ +
 Store/AMO page fault +
+Double trap +
 _Reserved_ +
 Software check +
 Hardware error +
@@ -2759,7 +2850,8 @@ _N_ is the smaller of MXLEN and ILEN.
 endif::[]
 
 ifndef::archi-default,MTvalEn-true[]
-[{ohg-config}] The `mtval` register is an MXLEN-bit read-only 0 register.
+[{ohg-config}] The `mtval` register is an MXLEN-bit read-write register
+holding constant value zero.
 endif::[]
 
 ==== Machine Configuration Pointer (`mconfigptr`) Register
@@ -2834,7 +2926,8 @@ privileged than M.
   {bits:  1, name: 'CBZE'},
   {bits: 24, name: 'WPRI'},
   {bits:  2, name: 'PMM'},
-  {bits: 26, name: 'WPRI'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: 'DTE'},
   {bits:  1, name: 'CDE'},
   {bits:  1, name: 'ADUE'},
   {bits:  1, name: 'PBMTE'},
@@ -3012,6 +3105,11 @@ the following rules apply to privilege modes that are less than M:
 * The `pte.xwr=010b` encoding in VS/S-stage page tables becomes reserved.
 * The `henvcfg.SSE` and `senvcfg.SSE` fields will read as zero and are read-only.
 * `SSAMOSWAP.W/D` raises an illegal-instruction exception.
+
+The Ssdbltrp extension adds the double-trap-enable (`DTE`) field in `menvcfg`.
+When `menvcfg.DTE` is zero, the implementation behaves as though Ssdbltrp is not
+implemented. When Ssdbltrp is not implemented `sstatus.SDT`, `vsstatus.SDT`, and
+`henvcfg.DTE` bits are read-only zero.
 endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
@@ -3401,12 +3499,6 @@ WFI is defined so that an implementation can trap into a higher
 privilege mode, either immediately on encountering the WFI or after some
 interval to initiate a machine-mode transition to a lower power state,
 for example.
-
-As implementations are free to implement WFI as a NOP, software must
-explicitly check for any relevant pending but disabled interrupts in the
-code following an WFI, and should loop back to the WFI if no suitable
-interrupt was detected. The `mip` register can be interrogated
-to determine the presence of any interrupt in machine.
 
 ***
 
@@ -4185,9 +4277,10 @@ implemented first. All PMP CSR fields are *WARL* and 8 upper entries are
 read-only zero. PMP CSRs are only accessible to M-mode.
 
 [{ohg-config}] The PMP configuration registers are densely packed into CSRs to minimize
-context-switch time. For {ohg-config} with sixteen CSRs, `pmpcfg0`–`pmpcfg15`, hold
+context-switch time. For {ohg-config} with sixteen CSRs, `pmpcfg0`–`pmpcfg3`, hold
 the configurations as shown
 in <<pmpcfg-rv32>>.
+The 2 upper entries are read-only zero.
 
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
@@ -4197,15 +4290,12 @@ include::images/bytefield/pmp-rv32.adoc[]
 PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <<pmpaddr-rv32>>. Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
-are *WARL*. (TODO which bits are implemented)
+are *WARL*.
 
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
 include::images/bytefield/pmpaddr-rv32.adoc[]
 endif::[]
-
-
-
 
 <<pmpcfg>> shows the layout of a PMP configuration
 register. The R, W, and X bits, when set, indicate that the PMP entry
@@ -4405,7 +4495,6 @@ addresses.
 If a PMP entry matches all bytes of an access, then the L, R, W, and X
 bits determine whether the access succeeds or fails. If the L bit is
 clear and the privilege mode of the access is M, the access succeeds.
-
 
 ifdef::archi-default,RVU-true[]
 Otherwise, if the L bit is set or the privilege mode of the access is S

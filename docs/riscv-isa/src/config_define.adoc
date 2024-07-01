@@ -58,3 +58,11 @@ endif::[]
 ifeval::[{RVA} == true]
 :RVA-true:
 endif::[]
+
+ifeval::[{RVZsmdbltrp} == true]
+:RVZsmdbltrp-true:
+endif::[]
+
+ifeval::[{RVZicfilp} == true]
+:RVZicfilp-true:
+endif::[]
