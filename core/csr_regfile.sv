@@ -811,10 +811,13 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
-
-    satp            = satp_q;
-    hgatp           = hgatp_q;
-    vsatp           = vsatp_q;
+    if (CVA6Cfg.RVS) begin
+      satp = satp_q;
+    end
+    if (CVA6Cfg.RVH) begin
+      hgatp = hgatp_q;
+      vsatp = vsatp_q;
+    end
     instret         = instret_q;
 
     mcountinhibit_d = mcountinhibit_q;
@@ -852,13 +855,18 @@ module csr_regfile
     priv_lvl_d                      = priv_lvl_q;
     v_d                             = v_q;
     debug_mode_d                    = debug_mode_q;
-    dcsr_d                          = dcsr_q;
-    dpc_d                           = dpc_q;
-    dscratch0_d                     = dscratch0_q;
-    dscratch1_d                     = dscratch1_q;
-    mstatus_d                       = mstatus_q;
-    hstatus_d                       = hstatus_q;
-    vsstatus_d                      = vsstatus_q;
+
+    if (CVA6Cfg.DebugEn) begin
+      dcsr_d      = dcsr_q;
+      dpc_d       = dpc_q;
+      dscratch0_d = dscratch0_q;
+      dscratch1_d = dscratch1_q;
+    end
+    mstatus_d = mstatus_q;
+    if (CVA6Cfg.RVH) begin
+      hstatus_d  = hstatus_q;
+      vsstatus_d = vsstatus_q;
+    end
 
     // check whether we come out of reset
     // this is a workaround. some tools have issues
@@ -872,51 +880,59 @@ module csr_regfile
       mtvec_d = mtvec_q;
     end
 
-    medeleg_d                = medeleg_q;
-    mideleg_d                = mideleg_q;
-    mip_d                    = mip_q;
-    mie_d                    = mie_q;
-    mepc_d                   = mepc_q;
-    mcause_d                 = mcause_q;
-    mcounteren_d             = mcounteren_q;
-    mscratch_d               = mscratch_q;
-    mtval_d                  = mtval_q;
-    mtinst_d                 = mtinst_q;
-    mtval2_d                 = mtval2_q;
-    fiom_d                   = fiom_q;
-    dcache_d                 = dcache_q;
-    icache_d                 = icache_q;
-    acc_cons_d               = acc_cons_q;
+    if (CVA6Cfg.RVS) begin
+      medeleg_d = medeleg_q;
+      mideleg_d = mideleg_q;
+    end
+    mip_d        = mip_q;
+    mie_d        = mie_q;
+    mepc_d       = mepc_q;
+    mcause_d     = mcause_q;
+    mcounteren_d = mcounteren_q;
+    mscratch_d   = mscratch_q;
+    mtval_d      = mtval_q;
+    if (CVA6Cfg.RVH) begin
+      mtinst_d = mtinst_q;
+      mtval2_d = mtval2_q;
+    end
 
-    vsstatus_d               = vsstatus_q;
-    vstvec_d                 = vstvec_q;
-    vsscratch_d              = vsscratch_q;
-    vsepc_d                  = vsepc_q;
-    vscause_d                = vscause_q;
-    vstval_d                 = vstval_q;
-    vsatp_d                  = vsatp_q;
+    fiom_d     = fiom_q;
+    dcache_d   = dcache_q;
+    icache_d   = icache_q;
+    acc_cons_d = acc_cons_q;
 
-    sepc_d                   = sepc_q;
-    scause_d                 = scause_q;
-    stvec_d                  = stvec_q;
-    scounteren_d             = scounteren_q;
-    sscratch_d               = sscratch_q;
-    stval_d                  = stval_q;
-    satp_d                   = satp_q;
-    hedeleg_d                = hedeleg_q;
-    hideleg_d                = hideleg_q;
-    hgeie_d                  = hgeie_q;
-    hgatp_d                  = hgatp_q;
-    hcounteren_d             = hcounteren_q;
-    htinst_d                 = htinst_q;
-    htval_d                  = htval_q;
+    if (CVA6Cfg.RVH) begin
+      vstvec_d                 = vstvec_q;
+      vsscratch_d              = vsscratch_q;
+      vsepc_d                  = vsepc_q;
+      vscause_d                = vscause_q;
+      vstval_d                 = vstval_q;
+      vsatp_d                  = vsatp_q;
+      hgatp_d                  = hgatp_q;
+      hedeleg_d                = hedeleg_q;
+      hideleg_d                = hideleg_q;
+      hgeie_d                  = hgeie_q;
+      hcounteren_d             = hcounteren_q;
+      htinst_d                 = htinst_q;
+      htval_d                  = htval_q;
+      en_ld_st_g_translation_d = en_ld_st_g_translation_q;
+    end
 
-    en_ld_st_translation_d   = en_ld_st_translation_q;
-    en_ld_st_g_translation_d = en_ld_st_g_translation_q;
-    dirty_fp_state_csr       = 1'b0;
+    if (CVA6Cfg.RVS) begin
+      sepc_d       = sepc_q;
+      scause_d     = scause_q;
+      stvec_d      = stvec_q;
+      scounteren_d = scounteren_q;
+      sscratch_d   = sscratch_q;
+      stval_d      = stval_q;
+      satp_d       = satp_q;
+    end
 
-    pmpcfg_d                 = pmpcfg_q;
-    pmpaddr_d                = pmpaddr_q;
+    en_ld_st_translation_d = en_ld_st_translation_q;
+    dirty_fp_state_csr     = 1'b0;
+
+    pmpcfg_d               = pmpcfg_q;
+    pmpaddr_d              = pmpaddr_q;
 
     // check for correct access rights and that we are writing
     if (csr_we) begin
@@ -1610,7 +1626,11 @@ module csr_regfile
       mstatus_d.vs = riscv::Dirty;
     end
     // hardwired extension registers
-    mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+    if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
+      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+    end else begin
+      mstatus_d.sd = riscv::Off;
+    end
     if (CVA6Cfg.RVH) begin
       vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
     end
@@ -1682,14 +1702,16 @@ module csr_regfile
           trap_to_v = v_q;
         end
       end else begin
-        if (CVA6Cfg.RVS && (ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]])) begin
-          // traps never transition from a more-privileged mode to a less privileged mode
-          // so if we are already in M mode, stay there
-          trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+        if (CVA6Cfg.RVS) begin
+          if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
+                  CVA6Cfg.XLEN
+              )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
+                  CVA6Cfg.XLEN
+              )-1:0]])) begin
+            // traps never transition from a more-privileged mode to a less privileged mode
+            // so if we are already in M mode, stay there
+            trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+          end
         end
       end
 
@@ -1937,7 +1959,11 @@ module csr_regfile
       else  // otherwise we go with the regular settings
         en_ld_st_translation_d = en_translation_o;
 
-      ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
+      if (CVA6Cfg.RVU) begin
+        ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
+      end else begin
+        ld_st_priv_lvl_o = priv_lvl_o;
+      end
       en_ld_st_translation_o = en_ld_st_translation_q;
       ld_st_v_o = 1'b0;
       en_ld_st_g_translation_o = 1'b0;
@@ -1991,31 +2017,35 @@ module csr_regfile
       end
     end
 
-    if (CVA6Cfg.RVH && sret && v_q) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o          = 1'b1;
-      // return the previous supervisor interrupt enable flag
-      vsstatus_d.sie  = vsstatus_q.spie;
-      // restore the previous privilege level
-      priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
-      // set spp to user mode
-      vsstatus_d.spp  = 1'b0;
-      // set spie to 1
-      vsstatus_d.spie = 1'b1;
+    if (CVA6Cfg.RVH) begin
+      if (sret && v_q) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o          = 1'b1;
+        // return the previous supervisor interrupt enable flag
+        vsstatus_d.sie  = vsstatus_q.spie;
+        // restore the previous privilege level
+        priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
+        // set spp to user mode
+        vsstatus_d.spp  = 1'b0;
+        // set spie to 1
+        vsstatus_d.spie = 1'b1;
+      end
     end
 
     // return from debug mode
-    if (CVA6Cfg.DebugEn && dret) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o     = 1'b1;
-      // restore the previous privilege level
-      priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
-      if (CVA6Cfg.RVH) begin
-        // restore the previous virtualization mode
-        v_d = dcsr_q.v;
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o     = 1'b1;
+        // restore the previous privilege level
+        priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
+        if (CVA6Cfg.RVH) begin
+          // restore the previous virtualization mode
+          v_d = dcsr_q.v;
+        end
+        // actually return from debug mode
+        debug_mode_d = 1'b0;
       end
-      // actually return from debug mode
-      debug_mode_d = 1'b0;
     end
   end
 
@@ -2070,12 +2100,12 @@ module csr_regfile
   assign irq_ctrl_o.sie = (CVA6Cfg.RVH && v_q) ? vsstatus_q.sie : mstatus_q.sie;
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
-  assign irq_ctrl_o.global_enable = (~debug_mode_q)
+  assign irq_ctrl_o.global_enable = (!CVA6Cfg.DebugEn & ~debug_mode_q)
       // interrupts are enabled during single step or we are not stepping
       // No need to check interrupts during single step if we don't support DEBUG mode
       & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
                                     & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
-                                    | (priv_lvl_o != riscv::PRIV_LVL_M));
+                                    | (CVA6Cfg.RVU & priv_lvl_o != riscv::PRIV_LVL_M));
 
   always_comb begin : privilege_check
     if (CVA6Cfg.RVH) begin
@@ -2252,7 +2282,7 @@ module csr_regfile
     // privilege level we are jumping and whether the vectored mode is
     // activated for _that_ privilege level.
     if (ex_i.cause[CVA6Cfg.XLEN-1] &&
-                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0]) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && mtvec_q[0]))
+                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])))
                || (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S && !trap_to_v && stvec_q[0]))) begin
       trap_vector_base_o[7:2] = ex_i.cause[5:0];
     end
@@ -2267,8 +2297,10 @@ module csr_regfile
       epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
     end
     // we are returning from debug mode, to take the dpc register
-    if (CVA6Cfg.DebugEn && dret) begin
-      epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+      end
     end
   end
 
@@ -2339,7 +2371,7 @@ module csr_regfile
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];
 `else
-  assign icache_en_o = icache_q[0] & (~debug_mode_q);
+  assign icache_en_o = icache_q[0] & (!CVA6Cfg.DebugEn && ~debug_mode_q);
 `endif
   assign dcache_en_o = dcache_q[0];
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
