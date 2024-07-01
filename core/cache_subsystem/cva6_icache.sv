@@ -431,10 +431,19 @@ module cva6_icache
         // check if we have to flush
         if (flush_d) begin
           state_d = IDLE;
-          // we have a hit or an exception output valid result
-        end else if (((|cl_hit && cache_en_q && !inv_q) || dreq_i.kill_req)) begin
+        end else if (dreq_i.kill_req) begin
           state_d = IDLE;
-          data_valid_obi = dreq_i.kill_req;  // just don't output in this case
+          if (!mem_rtrn_vld_i) begin
+            dreq_o.ready = 1'b1;
+            if (dreq_i.req) begin
+              state_d = READ;
+            end
+          end
+
+          // we have a hit
+        end else if ((|cl_hit && cache_en_q && !inv_q)) begin
+          state_d = IDLE;
+          data_valid_obi = 1'b1;
           // we can accept another request
           // and stay here, but only if no inval is coming in
           // note: we are not expecting ifill return packets here...
