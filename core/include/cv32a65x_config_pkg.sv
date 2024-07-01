@@ -18,15 +18,13 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
-  localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
-
   localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       FpgaEn: bit'(0),
       TechnoCut: bit'(1),
-      NrCommitPorts: unsigned'(1),
+      SuperscalarEn: bit'(0),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),

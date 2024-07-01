@@ -48,8 +48,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigWtDcacheWbufDepth = 2;
 
-  localparam CVA6ConfigSuperscalarEn = 0;
-  localparam CVA6ConfigNrCommitPorts = 1;
   localparam CVA6ConfigNrScoreboardEntries = 4;
 
   localparam CVA6ConfigFpgaEn = 1;
@@ -78,7 +76,7 @@ package cva6_config_pkg;
       XLEN: unsigned'(CVA6ConfigXlen),
       FpgaEn: bit'(CVA6ConfigFpgaEn),
       TechnoCut: bit'(0),
-      NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
+      SuperscalarEn: bit'(0),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),

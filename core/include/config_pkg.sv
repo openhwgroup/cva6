@@ -170,8 +170,8 @@ package config_pkg;
     bit                          FpgaEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
-    // Number of commit ports
-    int unsigned                 NrCommitPorts;
+    // Enable superscalar with 2 issue and commit ports
+    bit                          SuperscalarEn;
     // Load cycle latency number
     int unsigned                 NrLoadPipeRegs;
     // Store cycle latency number
@@ -211,12 +211,12 @@ package config_pkg;
 
     bit          FpgaEn;
     bit          TechnoCut;
-    /// Number of commit ports, i.e., maximum number of instructions that the
-    /// core can retire per cycle. It can be beneficial to have more commit
-    /// ports than issue ports, for the scoreboard to empty out in case one
-    /// instruction stalls a little longer.
+
+    bit          SuperscalarEn;
     int unsigned NrCommitPorts;
+    int unsigned NrIssuePorts;
     bit          SpeculativeSb;
+
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;
     /// AXI parameters.
