@@ -1742,7 +1742,11 @@ module csr_regfile
       mstatus_d.vs = riscv::Dirty;
     end
     // hardwired extension registers
-    mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+    if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
+      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+    end else begin
+      mstatus_d.sd = riscv::Off;
+    end
     if (CVA6Cfg.RVH) begin
       vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
     end
@@ -1814,14 +1818,16 @@ module csr_regfile
           trap_to_v = v_q;
         end
       end else begin
-        if (CVA6Cfg.RVS && (ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]])) begin
-          // traps never transition from a more-privileged mode to a less privileged mode
-          // so if we are already in M mode, stay there
-          trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+        if (CVA6Cfg.RVS) begin
+          if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
+                  CVA6Cfg.XLEN
+              )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
+                  CVA6Cfg.XLEN
+              )-1:0]])) begin
+            // traps never transition from a more-privileged mode to a less privileged mode
+            // so if we are already in M mode, stay there
+            trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+          end
         end
       end
 
@@ -2069,7 +2075,11 @@ module csr_regfile
       else  // otherwise we go with the regular settings
         en_ld_st_translation_d = en_translation_o;
 
-      ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
+      if (CVA6Cfg.RVU) begin
+        ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
+      end else begin
+        ld_st_priv_lvl_o = priv_lvl_o;
+      end
       en_ld_st_translation_o = en_ld_st_translation_q;
       ld_st_v_o = 1'b0;
       en_ld_st_g_translation_o = 1'b0;
@@ -2206,12 +2216,12 @@ module csr_regfile
   assign irq_ctrl_o.sie = (CVA6Cfg.RVH && v_q) ? vsstatus_q.sie : mstatus_q.sie;
   assign irq_ctrl_o.mideleg = mideleg_q;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
-  assign irq_ctrl_o.global_enable = (~debug_mode_q)
+  assign irq_ctrl_o.global_enable = (!CVA6Cfg.DebugEn & ~debug_mode_q)
       // interrupts are enabled during single step or we are not stepping
       // No need to check interrupts during single step if we don't support DEBUG mode
       & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
                                     & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
-                                    | (priv_lvl_o != riscv::PRIV_LVL_M));
+                                    | (CVA6Cfg.RVU & priv_lvl_o != riscv::PRIV_LVL_M));
 
   always_comb begin : privilege_check
     if (CVA6Cfg.RVH) begin
@@ -2388,7 +2398,7 @@ module csr_regfile
     // privilege level we are jumping and whether the vectored mode is
     // activated for _that_ privilege level.
     if (ex_i.cause[CVA6Cfg.XLEN-1] &&
-                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0]) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && mtvec_q[0]))
+                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])))
                || (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S && !trap_to_v && stvec_q[0]))) begin
       trap_vector_base_o[7:2] = ex_i.cause[5:0];
     end
@@ -2477,7 +2487,7 @@ module csr_regfile
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];
 `else
-  assign icache_en_o = icache_q[0] & (~debug_mode_q);
+  assign icache_en_o = icache_q[0] & (!CVA6Cfg.DebugEn && ~debug_mode_q);
 `endif
   assign dcache_en_o = dcache_q[0];
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
