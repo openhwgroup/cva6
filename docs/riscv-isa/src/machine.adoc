@@ -1,5 +1,3 @@
-include::config_define.adoc[]
-
 [[machine]]
 == Machine-Level ISA, Version 1.13
 
@@ -862,13 +860,11 @@ ifndef::archi-default,RVS-true[]
 
 endif::[]
 
-ifdef::archi-default[]
 ===== Endianness Control in `mstatus` and `mstatush` Registers
 
 The MBE, SBE, and UBE bits in `mstatus` and `mstatush` are *WARL* fields that
 control the endianness of memory accesses other than instruction
 fetches. Instruction fetches are always little-endian.
-endif::[]
 
 MBE controls whether non-instruction-fetch memory accesses made from
 M-mode (assuming `mstatus`.MPRV=0) are little-endian (MBE=0) or
@@ -1551,15 +1547,20 @@ interrupts, unless the interrupt results in a user-level context swap.
 ====
 endif::[]
 
-ifdef::archi-default[]
 ===== Previous Expected Landing Pad (ELP) State in `mstatus` Register
 
+ifdef::archi-default[]
 The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 `ELP`, and are updated as specified in <<ZICFILP_FORWARD_TRAPS>>. The
 *__x__*`PELP` fields are encoded as follows:
 
 * 0 - `NO_LP_EXPECTED` - no landing pad instruction expected.
 * 1 - `LP_EXPECTED` - a landing pad instruction is expected.
+endif::[]
+
+ifdef::archi-CVA6[]
+[{ohg-config}] As the Zicfilp extension is not supported,
+the `SPELP` and `MPELP` fields are read-only zero.
 endif::[]
 
 ==== Machine Trap-Vector Base-Address (`mtvec`) Register
@@ -2872,6 +2873,12 @@ Successor device output and memory writes (SW implied)
 |===
 endif::[]
 
+ifndef::archi-default,RVU-true[]
+The `menvcfg` CSR is a 64-bit read/write register that controls
+certain characteristics of the execution environment for modes less
+privileged than M.
+endif::[]
+
 ifeval::[{note} == true]
 [NOTE]
 ====
@@ -2945,27 +2952,35 @@ The CDE (Counter Delegation Enable) bit controls whether Zicntr and Zihpm counte
 [{ohg-config}] As Smcdeleg is not implemented, CDE is always 0
 endif::[]
 
+ifdef::archi-default,RVU-true[]
 The definition of the STCE field is furnished by the Sstc extension.
+endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
 [{ohg-config}] As Sstc is not implemented, STCE is always 0
 endif::[]
 
+ifdef::archi-default,RVU-true[]
 The definition of the CBZE field is furnished by the Zicboz extension.
+endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
 [{ohg-config}] As Zicboz is not implemented, CBZE is always 0
 endif::[]
 
+ifdef::archi-default,RVU-true[]
 The definitions of the CBCFE and CBIE fields are furnished by the Zicbom extension.
+endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
 [{ohg-config}] As Zicbom is not implemented, CBCFE and CBIE fields are always 0
 endif::[]
 
+ifdef::archi-default,RVU-true[]
 The definition of the PMM field will be furnished by the forthcoming
 Smnpm extension. Its allocation within `menvcfg` may change prior to the
 ratification of that extension.
+endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
 [{ohg-config}] As Smnpm is not implemented, PMM field is always 0
