@@ -44,6 +44,7 @@ package build_config_pkg;
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
     cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
+    cfg.SpeculativeSb = bit'(ariane_pkg::SUPERSCALAR);
     cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
     cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;

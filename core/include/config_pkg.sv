@@ -216,6 +216,7 @@ package config_pkg;
     /// ports than issue ports, for the scoreboard to empty out in case one
     /// instruction stalls a little longer.
     int unsigned NrCommitPorts;
+    bit          SpeculativeSb;
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;
     /// AXI parameters.

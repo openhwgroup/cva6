@@ -222,7 +222,7 @@ module issue_read_operands
       unique case (issue_instr_i[0].fu)
         NONE:  fus_busy[1].none = 1'b1;
         CTRL_FLOW: begin
-          if (ariane_pkg::SPECULATIVE_SB) begin
+          if (CVA6Cfg.SpeculativeSb) begin
             // Issue speculative instruction, will be removed on BMISS
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
