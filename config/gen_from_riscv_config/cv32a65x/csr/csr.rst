@@ -65,9 +65,9 @@ Register Summary
 +-------------+---------------------------------------------+-------------+----------------------------------------------------------------------------------------------------+
 | 0x344       | `MIP <#MIP>`_                               | MRW         | The mip register is an MXLEN-bit read/write register containing information on pending interrupts. |
 +-------------+---------------------------------------------+-------------+----------------------------------------------------------------------------------------------------+
-| 0x3a0-0x3a3 | `PMPCFG[0-3] <#PMPCFG[0-3]>`_               | MRW         | PMP configuration register                                                                         |
+| 0x3a0-0x3af | `PMPCFG[0-15] <#PMPCFG[0-15]>`_             | MRW         | PMP configuration register                                                                         |
 +-------------+---------------------------------------------+-------------+----------------------------------------------------------------------------------------------------+
-| 0x3b0-0x3bf | `PMPADDR[0-15] <#PMPADDR[0-15]>`_           | MRW         | Physical memory protection address register                                                        |
+| 0x3b0-0x3ef | `PMPADDR[0-63] <#PMPADDR[0-63]>`_           | MRW         | Physical memory protection address register                                                        |
 +-------------+---------------------------------------------+-------------+----------------------------------------------------------------------------------------------------+
 | 0x7c0       | `ICACHE <#ICACHE>`_                         | MRW         | the register controls the operation of the i-cache unit.                                           |
 +-------------+---------------------------------------------+-------------+----------------------------------------------------------------------------------------------------+
@@ -401,12 +401,11 @@ MIP
 | [31:13] | RESERVED_13  | 0x0           | WPRI   |                | *Reserved*                             |
 +---------+--------------+---------------+--------+----------------+----------------------------------------+
 
-
-.. .. _PMPCFG[0-3]:::
-PMPCFG[0-3]
+.. .. _PMPCFG[0-15]:::
+PMPCFG[0-15]
 ~~~~~~~~~~~
 
-:Address: 0x3a0-0x3a3
+:Address: 0x3a0-0x3af
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: PMP configuration register
@@ -424,11 +423,11 @@ PMPCFG[0-3]
 +---------+-----------------+---------------+--------+----------------+------------------------+
 
 
-.. .. _PMPADDR[0-15]:::
-PMPADDR[0-15]
+.. .. _PMPADDR[0-63]:::
+PMPADDR[0-63]
 ~~~~~~~~~~~~~
 
-:Address: 0x3b0-0x3bf
+:Address: 0x3b0-0x3ef
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: Physical memory protection address register
