@@ -919,13 +919,13 @@ module csr_regfile
     end
 
     if (CVA6Cfg.RVS) begin
-      sepc_d                   = sepc_q;
-      scause_d                 = scause_q;
-      stvec_d                  = stvec_q;
-      scounteren_d             = scounteren_q;
-      sscratch_d               = sscratch_q;
-      stval_d                  = stval_q;
-      satp_d                   = satp_q;
+      sepc_d       = sepc_q;
+      scause_d     = scause_q;
+      stvec_d      = stvec_q;
+      scounteren_d = scounteren_q;
+      sscratch_d   = sscratch_q;
+      stval_d      = stval_q;
+      satp_d       = satp_q;
     end
 
     en_ld_st_translation_d = en_ld_st_translation_q;
