@@ -150,6 +150,13 @@ It inserts stalls until it can satisfy the current request. This means:
 
 .. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
+After the instructions in the store buffer are done, a translation request is made to the MMU's TLB. In the same cycle, a memory access request is made to the D$ and the index of the virtual address is sent to it 
+
+.. figure:: ../images/schema_fsm_load_control.png
+      :name: Load unit's interactions
+   :align: center
+   :alt:
+
 .. include:: port_load_unit.rst
 
 
@@ -157,7 +164,7 @@ It inserts stalls until it can satisfy the current request. This means:
 lsu_bypass
 ----------
 
-TO BE COMPLETED
+The LSU bypass make the connection between the issue stage and the LSU. It is used as a buffer for the issued instructions when the store unit or the load unit are not available immediately.
 
 .. include:: port_lsu_bypass.rst
 
