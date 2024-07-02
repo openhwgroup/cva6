@@ -915,7 +915,7 @@ module csr_regfile
       hcounteren_d             = hcounteren_q;
       htinst_d                 = htinst_q;
       htval_d                  = htval_q;
-      en_ld_st_g_translation_d = en_ld_st_g_translation_q;      
+      en_ld_st_g_translation_d = en_ld_st_g_translation_q;
     end
 
     if (CVA6Cfg.RVS) begin
