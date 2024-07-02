@@ -69,7 +69,7 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                comparison_results.append((*key, *value, "PASS", message))
+                comparison_results.append((*key, *value, "FAIL", message))
     return comparison_results
 
 
