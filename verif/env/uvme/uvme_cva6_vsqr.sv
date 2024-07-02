@@ -2,6 +2,7 @@
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,6 +37,8 @@ class uvme_cva6_vsqr_c extends uvm_sequencer#(
 
    // Sequencer handles
    uvma_clknrst_sqr_c    clknrst_sequencer;
+   uvma_interrupt_sqr_c  interrupt_sequencer;
+   uvma_debug_sqr_c      debug_sequencer;
    uvma_cvxif_vsqr_c     cvxif_vsequencer;
    uvma_axi_vsqr_c       axi_vsequencer;
 

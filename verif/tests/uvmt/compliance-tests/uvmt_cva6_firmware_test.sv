@@ -176,16 +176,16 @@ endtask : run_phase
 
 task uvmt_cva6_firmware_test_c::irq_noise();
   `uvm_info("TEST", "Starting IRQ Noise thread in UVM test", UVM_NONE);
-//  while (1) begin
-//    uvme_cva6_interrupt_noise_c interrupt_noise_vseq;
+  while (1) begin
+    uvme_cva6_interrupt_noise_c interrupt_noise_vseq;
 
-//    interrupt_noise_vseq = uvme_cva6_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
-//    assert(interrupt_noise_vseq.randomize() with {
-//      reserved_irq_mask == 32'h0;
-//    });
-//    interrupt_noise_vseq.start(vsequencer);
-//    break;
-//  end
+    interrupt_noise_vseq = uvme_cva6_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
+    assert(interrupt_noise_vseq.randomize() with {
+      reserved_irq_mask == 32'h0;
+    });
+    interrupt_noise_vseq.start(vsequencer);
+    break;
+  end
 endtask : irq_noise
 
 task uvmt_cva6_firmware_test_c::random_fetch_toggle();

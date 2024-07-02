@@ -1,4 +1,5 @@
 // Copyright 2021 Thales DIS Design Services SAS
+// Copyright 2024 CoreLab Tech
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +30,8 @@ module uvmt_cva6_dut_wrap # (
 
                            (
                             uvma_clknrst_if                     clknrst_if,
+                            uvma_interrupt_if                   interrupt_if,
+                            uvma_debug_if                       debug_if,
                             uvma_cvxif_intf                     cvxif_if,
                             uvma_axi_intf                       axi_if,
                             uvmt_axi_switch_intf                axi_switch_vif,
@@ -60,6 +63,8 @@ module uvmt_cva6_dut_wrap # (
          .boot_addr_i            ( boot_addr                      ),
          .cvxif_resp             ( cvxif_if.cvxif_resp_o          ),
          .cvxif_req              ( cvxif_if.cvxif_req_i           ),
+         .interrupt_if           ( interrupt_if                   ),
+         .debug_if               ( debug_if                       ),
          .axi_slave              ( axi_if                         ),
          .axi_switch_vif         ( axi_switch_vif                 ),
          .default_inputs_vif     ( default_inputs_vif             ),
