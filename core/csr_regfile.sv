@@ -874,9 +874,13 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
-    satp            = satp_q;
-    hgatp           = hgatp_q;
-    vsatp           = vsatp_q;
+    if (CVA6Cfg.RVS) begin
+      satp = satp_q;
+    end
+    if (CVA6Cfg.RVH) begin
+      hgatp = hgatp_q;
+      vsatp = vsatp_q;
+    end
     instret         = instret_q;
 
     mcountinhibit_d = mcountinhibit_q;
@@ -914,13 +918,18 @@ module csr_regfile
     priv_lvl_d                      = priv_lvl_q;
     v_d                             = v_q;
     debug_mode_d                    = debug_mode_q;
-    dcsr_d                          = dcsr_q;
-    dpc_d                           = dpc_q;
-    dscratch0_d                     = dscratch0_q;
-    dscratch1_d                     = dscratch1_q;
-    mstatus_d                       = mstatus_q;
-    hstatus_d                       = hstatus_q;
-    vsstatus_d                      = vsstatus_q;
+
+    if (CVA6Cfg.DebugEn) begin
+      dcsr_d      = dcsr_q;
+      dpc_d       = dpc_q;
+      dscratch0_d = dscratch0_q;
+      dscratch1_d = dscratch1_q;
+    end
+    mstatus_d = mstatus_q;
+    if (CVA6Cfg.RVH) begin
+      hstatus_d  = hstatus_q;
+      vsstatus_d = vsstatus_q;
+    end
 
     // check whether we come out of reset
     // this is a workaround. some tools have issues
@@ -934,51 +943,59 @@ module csr_regfile
       mtvec_d = mtvec_q;
     end
 
-    medeleg_d                = medeleg_q;
-    mideleg_d                = mideleg_q;
-    mip_d                    = mip_q;
-    mie_d                    = mie_q;
-    mepc_d                   = mepc_q;
-    mcause_d                 = mcause_q;
-    mcounteren_d             = mcounteren_q;
-    mscratch_d               = mscratch_q;
-    mtval_d                  = mtval_q;
-    mtinst_d                 = mtinst_q;
-    mtval2_d                 = mtval2_q;
-    fiom_d                   = fiom_q;
-    dcache_d                 = dcache_q;
-    icache_d                 = icache_q;
-    acc_cons_d               = acc_cons_q;
+    if (CVA6Cfg.RVS) begin
+      medeleg_d = medeleg_q;
+      mideleg_d = mideleg_q;
+    end
+    mip_d        = mip_q;
+    mie_d        = mie_q;
+    mepc_d       = mepc_q;
+    mcause_d     = mcause_q;
+    mcounteren_d = mcounteren_q;
+    mscratch_d   = mscratch_q;
+    mtval_d      = mtval_q;
+    if (CVA6Cfg.RVH) begin
+      mtinst_d = mtinst_q;
+      mtval2_d = mtval2_q;
+    end
 
-    vsstatus_d               = vsstatus_q;
-    vstvec_d                 = vstvec_q;
-    vsscratch_d              = vsscratch_q;
-    vsepc_d                  = vsepc_q;
-    vscause_d                = vscause_q;
-    vstval_d                 = vstval_q;
-    vsatp_d                  = vsatp_q;
+    fiom_d     = fiom_q;
+    dcache_d   = dcache_q;
+    icache_d   = icache_q;
+    acc_cons_d = acc_cons_q;
 
-    sepc_d                   = sepc_q;
-    scause_d                 = scause_q;
-    stvec_d                  = stvec_q;
-    scounteren_d             = scounteren_q;
-    sscratch_d               = sscratch_q;
-    stval_d                  = stval_q;
-    satp_d                   = satp_q;
-    hedeleg_d                = hedeleg_q;
-    hideleg_d                = hideleg_q;
-    hgeie_d                  = hgeie_q;
-    hgatp_d                  = hgatp_q;
-    hcounteren_d             = hcounteren_q;
-    htinst_d                 = htinst_q;
-    htval_d                  = htval_q;
+    if (CVA6Cfg.RVH) begin
+      vstvec_d                 = vstvec_q;
+      vsscratch_d              = vsscratch_q;
+      vsepc_d                  = vsepc_q;
+      vscause_d                = vscause_q;
+      vstval_d                 = vstval_q;
+      vsatp_d                  = vsatp_q;
+      hgatp_d                  = hgatp_q;
+      hedeleg_d                = hedeleg_q;
+      hideleg_d                = hideleg_q;
+      hgeie_d                  = hgeie_q;
+      hcounteren_d             = hcounteren_q;
+      htinst_d                 = htinst_q;
+      htval_d                  = htval_q;
+      en_ld_st_g_translation_d = en_ld_st_g_translation_q;
+    end
 
-    en_ld_st_translation_d   = en_ld_st_translation_q;
-    en_ld_st_g_translation_d = en_ld_st_g_translation_q;
-    dirty_fp_state_csr       = 1'b0;
+    if (CVA6Cfg.RVS) begin
+      sepc_d       = sepc_q;
+      scause_d     = scause_q;
+      stvec_d      = stvec_q;
+      scounteren_d = scounteren_q;
+      sscratch_d   = sscratch_q;
+      stval_d      = stval_q;
+      satp_d       = satp_q;
+    end
 
-    pmpcfg_d                 = pmpcfg_q;
-    pmpaddr_d                = pmpaddr_q;
+    en_ld_st_translation_d = en_ld_st_translation_q;
+    dirty_fp_state_csr     = 1'b0;
+
+    pmpcfg_d               = pmpcfg_q;
+    pmpaddr_d              = pmpaddr_q;
 
     // check for correct access rights and that we are writing
     if (csr_we) begin
@@ -2106,31 +2123,35 @@ module csr_regfile
       end
     end
 
-    if (CVA6Cfg.RVH && sret && v_q) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o          = 1'b1;
-      // return the previous supervisor interrupt enable flag
-      vsstatus_d.sie  = vsstatus_q.spie;
-      // restore the previous privilege level
-      priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
-      // set spp to user mode
-      vsstatus_d.spp  = 1'b0;
-      // set spie to 1
-      vsstatus_d.spie = 1'b1;
+    if (CVA6Cfg.RVH) begin
+      if (sret && v_q) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o          = 1'b1;
+        // return the previous supervisor interrupt enable flag
+        vsstatus_d.sie  = vsstatus_q.spie;
+        // restore the previous privilege level
+        priv_lvl_d      = riscv::priv_lvl_t'({1'b0, vsstatus_q.spp});
+        // set spp to user mode
+        vsstatus_d.spp  = 1'b0;
+        // set spie to 1
+        vsstatus_d.spie = 1'b1;
+      end
     end
 
     // return from debug mode
-    if (CVA6Cfg.DebugEn && dret) begin
-      // return from exception, IF doesn't care from where we are returning
-      eret_o     = 1'b1;
-      // restore the previous privilege level
-      priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
-      if (CVA6Cfg.RVH) begin
-        // restore the previous virtualization mode
-        v_d = dcsr_q.v;
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        // return from exception, IF doesn't care from where we are returning
+        eret_o     = 1'b1;
+        // restore the previous privilege level
+        priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
+        if (CVA6Cfg.RVH) begin
+          // restore the previous virtualization mode
+          v_d = dcsr_q.v;
+        end
+        // actually return from debug mode
+        debug_mode_d = 1'b0;
       end
-      // actually return from debug mode
-      debug_mode_d = 1'b0;
     end
   end
 
@@ -2382,8 +2403,10 @@ module csr_regfile
       epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
     end
     // we are returning from debug mode, to take the dpc register
-    if (CVA6Cfg.DebugEn && dret) begin
-      epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+    if (CVA6Cfg.DebugEn) begin
+      if (dret) begin
+        epc_o = dpc_q[CVA6Cfg.VLEN-1:0];
+      end
     end
   end
 
