@@ -327,6 +327,18 @@ module frontend
   // MMU interface
   assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
 
+  // CHECK PMA regions
+
+  logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
+  assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_obi_req_o.a.addr}  //TO DO CHECK GRANULARITY
+  );
+
+  logic paddr_nonidempotent;
+  assign paddr_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_obi_req_o.a.addr}  //TO DO CHECK GRANULARITY
+  ); 
+
   // Caches optimisation signals
 
   typedef enum logic [1:0] {
@@ -395,6 +407,7 @@ module frontend
       vaddr_q <= '0;
       paddr_q <= '0;
       obi_vaddr_q <= '0;
+      paddr_is_cacheable_q <= '0;
     end else begin
       custom_state_q <= custom_state_d;
       atrans_state_q <= atrans_state_d;
@@ -403,6 +416,7 @@ module frontend
       vaddr_q <= vaddr_d;
       paddr_q <= paddr_d;
       obi_vaddr_q <= obi_vaddr_d;
+      paddr_is_cacheable_q <= paddr_is_cacheable;
     end
   end
 
@@ -609,7 +623,8 @@ module frontend
     fetch_obi_req_o.a.a_optional.auser= '0;
     fetch_obi_req_o.a.a_optional.wuser= '0;
     fetch_obi_req_o.a.a_optional.atop= '0;
-    fetch_obi_req_o.a.a_optional.memtype= '0;
+    fetch_obi_req_o.a.a_optional.memtype[0]='0;
+    fetch_obi_req_o.a.a_optional.memtype[1]=paddr_is_cacheable_q;
     fetch_obi_req_o.a.a_optional.mid= '0;
     fetch_obi_req_o.a.a_optional.prot= '0;
     fetch_obi_req_o.a.a_optional.dbg= '0;
@@ -635,7 +650,8 @@ module frontend
         fetch_obi_req_o.a.a_optional.auser= '0;
         fetch_obi_req_o.a.a_optional.wuser= '0;
         fetch_obi_req_o.a.a_optional.atop= '0;
-        fetch_obi_req_o.a.a_optional.memtype= '0;
+        fetch_obi_req_o.a.a_optional.memtype[0]='0;
+        fetch_obi_req_o.a.a_optional.memtype[1]=paddr_is_cacheable;
         fetch_obi_req_o.a.a_optional.mid= '0;
         fetch_obi_req_o.a.a_optional.prot= '0;
         fetch_obi_req_o.a.a_optional.dbg= '0;
@@ -712,16 +728,10 @@ module frontend
   bht_update_t bht_update;
   btb_update_t btb_update;
 
-  // assert on branch, deassert when resolved
-  logic addr_ni;
-  assign addr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_obi_req_o.a.addr}
-  );
-
   logic speculative_q, speculative_d;
   assign speculative_d = (speculative_q && !resolved_branch_i.valid || |is_branch || |is_return || |is_jalr) && !flush_i;
 
-  assign spec_req_non_idempot = (speculative_d || ((CVA6Cfg.NonIdemPotenceEn && !addr_ni) || (!CVA6Cfg.NonIdemPotenceEn)));
+  assign spec_req_non_idempot = (speculative_d || ((CVA6Cfg.NonIdemPotenceEn && !paddr_nonidempotent) || (!CVA6Cfg.NonIdemPotenceEn)));
 
 
   assign bht_update.valid = resolved_branch_i.valid
