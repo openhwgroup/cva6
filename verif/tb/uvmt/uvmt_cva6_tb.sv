@@ -67,6 +67,11 @@ module uvmt_cva6_tb;
                                          .clk(clknrst_if.clk),
                                          .rst_n(clknrst_if.reset_n)
                                       );
+
+   uvma_interrupt_if
+                    interrupt_vif(
+                                 );
+
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
    uvma_rvfi_instr_if #(
@@ -122,6 +127,7 @@ module uvmt_cva6_tb;
                     .axi_switch_vif    (axi_switch_vif),
                     .default_inputs_vif    (default_inputs_vif),
                     .core_cntrl_if(core_cntrl_if),
+                    .interrupt_vif(interrupt_vif),
                     .tb_exit_o(tb_exit_if.tb_exit_o),
                     .rvfi_o(rvfi_if.rvfi_o),
                     .rvfi_csr_o(rvfi_if.rvfi_csr_o)
@@ -370,6 +376,8 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvmt_axi_switch_intf  )::set(.cntxt(null), .inst_name("*.env"),             .field_name("axi_switch_vif"),   .value(axi_switch_vif));
      uvm_config_db#(virtual uvmt_rvfi_if#( .CVA6Cfg(CVA6Cfg), .rvfi_instr_t(rvfi_instr_t), .rvfi_csr_t (rvfi_csr_t)))::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),  .value(rvfi_if));
      uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
+     uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*"), .field_name("interrupt_vif"),  .value(interrupt_vif));
+
      uvm_config_db#(virtual uvmt_tb_exit_if)::set(.cntxt(null), .inst_name("*"), .field_name("tb_exit_vif"), .value(tb_exit_if));
 
      // DUT and ENV parameters
