@@ -902,13 +902,13 @@ module csr_regfile
     acc_cons_d = acc_cons_q;
 
     if (CVA6Cfg.RVH) begin
-      vstvec_d    = vstvec_q;
-      vsscratch_d = vsscratch_q;
-      vsepc_d     = vsepc_q;
-      vscause_d   = vscause_q;
-      vstval_d    = vstval_q;
-      vsatp_d     = vsatp_q;
-      hgatp_d     = hgatp_q;
+      vstvec_d                 = vstvec_q;
+      vsscratch_d              = vsscratch_q;
+      vsepc_d                  = vsepc_q;
+      vscause_d                = vscause_q;
+      vstval_d                 = vstval_q;
+      vsatp_d                  = vsatp_q;
+      hgatp_d                  = hgatp_q;
       hedeleg_d                = hedeleg_q;
       hideleg_d                = hideleg_q;
       hgeie_d                  = hgeie_q;
