@@ -48,7 +48,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter type rvfi_probes_instr_t = logic,
   parameter type rvfi_probes_csr_t = logic,
   parameter type rvfi_probes_t = logic,
-  // CVXFI Types
+  // CVXIF Types
   localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
   localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
   localparam type id_t                = `ID_T(CVA6Cfg),

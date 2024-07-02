@@ -22,7 +22,7 @@ module ariane import ariane_pkg::*; #(
     logic csr;
     logic instr;
   },
-  // CVXFI Types
+  // CVXIF Types
   localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
   localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
   localparam type id_t                = `ID_T(CVA6Cfg),

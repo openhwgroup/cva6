@@ -273,7 +273,7 @@ module cva6
     //
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0,
-    // CVXFI Types
+    // CVXIF Types
     parameter type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
     parameter type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
     parameter type id_t                = `ID_T(CVA6Cfg),
