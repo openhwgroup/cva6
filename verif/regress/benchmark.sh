@@ -33,8 +33,8 @@ BDIR=../tests/riscv-tests/benchmarks/
 CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../tests/custom/common/test.ld"
 
 GCC_COMMON_SRC=(
-        ../tests/riscv-tests/benchmarks/common/syscalls.c
-        ../tests/riscv-tests/benchmarks/common/crt.S
+        ../tests/custom/common/syscalls.c
+        ../tests/custom/common/crt.S
 )
 
 GCC_CFLAGS=(
@@ -51,20 +51,20 @@ GCC_CFLAGS=(
         -DNOPRINT
 )
 
-GCC_OPTS="${GCC_CFLAGS[*]} ${GCC_COMMON_SRC[*]}"
+GCC_OPTS="${GCC_COMMON_SRC[*]} ${GCC_CFLAGS[*]}"
 
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/dhrystone/dhrystone.c   --gcc_opts "$GCC_OPTS -I$BDIR/dhrystone/    $BDIR/dhrystone/dhrystone_main.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/median/median.c         --gcc_opts "$GCC_OPTS -I$BDIR/median/       $BDIR/median/median_main.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mm/mm.c                 --gcc_opts "$GCC_OPTS -I$BDIR/mm/           $BDIR/mm/mm_main.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-matmul/mt-matmul.c   --gcc_opts "$GCC_OPTS -I$BDIR/mt-matmul/    $BDIR/mt-matmul/matmul.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-vvadd/mt-vvadd.c     --gcc_opts "$GCC_OPTS -I$BDIR/mt-vvadd/     $BDIR/mt-vvadd/vvadd.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/multiply/multiply.c     --gcc_opts "$GCC_OPTS -I$BDIR/multiply/     $BDIR/multiply/multiply_main.c"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/pmp/pmp.c               --gcc_opts "$GCC_OPTS -I$BDIR/pmp/"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/qsort/qsort_main.c      --gcc_opts "$GCC_OPTS -I$BDIR/qsort/"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/rsort/rsort.c           --gcc_opts "$GCC_OPTS -I$BDIR/rsort/"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/spmv/spmv_main.c        --gcc_opts "$GCC_OPTS -I$BDIR/spmv/"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/towers/towers_main.c    --gcc_opts "$GCC_OPTS -I$BDIR/towers/"
-python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/vvadd/vvadd.c           --gcc_opts "$GCC_OPTS -I$BDIR/vvadd/        $BDIR/vvadd/vvadd_main.c"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/dhrystone/dhrystone_main.c --gcc_opts "$BDIR/dhrystone/dhrystone.c $GCC_OPTS -I$BDIR/dhrystone/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/median/median_main.c       --gcc_opts "$BDIR/median/median.c       $GCC_OPTS -I$BDIR/median/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mm/mm.c                    --gcc_opts "$BDIR/mm/mm_main.c          $GCC_OPTS -I$BDIR/mm/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-matmul/mt-matmul.c      --gcc_opts "$BDIR/mt-matmul/matmul.c    $GCC_OPTS -I$BDIR/mt-matmul/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/mt-vvadd/mt-vvadd.c        --gcc_opts "$BDIR/mt-vvadd/vvadd.c      $GCC_OPTS -I$BDIR/mt-vvadd/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/multiply/multiply_main.c   --gcc_opts "$BDIR/multiply/multiply.c   $GCC_OPTS -I$BDIR/multiply/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/pmp/pmp.c                  --gcc_opts "                            $GCC_OPTS -I$BDIR/pmp/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/qsort/qsort_main.c         --gcc_opts "                            $GCC_OPTS -I$BDIR/qsort/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/rsort/rsort.c              --gcc_opts "                            $GCC_OPTS -I$BDIR/rsort/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/spmv/spmv_main.c           --gcc_opts "                            $GCC_OPTS -I$BDIR/spmv/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/towers/towers_main.c       --gcc_opts "                            $GCC_OPTS -I$BDIR/towers/"
+python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/vvadd/vvadd_main.c         --gcc_opts "                            $GCC_OPTS -I$BDIR/vvadd/"
 
 make clean
 make -C verif/sim clean_all
