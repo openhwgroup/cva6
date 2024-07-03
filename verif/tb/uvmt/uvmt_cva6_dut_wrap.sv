@@ -30,7 +30,6 @@ module uvmt_cva6_dut_wrap # (
 
                            (
                             uvma_clknrst_if                     clknrst_if,
-                            uvma_interrupt_if                   interrupt_if,
                             uvma_debug_if                       debug_if,
                             uvma_cvxif_intf                     cvxif_if,
                             uvma_axi_intf                       axi_if,
@@ -63,7 +62,6 @@ module uvmt_cva6_dut_wrap # (
          .boot_addr_i            ( boot_addr                      ),
          .cvxif_resp             ( cvxif_if.cvxif_resp_o          ),
          .cvxif_req              ( cvxif_if.cvxif_req_i           ),
-         .interrupt_if           ( interrupt_if                   ),
          .debug_if               ( debug_if                       ),
          .axi_slave              ( axi_if                         ),
          .axi_switch_vif         ( axi_switch_vif                 ),

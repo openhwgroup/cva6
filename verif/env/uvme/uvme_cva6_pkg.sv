@@ -45,7 +45,6 @@ package uvme_cva6_pkg;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;
    import uvma_clknrst_pkg::*;
-   import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
    import uvma_cvxif_pkg::*;
    import uvma_axi_pkg::*;
@@ -99,8 +98,6 @@ package uvme_cva6_pkg;
    `include "uvma_cva6_core_cntrl_agent.sv"
    `include "uvme_cva6_sb.sv"
    `include "uvme_cva6_vsqr.sv"
-   // `include "uvme_interrupt_covg.sv"
-   // `include "uvme_debug_covg.sv"
    `include "uvme_cvxif_covg.sv"
    `include "uvme_isa_covg.sv"
    `include "uvme_illegal_instr_covg.sv"
@@ -115,7 +112,7 @@ package uvme_cva6_pkg;
    `include "uvme_cva6_base_vseq.sv"
    `include "uvme_cva6_reset_vseq.sv"
    `include "uvme_axi_fw_preload_seq.sv"
-   `include "uvme_cva6_interrupt_noise_vseq.sv"
+//   `include "uvme_cva6_interrupt_noise_vseq.sv"
    `include "uvme_cva6_vseq_lib.sv"
 
 endpackage : uvme_cva6_pkg

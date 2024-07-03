@@ -59,7 +59,6 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   output rvfi_csr_t                    rvfi_csr_o,
   input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
   output cvxif_pkg::cvxif_req_t        cvxif_req,
-  uvma_interrupt_if                    interrupt_if,
   uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
@@ -88,7 +87,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .rst_ni               ( rst_ni                    ),
     .boot_addr_i          ( boot_addr_i               ),//Driving the boot_addr value from the core control agent
     .hart_id_i            ( default_inputs_vif.hart_id   ),
-    .irq_i                ( interrupt_if.irq             ),
+    .irq_i                ( default_inputs_vif.irq       ),
     .ipi_i                ( default_inputs_vif.ipi       ),
     .time_irq_i           ( default_inputs_vif.time_irq  ),
     .debug_req_i          ( debug_if.debug_req           ),

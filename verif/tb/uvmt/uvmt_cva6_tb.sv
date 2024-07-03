@@ -60,8 +60,7 @@ module uvmt_cva6_tb;
 
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
-   uvma_interrupt_if            interrupt_if(); // Interrupts
-   uvma_debug_if                debug_if(); // Debug
+   uvma_debug_if                debug_if(); // debug
    uvma_cvxif_intf              cvxif_if(
                                          .clk(clknrst_if.clk),
                                          .reset_n(clknrst_if.reset_n)
@@ -104,11 +103,6 @@ module uvmt_cva6_tb;
     uvmt_tb_exit_if tb_exit_if ( .tb_exit_o());
 
   // --------------------------------------------
-  // Connect to uvma_interrupt_if
-  assign interrupt_if.clk     = clknrst_if.clk;
-  assign interrupt_if.reset_n = clknrst_if.reset_n;
-  // assign interrupt_if.irq_id  = irq_id;
-  // assign interrupt_if.irq_ack = irq_ack;
   assign debug_if.clk         = clknrst_if.clk;
   assign debug_if.reset_n     = clknrst_if.reset_n;
 
@@ -129,7 +123,6 @@ module uvmt_cva6_tb;
      .NUM_WORDS         (NUM_WORDS)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
-                    .interrupt_if(interrupt_if),
                     .debug_if(debug_if),
                     .cvxif_if  (cvxif_if),
                     .axi_if    (axi_if),
@@ -384,8 +377,6 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvmt_axi_switch_intf  )::set(.cntxt(null), .inst_name("*.env"),             .field_name("axi_switch_vif"),   .value(axi_switch_vif));
      uvm_config_db#(virtual uvmt_rvfi_if#( .CVA6Cfg(CVA6Cfg), .rvfi_instr_t(rvfi_instr_t), .rvfi_csr_t (rvfi_csr_t)))::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),  .value(rvfi_if));
      uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
-     uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
-     uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*.env"),                 .field_name("intr_vif"), .value(interrupt_if));
      uvm_config_db#(virtual uvma_debug_if)::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"),       .value(debug_if));
      uvm_config_db#(virtual uvma_debug_if)::set(.cntxt(null), .inst_name("*.env"),             .field_name("debug_vif"), .value(debug_if));
      uvm_config_db#(virtual uvmt_tb_exit_if)::set(.cntxt(null), .inst_name("*"), .field_name("tb_exit_vif"), .value(tb_exit_if));

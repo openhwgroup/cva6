@@ -24,7 +24,6 @@
 
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
--f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
 -f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
 -f ${DV_UVMA_CVXIF_PATH}/src/uvma_cvxif_pkg.flist
 -f ${DV_UVMA_AXI_PATH}/src/uvma_axi_pkg.flist
