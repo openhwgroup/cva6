@@ -11,7 +11,7 @@ This chapter presents opcode maps and instruction-set listings for RV32G
 and RV64G.
 endif::[]
 
-ifeval::[{ohg-config} == CV32A65X]
+ifdef::archi-CVA6[]
 {ohg-config}: This chapter presents opcode maps and instruction-set
 listings for {ohg-config}.
 endif::[]
