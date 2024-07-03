@@ -1,0 +1,68 @@
+
+ifeval::["{ohg-config}"=="CV32A65X"]
+:archi-CVA6:
+// specify that it is a custom architecture
+:archi-not-default:
+endif::[]
+
+ifeval::["{ohg-config}"=="CV64A6_MMU"]
+:archi-CVA6:
+// specify that it is a custom architecture
+:archi-not-default:
+endif::[]
+
+ifndef::archi-not-default[]
+:archi-default:
+endif::[]
+
+ifeval::[{RVS} == true]
+:RVS-true:
+endif::[]
+
+ifeval::[{RVU} == true]
+:RVU-true:
+endif::[]
+
+ifeval::[{XLEN} == 32]
+:XLEN-32:
+endif::[]
+
+ifeval::[{XLEN} == 64]
+:XLEN-64:
+endif::[]
+
+ifeval::[{RVZsmcntrpmf} == true]
+:RVZsmcntrpmf-true:
+endif::[]
+
+ifeval::[{RVC} == true]
+:RVC-true:
+endif::[]
+
+ifeval::[{MTvecDirectEn} == true]
+:MTvecDirectEn-true:
+endif::[]
+
+ifeval::[{MTvalEn} == true]
+:MTvalEn-true:
+endif::[]
+
+ifeval::[{RVZsmepmp} == true]
+:RVZsmepmp-true:
+endif::[]
+
+ifeval::[{DCacheEn} == true]
+:DCacheEn-true:
+endif::[]
+
+ifeval::[{RVA} == true]
+:RVA-true:
+endif::[]
+
+ifeval::[{RVZsmdbltrp} == true]
+:RVZsmdbltrp-true:
+endif::[]
+
+ifeval::[{RVZicfilp} == true]
+:RVZicfilp-true:
+endif::[]

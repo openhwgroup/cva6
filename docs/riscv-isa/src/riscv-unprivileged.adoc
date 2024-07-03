@@ -166,6 +166,8 @@ December 2019._
 _Contributors to {ohg-config} versions of the spec in alphabetical order:
 Jean-Roch Coulon, André Sintzoff._
 
+include::config_define.adoc[]
+
 //the colophon allows for a section after the preamble that is part of the frontmatter and therefore not assigned a page number.
 include::colophon.adoc[]
 include::intro.adoc[]
