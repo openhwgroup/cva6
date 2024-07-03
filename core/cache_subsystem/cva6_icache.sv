@@ -427,7 +427,7 @@ module cva6_icache
           // we have a hit or an exception output valid result
         end else if (((|cl_hit && cache_en_q && !inv_q) || dreq_i.kill_req)) begin
           state_d = IDLE;
-          data_valid_obi = 1;  // just don't output in the case of dreq_i.kill_req
+          data_valid_obi = '1;  // just don't output in the case of dreq_i.kill_req
           // we can accept another request
           // and stay here, but only if no inval is coming in
           // note: we are not expecting ifill return packets here...
