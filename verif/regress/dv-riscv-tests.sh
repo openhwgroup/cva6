@@ -21,6 +21,7 @@ source verif/regress/install-riscv-tests.sh
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
+  # DV_TARGET=cv64a6_imafdc_sv39_hpdcache
   DV_TARGET=cv64a6_imafdc_sv39
 fi
 
@@ -31,11 +32,18 @@ fi
 if ! [ -n "$DV_TESTLISTS" ]; then
   DV_TESTLISTS="../tests/testlist_riscv-tests-$DV_TARGET-p.yaml \
                 ../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+  # DV_TESTLISTS="../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml"
 fi
+
+export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
 cd verif/sim
 for TESTLIST in $DV_TESTLISTS
 do
   python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml $DV_OPTS
 done
+
+make -C ../.. clean
+make clean_all
+
 cd -

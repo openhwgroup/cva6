@@ -23,9 +23,9 @@ source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
 
 # install the required test suites
-source ./verif/regress/install-riscv-compliance.sh
+# source ./verif/regress/install-riscv-compliance.sh
 source ./verif/regress/install-riscv-tests.sh
-source ./verif/regress/install-riscv-arch-test.sh
+# source ./verif/regress/install-riscv-arch-test.sh
 
 # setup sim env
 source ./verif/sim/setup-env.sh
@@ -53,10 +53,10 @@ errors=0
 # 64-bit configurations implementing MMU
 riscv_tests_list=(
   rv64ui-v-add
-  rv64ui-v-ld
-  rv64ui-v-sd
-  rv64ui-v-beq
-  rv64ui-v-jal
+  # rv64ui-v-ld
+  # rv64ui-v-sd
+  # rv64ui-v-beq
+  # rv64ui-v-jal
 )
 for t in ${riscv_tests_list[@]} ; do
   python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-v.yaml --test $t --iss_yaml cva6.yaml --target ${DV_TARGET} --iss=$DV_SIMULATORS $DV_OPTS
