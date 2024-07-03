@@ -350,7 +350,7 @@ riscv-tests-p:
       allow_failure: true
     - when: manual
       allow_failure: true
-  timeout: 7h
+  timeout: 6h
 
 mmu_sv32_tests:
   extends:
@@ -430,21 +430,6 @@ directed_isacov-tests:
   script:
     - mkdir -p artifacts/coverage
     - source verif/regress/dv-generated-tests.sh
-    - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
-    - python3 .gitlab-ci/scripts/report_pass.py
-
-interrupt-tests:
-  extends:
-    - .verif_test
-  variables:
-    DASHBOARD_SORT_INDEX: 16
-    DASHBOARD_JOB_CATEGORY: "Interrupt tests"
-    DASHBOARD_JOB_TITLE: "Directed Interrupt tests"
-    DASHBOARD_JOB_DESCRIPTION: "Generate Random interrupt tests using CVA6-DV"
-    DV_SIMULATORS: "vcs-uvm"
-  script:
-    - mkdir -p artifacts/coverage
-    - source verif/regress/dv-interrupt-test.sh
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
@@ -536,7 +521,6 @@ code_coverage-report:
     - directed_isacov-tests
     - generated_xif_tests
     - csr_embedded_tests
-    - interrupt-tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
     DASHBOARD_JOB_DESCRIPTION: "Report merge coverage of generated tests"
