@@ -1,8 +1,8 @@
-# `gcc-toolchain-builder`: Basic scripts for building a RISC-V GCC compiler toolchain
+# `toolchain-builder`: Basic scripts for building a RISC-V GCC or LLVM compiler toolchain
 
 ## Overview
 
-This directory contains basic scripts for building local instances of CORE-V GCC toolchains.
+This directory contains basic scripts for building local instances of CORE-V GCC or LLVM toolchains.
 The scripts provide the means of fetching the source code and building the executables
 and libraries for well-defined toolchain configurations.  The intention is to
 simplify the processs of building such toolchains and make it as "push-button"
@@ -14,6 +14,7 @@ These configurations are deliberately lightweight and consist of:
 
 * `binutils-gdb`: assembler, linker, GDB debugger, and object file utilities
 * `GCC`: the GNU GCC compiler configured for C only
+* `LLVM`: the LLVM compiler infrastructure
 * `newlib`: an open-source C library suitable for embedded applications.
 
 ## Prerequisites
@@ -25,7 +26,7 @@ from source code:
  * 1.1 GB is needed for the build space;
  * 0.5 GB is needed for the installed toolchain.
 
-Several **standard packages** are needed to build the GCC-based compiler
+Several **standard packages** are needed to build the compiler
 toolchains.  On Debian/Ubuntu, executing the following command should suffice:
 
     $ sudo apt-get install autoconf automake autotools-dev curl git libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool bc zlib1g-dev
@@ -41,7 +42,7 @@ On macOS, you can use [Homebrew](http://brew.sh) to install the dependencies:
 ## Getting started
 
 Once the prerequisites (see [above](#prerequisites)) are satisfied, you can fetch and build the
-upstream GCC toolchain (default: 13.1.0) for bare-metal 32-bit and 64-bit applications in just three steps.
+upstream toolchain (default: GCC 13.1.0) for bare-metal 32-bit and 64-bit applications in just three steps.
 
     # 1. Select an installation location for the toolchain (here: the default RISC-V tooling directory $RISCV).
     INSTALL_DIR=$RISCV
@@ -66,11 +67,11 @@ different toolchain components in suitable order.
 In the process of building the toolchain, two new directory trees are created
 under the current working directory:
 
- * `src/`: Source code is fetched and checked out into subdirectories of `src` in
- the current working directory.
+ * `SRC_DIR`: Source code is fetched and checked out into subdirectories of `$SRC_DIR`, which
+ defaults to `src/` in the current working directory when it is not set.
 
- * `build/`: The building of the various components of the toolchain occurs in
- subdirectories of `build` in the current working directory.
+ * `BUILD_DIR`: The building of the various components of the toolchain occurs in subdirectories
+ of `$BUILD_DIR`, which defaults to `build/` in the current working directory when it is not set.
 
 This directory structure was chosen to keep the source and build directories
 local to the user's workspace while supporting systematic out-of-source-tree
@@ -89,12 +90,12 @@ yet: any missing directories will be created during the building process. _The u
 `build-toolchain.sh` script must have sufficient permissions to create the
 missing directories of the installation location._
 
-Once a configuration name `CONFIG_NAME` and an installation location
-`INSTALL_LOCATION` are chosen, use
+Once a configuration name `CONFIG_NAME` and an installation
+location `INSTALL_DIR` are chosen, use
 
     sh get-toolchain.sh CONFIG_NAME
     # E.g.,
-    # sh get-toolchain.sh gcc-10.2.0-baremetal
+    # sh get-toolchain.sh gcc-13.1.0-baremetal
 
 to fetch/update the source code and to check out the matching baseline of code.
 
@@ -111,6 +112,13 @@ To build the toolchain from the retrieved source baseline, use
     sh build-toolchain.sh CONFIG_NAME INSTALL_DIR
     # E.g.,
     # sh build-toolchain.sh gcc-13.1.0-baremetal $RISCV
+
+To speedup the building it is recommended to set the number of threads to use
+
+    # Use all available threads
+    export NUM_JOBS=$(nproc)
+    # Use 8 threads
+    export NUM_JOBS=8
 
 The `build-toolchain.sh` script incorporates fallbacks for several commonly encountered configuration and
 build issues. However, it is not meant to auto-detect major reconfigurations of source
@@ -144,15 +152,13 @@ adjusting the values of per-component variables.  Taking `GCC` as an example:
    `get-toolchain.sh` will update the local repository to the tip of the remote
    branch at every invocation._
 
- * `GCC_CONFIGURE_OPTS` is the list of options to pass to the configure script. \
-   _**NOTE:** Since `GCC_CONFIGURE_OPTS` is a Bourne shell variable, any double-quotes in
-   the option list must be duly escaped to be correctly handled by the shell._
+ * `GCC_CONFIGURE_OPTS` is the list of options to pass to the configure script. 
+   It is located in `config/global.sh`.
 
 ## Potential additions
 
 Several extensions are envisioned:
 
 * Explicit selection of GDB version
-* Addition of LLVM/Clang compilers
 * Support for Linux-based target environments
 * Addition of full-featured C library implementations
