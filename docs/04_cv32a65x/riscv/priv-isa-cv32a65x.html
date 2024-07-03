@@ -3328,7 +3328,10 @@ and UPP are read-only 0.</p>
 </div>
 <div class="sect4">
 <h5 id="machine-double-trap">3.1.6.2. Double Trap Control in <code>mstatus</code> Register</h5>
-
+<div class="paragraph">
+<p>[CV32A65X] As Double Trap Control (Smdbltrp extension) is not implemented,
+MDT field is read-only 0.</p>
+</div>
 </div>
 <div class="sect4">
 <h5 id="xlen-control">3.1.6.3. Base ISA Control in <code>mstatus</code> Register</h5>
@@ -3363,7 +3366,10 @@ big-endian (MBE=1).</p>
 <p>It is always little-endian in M-Mode, the MBE is read-only zero.</p>
 </div>
 <div class="paragraph">
-<p>U-Mode and S-Mode are not implemented, UBE and SBE are read-only 0.</p>
+<p>S-Mode is not implemented, SBE is read-only 0.</p>
+</div>
+<div class="paragraph">
+<p>U-Mode is not implemented, UBE is read-only 0.</p>
 </div>
 </div>
 <div class="sect4">
@@ -3638,8 +3644,10 @@ precision on RV32 and RV64.</p>
 CSRs return bits 31-0 of the corresponding register, and writes change
 only bits 31-0; reads of the <code>mcycleh</code>, <code>minstreth</code>, and <code>mhpmcounter<em>n</em>h</code>
 CSRs return bits 63-32 of the corresponding register, and writes change
-only bits 63-32.
-As the Sscofpmf extension is not implemented, the <code>mhpmevent<em>n</em>h</code> CSRs
+only bits 63-32.</p>
+</div>
+<div class="paragraph">
+<p>As the Sscofpmf extension is not implemented, the <code>mhpmevent<em>n</em>h</code> CSRs
 are not provided.</p>
 </div>
 </div>
@@ -3995,7 +4003,7 @@ certain characteristics of the execution environment for modes less
 privileged than M.</p>
 </div>
 <div class="paragraph">
-<p>As XLEN=32, <code>menvcfgh</code> is a 32-bit read/write register
+<p>[CV32A65X] As XLEN=32, <code>menvcfgh</code> is a 32-bit read/write register
 that aliases bits 63:32 of <code>menvcfg</code>.</p>
 </div>
 <div class="paragraph">
@@ -4061,10 +4069,6 @@ eventually, but not necessarily immediately.</p>
 of the register. The following code sequence sets a 64-bit <code>mtimecmp</code>
 value without spuriously generating a timer interrupt due to the
 intermediate value of the comparand:</p>
-</div>
-<div class="paragraph">
-<p>For RV64, naturally aligned 64-bit memory accesses to the <code>mtime</code> and
-<code>mtimecmp</code> registers are additionally supported and are atomic.</p>
 </div>
 <div class="literalblock">
 <div class="title">Sample code for setting the 64-bit time comparand in RV32 assuming a little-endian memory system and that the registers live in a strongly ordered I/O region.  Storing -1 to the low-order bits of <code>mtimecmp</code> prevents <code>mtimecmp</code> from temporarily becoming smaller than the lesser of the old and new values.</div>
