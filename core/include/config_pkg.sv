@@ -170,8 +170,10 @@ package config_pkg;
     bit                          FpgaEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
-    // Enable superscalar with 2 issue and commit ports
+    // Enable superscalar with 2 issue ports and 2 commit ports
     bit                          SuperscalarEn;
+    // Number of commit ports. Forced to 2 if SuperscalarEn.
+    int unsigned                 NrCommitPorts;
     // Load cycle latency number
     int unsigned                 NrLoadPipeRegs;
     // Store cycle latency number

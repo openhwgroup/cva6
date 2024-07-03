@@ -12,7 +12,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigXlen = 64;
 
   localparam CVA6ConfigBExtEn = 1;  // UVM
-  localparam CVA6ConfigNrCommitPorts = 1;  // UVM
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
@@ -31,6 +30,7 @@ package cva6_config_pkg;
       FpgaEn: bit'(0),
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
+      NrCommitPorts: unsigned'(1),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),

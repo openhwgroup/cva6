@@ -77,6 +77,7 @@ package cva6_config_pkg;
       FpgaEn: bit'(CVA6ConfigFpgaEn),
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
+      NrCommitPorts: unsigned'(1),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),

@@ -45,7 +45,7 @@ package build_config_pkg;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
 
     cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn;
-    cfg.NrCommitPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 2 : 1);
+    cfg.NrCommitPorts = CVA6Cfg.SuperscalarEn ? unsigned'(2) : CVA6Cfg.NrCommitPorts;
     cfg.NrIssuePorts = unsigned'(CVA6Cfg.SuperscalarEn ? 2 : 1);
     cfg.SpeculativeSb = CVA6Cfg.SuperscalarEn;
 
