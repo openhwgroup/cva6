@@ -89,6 +89,7 @@ David Patterson, Krste Asanović. Creative Commons Attribution 4.0 International
 
 _Contributors to {ohg-config} versions of the spec in alphabetical order:
 Jean-Roch Coulon, André Sintzoff._
+
 include::config_define.adoc[]
 
 include::priv-preface.adoc[]
