@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-# Copyright 2020-2023 Thales
+# Copyright 2024 Thales DIS France SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 #############################################################################
 #
 # Original Author: Zbigniew CHAMSKI, Thales Silicon Security
+#
+# Adapted by Mathieu Gouttenoire, Thales DIS France SAS
 #
 #############################################################################
 
@@ -37,6 +39,10 @@
 
 # Paths in config files are relative to this directory.
 ROOT_DIR=$(dirname $(readlink -f $0))
+
+# Load global config
+. $ROOT_DIR/config/global.sh
+
 
 # Helper function to print usage information.
 print_usage()
@@ -98,7 +104,7 @@ fi
 # fi
 
 # Overall directory infrastructure: make sure `pwd`/src exists.
-[ ! -d $ROOT_DIR/src ] && mkdir $ROOT_DIR/src
+[ ! -d "$SRC_DIR" ] && mkdir "$SRC_DIR"
 
 # All Git-based source trees are handled in the same way.
 # Positional args:
@@ -110,13 +116,13 @@ setup_sources_from_git()
     # make sure the source directory exists and is populated
     # with Git information.  If a stale non-Git directory exits,
     # remove it unless it is write-protected.
-    [ -d $ROOT_DIR/$2 -a -d $ROOT_DIR/$2/.git ] || \
-    { rm -rf $ROOT_DIR/$2 &&  \
-	  git clone --depth=1 --branch="$3" $1 $ROOT_DIR/$2 ; }
+    [ -d $SRC_DIR/$2 -a -d $SRC_DIR/$2/.git ] || \
+    { rm -rf $SRC_DIR/$2 &&  \
+	  git clone --depth=1 --branch="$3" $1 $SRC_DIR/$2 ; }
 
     # Check out the required revision as local branch (the shallow clone
     # leaves a "detached HEAD" state.)
-    cd $ROOT_DIR/$2
+    cd $SRC_DIR/$2
     LOCAL_BRANCH="${3}-local"
     { git branch | grep -q "$LOCAL_BRANCH" ; } || git checkout -b "$LOCAL_BRANCH"
     git checkout "$LOCAL_BRANCH"
@@ -125,17 +131,24 @@ setup_sources_from_git()
     cd -
 }
 
-# Binutils
-echo "# Step 1: Obtaining sources of binutils-gdb..."
+# Get Binutils sources
+echo "# Step 1: Obtaining sources of binutils..."
 setup_sources_from_git $BINUTILS_REPO $BINUTILS_DIR $BINUTILS_COMMIT
 
-# GCC
-echo "# Step 2: Obtaining sources of GCC..."
-setup_sources_from_git $GCC_REPO $GCC_DIR $GCC_COMMIT
+if [[ $CONFIG_NAME == "gcc"* ]]; then
+    # Get GCC sources
+    echo "# Step 2: Obtaining sources of GCC..."
+    setup_sources_from_git $GCC_REPO $GCC_DIR $GCC_COMMIT
+else
+    # Get LLVM sources
+    echo "# Step 2: Obtaining sources of LLVM..."
+    setup_sources_from_git $LLVM_REPO $LLVM_DIR $LLVM_COMMIT
+fi
 
-# Newlib
+# Get Newlib sources
 echo "# Step 3: Obtaining sources of newlib..."
 setup_sources_from_git $NEWLIB_REPO $NEWLIB_DIR $NEWLIB_COMMIT
 
 # Exit happily.
 exit 0
+
