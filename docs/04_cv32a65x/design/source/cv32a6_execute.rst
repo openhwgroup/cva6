@@ -155,9 +155,9 @@ The D$ acknowledge the read memory request in the same cycle since it has a high
 When a hit occurs in the MMU's TLB, the tag of the virtual address is sent to the D$. If the load request is in a non idempotent addresses region, it inserts a stall until the write buffer of the D$ is empty of non-idempotent request.
 
 .. figure:: ../images/schema_fsm_load_control.png
-      :name: Load unit's interactions
    :align: center
-   :alt:
+
+   Load unit's interactions
 
 .. include:: port_load_unit.rst
 
