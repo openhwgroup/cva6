@@ -367,7 +367,7 @@ module cva6_icache
           // check if we have to flush
           if (flush_d) begin
             state_d = IDLE;
-            // we have an exception output valid result
+            // we have an exception
           end else if (dreq_i.kill_req) begin
             state_d = IDLE;
             if (!mem_rtrn_vld_i) begin
@@ -424,7 +424,7 @@ module cva6_icache
         // check if we have to flush
         if (flush_d) begin
           state_d = IDLE;
-          // we have an exception
+          // we have an exception output valid result
         end else if (dreq_i.kill_req) begin
           data_valid_obi = '1;  // just don't output in this case
           state_d = IDLE;
