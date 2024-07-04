@@ -24,7 +24,7 @@ module cva6_hpdcache_icache_if_adapter
     parameter type fetch_drsp_t = logic,
     parameter type obi_fetch_req_t = logic,
     parameter type obi_fetch_rsp_t = logic,
-    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0 // TODO
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0  // TODO
 )
 //  }}}
 
@@ -72,61 +72,61 @@ module cva6_hpdcache_icache_if_adapter
   logic hpdcache_req_is_uncacheable;
   logic va_transferred_q, va_is_transferred_d;
 
-  always_ff @( posedge clk_i or negedge rst_ni) begin : transferred_state_magnegement
+  always_ff @(posedge clk_i or negedge rst_ni) begin : transferred_state_magnegement
     if (!rst_ni) begin
-        va_transferred_q <= '0;
+      va_transferred_q <= '0;
     end else begin
-        va_transferred_q <= va_is_transferred_d;
+      va_transferred_q <= va_is_transferred_d;
     end
   end
 
-  assign va_transferred_d = dreq_i.req
+  assign va_transferred_d = dreq_i.req;
   //  }}}
 
   //  Request forwarding
   //  {{{
-    assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
-          CVA6Cfg,
-          {
+  assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg,
+      {
         {64 - CVA6Cfg.PLEN{1'b0}},
         fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
         {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}
-          }
-      );
+      }
+  );
 
-      //    Request forwarding
-    assign hpdcache_req_valid_o = dreq_i.req,
-          hpdcache_req_o.addr_offset = dreq_i.vaddr[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH],
-          hpdcache_req_o.wdata = '0,
-          hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
-          hpdcache_req_o.be = fetch_obi_req_i.a.be,
-          hpdcache_req_o.size = hpdcache_req_is_uncacheable ? ICACHE_WORD_SIZE : ICACHE_MEM_REQ_CL_SIZE, // TODO
-          hpdcache_req_o.sid = '0,
-          hpdcache_req_o.tid = RdTxId, // TODO 
-          hpdcache_req_o.need_rsp = 1'b1,
-          hpdcache_req_o.phys_indexed = 1'b0,
-          hpdcache_req_o.addr_tag = '0,  // unused on virtually indexed request
-          hpdcache_req_o.pma = '0;  // unused on virtually indexed request
+  //    Request forwarding
+  assign hpdcache_req_valid_o = dreq_i.req,
+      hpdcache_req_o.addr_offset = dreq_i.vaddr[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH],
+      hpdcache_req_o.wdata = '0,
+      hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
+      hpdcache_req_o.be = fetch_obi_req_i.a.be,
+      hpdcache_req_o.size = hpdcache_req_is_uncacheable ? ICACHE_WORD_SIZE : ICACHE_MEM_REQ_CL_SIZE, // TODO
+      hpdcache_req_o.sid = '0,
+      hpdcache_req_o.tid = RdTxId,  // TODO 
+      hpdcache_req_o.need_rsp = 1'b1,
+      hpdcache_req_o.phys_indexed = 1'b0,
+      hpdcache_req_o.addr_tag = '0,  // unused on virtually indexed request
+      hpdcache_req_o.pma = '0;  // unused on virtually indexed request
 
-    assign hpdcache_req_abort_o = dreq_i.kill_req || !(va_transferred_q && fetch_obi_req_i.req),
-          hpdcache_req_tag_o = fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
-          hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable,
-          hpdcache_req_pma_o.io = 1'b0;
+  assign hpdcache_req_abort_o = dreq_i.kill_req || !(va_transferred_q && fetch_obi_req_i.req),
+      hpdcache_req_tag_o = fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
+      hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable,
+      hpdcache_req_pma_o.io = 1'b0;
 
-      //    Response forwarding
-    assign dreq_o.ready = hpdcache_rsp_valid_i,
-          dreq_o.invalid_data = hpdcache_req_ready_i; // TODO
+  //    Response forwarding
+  assign dreq_o.ready = hpdcache_req_ready_i;  // TODO
+  //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
 
-    assign fetch_obi_rsp_o.gnt = hpdcache_req_ready_i, // TODO
-      fetch_obi_rsp_o.gntpar = !hpdcache_req_ready_i, // TODO
-      fetch_obi_rsp_o.rvalid = hpdcache_req_ready_i, // TODO
-      fetch_obi_rsp_o.rvalidpar = !hpdcache_req_ready_i, // TODO
+  assign fetch_obi_rsp_o.gnt = hpdcache_req_ready_i,
+      fetch_obi_rsp_o.gntpar = !hpdcache_req_ready_i,
+      fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
+      fetch_obi_rsp_o.rvalidpar = !hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.r.rid = hpdcache_rsp_i.tid,
-      fetch_obi_rsp_o.r.r_optional.exokay = '0, // TODO
-      fetch_obi_rsp_o.r.r_optional.rchk = '0, // TODO
-      fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,
+      fetch_obi_rsp_o.r.r_optional.exokay = '0,  // need this?
+      fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
+      fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
       fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata,
-      fetch_obi_rsp_o.r.r_optional.ruser = '0; // TODO
+      fetch_obi_rsp_o.r.r_optional.ruser = '0;  // TODO
   //  }}}
   //  }}}
 
