@@ -424,7 +424,7 @@ module cva6_icache
         // check if we have to flush
         if (flush_d) begin
           state_d = IDLE;
-          // we have a hit or an exception output valid result
+          // we have an exception
         end else if (dreq_i.kill_req) begin
           data_valid_obi = '1;  // just don't output in this case
           state_d = IDLE;
@@ -434,6 +434,7 @@ module cva6_icache
               state_d = READ;
             end
           end
+          // we have a hit
         end else if (|cl_hit && cache_en_q && !inv_q) begin
           data_valid_obi = '1;
           state_d = IDLE;
