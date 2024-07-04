@@ -49,6 +49,8 @@ CVA6 User Manual
    CV32A60X CSR Details <CSR_CV32A60X>
    CV32A60AX CSR List <CSR_CV32A60AX_list>
    CV32A60AX CSR Details <CSR_CV32A60AX>
+   CV64A6_MMU CSR List <CSR_CV64A6_MMU_list>
+   CV64A6_MMU CSR Details <CSR_CV64A6_MMU>
    CV64A6 CSR <CV64A6_Control_Status_Registers>
    CSR_Cache_Control
    CSR Performance Counters <CSR_Performance_Counters>

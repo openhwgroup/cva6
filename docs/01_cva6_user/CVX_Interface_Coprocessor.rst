@@ -33,6 +33,7 @@ with external coprocessors.
 
    "CV32A60AX", "CV-X-IF included"
    "CV32A60X", "CV-X-IF included"
+   "CV64A6_MMU", "CV-X-IF included"
 
 
 CV-X-IF interface specification
