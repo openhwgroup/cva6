@@ -2226,8 +2226,8 @@ module csr_regfile
       // interrupts are enabled during single step or we are not stepping
       // No need to check interrupts during single step if we don't support DEBUG mode
       & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
-                                    & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
-                                    | (CVA6Cfg.RVU & priv_lvl_o != riscv::PRIV_LVL_M));
+                                    & ((mstatus_q.mie & (CVA6Cfg.RVU && priv_lvl_o == riscv::PRIV_LVL_M))
+                                    | (priv_lvl_o != riscv::PRIV_LVL_M));
 
   always_comb begin : privilege_check
     if (CVA6Cfg.RVH) begin
@@ -2302,7 +2302,7 @@ module csr_regfile
       // if we are reading or writing, check for the correct privilege level this has
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
-        if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+        if (CVA6Cfg.RVU && (riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
           privilege_violation = 1'b1;
         end
         // check access to debug mode only CSRs
