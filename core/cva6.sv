@@ -518,8 +518,8 @@ module cva6
   logic acc_cons_en_csr;
   logic debug_mode;
   logic single_step_csr_commit;
-  riscv::pmpcfg_t [15:0] pmpcfg;
-  logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr;
+  riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg;
+  logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
   // ----------------------------
   // Performance Counters <-> *

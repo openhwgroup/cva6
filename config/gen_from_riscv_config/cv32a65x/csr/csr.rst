@@ -406,7 +406,7 @@ MIP
 PMPCFG[0-3]
 ~~~~~~~~~~~
 
-:Address: 0x3a0-0x3a3
+:Address: 0x3a0-0x3af
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: PMP configuration register
@@ -428,7 +428,7 @@ PMPCFG[0-3]
 PMPADDR[0-15]
 ~~~~~~~~~~~~~
 
-:Address: 0x3b0-0x3bf
+:Address: 0x3b0-0x3ef
 :Reset Value: 0x00000000
 :Privilege: MRW
 :Description: Physical memory protection address register
