@@ -6,13 +6,11 @@ Description of the interrupt agent.
   3 - The agent sends randomized interrupt requests.   
 
 - The interrupt agent has 2 type of delays in `uvma_interrupt_seq_item.sv`:  
-  1 - `irq_delay` is related to the delay between two interupt request.  
+  1 - `irq_delay` is related to the delay between two interrupt request.  
   2 - `irq_time` is related to the time the interrupt request could take.  
 
 - The interrupt agent sends requests asynchronously.
 
 - To enable interrupt requests you should add the option `"+enable_interrupt"`.
-
-- There is no coverage for now.
 
 - There is no mechanism to clear the interrupt requests (on going).
