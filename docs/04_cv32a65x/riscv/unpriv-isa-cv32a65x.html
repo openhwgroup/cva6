@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.22">
-<meta name="description" content="Volume I - Unprivileged Architecture">
+<meta name="description" content="Unprivileged Architecture">
 <title>The RISC-V Instruction Set Manual for CV32A65X: Volume I - Unprivileged Architecture</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -440,7 +440,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>The RISC-V Instruction Set Manual for CV32A65X: Volume I - Unprivileged Architecture</h1>
 <div class="details">
-<span id="revnumber">version 20240612</span>
+<span id="revnumber">version 20240703</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1019,7 +1019,7 @@ Jean-Roch Coulon, André Sintzoff.</em></p>
 OpenHW Group CV32A65X.</p>
 </div>
 <div class="paragraph">
-<p><strong class="big"><em>Preface to Document Version 20240612</em></strong></p>
+<p><strong class="big"><em>Preface to Document Version 20240703</em></strong></p>
 </div>
 <div class="paragraph">
 <p>This document describes the RISC-V unprivileged architecture.</p>
@@ -1134,6 +1134,11 @@ to change before ratification.</p>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Zacas</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.0</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratifed</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Zabha</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.0</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratifed</strong></p></td>
 </tr>
@@ -1289,6 +1294,16 @@ to change before ratification.</p>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Zvkt</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.0</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratified</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Zicfiss</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.0</strong></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratified</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Zicfilp</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.0</strong></p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratified</strong></p></td>
 </tr>
@@ -10047,7 +10062,7 @@ Zcb can be implemented on <em>any</em> CPU as the instructions are 16-bit versio
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-  <em>c.sext.w</em> is a pseudo-instruction for <em>c.addiw rd, 0</em> (RV64)
+  <em>c.sext.w</em> is a pseudoinstruction for <em>c.addiw rd, 0</em> (RV64)
 </td>
 </tr>
 </table>
@@ -10503,7 +10518,7 @@ Zcmt is primarily targeted at embedded class CPUs due to implementation complexi
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 X(rdc) = EXTZ(mem[X(rs1c)+EXTZ(uimm)][7..0]);</code></pre>
 </div>
@@ -10573,7 +10588,7 @@ X(rdc) = EXTZ(mem[X(rs1c)+EXTZ(uimm)][7..0]);</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 X(rdc) = EXTZ(load_mem[X(rs1c)+EXTZ(uimm)][15..0]);</code></pre>
 </div>
@@ -10643,7 +10658,7 @@ X(rdc) = EXTZ(load_mem[X(rs1c)+EXTZ(uimm)][15..0]);</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 X(rdc) = EXTS(load_mem[X(rs1c)+EXTZ(uimm)][15..0]);</code></pre>
 </div>
@@ -10713,7 +10728,7 @@ X(rdc) = EXTS(load_mem[X(rs1c)+EXTZ(uimm)][15..0]);</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 mem[X(rs1c)+EXTZ(uimm)][7..0] = X(rs2c)</code></pre>
 </div>
@@ -10783,7 +10798,7 @@ mem[X(rs1c)+EXTZ(uimm)][7..0] = X(rs2c)</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 mem[X(rs1c)+EXTZ(uimm)][15..0] = X(rs2c)</code></pre>
 </div>
@@ -11572,7 +11587,7 @@ It is implementation defined whether interrupts can also be taken during the seq
 <div class="ulist">
 <ul>
 <li>
-<p>A sequence of stores writing the bytes required by the pseudo-code</p>
+<p>A sequence of stores writing the bytes required by the pseudocode</p>
 <div class="ulist">
 <ul>
 <li>
@@ -11654,7 +11669,7 @@ addi sp, sp, -64</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p>A sequence of loads reading the bytes required by the pseudo-code.</p>
+<p>A sequence of loads reading the bytes required by the pseudocode.</p>
 <div class="ulist">
 <ul>
 <li>
@@ -12040,11 +12055,11 @@ as defined above.</p>
 <p>Operation:</p>
 </div>
 <div class="paragraph">
-<p>The first section of pseudo-code may be executed multiple times before the instruction successfully completes.</p>
+<p>The first section of pseudocode may be executed multiple times before the instruction successfully completes.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 if (XLEN==32) bytes=4; else bytes=8;
 
@@ -12062,11 +12077,11 @@ for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1)  {
 </div>
 </div>
 <div class="paragraph">
-<p>The final section of pseudo-code executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
+<p>The final section of pseudocode executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 sp-=stack_adj;</code></pre>
 </div>
@@ -12266,11 +12281,11 @@ as defined above.</p>
 <p>Operation:</p>
 </div>
 <div class="paragraph">
-<p>The first section of pseudo-code may be executed multiple times before the instruction successfully completes.</p>
+<p>The first section of pseudocode may be executed multiple times before the instruction successfully completes.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 if (XLEN==32) bytes=4; else bytes=8;
 
@@ -12288,11 +12303,11 @@ for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1)  {
 </div>
 </div>
 <div class="paragraph">
-<p>The final section of pseudo-code executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
+<p>The final section of pseudocode executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 sp+=stack_adj;</code></pre>
 </div>
@@ -12487,11 +12502,11 @@ switch (rlist) {
 <p>Operation:</p>
 </div>
 <div class="paragraph">
-<p>The first section of pseudo-code may be executed multiple times before the instruction successfully completes.</p>
+<p>The first section of pseudocode may be executed multiple times before the instruction successfully completes.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 if (XLEN==32) bytes=4; else bytes=8;
 
@@ -12509,7 +12524,7 @@ for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1)  {
 </div>
 </div>
 <div class="paragraph">
-<p>The final section of pseudo-code executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
+<p>The final section of pseudocode executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -12527,7 +12542,7 @@ for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1)  {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 asm("li a0, 0");
 sp+=stack_adj;
@@ -12727,11 +12742,11 @@ switch (rlist) {
 <p>Operation:</p>
 </div>
 <div class="paragraph">
-<p>The first section of pseudo-code may be executed multiple times before the instruction successfully completes.</p>
+<p>The first section of pseudocode may be executed multiple times before the instruction successfully completes.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 if (XLEN==32) bytes=4; else bytes=8;
 
@@ -12749,11 +12764,11 @@ for(i in 27,26,25,24,23,22,21,20,19,18,9,8,1)  {
 </div>
 </div>
 <div class="paragraph">
-<p>The final section of pseudo-code executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
+<p>The final section of pseudocode executes atomically, and only executes if the section above completes without any exceptions or interrupts.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 sp+=stack_adj;
 asm("ret");</code></pre>
@@ -12812,7 +12827,7 @@ The execution is atomic, so it is not possible to observe state where only one o
 </div>
 <div class="paragraph">
 <p>The encoding uses <em>sreg</em> number specifiers instead of <em>xreg</em> number specifiers to save encoding space.
-The mapping between them is specified in the pseudo-code below.</p>
+The mapping between them is specified in the pseudocode below.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -12845,7 +12860,7 @@ The mapping between them is specified in the pseudo-code below.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 if (RV32E &amp;&amp; (r1sc&gt;1 || r2sc&gt;1)) {
   reserved();
 }
@@ -12894,7 +12909,7 @@ The execution is atomic, so it is not possible to observe state where only one o
 </div>
 <div class="paragraph">
 <p>The encoding uses <em>sreg</em> number specifiers instead of <em>xreg</em> number specifiers to save encoding space.
-The mapping between them is specified in the pseudo-code below.</p>
+The mapping between them is specified in the pseudocode below.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -12927,7 +12942,7 @@ The mapping between them is specified in the pseudo-code below.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 if (RV32E &amp;&amp; (r1sc&gt;1 || r2sc&gt;1)) {
   reserved();
 }
@@ -13208,7 +13223,7 @@ attempt to program different modes and read back the values to see which are ava
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 # target_address is temporary internal state, it doesn't represent a real register
 # InstMemory is byte indexed
@@ -13311,7 +13326,7 @@ j target_address[XLEN-1:0]&amp;~0x1;</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudo-code. The SAIL hasn't been written yet.
+<pre class="pygments highlight"><code data-lang="sail">//This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
 # target_address is temporary internal state, it doesn't represent a real register
 # InstMemory is byte indexed
@@ -19545,7 +19560,7 @@ categories: <em>standard</em> versus <em>non-standard</em>.</p>
 <li>
 <p>A standard extension is one that is generally useful and that is
 designed to not conflict with any other standard extension. Currently,
-"MAFDQLCBTPV", described in other chapters of this manual, are either
+"MAFDQCBTPV", described in other chapters of this manual, are either
 complete or planned standard extensions.</p>
 </li>
 <li>
@@ -24636,7 +24651,7 @@ sizes. Misaligned accesses are broken up into single-byte accesses.</p>
 semantics (RV64I and A), are integrated into the <code>rmem</code> exploration tool
 (<a href="https://github.com/rems-project/rmem" class="bare">github.com/rems-project/rmem</a>). <code>rmem</code> can explore litmus tests
 (see <a href="#litmustests">Section A.2</a>) and small ELF binaries
-exhaustively, pseudo-randomly and interactively. In <code>rmem</code>, the ISA
+exhaustively, pseudorandomly and interactively. In <code>rmem</code>, the ISA
 semantics is expressed explicitly in Sail (see
 <a href="https://github.com/rems-project/sail" class="bare">github.com/rems-project/sail</a> for the Sail language, and
 <a href="https://github.com/rems-project/sail-riscv" class="bare">github.com/rems-project/sail-riscv</a> for the RISC-V ISA model),
@@ -26330,7 +26345,7 @@ not supported.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 20240612<br>
+Version 20240703<br>
 </div>
 </div>
 </body>

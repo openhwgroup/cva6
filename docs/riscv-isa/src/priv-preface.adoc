@@ -6,10 +6,10 @@
 This document describes the RISC-V privileged architecture tailored for
 OpenHW Group {ohg-config}.
 
-[.big]*_Preface to Version 20240612_*
+[.big]*_Preface to Version 20240703_*
 
 This document describes the RISC-V privileged architecture. This
-release, version 20240612, contains the following versions of the RISC-V ISA
+release, version 20240703, contains the following versions of the RISC-V ISA
 modules:
 
 [%autowidth,float="center",align="center",cols="^,<,^",options="header",]
@@ -19,10 +19,10 @@ modules:
 *Smstateen Extension* +
 *Smcsrind/Sscsrind Extension* +
 *Smepmp* +
-**Smcntrpmf* +
+*Smcntrpmf* +
 *Smrnmi Extension* +
 *Smcdeleg* +
-*Smdbltrp* +
+_Smdbltrp_ +
 _Supervisor ISA_ +
 *Svade Extension* +
 *Svnapot Extension* +
@@ -31,9 +31,10 @@ _Supervisor ISA_ +
 *Svadu Extension* +
 *Sstc* +
 *Sscofpmf* +
-*Ssdbltrp* +
+_Ssdbltrp_ +
 *Hypervisor ISA* +
-_Shlcofideleg_
+_Shlcofideleg_ +
+*Svvptc*
 
 |_1.13_ +
 *1.0* +
@@ -42,7 +43,7 @@ _Shlcofideleg_
 *1.0* +
 *1.0* +
 *1.0* +
-*1.0* +
+_1.0_ +
 _1.13_ +
 *1.0* +
 *1.0* +
@@ -51,9 +52,10 @@ _1.13_ +
 *1.0* +
 *1.0* +
 *1.0* +
+_1.0_ +
 *1.0* +
-*1.0* +
-_0.1_
+_0.1_ +
+*1.0*
 
 |_Draft_ +
 *Ratified* +
@@ -73,7 +75,8 @@ _Draft_ +
 *Ratified* +
 _Draft_ +
 *Ratified* +
-_Draft_
+_Draft_ +
+*Ratified*
 |===
 
 The following changes have been made since version 1.12 of the Machine and
@@ -98,6 +101,7 @@ implemented.
 * Specified synchronization requirements when changing the PBMTE fields
 in `menvcfg` and `henvcfg`.
 * Exposed count-overflow interrups to VS-mode via the Shlcofideleg extension.
+* Relaxed behavior of some HINTs when MXLEN > XLEN.
 
 Finally, the following clarifications and document improvments have been made
 since the last document release:
@@ -117,6 +121,8 @@ be set to a nonzero value but sometimes not.
 * Clarified exception behavior of unimplemented or inaccessible CSRs.
 * Clarified that Svpbmt allows implementations to override additional PMAs.
 * Replaced the concept of vacant memory regions with inaccessible memory or I/O regions.
+* Clarified that timer and count-overflow interrupts' arrival in
+  interrupt-pending registers is not immediate.
 
 [.big]*_Preface to Version 20211203_*
 
