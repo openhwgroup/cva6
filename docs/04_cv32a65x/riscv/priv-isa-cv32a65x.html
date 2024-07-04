@@ -4495,7 +4495,7 @@ access-fault exception.</p>
 <div class="paragraph">
 <p>The A field in a PMP entry&#8217;s configuration register encodes the
 address-matching mode of the associated PMP address register. The
-encoding of this field is shown in <a href="#pmpcfg-a">[pmpcfg-a]</a>.</p>
+encoding of this field is shown in <a href="#pmpcfg-a">Table 14</a>.</p>
 </div>
 <div class="paragraph">
 <p>When A=0, this PMP entry is disabled and matches no addresses. Two other
@@ -4507,6 +4507,37 @@ four-byte regions (NA4); and the top boundary of an arbitrary range
 <div class="paragraph">
 <p>[CV32A65X] Two address-matching modes are supported: disabled and TOR.</p>
 </div>
+<table id="pmpcfg-a" class="tableblock frame-all grid-all fit-content center">
+<caption class="title">Table 14. Encoding of A field in PMP configuration registers.</caption>
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-right valign-top">A</th>
+<th class="tableblock halign-center valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-right valign-top"><p class="tableblock">0<br>
+1<br>
+2<br>
+3</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">OFF<br>
+TOR<br>
+NA4<br>
+NAPOT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Null region (disabled)<br>
+Top of range<br>
+Not supported<br>
+Not supported</p></td>
+</tr>
+</tbody>
+</table>
 <div class="paragraph">
 <p>If TOR is selected, the associated address register forms the top of the
 address range, and the preceding PMP address register forms the bottom
