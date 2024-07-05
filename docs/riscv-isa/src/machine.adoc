@@ -487,75 +487,13 @@ endif::[]
 ifdef::archi-default,XLEN-32[]
 [[mstatusreg-rv32]]
 .Machine-mode status (`mstatus`) register for RV32
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'MPIE'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'MPP[1:0]'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'MPRV'},
-  {bits:  1, name: 'SUM'},
-  {bits:  1, name: 'MXR'},
-  {bits:  1, name: 'TVM'},
-  {bits:  1, name: 'TW'},
-  {bits:  1, name: 'TSR'},
-  {bits:  1, name: 'SPELP'},
-  {bits:  7, name: 'WPRI'},
-  {bits:  1, name: 'SD'},
-], config:{lanes: 2, hspace:1024}}
-....
+include::images/wavedrom/mstatusreg-rv321.adoc[]
 endif::[]
 
 ifdef::archi-default,XLEN-64[]
 [[mstatusreg]]
 .Machine-mode status (`mstatus`) register for RV64
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'MPIE'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'MPP[1:0]'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'MPRV'},
-  {bits:  1, name: 'SUM'},
-  {bits:  1, name: 'MXR'},
-  {bits:  1, name: 'TVM'},
-  {bits:  1, name: 'TW'},
-  {bits:  1, name: 'TSR'},
-  {bits:  1, name: 'SPELP'},
-  {bits:  8, name: 'WPRI'},
-  {bits:  2, name: 'UXL[1:0]'},
-  {bits:  2, name: 'SXL[1:0]'},
-  {bits:  1, name: 'SBE'},
-  {bits:  1, name: 'MBE'},
-  {bits:  1, name: 'GVA'},
-  {bits:  1, name: 'MPV'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 20, name: 'WPRI'},
-  {bits:  1, name: 'SD'},
-], config:{lanes: 4, hspace:1024}}
-....
+include::images/wavedrom/mstatusreg.adoc[]
 endif::[]
 
 ifdef::archi-default[]
@@ -571,20 +509,7 @@ endif::[]
 ifdef::archi-default,XLEN-32[]
 [[mstatushreg]]
 .Additional machine-mode status (`mstatush`) register  for RV32.
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  4, name: 'WPRI'},
-  {bits:  1, name: 'SBE'},
-  {bits:  1, name: 'MBE'},
-  {bits:  1, name: 'GVA'},
-  {bits:  1, name: 'MPV'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 21, name: 'WPRI'},
-], config:{lanes: 2, hspace:1024}}
-....
+include::images/wavedrom/mstatushreg.adoc[]
 endif::[]
 
 [[privstack]]
@@ -769,8 +694,8 @@ ifeval::[{note} == true]
 [NOTE]
 ====
 The consequence of this specification is that on occurrence of double trap the
-RNMI handler is not provided with information that a trap would report in the
-`mtval` and the `mtval2` registers. This information, if needed, may be obtained
+RNMI handler is not provided with information that a trap reports in the
+`mtval` and the `mtval2` registers. This information, if needed, can be obtained
 by the RNMI handler by decoding the instruction at the address in `mnepc` and
 examining its source register contents.
 ====
@@ -779,7 +704,7 @@ endif::[]
 ifdef::archi-default,RVZsmdbltrp-true[]
 * When the Smrnmi extension is not implemented, or if the Smrnmi extension is
   implemented and `mnstatus.NMIE` is 0, the hart enters a critical-error state
-  without updating any architectural state including the `pc`. This state
+  without updating any architectural state, including the `pc`. This state
   involves ceasing execution, disabling all interrupts (including NMIs), and
   asserting a `critical-error` signal to the platform.
 endif::[]
@@ -787,14 +712,17 @@ endif::[]
 ifeval::[{note} == true]
 [NOTE]
 ====
-The actions performed by the platform on assertion of a `critical-error` signal
-by a hart are platform specific. The range of possible actions include restarting
-the affected hart or restarting the entire platform among others.
+The actions performed by the platform when a hart asserts a `critical-error` signal
+are platform-specific. The range of possible actions include restarting
+the affected hart or restarting the entire platform, among others.
 ====
 endif::[]
 
 ifdef::archi-default,RVZsmdbltrp-true[]
-An `MRET` instruction sets the `MDT` bit to 0.
+The `MRET` and `SRET` instructions, when executed in M-mode, set the `MDT` bit
+to 0. If the new privilege mode is U, VS, or VU, then `sstatus.SDT` is also set
+to 0. Additionally, if it is VU, then `vsstatus.SDT` is also set to 0.
+
 endif::[]
 
 ifndef::archi-default,RVZsmdbltrp-true[]
@@ -839,7 +767,7 @@ endif::[]
 ifeval::["{ohg-config}" == "CV64A6_MMU"]
 [{ohg-config}] The SXL and UXL fields are read-only fields that encode the
 value of XLEN for S-mode and U-mode, respectively. The encoding of these
-fields is the same as the MXL field of `misa`, shown in <<misabase>>. 
+fields is the same as the MXL field of `misa`, shown in <<misabase>>.
 The effective XLEN in S-mode and U-mode are termed _SXLEN_ and _UXLEN_, respectively.
 Their values are set to UXLEN=SXLEN=MXLEN.
 endif::[]
@@ -862,6 +790,22 @@ ifndef::archi-default,RVS-true[]
 [{ohg-config}] The SXL and UXL fields do not exist.
 endif::[]
 
+ifdef::archi-default[]
+Some HINT instructions are encoded as integer computational instructions that
+overwrite their destination register with its current value, e.g.,
+`c.addi x8, 0`.
+When such a HINT is executed with XLEN < MXLEN and bits MXLEN..XLEN of the
+destination register not all equal to bit XLEN-1, it is implementation-defined
+whether bits MXLEN..XLEN of the destination register are unchanged or are
+overwritten with copies of bit XLEN-1.
+
+NOTE: This definition allows implementations to elide register writeback for
+some HINTs, while allowing them to execute other HINTs in the same manner as
+other integer computational instructions.
+The implementation choice is observable only by privilege modes with an XLEN
+setting greater than the current XLEN; it is invisible to the current
+privilege mode.
+endif::[]
 
 ===== Memory Privilege in `mstatus` Register
 
@@ -873,7 +817,7 @@ protection mechanisms of the current privilege mode. When MPRV=1, load
 and store memory addresses are translated and protected, and endianness
 is applied, as though the current privilege mode were set to MPP.
 Instruction address-translation and protection are unaffected by the
-setting of MPRV. 
+setting of MPRV.
 endif::[]
 
 ifdef::archi-default[]
@@ -891,7 +835,7 @@ loads access virtual memory. When MXR=0, only loads from pages marked
 readable (R=1 in <<sv32pte>>) will succeed. When
 MXR=1, loads from pages marked either readable or executable (R=1 or
 X=1) will succeed. MXR has no effect when page-based virtual memory is
-not in effect. 
+not in effect.
 endif::[]
 
 ifdef::archi-default[]
@@ -921,11 +865,11 @@ SUM=0, S-mode memory accesses to pages that are accessible by U-mode
 (U=1 in <<sv32pte>>) will fault. When SUM=1, these
 accesses are permitted. SUM has no effect when page-based virtual memory
 is not in effect. Note that, while SUM is ordinarily ignored when not
-executing in S-mode, it _is_ in effect when MPRV=1 and MPP=S. 
+executing in S-mode, it _is_ in effect when MPRV=1 and MPP=S.
 endif::[]
 
 ifdef::archi-default[]
-SUM is 
+SUM is
 read-only 0 if S-mode is not supported or if `satp`.MODE is read-only 0.
 endif::[]
 
@@ -1087,10 +1031,10 @@ The TVM (Trap Virtual Memory) bit is a *WARL* field that supports intercepting
 supervisor virtual-memory management operations. When TVM=1, attempts to
 read or write the `satp` CSR or execute an SFENCE.VMA or SINVAL.VMA
 instruction while executing in S-mode will raise an illegal-instruction
-exception. When TVM=0, these operations are permitted in S-mode. 
+exception. When TVM=0, these operations are permitted in S-mode.
 endif::[]
 ifdef::archi-default[]
-TVM is 
+TVM is
 read-only 0 when S-mode is not supported.
 endif::[]
 
@@ -1125,7 +1069,7 @@ implementation-specific, bounded time limit, the WFI instruction causes
 an illegal-instruction exception. An implementation may have WFI always
 raise an illegal-instruction exception in less-privileged modes when
 TW=1, even if there are pending globally-disabled interrupts when the
-instruction is executed. 
+instruction is executed.
 endif::[]
 ifdef::archi-default[]
 TW is read-only 0 when there are no modes less
@@ -1161,7 +1105,7 @@ ifdef::archi-default,RVS-true[]
 The TSR (Trap SRET) bit is a *WARL* field that supports intercepting the
 supervisor exception return instruction, SRET. When TSR=1, attempts to
 execute SRET while executing in S-mode will raise an illegal-instruction
-exception. When TSR=0, this operation is permitted in S-mode. 
+exception. When TSR=0, this operation is permitted in S-mode.
 endif::[]
 ifdef::archi-default[]
 TSR is
@@ -2196,7 +2140,7 @@ counters, `mhpmcounter3`-`mhpmcounter31`. The event selector CSRs,
 `mhpmevent3`-`mhpmevent31`, are 64-bit *WARL* registers that control which
 event causes the corresponding counter to increment. The meaning of
 these events is defined by the platform, but event 0 is defined to mean
-"no event." 
+"no event."
 endif::[]
 
 ifdef::archi-default[]
@@ -2912,28 +2856,10 @@ as shown in <<menvcfgreg>>, that controls
 certain characteristics of the execution environment for modes less
 privileged than M.
 
-[#menvcfgreg]
+[[menvcfgreg]]
 .Machine environment configuration (`menvcfg`) register.
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  1, name: 'FIOM'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'LPE'},
-  {bits:  1, name: 'SSE'},
-  {bits:  2, name: 'CBIE'},
-  {bits:  1, name: 'CBCFE'},
-  {bits:  1, name: 'CBZE'},
-  {bits: 24, name: 'WPRI'},
-  {bits:  2, name: 'PMM'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: 'DTE'},
-  {bits:  1, name: 'CDE'},
-  {bits:  1, name: 'ADUE'},
-  {bits:  1, name: 'PBMTE'},
-  {bits:  1, name: 'STCE'},
-], config:{lanes: 4, hspace:1024}}
-....
+include::images/wavedrom/menvcfgreg.adoc[]
+
 
 If bit FIOM (Fence of I/O implies Memory) is set to one in `menvcfg`,
 FENCE instructions executed in modes less privileged than M are modified
@@ -3143,19 +3069,7 @@ shown in <<mseccfg>>, that controls security features.
 
 [[mseccfg]]
 .Machine security configuration (`mseccfg`) register.
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  1, name: 'MML'},
-  {bits:  1, name: 'MMWP'},
-  {bits:  1, name: 'RLB'},
-  {bits:  5, name: 'WPRI'},
-  {bits:  1, name: 'USEED'},
-  {bits:  1, name: 'SSEED'},
-  {bits:  1, name: 'MLPE'},
-  {bits: 53, name: 'WPRI'},
-], config:{lanes: 4, hspace:1024}}
-....
+include::images/wavedrom/mseccfg.adoc[]
 
 The definitions of the SSEED and USEED fields will be furnished by the
 forthcoming entropy-source extension, Zkr. Their allocations within
@@ -3252,8 +3166,9 @@ counting and wall-clock time.
 ====
 endif::[]
 
-Writes to `mtime` and `mtimecmp` are guaranteed to be reflected in MTIP
-eventually, but not necessarily immediately.
+If the result of the comparison between `mtime` and `mtimecmp` changes, it is
+guaranteed to be reflected in MTIP eventually, but not necessarily
+immediately.
 
 ifeval::[{note} == true]
 [NOTE]

@@ -63,6 +63,10 @@ ifeval::[{RVZsmdbltrp} == true]
 :RVZsmdbltrp-true:
 endif::[]
 
+ifeval::[{RVZssdbltrp} == true]
+:RVZssdbltrp-true:
+endif::[]
+
 ifeval::[{RVZicfilp} == true]
 :RVZicfilp-true:
 endif::[]
