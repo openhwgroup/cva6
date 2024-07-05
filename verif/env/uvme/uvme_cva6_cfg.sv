@@ -34,8 +34,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand bit                      scoreboard_enabled;
    rand bit                      tandem_enabled;
    rand bit                      cov_model_enabled;
-   rand bit                      cov_cvxif_model_enabled;
-   rand bit                      cov_isa_model_enabled;
    rand bit                      trn_log_enabled;
    rand int unsigned             sys_clk_period;
 
@@ -45,6 +43,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_axi_cfg_c        axi_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
+   rand uvma_interrupt_cfg_c              interrupt_cfg;
 
    // Zicond extension
    rand bit                      ext_zicond_supported;
@@ -83,6 +82,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(rvfi_cfg,    UVM_DEFAULT)
 
       `uvm_field_object(isacov_cfg,  UVM_DEFAULT)
+
+      `uvm_field_object(interrupt_cfg,  UVM_DEFAULT)
 
    `uvm_object_utils_end
 
@@ -185,11 +186,20 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h0000_0000);
    }
 
+   constraint default_interrupt_cons {
+      if (interrupt_cfg.interrupt_plusarg_valid) {
+         interrupt_cfg.enable_interrupt == 'h1;
+      }
+      else
+         interrupt_cfg.enable_interrupt == 'h0;
+   }
+
    constraint agent_cfg_cons {
       if (enabled) {
-         clknrst_cfg.enabled   == 1;
-         isacov_cfg.enabled    == 1;
-         rvfi_cfg.enabled      == 1;
+         clknrst_cfg.enabled    == 1;
+         isacov_cfg.enabled     == 1;
+         rvfi_cfg.enabled       == 1;
+         interrupt_cfg.enabled  == 1;
       }
 
       isacov_cfg.seq_instr_group_x2_enabled == 1;
@@ -203,9 +213,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       axi_cfg.rand_channel_delay_enabled    == 0;
 
       if (is_active == UVM_ACTIVE) {
-         clknrst_cfg.is_active   == UVM_ACTIVE;
-         isacov_cfg.is_active    == UVM_PASSIVE;
-         rvfi_cfg.is_active      == UVM_PASSIVE;
+         clknrst_cfg.is_active        == UVM_ACTIVE;
+         isacov_cfg.is_active         == UVM_PASSIVE;
+         rvfi_cfg.is_active           == UVM_PASSIVE;
+         interrupt_cfg.is_active      == UVM_ACTIVE;
       }
 
       if (trn_log_enabled) {
@@ -216,12 +227,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
 
       if (cov_model_enabled) {
-         cvxif_cfg.cov_model_enabled  == 1;
-         isacov_cfg.cov_model_enabled == 1;
-         axi_cfg.cov_model_enabled == 1;
-         //env coverage models
-         cov_cvxif_model_enabled == 1;
-         cov_isa_model_enabled   == 1;
+         cvxif_cfg.cov_model_enabled     == 1;
+         isacov_cfg.cov_model_enabled    == 1;
+         axi_cfg.cov_model_enabled       == 1;
+         interrupt_cfg.cov_model_enabled == 1;
       }
 
    }
@@ -253,6 +262,7 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
+   interrupt_cfg   = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
 
    isacov_cfg.core_cfg = this;
    rvfi_cfg.core_cfg = this;
