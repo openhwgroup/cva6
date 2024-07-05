@@ -135,18 +135,18 @@ module load_store_unit
     output logic                                      dtlb_miss_o,
 
     // Data cache request output - CACHES
-    input  dcache_req_o_t  [ 2:0]                   dcache_req_ports_i,
+    input  dcache_req_o_t [2:0] dcache_req_ports_i,
     // Data cache request input - CACHES
-    output dcache_req_i_t  [ 2:0]                   dcache_req_ports_o,
+    output dcache_req_i_t [2:0] dcache_req_ports_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                                    dcache_wbuffer_empty_i,
+    input  logic                dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                                    dcache_wbuffer_not_ni_i,
+    input  logic                dcache_wbuffer_not_ni_i,
     // AMO request - CACHE
-    output amo_req_t                                amo_req_o,
+    output amo_req_t            amo_req_o,
     // AMO response - CACHE
-    input  amo_resp_t                               amo_resp_i,
-    
+    input  amo_resp_t           amo_resp_i,
+
     // PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE

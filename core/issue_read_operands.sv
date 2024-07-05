@@ -32,42 +32,42 @@ module issue_read_operands
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input scoreboard_entry_t [SUPERSCALAR:0] issue_instr_i,
+    input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [SUPERSCALAR:0][31:0] orig_instr_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [SUPERSCALAR:0] issue_instr_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_valid_i,
     // Issue stage acknowledge - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] issue_ack_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack_o,
     // rs1 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs1_o,
     // rs1 operand - scoreboard
-    input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_i,
     // rs1 operand is valid - scoreboard
-    input logic [SUPERSCALAR:0] rs1_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] rs1_valid_i,
     // rs2 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs2_o,
     // rs2 operand - scoreboard
-    input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_i,
     // rs2 operand is valid - scoreboard
-    input logic [SUPERSCALAR:0] rs2_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] rs2_valid_i,
     // rs3 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs3_o,
     // rs3 operand - scoreboard
-    input rs3_len_t [SUPERSCALAR:0] rs3_i,
+    input rs3_len_t [CVA6Cfg.NrIssuePorts-1:0] rs3_i,
     // rs3 operand is valid - scoreboard
-    input logic [SUPERSCALAR:0] rs3_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] rs3_valid_i,
     // get clobber input
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output fu_data_t [SUPERSCALAR:0] fu_data_o,
+    output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
     // Instruction pc - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - TO_BE_COMPLETED
@@ -75,33 +75,33 @@ module issue_read_operands
     // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
     input logic flu_ready_i,
     // ALU output is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] alu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
     // Branch instruction is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] branch_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Transformed instruction - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0][31:0] tinst_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output branchpredict_sbe_t branch_predict_o,
     // Load Store Unit is ready - TO_BE_COMPLETED
     input logic lsu_ready_i,
     // Load Store Unit result is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] lsu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_o,
     // Mult result is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] mult_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU is ready - TO_BE_COMPLETED
     input logic fpu_ready_i,
     // FPU result is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] fpu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_o,
     // FPU fmt field from instruction - TO_BE_COMPLETED
     output logic [1:0] fpu_fmt_o,
     // FPU rm field from isntruction - TO_BE_COMPLETED
     output logic [2:0] fpu_rm_o,
     // ALU output is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] alu2_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_o,
     // CSR result is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] csr_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
     // CVXIF result is valid - TO_BE_COMPLETED
-    output logic [SUPERSCALAR:0] cvxif_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_o,
     // CVXIF is ready - TO_BE_COMPLETED
     input logic cvxif_ready_i,
     // CVXIF offloaded instruction - TO_BE_COMPLETED
@@ -119,40 +119,40 @@ module issue_read_operands
     output logic stall_issue_o
 );
 
-  localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts >> SUPERSCALAR;
+  localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
 
   typedef struct packed {
     logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
   } fus_busy_t;
 
-  logic [SUPERSCALAR:0] stall;
-  logic [SUPERSCALAR:0] fu_busy;  // functional unit is busy
-  fus_busy_t [SUPERSCALAR:0] fus_busy;  // which functional units are considered busy
+  logic [CVA6Cfg.NrIssuePorts-1:0] stall;
+  logic [CVA6Cfg.NrIssuePorts-1:0] fu_busy;  // functional unit is busy
+  fus_busy_t [CVA6Cfg.NrIssuePorts-1:0] fus_busy;  // which functional units are considered busy
   // operands coming from regfile
-  logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
-  rs3_len_t [SUPERSCALAR:0] operand_c_regfile, operand_c_gpr;
+  rs3_len_t [CVA6Cfg.NrIssuePorts-1:0] operand_c_regfile, operand_c_gpr;
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
-  fu_data_t [SUPERSCALAR:0] fu_data_n, fu_data_q;
-  logic [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
+  fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_n, fu_data_q;
+  logic [        CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
-  logic [   SUPERSCALAR:0] alu_valid_q;
-  logic [   SUPERSCALAR:0] mult_valid_q;
-  logic [   SUPERSCALAR:0] fpu_valid_q;
-  logic [             1:0] fpu_fmt_q;
-  logic [             2:0] fpu_rm_q;
-  logic [   SUPERSCALAR:0] alu2_valid_q;
-  logic [   SUPERSCALAR:0] lsu_valid_q;
-  logic [   SUPERSCALAR:0] csr_valid_q;
-  logic [   SUPERSCALAR:0] branch_valid_q;
-  logic [   SUPERSCALAR:0] cvxif_valid_q;
-  logic [            31:0] cvxif_off_instr_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_q;
+  logic [                     1:0] fpu_fmt_q;
+  logic [                     2:0] fpu_rm_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_q;
+  logic [                    31:0] cvxif_off_instr_q;
 
-  logic [SUPERSCALAR:0][31:0] tinst_n, tinst_q;  // transformed instruction
+  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
   // forwarding signals
-  logic [SUPERSCALAR:0] forward_rs1, forward_rs2, forward_rs3;
+  logic [CVA6Cfg.NrIssuePorts-1:0] forward_rs1, forward_rs2, forward_rs3;
 
   // original instruction
   riscv::instruction_t orig_instr;
@@ -160,7 +160,7 @@ module issue_read_operands
 
   // ID <-> EX registers
 
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign rs1_forwarding_o[i] = fu_data_n[i].operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
     assign rs2_forwarding_o[i] = fu_data_n[i].operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
   end
@@ -204,7 +204,7 @@ module issue_read_operands
     if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
       fus_busy[0].fpu = 1'b1;
       fus_busy[0].fpu_vec = 1'b1;
-      if (SUPERSCALAR) fus_busy[0].alu2 = 1'b1;
+      if (CVA6Cfg.SuperscalarEn) fus_busy[0].alu2 = 1'b1;
     end
 
     if (!lsu_ready_i) begin
@@ -216,13 +216,13 @@ module issue_read_operands
       fus_busy[0].cvxif = 1'b1;
     end
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       fus_busy[1] = fus_busy[0];
 
       unique case (issue_instr_i[0].fu)
         NONE:  fus_busy[1].none = 1'b1;
         CTRL_FLOW: begin
-          if (ariane_pkg::SPECULATIVE_SB) begin
+          if (CVA6Cfg.SpeculativeSb) begin
             // Issue speculative instruction, will be removed on BMISS
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
@@ -244,7 +244,7 @@ module issue_read_operands
           end
         end
         ALU: begin
-          if (SUPERSCALAR && !fus_busy[0].alu2) begin
+          if (CVA6Cfg.SuperscalarEn && !fus_busy[0].alu2) begin
             fus_busy[1].alu2 = 1'b1;
             // TODO is there a minimum float execution time?
             // If so we could issue FPU & ALU2 the same cycle
@@ -277,12 +277,12 @@ module issue_read_operands
 
   // select the right busy signal
   // this obviously depends on the functional unit we need
-  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     always_comb begin
       unique case (issue_instr_i[i].fu)
         NONE: fu_busy[i] = fus_busy[i].none;
         ALU: begin
-          if (SUPERSCALAR && !fus_busy[i].alu2) begin
+          if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
             fu_busy[i] = fus_busy[i].alu2;
           end else begin
             fu_busy[i] = fus_busy[i].alu;
@@ -313,7 +313,7 @@ module issue_read_operands
     forward_rs2 = '0;
     forward_rs3 = '0;  // FPR only
 
-    for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // poll the scoreboard for those values
       rs1_o[i] = issue_instr_i[i].rs1;
       rs2_o[i] = issue_instr_i[i].rs2;
@@ -370,7 +370,7 @@ module issue_read_operands
       end
     end
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
               issue_instr_i[1].op
           ) == is_rd_fpr(
@@ -408,7 +408,7 @@ module issue_read_operands
   end
 
   // Forwarding/Output MUX
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     always_comb begin : forwarding_operand_select
       // default is regfiles (gpr or fpr)
       fu_data_n[i].operand_a = operand_a_regfile[i];
@@ -490,11 +490,11 @@ module issue_read_operands
       // Exception pass through:
       // If an exception has occurred simply pass it through
       // we do not want to issue this instruction
-      for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
         if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
           case (issue_instr_i[i].fu)
             ALU: begin
-              if (SUPERSCALAR && !fus_busy[i].alu2) begin
+              if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
                 alu2_valid_q[i] <= 1'b1;
               end else begin
                 alu_valid_q[i] <= 1'b1;
@@ -548,7 +548,7 @@ module issue_read_operands
       end else begin
         cvxif_valid_q <= '0;
         cvxif_off_instr_q <= 32'b0;
-        for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+        for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
           if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
             case (issue_instr_i[i].fu)
               CVXIF: begin
@@ -571,7 +571,7 @@ module issue_read_operands
   // destination register.
   // We also need to check if there is an unresolved branch in the scoreboard.
   always_comb begin : issue_scoreboard
-    for (int unsigned i = 0; i <= SUPERSCALAR; i++) begin
+    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // default assignment
       issue_ack_o[i] = 1'b0;
       // check that we didn't stall, that the instruction we got is valid
@@ -620,7 +620,7 @@ module issue_read_operands
       end
     end
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (!issue_ack_o[0]) begin
         issue_ack_o[1] = 1'b0;
       end
@@ -638,7 +638,7 @@ module issue_read_operands
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1[4:0];
     assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2[4:0];
     if (OPERANDS_PER_INSTR == 3) begin
@@ -697,7 +697,7 @@ module issue_read_operands
       issue_instr_i[0].result[4:0], issue_instr_i[0].rs2[4:0], issue_instr_i[0].rs1[4:0]
     };
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (!(issue_instr_i[0].fu inside {FPU, FPU_VEC})) begin
         fp_raddr_pack = {
           issue_instr_i[1].result[4:0], issue_instr_i[1].rs2[4:0], issue_instr_i[1].rs1[4:0]
@@ -753,7 +753,7 @@ module issue_read_operands
     assign operand_c_fpr = fprdata[2];
   end
 
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
       assign operand_c_gpr[i] = rdata[i*OPERANDS_PER_INSTR+2];
     end
@@ -786,7 +786,7 @@ module issue_read_operands
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
-      if (SUPERSCALAR) begin
+      if (CVA6Cfg.SuperscalarEn) begin
         if (issue_instr_i[1].fu == CTRL_FLOW) begin
           pc_o                  <= issue_instr_i[1].pc;
           is_compressed_instr_o <= issue_instr_i[1].is_compressed;
@@ -803,7 +803,7 @@ module issue_read_operands
 
   //pragma translate_off
   initial begin
-    assert (CVA6Cfg.NrRgprPorts == 2 || (CVA6Cfg.NrRgprPorts == 3 && CVA6Cfg.CvxifEn) || SUPERSCALAR)
+    assert (OPERANDS_PER_INSTR == 2 || (OPERANDS_PER_INSTR == 3 && CVA6Cfg.CvxifEn))
     else
       $fatal(
           1,
@@ -820,12 +820,12 @@ module issue_read_operands
   // of ALU2 so that FPU is not busy.  However, if FPU has a minimum execution
   // time of 2 cycles, it is possible to simply not raise fus_busy[1].alu2.
   initial begin
-    assert (!(SUPERSCALAR && CVA6Cfg.FpPresent))
+    assert (!(CVA6Cfg.SuperscalarEn && CVA6Cfg.FpPresent))
     else
       $fatal(1, "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
   end
 
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assert property (@(posedge clk_i) (branch_valid_q) |-> (!$isunknown(
         fu_data_q[i].operand_a
     ) && !$isunknown(

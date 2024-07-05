@@ -37,57 +37,57 @@ module issue_stage
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
     // Handshake's data with decode stage - ID_STAGE
-    input scoreboard_entry_t [SUPERSCALAR:0] decoded_instr_i,
+    input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_i,
     // instruction value - ID_STAGE
-    input logic [SUPERSCALAR:0][31:0] orig_instr_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     // Handshake's valid with decode stage - ID_STAGE
-    input logic [SUPERSCALAR:0] decoded_instr_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_valid_i,
     // Is instruction a control flow instruction - ID_STAGE
-    input logic [SUPERSCALAR:0] is_ctrl_flow_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_i,
     // Handshake's acknowlege with decode stage - ID_STAGE
-    output logic [SUPERSCALAR:0] decoded_instr_ack_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
-    output [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
+    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
-    output [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
+    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
-    output fu_data_t [SUPERSCALAR:0] fu_data_o,
+    output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Transformed trap instruction - EX_STAGE
-    output logic [SUPERSCALAR:0][31:0] tinst_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_o,
     // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] alu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
     // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
     // Load store unit FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] lsu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_o,
     // Branch unit is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] branch_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Information of branch prediction - EX_STAGE
     output branchpredict_sbe_t branch_predict_o,
     // Mult FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] mult_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
     // FPU FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] fpu_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_o,
     // FPU fmt field - EX_STAGE
     output logic [1:0] fpu_fmt_o,
     // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
     // ALU2 FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] alu2_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_o,
     // CSR is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] csr_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
     // CVXIF FU is valid - EX_STAGE
-    output logic [SUPERSCALAR:0] x_issue_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] x_issue_valid_o,
     // CVXIF is FU ready - EX_STAGE
     input logic x_issue_ready_i,
     // CVXIF offloader instruction value - EX_STAGE
@@ -125,7 +125,7 @@ module issue_stage
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
     // Information dedicated to RVFI - RVFI
-    output logic [SUPERSCALAR:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
@@ -134,30 +134,30 @@ module issue_stage
   // ---------------------------------------------------
   typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
-  fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
-  fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
+  fu_t               [    2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
+  fu_t               [    2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs1_sb_iro;
-  logic              [       SUPERSCALAR:0]                    rs1_valid_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs1_iro_sb;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs1_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs1_valid_sb_iro;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs2_sb_iro;
-  logic              [       SUPERSCALAR:0]                    rs2_valid_iro_sb;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs2_iro_sb;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs2_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs2_valid_iro_sb;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_iro_sb;
-  rs3_len_t          [       SUPERSCALAR:0]                    rs3_sb_iro;
-  logic              [       SUPERSCALAR:0]                    rs3_valid_iro_sb;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs3_iro_sb;
+  rs3_len_t          [CVA6Cfg.NrIssuePorts-1:0]                    rs3_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs3_valid_iro_sb;
 
-  scoreboard_entry_t [       SUPERSCALAR:0]                    issue_instr_sb_iro;
-  logic              [       SUPERSCALAR:0][             31:0] orig_instr_sb_iro;
-  logic              [       SUPERSCALAR:0]                    issue_instr_valid_sb_iro;
-  logic              [       SUPERSCALAR:0]                    issue_ack_iro_sb;
+  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]                    issue_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][             31:0] orig_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                    issue_instr_valid_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                    issue_ack_iro_sb;
 
-  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
-  logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
 
-  for (genvar i = 0; i <= SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign rs1_forwarding_o[i] = rs1_forwarding_xlen[i][CVA6Cfg.VLEN-1:0];
     assign rs2_forwarding_o[i] = rs2_forwarding_xlen[i][CVA6Cfg.VLEN-1:0];
   end

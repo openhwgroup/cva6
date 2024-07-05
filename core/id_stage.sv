@@ -32,23 +32,23 @@ module id_stage #(
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
-    input fetch_entry_t [ariane_pkg::SUPERSCALAR:0] fetch_entry_i,
+    input fetch_entry_t [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_i,
     // Handshake's valid between fetch and decode - FRONTEND
-    input logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND
-    output logic [ariane_pkg::SUPERSCALAR:0] fetch_entry_ready_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
-    output scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0] issue_entry_o,
+    output scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_o,
     // Instruction value - ISSUE
-    output logic [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
-    output logic [ariane_pkg::SUPERSCALAR:0] issue_entry_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] issue_entry_valid_o,
     // Report if instruction is a control flow instruction - ISSUE
-    output logic [ariane_pkg::SUPERSCALAR:0] is_ctrl_flow_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
-    input logic [ariane_pkg::SUPERSCALAR:0] issue_instr_ack_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack_i,
     // Information dedicated to RVFI - RVFI
-    output logic [ariane_pkg::SUPERSCALAR:0] rvfi_is_compressed_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -85,28 +85,28 @@ module id_stage #(
     logic [31:0]       orig_instr;
     logic              is_ctrl_flow;
   } issue_struct_t;
-  issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
+  issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
 
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
-  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
-  logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_control_flow_instr;
+  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]       decoded_instruction;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr;
 
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal;
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal_cmp;
-  logic              [ariane_pkg::SUPERSCALAR:0][31:0] instruction;
-  logic              [ariane_pkg::SUPERSCALAR:0][31:0] compressed_instr;
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed;
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_compressed_cmp;
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_macro_instr_i;
-  logic                                                stall_instr_fetch;
-  logic                                                is_last_macro_instr_o;
-  logic                                                is_double_rd_macro_instr_o;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_illegal;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_illegal_cmp;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] compressed_instr;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_cmp;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_macro_instr_i;
+  logic                                               stall_instr_fetch;
+  logic                                               is_last_macro_instr_o;
+  logic                                               is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
     // 1. Check if they are compressed and expand in case they are
     // ---------------------------------------------------------
-    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       compressed_decoder #(
           .CVA6Cfg(CVA6Cfg)
       ) compressed_decoder_i (
@@ -136,10 +136,10 @@ module id_stage #(
           .is_last_macro_instr_o     (is_last_macro_instr_o),
           .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
       );
-      if (ariane_pkg::SUPERSCALAR > 0) begin
-        assign instruction[ariane_pkg::SUPERSCALAR] = '0;
-        assign is_illegal_cmp[ariane_pkg::SUPERSCALAR] = '0;
-        assign is_compressed_cmp[ariane_pkg::SUPERSCALAR] = '0;
+      if (CVA6Cfg.SuperscalarEn) begin
+        assign instruction[CVA6Cfg.NrIssuePorts-1] = '0;
+        assign is_illegal_cmp[CVA6Cfg.NrIssuePorts-1] = '0;
+        assign is_compressed_cmp[CVA6Cfg.NrIssuePorts-1] = '0;
       end
     end else begin
       assign instruction = compressed_instr;
@@ -149,7 +149,7 @@ module id_stage #(
       assign is_double_rd_macro_instr_o = '0;
     end
   end else begin
-    for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+    for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       assign instruction[i] = fetch_entry_i[i].instruction;
     end
     assign is_illegal_cmp = '0;
@@ -163,7 +163,7 @@ module id_stage #(
   // ---------------------------------------------------------
   // 2. Decode and emit instruction to issue stage
   // ---------------------------------------------------------
-  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     decoder #(
         .CVA6Cfg(CVA6Cfg),
         .branchpredict_sbe_t(branchpredict_sbe_t),
@@ -207,14 +207,14 @@ module id_stage #(
   // ------------------
   // Pipeline Register
   // ------------------
-  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign issue_entry_o[i] = issue_q[i].sbe;
     assign issue_entry_valid_o[i] = issue_q[i].valid;
     assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
     assign orig_instr_o[i] = issue_q[i].orig_instr;
   end
 
-  if (ariane_pkg::SUPERSCALAR) begin
+  if (CVA6Cfg.SuperscalarEn) begin
     always_comb begin
       issue_n = issue_q;
       fetch_entry_ready_o = '0;

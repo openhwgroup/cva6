@@ -39,17 +39,17 @@ module ex_stage
     // Debug mode is enabled - CSR_REGFILE
     input logic debug_mode_i,
     // rs1 forwarding - ISSUE_STAGE
-    input logic [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_i,
     // rs2 forwarding - ISSUE_STAGE
-    input logic [SUPERSCALAR:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
-    input fu_data_t [SUPERSCALAR:0] fu_data_i,
+    input fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Report whether instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Report instruction encoding - ISSUE_STAGE
-    input logic [SUPERSCALAR:0][31:0] tinst_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_i,
     // Fixed Latency Unit result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] flu_result_o,
     // ID of the scoreboard entry at which a=to write back - ISSUE_STAGE
@@ -61,9 +61,9 @@ module ex_stage
     // FLU result is valid - ISSUE_STAGE
     output logic flu_valid_o,
     // ALU instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] alu_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_i,
     // Branch unit instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] branch_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_i,
     // Information of branch prediction - ISSUE_STAGE
     input branchpredict_sbe_t branch_predict_i,
     // The branch engine uses the write back from the ALU - several_modules
@@ -71,17 +71,17 @@ module ex_stage
     // Signaling that we resolved the branch - ISSUE_STAGE
     output logic resolve_branch_o,
     // CSR instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] csr_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_i,
     // CSR address to write - COMMIT_STAGE
     output logic [11:0] csr_addr_o,
     // CSR commit - COMMIT_STAGE
     input logic csr_commit_i,
     // MULT instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] mult_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_i,
     // LSU is ready - ISSUE_STAGE
     output logic lsu_ready_o,
     // LSU instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] lsu_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_i,
     // Load result is valid - ISSUE_STAGE
     output logic load_valid_o,
     // Load result valid - ISSUE_STAGE
@@ -113,7 +113,7 @@ module ex_stage
     // FU is ready - ISSUE_STAGE
     output logic fpu_ready_o,
     // FPU instruction is ready - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] fpu_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_i,
     // FPU format - ISSUE_STAGE
     input logic [1:0] fpu_fmt_i,
     // FPU rm - ISSUE_STAGE
@@ -131,9 +131,9 @@ module ex_stage
     // FPU exception - ISSUE_STAGE
     output exception_t fpu_exception_o,
     // ALU2 instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] alu2_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_i,
     // CVXIF instruction is valid - ISSUE_STAGE
-    input logic [SUPERSCALAR:0] x_valid_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0] x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
     output logic x_ready_o,
     // undecoded instruction - ISSUE_STAGE
@@ -265,7 +265,7 @@ module ex_stage
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
-  logic [SUPERSCALAR:0] one_cycle_select;
+  logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
   assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i;
 
   fu_data_t one_cycle_data;
@@ -273,7 +273,7 @@ module ex_stage
     // data silence operation
     one_cycle_data = one_cycle_select[0] ? fu_data_i[0] : '0;
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (one_cycle_select[1]) begin
         one_cycle_data = fu_data_i[1];
       end
@@ -363,7 +363,7 @@ module ex_stage
   // input silencing of multiplier
   always_comb begin
     mult_data = mult_valid_i[0] ? fu_data_i[0] : '0;
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (mult_valid_i[1]) begin
         mult_data = fu_data_i[1];
       end
@@ -399,7 +399,7 @@ module ex_stage
       fu_data_t fpu_data;
       always_comb begin
         fpu_data = fpu_valid_i[0] ? fu_data_i[0] : '0;
-        if (SUPERSCALAR) begin
+        if (CVA6Cfg.SuperscalarEn) begin
           if (fpu_valid_i[1]) begin
             fpu_data = fu_data_i[1];
           end
@@ -439,7 +439,7 @@ module ex_stage
   // ALU2
   // ----------------
   fu_data_t alu2_data;
-  if (SUPERSCALAR) begin : alu2_gen
+  if (CVA6Cfg.SuperscalarEn) begin : alu2_gen
     always_comb begin
       alu2_data = alu2_valid_i[0] ? fu_data_i[0] : '0;
       if (alu2_valid_i[1]) begin
@@ -464,7 +464,7 @@ module ex_stage
 
   // result MUX
   // This is really explicit so that synthesis tools can elide unused signals
-  if (SUPERSCALAR) begin
+  if (CVA6Cfg.SuperscalarEn) begin
     if (CVA6Cfg.FpPresent) begin
       assign fpu_valid_o    = fpu_valid || |alu2_valid_i;
       assign fpu_result_o   = fpu_valid ? fpu_result   : alu2_result;
@@ -495,7 +495,7 @@ module ex_stage
     lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
     lsu_tinst = tinst_i[0];
 
-    if (SUPERSCALAR) begin
+    if (CVA6Cfg.SuperscalarEn) begin
       if (lsu_valid_i[1]) begin
         lsu_data  = fu_data_i[1];
         lsu_tinst = tinst_i[1];
@@ -582,7 +582,7 @@ module ex_stage
     fu_data_t cvxif_data;
     always_comb begin
       cvxif_data = x_valid_i[0] ? fu_data_i[0] : '0;
-      if (SUPERSCALAR) begin
+      if (CVA6Cfg.SuperscalarEn) begin
         if (x_valid_i[1]) begin
           cvxif_data = fu_data_i[1];
         end

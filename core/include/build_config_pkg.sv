@@ -43,7 +43,12 @@ package build_config_pkg;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
-    cfg.NrCommitPorts = CVA6Cfg.NrCommitPorts;
+
+    cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn;
+    cfg.NrCommitPorts = CVA6Cfg.SuperscalarEn ? unsigned'(2) : CVA6Cfg.NrCommitPorts;
+    cfg.NrIssuePorts = unsigned'(CVA6Cfg.SuperscalarEn ? 2 : 1);
+    cfg.SpeculativeSb = CVA6Cfg.SuperscalarEn;
+
     cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
     cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
@@ -79,7 +84,7 @@ package build_config_pkg;
     cfg.XF16Vec = bit'(XF16Vec);
     cfg.XF16ALTVec = bit'(XF16ALTVec);
     cfg.XF8Vec = bit'(XF8Vec);
-    cfg.NrRgprPorts = unsigned'(2 << ariane_pkg::SUPERSCALAR);
+    cfg.NrRgprPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 4 : 2);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
     cfg.PerfCounterEn = CVA6Cfg.PerfCounterEn;
@@ -140,7 +145,7 @@ package build_config_pkg;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
 
-    cfg.FETCH_WIDTH = 32 << ariane_pkg::SUPERSCALAR;
+    cfg.FETCH_WIDTH = unsigned'(CVA6Cfg.SuperscalarEn ? 64 : 32);
     cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_WIDTH / 8);
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
