@@ -141,7 +141,7 @@ endif
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
 		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
-	cp $(log).iss $(log)
+	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)
 
 ###############################################################################
 # UVM specific commands, variables
@@ -191,6 +191,7 @@ COMMON_COMP_UVM_FLAGS = \
 COMMON_PLUS_ARGS = \
 	++$(elf) \
 	+elf_file=$(elf) \
+	+core_name=$(target) \
         $(spike-yaml-plusarg) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
