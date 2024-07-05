@@ -512,6 +512,7 @@ fpga-boot:
     - source check_fpga_boot.sh
     - cd -
     - python3 .gitlab-ci/scripts/report_fpga_boot.py corev_apu/fpga/scripts/fpga_boot.rpt
+  retry: 1
 
 code_coverage-report:
   extends:
