@@ -4748,7 +4748,7 @@ access-fault exception.</p>
 <div class="paragraph">
 <p>The A field in a PMP entry&#8217;s configuration register encodes the
 address-matching mode of the associated PMP address register. The
-encoding of this field is shown in <a href="#pmpcfg-a">[pmpcfg-a]</a>.</p>
+encoding of this field is shown in <a href="#pmpcfg-a">Table 15</a>.</p>
 </div>
 <div class="paragraph">
 <p>When A=0, this PMP entry is disabled and matches no addresses. Two other
@@ -4760,6 +4760,37 @@ four-byte regions (NA4); and the top boundary of an arbitrary range
 <div class="paragraph">
 <p>[CV64A6_MMU] Two address-matching modes are supported: disabled and TOR.</p>
 </div>
+<table id="pmpcfg-a" class="tableblock frame-all grid-all fit-content center">
+<caption class="title">Table 15. Encoding of A field in PMP configuration registers.</caption>
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-right valign-top">A</th>
+<th class="tableblock halign-center valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-right valign-top"><p class="tableblock">0<br>
+1<br>
+2<br>
+3</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">OFF<br>
+TOR<br>
+NA4<br>
+NAPOT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Null region (disabled)<br>
+Top of range<br>
+Not supported<br>
+Not supported</p></td>
+</tr>
+</tbody>
+</table>
 <div class="paragraph">
 <p>If TOR is selected, the associated address register forms the top of the
 address range, and the preceding PMP address register forms the bottom
@@ -5038,7 +5069,7 @@ might impose additional alignment constraints on the value in the BASE
 field.</p>
 </div>
 <table id="stvec-mode" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 15. Encoding of <code>stvec</code> MODE field.</caption>
+<caption class="title">Table 16. Encoding of <code>stvec</code> MODE field.</caption>
 <colgroup>
 <col>
 <col>
@@ -5066,13 +5097,13 @@ Asynchronous interrupts set <code>pc</code> to BASE+4&#215;cause.<br>
 </table>
 <div class="paragraph">
 <p>The encoding of the MODE field is shown in
-<a href="#stvec-mode">Table 15</a>. When MODE=Direct, all traps into
+<a href="#stvec-mode">Table 16</a>. When MODE=Direct, all traps into
 supervisor mode cause the <code>pc</code> to be set to the address in the BASE
 field. When MODE=Vectored, all synchronous exceptions into supervisor
 mode cause the <code>pc</code> to be set to the address in the BASE field, whereas
 interrupts cause the <code>pc</code> to be set to the address in the BASE field
 plus four times the interrupt cause number. For example, a
-supervisor-mode timer interrupt (see <a href="#scauses">Table 16</a>)
+supervisor-mode timer interrupt (see <a href="#scauses">Table 17</a>)
 causes the <code>pc</code> to be set to BASE+<code>0x14</code>. Setting MODE=Vectored may
 impose a stricter alignment constraint on BASE.</p>
 </div>
@@ -5262,7 +5293,7 @@ implementation, though it may be explicitly written by software.</p>
 <div class="paragraph">
 <p>The Interrupt bit in the <code>scause</code> register is set if the trap was caused
 by an interrupt. The Exception Code field contains a code identifying
-the last exception or interrupt. <a href="#scauses">Table 16</a> lists
+the last exception or interrupt. <a href="#scauses">Table 17</a> lists
 the possible exception codes for the current supervisor ISAs. The
 Exception Code is a <strong>WLRL</strong> field. It is required to hold the values 0–31
 (i.e., bits 4–0 must be implemented), but otherwise it is only
@@ -5275,7 +5306,7 @@ guaranteed to hold supported exception codes.</p>
 <div class="title">Figure 37. Supervisor Cause (<code>scause</code>) register.</div>
 </div>
 <table id="scauses" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 16. Supervisor cause (<code>scause</code>) register values after trap. Synchronous exception priorities are given by <a href="#exception-priority">Table 13</a>.</caption>
+<caption class="title">Table 17. Supervisor cause (<code>scause</code>) register values after trap. Synchronous exception priorities are given by <a href="#exception-priority">Table 13</a>.</caption>
 <colgroup>
 <col>
 <col>
@@ -5415,7 +5446,7 @@ characteristics of the U-mode execution environment.</p>
 <p>If bit FIOM (Fence of I/O implies Memory) is set to one in <code>senvcfg</code>,
 FENCE instructions executed in U-mode are modified so the requirement to
 order accesses to device I/O implies also the requirement to order main
-memory accesses. <a href="#senvcfg-FIOM">Table 17</a> details the modified
+memory accesses. <a href="#senvcfg-FIOM">Table 18</a> details the modified
 interpretation of FENCE instruction bits PI, PO, SI, and SO in U-mode
 when FIOM=1.</p>
 </div>
@@ -5426,7 +5457,7 @@ set, then that instruction is ordered as though it accesses both device
 I/O and memory.</p>
 </div>
 <table id="senvcfg-FIOM" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 17. Modified interpretation of FENCE predecessor and successor sets in U-mode when FIOM=1.</caption>
+<caption class="title">Table 18. Modified interpretation of FENCE predecessor and successor sets in U-mode when FIOM=1.</caption>
 <colgroup>
 <col>
 <col>
@@ -5476,7 +5507,7 @@ register are described in <a href="#virt-control">Section 3.1.6.6</a>.</p>
 <div class="title">Figure 39. Supervisor address translation and protection (<code>satp</code>) register when SXLEN=64, for MODE values Bare, Sv39, Sv48, and Sv57.</div>
 </div>
 <div class="paragraph">
-<p><a href="#satp-mode">Table 18</a> shows the encodings of the MODE field when
+<p><a href="#satp-mode">Table 19</a> shows the encodings of the MODE field when
 SXLEN=32 and SXLEN=64. When MODE=Bare, supervisor virtual addresses are
 equal to supervisor physical addresses, and there is no additional
 memory protection beyond the physical memory protection scheme described
@@ -5498,7 +5529,7 @@ and Sv57.</p>
 </div>
 <div style="page-break-after: always;"></div>
 <table id="satp-mode" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 18. Encoding of <code>satp</code> MODE field.</caption>
+<caption class="title">Table 19. Encoding of <code>satp</code> MODE field.</caption>
 <colgroup>
 <col>
 <col>
@@ -5661,11 +5692,11 @@ permission bits, R, W, and X, indicate whether the page is readable,
 writable, and executable, respectively. When all three are zero, the PTE
 is a pointer to the next level of the page table; otherwise, it is a
 leaf PTE. Writable pages must also be marked readable; the contrary
-combinations are reserved for future use. <a href="#pteperm">Table 19</a>
+combinations are reserved for future use. <a href="#pteperm">Table 20</a>
 summarizes the encoding of the permission bits.</p>
 </div>
 <table id="pteperm" class="tableblock frame-all grid-all fit-content center">
-<caption class="title">Table 19. Encoding of PTE R/W/X fields.</caption>
+<caption class="title">Table 20. Encoding of PTE R/W/X fields.</caption>
 <colgroup>
 <col>
 <col>

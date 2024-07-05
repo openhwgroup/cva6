@@ -4244,7 +4244,9 @@ regions (NAPOT), including the special case of naturally aligned
 four-byte regions (NA4); and the top boundary of an arbitrary range
 (TOR). These modes support four-byte granularity.
 
-ifdef::archi-default[]
+ifdef::archi-CVA6[]
+[{ohg-config}] Two address-matching modes are supported: disabled and TOR.
+
 [[pmpcfg-a]]
 .Encoding of A field in PMP configuration registers.
 [%autowidth,float="center",align="center",cols=">,^,<",options="header"]
@@ -4260,11 +4262,12 @@ NA4 +
 NAPOT
 |Null region (disabled) +
 Top of range +
-Naturally aligned four-byte region +
-Naturally aligned power-of-two region, &#8805;8
-bytes
+Not supported +
+Not supported
 |===
+endif::[]
 
+ifdef::archi-default[]
 NAPOT ranges make use of the low-order bits of the associated address
 register to encode the size of the range, as shown in
 <<pmpcfg-napot>>.
@@ -4303,11 +4306,6 @@ NAPOT
 2^XLEN+3^-byte NAPOT range
 |===
 endif::[]
-
-ifdef::archi-CVA6[]
-[{ohg-config}] Two address-matching modes are supported: disabled and TOR.
-endif::[]
-
 
 If TOR is selected, the associated address register forms the top of the
 address range, and the preceding PMP address register forms the bottom
