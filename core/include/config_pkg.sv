@@ -211,8 +211,8 @@ package config_pkg;
     int unsigned ASID_WIDTH;
     int unsigned VMID_WIDTH;
 
-    bit          FpgaEn;
-    bit          TechnoCut;
+    bit FpgaEn;
+    bit TechnoCut;
 
     bit          SuperscalarEn;
     int unsigned NrCommitPorts;

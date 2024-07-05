@@ -135,19 +135,19 @@ module issue_read_operands
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_n, fu_data_q;
-  logic [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
+  logic [        CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
-  logic [   CVA6Cfg.NrIssuePorts-1:0] alu_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] mult_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] fpu_valid_q;
-  logic [             1:0] fpu_fmt_q;
-  logic [             2:0] fpu_rm_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] alu2_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] lsu_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] csr_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] branch_valid_q;
-  logic [   CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_q;
-  logic [            31:0] cvxif_off_instr_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_q;
+  logic [                     1:0] fpu_fmt_q;
+  logic [                     2:0] fpu_rm_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_q;
+  logic [                    31:0] cvxif_off_instr_q;
 
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_n, tinst_q;  // transformed instruction
 

@@ -98,9 +98,9 @@ module id_stage #(
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_cmp;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_macro_instr_i;
-  logic                                                stall_instr_fetch;
-  logic                                                is_last_macro_instr_o;
-  logic                                                is_double_rd_macro_instr_o;
+  logic                                               stall_instr_fetch;
+  logic                                               is_last_macro_instr_o;
+  logic                                               is_double_rd_macro_instr_o;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
