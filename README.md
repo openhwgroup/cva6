@@ -27,7 +27,7 @@ cd cva6
 git submodule update --init --recursive
 ```
 
-2. Install the GCC Toolchain [build prerequisites](util/gcc-toolchain-builder/README.md#Prerequisites) then [the toolchain itself](util/gcc-toolchain-builder/README.md#Getting-started).
+2. Install the GCC Toolchain [build prerequisites](util/toolchain-builder/README.md#Prerequisites) then [the toolchain itself](util/toolchain-builder/README.md#Getting-started).
 
 :warning: It is **strongly recommended** to use the toolchain built with the provided scripts.
 
