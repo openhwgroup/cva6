@@ -171,13 +171,13 @@ endtask : debug
 
 task uvml_mem_vp_c::wait_n_clocks(int unsigned n);
 
-  repeat (n) @(cntxt.debug_cntxt.vif.mon_cb);
+  repeat (n) @(cntxt.debug_vif.mon_cb);
 
 endtask : wait_n_clocks
 
 task uvml_mem_vp_c::set_debug_req(bit debug_req);
 
-  cntxt.debug_cntxt.vif.drv_cb.debug_drv <= debug_req;
+  cntxt.debug_vif.drv_cb.debug_drv <= debug_req;
 
 endtask : set_debug_req
 

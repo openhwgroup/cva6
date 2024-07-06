@@ -39,6 +39,9 @@ class uvme_cva6_cntxt_c extends uvm_object;
    // Memory modelling
    rand uvml_mem_cva6      mem;
 
+   // Handle to debug_req interface
+   virtual uvma_debug_if   debug_vif;
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
