@@ -87,6 +87,462 @@ csrcsi:
     csrr x14, 0xb17
 
     ##########################
+    #PMPCFG4 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG4 Write immediate value 0x1f
+    csrrci x14, 0x3a4, 0x1f
+    csrrsi x14, 0x3a4, 0x1f
+
+    #PMPCFG4 read value
+    csrr x14, 0x3a4
+
+    #PMPCFG4 Write immediate value 0x0
+    csrrsi x14, 0x3a4, 0x0
+    csrrci x14, 0x3a4, 0x0
+
+    #PMPCFG4 read value
+    csrr x14, 0x3a4
+
+    #PMPCFG4 Write immediate value 0x15
+    csrrsi x14, 0x3a4, 0x15
+    csrrci x14, 0x3a4, 0x15
+
+    #PMPCFG4 read value
+    csrr x14, 0x3a4
+
+    #PMPCFG4 Write immediate value 0xa
+    csrrsi x14, 0x3a4, 0xa
+    csrrci x14, 0x3a4, 0xa
+
+    #PMPCFG4 read value
+    csrr x14, 0x3a4
+
+    #PMPCFG4 Write immediate value 0x13
+    csrrsi x14, 0x3a4, 0x13
+    csrrci x14, 0x3a4, 0x13
+
+    #PMPCFG4 read value
+    csrr x14, 0x3a4
+
+    ##########################
+    #PMPCFG5 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG5 Write immediate value 0x1f
+    csrrsi x14, 0x3a5, 0x1f
+    csrrci x14, 0x3a5, 0x1f
+
+    #PMPCFG5 read value
+    csrr x14, 0x3a5
+
+    #PMPCFG5 Write immediate value 0x0
+    csrrsi x14, 0x3a5, 0x0
+    csrrci x14, 0x3a5, 0x0
+
+    #PMPCFG5 read value
+    csrr x14, 0x3a5
+
+    #PMPCFG5 Write immediate value 0x15
+    csrrsi x14, 0x3a5, 0x15
+    csrrci x14, 0x3a5, 0x15
+
+    #PMPCFG5 read value
+    csrr x14, 0x3a5
+
+    #PMPCFG5 Write immediate value 0xa
+    csrrsi x14, 0x3a5, 0xa
+    csrrci x14, 0x3a5, 0xa
+
+    #PMPCFG5 read value
+    csrr x14, 0x3a5
+
+    #PMPCFG5 Write immediate value 0x13
+    csrrsi x14, 0x3a5, 0x13
+    csrrci x14, 0x3a5, 0x13
+
+    #PMPCFG5 read value
+    csrr x14, 0x3a5
+
+    ##########################
+    #PMPCFG6 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG6 Write immediate value 0x1f
+    csrrsi x14, 0x3a6, 0x1f
+    csrrci x14, 0x3a6, 0x1f
+
+    #PMPCFG6 read value
+    csrr x14, 0x3a6
+
+    #PMPCFG6 Write immediate value 0x0
+    csrrsi x14, 0x3a6, 0x0
+    csrrci x14, 0x3a6, 0x0
+
+    #PMPCFG6 read value
+    csrr x14, 0x3a6
+
+    #PMPCFG6 Write immediate value 0x15
+    csrrsi x14, 0x3a6, 0x15
+    csrrci x14, 0x3a6, 0x15
+
+    #PMPCFG6 read value
+    csrr x14, 0x3a6
+
+    #PMPCFG6 Write immediate value 0xa
+    csrrsi x14, 0x3a6, 0xa
+    csrrci x14, 0x3a6, 0xa
+
+    #PMPCFG6 read value
+    csrr x14, 0x3a6
+
+    #PMPCFG6 Write immediate value 0x13
+    csrrsi x14, 0x3a6, 0x13
+    csrrci x14, 0x3a6, 0x13
+
+    #PMPCFG6 read value
+    csrr x14, 0x3a6
+
+    ##########################
+    #PMPCFG7 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG7 Write immediate value 0x1f
+    csrrsi x14, 0x3a7, 0x1f
+    csrrci x14, 0x3a7, 0x1f
+
+    #PMPCFG7 read value
+    csrr x14, 0x3a7
+
+    #PMPCFG7 Write immediate value 0x0
+    csrrsi x14, 0x3a7, 0x0
+    csrrci x14, 0x3a7, 0x0
+
+    #PMPCFG7 read value
+    csrr x14, 0x3a7
+
+    #PMPCFG7 Write immediate value 0x15
+    csrrsi x14, 0x3a7, 0x15
+    csrrci x14, 0x3a7, 0x15
+
+    #PMPCFG7 read value
+    csrr x14, 0x3a7
+
+    #PMPCFG7 Write immediate value 0xa
+    csrrsi x14, 0x3a7, 0xa
+    csrrci x14, 0x3a7, 0xa
+
+    #PMPCFG7 read value
+    csrr x14, 0x3a7
+
+    #PMPCFG7 Write immediate value 0x13
+    csrrsi x14, 0x3a7, 0x13
+    csrrci x14, 0x3a7, 0x13
+
+    #PMPCFG7 read value
+    csrr x14, 0x3a7
+
+    ##########################
+    #PMPCFG8 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG8 Write immediate value 0x1f
+    csrrsi x14, 0x3a8, 0x1f
+    csrrci x14, 0x3a8, 0x1f
+
+    #PMPCFG8 read value
+    csrr x14, 0x3a8
+
+    #PMPCFG8 Write immediate value 0x0
+    csrrsi x14, 0x3a8, 0x0
+    csrrci x14, 0x3a8, 0x0
+
+    #PMPCFG8 read value
+    csrr x14, 0x3a8
+
+    #PMPCFG8 Write immediate value 0x15
+    csrrsi x14, 0x3a8, 0x15
+    csrrci x14, 0x3a8, 0x15
+
+    #PMPCFG8 read value
+    csrr x14, 0x3a8
+
+    #PMPCFG8 Write immediate value 0xa
+    csrrsi x14, 0x3a8, 0xa
+    csrrci x14, 0x3a8, 0xa
+
+    #PMPCFG8 read value
+    csrr x14, 0x3a8
+
+    #PMPCFG8 Write immediate value 0x13
+    csrrsi x14, 0x3a8, 0x13
+    csrrci x14, 0x3a8, 0x13
+
+    #PMPCFG8 read value
+    csrr x14, 0x3a8
+
+    ##########################
+    #PMPCFG9 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG9 Write immediate value 0x1f
+    csrrsi x14, 0x3a9, 0x1f
+    csrrci x14, 0x3a9, 0x1f
+
+    #PMPCFG9 read value
+    csrr x14, 0x3a9
+
+    #PMPCFG9 Write immediate value 0x0
+    csrrsi x14, 0x3a9, 0x0
+    csrrci x14, 0x3a9, 0x0
+
+    #PMPCFG9 read value
+    csrr x14, 0x3a9
+
+    #PMPCFG9 Write immediate value 0x15
+    csrrsi x14, 0x3a9, 0x15
+    csrrci x14, 0x3a9, 0x15
+
+    #PMPCFG9 read value
+    csrr x14, 0x3a9
+
+    #PMPCFG9 Write immediate value 0xa
+    csrrsi x14, 0x3a9, 0xa
+    csrrci x14, 0x3a9, 0xa
+
+    #PMPCFG9 read value
+    csrr x14, 0x3a9
+
+    #PMPCFG9 Write immediate value 0x13
+    csrrsi x14, 0x3a9, 0x13
+    csrrci x14, 0x3a9, 0x13
+
+    #PMPCFG9 read value
+    csrr x14, 0x3a9
+
+    ##########################
+    #PMPCFG10 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG10 Write immediate value 0x1f
+    csrrsi x14, 0x3aa, 0x1f
+    csrrci x14, 0x3aa, 0x1f
+
+    #PMPCFG10 read value
+    csrr x14, 0x3aa
+
+    #PMPCFG10 Write immediate value 0x0
+    csrrsi x14, 0x3aa, 0x0
+    csrrci x14, 0x3aa, 0x0
+
+    #PMPCFG10 read value
+    csrr x14, 0x3aa
+
+    #PMPCFG10 Write immediate value 0x15
+    csrrsi x14, 0x3aa, 0x15
+    csrrci x14, 0x3aa, 0x15
+
+    #PMPCFG10 read value
+    csrr x14, 0x3aa
+
+    #PMPCFG10 Write immediate value 0xa
+    csrrsi x14, 0x3aa, 0xa
+    csrrci x14, 0x3aa, 0xa
+
+    #PMPCFG10 read value
+    csrr x14, 0x3aa
+
+    #PMPCFG10 Write immediate value 0x13
+    csrrsi x14, 0x3aa, 0x13
+    csrrci x14, 0x3aa, 0x13
+
+    #PMPCFG10 read value
+    csrr x14, 0x3aa
+
+    ##########################
+    #PMPCFG11 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG11 Write immediate value 0x1f
+    csrrsi x14, 0x3ab, 0x1f
+    csrrci x14, 0x3ab, 0x1f
+
+    #PMPCFG11 read value
+    csrr x14, 0x3ab
+
+    #PMPCFG11 Write immediate value 0x0
+    csrrsi x14, 0x3ab, 0x0
+    csrrci x14, 0x3ab, 0x0
+
+    #PMPCFG11 read value
+    csrr x14, 0x3ab
+
+    #PMPCFG11 Write immediate value 0x15
+    csrrsi x14, 0x3ab, 0x15
+    csrrci x14, 0x3ab, 0x15
+
+    #PMPCFG11 read value
+    csrr x14, 0x3ab
+
+    #PMPCFG11 Write immediate value 0xa
+    csrrsi x14, 0x3ab, 0xa
+    csrrci x14, 0x3ab, 0xa
+
+    #PMPCFG11 read value
+    csrr x14, 0x3ab
+
+    #PMPCFG11 Write immediate value 0x13
+    csrrsi x14, 0x3ab, 0x13
+    csrrci x14, 0x3ab, 0x13
+
+    #PMPCFG11 read value
+    csrr x14, 0x3ab
+
+    ##########################
+    #PMPCFG12 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG12 Write immediate value 0x1f
+    csrrsi x14, 0x3ac, 0x1f
+    csrrci x14, 0x3ac, 0x1f
+
+    #PMPCFG12 read value
+    csrr x14, 0x3ac
+
+    #PMPCFG12 Write immediate value 0x0
+    csrrsi x14, 0x3ac, 0x0
+    csrrci x14, 0x3ac, 0x0
+
+    #PMPCFG12 read value
+    csrr x14, 0x3ac
+
+    #PMPCFG12 Write immediate value 0x15
+    csrrsi x14, 0x3ac, 0x15
+    csrrci x14, 0x3ac, 0x15
+
+    #PMPCFG12 read value
+    csrr x14, 0x3ac
+
+    #PMPCFG12 Write immediate value 0xa
+    csrrsi x14, 0x3ac, 0xa
+    csrrci x14, 0x3ac, 0xa
+
+    #PMPCFG12 read value
+    csrr x14, 0x3ac
+
+    #PMPCFG12 Write immediate value 0x13
+    csrrsi x14, 0x3ac, 0x13
+    csrrci x14, 0x3ac, 0x13
+
+    #PMPCFG12 read value
+    csrr x14, 0x3ac
+
+    ##########################
+    #PMPCFG13 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG13 Write immediate value 0x1f
+    csrrsi x14, 0x3ad, 0x1f
+    csrrci x14, 0x3ad, 0x1f
+
+    #PMPCFG13 read value
+    csrr x14, 0x3ad
+
+    #PMPCFG13 Write immediate value 0x0
+    csrrsi x14, 0x3ad, 0x0
+    csrrci x14, 0x3ad, 0x0
+
+    #PMPCFG13 read value
+    csrr x14, 0x3ad
+
+    #PMPCFG13 Write immediate value 0x15
+    csrrsi x14, 0x3ad, 0x15
+    csrrci x14, 0x3ad, 0x15
+
+    #PMPCFG13 read value
+    csrr x14, 0x3ad
+
+    #PMPCFG13 Write immediate value 0xa
+    csrrsi x14, 0x3ad, 0xa
+    csrrci x14, 0x3ad, 0xa
+
+    #PMPCFG13 read value
+    csrr x14, 0x3ad
+
+    #PMPCFG13 Write immediate value 0x13
+    csrrsi x14, 0x3ad, 0x13
+    csrrci x14, 0x3ad, 0x13
+
+    #PMPCFG13 read value
+    csrr x14, 0x3ad
+
+    ##########################
+    #PMPCFG14 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG14 Write immediate value 0x1f
+    csrrsi x14, 0x3ae, 0x1f
+    csrrci x14, 0x3ae, 0x1f
+
+    #PMPCFG14 read value
+    csrr x14, 0x3ae
+
+    #PMPCFG14 Write immediate value 0x0
+    csrrsi x14, 0x3ae, 0x0
+    csrrci x14, 0x3ae, 0x0
+
+    #PMPCFG14 read value
+    csrr x14, 0x3ae
+
+    #PMPCFG14 Write immediate value 0x15
+    csrrsi x14, 0x3ae, 0x15
+    csrrci x14, 0x3ae, 0x15
+
+    #PMPCFG14 read value
+    csrr x14, 0x3ae
+
+    #PMPCFG14 Write immediate value 0xa
+    csrrsi x14, 0x3ae, 0xa
+    csrrci x14, 0x3ae, 0xa
+
+    #PMPCFG14 read value
+    csrr x14, 0x3ae
+
+    #PMPCFG14 Write immediate value 0x13
+    csrrsi x14, 0x3ae, 0x13
+    csrrci x14, 0x3ae, 0x13
+
+    #PMPCFG14 read value
+    csrr x14, 0x3ae
+
+    ##########################
+    #PMPCFG15 testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h13} 
+    ##########################
+    #PMPCFG15 Write immediate value 0x1f
+    csrrsi x14, 0x3af, 0x1f
+    csrrci x14, 0x3af, 0x1f
+
+    #PMPCFG15 read value
+    csrr x14, 0x3af
+
+    #PMPCFG15 Write immediate value 0x0
+    csrrsi x14, 0x3af, 0x0
+    csrrci x14, 0x3af, 0x0
+
+    #PMPCFG15 read value
+    csrr x14, 0x3af
+
+    #PMPCFG15 Write immediate value 0x15
+    csrrsi x14, 0x3af, 0x15
+    csrrci x14, 0x3af, 0x15
+
+    #PMPCFG15 read value
+    csrr x14, 0x3af
+
+    #PMPCFG15 Write immediate value 0xa
+    csrrsi x14, 0x3af, 0xa
+    csrrci x14, 0x3af, 0xa
+
+    #PMPCFG15 read value
+    csrr x14, 0x3af
+
+    #PMPCFG15 Write immediate value 0x13
+    csrrsi x14, 0x3af, 0x13
+    csrrci x14, 0x3af, 0x13
+
+    #PMPCFG15 read value
+    csrr x14, 0x3af
+
+    ##########################
     #MTVEC testing W/R values '{'h1f, 'h0, 'h15, 'ha, 'h5} 
     ##########################
     #MTVEC Write clear/set value 0x1f
@@ -4667,5 +5123,111 @@ csrcsi:
 
     #MHPMEVENT9 read value
     csrr x14, 0x329
+
+    ##########################
+    #PMPADDR16-PMPADDR63 testing Clear/Set values '{'h1f, 'h0, 'h15, 'ha, 'h1} 
+    ##########################
+    #PMPADDR Set immediate value 0x1f
+    csrrsi x14, 0x3c0, 0x1f
+    csrrsi x14, 0x3c1, 0x1f
+    csrrsi x14, 0x3c2, 0x1f
+    csrrsi x14, 0x3c3, 0x1f
+    csrrsi x14, 0x3c4, 0x1f
+    csrrsi x14, 0x3c5, 0x1f
+    csrrsi x14, 0x3c6, 0x1f
+    csrrsi x14, 0x3c7, 0x1f
+    csrrsi x14, 0x3c8, 0x1f
+    csrrsi x14, 0x3c9, 0x1f
+    csrrsi x14, 0x3ca, 0x1f
+    csrrsi x14, 0x3cb, 0x1f
+    csrrsi x14, 0x3cc, 0x1f
+    csrrsi x14, 0x3cd, 0x1f
+    csrrsi x14, 0x3ce, 0x1f
+    csrrsi x14, 0x3cf, 0x1f
+    csrrsi x14, 0x3d0, 0x1f
+    csrrsi x14, 0x3d1, 0x1f
+    csrrsi x14, 0x3d2, 0x1f
+    csrrsi x14, 0x3d3, 0x1f
+    csrrsi x14, 0x3d4, 0x1f
+    csrrsi x14, 0x3d5, 0x1f
+    csrrsi x14, 0x3d6, 0x1f
+    csrrsi x14, 0x3d7, 0x1f
+    csrrsi x14, 0x3d8, 0x1f
+    csrrsi x14, 0x3d9, 0x1f
+    csrrsi x14, 0x3da, 0x1f
+    csrrsi x14, 0x3db, 0x1f
+    csrrsi x14, 0x3dc, 0x1f
+    csrrsi x14, 0x3dd, 0x1f
+    csrrsi x14, 0x3de, 0x1f
+    csrrsi x14, 0x3df, 0x1f
+    csrrsi x14, 0x3e0, 0x1f
+    csrrsi x14, 0x3e1, 0x1f
+    csrrsi x14, 0x3e2, 0x1f
+    csrrsi x14, 0x3e3, 0x1f
+    csrrsi x14, 0x3e4, 0x1f
+    csrrsi x14, 0x3e5, 0x1f
+    csrrsi x14, 0x3e6, 0x1f
+    csrrsi x14, 0x3e7, 0x1f
+    csrrsi x14, 0x3e8, 0x1f
+    csrrsi x14, 0x3e9, 0x1f
+    csrrsi x14, 0x3ea, 0x1f
+    csrrsi x14, 0x3eb, 0x1f
+    csrrsi x14, 0x3ec, 0x1f
+    csrrsi x14, 0x3ed, 0x1f
+    csrrsi x14, 0x3ee, 0x1f
+    csrrsi x14, 0x3ef, 0x1f
+
+    ##########################
+    #PMPADDR16-PMPADDR63 testing Clear/Set values '{'h1f, 'h0, 'h15, 'ha, 'h1} 
+    ##########################
+    #PMPADDR Clear immediate value 0x1f
+    csrrci x14, 0x3c0, 0x1f
+    csrrci x14, 0x3c1, 0x1f
+    csrrci x14, 0x3c2, 0x1f
+    csrrci x14, 0x3c3, 0x1f
+    csrrci x14, 0x3c4, 0x1f
+    csrrci x14, 0x3c5, 0x1f
+    csrrci x14, 0x3c6, 0x1f
+    csrrci x14, 0x3c7, 0x1f
+    csrrci x14, 0x3c8, 0x1f
+    csrrci x14, 0x3c9, 0x1f
+    csrrci x14, 0x3ca, 0x1f
+    csrrci x14, 0x3cb, 0x1f
+    csrrci x14, 0x3cc, 0x1f
+    csrrci x14, 0x3cd, 0x1f
+    csrrci x14, 0x3ce, 0x1f
+    csrrci x14, 0x3cf, 0x1f
+    csrrci x14, 0x3d0, 0x1f
+    csrrci x14, 0x3d1, 0x1f
+    csrrci x14, 0x3d2, 0x1f
+    csrrci x14, 0x3d3, 0x1f
+    csrrci x14, 0x3d4, 0x1f
+    csrrci x14, 0x3d5, 0x1f
+    csrrci x14, 0x3d6, 0x1f
+    csrrci x14, 0x3d7, 0x1f
+    csrrci x14, 0x3d8, 0x1f
+    csrrci x14, 0x3d9, 0x1f
+    csrrci x14, 0x3da, 0x1f
+    csrrci x14, 0x3db, 0x1f
+    csrrci x14, 0x3dc, 0x1f
+    csrrci x14, 0x3dd, 0x1f
+    csrrci x14, 0x3de, 0x1f
+    csrrci x14, 0x3df, 0x1f
+    csrrci x14, 0x3e0, 0x1f
+    csrrci x14, 0x3e1, 0x1f
+    csrrci x14, 0x3e2, 0x1f
+    csrrci x14, 0x3e3, 0x1f
+    csrrci x14, 0x3e4, 0x1f
+    csrrci x14, 0x3e5, 0x1f
+    csrrci x14, 0x3e6, 0x1f
+    csrrci x14, 0x3e7, 0x1f
+    csrrci x14, 0x3e8, 0x1f
+    csrrci x14, 0x3e9, 0x1f
+    csrrci x14, 0x3ea, 0x1f
+    csrrci x14, 0x3eb, 0x1f
+    csrrci x14, 0x3ec, 0x1f
+    csrrci x14, 0x3ed, 0x1f
+    csrrci x14, 0x3ee, 0x1f
+    csrrci x14, 0x3ef, 0x1f
 
     ret
