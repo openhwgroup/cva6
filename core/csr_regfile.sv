@@ -2227,7 +2227,7 @@ module csr_regfile
       // No need to check interrupts during single step if we don't support DEBUG mode
       & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
                                     & ((mstatus_q.mie & (!CVA6Cfg.RVU && priv_lvl_o == riscv::PRIV_LVL_M))
-                                    | (priv_lvl_o != riscv::PRIV_LVL_M));
+                                    | (CVA6Cfg.RVU & priv_lvl_o != riscv::PRIV_LVL_M));
 
   always_comb begin : privilege_check
     if (CVA6Cfg.RVH) begin
