@@ -31,13 +31,13 @@ module load_unit
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Flush signal - TO_BE_COMPLETED
     input logic flush_i,
-    // Load unit input port - TO_BE_COMPLETED
+    // Load request is valid - TO_BE_COMPLETED
     input logic valid_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Load request input - TO_BE_COMPLETED
     input lsu_ctrl_t lsu_ctrl_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Pop the load request from the LSU bypass FIFO - TO_BE_COMPLETED
     output logic pop_ld_o,
     // Load unit result is valid - TO_BE_COMPLETED
     output logic valid_o,
@@ -63,21 +63,21 @@ module load_unit
     input exception_t ex_i,
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Physical page number from the DTLB - TO_BE_COMPLETED
     input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Page offset for address checking - TO_BE_COMPLETED
     output logic [11:0] page_offset_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Indicates if the page offset matches a store unit entry - TO_BE_COMPLETED
     input logic page_offset_matches_i,
     // Store buffer is empty - TO_BE_COMPLETED
     input logic store_buffer_empty_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Transaction ID of the committing instruction - TO_BE_COMPLETED
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Indicates if there are NI operations in the D$ write buffer - TO_BE_COMPLETED
     input logic dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {
