@@ -286,6 +286,31 @@ main:
   csrrsi zero, mscratch, 0
   csrrci zero, mscratch, 0
 
+  csrrc x14, mvendorid, x0
+  csrrs x14, mvendorid, x0
+  csrrci x14, mvendorid, 0x0
+  csrrsi x14, mvendorid, 0x0
+
+  csrrc x14, marchid, x0
+  csrrs x14, marchid, x0
+  csrrci x14, marchid, 0x0
+  csrrsi x14, marchid, 0x0
+
+  csrrc x14, mimpid, x0
+  csrrs x14, mimpid, x0
+  csrrci x14, mimpid, 0x0
+  csrrsi x14, mimpid, 0x0
+
+  csrrc x14, mhartid, x0
+  csrrs x14, mhartid, x0
+  csrrci x14, mhartid, 0x0
+  csrrsi x14, mhartid, 0x0
+
+  csrrc x14, mconfigptr, x0
+  csrrs x14, mconfigptr, x0
+  csrrci x14, mconfigptr, 0x0
+  csrrsi x14, mconfigptr, 0x0
+
   add zero, zero, zero
   add ra, ra, zero
   add sp, sp, zero
@@ -321,7 +346,7 @@ main:
 
   andi t6, zero, 0
   xori t6, zero, 0
-
+  
   #End of test
   j test_pass
 
