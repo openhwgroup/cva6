@@ -150,13 +150,13 @@ It inserts stalls until it can satisfy the current request. This means:
 
 .. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
-After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. In the same cycle, a read memory request is made to the D$ and the index of the virtual address is sent to D$ in the same time.
-To go further, the D$ has to acknowledge the read memory request.
-
-..
-   in the same cycle since it has a higher priority than a write request. 
-
-When a hit occurs in the MMU's TLB, the tag of the virtual address is sent to the D$. If the load request is in a non idempotent addresses region, it inserts a stall until the write buffer of the D$ is empty of non-idempotent request and the store buffer is empty. It stalls also when the incoming load instruction is not the instruction that will be commited. 
+After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. 
+In the same cycle, a read memory request is made to the D$ and the index field of the virtual address is sent to D$ in the same time (1).
+To go further, the D$ has to acknowledge the read memory request (2).
+When a hit occurs in the MMU's TLB, the tag field of the virtual address is sent to the D$ (3). 
+If the load request is in a non idempotent addresses region, it inserts a stall until the write buffer of the D$ is empty of non-idempotent request and the store buffer is empty. 
+It also stalls until the incoming load instruction is the next instruction to be committed. 
+When the data in the D$ can be read, the load instruction can be committed (4).
 
 .. figure:: ../images/schema_fsm_load_control.png
    :align: center
