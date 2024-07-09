@@ -49,9 +49,9 @@ module spike #(
 
     st_core_cntrl_cfg st;
     bit sim_finished;
+    string core_name = "cva6";
 
     initial begin
-        string core_name = "cva6";
         st = cva6pkg_to_core_cntrl_cfg(st);
         st.boot_addr_valid = 1'b1;
         st.boot_addr = 64'h0x10000;
