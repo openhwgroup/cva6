@@ -1833,23 +1833,25 @@ module csr_regfile
 
       // trap to supervisor mode
       if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-        if (CVA6Cfg.RVH && trap_to_v) begin
-          // update sstatus
-          vsstatus_d.sie = 1'b0;
-          vsstatus_d.spie = vsstatus_q.sie;
-          // this can either be user or supervisor mode
-          vsstatus_d.spp = priv_lvl_q[0];
-          // set cause
-          vscause_d = ex_i.cause[CVA6Cfg.XLEN-1] ? {ex_i.cause[CVA6Cfg.XLEN-1:2], 2'b01} : ex_i.cause;
-          // set epc
-          vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
-          // set vstval
-          vstval_d        = (ariane_pkg::ZERO_TVAL
-                                      && (ex_i.cause inside {
-                                        riscv::ILLEGAL_INSTR,
-                                        riscv::BREAKPOINT,
-                                        riscv::ENV_CALL_UMODE
-                                      } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+        if (CVA6Cfg.RVH) begin
+          if (trap_to_v) begin
+            // update sstatus
+            vsstatus_d.sie = 1'b0;
+            vsstatus_d.spie = vsstatus_q.sie;
+            // this can either be user or supervisor mode
+            vsstatus_d.spp = priv_lvl_q[0];
+            // set cause
+            vscause_d = ex_i.cause[CVA6Cfg.XLEN-1] ? {ex_i.cause[CVA6Cfg.XLEN-1:2], 2'b01} : ex_i.cause;
+            // set epc
+            vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+            // set vstval
+            vstval_d        = (ariane_pkg::ZERO_TVAL
+                                        && (ex_i.cause inside {
+                                          riscv::ILLEGAL_INSTR,
+                                          riscv::BREAKPOINT,
+                                          riscv::ENV_CALL_UMODE
+                                        } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+          end
         end else begin
           // update sstatus
           mstatus_d.sie = 1'b0;
@@ -2213,8 +2215,10 @@ module csr_regfile
 
   assign irq_ctrl_o.mie = mie_q;
   assign irq_ctrl_o.mip = mip_q;
-  assign irq_ctrl_o.sie = (CVA6Cfg.RVH && v_q) ? vsstatus_q.sie : mstatus_q.sie;
-  assign irq_ctrl_o.mideleg = mideleg_q;
+  if (CVA6Cfg.RVH) begin
+    assign irq_ctrl_o.sie = (v_q) ? vsstatus_q.sie : mstatus_q.sie;
+  end
+  assign irq_ctrl_o.mideleg = (CVA6Cfg.RVS) ? mideleg_q : '0;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
   assign irq_ctrl_o.global_enable = ~(CVA6Cfg.DebugEn & debug_mode_q)
       // interrupts are enabled during single step or we are not stepping
