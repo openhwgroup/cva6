@@ -13,8 +13,7 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
-module id_stage
-#(
+module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
     parameter type exception_t = logic,
@@ -155,47 +154,47 @@ module id_stage
         assign is_compressed_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
       end
       cvxif_compressed_if_driver #(
-        .CVA6Cfg(CVA6Cfg),
-        .x_compressed_req_t (x_compressed_req_t),
-        .x_compressed_resp_t (x_compressed_resp_t)
-      ) i_cvxif_compressed_if_driver_i(
-        .clk_i           ( clk_i             ),
-        .rst_ni          ( rst_ni            ),
-        .hart_id_i       ( hart_id_i         ),
-        .is_compressed_i ( is_compressed_cvxif ),
-        .is_illegal_i    ( is_illegal_cvxif    ),
-        .instruction_i   ( instruction_cvxif   ),
-        .is_compressed_o ( is_compressed_cmp ),
-        .is_illegal_o    ( is_illegal_cmp    ),
-        .instruction_o   ( instruction       ),
-        .stall_i         ( stall_macro_deco  ),
-        .stall_o         ( stall_instr_fetch ),
-        .compressed_ready_i (compressed_ready_i  ),
-        .compressed_resp_i  (compressed_resp_i  ),
-        .compressed_valid_o (compressed_valid_o ),
-        .compressed_req_o   (compressed_req_o   )
+          .CVA6Cfg(CVA6Cfg),
+          .x_compressed_req_t(x_compressed_req_t),
+          .x_compressed_resp_t(x_compressed_resp_t)
+      ) i_cvxif_compressed_if_driver_i (
+          .clk_i             (clk_i),
+          .rst_ni            (rst_ni),
+          .hart_id_i         (hart_id_i),
+          .is_compressed_i   (is_compressed_cvxif),
+          .is_illegal_i      (is_illegal_cvxif),
+          .instruction_i     (instruction_cvxif),
+          .is_compressed_o   (is_compressed_cmp),
+          .is_illegal_o      (is_illegal_cmp),
+          .instruction_o     (instruction),
+          .stall_i           (stall_macro_deco),
+          .stall_o           (stall_instr_fetch),
+          .compressed_ready_i(compressed_ready_i),
+          .compressed_resp_i (compressed_resp_i),
+          .compressed_valid_o(compressed_valid_o),
+          .compressed_req_o  (compressed_req_o)
       );
     end else begin
       cvxif_compressed_if_driver #(
-        .CVA6Cfg(CVA6Cfg),
-        .x_compressed_req_t (x_compressed_req_t),
-        .x_compressed_resp_t (x_compressed_resp_t)
-      ) i_cvxif_compressed_if_driver_i(
-        .clk_i           ( clk_i             ),
-        .rst_ni          ( rst_ni            ),
-        .hart_id_i       ( hart_id_i         ),
-        .is_compressed_i ( is_compressed     ),
-        .is_illegal_i    ( is_illegal        ),
-        .instruction_i   ( compressed_instr  ),
-        .is_compressed_o ( is_compressed_cmp ),
-        .is_illegal_o    ( is_illegal_cmp    ),
-        .instruction_o   ( instruction       ),
-        .stall_i         ( 1'b0              ),
-        .stall_o         ( stall_instr_fetch ),
-        .compressed_ready_i (compressed_ready_i  ),
-        .compressed_resp_i  (compressed_resp_i  ),
-        .compressed_valid_o (compressed_valid_o ),
-        .compressed_req_o   (compressed_req_o   )
+          .CVA6Cfg(CVA6Cfg),
+          .x_compressed_req_t(x_compressed_req_t),
+          .x_compressed_resp_t(x_compressed_resp_t)
+      ) i_cvxif_compressed_if_driver_i (
+          .clk_i             (clk_i),
+          .rst_ni            (rst_ni),
+          .hart_id_i         (hart_id_i),
+          .is_compressed_i   (is_compressed),
+          .is_illegal_i      (is_illegal),
+          .instruction_i     (compressed_instr),
+          .is_compressed_o   (is_compressed_cmp),
+          .is_illegal_o      (is_illegal_cmp),
+          .instruction_o     (instruction),
+          .stall_i           (1'b0),
+          .stall_o           (stall_instr_fetch),
+          .compressed_ready_i(compressed_ready_i),
+          .compressed_resp_i (compressed_resp_i),
+          .compressed_valid_o(compressed_valid_o),
+          .compressed_req_o  (compressed_req_o)
       );
       assign is_last_macro_instr_o = '0;
       assign is_double_rd_macro_instr_o = '0;
@@ -213,7 +212,7 @@ module id_stage
       assign compressed_valid_o = '0;
       assign compressed_req_o.instr = '0;
       assign compressed_req_o.hartid = hart_id_i;
-    end // TODO Add else to map x_compressed_if outputs to '0 ?
+    end  // TODO Add else to map x_compressed_if outputs to '0 ?
   end
 
   assign rvfi_is_compressed_o = is_compressed_cmp;

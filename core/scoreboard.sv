@@ -34,15 +34,15 @@ module scoreboard #(
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
     // Writeback Handling of CVXIF
-    input  logic x_transaction_accepted_i,
-    input  logic x_issue_writeback_i,
-    input  logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
+    input logic x_transaction_accepted_i,
+    input logic x_issue_writeback_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
     // rs1 operand address - issue_read_operands
-    input  logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
-    output logic [CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs1_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_o,
     // rs1 operand is valid - issue_read_operands
-    output logic [CVA6Cfg.NrIssuePorts-1:0]                                rs1_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] rs1_valid_o,
 
     // rs2 operand address - issue_read_operands
     input  logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
@@ -100,7 +100,7 @@ module scoreboard #(
     // Cvxif we for writeback - TO_BE_COMPLETED
     input logic x_we_i,
     // CVXIF destination register - ISSUE_STAGE
-    input logic[4:0] x_rd_i,
+    input logic [4:0] x_rd_i,
 
     // TO_BE_COMPLETED - RVFI
     output logic [ CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
@@ -510,8 +510,8 @@ module scoreboard #(
       commit_pointer_q <= '0;
       issue_pointer_q  <= '0;
     end else begin
-      issue_pointer_q  <= issue_pointer_n;
-      mem_q            <= mem_n;
+      issue_pointer_q <= issue_pointer_n;
+      mem_q <= mem_n;
       mem_q[x_id_i].sbe.rd <= (x_transaction_accepted_i && ~x_issue_writeback_i) ? 5'b0 : mem_n[x_id_i].sbe.rd;
       commit_pointer_q <= commit_pointer_n;
     end

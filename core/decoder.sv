@@ -1424,11 +1424,11 @@ module decoder
     end
     if (CVA6Cfg.CvxifEn) begin
       if (~ex_i.valid && (is_illegal_i || illegal_instr)) begin
-        instruction_o.fu       = CVXIF;
+        instruction_o.fu = CVXIF;
         instruction_o.rs1[4:0] = instr.r4type.rs1;
         instruction_o.rs2[4:0] = instr.r4type.rs2;
-        instruction_o.rd[4:0]  = instr.r4type.rd;
-        instruction_o.op       = ariane_pkg::OFFLOAD;
+        instruction_o.rd[4:0] = instr.r4type.rd;
+        instruction_o.op = ariane_pkg::OFFLOAD;
         imm_select             = instr.rtype.opcode == riscv::OpcodeMadd ||
                                  instr.rtype.opcode == riscv::OpcodeMsub ||
                                  instr.rtype.opcode == riscv::OpcodeNmadd ||

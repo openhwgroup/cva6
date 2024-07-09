@@ -16,38 +16,38 @@ module cvxif_fu
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type exception_t = logic,
-    parameter type x_result_t  = logic
+    parameter type x_result_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input  logic                                               clk_i,
+    input  logic                                   clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input  logic                                               rst_ni,
+    input  logic                                   rst_ni,
     // CVXIF instruction is valid - ISSUE_STAGE
-    input  logic                                               x_valid_i,
+    input  logic                                   x_valid_i,
     // Transaction ID - ISSUE_STAGE
-    input  logic [CVA6Cfg.TRANS_ID_BITS-1:0]                   x_trans_id_i,
+    input  logic       [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_i,
     // Instruction is illegal, determined during CVXIF issue transaction - ISSUE_STAGE
-    input  logic                                               x_illegal_i,
+    input  logic                                   x_illegal_i,
     // Offloaded instruction - ISSUE_STAGE
-    input  logic[31:0]                                         x_off_instr_i,
+    input  logic       [                     31:0] x_off_instr_i,
     // CVXIF is ready - ISSUE_STAGE
-    output logic                                               x_ready_o,
+    output logic                                   x_ready_o,
     // CVXIF result transaction ID - ISSUE_STAGE
-    output logic                   [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
+    output logic       [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
     // CVXIF exception - ISSUE_STAGE
-    output exception_t                                         x_exception_o,
+    output exception_t                             x_exception_o,
     // CVXIF FU result - ISSUE_STAGE
-    output logic                   [         CVA6Cfg.XLEN-1:0] x_result_o,
+    output logic       [         CVA6Cfg.XLEN-1:0] x_result_o,
     // CVXIF result valid - ISSUE_STAGE
-    output logic                                               x_valid_o,
+    output logic                                   x_valid_o,
     // CVXIF write enable - ISSUE_STAGE
-    output logic                                               x_we_o,
+    output logic                                   x_we_o,
     // CVXIF destination register - ISSUE_STAGE
-    output logic[4:0]                                          x_rd_o,
+    output logic       [                      4:0] x_rd_o,
     // CVXIF result interface
-    input  logic                                               result_valid_i,
-    input  x_result_t                                          result_i,
-    output logic                                               result_ready_o
+    input  logic                                   result_valid_i,
+    input  x_result_t                              result_i,
+    output logic                                   result_ready_o
 );
 
 
@@ -56,19 +56,20 @@ module cvxif_fu
 
   assign x_ready_o = 1'b1; // Readyness of cvxif_fu is determined in issue stage by CVXIF issue interface
   // Result signals
-  assign x_valid_o  = x_illegal_i ? 1'b1 : result_valid_i;
+  assign x_valid_o = x_illegal_i ? 1'b1 : result_valid_i;
   assign x_result_o = result_i.data;
   assign x_trans_id_o = x_illegal_i ? x_trans_id_i : result_i.id;
-  assign x_we_o       = result_i.we;
-  assign x_rd_o       = result_i.rd;
+  assign x_we_o = result_i.we;
+  assign x_rd_o = result_i.rd;
 
   // Handling of illegal instruction exception
   always_comb begin
-    x_exception_o = '0; // No exception in this interface
+    x_exception_o = '0;  // No exception in this interface
     if (x_illegal_i) begin
       x_exception_o.valid = '1;
       x_exception_o.cause = riscv::ILLEGAL_INSTR;
-      if (CVA6Cfg.TvalEn) x_exception_o.tval  = x_off_instr_i; // TODO Optimization : Set exception in IRO.
+      if (CVA6Cfg.TvalEn)
+        x_exception_o.tval = x_off_instr_i;  // TODO Optimization : Set exception in IRO.
     end
   end
 
