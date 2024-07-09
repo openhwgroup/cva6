@@ -858,6 +858,11 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32uf/src/fclass.S
 
+  - test: rv32uf-ldst
+    iterations: 0
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32uf/src/ldst.S
+
   - test: rv32uf-fmadd
     iterations: 0
     <<: *common_test_config
