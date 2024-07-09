@@ -20,13 +20,13 @@ module cvxif_compressed_if_driver
     // CVA6 Hart id
     input logic [CVA6Cfg.XLEN-1:0]                 hart_id_i,
 
-    input logic [ariane_pkg::SUPERSCALAR:0]        is_compressed_i,
-    input logic [ariane_pkg::SUPERSCALAR:0]        is_illegal_i,
-    input logic [ariane_pkg::SUPERSCALAR:0][31:0]  instruction_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0]        is_compressed_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0]        is_illegal_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0]  instruction_i,
 
-    output logic [ariane_pkg::SUPERSCALAR:0]       is_compressed_o,
-    output logic [ariane_pkg::SUPERSCALAR:0]       is_illegal_o,
-    output logic [ariane_pkg::SUPERSCALAR:0][31:0] instruction_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0]       is_illegal_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction_o,
     input  logic                                   stall_i,
     output logic                                   stall_o,
     // CVXIF Compressed interface
@@ -54,7 +54,7 @@ module cvxif_compressed_if_driver
             if (~stall_i) begin
                 // Propagate stall from macro decoder or wait for compressed ready if compressed transaction is happening.
                 // Stall if both instruction are illegal
-                stall_o = (compressed_valid_o && ~compressed_ready_i) || (ariane_pkg::SUPERSCALAR && is_illegal_i[1]);
+                stall_o = (compressed_valid_o && ~compressed_ready_i) || (CVA6Cfg.SuperscalarEn && is_illegal_i[1]);
             end
         end
         if (~is_illegal_i[0] && is_illegal_i[1]) begin // 2nd instruction is illegal
