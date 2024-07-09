@@ -186,6 +186,7 @@ export SPIKE_PATH = $(CORE_V_VERIF)/vendor/riscv/riscv-isa-sim/
 
 COMMON_COMP_UVM_FLAGS = \
 	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
+	  +core_name=$(target) \
 	  $(if $(spike-tandem), +define+SPIKE_TANDEM=1)
 
 COMMON_PLUS_ARGS = \
@@ -429,7 +430,7 @@ xrun-testharness:
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
-	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)) batch-mode=1 elf_file=$(elf) \
+	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
