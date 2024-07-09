@@ -23,7 +23,7 @@
 *******************************************************************************
 */
 
-#define CV_VP_REGISTER_BASE          0x00800000
+#define CV_VP_REGISTER_BASE          0x80800000
 
 #define CV_VP_VIRTUAL_PRINTER_OFFSET        0x00000000
 #define CV_VP_RANDOM_NUM_OFFSET             0x00000040

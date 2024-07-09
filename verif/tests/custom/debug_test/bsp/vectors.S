@@ -35,7 +35,7 @@ vector_table:
 	j __no_irq_handler
 	j __no_irq_handler
 	j __no_irq_handler
-	j nmi_handler
+	j __no_irq_handler
 	j m_fast0_irq_handler
 	j m_fast1_irq_handler
 	j m_fast2_irq_handler

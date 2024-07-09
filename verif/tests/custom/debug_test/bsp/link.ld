@@ -22,8 +22,8 @@ MEMORY
        allowing initialized sections to be placed there). Infact we dump all
        sections to ram. */
 
-  ram (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x400000
-  dbg (rwxai) : ORIGIN = 0x1A110800, LENGTH = 0x1000
+  ram (rwxai) : ORIGIN = 0x80000000, LENGTH = 0x400000
+  dbg (rwxai) : ORIGIN = 0x800, LENGTH = 0x1000
 }
 
 SECTIONS
@@ -35,7 +35,7 @@ SECTIONS
     PROVIDE(_debugger_start = .);
     KEEP(*(.debugger));
   } >dbg
-  .debugger_exception (0x1A111000):
+  .debugger_exception (0x1000):
   {
     PROVIDE(_debugger_exception = .);
     KEEP(*(.debugger_exception));
@@ -46,21 +46,24 @@ SECTIONS
    PROVIDE(__debugger_stack_start = ALIGN(ORIGIN(dbg) + LENGTH(dbg) - 15, 16));
   } >dbg
 
-  /* CORE-V: we want a fixed entry point */
-  PROVIDE(__boot_address = 0x80);
-
-  /* CORE-V: interrupt vectors */
-  .vectors (ORIGIN(ram)):
-  {
-    PROVIDE(__vector_start = .);
-    KEEP(*(.vectors));
-  } >ram
 
   /* CORE-V: crt0 init code */
-  .init (__boot_address):
+  .init (ORIGIN(ram)):
   {
     KEEP (*(SORT_NONE(.init)))
     KEEP (*(.text.start))
+  } >ram
+
+  . = ALIGN(0x1000);
+  .tohost : { *(.tohost) }
+
+  /* CORE-V: interrupt vectors */
+  . = ALIGN(0x1000);
+  .vectors :
+  {
+    . = ALIGN(0x1000);
+    PROVIDE(__vector_start = .);
+    KEEP(*(.vectors));
   } >ram
 
 
