@@ -26,6 +26,7 @@
    :header: "Configuration", "Implementation"
 
    "CV32A60X", "Implemented extension"
+   "CV64A6_MMU", "Implemented extension"
 
 **Note**: Zcmp is primarily targeted at embedded class CPUs due to implementation complexity. Additionally, it is not compatible with architecture class profiles.  
 

@@ -108,6 +108,29 @@ These extensions are available in CV32A60X:
    "RVZifencei - Instruction-Fetch Fence",                                  "✔"
    "RVZicond - Integer Conditional Operations(Ratification pending)",       ""
 
+CV64A6_MMU extensions
+~~~~~~~~~~~~~~~~~~~
+
+These extensions are available in CV64A6_MMU:
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Extension", "Available in CV64A6_MMU"
+
+   "RV32I - Base Integer Instruction Set",                                  "✔"
+   "RV32A - Atomic Instructions",                                           ""
+   "RV32Zb* - Bit-Manipulation (Zba, Zbb, Zbc, Zbs)",                       "✔"
+   "RV32C - Compressed Instructions ",                                      "✔"
+   "RV32Zcb - Code Size Reduction",                                         "✔"
+   "RVZcmp - Code Size Reduction",                                          "✔"
+   "RV32D - Double precision floating-point",                               ""
+   "RV32F - Single precision floating-point",                               ""
+   "RV32M - Integer Multiply/Divide",                                       "✔"
+   "RVZicount - Performance Counters",                                      ""
+   "RVZicsr - Control and Status Register Instructions",                    "✔"
+   "RVZifencei - Instruction-Fetch Fence",                                  "✔"
+   "RVZicond - Integer Conditional Operations(Ratification pending)",       ""
 
 RISC-V Privileges
 -----------------
@@ -158,6 +181,19 @@ These privilege modes are available in CV32A60X:
    "S - Supervior",                 ""
    "U - User",                      ""
 
+CV64A6_MMU privilege modes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These privilege modes are available in CV64A6_MMU:
+
+.. csv-table::
+   :widths: auto
+   :align: left
+   :header: "Privileges", "Available in CV64A6_MMU"
+
+   "M - Machine",                   "✔"
+   "S - Supervior",                 "✔"
+   "U - User",                      "✔"
 
 RISC-V Virtual Memory
 ---------------------
@@ -209,6 +245,10 @@ CV32A60X virtual memory
 
 CV32A60X integrates no MMU and only supports the **Bare** addressing mode.
 
+CV64A6_MMU virtual memory
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+CV64A6_MMU integrates an MMU and supports both the **Bare** and **Sv39** addressing modes.
 
 Memory Alignment
 ----------------

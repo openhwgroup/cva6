@@ -27,6 +27,7 @@
 
    "CV32A60AX", "Performance counters included"
    "CV32A60X", "No performance counters"
+   "CV64A6_MMU", "No performance counters"
 
 CSR performance counters control
 ================================

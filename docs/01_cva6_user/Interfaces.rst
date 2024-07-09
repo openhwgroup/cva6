@@ -34,6 +34,7 @@ The AXI interface is described in a separate chapter.
 
    "CV32A60AX", "AXI implemented"
    "CV32A60X", "AXI implemented"
+   "CV64A6_MMU", "AXI implemented"
 
 Debug Interface
 ---------------
@@ -52,6 +53,7 @@ Debug Interface
 
    "CV32A60AX", "Debug interface implemented"
    "CV32A60X", "No debug interface"
+   "CV64A6_MMU", "Debug interface implemented"
 
 Interrupt Interface
 -------------------
@@ -77,3 +79,4 @@ For more information, refer to OpenPiton documents.
 
    "CV32A60AX", "No TRI interface"
    "CV32A60X", "No TRI interface"
+   "CV64A6_MMU", "No TRI interface"

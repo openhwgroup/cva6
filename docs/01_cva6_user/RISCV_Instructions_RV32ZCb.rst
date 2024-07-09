@@ -27,6 +27,7 @@
 
    "CV32A60AX", "Implemented extension"
    "CV32A60X", "Implemented extension"
+   "CV64A6_MMU", "Implemented extension"
 
 **Note**: This chapter is specific to CV32A6 configurations. CV64A6 configurations implement as an option RV64Zcb, that includes one additional instruction.
    

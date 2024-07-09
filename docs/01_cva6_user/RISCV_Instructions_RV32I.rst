@@ -29,6 +29,7 @@ This chapter is applicable to all CV32A6 configurations.
 
    "CV32A60AX", "Implemented extension"
    "CV32A60X", "Implemented extension"
+   "CV64A6_MMU", "Implemented extension"
 
 **Note**: CV64A6 implements RV64I that includes additional instructions.
 
