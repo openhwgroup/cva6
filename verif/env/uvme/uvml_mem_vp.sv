@@ -23,6 +23,8 @@ typedef class uvme_cva6_cntxt_c;
  * Memory model
  */
 class uvml_mem_vp_c#(int XLEN=`UVML_MEM_XLEN) extends uvml_mem_c#(XLEN);
+
+  int vp_log;
   uvme_cva6_cntxt_c  cntxt;
 
   `uvm_object_param_utils_begin(uvml_mem_vp_c#(XLEN));
@@ -72,6 +74,7 @@ endclass : uvml_mem_vp_c
 function uvml_mem_vp_c::new(string name="uvml_mem_vp_c");
 
   super.new(name);
+  vp_log = $fopen("vp.log", "w");
 
 endfunction : new
 
@@ -104,7 +107,8 @@ function void uvml_mem_vp_c::post_write(bit[XLEN-1:0] addr, reg[7:0] data);
     wval=data;
     `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'virtual_printer', wval=0x%0x", wval), UVM_HIGH)
     // Allow $write as this acts as a UART/serial printer
-    $write("%c", wval);
+    // $write("%c", wval);
+    $fwrite(vp_log, $sformatf("%c", wval));
   end
   else if ( addr==CV_VP_STATUS_FLAGS_BASE ) begin
     wval = read_word(CV_VP_STATUS_FLAGS_BASE);
