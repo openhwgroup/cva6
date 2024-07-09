@@ -30,7 +30,6 @@ class uvme_cva6_cov_model_c extends uvm_component;
    uvme_cva6_cntxt_c  cntxt;
 
    // Components
-   uvme_cvxif_covg_c                 cvxif_covg;
    uvme_isa_cov_model_c              isa_covg;
    uvme_cva6_config_covg_c           config_covg;
    uvme_illegal_instr_cov_model_c    illegal_covg;
@@ -100,12 +99,6 @@ function void uvme_cva6_cov_model_c::build_phase(uvm_phase phase);
    void'(uvm_config_db#(uvme_cva6_cntxt_c)::get(this, "", "cntxt", cntxt));
    if (!cntxt) begin
       `uvm_fatal("CNTXT", "Context handle is null")
-   end
-
-   if (cfg.cvxif_cfg.cov_model_enabled) begin
-      cvxif_covg = uvme_cvxif_covg_c::type_id::create("cvxif_covg", this);
-      uvm_config_db#(uvme_cva6_cfg_c)::set(this, "cvxif_covg", "cfg", cfg);
-      uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "cvxif_covg", "cntxt", cntxt);
    end
 
    if (cfg.isacov_cfg.cov_model_enabled) begin

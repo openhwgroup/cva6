@@ -56,8 +56,6 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   output logic [31:0]                  tb_exit_o,
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   output rvfi_csr_t                    rvfi_csr_o,
-  input  cvxif_pkg::cvxif_resp_t       cvxif_resp,
-  output cvxif_pkg::cvxif_req_t        cvxif_req,
   input  logic [2:0]                   irq_i,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
@@ -91,10 +89,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .time_irq_i           ( irq_i[2]                     ),
     .debug_req_i          ( default_inputs_vif.debug_req ),
     .rvfi_probes_o        ( rvfi_probes                  ),
-    .cvxif_req_o          ( cvxif_req                    ),
-    .cvxif_resp_i         ( cvxif_resp                   ),
-    .noc_req_o            ( axi_ariane_req               ),
-    .noc_resp_i           ( axi_ariane_resp              )
+    .cvxif_req_o          ( '0                 ),
+    .cvxif_resp_i         ( '0                ),
+    .noc_req_o            ( axi_ariane_req            ),
+    .noc_resp_i           ( axi_ariane_resp           )
   );
 
   //----------------------------------------------------------------------------

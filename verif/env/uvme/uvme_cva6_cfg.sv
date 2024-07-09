@@ -39,7 +39,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
-   rand uvma_cvxif_cfg_c      cvxif_cfg;
    rand uvma_axi_cfg_c        axi_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
@@ -75,8 +74,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
 
-      `uvm_field_object(cvxif_cfg, UVM_DEFAULT)
-
       `uvm_field_object(axi_cfg, UVM_DEFAULT)
 
       `uvm_field_object(rvfi_cfg,    UVM_DEFAULT)
@@ -97,19 +94,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
-   constraint cvxif_feature { //CV32A65X do not support dual read & write also the memory interface
-      cvxif_cfg.dual_read_write_support_x  == 0;
-      cvxif_cfg.load_store_support_x       == 0;
-      cvxif_cfg.seq_cus_instr_x2_enabled   == 1;
-      cvxif_cfg.reg_cus_crosses_enabled    == 0;
-      cvxif_cfg.mode_s_supported           == CVA6Cfg.RVS;
-      cvxif_cfg.mode_u_supported           == CVA6Cfg.RVU;
-   }
-
    constraint cva6_riscv_cons {
       xlen == CVA6Cfg.XLEN;
       ilen == 32;
-
       ext_i_supported        == 1;
       ext_a_supported        == CVA6Cfg.RVA;
       ext_m_supported        == 1;
@@ -227,7 +214,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
 
       if (cov_model_enabled) {
-         cvxif_cfg.cov_model_enabled     == 1;
          isacov_cfg.cov_model_enabled    == 1;
          axi_cfg.cov_model_enabled       == 1;
          interrupt_cfg.cov_model_enabled == 1;
@@ -258,7 +244,6 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    super.new(name);
 
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
-   cvxif_cfg    = uvma_cvxif_cfg_c::type_id::create("cvxif_cfg");
    axi_cfg      = uvma_axi_cfg_c::type_id::create("axi_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
