@@ -27,10 +27,10 @@ _start:
 1:auipc gp, %pcrel_hi(__global_pointer$)
   addi  gp, gp, %pcrel_lo(1b)
 
-/* initialize vector table pointer */
-1:auipc a0, %pcrel_hi(__jvt_base$)
-  addi  a0, a0, %pcrel_lo(1b)
-  csrw  jvt, a0
+// /* initialize vector table pointer */
+// 1:auipc a0, %pcrel_hi(__jvt_base$)
+//   addi  a0, a0, %pcrel_lo(1b)
+//   csrw  jvt, a0
 .option pop
 
 /* initialize stack pointer */
