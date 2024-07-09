@@ -58,7 +58,7 @@ module spike #(
 
         if ($test$plusargs("core_name")) begin
           $value$plusargs("core_name=%s", core_name);
-          `uvm_info("SPIKE", $sformatf("### core_name = '%s'", core_name), UVM_INFO);
+          `uvm_info("SPIKE", $sformatf("### core_name = '%s'", core_name), UVM_LOW);
         end
 
         rvfi_initialize(st);
