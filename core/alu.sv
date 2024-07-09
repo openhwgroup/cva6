@@ -150,9 +150,9 @@ module alu
 
   assign shift_amt = fu_data_i.operand_b;
 
-  assign shift_left = (fu_data_i.operation == SLL) | (fu_data_i.operation == SLLW);
+  assign shift_left = (fu_data_i.operation == SLL) | (CVA6Cfg.IS_XLEN64 && fu_data_i.operation == SLLW);
 
-  assign shift_arithmetic = (fu_data_i.operation == SRA) | (fu_data_i.operation == SRAW);
+  assign shift_arithmetic = (fu_data_i.operation == SRA) | (VA6Cfg.IS_XLEN64 && fu_data_i.operation == SRAW);
 
   // right shifts, we let the synthesizer optimize this
   logic [CVA6Cfg.XLEN:0] shift_op_a_64;
