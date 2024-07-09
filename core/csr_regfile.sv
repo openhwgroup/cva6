@@ -2217,6 +2217,8 @@ module csr_regfile
   assign irq_ctrl_o.mip = mip_q;
   if (CVA6Cfg.RVH) begin
     assign irq_ctrl_o.sie = (v_q) ? vsstatus_q.sie : mstatus_q.sie;
+  end else begin
+    assign irq_ctrl_o.sie = mstatus_q.sie;
   end
   assign irq_ctrl_o.mideleg = (CVA6Cfg.RVS) ? mideleg_q : '0;
   assign irq_ctrl_o.hideleg = (CVA6Cfg.RVH) ? hideleg_q : '0;
