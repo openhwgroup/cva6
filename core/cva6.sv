@@ -13,6 +13,7 @@
 // Description: CVA6 Top-level module
 
 `include "rvfi_types.svh"
+`include "cvxif_types.svh"
 
 module cva6
   import ariane_pkg::*;
@@ -272,8 +273,20 @@ module cva6
     //
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0,
-    parameter type cvxif_req_t = cvxif_pkg::cvxif_req_t,
-    parameter type cvxif_resp_t = cvxif_pkg::cvxif_resp_t
+    // CVXFI Types
+    parameter type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
+    parameter type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
+    parameter type id_t                = `ID_T(CVA6Cfg),
+    parameter type hartid_t            = `HARTID_T(CVA6Cfg),
+    parameter type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
+    parameter type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
+    parameter type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+    parameter type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
+    parameter type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
+    parameter type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
+    parameter type x_result_t          = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
+    parameter type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+    parameter type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t)
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -343,8 +356,27 @@ module cva6
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
 
   localparam NumPorts = 4;
-  cvxif_pkg::cvxif_req_t cvxif_req;
-  cvxif_pkg::cvxif_resp_t cvxif_resp;
+
+  // CVXIF
+  cvxif_req_t cvxif_req;
+  // CVXIF OUTPUTS
+  logic              x_compressed_valid;
+  x_compressed_req_t x_compressed_req;
+  logic              x_issue_valid;
+  x_issue_req_t      x_issue_req;
+  logic              x_register_valid;
+  x_register_t       x_register;
+  logic              x_commit_valid;
+  x_commit_t         x_commit;
+  logic              x_result_ready;
+  // CVXIF INPUTS
+  logic               x_compressed_ready;
+  x_compressed_resp_t x_compressed_resp;
+  logic               x_issue_ready;
+  x_issue_resp_t      x_issue_resp;
+  logic               x_register_ready;
+  logic               x_result_valid;
+  x_result_t          x_result;
 
   // --------------
   // PCGEN <-> CSR
@@ -437,9 +469,11 @@ module cva6
   logic x_valid_ex_id;
   exception_t x_exception_ex_id;
   logic x_we_ex_id;
+  logic [4:0] x_rd_ex_id;
   logic [CVA6Cfg.NrIssuePorts-1:0] x_issue_valid_id_ex;
   logic x_issue_ready_ex_id;
   logic [31:0] x_off_instr_id_ex;
+  logic x_transaction_rejected;
   // --------------
   // EX <-> COMMIT
   // --------------
@@ -633,7 +667,9 @@ module cva6
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS)
+      .INTERRUPTS(INTERRUPTS),
+      .x_compressed_req_t (x_compressed_req_t),
+      .x_compressed_resp_t (x_compressed_resp_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -665,7 +701,12 @@ module cva6
       .tw_i        (tw_csr_id),
       .vtw_i       (vtw_csr_id),
       .tsr_i       (tsr_csr_id),
-      .hu_i        (hu)
+      .hu_i        (hu),
+      .hart_id_i   (hart_id_i),
+      .compressed_ready_i (x_compressed_ready),
+      .compressed_resp_i  (x_compressed_resp),
+      .compressed_valid_o (x_compressed_valid),
+      .compressed_req_o   (x_compressed_req)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -693,16 +734,39 @@ module cva6
   assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
   assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
 
+  always_comb begin : gen_cvxif_input_assignement
+      x_compressed_ready           = cvxif_resp_i.compressed_ready;
+      x_compressed_resp            = cvxif_resp_i.compressed_resp;
+      x_issue_ready                = cvxif_resp_i.issue_ready;
+      x_issue_resp                 = cvxif_resp_i.issue_resp;
+      x_register_ready             = cvxif_resp_i.register_ready;
+      x_result_valid               = cvxif_resp_i.result_valid;
+      x_result                     = cvxif_resp_i.result;
+  end
   if (CVA6Cfg.CvxifEn) begin
+     always_comb begin : gen_cvxif_output_assignement
+        cvxif_req.compressed_valid = x_compressed_valid;
+        cvxif_req.compressed_req   = x_compressed_req;
+        cvxif_req.issue_valid      = x_issue_valid;
+        cvxif_req.issue_req        = x_issue_req;
+        cvxif_req.register_valid   = x_register_valid;
+        cvxif_req.register         = x_register;
+        cvxif_req.commit_valid     = x_commit_valid;
+        cvxif_req.commit           = x_commit;
+        cvxif_req.result_ready     = x_result_ready;
+    end
     assign trans_id_ex_id[X_WB] = x_trans_id_ex_id;
     assign wbdata_ex_id[X_WB]   = x_result_ex_id;
     assign ex_ex_ex_id[X_WB]    = x_exception_ex_id;
     assign wt_valid_ex_id[X_WB] = x_valid_ex_id;
   end else if (CVA6Cfg.EnableAccelerator) begin
+    assign cvxif_req = '0;
     assign trans_id_ex_id[ACC_WB] = acc_trans_id_ex_id;
     assign wbdata_ex_id[ACC_WB]   = acc_result_ex_id;
     assign ex_ex_ex_id[ACC_WB]    = acc_exception_ex_id;
     assign wt_valid_ex_id[ACC_WB] = acc_valid_ex_id;
+  end else begin
+    assign cvxif_req = '0;
   end
 
   if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
@@ -718,7 +782,11 @@ module cva6
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
-      .scoreboard_entry_t(scoreboard_entry_t)
+      .scoreboard_entry_t(scoreboard_entry_t),
+      .x_issue_req_t (x_issue_req_t),
+      .x_issue_resp_t (x_issue_resp_t),
+      .x_register_t (x_register_t),
+      .x_commit_t (x_commit_t)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -762,9 +830,20 @@ module cva6
       // CSR
       .csr_valid_o           (csr_valid_id_ex),
       // CVXIF
-      .x_issue_valid_o       (x_issue_valid_id_ex),
-      .x_issue_ready_i       (x_issue_ready_ex_id),
+      .xfu_valid_o           (x_issue_valid_id_ex),
+      .xfu_ready_i           (x_issue_ready_ex_id),
       .x_off_instr_o         (x_off_instr_id_ex),
+      .hart_id_i             (hart_id_i),
+      .x_issue_ready_i       (x_issue_ready),
+      .x_issue_resp_i        (x_issue_resp),
+      .x_issue_valid_o       (x_issue_valid),
+      .x_issue_req_o         (x_issue_req),
+      .x_register_ready_i    (x_register_ready),
+      .x_register_valid_o    (x_register_valid),
+      .x_register_o          (x_register),
+      .x_commit_valid_o      (x_commit_valid),
+      .x_commit_o            (x_commit),
+      .x_transaction_rejected_o (x_transaction_rejected),
       // Accelerator
       .issue_instr_o         (issue_instr_id_acc),
       .issue_instr_hs_o      (issue_instr_hs_id_acc),
@@ -775,6 +854,7 @@ module cva6
       .ex_ex_i               (ex_ex_ex_id),
       .wt_valid_i            (wt_valid_ex_id),
       .x_we_i                (x_we_ex_id),
+      .x_rd_i                (x_rd_ex_id),
 
       .waddr_i              (waddr_commit_id),
       .wdata_i              (wdata_commit_id),
@@ -806,7 +886,8 @@ module cva6
       .icache_arsp_t(icache_arsp_t),
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .x_result_t(x_result_t)
   ) ex_stage_i (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -877,13 +958,16 @@ module cva6
       .x_valid_i               (x_issue_valid_id_ex),
       .x_ready_o               (x_issue_ready_ex_id),
       .x_off_instr_i           (x_off_instr_id_ex),
+      .x_transaction_rejected_i (x_transaction_rejected),
       .x_trans_id_o            (x_trans_id_ex_id),
       .x_exception_o           (x_exception_ex_id),
       .x_result_o              (x_result_ex_id),
       .x_valid_o               (x_valid_ex_id),
       .x_we_o                  (x_we_ex_id),
-      .cvxif_req_o             (cvxif_req),
-      .cvxif_resp_i            (cvxif_resp),
+      .x_rd_o                  (x_rd_ex_id),
+      .x_result_valid_i        (x_result_valid),
+      .x_result_i              (x_result),
+      .x_result_ready_o        (x_result_ready),
       // Accelerator
       .acc_valid_i             (acc_valid_acc_ex),
       // Performance counters
@@ -1432,7 +1516,6 @@ module cva6
 
     // Feed through cvxif
     assign cvxif_req_o                = cvxif_req;
-    assign cvxif_resp                 = cvxif_resp_i;
   end : gen_no_accelerator
 
   // -------------------

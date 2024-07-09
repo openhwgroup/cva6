@@ -33,7 +33,10 @@ module scoreboard #(
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_gpr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
-
+    // Writeback Handling of CVXIF
+    input  logic x_transaction_accepted_i,
+    input  logic x_issue_writeback_i,
+    input  logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
     // rs1 operand address - issue_read_operands
     input  logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
@@ -96,6 +99,8 @@ module scoreboard #(
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // Cvxif we for writeback - TO_BE_COMPLETED
     input logic x_we_i,
+    // CVXIF destination register - ISSUE_STAGE
+    input logic[4:0] x_rd_i,
 
     // TO_BE_COMPLETED - RVFI
     output logic [ CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
@@ -225,8 +230,9 @@ module scoreboard #(
         if (CVA6Cfg.DebugEn) begin
           mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
         end
-        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
-          mem_n[trans_id_i[i]].sbe.rd = 5'b0;
+        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF) begin
+          if (x_we_i) mem_n[trans_id_i[i]].sbe.rd = x_rd_i;
+          else mem_n[trans_id_i[i]].sbe.rd = 5'b0;
         end
         // write the exception back if it is valid
         if (ex_i[i].valid) mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
@@ -506,6 +512,7 @@ module scoreboard #(
     end else begin
       issue_pointer_q  <= issue_pointer_n;
       mem_q            <= mem_n;
+      mem_q[x_id_i].sbe.rd <= (x_transaction_accepted_i && ~x_issue_writeback_i) ? 5'b0 : mem_n[x_id_i].sbe.rd;
       commit_pointer_q <= commit_pointer_n;
     end
   end

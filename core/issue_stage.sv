@@ -22,7 +22,11 @@ module issue_stage
     parameter type branchpredict_sbe_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
-    parameter type scoreboard_entry_t = logic
+    parameter type scoreboard_entry_t = logic,
+    parameter type x_issue_req_t = logic,
+    parameter type x_issue_resp_t = logic,
+    parameter type x_register_t = logic,
+    parameter type x_commit_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -87,11 +91,27 @@ module issue_stage
     // CSR is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
     // CVXIF FU is valid - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0] x_issue_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] xfu_valid_o,
     // CVXIF is FU ready - EX_STAGE
-    input logic x_issue_ready_i,
+    input logic xfu_ready_i,
     // CVXIF offloader instruction value - EX_STAGE
     output logic [31:0] x_off_instr_o,
+    // CVA6 Hart ID - SUBSYSTEM
+    input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
+    // CVXIF Issue interface
+    input  logic x_issue_ready_i,
+    input  x_issue_resp_t x_issue_resp_i,
+    output logic x_issue_valid_o,
+    output x_issue_req_t x_issue_req_o,
+    // CVXIF Register interface
+    input  logic x_register_ready_i,
+    output logic x_register_valid_o,
+    output x_register_t x_register_o,
+    // CVXIF Commit interface
+    output logic x_commit_valid_o,
+    output x_commit_t x_commit_o,
+    // CVXIF Transaction rejected -> instruction is illegal - EX_STAGE
+    output logic x_transaction_rejected_o,
     // Issue scoreboard entry - ACC_DISPATCHER
     output scoreboard_entry_t issue_instr_o,
     // TO_BE_COMPLETED - ACC_DISPATCHER
@@ -108,6 +128,8 @@ module issue_stage
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // CVXIF write enable - EX_STAGE
     input logic x_we_i,
+    // CVXIF destination register - ISSUE_STAGE
+    input logic[4:0] x_rd_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - EX_STAGE
@@ -165,6 +187,9 @@ module issue_stage
   assign issue_instr_o    = issue_instr_sb_iro[0];
   assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];
 
+  logic x_transaction_accepted_iro_sb, x_issue_writeback_iro_sb;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_iro_sb;
+
 
   // ---------------------------------------------------------
   // 2. Manage instructions in a scoreboard
@@ -179,6 +204,9 @@ module issue_stage
       .sb_full_o       (sb_full_o),
       .rd_clobber_gpr_o(rd_clobber_gpr_sb_iro),
       .rd_clobber_fpr_o(rd_clobber_fpr_sb_iro),
+      .x_transaction_accepted_i(x_transaction_accepted_iro_sb),
+      .x_issue_writeback_i     (x_issue_writeback_iro_sb),
+      .x_id_i                  (x_id_iro_sb),
       .rs1_i           (rs1_iro_sb),
       .rs1_o           (rs1_sb_iro),
       .rs1_valid_o     (rs1_valid_sb_iro),
@@ -212,7 +240,11 @@ module issue_stage
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .rs3_len_t(rs3_len_t)
+      .rs3_len_t(rs3_len_t),
+      .x_issue_req_t (x_issue_req_t),
+      .x_issue_resp_t (x_issue_resp_t),
+      .x_register_t (x_register_t),
+      .x_commit_t (x_commit_t)
   ) i_issue_read_operands (
       .flush_i            (flush_unissued_instr_i),
       .issue_instr_i      (issue_instr_sb_iro),
@@ -236,8 +268,22 @@ module issue_stage
       .alu2_valid_o       (alu2_valid_o),
       .branch_valid_o     (branch_valid_o),
       .csr_valid_o        (csr_valid_o),
-      .cvxif_valid_o      (x_issue_valid_o),
-      .cvxif_ready_i      (x_issue_ready_i),
+      .cvxif_valid_o      (xfu_valid_o),
+      .cvxif_ready_i      (xfu_ready_i),
+      .hart_id_i          (hart_id_i),
+      .x_issue_ready_i    (x_issue_ready_i),
+      .x_issue_resp_i     (x_issue_resp_i),
+      .x_issue_valid_o    (x_issue_valid_o),
+      .x_issue_req_o      (x_issue_req_o),
+      .x_register_ready_i (x_register_ready_i),
+      .x_register_valid_o (x_register_valid_o),
+      .x_register_o       (x_register_o),
+      .x_commit_valid_o   (x_commit_valid_o),
+      .x_commit_o         (x_commit_o),
+      .x_transaction_accepted_o (x_transaction_accepted_iro_sb),
+      .x_transaction_rejected_o (x_transaction_rejected_o),
+      .x_issue_writeback_o      (x_issue_writeback_iro_sb),
+      .x_id_o                   (x_id_iro_sb),
       .cvxif_off_instr_o  (x_off_instr_o),
       .mult_valid_o       (mult_valid_o),
       .rs1_forwarding_o   (rs1_forwarding_xlen),

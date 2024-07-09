@@ -337,6 +337,17 @@ package config_pkg;
     vm_mode_t MODE_SV;
     int unsigned SV;
     int unsigned SVX;
+
+    int unsigned X_NUM_RS;
+    int unsigned X_ID_WIDTH;
+    int unsigned X_RFR_WIDTH;
+    int unsigned X_RFW_WIDTH;
+    int unsigned X_NUM_HARTS;
+    int unsigned X_HARTID_WIDTH;
+    int unsigned X_DUALREAD;
+    int unsigned X_DUALWRITE;
+    int unsigned X_ISSUE_REGISTER_SPLIT;
+
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
