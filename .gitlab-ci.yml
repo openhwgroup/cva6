@@ -476,7 +476,6 @@ simu-gate:
     - git -C verif/core-v-verif fetch --unshallow
     - mkdir -p tools
     - mv artifacts/tools/spike tools
-    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
