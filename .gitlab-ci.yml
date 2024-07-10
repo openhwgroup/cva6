@@ -378,12 +378,8 @@ supervisor-tests:
     DASHBOARD_SORT_INDEX: 4
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    DV_TESTLISTS: "../tests/testlist_rv32si-$DV_TARGET.yaml"
     DV_TARGET: cv32a6_imac_sv32
-  script:
-    - source verif/sim/setup-env.sh
-    - cd verif/sim
-    - python3 cva6.py --testlist=$DV_TESTLISTS --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS
+  script: bash verif/regress/dv-supervisor-tests.sh
 
 .verif_test:
   extends:
