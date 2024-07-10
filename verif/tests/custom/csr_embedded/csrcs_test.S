@@ -5888,4 +5888,140 @@ csrcs:
     #MHPMEVENT20 read value
     csrr x14, 0x334
 
+    ##########################
+    #PMPCFG4-PMPCFG15 testing clear value
+    ##########################
+    csrrc x14, 0x3a4, x3
+    csrrc x14, 0x3a5, x3
+    csrrc x14, 0x3a6, x3
+    csrrc x14, 0x3a7, x3
+    csrrc x14, 0x3a8, x3
+    csrrc x14, 0x3a9, x3
+    csrrc x14, 0x3aa, x3
+    csrrc x14, 0x3ab, x3
+    csrrc x14, 0x3ac, x3
+    csrrc x14, 0x3ad, x3
+    csrrc x14, 0x3ae, x3
+    csrrc x14, 0x3af, x3
+
+    ##########################
+    #PMPADDR16-PMPADDR63 testing clear value
+    ##########################
+    csrrc x14, 0x3c0, x3
+    csrrc x14, 0x3c1, x3
+    csrrc x14, 0x3c2, x3
+    csrrc x14, 0x3c3, x3
+    csrrc x14, 0x3c4, x3
+    csrrc x14, 0x3c5, x3
+    csrrc x14, 0x3c6, x3
+    csrrc x14, 0x3c7, x3
+    csrrc x14, 0x3c8, x3
+    csrrc x14, 0x3c9, x3
+    csrrc x14, 0x3ca, x3
+    csrrc x14, 0x3cb, x3
+    csrrc x14, 0x3cc, x3
+    csrrc x14, 0x3cd, x3
+    csrrc x14, 0x3ce, x3
+    csrrc x14, 0x3cf, x3
+    csrrc x14, 0x3d0, x3
+    csrrc x14, 0x3d1, x3
+    csrrc x14, 0x3d2, x3
+    csrrc x14, 0x3d3, x3
+    csrrc x14, 0x3d4, x3
+    csrrc x14, 0x3d5, x3
+    csrrc x14, 0x3d6, x3
+    csrrc x14, 0x3d7, x3
+    csrrc x14, 0x3d8, x3
+    csrrc x14, 0x3d9, x3
+    csrrc x14, 0x3da, x3
+    csrrc x14, 0x3db, x3
+    csrrc x14, 0x3dc, x3
+    csrrc x14, 0x3dd, x3
+    csrrc x14, 0x3de, x3
+    csrrc x14, 0x3df, x3
+    csrrc x14, 0x3e0, x3
+    csrrc x14, 0x3e1, x3
+    csrrc x14, 0x3e2, x3
+    csrrc x14, 0x3e3, x3
+    csrrc x14, 0x3e4, x3
+    csrrc x14, 0x3e5, x3
+    csrrc x14, 0x3e6, x3
+    csrrc x14, 0x3e7, x3
+    csrrc x14, 0x3e8, x3
+    csrrc x14, 0x3e9, x3
+    csrrc x14, 0x3ea, x3
+    csrrc x14, 0x3eb, x3
+    csrrc x14, 0x3ec, x3
+    csrrc x14, 0x3ed, x3
+    csrrc x14, 0x3ee, x3
+    csrrc x14, 0x3ef, x3
+
+    ##########################
+    #PMPCFG4-PMPCFG15 testing set value
+    ##########################
+    csrrs x14, 0x3a4, x3
+    csrrs x14, 0x3a5, x3
+    csrrs x14, 0x3a6, x3
+    csrrs x14, 0x3a7, x3
+    csrrs x14, 0x3a8, x3
+    csrrs x14, 0x3a9, x3
+    csrrs x14, 0x3aa, x3
+    csrrs x14, 0x3ab, x3
+    csrrs x14, 0x3ac, x3
+    csrrs x14, 0x3ad, x3
+    csrrs x14, 0x3ae, x3
+    csrrs x14, 0x3af, x3
+
+    ##########################
+    #PMPADDR16-PMPADDR63 testing set value
+    ##########################
+    csrrs x14, 0x3c0, x3
+    csrrs x14, 0x3c1, x3
+    csrrs x14, 0x3c2, x3
+    csrrs x14, 0x3c3, x3
+    csrrs x14, 0x3c4, x3
+    csrrs x14, 0x3c5, x3
+    csrrs x14, 0x3c6, x3
+    csrrs x14, 0x3c7, x3
+    csrrs x14, 0x3c8, x3
+    csrrs x14, 0x3c9, x3
+    csrrs x14, 0x3ca, x3
+    csrrs x14, 0x3cb, x3
+    csrrs x14, 0x3cc, x3
+    csrrs x14, 0x3cd, x3
+    csrrs x14, 0x3ce, x3
+    csrrs x14, 0x3cf, x3
+    csrrs x14, 0x3d0, x3
+    csrrs x14, 0x3d1, x3
+    csrrs x14, 0x3d2, x3
+    csrrs x14, 0x3d3, x3
+    csrrs x14, 0x3d4, x3
+    csrrs x14, 0x3d5, x3
+    csrrs x14, 0x3d6, x3
+    csrrs x14, 0x3d7, x3
+    csrrs x14, 0x3d8, x3
+    csrrs x14, 0x3d9, x3
+    csrrs x14, 0x3da, x3
+    csrrs x14, 0x3db, x3
+    csrrs x14, 0x3dc, x3
+    csrrs x14, 0x3dd, x3
+    csrrs x14, 0x3de, x3
+    csrrs x14, 0x3df, x3
+    csrrs x14, 0x3e0, x3
+    csrrs x14, 0x3e1, x3
+    csrrs x14, 0x3e2, x3
+    csrrs x14, 0x3e3, x3
+    csrrs x14, 0x3e4, x3
+    csrrs x14, 0x3e5, x3
+    csrrs x14, 0x3e6, x3
+    csrrs x14, 0x3e7, x3
+    csrrs x14, 0x3e8, x3
+    csrrs x14, 0x3e9, x3
+    csrrs x14, 0x3ea, x3
+    csrrs x14, 0x3eb, x3
+    csrrs x14, 0x3ec, x3
+    csrrs x14, 0x3ed, x3
+    csrrs x14, 0x3ee, x3
+    csrrs x14, 0x3ef, x3
+
     ret

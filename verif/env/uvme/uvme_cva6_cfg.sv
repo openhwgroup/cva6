@@ -140,7 +140,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       mode_h_supported       == CVA6Cfg.RVH;
 
       pmp_supported          == (CVA6Cfg.NrPMPEntries > 0);
-      nr_pmp_entries         == 16;
+      nr_pmp_entries         == 64;
       debug_supported        == CVA6Cfg.DebugEn;
 
       unaligned_access_supported     == 0;
