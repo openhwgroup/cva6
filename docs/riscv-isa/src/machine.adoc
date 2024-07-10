@@ -4186,22 +4186,22 @@ ifdef::archi-CVA6[]
 [ohg-config]
 PMP entries are described by an 8-bit configuration register and one
 MXLEN-bit address register. Some PMP settings additionally use the
-address register associated with the preceding PMP entry. 16 PMP
+address register associated with the preceding PMP entry. 64 PMP
 entries are implemented. The lowest-numbered PMP entries must be
-implemented first. All PMP CSR fields are *WARL* and 8 upper entries are
+implemented first. All PMP CSR fields are *WARL* and 56 upper entries are
 read-only zero. PMP CSRs are only accessible to M-mode.
 
 [{ohg-config}] The PMP configuration registers are densely packed into CSRs to minimize
-context-switch time. For {ohg-config} with sixteen CSRs, `pmpcfg0`–`pmpcfg3`, hold
+context-switch time. For {ohg-config} with sixty four CSRs, `pmpcfg0`–`pmpcfg15`, hold
 the configurations as shown
 in <<pmpcfg-rv32>>.
-The 2 upper entries are read-only zero.
+The 14 upper entries are read-only zero.
 
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
 include::images/bytefield/pmp-rv32.adoc[]
 
-[{ohg-config}] The PMP address registers are CSRs named `pmpaddr0`-`pmpaddr15`. Each
+[{ohg-config}] The PMP address registers are CSRs named `pmpaddr0`-`pmpaddr63`. Each
 PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <<pmpaddr-rv32>>. Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
