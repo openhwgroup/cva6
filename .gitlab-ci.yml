@@ -519,7 +519,7 @@ code_coverage-report:
   needs:
     - generated_tests
     - directed_isacov-tests
-    - generated_xif_tests
+#    - generated_xif_tests
     - csr_embedded_tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"
