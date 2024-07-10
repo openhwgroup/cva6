@@ -121,7 +121,7 @@ module branch_unit #(
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump
     if (!CVA6Cfg.RVC) begin
-      if (branch_valid_i && (target_address[0] || (target_address[1]) && jump_taken) begin
+      if (branch_valid_i && (target_address[0] || target_address[1]) && jump_taken) begin
         branch_exception_o.valid = 1'b1;
       end
     end
