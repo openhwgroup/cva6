@@ -111,6 +111,7 @@ module id_stage #(
 
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_macro_instr_i;
   logic                                               stall_instr_fetch;
+  logic                                               stall_macro_deco;
   logic                                               is_last_macro_instr_o;
   logic                                               is_double_rd_macro_instr_o;
 
