@@ -170,7 +170,7 @@ When the data in the D$ can be read, the load instruction can be committed (4).
 lsu_bypass
 ----------
 
-The LSU bypass make the connection between the issue stage and the load/store units. It is used as a buffer for the issued instructions when the store unit or the load unit are not available immediately.
+The LSU bypass makes the connection between the issue stage and the load/store units. It is used as a buffer for the issued instructions when the store unit or the load unit are not available immediately.
 
 .. include:: port_lsu_bypass.rst
 
