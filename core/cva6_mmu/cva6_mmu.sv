@@ -100,6 +100,7 @@ module cva6_mmu
 
     // PMP
     input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input  logic                                    pmp_instr_allow_i,
     input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
     input  exception_t                              pmp_misaligned_ex_i
 );
@@ -354,7 +355,6 @@ module cva6_mmu
   //-----------------------
   // Instruction Interface
   //-----------------------
-  logic pmp_instr_allow;
   localparam int PPNWMin = (CVA6Cfg.PPNW - 1 > 29) ? 29 : CVA6Cfg.PPNW - 1;
 
   // The instruction interface is a simple request response interface
@@ -439,7 +439,7 @@ module cva6_mmu
             icache_areq_o.fetch_exception.tinst = '0;
             icache_areq_o.fetch_exception.gva   = v_i;
           end
-        end else if (!pmp_instr_allow) begin
+        end else if (!pmp_instr_allow_i) begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
@@ -526,10 +526,6 @@ module cva6_mmu
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
-
-  // Wires to PMP checks
-  riscv::pmp_access_t pmp_access_type;
-  logic               pmp_data_allow;
 
 
   // The data interface is simpler and only consists of a request/response interface
@@ -624,7 +620,7 @@ module cva6_mmu
               lsu_exception_o.gva   = ld_st_v_i;
             end
             // Check if any PMPs are violated
-          end else if (!pmp_data_allow) begin
+          end else if (!pmp_data_allow_i) begin
             lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -665,7 +661,7 @@ module cva6_mmu
               lsu_exception_o.gva   = ld_st_v_i;
             end
             // Check if any PMPs are violated
-          end else if (!pmp_data_allow) begin
+          end else if (!pmp_data_allow_i) begin
             lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -773,7 +769,7 @@ module cva6_mmu
         end
       end
       // If translation is not enabled, check the paddr immediately against PMPs
-    end else if (lsu_req_q && !pmp_misaligned_ex_i.valid && !pmp_data_allow) begin
+    end else if (lsu_req_q && !pmp_misaligned_ex_i.valid && !pmp_data_allow_i) begin
       if (lsu_is_store_q) begin
         lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
