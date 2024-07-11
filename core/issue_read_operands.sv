@@ -217,7 +217,7 @@ module issue_read_operands
       .rs_valid_i      (rs_valid),
       .cvxif_busy_o    (cvxif_busy)
   );
-  if (CVA6Cfg.NrRgprPorts == 3) begin
+  if (OPERANDS_PER_INSTR == 3) begin
     assign rs_valid = {~stall_rs3[0], ~stall_rs2[0], ~stall_rs1[0]};
     assign rs = {fu_data_n[0].imm, fu_data_n[0].operand_b, fu_data_n[0].operand_a};
   end else begin
@@ -441,11 +441,11 @@ module issue_read_operands
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
-      if ((CVA6Cfg.CvxifEn && x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[2])
+      if ((CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3 && x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[2])
        &&(CVA6Cfg.FpPresent && is_imm_fpr(
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE :
-              issue_instr_i[i].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
+              issue_instr_i[i].op == OFFLOAD && OPERANDS_PER_INSTR == 3 ?
               rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
         if (rs3_valid_i[i]) begin
@@ -480,7 +480,7 @@ module issue_read_operands
           )) ? is_rd_fpr(
               issue_instr_i[0].op
           ) && issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] :
-              issue_instr_i[1].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
+              issue_instr_i[1].op == OFFLOAD && OPERANDS_PER_INSTR == 3 ?
               issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] : 1'b0) begin
         stall[1] = 1'b1;
       end
@@ -488,7 +488,7 @@ module issue_read_operands
   end
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
-  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_rs3
+  if (OPERANDS_PER_INSTR == 3) begin : gen_gp_rs3
     assign imm_forward_rs3 = rs3_i[0];
   end else begin : gen_fp_rs3
     assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i[0]};
@@ -503,7 +503,7 @@ module issue_read_operands
 
       // immediates are the third operands in the store case
       // for FP operations, the imm field can also be the third operand from the regfile
-      if (CVA6Cfg.NrRgprPorts == 3) begin
+      if (OPERANDS_PER_INSTR == 3) begin
         fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
             {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} :
             issue_instr_i[i].op == OFFLOAD ? operand_c_regfile[i] : issue_instr_i[i].result;
@@ -525,7 +525,7 @@ module issue_read_operands
       if (forward_rs2[i]) begin
         fu_data_n[i].operand_b = rs2_i[i];
       end
-      if ((CVA6Cfg.FpPresent || (CVA6Cfg.CvxifEn && CVA6Cfg.NrRgprPorts == 3)) && forward_rs3[i]) begin
+      if ((CVA6Cfg.FpPresent || (CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3)) && forward_rs3[i]) begin
         fu_data_n[i].imm = imm_forward_rs3;
       end
 
@@ -837,14 +837,14 @@ module issue_read_operands
     end
   endgenerate
 
-  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
+  if (OPERANDS_PER_INSTR == 3) begin : gen_operand_c
     assign operand_c_fpr = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
   end else begin
     assign operand_c_fpr = fprdata[2];
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
+    if (OPERANDS_PER_INSTR == 3) begin : gen_operand_c
       assign operand_c_gpr[i] = rdata[i*OPERANDS_PER_INSTR+2];
     end
 
@@ -854,7 +854,7 @@ module issue_read_operands
     assign operand_b_regfile[i] = (CVA6Cfg.FpPresent && is_rs2_fpr(
         issue_instr_i[i].op
     )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
-    assign operand_c_regfile[i] = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
+    assign operand_c_regfile[i] = (OPERANDS_PER_INSTR == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
         issue_instr_i[i].op
     )) ? operand_c_fpr : operand_c_gpr[i]) : operand_c_fpr;
   end
