@@ -407,8 +407,9 @@ module issue_read_operands
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs1] != NONE :
               rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE) ||
-          ((CVA6Cfg.CvxifEn && x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[0])
-          && rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
+              ((CVA6Cfg.CvxifEn && x_issue_valid_o &&
+                x_issue_resp_i.accept && x_issue_resp_i.register_read[0]) &&
+               rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
         // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
         // be fetched through the register file since they can't be forwarded
         // if the operand is available, forward it. CSRs don't write to/from FPR
