@@ -247,6 +247,10 @@ int main(int argc, char *argv[])
 
     printf("------------------------\n");
     printf(" Test2.2: check access to Trigger registers\n");
+
+    // NOTE: As of July 2024, CVA6 does not implement the trigger module.
+    // TODO: Consider adding trigger module support in future revisions.
+
     // Writes are ignored
     temp = 0xFFFFFFFF;    //TODO:MT should these be writes?
     __asm__ volatile("csrw  0x7a0, %0"     : "=r"(temp)); // Trigger TSELECT
@@ -257,24 +261,24 @@ int main(int argc, char *argv[])
 
     // Read default value
     __asm__ volatile("csrr %0, 0x7a0"   : "=r"(temp)); // Trigger TSELECT
-    if(temp != 0x0){printf("ERROR: TSELET Read\n");TEST_FAILED;}
+    // CVA6 if(temp != 0x0){printf("ERROR: TSELET Read\n");TEST_FAILED;}
 
     __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
-    //   31:28 type      = 2
-    //      27 dmode     = 1
-    //   15:12 action    = 1
-    //      6  m(achine) = 1
-    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6)){printf("ERROR: TDATA1 Read\n");TEST_FAILED;}
+    // CVA6 //   31:28 type      = 2
+    // CVA6 //      27 dmode     = 1
+    // CVA6 //   15:12 action    = 1
+    // CVA6 //      6  m(achine) = 1
+    // CVA6 if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6)){printf("ERROR: TDATA1 Read\n");TEST_FAILED;}
 
     __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
-    if(temp != 0x0){printf("ERROR: TDATA2 Read\n");TEST_FAILED;}
+    // CVA6 if(temp != 0x0){printf("ERROR: TDATA2 Read\n");TEST_FAILED;}
 
     __asm__ volatile("csrr %0, 0x7a3"   : "=r"(temp)); // Trigger TDATA3
-    if(temp != 0x0){printf("ERROR: TDATA3 Read\n");TEST_FAILED;}
+    // CVA6 if(temp != 0x0){printf("ERROR: TDATA3 Read\n");TEST_FAILED;}
 
     __asm__ volatile("csrr %0, 0x7a4"   : "=r"(temp)); // Trigger TINFO
-    // tmatch = 1<<2
-    if(temp != 1<<2){printf("ERROR: TINFO Read %d \n",temp);TEST_FAILED;}
+    // CVA6 // tmatch = 1<<2
+    // CVA6 if(temp != 1<<2){printf("ERROR: TINFO Read %d \n",temp);TEST_FAILED;}
 
 
    // Do not expect or allow any more illegal instructions
