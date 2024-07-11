@@ -49,15 +49,16 @@ module spike #(
 
     st_core_cntrl_cfg st;
     bit sim_finished;
+    string core_name = "cva6";
 
     initial begin
-        string core_name = "cva6";
         st = cva6pkg_to_core_cntrl_cfg(st);
         st.boot_addr_valid = 1'b1;
         st.boot_addr = 64'h0x10000;
 
         if ($test$plusargs("core_name")) begin
           $value$plusargs("core_name=%s", core_name);
+          `uvm_info("SPIKE", $sformatf("### core_name = '%s'", core_name), UVM_LOW);
         end
 
         rvfi_initialize(st);

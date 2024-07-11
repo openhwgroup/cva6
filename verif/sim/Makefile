@@ -63,8 +63,9 @@ endif
 spike_yaml ?= $(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 
 # Set up flags for Spike solo and tandem invocations, but only if parameter file exists.
+spike_params_final = $(spike_params)
 ifneq ($(wildcard $(spike_yaml)),)
-  spike_params += --yaml-param $(spike_yaml)
+  spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
   spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
 endif
 
@@ -139,8 +140,8 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params) -l $(elf)
-	cp $(log).iss $(log)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
+	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)
 
 ###############################################################################
 # UVM specific commands, variables
@@ -185,15 +186,16 @@ export SPIKE_PATH = $(CORE_V_VERIF)/vendor/riscv/riscv-isa-sim/
 
 COMMON_COMP_UVM_FLAGS = \
 	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
+	  +core_name=$(target) \
 	  $(if $(spike-tandem), +define+SPIKE_TANDEM=1)
 
 COMMON_PLUS_ARGS = \
 	++$(elf) \
 	+elf_file=$(elf) \
+	+core_name=$(target) \
         $(spike-yaml-plusarg) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
-	$(spike-yaml-plusarg) \
 	+report_file=$(log).yaml +core_name=$(target)
 
 ifneq ($(UVM_VERBOSITY),)
@@ -428,7 +430,7 @@ xrun-testharness:
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
-	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)) batch-mode=1 elf_file=$(elf) \
+	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
@@ -437,7 +439,7 @@ questa-testharness:
 # Common targets and rules
 ###############################################################################
 
-clean_all: vcs_clean_all 
+clean_all: vcs_clean_all
 	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
