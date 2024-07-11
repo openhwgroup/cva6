@@ -428,8 +428,9 @@ module issue_read_operands
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs2] != NONE :
               rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE) ||
-          ((CVA6Cfg.CvxifEn && x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[1])
-          && rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE)) begin
+              ((CVA6Cfg.CvxifEn &&
+                x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[1]) &&
+               rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE)) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR
         if (rs2_valid_i[i] && (CVA6Cfg.FpPresent && is_rs2_fpr(
                 issue_instr_i[i].op
