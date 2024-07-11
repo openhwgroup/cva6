@@ -152,11 +152,11 @@ It inserts stalls until it can satisfy the current request. This means:
 
 After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. 
 In the same cycle, a read request is sent to the D$, with the index field of the virtual address (1).
-To go further, the D$ has to acknowledge the read memory request (2).
+The load unit stalls until the D$ acknowledges this request (2).
 When the MMU returns the translated address, the tag field of the virtual address is sent to the D$ (3). 
 If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
 It also stalls until the incoming load instruction is the next instruction to be committed. 
-When the data in the D$ can be read, the load instruction can be committed (4).
+When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).
 
 .. figure:: ../images/schema_fsm_load_control.png
    :align: center
