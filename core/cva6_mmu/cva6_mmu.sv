@@ -99,8 +99,9 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
+    input  exception_t                              pmp_misaligned_ex_i
 );
 
   // memory management, pte for cva6
@@ -353,7 +354,6 @@ module cva6_mmu
   //-----------------------
   // Instruction Interface
   //-----------------------
-  logic match_any_execute_region;
   logic pmp_instr_allow;
   localparam int PPNWMin = (CVA6Cfg.PPNW - 1 > 29) ? 29 : CVA6Cfg.PPNW - 1;
 
@@ -492,7 +492,7 @@ module cva6_mmu
 
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
-    if ((!match_any_execute_region && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow)) begin
+    if ((!match_any_execute_region_i && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow_i)) begin
       icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
       icache_areq_o.fetch_exception.valid = 1'b1;
       if (CVA6Cfg.TvalEn) begin  //To confirm this is the right TVAL 
@@ -509,28 +509,6 @@ module cva6_mmu
     end
   end
 
-  // check for execute flag on memory
-  assign match_any_execute_region = config_pkg::is_inside_execute_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, icache_areq_o.fetch_paddr}
-  );
-
-  // Instruction fetch
-  pmp #(
-      .CVA6Cfg   (CVA6Cfg),              //comment for hypervisor extension
-      .PLEN      (CVA6Cfg.PLEN),
-      .PMP_LEN   (CVA6Cfg.PLEN - 2),
-      .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-      // .NR_ENTRIES ( ArianeCfg.NrPMPEntries ) // configuration used in hypervisor extension
-  ) i_pmp_if (
-      .addr_i       (icache_areq_o.fetch_paddr),
-      .priv_lvl_i,
-      // we will always execute on the instruction fetch port
-      .access_type_i(riscv::ACCESS_EXEC),
-      // Configuration
-      .conf_addr_i  (pmpaddr_i),
-      .conf_i       (pmpcfg_i),
-      .allow_o      (pmp_instr_allow)
-  );
 
   //-----------------------
   // Data Interface
@@ -821,22 +799,6 @@ module cva6_mmu
       end
     end
   end
-
-  // Load/store PMP check
-  pmp #(
-      .CVA6Cfg   (CVA6Cfg),
-      .PLEN      (CVA6Cfg.PLEN),
-      .PMP_LEN   (CVA6Cfg.PLEN - 2),
-      .NR_ENTRIES(CVA6Cfg.NrPMPEntries)
-  ) i_pmp_data (
-      .addr_i       (lsu_paddr_o),
-      .priv_lvl_i   (ld_st_priv_lvl_i),
-      .access_type_i(pmp_access_type),
-      // Configuration
-      .conf_addr_i  (pmpaddr_i),
-      .conf_i       (pmpcfg_i),
-      .allow_o      (pmp_data_allow)
-  );
 
   // ----------
   // Registers
