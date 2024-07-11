@@ -144,6 +144,7 @@ task uvml_mem_vp_c::debug(bit dbg_req_value,
       if(!uvm_config_db#(uvme_cva6_cntxt_c)::get(uvm_root::get(), "uvm_test_top.env", "cntxt", this.cntxt)) begin
         `uvm_fatal("UVML_MEM_VP", "cva6 cntxt object handle not found")
       end
+      cntxt.debug_vif.is_active = 1;
       if (rand_start_delay) begin
          wait_n_clocks($urandom_range(start_delay, 0));
       end
