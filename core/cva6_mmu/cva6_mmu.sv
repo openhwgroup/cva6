@@ -102,6 +102,7 @@ module cva6_mmu
     input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     input  logic                                    pmp_instr_allow_i,
     input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
+    input  exception_t                              pmp_fetch_exception_i,
     input  exception_t                              pmp_misaligned_ex_i
 );
 
@@ -440,15 +441,7 @@ module cva6_mmu
             icache_areq_o.fetch_exception.gva   = v_i;
           end
         end else if (!pmp_instr_allow_i) begin
-          icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
-          icache_areq_o.fetch_exception.valid = 1'b1;
-          if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(icache_areq_i.fetch_vaddr);
-          if (CVA6Cfg.RVH) begin
-            icache_areq_o.fetch_exception.tval2 = '0;
-            icache_areq_o.fetch_exception.tinst = '0;
-            icache_areq_o.fetch_exception.gva   = v_i;
-          end
+          icache_areq_o.fetch_exception = pmp_fetch_exception_i;
         end
       end else if (ptw_active && walking_instr) begin
         // ---------//
@@ -493,18 +486,10 @@ module cva6_mmu
     // if it didn't match any execute region throw an `Instruction Access Fault`
     // or: if we are not translating, check PMPs immediately on the paddr
     if ((!match_any_execute_region_i && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow_i)) begin
-      icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
-      icache_areq_o.fetch_exception.valid = 1'b1;
-      if (CVA6Cfg.TvalEn) begin  //To confirm this is the right TVAL 
+      icache_areq_o.fetch_exception = pmp_fetch_exception_i;
+      if (CVA6Cfg.TvalEn) begin  // To confirm this is the right TVAL
         if (enable_translation_i || enable_g_translation_i)
           icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
-        else
-          icache_areq_o.fetch_exception.tval=CVA6Cfg.XLEN'(icache_areq_o.fetch_paddr[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? (CVA6Cfg.PLEN - CVA6Cfg.VLEN) : 0]);
-      end
-      if (CVA6Cfg.RVH) begin
-        icache_areq_o.fetch_exception.tval2 = '0;
-        icache_areq_o.fetch_exception.tinst = '0;
-        icache_areq_o.fetch_exception.gva   = v_i;
       end
     end
   end
