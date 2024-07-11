@@ -146,8 +146,8 @@ It stalls until it can satisfy the current request. This means:
 
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
-* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer). Once the store is committed, the load unit stalls until the store is actually finished (popped from the store buffer) to process the load request i.e there is no fowarding.
-
+* A store after a load to the same address is allowed.
+* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.
 
 After the check of the store buffer, a translation request is made to the MMU's TLB. 
 In the same cycle, a read request is sent to the D$, with the index field of the virtual address (1).
