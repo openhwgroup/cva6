@@ -31,53 +31,53 @@ module load_unit
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Flush signal - TO_BE_COMPLETED
+    // Flush signal - CONTROLLER
     input logic flush_i,
-    // Load request is valid - TO_BE_COMPLETED
+    // Load request is valid - LSU bypass
     input logic valid_i,
-    // Load request input - TO_BE_COMPLETED
+    // Load request input - LSU bypass
     input lsu_ctrl_t lsu_ctrl_i,
-    // Pop the load request from the LSU bypass FIFO - TO_BE_COMPLETED
+    // Pop the load request from the LSU bypass FIFO - LSU bypass
     output logic pop_ld_o,
-    // Load unit result is valid - TO_BE_COMPLETED
+    // Load unit result is valid - Issue stage
     output logic valid_o,
-    // Load transaction ID - TO_BE_COMPLETED
+    // Load transaction ID - Issue stage
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
-    // Load result - TO_BE_COMPLETED
+    // Load result - Issue stage
     output logic [CVA6Cfg.XLEN-1:0] result_o,
-    // Load exception - TO_BE_COMPLETED
+    // Load exception - Issue stage
     output exception_t ex_o,
-    // Request address translation - TO_BE_COMPLETED
+    // Request address translation - MMU
     output logic translation_req_o,
-    // Virtual address - TO_BE_COMPLETED
+    // Virtual address - MMU
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
-    // Transformed trap instruction out - TO_BE_COMPLETED
+    // Transformed trap instruction out - MMU
     output logic [31:0] tinst_o,
-    // Instruction is a hyp load store instruction - TO_BE_COMPLETED
+    // Instruction is a hyp load store instruction - MMU
     output logic hs_ld_st_inst_o,
-    // Hyp load store with execute permissions - TO_BE_COMPLETED
+    // Hyp load store with execute permissions - MMU
     output logic hlvx_inst_o,
-    // Physical address - TO_BE_COMPLETED
+    // Physical address - MMU
     input logic [CVA6Cfg.PLEN-1:0] paddr_i,
-    // Excepted which appears before load - TO_BE_COMPLETED
+    // Excepted which appears before load - MMU
     input exception_t ex_i,
-    // Data TLB hit - lsu
+    // Data TLB hit - MMU
     input logic dtlb_hit_i,
-    // Physical page number from the DTLB - TO_BE_COMPLETED
+    // Physical page number from the DTLB - MMU
     input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
-    // Page offset for address checking - TO_BE_COMPLETED
+    // Page offset for address checking - Store unit
     output logic [11:0] page_offset_o,
-    // Indicates if the page offset matches a store unit entry - TO_BE_COMPLETED
+    // Indicates if the page offset matches a store unit entry - Store unit
     input logic page_offset_matches_i,
-    // Store buffer is empty - TO_BE_COMPLETED
+    // Store buffer is empty - Store unit
     input logic store_buffer_empty_i,
-    // Transaction ID of the committing instruction - TO_BE_COMPLETED
+    // Transaction ID of the committing instruction - Commit stage
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
-    // Presence of non-idempotent operations in the D$ write buffer - TO_BE_COMPLETED
+    // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {

@@ -139,18 +139,18 @@ Furthermore, the store_unit module provides information to the load_unit to know
 load_unit
 ---------
 
-The load_unit module manages the data load operations.
+The load unit module manages the data load operations.
 
 Before issuing a load, the load unit needs to check the store buffer for potential aliasing.
-It inserts stalls until it can satisfy the current request. This means:
+It stalls until it can satisfy the current request. This means:
 
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
-* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer). Once the store is committed, 
+* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer). Once the store is committed, the load unit stalls until the store is actually finished to process the load request i.e there is no fowarding.
 
 .. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
-After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. 
+After the check of the store buffer, a translation request is made to the MMU's TLB. 
 In the same cycle, a read request is sent to the D$, with the index field of the virtual address (1).
 The load unit stalls until the D$ acknowledges this request (2).
 When the MMU returns the translated address, the tag field of the physical address is sent to the D$ (3). 
