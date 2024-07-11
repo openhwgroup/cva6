@@ -103,7 +103,9 @@ module cva6_mmu
     input  logic                                    pmp_instr_allow_i,
     input  logic                                    match_any_execute_region_i,
     input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
+    input logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     input  exception_t                              pmp_fetch_exception_i,
+    input  exception_t                              pmp_exception_i,
     input  exception_t                              pmp_misaligned_ex_i
 );
 
@@ -588,17 +590,7 @@ module cva6_mmu
             end
             // Check if any PMPs are violated
           end else if (!pmp_data_allow_i) begin
-            lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
-            lsu_exception_o.valid = 1'b1;
-            if (CVA6Cfg.TvalEn)
-              lsu_exception_o.tval = {
-                {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
-              };
-            if (CVA6Cfg.RVH) begin
-              lsu_exception_o.tval2 = '0;
-              lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva   = ld_st_v_i;
-            end
+            lsu_exception_o = pmp_exception_i;
           end
           // this is a load
         end else begin
@@ -629,17 +621,7 @@ module cva6_mmu
             end
             // Check if any PMPs are violated
           end else if (!pmp_data_allow_i) begin
-            lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
-            lsu_exception_o.valid = 1'b1;
-            if (CVA6Cfg.TvalEn)
-              lsu_exception_o.tval = {
-                {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
-              };
-            if (CVA6Cfg.RVH) begin
-              lsu_exception_o.tval2 = '0;
-              lsu_exception_o.tinst = lsu_tinst_q;
-              lsu_exception_o.gva   = ld_st_v_i;
-            end
+            lsu_exception_o = pmp_exception_i;
           end
         end
       end else
@@ -737,29 +719,7 @@ module cva6_mmu
       end
       // If translation is not enabled, check the paddr immediately against PMPs
     end else if (lsu_req_q && !pmp_misaligned_ex_i.valid && !pmp_data_allow_i) begin
-      if (lsu_is_store_q) begin
-        lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
-        lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          lsu_exception_o.tval = CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0]);
-
-        if (CVA6Cfg.RVH) begin
-          lsu_exception_o.tval2 = '0;
-          lsu_exception_o.tinst = lsu_tinst_q;
-          lsu_exception_o.gva   = ld_st_v_i;
-        end
-      end else begin
-        lsu_exception_o.cause = riscv::LD_ACCESS_FAULT;
-        lsu_exception_o.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          lsu_exception_o.tval = CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0]);
-
-        if (CVA6Cfg.RVH) begin
-          lsu_exception_o.tval2 = '0;
-          lsu_exception_o.tinst = lsu_tinst_q;
-          lsu_exception_o.gva   = ld_st_v_i;
-        end
-      end
+      lsu_exception_o = pmp_exception_i;
     end
   end
 
