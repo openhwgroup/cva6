@@ -242,10 +242,8 @@ module scoreboard #(
     // ------------
     if (CVA6Cfg.SpeculativeSb) begin
       if (bmiss) begin
-        for (int unsigned i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
-          if (speculative_instrs[i]) begin
-            mem_n[i].cancelled = 1'b1;
-          end
+        if (after_flu_wb != issue_pointer[0]) begin
+          mem_n[after_flu_wb].cancelled = 1'b1;
         end
       end
     end
@@ -279,16 +277,6 @@ module scoreboard #(
 
   assign bmiss = resolved_branch_i.valid && resolved_branch_i.is_mispredict;
   assign after_flu_wb = trans_id_i[ariane_pkg::FLU_WB] + 'd1;
-
-  if (CVA6Cfg.SpeculativeSb) begin : find_speculative_instrs
-    round_interval #(
-        .S(CVA6Cfg.TRANS_ID_BITS)
-    ) i_speculative_instrs (
-        .start_i (after_flu_wb),
-        .stop_i  (issue_pointer_q),
-        .active_o(speculative_instrs)
-    );
-  end
 
   // FIFO counter updates
   if (CVA6Cfg.NrCommitPorts == 2) begin : gen_commit_ports
