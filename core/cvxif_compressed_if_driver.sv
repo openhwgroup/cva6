@@ -53,7 +53,11 @@ module cvxif_compressed_if_driver #(
       if (~stall_i) begin
         // Propagate stall from macro decoder or wait for compressed ready if compressed transaction is happening.
         // Stall if both instruction are illegal
-        stall_o = (compressed_valid_o && ~compressed_ready_i) || (CVA6Cfg.SuperscalarEn && is_illegal_i[1]);
+        if (CVA6Cfg.SuperscalarEn) begin
+          stall_o = is_illegal_i[1];
+        end else begin
+          stall_o = (compressed_valid_o && ~compressed_ready_i);
+        end
       end
     end
     if (CVA6Cfg.SuperscalarEn) begin
