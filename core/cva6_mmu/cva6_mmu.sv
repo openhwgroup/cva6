@@ -100,7 +100,7 @@ module cva6_mmu
 
     // PMP
     input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input  exception_t                              pmp_misaligned_ex_i
 );
 
   // memory management, pte for cva6
@@ -522,7 +522,6 @@ module cva6_mmu
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
   pte_cva6_t dtlb_pte_n, dtlb_pte_q;
   pte_cva6_t dtlb_gpte_n, dtlb_gpte_q;
-  exception_t misaligned_ex_n, misaligned_ex_q;
   logic lsu_req_n, lsu_req_q;
   logic lsu_is_store_n, lsu_is_store_q;
   logic dtlb_hit_n, dtlb_hit_q;
@@ -541,18 +540,13 @@ module cva6_mmu
     // save request and DTLB response
     lsu_vaddr_n = lsu_vaddr_i;
     lsu_req_n = lsu_req_i;
-    misaligned_ex_n = misaligned_ex_i;
     dtlb_pte_n = dtlb_content;
     dtlb_hit_n = dtlb_lu_hit;
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
 
     lsu_valid_o = lsu_req_q;
-    lsu_exception_o = misaligned_ex_q;
-    pmp_access_type = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
-
-    // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
-    misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
+    lsu_exception_o = pmp_misaligned_ex_i;
 
     // Check if the User flag is set, then we may only access it in supervisor mode
     // if SUM is enabled
@@ -573,7 +567,7 @@ module cva6_mmu
     lsu_dtlb_ppn_o        = (CVA6Cfg.PPNW)'(lsu_vaddr_n[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):12]);
 
     // translation is enabled and no misaligned exception occurred
-    if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !misaligned_ex_q.valid) begin
+    if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !pmp_misaligned_ex_i.valid) begin
       lsu_valid_o = 1'b0;
 
       lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_g_content.ppn :dtlb_content.ppn;
@@ -782,7 +776,7 @@ module cva6_mmu
         end
       end
       // If translation is not enabled, check the paddr immediately against PMPs
-    end else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
+    end else if (lsu_req_q && !pmp_misaligned_ex_i.valid && !pmp_data_allow) begin
       if (lsu_is_store_q) begin
         lsu_exception_o.cause = riscv::ST_ACCESS_FAULT;
         lsu_exception_o.valid = 1'b1;
@@ -833,7 +827,6 @@ module cva6_mmu
       lsu_vaddr_q     <= '0;
       lsu_gpaddr_q    <= '0;
       lsu_req_q       <= '0;
-      misaligned_ex_q <= '0;
       dtlb_pte_q      <= '0;
       dtlb_gpte_q     <= '0;
       dtlb_hit_q      <= '0;
@@ -844,7 +837,6 @@ module cva6_mmu
     end else begin
       lsu_vaddr_q     <= lsu_vaddr_n;
       lsu_req_q       <= lsu_req_n;
-      misaligned_ex_q <= misaligned_ex_n;
       dtlb_pte_q      <= dtlb_pte_n;
       dtlb_hit_q      <= dtlb_hit_n;
       lsu_is_store_q  <= lsu_is_store_n;
