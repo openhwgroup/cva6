@@ -211,7 +211,7 @@ module issue_read_operands
       .commit_valid_o  (x_commit_valid_o),
       .commit_o        (x_commit_o),
       .valid_i         (cvxif_instruction_valid),
-      .x_off_instr_i   (orig_instr_i),
+      .x_off_instr_i   (orig_instr_i[0]),
       .x_trans_id_i    (issue_instr_i[0].trans_id),
       .register_i      (rs),
       .rs_valid_i      (rs_valid),
