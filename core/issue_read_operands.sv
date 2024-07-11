@@ -889,6 +889,7 @@ module issue_read_operands
         is_compressed_instr_o <= issue_instr_i[0].is_compressed;
         branch_predict_o      <= issue_instr_i[0].bp;
       end
+      x_transaction_rejected_o <= 1'b0;
       if (issue_instr_i[0].fu == CVXIF) begin
         x_transaction_rejected_o <= x_transaction_rejected;
       end

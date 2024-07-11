@@ -56,12 +56,14 @@ module cvxif_compressed_if_driver #(
         stall_o = (compressed_valid_o && ~compressed_ready_i) || (CVA6Cfg.SuperscalarEn && is_illegal_i[1]);
       end
     end
-    if (~is_illegal_i[0] && is_illegal_i[1]) begin  // 2nd instruction is illegal
-      compressed_valid_o = is_illegal_i[1];
-      compressed_req_o.instr = instruction_i[1][15:0];
-      is_illegal_o[1] = ~compressed_resp_i.accept;
-      instruction_o[1] = compressed_resp_i.accept ? compressed_resp_i.instr : instruction_i[1];
-      is_compressed_o[1] = compressed_resp_i.accept ? 1'b0 : is_compressed_i[1];
+    if (CVA6Cfg.SuperscalarEn) begin
+      if (~is_illegal_i[0] && is_illegal_i[1]) begin  // 2nd instruction is illegal
+        compressed_valid_o = is_illegal_i[1];
+        compressed_req_o.instr = instruction_i[1][15:0];
+        is_illegal_o[1] = ~compressed_resp_i.accept;
+        instruction_o[1] = compressed_resp_i.accept ? compressed_resp_i.instr : instruction_i[1];
+        is_compressed_o[1] = compressed_resp_i.accept ? 1'b0 : is_compressed_i[1];
+      end
     end
   end
 
