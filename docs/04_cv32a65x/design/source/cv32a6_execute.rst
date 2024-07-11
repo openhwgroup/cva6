@@ -146,14 +146,14 @@ It inserts stalls until it can satisfy the current request. This means:
 
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
-* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer).
+* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer). Once the store is committed, 
 
 .. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
 After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. 
 In the same cycle, a read request is sent to the D$, with the index field of the virtual address (1).
 The load unit stalls until the D$ acknowledges this request (2).
-When the MMU returns the translated address, the tag field of the virtual address is sent to the D$ (3). 
+When the MMU returns the translated address, the tag field of the physical address is sent to the D$ (3). 
 If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
 It also stalls until the incoming load instruction is the next instruction to be committed. 
 When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).
