@@ -151,10 +151,10 @@ It inserts stalls until it can satisfy the current request. This means:
 .. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
 
 After the instructions are no longer in the store buffer, a translation request is made to the MMU's TLB. 
-In the same cycle, a read memory request is made to the D$ and the index field of the virtual address is sent to D$ in the same time (1).
+In the same cycle, a read request is sent to the D$, with the index field of the virtual address (1).
 To go further, the D$ has to acknowledge the read memory request (2).
-When a hit occurs in the MMU's TLB, the tag field of the virtual address is sent to the D$ (3). 
-If the load request is in a non idempotent addresses region, it inserts a stall until the write buffer of the D$ is empty of non-idempotent request and the store buffer is empty. 
+When the MMU returns the translated address, the tag field of the virtual address is sent to the D$ (3). 
+If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
 It also stalls until the incoming load instruction is the next instruction to be committed. 
 When the data in the D$ can be read, the load instruction can be committed (4).
 
@@ -170,7 +170,7 @@ When the data in the D$ can be read, the load instruction can be committed (4).
 lsu_bypass
 ----------
 
-The LSU bypass makes the connection between the issue stage and the load/store units. It is used as a buffer for the issued instructions when the store unit or the load unit are not available immediately.
+The LSU bypass is a FIFO which keeps instructions from the issue stage when the store unit or the load unit are not available immediately.
 
 .. include:: port_lsu_bypass.rst
 

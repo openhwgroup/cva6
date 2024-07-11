@@ -77,7 +77,7 @@ module load_unit
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
-    // Indicates if there are NI operations in the D$ write buffer - TO_BE_COMPLETED
+    // Presence of non-idempotent operations in the D$ write buffer - TO_BE_COMPLETED
     input logic dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {
