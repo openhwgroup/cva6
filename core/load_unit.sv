@@ -33,19 +33,19 @@ module load_unit
     input logic rst_ni,
     // Flush signal - CONTROLLER
     input logic flush_i,
-    // Load request is valid - LSU bypass
+    // Load request is valid - LSU_BYPASS
     input logic valid_i,
-    // Load request input - LSU bypass
+    // Load request input - LSU_BYPASS
     input lsu_ctrl_t lsu_ctrl_i,
-    // Pop the load request from the LSU bypass FIFO - LSU bypass
+    // Pop the load request from the LSU bypass FIFO - LSU_BYPASS
     output logic pop_ld_o,
-    // Load unit result is valid - Issue stage
+    // Load unit result is valid - ISSUE_STAGE
     output logic valid_o,
-    // Load transaction ID - Issue stage
+    // Load transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
-    // Load result - Issue stage
+    // Load result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] result_o,
-    // Load exception - Issue stage
+    // Load exception - ISSUE_STAGE
     output exception_t ex_o,
     // Request address translation - MMU
     output logic translation_req_o,
@@ -65,13 +65,13 @@ module load_unit
     input logic dtlb_hit_i,
     // Physical page number from the DTLB - MMU
     input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
-    // Page offset for address checking - Store unit
+    // Page offset for address checking - STORE_UNIT
     output logic [11:0] page_offset_o,
-    // Indicates if the page offset matches a store unit entry - Store unit
+    // Indicates if the page offset matches a store unit entry - STORE_UNIT
     input logic page_offset_matches_i,
-    // Store buffer is empty - Store unit
+    // Store buffer is empty - STORE_UNIT
     input logic store_buffer_empty_i,
-    // Transaction ID of the committing instruction - Commit stage
+    // Transaction ID of the committing instruction - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
