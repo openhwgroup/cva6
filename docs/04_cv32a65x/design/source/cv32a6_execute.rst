@@ -153,7 +153,7 @@ After the check of the store buffer, a read request is sent to the D$ with the i
 The load unit stalls until the D$ acknowledges this request (2).
 In the next cycle, the tag field of the address is sent to the D$ (3).
 If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
-It also stalls until the incoming load instruction is the next instruction to be committed. 
+It also stalls until the incoming load instruction is the next instruction to be committed.
 When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).
 
 .. figure:: ../images/schema_fsm_load_control.png
