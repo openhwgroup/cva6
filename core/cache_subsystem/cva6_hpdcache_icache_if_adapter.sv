@@ -80,7 +80,7 @@ module cva6_hpdcache_icache_if_adapter
     end
   end
 
-  assign va_transferred_d = dreq_i.req;
+  assign va_transferred_d = dreq_i.req & hpdcache_req_ready_i;
   //  }}}
 
   //  Request forwarding
@@ -108,7 +108,7 @@ module cva6_hpdcache_icache_if_adapter
       hpdcache_req_o.addr_tag = '0,  // unused on virtually indexed request
       hpdcache_req_o.pma = '0;  // unused on virtually indexed request
 
-  assign hpdcache_req_abort_o = dreq_i.kill_req || !(va_transferred_q && fetch_obi_req_i.req),
+  assign hpdcache_req_abort_o = va_transferred_q & (dreq_i.kill_req | ~fetch_obi_req_i.req),
       hpdcache_req_tag_o = fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
       hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable,
       hpdcache_req_pma_o.io = 1'b0;
