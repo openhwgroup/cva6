@@ -266,7 +266,7 @@
 
    * - ``SuperscalarEn``
      - ``bit``
-     - Enable superscalar with 2 issue ports and 2 commit ports
+     - Enable superscalar* with 2 issue ports and 2 commit ports.
 
    * - ``NrCommitPorts``
      - ``int unsigned``
