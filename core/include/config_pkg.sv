@@ -355,6 +355,8 @@ package config_pkg;
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
     assert (Cfg.NrPMPEntries <= 64);
+    assert (!(Cfg.SuperscalarEn && Cfg.RVF));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
 `endif
     // pragma translate_on
   endfunction
