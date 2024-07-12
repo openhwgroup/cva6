@@ -133,7 +133,7 @@ build_tools:
 .simu_after_script: &simu_after_script
   - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
-  - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
 smoke:
   extends:
@@ -149,11 +149,12 @@ smoke:
     matrix:
       - DV_SIMULATORS:
         - "veri-testharness,spike"
-        - "vcs-testharness,spike"
+        - "vcs-testharness"
         - "questa-testharness,spike"
-        - "vcs-uvm,spike"
+        - "vcs-uvm"
   script:
     - source $QUESTA_BASHRC
+    - if [[ "$DV_SIMULATORS" == "veri-testharness,spike" || "$DV_SIMULATORS" == "questa-testharness,spike" ]]; then unset SPIKE_TANDEM; fi
     - bash verif/regress/smoke-tests.sh
     - !reference [.simu_after_script]
 
@@ -165,9 +166,9 @@ gen_smoke:
     DASHBOARD_JOB_DESCRIPTION: "Short generated tests to challenge the CVA6-DV on STEP1 configuration"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
-    DV_SIMULATORS: "vcs-uvm,spike"
-    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "vcs-uvm"
     COLLECT_SIMU_LOGS: 1
+    SPIKE_TANDEM: 1
   script:
     - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
