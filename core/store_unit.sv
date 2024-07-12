@@ -279,8 +279,8 @@ module store_unit
   logic store_buffer_ready, amo_buffer_ready;
 
   // multiplex between store unit and amo buffer
-  assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);
-  assign amo_buffer_valid = st_valid & (amo_op_q != AMO_NONE);
+  assign store_buffer_valid = st_valid & (!CVA6Cfg.RVA || (amo_op_q == AMO_NONE));
+  assign amo_buffer_valid = st_valid & (CVA6Cfg.RVA && (amo_op_q != AMO_NONE));
 
   assign st_ready = store_buffer_ready & amo_buffer_ready;
 
