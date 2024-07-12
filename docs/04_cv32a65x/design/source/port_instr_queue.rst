@@ -106,19 +106,19 @@
      - out
      - Handshake’s data with ID_STAGE
      - ID_STAGE
-     - fetch_entry_t[ariane_pkg::SUPERSCALAR:0]
+     - fetch_entry_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``fetch_entry_valid_o``
      - out
      - Handshake’s valid with ID_STAGE
      - ID_STAGE
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``fetch_entry_ready_i``
      - in
      - Handshake’s ready with ID_STAGE
      - ID_STAGE
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

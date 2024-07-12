@@ -64,61 +64,67 @@
      - in
      - rs1 operand address
      - issue_read_operands
-     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs1_o``
      - out
      - rs1 operand
      - issue_read_operands
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``rs1_valid_o``
      - out
      - rs1 operand is valid
      - issue_read_operands
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs2_i``
      - in
      - rs2 operand address
      - issue_read_operands
-     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs2_o``
      - out
      - rs2 operand
      - issue_read_operands
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_valid_o``
      - out
      - rs2 operand is valid
      - issue_read_operands
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs3_i``
      - in
      - rs3 operand address
      - issue_read_operands
-     - logic[ariane_pkg::REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0]
 
    * - ``rs3_o``
      - out
      - rs3 operand
      - issue_read_operands
-     - rs3_len_t
+     - rs3_len_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs3_valid_o``
      - out
      - rs3 operand is valid
      - issue_read_operands
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``commit_instr_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+
+   * - ``commit_drop_o``
+     - out
+     - TO_BE_COMPLETED
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_ack_i``
      - in
@@ -130,43 +136,43 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - scoreboard_entry_t[ariane_pkg::SUPERSCALAR:0]
+     - scoreboard_entry_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``orig_instr_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0][31:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][31:0]
 
    * - ``decoded_instr_valid_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``decoded_instr_ack_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``orig_instr_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0][31:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][31:0]
 
    * - ``issue_instr_valid_o``
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``issue_ack_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[ariane_pkg::SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``resolved_branch_i``
      - in

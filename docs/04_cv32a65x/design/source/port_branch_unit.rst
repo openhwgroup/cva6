@@ -48,12 +48,6 @@
      - ISSUE_STAGE
      - logic
 
-   * - ``fu_valid_i``
-     - in
-     - any functional unit is valid, check that there is no accidental mis-predict
-     - TO_BE_COMPLETED
-     - logic
-
    * - ``branch_valid_i``
      - in
      - Branch unit instruction is valid

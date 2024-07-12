@@ -40,19 +40,19 @@
      - in
      - rs1 forwarding
      - ISSUE_STAGE
-     - logic[CVA6Cfg.VLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``rs2_forwarding_i``
      - in
      - rs2 forwarding
      - ISSUE_STAGE
-     - logic[CVA6Cfg.VLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``fu_data_i``
      - in
      - FU data useful to execute instruction
      - ISSUE_STAGE
-     - fu_data_t
+     - fu_data_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``pc_i``
      - in
@@ -62,7 +62,7 @@
 
    * - ``is_compressed_instr_i``
      - in
-     - Report whether isntruction is compressed
+     - Report whether instruction is compressed
      - ISSUE_STAGE
      - logic
 
@@ -100,13 +100,13 @@
      - in
      - ALU instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_valid_i``
      - in
      - Branch unit instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_predict_i``
      - in
@@ -130,7 +130,7 @@
      - in
      - CSR instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``csr_addr_o``
      - out
@@ -148,7 +148,7 @@
      - in
      - MULT instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``lsu_ready_o``
      - out
@@ -160,7 +160,7 @@
      - in
      - LSU instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``load_valid_o``
      - out
@@ -234,11 +234,17 @@
      - COMMIT_STAGE
      - logic
 
+   * - ``alu2_valid_i``
+     - in
+     - ALU2 instruction is valid
+     - ISSUE_STAGE
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
+
    * - ``x_valid_i``
      - in
      - CVXIF instruction is valid
      - ISSUE_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``x_ready_o``
      - out
@@ -334,13 +340,13 @@
      - in
      - Report the PMP configuration
      - CSR_REGFILE
-     - riscv::pmpcfg_t[15:0]
+     - riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries:0]
 
    * - ``pmpaddr_i``
      - in
      - Report the PMP addresses
      - CSR_REGFILE
-     - logic[15:0][CVA6Cfg.PLEN-3:0]
+     - logic[CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

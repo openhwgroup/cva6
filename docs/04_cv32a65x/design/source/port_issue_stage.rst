@@ -46,49 +46,49 @@
      - in
      - Handshake's data with decode stage
      - ID_STAGE
-     - scoreboard_entry_t[SUPERSCALAR:0]
+     - scoreboard_entry_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``orig_instr_i``
      - in
      - instruction value
      - ID_STAGE
-     - logic[SUPERSCALAR:0][31:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][31:0]
 
    * - ``decoded_instr_valid_i``
      - in
      - Handshake's valid with decode stage
      - ID_STAGE
-     - logic[SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``is_ctrl_flow_i``
      - in
      - Is instruction a control flow instruction
      - ID_STAGE
-     - logic[SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``decoded_instr_ack_o``
      - out
      - Handshake's acknowlege with decode stage
      - ID_STAGE
-     - logic[SUPERSCALAR:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs1_forwarding_o``
      - out
      - rs1 forwarding
      - EX_STAGE
-     - [CVA6Cfg.VLEN-1:0]
+     - [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``rs2_forwarding_o``
      - out
      - rs2 forwarding
      - EX_STAGE
-     - [CVA6Cfg.VLEN-1:0]
+     - [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0]
 
    * - ``fu_data_o``
      - out
      - FU data useful to execute instruction
      - EX_STAGE
-     - fu_data_t
+     - fu_data_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``pc_o``
      - out
@@ -112,7 +112,7 @@
      - out
      - ALU FU is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``resolve_branch_i``
      - in
@@ -130,13 +130,13 @@
      - out
      - Load store unit FU is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_valid_o``
      - out
      - Branch unit is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_predict_o``
      - out
@@ -148,19 +148,25 @@
      - out
      - Mult FU is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
+
+   * - ``alu2_valid_o``
+     - out
+     - ALU2 FU is valid
+     - EX_STAGE
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``csr_valid_o``
      - out
      - CSR is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``x_issue_valid_o``
      - out
      - CVXIF FU is valid
      - EX_STAGE
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``x_issue_ready_i``
      - in
@@ -233,6 +239,12 @@
      - Instructions to commit
      - COMMIT_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
+
+   * - ``commit_drop_o``
+     - out
+     - Instruction is cancelled
+     - COMMIT_STAGE
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
 
    * - ``commit_ack_i``
      - in

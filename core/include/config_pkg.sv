@@ -170,7 +170,7 @@ package config_pkg;
     bit                          FpgaEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
-    // Enable superscalar with 2 issue ports and 2 commit ports
+    // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;
     // Number of commit ports. Forced to 2 if SuperscalarEn.
     int unsigned                 NrCommitPorts;
@@ -366,6 +366,8 @@ package config_pkg;
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
     assert (Cfg.NrPMPEntries <= 64);
+    assert (!(Cfg.SuperscalarEn && Cfg.RVF));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
 `endif
     // pragma translate_on
   endfunction

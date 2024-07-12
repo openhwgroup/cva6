@@ -172,13 +172,13 @@
      - in
      - PMP configuration
      - CSR_REGFILE
-     - riscv::pmpcfg_t[15:0]
+     - riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries:0]
 
    * - ``pmpaddr_i``
      - in
      - PMP address
      - CSR_REGFILE
-     - logic[15:0][CVA6Cfg.PLEN-3:0]
+     - logic[CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0]
 
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 
