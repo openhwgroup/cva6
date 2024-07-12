@@ -139,16 +139,27 @@ Furthermore, the store_unit module provides information to the load_unit to know
 load_unit
 ---------
 
-The load_unit module manages the data load operations.
+The load unit module manages the data load operations.
 
 Before issuing a load, the load unit needs to check the store buffer for potential aliasing.
-It inserts stalls until it can satisfy the current request. This means:
+It stalls until it can satisfy the current request. This means:
 
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
-* A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer).
+* A store after a load to the same address is allowed.
+* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.
 
-.. TO_BE_COMPLETED, But once the store is committed, do we do forwarding without waiting for the store to actually be finished? Or do we authorize the outcome of the load, which will be carried out in memory/cache?
+After the check of the store buffer, a read request is sent to the D$ with the index field of the address (1).
+The load unit stalls until the D$ acknowledges this request (2).
+In the next cycle, the tag field of the address is sent to the D$ (3).
+If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
+It also stalls until the incoming load instruction is the next instruction to be committed.
+When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).
+
+.. figure:: ../images/schema_fsm_load_control.png
+   :align: center
+
+   Load unit's interactions
 
 .. include:: port_load_unit.rst
 
@@ -157,7 +168,7 @@ It inserts stalls until it can satisfy the current request. This means:
 lsu_bypass
 ----------
 
-TO BE COMPLETED
+The LSU bypass is a FIFO which keeps instructions from the issue stage when the store unit or the load unit are not available immediately.
 
 .. include:: port_lsu_bypass.rst
 
