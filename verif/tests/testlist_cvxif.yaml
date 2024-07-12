@@ -36,9 +36,14 @@ common_test_config_lgcc: &common_test_config_lgcc
 
 testlist:
   - test: cvxif_add_nop
-    <<: *common_test_config
-    iterations: 0
+    <<: *common_test_config_lgcc
+    iterations: 1
     asm_tests: <path_var>/custom/cv_xif/cvxif_add_nop.S
+
+  - test: cvxif_full
+    <<: *common_test_config_lgcc
+    iterations: 1
+    asm_tests: <path_var>/custom/cv_xif/cvxif_full.S
 
   - test: cvxif_multi
     <<: *common_test_config

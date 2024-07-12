@@ -30,7 +30,6 @@
 `include "uvml_mem_macros.sv"
 `include "uvma_axi_macros.sv"
 `include "uvma_clknrst_macros.sv"
-`include "uvma_cvxif_macros.sv"
 `include "uvma_isacov_macros.sv"
 `include "uvme_cva6_macros.sv"
 
@@ -46,7 +45,6 @@ package uvme_cva6_pkg;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;
    import uvma_clknrst_pkg::*;
-   import uvma_cvxif_pkg::*;
    import uvma_axi_pkg::*;
    import uvml_mem_pkg  ::*;
    import uvma_core_cntrl_pkg::*;
@@ -100,7 +98,6 @@ package uvme_cva6_pkg;
    `include "uvma_cva6_core_cntrl_agent.sv"
    `include "uvme_cva6_sb.sv"
    `include "uvme_cva6_vsqr.sv"
-   `include "uvme_cvxif_covg.sv"
    `include "uvme_isa_covg.sv"
    `include "uvme_illegal_instr_covg.sv"
    `include "uvme_exception_covg.sv"

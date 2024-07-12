@@ -34,6 +34,23 @@ start0:
     lw a1, num2;
     CUS_ADD(01010,01011,00000);
 
+#    R4-Type RS3 Instructions
+    LOAD_RS(a0, 0x111111);
+    LOAD_RS(a1, 0x222222);
+    LOAD_RS(a2, 0x333333);
+    CUS_ADD_RS3_MADD(01010,01011,01100,01101);
+    CUS_ADD_RS3_MSUB(01010,01011,01100,01101);
+    CUS_ADD_RS3_NMADD(01010,01011,01100,01101);
+    CUS_ADD_RS3_NMSUB(01010,01011,01100,01101);
+
+#   R-type RS3 Instruction
+    LOAD_RS(a0, 0x111111);
+    LOAD_RS(a1, 0x222222);
+    LOAD_RS(a2, 0x333333);
+    CUS_ADD_RS3_RTYPE(01010,01011,01100); # --> result in 0b01010
+    CUS_ADD_RS3_RTYPE(01010,01011,01100); # --> result in 0b01010
+    CUS_ADD_RS3_RTYPE(01010,01011,01100); # --> result in 0b01010
+
 # Take branch to check for instruction kill
     li a0, 0xCAFE;
     li a1, 0xCAFE;
@@ -52,11 +69,24 @@ branch2:
     lw a1, num2;
     CUS_ADD(01010,01011,00000);
 
+#   Compressed instruction leads to error in spike
+    LOAD_RS(a0, 0x111111);
+    LOAD_RS(a1, 0x222222);
+    LOAD_RS(a2, 0x333333);
+    CUS_CNOP();
+    CUS_CADD(01011,01010);
+    xor a1, a0, a2;
+    beqz a2, pass;
+
+#    Should raise an exception
+#    .half 0x0000;
+#    .word 0xFFFFFFFF;
+
 # (example of) final self-check test
-  li a0, 0xCAFE;
-  li a1, 0xCAFE;
-  xor a2, a0, a1;
-  beqz a2, pass;
+#  li a0, 0xCAFE;
+#  li a1, 0xCAFE;
+#  xor a2, a0, a1;
+#  beqz a2, pass;
 
 fail:
   # Failure post-processing (messages, ecall setup etc.)

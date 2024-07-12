@@ -18,8 +18,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
-  localparam CVA6ConfigNrScoreboardEntries = 8;  // cvxif_pkg.sv
-
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       FpgaEn: bit'(0),
@@ -49,7 +47,7 @@ package cva6_config_pkg;
       RVZiCond: bit'(0),
       RVZicntr: bit'(0),
       RVZihpm: bit'(0),
-      NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      NrScoreboardEntries: unsigned'(8),
       PerfCounterEn: bit'(0),
       MmuPresent: bit'(0),
       RVS: bit'(0),
