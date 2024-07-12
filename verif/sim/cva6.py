@@ -1107,8 +1107,8 @@ def check_spike_version():
   user_spike_stderr_string = user_spike_version.stderr.strip()
 
   if user_spike_version.returncode != 0:
-    logging.info("Stdout of Spike version check:\n\n{user_spike_stdout_string}\n")
-    logging.info("Stderr of Spike version check:\n\n{user_spike_stderr_string}")
+    logging.info(f"Stdout of Spike version check:\n\n{user_spike_stdout_string}\n")
+    logging.info(f"Stderr of Spike version check:\n\n{user_spike_stderr_string}")
     incorrect_version_exit("Spike", "- unknown -", spike_version)
 
   logging.info(f"Spike Version: {user_spike_stderr_string}")
