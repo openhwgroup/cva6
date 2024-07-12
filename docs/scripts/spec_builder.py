@@ -18,8 +18,7 @@ from parameters_extractor import parameters_extractor
 from parameters_extractor import writeout_parameter_table
 
 
-if __name__ == "__main__":
-
+def main():
     PATH = "04_cv32a65x"
     [spec_number, target] = PATH.split("_")
 
@@ -29,6 +28,7 @@ if __name__ == "__main__":
     pathout = f"./{spec_number}_{target}/design/source"
     fileout = f"{pathout}/parameters_{target}.rst"
     writeout_parameter_table(fileout, parameters, target)
+    export_user_cfg_doc("01_cva6_user/user_cfg_doc.rst", parameters)
 
     file = []
     file.append("../core/cva6.sv")
@@ -127,19 +127,7 @@ if __name__ == "__main__":
                     connexion = "none"
 
         with open(fileout, "w", encoding="utf-8") as fout:
-            fout.write("..\n")
-            fout.write("   Copyright 2024 Thales DIS France SAS\n")
-            fout.write(
-                '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
-            )
-            fout.write(
-                "   you may not use this file except in compliance with the License.\n"
-            )
-            fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
-            fout.write(
-                "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
-            )
-            fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
+            fout.write(HEADER)
             fout.write(f".. _CVA6_{module}_ports:\n\n")
             fout.write(f".. list-table:: **{module} module** IO ports\n")
             fout.write("   :header-rows: 1\n")
@@ -165,3 +153,37 @@ if __name__ == "__main__":
                 for comment in comments:
                     fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
             fout.write("\n")
+
+HEADER = """\
+..
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+
+"""
+
+def export_user_cfg_doc(out_path, params):
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(HEADER)
+        f.write("""\
+.. _cva6_user_cfg_doc:
+
+.. list-table:: ``cva6_user_cfg_t`` parameters
+   :header-rows: 1
+
+   * - Name
+     - Type
+     - Description
+""")
+        for name, param in params.items():
+            f.write("\n")
+            f.write(f"   * - ``{name}``\n")
+            f.write(f"     - ``{param.datatype.strip()}``\n")
+            f.write(f"     - {param.description}\n")
+
+if __name__ == "__main__":
+    main()

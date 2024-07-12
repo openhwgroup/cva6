@@ -40,79 +40,79 @@
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - scoreboard_entry_t
+     - scoreboard_entry_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``orig_instr_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic[31:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][31:0]
 
    * - ``issue_instr_valid_i``
      - in
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``issue_ack_o``
      - out
      - Issue stage acknowledge
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs1_o``
      - out
      - rs1 operand address
      - scoreboard
-     - logic[REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0]
 
    * - ``rs1_i``
      - in
      - rs1 operand
      - scoreboard
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``rs1_valid_i``
      - in
      - rs1 operand is valid
      - scoreboard
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs2_o``
      - out
      - rs2 operand address
      - scoreboard
-     - logic[REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0]
 
    * - ``rs2_i``
      - in
      - rs2 operand
      - scoreboard
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_valid_i``
      - in
      - rs2 operand is valid
      - scoreboard
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs3_o``
      - out
      - rs3 operand address
      - scoreboard
-     - logic[REG_ADDR_SIZE-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0]
 
    * - ``rs3_i``
      - in
      - rs3 operand
      - scoreboard
-     - rs3_len_t
+     - rs3_len_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs3_valid_i``
      - in
      - rs3 operand is valid
      - scoreboard
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rd_clobber_gpr_i``
      - in
@@ -130,19 +130,19 @@
      - out
      - TO_BE_COMPLETED
      - TO_BE_COMPLETED
-     - fu_data_t
+     - fu_data_t[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``rs1_forwarding_o``
      - out
      - Unregistered version of fu_data_o.operanda
      - TO_BE_COMPLETED
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``rs2_forwarding_o``
      - out
      - Unregistered version of fu_data_o.operandb
      - TO_BE_COMPLETED
-     - logic[CVA6Cfg.XLEN-1:0]
+     - logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
 
    * - ``pc_o``
      - out
@@ -166,13 +166,13 @@
      - out
      - ALU output is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_valid_o``
      - out
      - Branch instruction is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``branch_predict_o``
      - out
@@ -190,25 +190,31 @@
      - out
      - Load Store Unit result is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``mult_valid_o``
      - out
      - Mult result is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
+
+   * - ``alu2_valid_o``
+     - out
+     - ALU output is valid
+     - TO_BE_COMPLETED
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``csr_valid_o``
      - out
      - CSR result is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``cvxif_valid_o``
      - out
      - CVXIF result is valid
      - TO_BE_COMPLETED
-     - logic
+     - logic[CVA6Cfg.NrIssuePorts-1:0]
 
    * - ``cvxif_ready_i``
      - in

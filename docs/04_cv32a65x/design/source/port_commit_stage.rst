@@ -54,6 +54,12 @@
      - ISSUE_STAGE
      - scoreboard_entry_t[CVA6Cfg.NrCommitPorts-1:0]
 
+   * - ``commit_drop_i``
+     - in
+     - The instruction is cancelled
+     - ISSUE_STAGE
+     - logic[CVA6Cfg.NrCommitPorts-1:0]
+
    * - ``commit_ack_o``
      - out
      - Acknowledge that we are indeed committing
