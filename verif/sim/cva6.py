@@ -1103,15 +1103,18 @@ def check_spike_version():
   # Get Spike User version
   get_env_var("SPIKE_PATH")
   user_spike_version = subprocess.run("$SPIKE_PATH/spike -v", capture_output=True, text=True, shell=True)
-  user_spike_version_string = user_spike_version.stderr.strip()
+  user_spike_stdout_string = user_spike_version.stdout.strip()
+  user_spike_stderr_string = user_spike_version.stderr.strip()
 
   if user_spike_version.returncode != 0:
+    logging.info("Stdout of Spike version check:\n\n{user_spike_stdout_string}\n")
+    logging.info("Stderr of Spike version check:\n\n{user_spike_stderr_string}")
     incorrect_version_exit("Spike", "- unknown -", spike_version)
 
-  logging.info(f"Spike Version: {user_spike_version_string}")
+  logging.info(f"Spike Version: {user_spike_stderr_string}")
 
-  if user_spike_version_string != spike_version:
-    incorrect_version_exit("Spike", user_spike_version_string, spike_version)
+  if user_spike_stderr_string != spike_version:
+    incorrect_version_exit("Spike", user_spike_stderr_string, spike_version)
 
 
 def check_verilator_version():
