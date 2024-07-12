@@ -204,8 +204,7 @@ https://github.com/riscv-non-isa/riscv-arch-test.
 [AXI] AXI Specification,
 https://developer.arm.com/documentation/ihi0022/hc.
 
-[CV-X-IF] Placeholder for the CV-X-IF coprocessor interface currently
-prepared at OpenHW Group; current version in
+[CV-X-IF] “OpenHW Group Specification: Core-V eXtension interface (CV-X-IF)”, version 1.0.0,
 https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
 
 [OpenPiton] “OpenPiton Microarchitecture Specification”, Princeton
@@ -304,9 +303,11 @@ independent requirements.
 |                                   | 2.0.                              |
 +-----------------------------------+-----------------------------------+
 | ISA-120                           | CVA6 should support as an         |
-|                                   | **option** the **Zba**, **Zbb**,  |
-|                                   | **Zbc** and **Zbs** extensions    |
+|                                   | **option** the **B** extension    |
 |                                   | (bit manipulation), version 1.0.  |
+|                                   | The **B** extension comprises the |
+|                                   | **Zba**, **Zbb**, **Zbc**         |
+|                                   | and **Zbs** extensions.           |
 +-----------------------------------+-----------------------------------+
 | ISA-130                           | CVA6 should support as an         |
 |                                   | **option** the **Zicond**         |
@@ -614,15 +615,15 @@ work. If a RISC-V specification is ratified, the CVA6 specification will
 likely switch to it.
 
 +-----------------------------------+-----------------------------------+
-| FET‑10                            | CVA6 shall support the            |
+| FET‑10                            | CVA6 should support the           |
 |                                   | ``FENCE.T`` instruction that      |
 |                                   | ensures that the execution time   |
 |                                   | of subsequent instructions is     |
 |                                   | unrelated with predecessor        |
 |                                   | instructions.                     |
 +-----------------------------------+-----------------------------------+
-| FET‑20                            | ``FENCE.T`` shall be available in |
-|                                   | all privilege modes (machine,     |
+| FET‑20                            | ``FENCE.T`` should be available   |
+|                                   | in all privilege modes (machine,  |
 |                                   | supervisor, user and hypervisor   |
 |                                   | if present).                      |
 +-----------------------------------+-----------------------------------+
@@ -636,11 +637,6 @@ It is not yet decided if the ``FENCE.T`` instruction arguments can be
 used to select a subset of microarchitecture features that will be
 cleared. The list of arguments, if any, will be detailed in the user’s
 guide.
-
-Anticipation of verification: It can be cumbersome to prove the timing
-decorrelation as expressed in the requirement with digital simulations.
-We can simulate the microarchitecture features and explain how they
-satisfy the requirement as Nils Wistoff’s work demonstrated.
 
 .. _ppa_targets:
 
@@ -751,13 +747,6 @@ Coprocessor interface
 |                                   | and “Result” interfaces of the    |
 |                                   | [CV-X-IF] specification.          |
 +-----------------------------------+-----------------------------------+
-
-The goal is to have a compatible interface between CORE-V cores (CVA6,
-CV32E40X…). The feasibility still needs to be confirmed; including the
-speculative execution.
-
-CVA6 can interface with several coprocessors simultaneously through a
-specific external feature implemented on the CV-X-IF interface.
 
 .. _multi_core_interface:
 
