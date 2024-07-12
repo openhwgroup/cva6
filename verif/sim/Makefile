@@ -207,6 +207,7 @@ COMMON_RUN_ARGS = \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libcustomext \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm
 
 ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
@@ -315,6 +316,7 @@ xrun_uvm_run:
 	  $(XRUN_RUN)			\
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	  ++$(elf) \
 	  +elf_file=$(elf) \
