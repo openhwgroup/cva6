@@ -99,17 +99,17 @@ module store_unit
       data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-17:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-16]};
       3'b011:
       data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-25:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-24]};
-      default: data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-1:0]};
+      default:
+        if (CVA6Cfg.IS_XLEN64) begin
+          case (addr_tmp)
+            3'b100: data_tmp = {data[31:0], data[63:32]};
+            3'b101: data_tmp = {data[23:0], data[63:24]};
+            3'b110: data_tmp = {data[15:0], data[63:16]};
+            3'b111: data_tmp = {data[7:0], data[63:8]};
+            default: data_tmp = {data[63:0]};
+          endcase
+        end
     endcase
-    if (CVA6Cfg.IS_XLEN64) begin
-      case (addr_tmp)
-        3'b100: data_tmp = {data[31:0], data[63:32]};
-        3'b101: data_tmp = {data[23:0], data[63:24]};
-        3'b110: data_tmp = {data[15:0], data[63:16]};
-        3'b111: data_tmp = {data[7:0], data[63:8]};
-        default: data_tmp = {data[63:0]};
-      endcase
-    end
     return data_tmp[CVA6Cfg.XLEN-1:0];
   endfunction
 
