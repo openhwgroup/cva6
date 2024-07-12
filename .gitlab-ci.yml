@@ -155,6 +155,7 @@ gen_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
+    SPIKE_TANDEM: 1
     COLLECT_SIMU_LOGS: 1
   script:
     - bash verif/regress/smoke-gen_tests.sh
@@ -296,7 +297,6 @@ riscv_arch_test:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -309,7 +309,6 @@ compliance:
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -324,7 +323,6 @@ riscv-tests-v:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -338,7 +336,6 @@ riscv-tests-p:
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
