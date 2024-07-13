@@ -70,13 +70,13 @@ module cva6_hpdcache_icache_if_adapter
   //  Internal nets and registers
   //  {{{
   logic hpdcache_req_is_uncacheable;
-  logic va_transferred_q, va_is_transferred_d;
+  logic va_transferred_q, va_transferred_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : transferred_state_magnegement
     if (!rst_ni) begin
       va_transferred_q <= '0;
     end else begin
-      va_transferred_q <= va_is_transferred_d;
+      va_transferred_q <= va_transferred_d;
     end
   end
 

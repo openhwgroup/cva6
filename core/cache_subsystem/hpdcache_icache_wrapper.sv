@@ -198,8 +198,8 @@ module hpdcache_icache_wrapper
 
           .hpdcache_req_sid_i(hpdcache_req_sid_t'(r)),
 
-          .fetch_dreq_i(fetch_dreq_i),
-          .fetch_dreq_o(fetch_dreq_o),
+          .dreq_i(fetch_dreq_i),
+          .dreq_o(fetch_dreq_o),
           .fetch_obi_req_i(fetch_obi_req_i),
           .fetch_obi_rsp_o(fetch_obi_rsp_o),
 
