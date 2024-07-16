@@ -1508,6 +1508,7 @@ module cva6
     assign halt_acc_ctrl              = '0;
     assign stall_st_pending_ex        = '0;
     assign flush_acc                  = '0;
+    assign single_step_acc_commit     = '0;
 
     // D$ connection is unused
     assign dcache_req_ports_acc_cache = '0;
