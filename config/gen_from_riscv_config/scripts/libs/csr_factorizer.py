@@ -24,7 +24,7 @@ def address_to_key(address):
 
 def factorizer(yaml_data):
     privname = None
-    legalname = None
+    legalname= None
     fieldname = []
     regname = []
     regdescr = []
@@ -51,29 +51,15 @@ def factorizer(yaml_data):
                 desc = ""
             if regelement.get("rv32", "")["accessible"]:
                 fields = regelement.get("rv32", "").get("fields", [])
-                if not fields:
-                    legal = (
-                        regelement.get("rv32", "").get("type", None).keys()
-                        if regelement.get("rv32", "").get("type", None) is not None
-                        else None
-                    )
-                else:
-                    legal = [
-                        regelement.get("rv32", "").get(item, {}).get("type").keys()
-                        for item in fields
-                        if not isinstance(item, list)
-                        and regelement.get("rv32", "").get(item, {}).get("type")
-                        is not None
-                    ]
+                if not fields :
+                  legal = regelement.get("rv32", "").get("type", None).keys() if regelement.get("rv32", "").get("type", None) is not None else None
+                else :
+                  legal = [regelement.get("rv32", "").get(item, {}).get("type").keys()for item in fields if not isinstance(item, list) and regelement.get("rv32", "").get(item, {}).get("type") is not None]
                 pattern = r"(\D+)(\d+)(.*)"
                 match = re.search(pattern, key)
                 if match:
                     key_to_remove.append(key)
-                    if (
-                        privname
-                        and match.group(1) == privname.group(1)
-                        and legalname == legal
-                    ):
+                    if privname and match.group(1) == privname.group(1) and legalname == legal:
                         if len(match.group(3)) > 0:
                             suffix_name.append(match.group(0))
                             field_suffix.append(match.group(1))

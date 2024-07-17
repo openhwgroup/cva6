@@ -859,7 +859,6 @@ class CsrParser:
                                 elif isinstance(legal_2, list):
                                     pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(:|,?)\s*((?:0x)?[0-9A-Fa-f]+)?"
                                     for value in legal_2:
-                                        print(value)
                                         value_list = value.split(",")
                                         processed_values = []
                                         for val in value_list:
@@ -983,7 +982,6 @@ class CsrParser:
                     else:
                         if isinstance(legal_2, dict):
                             pattern = r"([\w\[\]:]+\s*(\w+)\s*)(\[\s*((?:0x)?[0-9A-Fa-f]+)\s*\D+\s*(?:((?:0x)?[0-9A-Fa-f]+))?\s*])"
-                            print(str(legal_2["legal"][0]))
                             matches = re.search(pattern, str(legal_2["legal"][0]))
                             if matches:
                                 legal_value = Render.range(
@@ -1220,7 +1218,6 @@ class SpikeParser:
         bitWidth = 32
         isa = ""
         for entry in data["hart_ids"]:
-            print(int(data[f"hart{entry}"].get("satp", {}).get("reset-val", "")) >> 31)
             M = (
                 "M"
                 if data[f"hart{entry}"]
@@ -1334,7 +1331,6 @@ class CsrGenerator:
 
     def write(self, file_name, string):
         path = f"./{self.target}/csr/"
-        print(path)
         if not os.path.exists(path):
             os.makedirs(path)
         _dest = os.path.join(path, file_name)
