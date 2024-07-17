@@ -143,7 +143,7 @@ module extended_hpdcache_subsystem_axi_arbiter
       mem_req_read_valid[0] = icache_miss_valid_i,
       mem_req_read[0] = icache_miss_i;
 
-  assign dcache_uc_read_ready_o = mem_req_read_ready[1],
+  assign icache_uc_read_ready_o = mem_req_read_ready[1],
       mem_req_read_valid[1] = icache_uc_read_valid_i,
       mem_req_read[1] = icache_uc_read_i;
 
