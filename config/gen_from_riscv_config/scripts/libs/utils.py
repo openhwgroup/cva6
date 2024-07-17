@@ -454,6 +454,191 @@ class InstrstBlock(InstructionBlockClass):
                 r.table(header=_headers, data=reg_table)
         return r.data
 
+class AdocAddressBlock(AddressBlockClass):
+    """Generates an AsciiDoc file from a IP-XACT register description"""
+
+    def __init__(self, name):
+        super().__init__("csr")
+        self.name = name
+        self.registerList = []
+        self.suffix = ".adoc"
+
+    def get_access_privilege(self, reg):
+        """Registers with address bits [11:10] == 2'b11 are Read-Only
+        as per privileged ISA spec."""
+        # Handle register address ranges separated by dashes.
+        if (int(reg.address.split("-")[0], 0) & 0xC00) == 0xC00:
+            return "RO"
+        else:
+            return "RW"
+        
+    def generate_label(self, name):
+        return "_" + name.replace('[','').replace(']','').upper()
+
+    def returnAsString(self):
+        registerlist = sorted(self.registerList, key=lambda reg: reg.address)
+        r = ""
+        regNameList = [reg.name.upper() for reg in registerlist]
+        regAddressList = [reg.address for reg in registerlist]
+        regPrivModeList = [reg.access for reg in registerlist]
+        regPrivAccessList = [self.get_access_privilege(reg) for reg in registerlist]
+        regDescrList = [reg.desc for reg in registerlist]
+        regRV32List = [reg.RV32 for reg in registerlist]
+        regRV64List = [reg.RV64 for reg in registerlist]
+
+        r += "////\n"
+        r += "  Copyright (c) 2024 OpenHW Group\n"
+        r += "  Copyright (c) 2024 Thales\n"
+        r += "  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n"
+        r += "  Author: Abdessamii Oukalrazqou\n"
+        r += "////\n\n"
+        
+        r += "=== %s\n\n"%self.name
+        r += "==== Conventions\n\n"
+        
+        r += "In the subsequent sections, register fields are labeled with one of the following abbreviations:\n\n"
+        
+        r += "* WPRI (Writes Preserve Values, Reads Ignore Values): read/write field reserved\n"
+        r += "for future use.  For forward compatibility, implementations that do not\n"
+        r += "furnish these fields must make them read-only zero.\n"
+        
+        r += "* WLRL (Write/Read Only Legal Values): read/write CSR field that specifies\n"
+        r += "behavior for only a subset of possible bit encodings, with other bit encodings\n"
+        r += "reserved.\n"
+        
+        r += "* WARL (Write Any Values, Reads Legal Values): read/write CSR fields which are\n"
+        r += "only defined for a subset of bit encodings, but allow any value to be written\n"
+        r += "while guaranteeing to return a legal value whenever read.\n"
+       
+        r += "* ROCST (Read-Only Constant): A special case of WARL field which admits only one\n"
+        r += "legal value, and therefore, behaves as a constant field that silently ignores\n"
+        r += "writes.\n"
+
+        r += "* ROVAR (Read-Only Variable): A special case of WARL field which can take\n"
+        r += "multiple legal values but cannot be modified by software and depends only on\n"
+        r += "the architectural state of the hart.\n\n"
+        
+        r += "In particular, a register that is not internally divided\n"
+        r += "into multiple fields can be considered as containing a single field of XLEN bits.\n"
+        r += "This allows to clearly represent read-write registers holding a single legal value\n"
+        r += "(typically zero).\n\n"
+        
+        r += "==== Register Summary\n\n"
+
+        r += "|===\n"
+        r += "|Address | Register Name | Privilege | Description\n\n"
+        for i, _ in enumerate(regNameList):
+            if regRV32List[i] | regRV64List[i]:
+                r += "|" + regAddressList[i] + \
+                    f"| `<<{self.generate_label(regNameList[i])},{regNameList[i].upper()}>>`" + \
+                    "|" + regPrivModeList[i] + regPrivAccessList[i] + \
+                    "|" + str(regDescrList[i]) + "\n"
+        r += "|===\n\n"
+
+        r += "==== Register Description\n\n"
+        for reg in registerlist:
+            if reg.RV32 | reg.RV64:
+                r += "[[%s]]\n"%self.generate_label(reg.name)
+                r += "===== %s\n\n"%reg.name.upper()
+
+                r += "Address:: %s\n"%reg.address
+                if reg.resetValue:
+                    # display the resetvalue in hex notation in the full length of the register
+                    r += "Reset Value:: 0x%s\n"%f"{reg.resetValue[2:].zfill(int(reg.size/4))}"
+                    # RO/RW privileges are encoded in register address.
+                    r += "Privilege:: %s\n"%(reg.access + self.get_access_privilege(reg))
+                    r += "Description:: %s\n\n"%(reg.desc)
+                    
+                reg_table = []
+                for field in reg.field:
+                    if field.bitWidth == 1:  # only one bit -> no range needed
+                        bits = f"{field.bitlsb}"
+                    else:
+                        bits = f"[{field.bitmsb}:{field.bitlsb}]"
+                    _line = [
+                        bits,
+                        field.name.upper(),
+                        field.fieldreset,
+                        field.fieldaccess,
+                        (
+                            Render.bitmask(field.andMask, field.orMask)
+                            if field.andMask and field.orMask
+                            else field.bitlegal
+                        ),
+                    ]
+                    _line.append(field.fieldDesc)
+                    reg_table.append(_line)
+
+                reg_table = sorted(
+                    reg_table, key=lambda x: int(x[0].strip("[]").split(":")[0])
+                )
+                # table of the register
+                r += "|===\n"
+                r += "| Bits | Field Name | Reset Value | Type | Legal Values | Description\n\n"
+                for reg in reg_table:
+                    for col in reg:
+                        r +="| %s "%col.replace('\n','')
+                    r += "\n"
+                r += "|===\n\n"
+                        
+        return r
+
+class InstadocBlock(InstructionBlockClass):
+    """Generates a ISA AsciiDoc file from RISC-V Config Yaml register description"""
+
+    def __init__(self, name):
+        super().__init__("isa")
+        self.name = name
+        self.Instructionlist = []
+        self.suffix = ".adoc"
+
+    def returnAsString(self):
+        r = ""
+        InstrNameList = [reg.key for reg in self.Instructionlist]
+        InstrDescrList = [reg.descr for reg in self.Instructionlist]
+        InstrExtList = [reg.Extension_Name for reg in self.Instructionlist]
+        
+        r += "////\n"
+        r += "  Copyright (c) 2024 OpenHW Group\n"
+        r += "  Copyright (c) 2024 Thales\n"
+        r += "  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n"
+        r += "  Author: Abdessamii Oukalrazqou\n"
+        r += "////\n\n"
+
+        r += "=== %s\n\n"%self.name
+        r += "==== Instructions\n\n"
+            
+        r += "|===\n"
+        r += "|Subset Name | Name | Description\n\n"
+        for i, _ in enumerate(InstrNameList):
+            r += "|%s | %s | %s\n"%(str(InstrExtList[i]),
+                    str(InstrNameList[i]) + "_",
+                    str(InstrDescrList[i]))
+        r += "|===\n\n"
+                    
+        for reg in self.Instructionlist:
+            reg_table = []
+            if len(reg.Name) > 0:
+                r += "==== %s\n\n"%reg.key
+                r += "|===\n"
+                r += "| Name | Format | Pseudocode|Invalid_values | Exception_raised | Description| Op Name\n\n"
+
+                for fieldIndex in list(range(len(reg.Name))):
+                    _line = [
+                        reg.Name[fieldIndex],
+                        reg.Format[fieldIndex],
+                        reg.pseudocode[fieldIndex],
+                        reg.invalid_values[fieldIndex],
+                        reg.exception_raised[fieldIndex],
+                        reg.Description[fieldIndex],
+                    ]
+                    _line.append(reg.OperationName[fieldIndex])
+
+                    for col in _line:
+                        r +="| %s "%col.replace('\n','')
+                    r += "\n"
+                r += "|===\n\n"
+        return r
 
 class InstmdBlock(InstructionBlockClass):
     """Generates an ISA Markdown file from a RISC Config Yaml register description"""

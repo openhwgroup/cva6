@@ -1,0 +1,895 @@
+////
+   Copyright (c) 2023 OpenHW Group
+   Copyright (c) 2023 Thales
+
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+
+   Original Author: Alae Eddine EZ ZEJJARI (alae-eddine.ez-zejjari@external.thalesgroup.com)
+////
+
+[[cva6_axi]]
+AXI
+~~~
+
+[[cva6_axi-introduction]]
+Introduction
+^^^^^^^^^^^^
+In this chapter, we describe in detail the restriction that apply to the supported features.
+
+In order to understand how the AXI memory interface behaves in CVA6, it is necessary to read the AMBA AXI and ACE Protocol Specification (https://developer.arm.com/documentation/ihi0022/hc) and this chapter.
+
+_Applicability of this chapter to configurations:_
+
+[cols=",",options="header",]
+|=============================
+|Configuration |Implementation
+|CV32A60AX |AXI included
+|CV32A60X |AXI included
+|=============================
+
+[[about-the-axi4-protocol]]
+About the AXI4 protocol
++++++++++++++++++++++++
+
+The AMBA AXI protocol supports high-performance, high-frequency system designs for communication between Manager and Subordinate components.
+
+The AXI protocol features are:
+
+* It is suitable for high-bandwidth and low-latency designs.
+* High-frequency operation is provided, without using complex bridges.
+* The protocol meets the interface requirements of a wide range of components.
+* It is suitable for memory controllers with high initial access latency.
+* Flexibility in the implementation of interconnect architectures is provided.
+* It is backward-compatible with AHB and APB interfaces.
+
+The key features of the AXI protocol are:
+
+* Separate address/control and data phases.
+* Support for unaligned data transfers, using byte strobes.
+* Uses burst-based transactions with only the start address issued.
+* Separate read and write data channels, that can provide low-cost Direct Memory Access (DMA).
+* Support for issuing multiple outstanding addresses.
+* Support for out-of-order transaction completion.
+* Permits easy addition of register stages to provide timing closure.
+
+The present specification is based on: https://developer.arm.com/documentation/ihi0022/hc
+
+
+[[axi4-and-cva6]]
+AXI4 and CVA6
++++++++++++++
+
+The AXI bus protocol is used with the CVA6 processor as a memory interface. Since the processor is the one that initiates the connection with the memory, it will have a manager interface to send requests to the subordinate, which will be the memory.
+
+Features supported by CVA6 are the ones in the AMBA AXI4 specification and the Atomic Operation feature from AXI5. With restriction that apply to some features.
+
+This doesn’t mean that all the full set of signals available on an AXI interface are supported by the CVA6. Nevertheless, all required AXI signals are implemented.
+
+Supported AXI4 features are defined in AXI Protocol Specification sections: A3, A4, A5, A6 and A7.
+
+Supported AXI5 feature are defined in AXI Protocol Specification section: E1.1.
+
+
+[[signal-description-section-a2]]
+Signal Description (Section A2)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section introduces the AXI memory interface signals of CVA6. Most of the signals are supported by CVA6, the tables summarizing the signals identify the exceptions.
+
+In the following tables, the *Src* column tells whether the signal is driven by Manager ou Subordinate.
+
+The AXI required and optional signals, and the default signals values that apply when an optional signal is not implemented are defined in AXI Protocol Specification section A9.3.
+
+[[global-signals-section-a2.1]]
+Global signals (Section A2.1)
++++++++++++++++++++++++++++++
+
+Table 2.1 shows the global AXI memory interface signals.
+
+[width="100%",cols="20%,20%,60%",options="header",]
+|==========================================================
+|*Signal* |*Src* |*Description*
+|*ACLK* |Clock source a|
+[verse]
+--
+Global clock signal. Synchronous signals are sampled on the
+rising edge of the global clock.
+--
+
+|*WDATA* |Reset source a|
+[verse]
+--
+Global reset signal. This signal is active-LOW.
+--
+
+|==========================================================
+
+[[write-address-channel-signals-section-a2.2]]
+Write address channel signals (Section A2.2)
+++++++++++++++++++++++++++++++++++++++++++++
+
+Table 2.2 shows the AXI memory interface write address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+
+[width="100%",cols="15%,15%,15%,55%",options="header",]
+|=====================================================================
+|*Signal* |*Src* |*Support* |*Description*
+|*AWID* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Identification tag for a write transaction.
+CVA6 gives the id depending on the type of transaction.
+See transaction_identifiers_label.
+--
+
+|*AWADDR* |M |Yes a|
+[verse]
+--
+The address of the first transfer in a write transaction.
+--
+
+|*AWLEN* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Length, the exact number of data transfers in a write
+transaction. This information determines the number of
+data transfers associated with the address.
+All write transactions performed by CVA6 are of length 1.
+(AWLEN = 0b00000000)
+--
+
+|*AWSIZE* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Size, the number of bytes in each data transfer in a write
+transaction
+See address_structure_label.
+--
+
+|*AWBURST* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Burst type, indicates how address changes between each
+transfer in a write transaction.
+All write transactions performed by CVA6 are of burst type
+INCR. (AWBURST = 0b01)
+--
+
+|*AWLOCK* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Provides information about the atomic characteristics of a
+write transaction.
+--
+
+|*AWCACHE* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Indicates how a write transaction is required to progress
+through a system.
+The subordinate is always of type Normal Non-cacheable Non-bufferable.
+(AWCACHE = 0b0010)
+--
+
+|*AWPROT* |M |Yes a|
+[verse]
+--
+Protection attributes of a write transaction:
+privilege, security level, and access type.
+The value of AWPROT is always 0b000.
+--
+
+|*AWQOS* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+Quality of Service identifier for a write transaction.
+AWQOS = 0b0000
+--
+
+|*AWREGION* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+Region indicator for a write transaction.
+AWREGION = 0b0000
+--
+
+|*AWUSER* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+User-defined extension for the write address channel.
+AWUSER = 0b00
+--
+
+|*AWATOP* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+AWATOP indicates the Properties of the Atomic Operation
+used for a write transaction.
+See atomic_transactions_label.
+--
+
+|*AWVALID* |M |Yes a|
+[verse]
+--
+Indicates that the write address channel signals are valid.
+--
+
+|*AWREADY* |S |Yes a|
+[verse]
+--
+Indicates that a transfer on the write address channel
+can be accepted.
+--
+
+|=====================================================================
+
+[[write-data-channel-signals-section-a2.3]]
+Write data channel signals (Section A2.3)
++++++++++++++++++++++++++++++++++++++++++
+
+Table 2.3 shows the AXI write data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+
+[width="100%",cols="15%,15%,15%,55%",options="header",]
+|==========================================================
+|*Signal* |*Src* |*Support* |*Description*
+|*WDATA* |M |Yes a|
+[verse]
+--
+Write data.
+--
+
+|*WSTRB* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Write strobes, indicate which byte lanes hold valid data
+See data_read_and_write_structure_label.
+--
+
+|*WLAST* |M |Yes a|
+[verse]
+--
+Indicates whether this is the last data transfer in a write
+transaction.
+--
+
+|*WUSER* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+User-defined extension for the write data channel.
+--
+
+|*WVALID* |M |Yes a|
+[verse]
+--
+Indicates that the write data channel signals are valid.
+--
+
+|*WREADY* |S |Yes a|
+[verse]
+--
+Indicates that a transfer on the write data channel can be
+accepted.
+--
+
+|==========================================================
+
+[[write-response-channel-signals-section-a2.4]]
+Write Response Channel signals (Section A2.4)
++++++++++++++++++++++++++++++++++++++++++++++
+
+Table 2.4 shows the AXI write response channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+
+[width="100%",cols="15%,15%,15%,55%",options="header",]
+|=============================================================
+|*Signal* |*Src* |*Support* |*Description*
+|*BID* |S a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Identification tag for a write response.
+CVA6 gives the id depending on the type of transaction.
+See transaction_identifiers_label.
+--
+
+|*BRESP* |S |Yes a|
+[verse]
+--
+Write response, indicates the status of a write transaction.
+See read_and_write_response_structure_label.
+--
+
+|*BUSER* |S a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+User-defined extension for the write response channel.
+Not supported.
+--
+
+|*BVALID* |S |Yes a|
+[verse]
+--
+Indicates that the write response channel signals are valid.
+--
+
+|*BREADY* |M |Yes a|
+[verse]
+--
+Indicates that a transfer on the write response channel can be
+accepted.
+--
+
+|=============================================================
+
+[[read-address-channel-signals-section-a2.5]]
+Read address channel signals (Section A2.5)
++++++++++++++++++++++++++++++++++++++++++++
+
+Table 2.5 shows the AXI read address channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+
+
+[width="100%",cols="15%,15%,15%,55%",options="header",]
+|================================================================
+|*Signal* |*Src* |*Support* |*Description*
+|*ARID* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Identification tag for a read transaction.
+CVA6 gives the id depending on the type of transaction.
+See transaction_identifiers_label.
+--
+
+|*ARADDR* |M a|
+[verse]
+--
+Yes
+--
+
+ a|
+[verse]
+--
+The address of the first transfer in a read transaction.
+--
+
+|*ARLEN* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Length, the exact number of data transfers in a read
+transaction. This information determines the number of data
+transfers associated with the address.
+All read transactions performed by CVA6 have a length equal to 0,
+ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64.
+--
+
+|*ARSIZE* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Size, the number of bytes in each data transfer in a read
+transaction
+See address_structure_label.
+--
+
+|*ARBURST* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Burst type, indicates how address changes between each
+transfer in a read transaction.
+All Read transactions performed by CVA6 are of burst type INCR.
+(ARBURST = 0b01)
+--
+
+|*ARLOCK* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Provides information about the atomic characteristics of
+a read transaction.
+--
+
+|*ARCACHE* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Indicates how a read transaction is required to progress
+through a system.
+The memory is always of type Normal Non-cacheable Non-bufferable.
+(ARCACHE = 0b0010)
+--
+
+|*ARPROT* |M a|
+[verse]
+--
+Yes
+--
+
+ a|
+[verse]
+--
+Protection attributes of a read transaction:
+privilege, security level, and access type.
+The value of ARPROT is always 0b000.
+--
+
+|*ARQOS* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+Quality of Service identifier for a read transaction.
+ARQOS= 0b00
+--
+
+|*ARREGION* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+Region indicator for a read transaction.
+ARREGION= 0b00
+--
+
+|*ARUSER* |M a|
+[verse]
+--
+No
+(optional)
+--
+
+ a|
+[verse]
+--
+User-defined extension for the read address channel.
+ARUSER= 0b00
+--
+
+|*ARVALID* |M a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Indicates that the read address channel signals are valid.
+--
+
+|*ARREADY* |S a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+Indicates that a transfer on the read address channel can be
+accepted.
+--
+
+|================================================================
+
+[[read-data-channel-signals-section-a2.6]]
+Read data channel signals (Section A2.6)
+++++++++++++++++++++++++++++++++++++++++
+
+Table 2.6 shows the AXI read data channel signals. Unless the description indicates otherwise, a signal can take any parameter if is supported.
+
+
+[width="100%",cols="15%,15%,15%,55%",options="header",]
+|==================================================================
+|*Signal* |*Src* |*Support* |*Description*
+|*RID* |S a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+The ID tag of the read data transfer.
+CVA6 gives the id depending on the type of transaction.
+See transaction_identifiers_label.
+--
+
+|*RDATA* |S |Yes a|
+[verse]
+--
+Read data.
+--
+
+|*RLAST* |S |Yes a|
+[verse]
+--
+Indicates whether this is the last data transfer in a read
+transaction.
+--
+
+|*RUSER* |S a|
+[verse]
+--
+Yes
+(optional)
+--
+
+ a|
+[verse]
+--
+User-defined extension for the read data channel.
+Not supported.
+--
+
+|*RVALID* |S |Yes a|
+[verse]
+--
+Indicates that the read data channel signals are valid.
+--
+
+|*RREADY* |M |Yes a|
+[verse]
+--
+Indicates that a transfer on the read data channel can be accepted.
+--
+
+|==================================================================
+
+[[single-interface-requirements-transaction-structure-section-a3.4]]
+Single Interface Requirements: Transaction structure (Section A3.4)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section describes the structure of transactions. The following sections define the address, data, and response
+structures
+
+[[address_structure_label]]
+Address structure (Section A3.4.1)
+++++++++++++++++++++++++++++++++++
+
+The AXI protocol is burst-based. The Manager begins each burst by driving control information and the address of the first byte in the transaction to the Subordinate. As the burst progresses, the Subordinate must calculate the addresses of subsequent transfers in the burst.
+
+*Burst length*
+
+The burst length is specified by:
+
+* `ARLEN[7:0]`, for read transfers
+* `AWLEN[7:0]`, for write transfers
+
+The burst length for AXI4 is defined as: `Burst_Length = AxLEN[3:0] + 1`.
+
+CVA6 has some limitation governing the use of bursts:
+
+* _All read transactions performed by CVA6 are of burst length equal to 0, ICACHE_LINE_WIDTH/64 or DCACHE_LINE_WIDTH/64._
+* _All write transactions performed by CVA6 are of burst length equal to 1._
+
+*Burst size*
+
+The maximum number of bytes to transfer in each data transfer, or beat, in a burst, is specified by:
+
+* `ARSIZE[2:0]`, for read transfers
+* `AWSIZE[2:0]`, for write transfers
+
+_The maximum value can be taking by AxSIZE is log2(AXI DATA WIDTH/8) (8 bytes by transfer)._ 
+_If(RV32) AWSIZE < 3 (The maximum store size is 4 bytes)_
+
+*Burst type*
+
+The AXI protocol defines three burst types:
+
+* *FIXED*
+* *INCR*
+* *WRAP*
+
+The burst type is specified by:
+
+* `ARBURST[1:0]`, for read transfers
+* `AWBURST[1:0]`, for write transfers
+
+_All transactions performed by CVA6 are of burst type INCR. (AxBURST = 0b01)_
+
+[[data_read_and_write_structure_label]]
+Data read and write structure: (Section A3.4.4)
++++++++++++++++++++++++++++++++++++++++++++++++
+
+*Write strobes*
+
+The `WSTRB[n:0]` signals when HIGH, specify the byte lanes of the data bus that contain valid information. There is one write strobe 
+for each 8 bits of the write data bus, therefore `WSTRB[n]` corresponds to `WDATA[(8n)+7: (8n)]`.
+
+_Write Strobe width is equal to (AXI_DATA_WIDTH/8) (n = (AXI_DATA_WIDTH/8)-1)._
+
+_The size of transactions performed by cva6 is equal to the number of data byte lanes containing valid information._ 
+_This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information._ 
+_CVA6 doesn't perform unaligned memory acces, therefore the WSTRB take only combination of aligned access_ 
+_If(RV32) WSTRB < 255 (Since AWSIZE lower than 3, so the data bus cannot have more than 4 valid byte lanes)_
+
+*Unaligned transfers*
+
+For any burst that is made up of data transfers wider than 1 byte, the first bytes accessed might be unaligned with the natural
+address boundary. For example, a 32-bit data packet that starts at a byte address of 0x1002 is not aligned to the natural 32-bit
+transfer size.
+
+_CVA6 does not perform Unaligned transfers._
+
+[[read_and_write_response_structure_label]]
+Read and write response structure (Section A3.4.5)
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The AXI protocol provides response signaling for both read and write transactions:
+
+* For read transactions, the response information from the Subordinate is signaled on the read data channel.
+* For write transactions, the response information is signaled on the write response channel.
+
+CVA6 does not consider the responses sent by the memory except in the exclusive Access ( `XRESP[1:0]` = 0b01 ).
+
+[[transaction-attributes-memory-types-section-a4]]
+Transaction Attributes: Memory types (Section A4)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section describes the attributes that determine how a transaction should be treated by the AXI subordinate that is connected to the CVA6.
+
+`AxCACHE` always takeq 0b0010. The subordinate should be a Normal Non-cacheable Non-bufferable.
+
+The required behavior for Normal Non-cacheable Non-bufferable memory is:
+
+* The write response must be obtained from the final destination.
+* Read data must be obtained from the final destination.
+* Transactions are modifiable.
+* Writes can be merged.
+
+[[transaction_identifiers_label]]
+Transaction Identifiers (Section A5)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The AXI protocol includes AXI ID transaction identifiers. A Manager can use these to identify separate transactions that must be returned in order.
+
+The CVA6 identify each type of transaction with a specific ID:
+
+* For read transaction, id can be 0 or 1. (0 for instruction fetch and 1 for data)
+* For write transaction, id = 1.
+* For Atomic operation, id = 3. This ID must be sent in the write channels and also in the read channel if the transaction performed requires response data.
+* For Exclusive transaction, id = 3.
+
+[[axi-ordering-model-section-a6]]
+AXI Ordering Model (Section A6)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[[axi-ordering-model-overview-section-a6.1]]
+AXI ordering model overview (Section A6.1)
+++++++++++++++++++++++++++++++++++++++++++
+
+The AXI ordering model is based on the use of the transaction identifier, which is signaled on `ARID` or `AWID`.
+
+Transaction requests on the same channel, with the same ID and destination are guaranteed to remain in order.
+
+Transaction responses with the same ID are returned in the same order as the requests were issued.
+
+Write transaction requests, with the same destination are guaranteed to remain in order. Because all write transaction performed by CVA6 have the same ID.
+
+CVA6 can perform multiple outstanding write address transactions.
+
+CVA6 cannot perform a Read transaction and a Write one at the same time. Therefore there no ordering problems between Read and write transactions.
+
+The ordering model does not give any ordering guarantees between:
+
+* Transactions from different Managers
+* Read Transactions with different IDs
+* Transactions to different Memory locations
+
+If the CVA6 requires ordering between transactions that have no ordering guarantee, the Manager must wait to receive a response to the first transaction before issuing the second transaction.
+
+[[memory-locations-and-peripheral-regions-section-a6.2]]
+Memory locations and Peripheral regions (Section A6.2)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The address map in AMBA is made up of Memory locations and Peripheral regions. But the AXI is associated to the memory interface of CVA6.
+
+A Memory location has all of the following properties:
+
+* A read of a byte from a Memory location returns the last value that was written to that byte location.
+* A write to a byte of a Memory location updates the value at that location to a new value that is obtained by a subsequent read of that location.
+* Reading or writing to a Memory location has no side-effects on any other Memory location.
+* Observation guarantees for Memory are given for each location.
+* The size of a Memory location is equal to the single-copy atomicity size for that component.
+
+[[transactions-and-ordering-section-a6.3]]
+Transactions and ordering (Section A6.3)
+++++++++++++++++++++++++++++++++++++++++
+
+A transaction is a read or a write to one or more address locations. The locations are determined by AxADDR and any relevant qualifiers such as the Non-secure bit in `AxPROT`.
+
+* Ordering guarantees are given only between accesses to the same Memory location or Peripheral region.
+* A transaction to a Peripheral region must be entirely contained within that region.
+* A transaction that spans multiple Memory locations has multiple ordering guarantees.
+
+Transaction performed by CVA6 is of type Normal, because `AxCACHE[1]` is asserted.
+
+Normal transactions are used to access Memory locations and are not expected to be used to access Peripheral regions.
+
+A Normal access to a Peripheral region must complete in a protocol-compliant manner, but the result is IMPLEMENTATION DEFINED.
+
+A write transaction performed by CVA6 is Non-bufferable (It is not possible to send an early response before the transaction reach the final destination), because `AxCACHE[0]` is deasserted.
+
+[[ordered-write-observation-section-a6.8]]
+Ordered write observation (Section A6.8)
+++++++++++++++++++++++++++++++++++++++++
+
+To improve compatibility with interface protocols that support a different ordering model, a Subordinate interface can give stronger ordering guarantees for write transactions. A stronger ordering guarantee is known as Ordered Write Observation.
+
+_The CVA6 AXI interface exhibits Ordered Write Observation, so the Ordered_Write_Observation property is True._
+
+An interface that exhibits Ordered Write Observation gives guarantees for write transactions that are not dependent on the destination or address:
+
+* A write W1 is guaranteed to be observed by a write W2, where W2 is issued after W1, from the same Manager, with the same ID.
+
+[[atomic_transactions_label]]
+Atomic transactions (Section E1.1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AMBA 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
+
+_If(RVA) AWATOP = 0 (If AMO instructions are not supported, CVA6 cannot perform Atomic transaction)_
+
+_CVA6 supports just the AtomicLoad and AtomicSwap transaction. So `AWATOP[5:4]` can be 00, 10 or 11._
+
+_CVA6 performs only little-endian operation. So `AWATOP[3]` = 0._
+
+_For AtomicLoad, CVA6 supports all arithmetic operations encoded on the lower-order `AWATOP[2:0]` signals._
+
+[[cva6-constraints]]
+CVA6 Constraints
+^^^^^^^^^^^^^^^^
+
+This section describes cross-cases between several features that are not supported by CVA6.
+
+* ARID = 0 && ARSIZE = log(AXI_DATA_WIDTH/8), CVA6 always requests max number of words in case of read transaction with ID 0 (instruction fetch)
+* if(RV32) ARSIZE != 3 && ARLEN = 0 && ARID = 1, the maximum load instruction size is 4 bytes
+* if(!RVA) AxLOCK = 0, if AMO instructions are not supported, CVA6 cannot perform exclusive transaction
+* if(RVA) AxLOCK = 1 => AxSIZE > 1, CVA6 doesn't perform exclusive transaction with size lower than 4 bytes
