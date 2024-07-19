@@ -47,24 +47,14 @@ module extended_hpdcache_subsystem_axi_arbiter
 
     //  Interfaces from/to I$
     //  {{{
-    input  logic              icache_miss_id_i,
-    output logic              icache_miss_ready_o,
     input  logic              icache_miss_valid_i,
+    output logic              icache_miss_ready_o,
     input  hpdcache_mem_req_t icache_miss_i,
+    input  hpdcache_mem_id_t  icache_miss_id_i,
 
     input  logic                 icache_miss_resp_ready_i,
     output logic                 icache_miss_resp_valid_o,
     output hpdcache_mem_resp_r_t icache_miss_resp_o,
-
-    //      Uncached read interface
-    output logic              icache_uc_read_ready_o,
-    input  logic              icache_uc_read_valid_i,
-    input  hpdcache_mem_req_t icache_uc_read_i,
-    input  hpdcache_mem_id_t  icache_uc_read_id_i,
-
-    input  logic                 icache_uc_read_resp_ready_i,
-    output logic                 icache_uc_read_resp_valid_o,
-    output hpdcache_mem_resp_r_t icache_uc_read_resp_o,
     //  }}}
 
     //  Interfaces from/to D$
@@ -127,13 +117,13 @@ module extended_hpdcache_subsystem_axi_arbiter
   //  {{{
   localparam int MEM_RESP_RT_DEPTH = (1 << CVA6Cfg.MEM_TID_WIDTH);
   typedef hpdcache_mem_id_t [MEM_RESP_RT_DEPTH-1:0] mem_resp_rt_t;
-  //  }}}
+    //  }}}
 
   //  Read request arbiter
   //  {{{
-  logic              mem_req_read_ready     [3:0];
-  logic              mem_req_read_valid     [3:0];
-  hpdcache_mem_req_t mem_req_read           [3:0];
+  logic              mem_req_read_ready     [2:0];
+  logic              mem_req_read_valid     [2:0];
+  hpdcache_mem_req_t mem_req_read           [2:0];
 
   logic              mem_req_read_ready_arb;
   logic              mem_req_read_valid_arb;
@@ -143,20 +133,16 @@ module extended_hpdcache_subsystem_axi_arbiter
       mem_req_read_valid[0] = icache_miss_valid_i,
       mem_req_read[0] = icache_miss_i;
 
-  assign icache_uc_read_ready_o = mem_req_read_ready[1],
-      mem_req_read_valid[1] = icache_uc_read_valid_i,
-      mem_req_read[1] = icache_uc_read_i;
+  assign dcache_miss_ready_o = mem_req_read_ready[1],
+      mem_req_read_valid[1] = dcache_miss_valid_i,
+      mem_req_read[1] = dcache_miss_i;
 
-  assign dcache_miss_ready_o = mem_req_read_ready[2],
-      mem_req_read_valid[2] = dcache_miss_valid_i,
-      mem_req_read[2] = dcache_miss_i;
-
-  assign dcache_uc_read_ready_o = mem_req_read_ready[3],
-      mem_req_read_valid[3] = dcache_uc_read_valid_i,
-      mem_req_read[3] = dcache_uc_read_i;
+  assign dcache_uc_read_ready_o = mem_req_read_ready[2],
+      mem_req_read_valid[2] = dcache_uc_read_valid_i,
+      mem_req_read[2] = dcache_uc_read_i;
 
   hpdcache_mem_req_read_arbiter #(
-      .N                 (4),
+      .N                 (3),
       .hpdcache_mem_req_t(hpdcache_mem_req_t)
   ) i_mem_req_read_arbiter (
       .clk_i,
@@ -178,22 +164,21 @@ module extended_hpdcache_subsystem_axi_arbiter
   logic                 mem_resp_read_valid;
   hpdcache_mem_resp_r_t mem_resp_read;
 
-  logic                 mem_resp_read_ready_arb[3:0];
-  logic                 mem_resp_read_valid_arb[3:0];
-  hpdcache_mem_resp_r_t mem_resp_read_arb      [3:0];
+  logic                 mem_resp_read_ready_arb[2:0];
+  logic                 mem_resp_read_valid_arb[2:0];
+  hpdcache_mem_resp_r_t mem_resp_read_arb      [2:0];
 
   mem_resp_rt_t         mem_resp_read_rt;
 
   always_comb begin
     for (int i = 0; i < MEM_RESP_RT_DEPTH; i++) begin
       mem_resp_read_rt[i] = (i == int'(   icache_miss_id_i)) ? 0 :
-                            (i == int'(icache_uc_read_id_i)) ? 1 :
-                            (i == int'(dcache_uc_read_id_i)) ? 3 : 2;
+                            (i == int'(dcache_uc_read_id_i)) ? 2 : 1;
     end
   end
 
   hpdcache_mem_resp_demux #(
-      .N        (4),
+      .N        (3),
       .resp_t   (hpdcache_mem_resp_r_t),
       .resp_id_t(hpdcache_mem_id_t)
   ) i_mem_resp_read_demux (
@@ -216,17 +201,13 @@ module extended_hpdcache_subsystem_axi_arbiter
       icache_miss_resp_o = mem_resp_read_arb[0],
       mem_resp_read_ready_arb[0] = icache_miss_resp_ready_i;
 
-  assign icache_uc_read_resp_valid_o = mem_resp_read_valid_arb[1],
-      icache_uc_read_resp_o = mem_resp_read_arb[1],
-      mem_resp_read_ready_arb[1] = icache_uc_read_resp_ready_i;
+  assign dcache_miss_resp_valid_o = mem_resp_read_valid_arb[1],
+      dcache_miss_resp_o = mem_resp_read_arb[1],
+      mem_resp_read_ready_arb[1] = dcache_miss_resp_ready_i;
 
-  assign dcache_miss_resp_valid_o = mem_resp_read_valid_arb[2],
-      dcache_miss_resp_o = mem_resp_read_arb[2],
-      mem_resp_read_ready_arb[2] = dcache_miss_resp_ready_i;
-
-  assign dcache_uc_read_resp_valid_o = mem_resp_read_valid_arb[3],
-      dcache_uc_read_resp_o = mem_resp_read_arb[3],
-      mem_resp_read_ready_arb[3] = dcache_uc_read_resp_ready_i;
+  assign dcache_uc_read_resp_valid_o = mem_resp_read_valid_arb[2],
+      dcache_uc_read_resp_o = mem_resp_read_arb[2],
+      mem_resp_read_ready_arb[2] = dcache_uc_read_resp_ready_i;
   //  }}}
 
   //  Write request arbiter

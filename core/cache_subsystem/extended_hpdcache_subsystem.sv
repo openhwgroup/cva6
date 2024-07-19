@@ -220,6 +220,14 @@ module extended_hpdcache_subsystem
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
   ////////////////////////////
+  logic                 icache_miss_uc_ready;
+  logic                 icache_miss_uc_valid;
+  hpdcache_mem_req_t    icache_miss_uc;
+
+  logic                 icache_miss_uc_resp_ready;
+  logic                 icache_miss_uc_resp_valid;
+  hpdcache_mem_resp_r_t icache_miss_uc_resp;
+
   logic                 icache_miss_ready;
   logic                 icache_miss_valid;
   hpdcache_mem_req_t    icache_miss;
@@ -236,6 +244,66 @@ module extended_hpdcache_subsystem
   logic                 icache_uc_read_resp_valid;
   hpdcache_mem_resp_r_t icache_uc_read_resp;
 
+  logic paddr_is_nc;
+  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
+  // extract tag from physical address, check if NC
+  // assign cl_tag_d  = (fetch_obi_req_i.req && obi_grant) ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+  assign cl_tag_d  = fetch_obi_req_i.req  ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      cl_tag_q      <= '0;
+    end else begin
+      cl_tag_q      <= cl_tag_d;
+    end
+  end
+
+
+  // noncacheable if request goes to I/O space, or if cache is disabled
+  // assign paddr_is_nc = (~cache_en_q) | (~config_pkg::is_inside_cacheable_regions(
+  assign paddr_is_nc = (~config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, cl_tag_d, {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}}
+  ));
+
+  always_comb begin : blockName
+    // if (paddr_is_nc) begin
+    //   icache_miss_ready = icache_miss_uc_ready;
+    //   icache_miss = icache_miss_uc;
+    //   icache_uc_read_ready = 0;
+
+    //   icache_miss_resp = icache_miss_uc_resp;
+    //   icache_miss_resp_valid = icache_miss_uc_resp_valid;
+    //   icache_uc_read_resp_valid = 0;
+    // end else begin
+    //   icache_uc_read_ready = icache_miss_ready;
+    //   icache_uc_read = icache_miss;
+    //   icache_miss_ready = 0;
+
+    //   icache_uc_read_resp = icache_miss_uc_resp;
+    //   icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
+    //   icache_miss_resp_valid = 0;
+    // end
+    if (~paddr_is_nc) begin
+      icache_miss_ready = icache_miss_uc_ready;
+      icache_miss = icache_miss_uc;
+      icache_uc_read_ready = 0;
+
+      icache_miss_resp = icache_miss_uc_resp;
+      icache_miss_resp_valid = icache_miss_uc_resp_valid;
+      icache_uc_read_resp_valid = 0;
+    end else begin
+      icache_uc_read_ready = icache_miss_ready;
+      icache_uc_read = icache_miss;
+      icache_miss_ready = 0;
+
+      icache_uc_read_resp = icache_miss_uc_resp;
+      icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
+      icache_miss_resp_valid = 0;
+    end
+  end
+
+  assign icache_miss_uc_valid = icache_miss_valid | icache_uc_read_valid;
+
   hpdcache_icache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
       .HPDcacheCfg(hpdcacheCfg),
@@ -245,8 +313,6 @@ module extended_hpdcache_subsystem
       .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .NumPorts(4),
       .NrHwPrefetchers(6),
-      // .cmo_req_t(cmo_req_t),
-      // .cmo_rsp_t(cmo_rsp_t),
       .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
       .hpdcache_mem_id_t(hpdcache_mem_id_t),
       .hpdcache_mem_data_t(hpdcache_mem_data_t),
@@ -503,24 +569,14 @@ module extended_hpdcache_subsystem
       .clk_i,
       .rst_ni,
 
-      .icache_miss_ready_o(icache_miss_ready),
-      .icache_miss_valid_i(icache_miss_valid),
-      .icache_miss_i(icache_miss),
+      .icache_miss_ready_o(icache_miss_uc_ready),
+      .icache_miss_valid_i(icache_miss_uc_valid),
+      .icache_miss_i(icache_miss_uc),
       .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
 
-      .icache_miss_resp_ready_i(icache_miss_resp_ready),
-      .icache_miss_resp_valid_o(icache_miss_resp_valid),
-      .icache_miss_resp_o(icache_miss_resp),
-
-      //      Uncached read interface
-      .icache_uc_read_ready_o(icache_uc_read_ready),
-      .icache_uc_read_valid_i(icache_uc_read_valid),
-      .icache_uc_read_i(icache_uc_read),
-      .icache_uc_read_id_i(3),  // TODO
-
-      .icache_uc_read_resp_ready_i(icache_uc_read_resp_ready),
-      .icache_uc_read_resp_valid_o(icache_uc_read_resp_valid),
-      .icache_uc_read_resp_o(icache_uc_read_resp),
+      .icache_miss_resp_ready_i(icache_miss_uc_resp_ready),
+      .icache_miss_resp_valid_o(icache_miss_uc_resp_valid),
+      .icache_miss_resp_o(icache_miss_uc_resp),
 
       .dcache_miss_ready_o(dcache_miss_ready),
       .dcache_miss_valid_i(dcache_miss_valid),
