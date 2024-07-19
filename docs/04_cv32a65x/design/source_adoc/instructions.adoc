@@ -12,18 +12,9 @@
 Instructions
 ~~~~~~~~~~~~
 
-The next first subchapter lists the extensions implemented in CVA6. By
+The next subchapter lists the extensions implemented in CVA6. By
 configuration, we can enable/disable the extensions. CV32A65X supports
 the extensions described in the next subchapters. RVZicond, RV32A and
-RVZifencei extensions are not supported by CV32A65X.
+RVZicntr extensions are not supported by CV32A65X.
 
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RV32I]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RV32M]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RV32C]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RV32ZCb]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RVZba]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RVZbb]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RVZbc]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RVZbs]*
-*[TODO : include ../../../01_cva6_user/RISCV_Instructions_RVZicsr]*
+include::../../../../config/gen_from_riscv_config/cv32a65x/isa/isa.adoc[]

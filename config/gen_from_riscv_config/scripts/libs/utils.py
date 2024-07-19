@@ -612,8 +612,8 @@ class InstadocBlock(InstructionBlockClass):
         r += "|Subset Name | Name | Description\n\n"
         for i, _ in enumerate(InstrNameList):
             r += "|%s | %s | %s\n"%(str(InstrExtList[i]),
-                    str(InstrNameList[i]) + "_",
-                    str(InstrDescrList[i]))
+                    str(InstrNameList[i]),
+                    str(InstrDescrList[i]).replace('\n',''))
         r += "|===\n\n"
                     
         for reg in self.Instructionlist:
@@ -627,7 +627,7 @@ class InstadocBlock(InstructionBlockClass):
                     _line = [
                         reg.Name[fieldIndex],
                         reg.Format[fieldIndex],
-                        reg.pseudocode[fieldIndex],
+                        reg.pseudocode[fieldIndex].replace('|','\|'),
                         reg.invalid_values[fieldIndex],
                         reg.exception_raised[fieldIndex],
                         reg.Description[fieldIndex],
