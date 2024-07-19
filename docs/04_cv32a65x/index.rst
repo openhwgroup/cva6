@@ -6,4 +6,4 @@ CV32A65X documentation
 
    riscv/unpriv.rst
    riscv/priv.rst
-   design/source/index.rst
+   design/design.rst
