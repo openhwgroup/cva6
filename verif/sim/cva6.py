@@ -1107,8 +1107,26 @@ def check_spike_version():
   user_spike_stderr_string = user_spike_version.stderr.strip()
 
   if user_spike_version.returncode != 0:
+    # Re-run 'spike -v' and print contents of stdout and stderr.
     logging.info(f"Stdout of Spike version check:\n\n{user_spike_stdout_string}\n")
     logging.info(f"Stderr of Spike version check:\n\n{user_spike_stderr_string}")
+    # Run 'ldd' on Spike binary and print contents of stdout and stderr.
+    spike_ldd = subprocess.run(
+        "/bin/ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
+    )
+    spike_ldd_stdout = spike_ldd.stdout.strip()
+    spike_ldd_stderr = spike_ldd.stderr.strip()
+    logging.info(f"Stdout of Spike LDD check:\n\n{spike_ldd_stdout}\n")
+    logging.info(f"Stderr of Spike version check:\n\n{spike_ldd_stderr}")
+    # Run 'ls -l' on Spike lib directory and print contents of stdout and stderr.
+    spike_lib_ls = subprocess.run(
+        "ls -l $SPIKE_PATH/../lib", capture_output=True, text=True, shell=True
+    )
+    spike_lib_stdout = spike_lib_ls.stdout.strip()
+    spike_lib_stderr = spike_lib_ls.stderr.strip()
+    logging.info(f"Stdout of Spike version check:\n\n{spike_lib_stdout}\n")
+    logging.info(f"Stderr of Spike version check:\n\n{spike_lib_stderr}")
+
     incorrect_version_exit("Spike", "- unknown -", spike_version)
 
   logging.info(f"Spike Version: {user_spike_stderr_string}")
