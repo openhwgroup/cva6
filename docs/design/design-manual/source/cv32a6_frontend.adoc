@@ -123,9 +123,9 @@ The FRONTEND transmits the exception from CACHES to DECODE.
 Submodules
 ^^^^^^^^^^
 
-image:../images/frontend_modules.png[FRONTEND submodules]
+image:frontend_modules.png[FRONTEND submodules]
 
-image:../images/ZoominFrontend.png[FRONTEND submodule interconnections]
+image:ZoominFrontend.png[FRONTEND submodule interconnections]
 
 [[instr_realign-submodule]]
 Instr_realign submodule
@@ -182,7 +182,7 @@ The Branch History Table is a table of two-bit saturating counters that takes th
 It states whether the current branch request should be taken or not.
 The two bit counter is updated by the successive execution of the instructions as shown in the following figure.
 
-image:../images/bht.png[BHT saturation]
+image:bht.png[BHT saturation]
 
 // TODO: if debug enable, The BHT is not updated if processor is in debug mode.
 

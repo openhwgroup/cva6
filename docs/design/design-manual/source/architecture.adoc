@@ -18,11 +18,11 @@ For ASIC synthesis, the whole design is completely synchronous and uses positive
 
 The CV32A65X subsystem is composed of 8 modules.
 
-image:../images/subsystems.png[CV32A65X modules]
+image:subsystems.png[CV32A65X modules]
 
 Connections between modules are illustrated in the following block diagram. FRONTEND, DECODE, ISSUE, EXECUTE, COMMIT and CONTROLLER are part of the pipeline. And CACHES implements the instruction and data caches and CSRFILE contains registers.
 
-image:../images/CV32A65X_subsystems.png[CV32A65X pipeline and modules]
+image:CV32A65X_subsystems.png[CV32A65X pipeline and modules]
 
 include::cv32a6_frontend.adoc[]
 include::cva6_id_stage.adoc[]

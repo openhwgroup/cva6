@@ -44,7 +44,7 @@ TO BE COMPLETED
 Submodules
 ^^^^^^^^^^
 
-image:../images/issue_stage_modules.png[ISSUE_STAGE submodules]
+image:issue_stage_modules.png[ISSUE_STAGE submodules]
 
 [[scoreboard]]
 Scoreboard

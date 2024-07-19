@@ -7,7 +7,7 @@ The Memory Management Unit (MMU) SV32 module is a crucial component in
 the RISC-V-based processor, serving as the backbone for virtual memory
 management and address translation.
 
-image:../images/mmu_in_out.png[*Figure 1:* Inputs and Outputs of CVA6
+image:mmu_in_out.png[*Figure 1:* Inputs and Outputs of CVA6
 MMU SV32,scaledwidth=70.0%]
 
 At its core, the MMU SV32 plays a pivotal role in translating virtual
@@ -24,7 +24,7 @@ translation process. These includes:
 * Shared TLB
 * Page Table Walker (PTW)
 
-image:../images/mmu_major_blocks.png[*Figure 2:* Major Blocks in CVA6
+image:mmu_major_blocks.png[*Figure 2:* Major Blocks in CVA6
 MMU SV32,scaledwidth=60.0%]
 
 The MMU SV32 manages privilege levels and access control, enforcing
@@ -168,7 +168,7 @@ Address
 |`access_type` |pmpcfg_access_t |None, read, write, execute
 |====================================================================
 
-image:../images/mmu_control_flow.png[*Figure 3:* Control Flow in CVA6
+image:mmu_control_flow.png[*Figure 3:* Control Flow in CVA6
 MMU SV32,scaledwidth=95.0%]
 
 Two potential exception sources exist:
@@ -290,7 +290,7 @@ exception.
 The inputs and output signals of the TLB are shown in the following two
 figures.
 
-image:../images/in_out_tlb.png[*Figure 4:* Inputs and Outputs of CVA6
+image:in_out_tlb.png[*Figure 4:* Inputs and Outputs of CVA6
 TLB,scaledwidth=65.0%]
 
 [cols=",,,,",options="header",]
@@ -434,7 +434,7 @@ memory. It is copied from the page table, as is, and the VALID bit in
 the Tag is set based on its value.The TLB entry fields are shown in
 *Figure 2*.
 
-image:../images/cva6_tlb_entry.png[*Figure 5:* Fields in CVA6 TLB
+image:cva6_tlb_entry.png[*Figure 5:* Fields in CVA6 TLB
 entry,scaledwidth=80.0%]
 
 The CVA6 TLB implements the following three functions:
@@ -475,7 +475,7 @@ All the conditions listed above are checked against every TLB entry. If
 there is a TLB hit then the corresponding bit in the hit array is set.
 *Figure 3* Illustrates the TLB hit/miss process listed above.
 
-image:../images/cva6_tlb_hit.png[*Figure 6:* Block diagram of CVA6 TLB
+image:cva6_tlb_hit.png[*Figure 6:* Block diagram of CVA6 TLB
 hit or miss,scaledwidth=75.0%]
 
 The SFENCE.VMA instruction can be used with certain specific source
@@ -493,14 +493,14 @@ register rs2 (shown below as asid_to_be_flushed_i), except for entries
 containing global mappings. This is referred to as the “SFENCE.VMA vaddr
 asid” case.
 
-image:../images/sfence_vaddr_asid.png[*Figure 7:* Invalidate TLB entry
+image:sfence_vaddr_asid.png[*Figure 7:* Invalidate TLB entry
 if ASID and virtual address match,scaledwidth=75.0%]
 
 * *If rs1 is equal to x0 and rs2 is equal to x0:* Invalidate all TLB
 entries for all address spaces. This is referred to as the "SFENCE.VMA
 x0 x0" case.
 
-image:../images/sfence_x0_x0.png[*Figure 8:* Invalidate all TLB entries
+image:sfence_x0_x0.png[*Figure 8:* Invalidate all TLB entries
 if both source register specifiers are x0,scaledwidth=62.0%]
 
 * *If rs1 is not equal to x0 and rs2 is equal to x0:* invalidate all TLB
@@ -508,7 +508,7 @@ entries that contain leaf page table entries corresponding to the
 virtual address in rs1, for all address spaces. This is referred to as
 the “SFENCE.VMA vaddr x0” case.
 
-image:../images/sfence_vaddr_x0.png[*Figure 9:* Invalidate TLB entry
+image:sfence_vaddr_x0.png[*Figure 9:* Invalidate TLB entry
 with matching virtual address for all address spaces,scaledwidth=75.0%]
 
 * *If rs1 is equal to x0 and rs2 is not equal to x0:* Invalidate all TLB
@@ -516,7 +516,7 @@ entries matching the address space identified by integer register rs2,
 except for entries containing global mappings. This is referred to as
 the “SFENCE.VMA 0 asid” case.
 
-image:../images/sfence_x0_asid.png[*Figure 10:* Invalidate TLB entry for
+image:sfence_x0_asid.png[*Figure 10:* Invalidate TLB entry for
 matching ASIDs,scaledwidth=75.0%]
 
 When a TLB valid update request is signaled by the shared TLB, and the
@@ -556,7 +556,7 @@ appearing before higher ones. Furthermore those on the left side of a
 node appear before those on the right side of a node. The figure below
 shows a tree and the corresponding array.
 
-image:../images/plru_tree_indexing.png[*Figure 11:* PLRU Tree
+image:plru_tree_indexing.png[*Figure 11:* PLRU Tree
 Indexing,scaledwidth=60.0%]
 
 For n-way associative, we require n - 1 internal nodes in the tree. With
@@ -587,7 +587,7 @@ level 2, the first two bits of the entry's index from MSB side determine
 the offset from the index base because there are 4 nodes at the level 2
 and so on.
 
-image:../images/update_tree.png[*Figure 12:* Promote Entry to be
+image:update_tree.png[*Figure 12:* Promote Entry to be
 MRU,scaledwidth=82.0%]
 
 In the above figure entry at index 5, is accessed. To make it MRU entry,
@@ -609,7 +609,7 @@ the node being traversed at the current level, keep the replacement
 signal high for that entry; otherwise, set the replacement signal to
 low.
 
-image:../images/replacement_entry.png[*Figure 13:* Possible path
+image:replacement_entry.png[*Figure 13:* Possible path
 traverse for entry selection for replacement,scaledwidth=65.0%]
 
 Figure shows every possible path that traverses to find out the PLRU
@@ -722,7 +722,7 @@ the corresponding physical page in memory.
 The inputs and output signals of the shared TLB are shown in the
 following two figures.
 
-image:../images/shared_tlb_in_out.png[*Figure 14:* Inputs and outputs of
+image:shared_tlb_in_out.png[*Figure 14:* Inputs and outputs of
 CVA6 shared TLB,scaledwidth=60.0%]
 
 [cols=",,,,",options="header",]
@@ -807,7 +807,7 @@ page size (is_4M). The Content field contains two physical page numbers
 (PPN1, PPN0) along with a number of bits which specify various
 attributes of the physical page.
 
-image:../images/shared_tlb.png[*Figure 15:* CVA6 Shared TLB
+image:shared_tlb.png[*Figure 15:* CVA6 Shared TLB
 Structure,scaledwidth=60.0%]
 
 The implementation of a shared TLB in CVA6 is described in the following
@@ -861,7 +861,7 @@ VPN0 of the requested virtual address. Given that the shared TLB is
 these entries are compared. Below figure illustrates how the set is
 opted for the lookup.
 
-image:../images/shared_tlb_set.png[*Figure 16:* Set opted for lookup in
+image:shared_tlb_set.png[*Figure 16:* Set opted for lookup in
 shared TLB,scaledwidth=60.0%]
 
 Differing from the ITLB and DTLB, a specific virtual address or
@@ -907,7 +907,7 @@ significant bit (LSB). if there is at least one non-valid entry, that
 entry is opted for the replacement, and If not then this is signaled by
 LZC.
 
-image:../images/LZC.png[*Figure 17:* Replacement of First invalid
+image:LZC.png[*Figure 17:* Replacement of First invalid
 entry.,scaledwidth=60.0%]
 
 If all ways are valid, a random replacement policy is employed for the
@@ -923,7 +923,7 @@ involves XOR operations between the shifted state bits and specific
 pattern bits, contributing to the complexity and unpredictability of the
 generated sequence.
 
-image:../images/RR.png[*Figure 18:* Entry selection for replacement
+image:RR.png[*Figure 18:* Entry selection for replacement
 using LFSR,scaledwidth=95.0%]
 
 [[page-table-walker]]
@@ -935,7 +935,7 @@ developed for the CV32A6 processor architecture, designed to facilitate
 the translation of virtual addresses into physical addresses, a crucial
 task in memory access management.
 
-image:../images/ptw_in_out.png[*Figure 19:* Input and Outputs of Page
+image:ptw_in_out.png[*Figure 19:* Input and Outputs of Page
 Table Walker,scaledwidth=60.0%]
 
 The PTW module operates through various states, each with its specific
@@ -1091,7 +1091,7 @@ signal, indicating that relevant data is ready for further processing.
 * *LATENCY:* Introduces a delay to account for synchronization or timing
 requirements between states.
 
-image:../images/ptw_state_diagram.png[*Figure 20:* State Machine Diagram
+image:ptw_state_diagram.png[*Figure 20:* State Machine Diagram
 of CVA6 PTW,scaledwidth=95.0%]
 
 In the IDLE state of the Page Table Walker (PTW) finite state machine,
@@ -1116,7 +1116,7 @@ level 1 page table from the SATP register by the page size (4kB). This
 result is then added to the product of the Virtual Page Number (VPN1),
 and the size of a page table entry(4 bytes).
 
-image:../images/ptw_idle.png[*Figure 21:* Address of Desired PTE at
+image:ptw_idle.png[*Figure 21:* Address of Desired PTE at
 Level 1,scaledwidth=68.0%]
 
 In the *WAIT_GRANT* state of the Page Table Walker's finite state
@@ -1146,7 +1146,7 @@ RWX field encodings, it signifies an Invalid PTE. In such cases, the
 state transitions to the "PROPAGATE_ERROR" state, indicating a
 page-fault exception due to an invalid translation.
 
-image:../images/ptw_pte_1.png[*Figure 22:* Invalid PTE and reserved RWX
+image:ptw_pte_1.png[*Figure 22:* Invalid PTE and reserved RWX
 encoding leads to page fault,scaledwidth=70.0%]
 
 1.  Within the Valid PTE scenario, the state performs further checks
@@ -1156,13 +1156,13 @@ a.  For instruction page table walk, if the page is not executable
 (pte.x is not set) or not marked as accessible (pte.a is not set), the
 state transitions to the "PROPAGATE_ERROR" state.
 
-image:../images/ptw_iptw.png[*Figure 23:* For Instruction Page Table
+image:ptw_iptw.png[*Figure 23:* For Instruction Page Table
 Walk,scaledwidth=70.0%]
 
-image:../images/ptw_dptw.png[*Figure 24:* Data Access Page Table
+image:ptw_dptw.png[*Figure 24:* Data Access Page Table
 Walk,scaledwidth=70.0%]
 
-image:../images/ptw_dptw_s.png[*Figure 25:* Data Access Page Table Walk,
+image:ptw_dptw_s.png[*Figure 25:* Data Access Page Table Walk,
 Store requested,scaledwidth=70.0%]
 
 1.  The state also checks for potential misalignment issues in the
@@ -1170,7 +1170,7 @@ translation: If the current page table level is the first level (LVL1)
 and if the PPN0 of in PTE is not zero, it indicates a misaligned
 superpage, leading to a transition to the "PROPAGATE_ERROR" state.
 
-image:../images/ptw_mis_sup.png[*Figure 26:* Misaligned Superpage
+image:ptw_mis_sup.png[*Figure 26:* Misaligned Superpage
 Check,scaledwidth=70.0%]
 
 1.  If the PTE is valid but the page is neither readable nor executable,
@@ -1183,7 +1183,7 @@ next level pointer and calculating the address for the next page table
 entry using the Physical Page Number from the PTE and the index of the
 level 2 page table from virtual address.
 
-image:../images/ptw_nlvl.png[*Figure 27:* Address of desired PTE at next
+image:ptw_nlvl.png[*Figure 27:* Address of desired PTE at next
 level of Page Table,scaledwidth=70.0%]
 
 1.  The state then transitions to the "WAIT_GRANT" state, indicating
@@ -1203,7 +1203,7 @@ to the "PROPAGATE_ACCESS_ERROR" state.
 the state indicates to the cache subsystem that the tag associated with
 the data is now valid.
 
-image:../images/ptw_pte_flowchart.png[*Figure 28:* Flow Chart of PTE
+image:ptw_pte_flowchart.png[*Figure 28:* Flow Chart of PTE
 LOOKUP State]
 
 This state indicates a detected error in the page table walk process,

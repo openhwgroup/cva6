@@ -28,7 +28,7 @@ information to develop software like instructions or registers.
 
 The CVA6 architecture is illustrated in the following figure.
 
-image:../images/ariane_overview.drawio.png[CVA6 Architecture]
+image:ariane_overview.drawio.png[CVA6 Architecture]
 
 [[license]]
 License

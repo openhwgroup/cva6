@@ -16,21 +16,21 @@ design_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 all: design-pdf design-html
 
 setup:
-	mkdir -p build/design-manual
+	mkdir -p build
 	pwd 
 	echo $(design_dir)
-	cp -r $(design_dir)/design-manual/* build/design-manual
-	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/design-manual/source
-	cp -r $(design_dir)/../riscv-isa/riscv-isa-manual/docs-resources build/design-manual
-#cp -r src build/design-manual
+	cp -r $(design_dir)/design-manual/* build
+	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
+	cp -r $(design_dir)/../riscv-isa/riscv-isa-manual/docs-resources build
+	cp -rf source build
 
 design-pdf: setup
-	cd build/design-manual; make SKIP_DOCKER=true build/design.pdf
-	cp ./build/design-manual/build/design.pdf design-$(CONFIG).pdf
+	cd build; make SKIP_DOCKER=true build/design.pdf
+	cp ./build/build/design.pdf design-$(CONFIG).pdf
 
 design-html: setup
-	cd build/design-manual; make SKIP_DOCKER=true build/design.html
-	cp ./build/design-manual/build/design.html design-$(CONFIG).html
+	cd build; make SKIP_DOCKER=true build/design.html
+	cp ./build/build/design.html design-$(CONFIG).html
 
 clean:
 	rm -rf build

@@ -124,8 +124,8 @@ if __name__ == "__main__":
         fileout = f"{pathout}/parameters_{target}.rst"
         writeout_parameter_table(fileout, parameters, target)
     elif generate_file_type in ['adoc']:
-        pathout = f"./{spec_number}_{target}/design/source_adoc"
-        fileout = f"{pathout}/parameters_{target}.adoc"
+        pathout = f"./{spec_number}_{target}/design/source"
+        fileout = f"{pathout}/parameters.adoc"
         writeout_parameter_table_adoc(fileout, parameters, target)
     else:
         raise Exception("Format de sortie %s non pris en charge"%generate_file_type)

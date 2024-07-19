@@ -25,7 +25,7 @@ TO BE COMPLETED
 Submodules
 ^^^^^^^^^^
 
-image:../images/ex_stage_modules.png[EX_STAGE submodules]
+image:ex_stage_modules.png[EX_STAGE submodules]
 
 [[alu]]
 alu
@@ -61,7 +61,7 @@ mult
 
 The multiplier module supports the division and multiplication operations.
 
-image:../images/mult_modules.png[mult submodules]
+image:mult_modules.png[mult submodules]
 
 include::port_mult.adoc[]
 
@@ -89,7 +89,7 @@ The LSU does not handle misaligned accesses.
 Misaligned accesses are double word accesses which are not aligned to a 64-bit boundary, word accesses which are not aligned to a 32-bit boundary and half word accesses which are not aligned on 16-bit boundary.
 If the LSU encounters a misaligned load or store, it throws a misaligned exception.
 
-image:../images/load_store_unit_modules.png[load_store_unit submodules]
+image:load_store_unit_modules.png[load_store_unit submodules]
 
 include::port_load_store_unit.adoc[]
 

@@ -35,4 +35,4 @@ TO BE COMPLETED
 Submodules
 ^^^^^^^^^^
 
-image:../images/caches.png[CACHES submodules]
+image:caches.png[CACHES submodules]

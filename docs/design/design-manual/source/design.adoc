@@ -20,12 +20,13 @@
 :table-caption: Table
 :figure-caption: Figure
 :xrefstyle: short
-:imagesdir: ../images
+:imagesdir: images
 :example-caption: Example
 :listing-caption: Listing
 :chapter-refsig: Chapter
 :section-refsig: Section
 :appendix-refsig: Appendix
+:data-uri:
 
 Editor: *Jean Roch Coulon*
 

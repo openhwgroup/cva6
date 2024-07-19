@@ -46,7 +46,7 @@ TO BE COMPLETED
 Submodules
 ^^^^^^^^^^
 
-image:../images/id_stage_modules.png[ID_STAGE submodules]
+image:id_stage_modules.png[ID_STAGE submodules]
 
 [[compressed_decoder]]
 Compressed_decoder
