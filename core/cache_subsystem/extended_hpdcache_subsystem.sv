@@ -244,7 +244,7 @@ module extended_hpdcache_subsystem
   logic                 icache_uc_read_resp_valid;
   hpdcache_mem_resp_r_t icache_uc_read_resp;
 
-  logic paddr_is_nc;
+  logic                 paddr_is_nc;
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
   // extract tag from physical address, check if NC
   // assign cl_tag_d  = (fetch_obi_req_i.req && obi_grant) ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
@@ -252,9 +252,9 @@ module extended_hpdcache_subsystem
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      cl_tag_q      <= '0;
+      cl_tag_q <= '0;
     end else begin
-      cl_tag_q      <= cl_tag_d;
+      cl_tag_q <= cl_tag_d;
     end
   end
 
@@ -266,34 +266,17 @@ module extended_hpdcache_subsystem
   ));
 
   always_comb begin : blockName
-    // if (paddr_is_nc) begin
-    //   icache_miss_ready = icache_miss_uc_ready;
-    //   icache_miss = icache_miss_uc;
-    //   icache_uc_read_ready = 0;
-
-    //   icache_miss_resp = icache_miss_uc_resp;
-    //   icache_miss_resp_valid = icache_miss_uc_resp_valid;
-    //   icache_uc_read_resp_valid = 0;
-    // end else begin
-    //   icache_uc_read_ready = icache_miss_ready;
-    //   icache_uc_read = icache_miss;
-    //   icache_miss_ready = 0;
-
-    //   icache_uc_read_resp = icache_miss_uc_resp;
-    //   icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
-    //   icache_miss_resp_valid = 0;
-    // end
     if (~paddr_is_nc) begin
       icache_miss_ready = icache_miss_uc_ready;
-      icache_miss = icache_miss_uc;
+      icache_miss_uc = icache_miss;
       icache_uc_read_ready = 0;
 
       icache_miss_resp = icache_miss_uc_resp;
       icache_miss_resp_valid = icache_miss_uc_resp_valid;
       icache_uc_read_resp_valid = 0;
     end else begin
-      icache_uc_read_ready = icache_miss_ready;
-      icache_uc_read = icache_miss;
+      icache_uc_read_ready = icache_miss_uc_ready;
+      icache_miss_uc = icache_uc_read;
       icache_miss_ready = 0;
 
       icache_uc_read_resp = icache_miss_uc_resp;

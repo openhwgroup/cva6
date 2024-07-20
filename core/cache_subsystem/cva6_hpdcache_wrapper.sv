@@ -363,6 +363,9 @@ module cva6_hpdcache_wrapper
       .hpdcache_rsp_i      (dcache_rsp[NumPorts+1])
   );
 
+  localparam logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID =
+        {HPDcacheCfg.u.memIdWidth{1'b1}};
+
   hpdcache #(
       .hpdcacheCfg          (HPDcacheCfg),
       .wbuf_timecnt_t       (hpdcache_wbuf_timecnt_t),
@@ -461,7 +464,8 @@ module cva6_hpdcache_wrapper
       .cfg_wbuf_inhibit_write_coalescing_i(1'b0),
       .cfg_prefetch_updt_plru_i           (1'b1),
       .cfg_error_on_cacheable_amo_i       (1'b0),
-      .cfg_rtab_single_entry_i            (1'b0)
+      .cfg_rtab_single_entry_i            (1'b0),
+      .HPDCACHE_UC_READ_ID                (HPDCACHE_UC_READ_ID)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
