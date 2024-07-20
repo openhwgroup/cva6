@@ -220,6 +220,8 @@ module extended_hpdcache_subsystem
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
   ////////////////////////////
+
+  //  {{{
   logic                 icache_miss_uc_ready;
   logic                 icache_miss_uc_valid;
   hpdcache_mem_req_t    icache_miss_uc;
@@ -246,6 +248,9 @@ module extended_hpdcache_subsystem
 
   logic                 paddr_is_nc;
   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] cl_tag_d, cl_tag_q;  // this is the cache tag
+
+  //  }}}
+
   // extract tag from physical address, check if NC
   // assign cl_tag_d  = (fetch_obi_req_i.req && obi_grant) ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
   assign cl_tag_d  = fetch_obi_req_i.req  ? fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH] : cl_tag_q;
@@ -265,27 +270,48 @@ module extended_hpdcache_subsystem
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, cl_tag_d, {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}}
   ));
 
-  always_comb begin : blockName
-    if (~paddr_is_nc) begin
-      icache_miss_ready = icache_miss_uc_ready;
-      icache_miss_uc = icache_miss;
-      icache_uc_read_ready = 0;
+  // always_comb begin : blockName
+  //   if (~paddr_is_nc) begin
+  //     icache_miss_ready = icache_miss_uc_ready;
+  //     icache_miss_uc = icache_miss;
+  //     icache_uc_read_ready = 0;
 
-      icache_miss_resp = icache_miss_uc_resp;
-      icache_miss_resp_valid = icache_miss_uc_resp_valid;
-      icache_uc_read_resp_valid = 0;
-    end else begin
-      icache_uc_read_ready = icache_miss_uc_ready;
+  //     icache_miss_resp = icache_miss_uc_resp;
+  //     icache_miss_resp_valid = icache_miss_uc_resp_valid;
+  //     icache_uc_read_resp_valid = 0;
+  //   end else begin
+  //     icache_uc_read_ready = icache_miss_uc_ready;
+  //     icache_miss_uc = icache_uc_read; //
+  //     icache_miss_ready = 0; //
+
+  //     icache_uc_read_resp = icache_miss_uc_resp;
+  //     icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
+  //     icache_miss_resp_valid = 0;
+  //   end
+  // end
+  always_comb begin : blockName
+    if (paddr_is_nc) begin
       icache_miss_uc = icache_uc_read;
+      icache_miss_uc_valid = icache_uc_read_valid;  //
+      icache_uc_read_ready = icache_miss_uc_ready;
       icache_miss_ready = 0;
 
+      icache_miss_uc_resp_ready = icache_uc_read_resp_ready;  //
       icache_uc_read_resp = icache_miss_uc_resp;
       icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
       icache_miss_resp_valid = 0;
+    end else begin
+      icache_miss_uc = icache_miss;
+      icache_miss_uc_valid = icache_miss_valid;  //
+      icache_miss_ready = icache_miss_uc_ready;
+      icache_uc_read_ready = 0;
+
+      icache_miss_uc_resp_ready = icache_miss_resp_ready;  //
+      icache_miss_resp = icache_miss_uc_resp;
+      icache_miss_resp_valid = icache_miss_uc_resp_valid;
+      icache_uc_read_valid = 0;
     end
   end
-
-  assign icache_miss_uc_valid = icache_miss_valid | icache_uc_read_valid;
 
   hpdcache_icache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
@@ -387,7 +413,7 @@ module extended_hpdcache_subsystem
 
 
   ////////////////////////////
-
+  //  {{{
   logic                 dcache_miss_ready;
   logic                 dcache_miss_valid;
   hpdcache_mem_req_t    dcache_miss;
@@ -427,6 +453,7 @@ module extended_hpdcache_subsystem
   logic                 dcache_uc_write_resp_ready;
   logic                 dcache_uc_write_resp_valid;
   hpdcache_mem_resp_w_t dcache_uc_write_resp;
+  //  }}}
 
   cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
