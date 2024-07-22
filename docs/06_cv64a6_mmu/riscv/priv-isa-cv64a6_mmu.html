@@ -4498,34 +4498,13 @@ machine&#8217;s physical address space are termed <em>physical memory attributes
 systems implement and check PMAs.</p>
 </div>
 <div class="paragraph">
-<p>[CV64A6_MMU] PMAs are inherent properties of the underlying hardware. The PMAs of
-some memory regions are fixed at chip design time.</p>
-</div>
-<div class="paragraph">
-<p>[CV64A6_MMU] Some PMAs are dynamically
-checked in hardware later in the execution pipeline after the physical
-address is known, as some operations will not be supported at all
-physical memory addresses, and some operations require knowing the
-setting of a PMA attribute.</p>
-</div>
-<div class="paragraph">
-<p>[CV64A6_MMU] For RISC-V, we separate out specification and checking of PMAs into a
-separate hardware structure, the <em>PMA checker</em>. In CV64A6_MMU, the
-attributes are known at system design time for each physical address
-region, and are hardwired into the PMA checker.
-PMAs are checked for any access to physical memory, including accesses
-that have undergone virtual to physical memory translation. To aid in
-system debugging, we strongly recommend that, where possible, RISC-V
-processors precisely trap physical memory accesses that fail PMA checks.
-Precisely trapped PMA violations manifest as instruction, load, or store
-access-fault exceptions, distinct from virtual-memory page-fault
-exceptions. Precise PMA traps might not always be possible, for example,
-when probing a legacy bus architecture that uses access failures as part
-of the discovery mechanism. In this case, error responses from
-peripheral devices will be reported as imprecise bus-error interrupts.</p>
-</div>
-<div class="paragraph">
-<p>[CV64A6_MMU] PMAs are not readable by software.</p>
+<p>[CV64A6_MMU] PMA is not implemented by CV64A6_MMU but information
+is sent outside the processor to be able to check PMA outside processor.
+These checkers are based on the following information contained in the
+memory accesses requested by the processor.
+- The information which indicates whether memory access is read, write or
+execution,
+- The access length information to check the subword and subblock access rights.</p>
 </div>
 <div class="sect3">
 <h4 id="_main_memory_versus_io_regions">3.6.1. Main Memory versus I/O Regions</h4>
@@ -4609,44 +4588,14 @@ platform without any DMA, no memory-ordering mechanism is implemented.</p>
 <div class="sect3">
 <h4 id="_coherence_and_cacheability_pmas">3.6.6. Coherence and Cacheability PMAs</h4>
 <div class="paragraph">
-<p>[CV64A6_MMU] Write accesses are not cached. No cache-coherence scheme
+<p>[CV64A6_MMU] Caches are not implemented. No cache-coherence scheme
 is implemented.</p>
-</div>
-<div class="paragraph">
-<p>If a PMA indicates non-cacheability, then accesses to that region must
-be satisfied by the memory itself, not by any caches.</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_idempotency_pmas">3.6.7. Idempotency PMAs</h4>
 <div class="paragraph">
-<p>Idempotency PMAs describe whether reads and writes to an address region
-are idempotent. Main memory regions are assumed to be idempotent. For
-I/O regions, idempotency on reads and writes can be specified separately
-(e.g., reads are idempotent but writes are not). If accesses are
-non-idempotent, i.e., there is potentially a side effect on any read or
-write access, then speculative or redundant accesses must be avoided.</p>
-</div>
-<div class="paragraph">
-<p>For the purposes of defining the idempotency PMAs, changes in observed
-memory ordering created by redundant accesses are not considered a side
-effect.</p>
-</div>
-<div class="paragraph">
-<p>For non-idempotent regions, implicit reads and writes must not be
-performed early or speculatively, with the following exceptions. When a
-non-speculative implicit read is performed, an implementation is
-permitted to additionally read any of the bytes within a naturally
-aligned power-of-2 region containing the address of the non-speculative
-implicit read. Furthermore, when a non-speculative instruction fetch is
-performed, an implementation is permitted to additionally read any of
-the bytes within the <em>next</em> naturally aligned power-of-2 region of the
-same size (with the address of the region taken modulo
-2<sup>XLEN</sup>. The results of these additional reads
-may be used to satisfy subsequent early or speculative implicit reads.
-The size of these naturally aligned power-of-2 regions is
-implementation-defined, but, for systems with page-based virtual memory,
-must not exceed the smallest supported page size.</p>
+<p>[CV64A6_MMU] All memory accesses are idempotent.</p>
 </div>
 </div>
 </div>
