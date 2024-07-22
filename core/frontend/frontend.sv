@@ -337,7 +337,7 @@ module frontend
   logic paddr_nonidempotent;
   assign paddr_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, fetch_obi_req_o.a.addr}  //TO DO CHECK GRANULARITY
-  ); 
+  );
 
   // Caches optimisation signals
 
@@ -437,7 +437,7 @@ module frontend
     unique case (custom_state_q)
       WAIT_NEW_REQ: begin
         vaddr_d = npc_fetch_address;
-        if (instr_queue_ready && atrans_ready && !kill_s2) begin
+        if ((obi_a_state_q == TRANSPARENT || obi_r_req == '1) && instr_queue_ready && atrans_ready && !kill_s2) begin
           fetch_dreq_o.req = '1;
           if (fetch_dreq_i.ready) begin
             if_ready = '1;
@@ -470,7 +470,7 @@ module frontend
             obi_a_req = '1;
             obi_vaddr_d = vaddr_d;
             vaddr_d = npc_fetch_address;
-            if (instr_queue_ready && atrans_ready && !kill_s1) begin
+            if (obi_r_req && instr_queue_ready && atrans_ready && !kill_s1) begin
               fetch_dreq_o.req = '1;
               if (fetch_dreq_i.ready) begin
                 if_ready   = '1;
@@ -505,7 +505,7 @@ module frontend
       WAIT_OBI: begin
         if (kill_s2) begin
           vaddr_d = npc_fetch_address;
-          if (instr_queue_ready && atrans_ready && !kill_s1) begin
+          if ((obi_a_state_q == TRANSPARENT || obi_r_req == '1) && instr_queue_ready && atrans_ready && !kill_s1) begin
             fetch_dreq_o.req = '1;
             if (fetch_dreq_i.ready) begin
               if_ready = '1;
@@ -521,7 +521,7 @@ module frontend
           obi_a_req = '1;
           obi_vaddr_d = vaddr_d;
           vaddr_d = npc_fetch_address;
-          if (instr_queue_ready && atrans_ready && !kill_s1) begin
+          if (obi_r_req && instr_queue_ready && atrans_ready && !kill_s1) begin
             fetch_dreq_o.req = '1;
             if (fetch_dreq_i.ready) begin
               if_ready = '1;
