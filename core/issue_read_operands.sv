@@ -370,15 +370,15 @@ module issue_read_operands
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
-        default: fu_busy[i] = 1'b0;
+        default:
+        if (CVA6Cfg.FpPresent) begin
+          unique case (issue_instr_i[i].fu)
+            FPU: fu_busy[i] = fus_busy[i].fpu;
+            FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
+            default: fu_busy[i] = 1'b0;
+          endcase
+        end
       endcase
-      if (CVA6Cfg.FpPresent) begin
-        unique case (issue_instr_i[i].fu)
-          FPU: fu_busy[i] = fus_busy[i].fpu;
-          FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
-          default: fu_busy[i] = 1'b0;
-        endcase
-      end
     end
   end
 

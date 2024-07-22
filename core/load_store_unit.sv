@@ -590,7 +590,6 @@ module load_store_unit
           misaligned_exception.tinst = lsu_ctrl.tinst;
           misaligned_exception.gva   = ld_st_v_i;
         end
-
       end if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
@@ -616,7 +615,6 @@ module load_store_unit
           misaligned_exception.tinst = lsu_ctrl.tinst;
           misaligned_exception.gva   = ld_st_v_i;
         end
-
       end if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::STORE_PAGE_FAULT;
         misaligned_exception.valid = 1'b1;
