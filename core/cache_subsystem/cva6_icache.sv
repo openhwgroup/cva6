@@ -82,7 +82,8 @@ module cva6_icache
   logic cache_en_d, cache_en_q;  // cache is enabled
   logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
   logic paddr_is_nc_q, paddr_is_nc_d;  // asserted if physical address is non-cacheable
-  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit;  // hit from tag compare
+  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] cl_hit, cl_hit2;  // hit from tag compare
+
   logic cache_rden;  // triggers cache lookup
   logic cache_wren;  // triggers write to cacheline
   logic
@@ -233,8 +234,12 @@ module cva6_icache
 
     unique case (obi_r_state_q)
       OBI_R_IDLE: begin
-        if (fetch_obi_req_i.req) begin
-          obi_r_state_d = OBI_R_WAIT;
+        if (fetch_obi_req_i.req && obi_grant) begin
+          if (!(dreq_i.kill_req || flush_d)) begin
+            obi_r_state_d = OBI_R_WAIT;
+          end else begin
+            obi_r_state_d = OBI_R_KILLED;
+          end
         end
       end
 
@@ -250,7 +255,7 @@ module cva6_icache
             obi_ruser = userdata_d;
           end
           obi_ruser = userdata_d;
-          if (!(fetch_obi_req_i.req)) begin
+          if (!(fetch_obi_req_i.req && obi_grant)) begin
             obi_r_state_d = OBI_R_IDLE;
           end
         end
@@ -259,8 +264,10 @@ module cva6_icache
       OBI_R_KILLED: begin
         obi_valid = '1;
         dreq_o.invalid_data = '1;
-        if (fetch_obi_req_i.req) begin
-          obi_r_state_d = OBI_R_WAIT;
+        if (fetch_obi_req_i.req && obi_grant) begin
+          if (!(dreq_i.kill_req || flush_d)) begin
+            obi_r_state_d = OBI_R_WAIT;
+          end
         end else begin
           obi_r_state_d = OBI_R_IDLE;
         end
@@ -333,14 +340,13 @@ module cva6_icache
           if (!mem_rtrn_vld_i) begin
             dreq_o.ready = 1'b1;
             // we have a new request not killed
-            if (dreq_i.req && !dreq_i.kill_req) begin
+            if (fetch_obi_req_i.req && !dreq_i.kill_req) begin
               cache_rden = 1'b1;
-              if (fetch_obi_req_i.req) begin
-                state_d   = READ_BIS;
-                obi_grant = 1'b1;
-              end else begin
-                state_d = READ;
-              end
+              state_d = READ_BIS;
+              obi_grant = 1'b1;
+            end else if (dreq_i.req && !dreq_i.kill_req) begin
+              cache_rden = 1'b1;
+              state_d = READ;
             end
           end
         end
@@ -438,7 +444,7 @@ module cva6_icache
           end
 
           // we have a hit
-        end else if ((|cl_hit && cache_en_q && !inv_q)) begin
+        end else if ((|cl_hit2 && cache_en_q && !inv_q)) begin
           state_d = IDLE;
           data_valid_obi = 1'b1;
           // we can accept another request
@@ -571,6 +577,7 @@ module cva6_icache
 
   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     assign cl_hit[i]  = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
+    assign cl_hit2[i] = (cl_tag_rdata[i] == cl_tag_q) & vld_rdata[i];
     assign cl_sel[i]  = cl_rdata[i][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
     assign cl_user[i] = cl_ruser[i][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_USER_WIDTH];
   end
