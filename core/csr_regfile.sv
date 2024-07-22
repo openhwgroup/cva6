@@ -2464,6 +2464,8 @@ module csr_regfile
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
   if (CVA6Cfg.RVS) begin
     assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  end else begin
+    assign asid_o = '0;
   end
   assign vs_asid_o = CVA6Cfg.RVH ? vsatp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vmid_o = CVA6Cfg.RVH ? hgatp_q.vmid[CVA6Cfg.VMID_WIDTH-1:0] : '0;
