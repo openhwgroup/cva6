@@ -142,7 +142,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == (CVA6Cfg.DCacheType == 2);
+      HPDCache_supported      == 1;
 
       DirectVecOnly           == CVA6Cfg.DirectVecOnly;
       TvalEn                  == CVA6Cfg.TvalEn;
