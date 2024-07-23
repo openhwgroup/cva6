@@ -2489,7 +2489,7 @@ module csr_regfile
                              : 1'b0;
     assign en_g_translation_o = 1'b0;
   end
-  assign mxr_o = mstatus_q.mxr;
+  assign mxr_o  = mstatus_q.mxr;
   assign vmxr_o = CVA6Cfg.RVH ? vsstatus_q.mxr : '0;
   if (CVA6Cfg.RVH) begin
     assign tvm_o = (v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
