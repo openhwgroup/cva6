@@ -334,7 +334,7 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 vcs: vcs_build
 	cd $(vcs-library) && \
 	 ./simv +permissive $(if $(VERDI), -verdi -do $(root-dir)/init_testharness.do,) \
-		+elf_file=$(elf_file) ++$(elf_file) $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/libriscv) \
+		+elf_file=$(elf_file) ++$(elf_file) $(if $(spike-tandem), -sv_lib $(SPIKE_INSTALL_DIR)/libyaml-cpp) -sv_lib $(SPIKE_INSTALL_DIR)/libriscv \
 		-sv_lib ../work-dpi/ariane_dpi | tee vcs.log
 
 # Build the TB and module using QuestaSim
@@ -386,8 +386,8 @@ generate-trace-vsim:
 
 sim: build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm -sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	${top_level}_optimized +permissive-off +elf_file=$(elf_file) ++$(elf_file) ++$(target-options)
 
 $(riscv-asm-tests): build

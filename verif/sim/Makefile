@@ -201,12 +201,13 @@ ifneq ($(UVM_VERBOSITY),)
 COMMON_PLUS_ARGS += +UVM_VERBOSITY=$(UVM_VERBOSITY)
 endif
 
+# Libraries that provide symbols for other libs must come first.
 COMMON_RUN_ARGS = \
 	$(COMMON_PLUS_ARGS) $(issrun_opts) \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libcustomext \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm
 
 ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
@@ -308,14 +309,15 @@ xrun_uvm_comp:
           $(cov-comp-opt) $(isscomp_opts)\
 	  -top uvmt_cva6_tb
 
+# Libraries that provide symbols for other libs must come first.
 xrun_uvm_run:
 	@echo "[XRUN] Running"
 	cd $(XRUN_WORK_DIR) && 	\
 	  xrun 			\
 	  $(XRUN_RUN)			\
+	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libriscv \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	  +sv_lib=$(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	  ++$(elf) \
 	  +elf_file=$(elf) \
