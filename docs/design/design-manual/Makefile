@@ -63,7 +63,7 @@ OPTIONS := --trace \
            $(XTRA_ADOC_OPTS) \
            -D build \
            --failure-level=WARN \
-		   -a attribute-missing=warn
+           -a attribute-missing=warn
 REQUIRES := 
 
 .PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub
