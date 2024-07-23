@@ -22,6 +22,7 @@ setup:
 	cp -r $(design_dir)/design-manual/* build
 	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
 	cp -r $(design_dir)/../riscv-isa/riscv-isa-manual/docs-resources build
+	cp ../config/config.adoc build/source
 	cp -rf source build
 
 design-pdf: setup

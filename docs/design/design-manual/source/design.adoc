@@ -8,9 +8,11 @@
    Original Author: Jean-Roch COULON - Thales
 ////
 
+include::config.adoc[]
+
 [[DesignDocument]]
-= Design Documentation for CVA6 architecture
-:description: Design documentation for CVA6
+= Design Documentation for {ohg-config} architecture
+:description: Design documentation for {ohg-config}
 :company: THALES
 :doctype: book
 :sectnums:
