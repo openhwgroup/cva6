@@ -11,7 +11,7 @@
 
 import re
 import sys
-
+import subprocess
 import report_builder as rb
 
 
@@ -97,6 +97,26 @@ def report_spyglass_lint(comparison_results):
     report.dump()
 
 
+def run_diff(ref_file, new_file):
+    result = subprocess.run(
+        [
+            "diff",
+            "-I",
+            r"#\s+Report Name\s+:\s*[^#]*#\s+Report Created by\s*:\s*[^#]*#\s+Report Created on\s*:\s*[^#]*#\s+Working Directory\s*:\s*[^#]*",
+            ref_file,
+            new_file,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout:
+        print("Found differences between reference and new summary")
+        return False
+    else:
+        print("No differences found between reference and new summary")
+        return True
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python script.py <summary_ref_results> <summary_file_path>")
@@ -104,7 +124,13 @@ if __name__ == "__main__":
     summary_ref_results = sys.argv[1]
     summary_rpt = sys.argv[2]
 
+    no_diff = run_diff(summary_ref_results, summary_rpt)
+
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
     report_spyglass_lint(comparison_results)
+
+    if not no_diff:
+        print("Job failed due to differences in summaries")
+        sys.exit(1)
