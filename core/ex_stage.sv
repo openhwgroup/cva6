@@ -274,13 +274,19 @@ module ex_stage
   assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i;
 
   fu_data_t one_cycle_data;
+  logic [CVA6Cfg.VLEN-1:0] rs1_forwarding;
+  logic [CVA6Cfg.VLEN-1:0] rs2_forwarding;
   always_comb begin
     // data silence operation
     one_cycle_data = one_cycle_select[0] ? fu_data_i[0] : '0;
+    rs1_forwarding = rs1_forwarding_i[0];
+    rs2_forwarding = rs2_forwarding_i[0];
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (one_cycle_select[1]) begin
         one_cycle_data = fu_data_i[1];
+        rs1_forwarding = rs1_forwarding_i[1];
+        rs2_forwarding = rs2_forwarding_i[1];
       end
     end
   end
@@ -671,10 +677,10 @@ module ex_stage
           gpaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i[0].operation == SFENCE_VMA || fu_data_i[0].operation == HFENCE_VVMA || fu_data_i[0].operation == HFENCE_GVMA ) && |csr_valid_i))) begin
-          vaddr_to_be_flushed  <= rs1_forwarding_i;
-          gpaddr_to_be_flushed <= {2'b00, rs1_forwarding_i[CVA6Cfg.GPLEN-1:2]};
-          asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
-          vmid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.VMID_WIDTH-1:0];
+          vaddr_to_be_flushed  <= rs1_forwarding;
+          gpaddr_to_be_flushed <= {2'b00, rs1_forwarding[CVA6Cfg.GPLEN-1:2]};
+          asid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.ASID_WIDTH-1:0];
+          vmid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.VMID_WIDTH-1:0];
         end
       end
     end else begin
@@ -687,8 +693,8 @@ module ex_stage
           vaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i[0].operation == SFENCE_VMA) && |csr_valid_i))) begin
-          vaddr_to_be_flushed <= rs1_forwarding_i;
-          asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
+          vaddr_to_be_flushed <= rs1_forwarding;
+          asid_to_be_flushed  <= rs2_forwarding[CVA6Cfg.ASID_WIDTH-1:0];
         end
       end
     end
