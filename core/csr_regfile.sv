@@ -2496,7 +2496,7 @@ module csr_regfile
   end else begin
     assign tvm_o = mstatus_q.tvm;
   end
-  assign tw_o = mstatus_q.tw;
+  assign tw_o  = mstatus_q.tw;
   assign vtw_o = CVA6Cfg.RVH ? hstatus_q.vtw : '0;
   if (CVA6Cfg.RVH) begin
     assign tsr_o = (v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
