@@ -5,8 +5,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<meta name="description" content="Design documentation for CVA6">
-<title>Design Documentation for CVA6 architecture</title>
+<meta name="description" content="Design documentation for CV32A65X">
+<title>Design Documentation for CV32A65X architecture</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,7 +437,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body id="DesignDocument" class="book toc2 toc-left">
 <div id="header">
-<h1>Design Documentation for CVA6 architecture</h1>
+<h1>Design Documentation for CV32A65X architecture</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -1417,8 +1417,7 @@ Commit stage. At least 6 cycles are needed to execute one instruction.</p>
 <div class="paragraph">
 <p>The next subchapter lists the extensions implemented in CVA6. By
 configuration, we can enable/disable the extensions. CV32A65X supports
-the extensions described in the next subchapters. RVZicond, RV32A and
-RVZicntr extensions are not supported by CV32A65X.</p>
+the extensions described in the next subchapters.</p>
 </div>
 </div>
 <div class="sect2">
@@ -7233,7 +7232,7 @@ This submodule extracts the instructions from the 32-bit blocks.
 It is possible to fetch up to two instructions per cycle when C extension is used.
 An not-compressed instruction can be misaligned on the block size, interleaved with two cache blocks.
 In that case, two cache accesses are needed to get the whole instruction.
-The instr_realign submodule provides at maximum two instructions per cycle when compressed extensionis enabled, else one instruction per cycle.
+The instr_realign submodule provides at maximum two instructions per cycle when compressed extension is enabled, else one instruction per cycle.
 Incomplete instruction is stored in instr_realign submodule until its second half is fetched.</p>
 </div>
 <table id="_CVA6_instr_realign_ports" class="tableblock frame-all grid-all stretch">
@@ -12685,7 +12684,7 @@ by 4</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-07-19 17:07:05 +0200
+Last updated 2024-07-23 17:29:51 +0200
 </div>
 </div>
 </body>

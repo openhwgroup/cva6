@@ -78,29 +78,24 @@ In any case we need to correct our action and start fetching from the correct ad
 * *Return from environment call:* When CSR requests a return from an environment call, next PC takes the value of the PC of the instruction after the one pointed to by the mepc CSR.
 
 * *Exception/Interrupt:* If an exception is triggered by CSR_REGISTER, next PC takes the value of the trap vector base address CSR.
+ifdef::RVS-true,RVU-true[]
+The trap vector base address can be different depending on whether the exception traps to S-Mode or M-Mode.
+It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
+endif::[]
 
 * *Pipeline starting fetching from COMMIT PC:* When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC takes the value of the PC coming from the COMMIT submodule. 
 As CSR instructions do not exist in a compressed form, PC is unconditionally incremented by 4.
 
-//// 
-user and supervisor modes are not supported by CV32A65X
-The trap vector base address can be different depending on whether the exception traps to S-Mode or  M-Mode (user mode exceptions are currently not supported).
-It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
-////
-
-//// 
-Debug feature is not supported by CV32A65X
+ifeval::[{DebugEn} == true]
 * *Debug:* Debug has the highest order of precedence as it can interrupt any control flow requests. It also the only source of control flow change which can actually happen simultaneously to any other of the forced control flow changes.
 The debug jump is requested by CSR.
 The address to be jumped into is HW coded.
-////
+endif::[]
 
 All program counters are logical addressed.
-
-//// 
-MMU is not supported in CV32A65X
-If the logical to physical mapping changes, a ``fence.vm`` instruction should be used to flush the pipeline *and TLBs (MMU is not enabled in CV32A6 v0.1.0)*.
-////
+ifeval::[{MmuPresent} == true]
+If the logical to physical mapping changes, a ``fence.vm`` instruction should be used to flush the pipeline and TLBs.
+endif::[]
 
 [[fetch-stage]]
 Fetch Stage
@@ -136,7 +131,7 @@ This submodule extracts the instructions from the 32-bit blocks.
 It is possible to fetch up to two instructions per cycle when C extension is used.
 An not-compressed instruction can be misaligned on the block size, interleaved with two cache blocks.
 In that case, two cache accesses are needed to get the whole instruction.
-The instr_realign submodule provides at maximum two instructions per cycle when compressed extensionis enabled, else one instruction per cycle.
+The instr_realign submodule provides at maximum two instructions per cycle when compressed extension is enabled, else one instruction per cycle.
 Incomplete instruction is stored in instr_realign submodule until its second half is fetched.
 
 include::port_instr_realign.adoc[]

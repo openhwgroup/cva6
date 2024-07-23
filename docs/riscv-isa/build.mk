@@ -19,6 +19,7 @@ setup:
 	mkdir -p build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/riscv-isa-manual/* build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/src build/riscv-isa-manual
+	cp -r $(riscv-isa_dir)/../common/*.adoc build/riscv-isa-manual/src
 	cp ../config/config.adoc build/riscv-isa-manual/src
 
 priv-pdf: setup

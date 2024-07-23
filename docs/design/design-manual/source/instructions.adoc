@@ -12,9 +12,8 @@
 Instructions
 ~~~~~~~~~~~~
 
-The next subchapter lists the extensions implemented in CVA6. By
-configuration, we can enable/disable the extensions. CV32A65X supports
-the extensions described in the next subchapters. RVZicond, RV32A and
-RVZicntr extensions are not supported by CV32A65X.
+The next subchapter lists the extensions implemented in {ohg-config}. By
+configuration, we can enable/disable the extensions. {ohg-config} supports
+the extensions described in the next subchapters.
 
 include::isa/isa.adoc[]

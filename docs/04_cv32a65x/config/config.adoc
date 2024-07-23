@@ -47,3 +47,5 @@
 :MTvalEn: false
 :MTvecDirectEn: true
 :note: false
+:DebugEn: false
+:MmuPresent: false

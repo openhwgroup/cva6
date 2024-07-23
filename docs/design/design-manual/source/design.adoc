@@ -9,6 +9,7 @@
 ////
 
 include::config.adoc[]
+include::config_define.adoc[]
 
 [[DesignDocument]]
 = Design Documentation for {ohg-config} architecture
