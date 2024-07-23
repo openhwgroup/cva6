@@ -340,7 +340,7 @@ vcs: vcs_build
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr  $(vopt_flag)
+	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/libfesvr -dpilib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp $(vopt_flag)
 
 # src files
 $(library)/.build-srcs: $(library)
@@ -368,13 +368,13 @@ $(dpi-library)/%.o: corev_apu/tb/dpi/%.cc $(dpi_hdr)
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv
+	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -lyaml-cpp
 
 $(dpi-library)/xrun_ariane_dpi.so: $(dpi)
 	# Make Dir work-dpi
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/xrun_ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv
+	$(CXX) -shared -m64 -o $(dpi-library)/xrun_ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -lyaml-cpp
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
@@ -387,7 +387,7 @@ generate-trace-vsim:
 sim: build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm  \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm -sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
 	${top_level}_optimized +permissive-off +elf_file=$(elf_file) ++$(elf_file) ++$(target-options)
 
 $(riscv-asm-tests): build
