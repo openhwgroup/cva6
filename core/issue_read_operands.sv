@@ -377,6 +377,8 @@ module issue_read_operands
             FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
             default: fu_busy[i] = 1'b0;
           endcase
+        end else begin
+          fu_busy[i] = 1'b0;
         end
       endcase
     end
