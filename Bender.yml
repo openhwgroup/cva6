@@ -76,7 +76,6 @@ sources:
       - core/include/std_cache_pkg.sv
 
       # Extension Interface
-      - core/include/cvxif_pkg.sv
       - core/cvxif_example/include/cvxif_instr_pkg.sv
       - core/cvxif_fu.sv
       - core/cvxif_example/cvxif_example_coprocessor.sv

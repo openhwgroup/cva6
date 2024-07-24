@@ -84,7 +84,9 @@ package build_config_pkg;
     cfg.XF16Vec = bit'(XF16Vec);
     cfg.XF16ALTVec = bit'(XF16ALTVec);
     cfg.XF8Vec = bit'(XF8Vec);
+    // Can take 2 or 3 in single issue. 4 or 6 in dual issue.
     cfg.NrRgprPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 4 : 2);
+    // cfg.NrRgprPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 6 : 3);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
     cfg.PerfCounterEn = CVA6Cfg.PerfCounterEn;
@@ -164,6 +166,16 @@ package build_config_pkg;
     cfg.SharedTlbDepth = CVA6Cfg.SharedTlbDepth;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
+
+    cfg.X_NUM_RS = cfg.NrRgprPorts;
+    cfg.X_ID_WIDTH = cfg.TRANS_ID_BITS;
+    cfg.X_RFR_WIDTH = cfg.XLEN;
+    cfg.X_RFW_WIDTH = cfg.XLEN;
+    cfg.X_NUM_HARTS = 1;
+    cfg.X_HARTID_WIDTH = cfg.XLEN;
+    cfg.X_DUALREAD = 0;
+    cfg.X_DUALWRITE = 0;
+    cfg.X_ISSUE_REGISTER_SPLIT = 0;
 
     return cfg;
   endfunction

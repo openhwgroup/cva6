@@ -84,6 +84,34 @@
 
 |`cvxif_off_instr_o` | out | CVXIF offloaded instruction | TO_BE_COMPLETED | logic[31:0]
 
+|`hart_id_i` | in | CVA6 Hart ID | SUBSYSTEM | logic[CVA6Cfg.XLEN-1:0]
+
+|`x_issue_ready_i` | in | none | none | logic
+
+|`x_issue_resp_i` | in | none | none | x_issue_resp_t
+
+|`x_issue_valid_o` | out | none | none | logic
+
+|`x_issue_req_o` | out | none | none | x_issue_req_t
+
+|`x_register_ready_i` | in | none | none | logic
+
+|`x_register_valid_o` | out | none | none | logic
+
+|`x_register_o` | out | none | none | x_register_t
+
+|`x_commit_valid_o` | out | none | none | logic
+
+|`x_commit_o` | out | none | none | x_commit_t
+
+|`x_transaction_accepted_o` | out | none | none | logic
+
+|`x_transaction_rejected_o` | out | none | none | logic
+
+|`x_issue_writeback_o` | out | none | none | logic
+
+|`x_id_o` | out | none | none | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+
 |`waddr_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic[CVA6Cfg.NrCommitPorts-1:0][4:0]
 
 |`wdata_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic[CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0]

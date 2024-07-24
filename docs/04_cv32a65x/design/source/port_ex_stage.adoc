@@ -92,7 +92,7 @@
 
 |`x_ready_o` | out | CVXIF is ready | ISSUE_STAGE | logic
 
-|`x_off_instr_i` | in | undecoded instruction | ISSUE_STAGE | logic[31:0]
+|`x_off_instr_i` | in | none | none | logic[31:0]
 
 |`x_trans_id_o` | out | CVXIF transaction ID | ISSUE_STAGE | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
@@ -104,9 +104,15 @@
 
 |`x_we_o` | out | CVXIF write enable | ISSUE_STAGE | logic
 
-|`cvxif_req_o` | out | CVXIF request | SUBSYSTEM | cvxif_pkg::cvxif_req_t
+|`x_rd_o` | out | CVXIF destination register | ISSUE_STAGE | logic[4:0]
 
-|`cvxif_resp_i` | in | CVXIF response | SUBSYSTEM | cvxif_pkg::cvxif_resp_t
+|`x_result_valid_i` | in | CVXIF Result interface | SUBSYSTEM | logic
+
+|`x_result_i` | in | none | none | x_result_t
+
+|`x_result_ready_o` | out | none | none | logic
+
+|`x_transaction_rejected_i` | in | CVXIF Issue transaction rejected -> illegal instruction | ISSUE_STAGE | logic
 
 |`icache_areq_i` | in | icache translation response | CACHE | icache_arsp_t
 

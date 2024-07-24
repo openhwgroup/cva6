@@ -28,7 +28,8 @@ module ex_stage
     parameter type icache_arsp_t = logic,
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
-    parameter type lsu_ctrl_t = logic
+    parameter type lsu_ctrl_t = logic,
+    parameter type x_result_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -136,7 +137,7 @@ module ex_stage
     input logic [CVA6Cfg.NrIssuePorts-1:0] x_valid_i,
     // CVXIF is ready - ISSUE_STAGE
     output logic x_ready_o,
-    // undecoded instruction - ISSUE_STAGE
+    // CVXIF undecoded instruction
     input logic [31:0] x_off_instr_i,
     // CVXIF transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_o,
@@ -148,10 +149,14 @@ module ex_stage
     output logic x_valid_o,
     // CVXIF write enable - ISSUE_STAGE
     output logic x_we_o,
-    // CVXIF request - SUBSYSTEM
-    output cvxif_pkg::cvxif_req_t cvxif_req_o,
-    // CVXIF response - SUBSYSTEM
-    input cvxif_pkg::cvxif_resp_t cvxif_resp_i,
+    // CVXIF destination register - ISSUE_STAGE
+    output logic [4:0] x_rd_o,
+    // CVXIF Result interface - SUBSYSTEM
+    input logic x_result_valid_i,
+    input x_result_t x_result_i,
+    output logic x_result_ready_o,
+    // CVXIF Issue transaction rejected -> illegal instruction - ISSUE_STAGE
+    input logic x_transaction_rejected_i,
     // accelerate port result is valid - ACC_DISPATCHER
     input logic acc_valid_i,
     // Enable virtual memory translation - CSR_REGFILE
@@ -269,13 +274,19 @@ module ex_stage
   assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i;
 
   fu_data_t one_cycle_data;
+  logic [CVA6Cfg.VLEN-1:0] rs1_forwarding;
+  logic [CVA6Cfg.VLEN-1:0] rs2_forwarding;
   always_comb begin
     // data silence operation
     one_cycle_data = one_cycle_select[0] ? fu_data_i[0] : '0;
+    rs1_forwarding = rs1_forwarding_i[0];
+    rs2_forwarding = rs2_forwarding_i[0];
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (one_cycle_select[1]) begin
         one_cycle_data = fu_data_i[1];
+        rs1_forwarding = rs1_forwarding_i[1];
+        rs2_forwarding = rs2_forwarding_i[1];
       end
     end
   end
@@ -592,29 +603,31 @@ module ex_stage
     cvxif_fu #(
         .CVA6Cfg(CVA6Cfg),
         .exception_t(exception_t),
-        .fu_data_t(fu_data_t)
+        .x_result_t(x_result_t)
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,
-        .fu_data_i (cvxif_data),
-        .priv_lvl_i(ld_st_priv_lvl_i),
-        .x_valid_i (|x_valid_i),
-        .x_ready_o,
+        .x_valid_i(|x_valid_i),
+        .x_trans_id_i(cvxif_data.trans_id),
+        .x_illegal_i(x_transaction_rejected_i),
         .x_off_instr_i,
+        .x_ready_o,
         .x_trans_id_o,
         .x_exception_o,
         .x_result_o,
         .x_valid_o,
         .x_we_o,
-        .cvxif_req_o,
-        .cvxif_resp_i
+        .x_rd_o,
+        .result_valid_i(x_result_valid_i),
+        .result_i(x_result_i),
+        .result_ready_o(x_result_ready_o)
     );
   end else begin : gen_no_cvxif
-    assign cvxif_req_o   = '0;
-    assign x_trans_id_o  = '0;
-    assign x_exception_o = '0;
-    assign x_result_o    = '0;
-    assign x_valid_o     = '0;
+    assign x_result_ready_o = '0;
+    assign x_trans_id_o     = '0;
+    assign x_exception_o    = '0;
+    assign x_result_o       = '0;
+    assign x_valid_o        = '0;
   end
 
   if (CVA6Cfg.RVS) begin
@@ -664,10 +677,10 @@ module ex_stage
           gpaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i[0].operation == SFENCE_VMA || fu_data_i[0].operation == HFENCE_VVMA || fu_data_i[0].operation == HFENCE_GVMA ) && |csr_valid_i))) begin
-          vaddr_to_be_flushed  <= rs1_forwarding_i;
-          gpaddr_to_be_flushed <= {2'b00, rs1_forwarding_i[CVA6Cfg.GPLEN-1:2]};
-          asid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
-          vmid_to_be_flushed   <= rs2_forwarding_i[CVA6Cfg.VMID_WIDTH-1:0];
+          vaddr_to_be_flushed  <= rs1_forwarding;
+          gpaddr_to_be_flushed <= {2'b00, rs1_forwarding[CVA6Cfg.GPLEN-1:2]};
+          asid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.ASID_WIDTH-1:0];
+          vmid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.VMID_WIDTH-1:0];
         end
       end
     end else begin
@@ -680,8 +693,8 @@ module ex_stage
           vaddr_to_be_flushed <= '0;
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~current_instruction_is_sfence_vma) && (~((fu_data_i[0].operation == SFENCE_VMA) && |csr_valid_i))) begin
-          vaddr_to_be_flushed <= rs1_forwarding_i;
-          asid_to_be_flushed  <= rs2_forwarding_i[CVA6Cfg.ASID_WIDTH-1:0];
+          vaddr_to_be_flushed <= rs1_forwarding;
+          asid_to_be_flushed  <= rs2_forwarding[CVA6Cfg.ASID_WIDTH-1:0];
         end
       end
     end

@@ -2415,8 +2415,10 @@ module csr_regfile
 
     epc_o = mepc_q[CVA6Cfg.VLEN-1:0];
     // we are returning from supervisor or virtual supervisor mode, so take the sepc register
-    if (CVA6Cfg.RVS && sret) begin
-      epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
+    if (CVA6Cfg.RVS) begin
+      if (sret) begin
+        epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
+      end
     end
     // we are returning from debug mode, to take the dpc register
     if (CVA6Cfg.DebugEn) begin
@@ -2457,10 +2459,14 @@ module csr_regfile
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
   // MMU outputs
-  assign satp_ppn_o = satp_q.ppn;
+  assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
-  assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  if (CVA6Cfg.RVS) begin
+    assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  end else begin
+    assign asid_o = '0;
+  end
   assign vs_asid_o = CVA6Cfg.RVH ? vsatp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vmid_o = CVA6Cfg.RVH ? hgatp_q.vmid[CVA6Cfg.VMID_WIDTH-1:0] : '0;
   assign sum_o = mstatus_q.sum;
@@ -2483,12 +2489,20 @@ module csr_regfile
                              : 1'b0;
     assign en_g_translation_o = 1'b0;
   end
-  assign mxr_o = mstatus_q.mxr;
+  assign mxr_o  = mstatus_q.mxr;
   assign vmxr_o = CVA6Cfg.RVH ? vsstatus_q.mxr : '0;
-  assign tvm_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
-  assign tw_o = mstatus_q.tw;
+  if (CVA6Cfg.RVH) begin
+    assign tvm_o = (v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
+  end else begin
+    assign tvm_o = mstatus_q.tvm;
+  end
+  assign tw_o  = mstatus_q.tw;
   assign vtw_o = CVA6Cfg.RVH ? hstatus_q.vtw : '0;
-  assign tsr_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  if (CVA6Cfg.RVH) begin
+    assign tsr_o = (v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  end else begin
+    assign tsr_o = mstatus_q.tsr;
+  end
   assign halt_csr_o = wfi_q;
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];

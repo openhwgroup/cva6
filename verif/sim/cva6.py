@@ -704,6 +704,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           elf = prefix + ".o"
           log = ("%s/%s_%d.%s.log" % (log_dir, test['test'], i, target))
           cmd = get_iss_cmd(base_cmd, elf, target, log)
+          yaml = ("%s/%s_%s.%s.log.yaml" % (log_dir, test['test'], i, target))
           if 'iss_opts' in test:
             cmd += ' '
             cmd += test['iss_opts']
@@ -713,6 +714,8 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           else:
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
+          if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
+            analize_result_yaml(yaml)
 
 
 def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):

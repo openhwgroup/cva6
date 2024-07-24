@@ -19,24 +19,37 @@ from parameters_extractor import parameters_extractor
 from parameters_extractor import writeout_parameter_table
 from parameters_extractor import writeout_parameter_table_adoc
 
-def print_to_rst(pathout, module, ports, comments):
+HEADER_RST = """\
+..
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+
+"""
+
+HEADER_ADOC = """\
+////
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+////
+
+"""
+
+def print_to_rst(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.rst"
     print("Output file " + fileout)
 
     with open(fileout, "w", encoding="utf-8") as fout:
-        fout.write("..\n")
-        fout.write("   Copyright 2024 Thales DIS France SAS\n")
-        fout.write(
-            '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
-        )
-        fout.write(
-            "   you may not use this file except in compliance with the License.\n"
-        )
-        fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
-        fout.write(
-            "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
-        )
-        fout.write("   Original Author: Jean-Roch COULON - Thales\n\n")
+        fout.write(HEADER_RST)
         fout.write(f".. _CVA6_{module}_ports:\n\n")
         fout.write(f".. list-table:: **{module} module** IO ports\n")
         fout.write("   :header-rows: 1\n")
@@ -63,7 +76,7 @@ def print_to_rst(pathout, module, ports, comments):
                 fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
         fout.write("\n")
 
-def print_to_adoc(pathout, module, ports, comments):
+def print_to_adoc(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.adoc"
     print("Output file " + fileout)
 
@@ -74,27 +87,14 @@ def print_to_adoc(pathout, module, ports, comments):
             comment[i] = comment[i].replace('|', '*')
 
     with open(fileout, "w", encoding="utf-8") as fout:
-        fout.write("////\n")
-        fout.write("   Copyright 2024 Thales DIS France SAS\n")
-        fout.write(
-            '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
-        )
-        fout.write(
-            "   you may not use this file except in compliance with the License.\n"
-        )
-        fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
-        fout.write(
-            "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
-        )
-        fout.write("   Original Author: Jean-Roch COULON - Thales\n")
-        fout.write("////\n\n")
+        fout.write(HEADER_ADOC)
 
         fout.write(f"[[_CVA6_{module}_ports]]\n\n")
-        
+
         fout.write(f".*{module} module* IO ports\n")
         fout.write("|===\n")
         fout.write("|Signal | IO | Description | connexion | Type\n\n")
-        
+
         for port in ports:
             fout.write(f"|`{port.name}` | {port.direction} | {port.description} | {port.connexion} | {port.data_type}\n\n")
         fout.write("|===\n")
@@ -107,20 +107,18 @@ def print_to_adoc(pathout, module, ports, comments):
                 fout.write(f"{comment[0]},::\n*   {comment[1]}\n")
         fout.write("\n")
 
-if __name__ == "__main__":
-    try:
-        generate_file_type = sys.argv[1].lower()
-    except IndexError:
-        generate_file_type = "adoc"
-
+def main():
     PATH = "04_cv32a65x"
+    generate_file_type = "adoc"
     [spec_number, target] = PATH.split("_")
 
     print(spec_number, target)
+
+    # Parameters
     parameters = parameters_extractor(spec_number, target)
 
+    pathout = f"./{spec_number}_{target}/design/source"
     if generate_file_type in ['rst']:
-        pathout = f"./{spec_number}_{target}/design/source"
         fileout = f"{pathout}/parameters_{target}.rst"
         writeout_parameter_table(fileout, parameters, target)
     elif generate_file_type in ['adoc']:
@@ -130,6 +128,10 @@ if __name__ == "__main__":
     else:
         raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
 
+    # User_cfg
+    export_user_cfg_doc("01_cva6_user/user_cfg_doc.rst", parameters)
+
+    # Ports
     file = []
     file.append("../core/cva6.sv")
     file.append("../core/frontend/frontend.sv")
@@ -225,8 +227,30 @@ if __name__ == "__main__":
                     connexion = "none"
 
         if generate_file_type in ['rst']:
-            print_to_rst(pathout, module, ports, comments)
+            print_to_rst(pathout, target, module, ports, comments)
         elif generate_file_type in ['adoc']:
-            print_to_adoc(pathout, module, ports, comments)
+            print_to_adoc(pathout, target, module, ports, comments)
         else:
             raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
+
+def export_user_cfg_doc(out_path, params):
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(HEADER_RST)
+        f.write("""\
+.. _cva6_user_cfg_doc:
+
+.. list-table:: ``cva6_user_cfg_t`` parameters
+   :header-rows: 1
+
+   * - Name
+     - Type
+     - Description
+""")
+        for name, param in params.items():
+            f.write("\n")
+            f.write(f"   * - ``{name}``\n")
+            f.write(f"     - ``{param.datatype.strip()}``\n")
+            f.write(f"     - {param.description}\n")
+
+if __name__ == "__main__":
+    main()

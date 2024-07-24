@@ -59,10 +59,7 @@ module uvmt_cva6_tb;
 
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
-   uvma_cvxif_intf              cvxif_if(
-                                         .clk(clknrst_if.clk),
-                                         .reset_n(clknrst_if.reset_n)
-                                        ); // cvxif from the cvxif agent
+
    uvma_axi_intf                axi_if(
                                          .clk(clknrst_if.clk),
                                          .rst_n(clknrst_if.reset_n)
@@ -83,12 +80,6 @@ module uvmt_cva6_tb;
 
     uvmt_default_inputs_intf         default_inputs_vif();
 
-   //bind assertion module for cvxif interface
-   bind uvmt_cva6_dut_wrap
-      uvma_cvxif_assert          cvxif_assert(.cvxif_assert(cvxif_if),
-                                              .clk(clknrst_if.clk),
-                                              .reset_n(clknrst_if.reset_n)
-                                             );
    //bind assertion module for axi interface
    bind uvmt_cva6_dut_wrap
       uvmt_axi_assert #(CVA6Cfg.DCacheType)           axi_assert(.axi_assert_if(axi_if));
@@ -122,7 +113,6 @@ module uvmt_cva6_tb;
      .NUM_WORDS         (NUM_WORDS)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
-                    .cvxif_if  (cvxif_if),
                     .axi_if    (axi_if),
                     .axi_switch_vif    (axi_switch_vif),
                     .default_inputs_vif    (default_inputs_vif),
@@ -371,7 +361,6 @@ module uvmt_cva6_tb;
 
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));
-     uvm_config_db#(virtual uvma_cvxif_intf )::set(.cntxt(null), .inst_name("*.env.cvxif_agent"),   .field_name("vif"),       .value(cvxif_if)  );
      uvm_config_db#(virtual uvma_axi_intf   )::set(.cntxt(null), .inst_name("*"),                   .field_name("axi_vif"),    .value(axi_if));
      uvm_config_db#(virtual uvmt_axi_switch_intf  )::set(.cntxt(null), .inst_name("*.env"),             .field_name("axi_switch_vif"),   .value(axi_switch_vif));
      uvm_config_db#(virtual uvmt_rvfi_if#( .CVA6Cfg(CVA6Cfg), .rvfi_instr_t(rvfi_instr_t), .rvfi_csr_t (rvfi_csr_t)))::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),  .value(rvfi_if));

@@ -42,7 +42,6 @@ class uvme_cva6_env_c extends uvm_env;
 
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
-   uvma_cvxif_agent_c     cvxif_agent;
    uvma_axi_agent_c       axi_agent;
    uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
    uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
@@ -246,8 +245,6 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
-   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
-
    uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
 
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
@@ -278,7 +275,6 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
-   cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
    axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
    rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
@@ -361,7 +357,6 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.cvxif_vsequencer    = cvxif_agent.vsequencer;
    vsequencer.axi_vsequencer      = axi_agent.vsequencer;
    vsequencer.interrupt_sequencer      = interrupt_agent.sequencer;
 
@@ -371,12 +366,6 @@ endfunction: assemble_vsequencer
 task uvme_cva6_env_c::run_phase(uvm_phase phase);
 
    fork
-
-      begin
-            uvme_cvxif_vseq_c        cvxif_vseq;
-            cvxif_vseq = uvme_cvxif_vseq_c::type_id::create("cvxif_vseq");
-            cvxif_vseq.start(cvxif_agent.vsequencer);
-      end
 
       begin
          if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
@@ -398,9 +387,6 @@ endtask
 
 function void uvme_cva6_env_c::connect_coverage_model();
 
-   if (cfg.cvxif_cfg.cov_model_enabled) begin
-      cvxif_agent.monitor.req_ap.connect(cov_model.cvxif_covg.req_item_fifo.analysis_export);
-   end
    if (cfg.isacov_cfg.cov_model_enabled) begin
       isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
       isacov_agent.monitor.ap.connect(cov_model.illegal_covg.mon_trn_fifo.analysis_export);

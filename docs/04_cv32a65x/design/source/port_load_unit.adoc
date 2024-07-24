@@ -18,43 +18,43 @@
 
 |`rst_ni` | in | Asynchronous reset active low | SUBSYSTEM | logic
 
-|`flush_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic
+|`flush_i` | in | Flush signal | CONTROLLER | logic
 
-|`valid_i` | in | Load unit input port | TO_BE_COMPLETED | logic
+|`valid_i` | in | Load request is valid | LSU_BYPASS | logic
 
-|`lsu_ctrl_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | lsu_ctrl_t
+|`lsu_ctrl_i` | in | Load request input | LSU_BYPASS | lsu_ctrl_t
 
-|`pop_ld_o` | out | TO_BE_COMPLETED | TO_BE_COMPLETED | logic
+|`pop_ld_o` | out | Pop the load request from the LSU bypass FIFO | LSU_BYPASS | logic
 
-|`valid_o` | out | Load unit result is valid | TO_BE_COMPLETED | logic
+|`valid_o` | out | Load unit result is valid | ISSUE_STAGE | logic
 
-|`trans_id_o` | out | Load transaction ID | TO_BE_COMPLETED | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+|`trans_id_o` | out | Load transaction ID | ISSUE_STAGE | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
-|`result_o` | out | Load result | TO_BE_COMPLETED | logic[CVA6Cfg.XLEN-1:0]
+|`result_o` | out | Load result | ISSUE_STAGE | logic[CVA6Cfg.XLEN-1:0]
 
-|`ex_o` | out | Load exception | TO_BE_COMPLETED | exception_t
+|`ex_o` | out | Load exception | ISSUE_STAGE | exception_t
 
-|`translation_req_o` | out | Request address translation | TO_BE_COMPLETED | logic
+|`translation_req_o` | out | Request address translation | MMU | logic
 
-|`vaddr_o` | out | Virtual address | TO_BE_COMPLETED | logic[CVA6Cfg.VLEN-1:0]
+|`vaddr_o` | out | Virtual address | MMU | logic[CVA6Cfg.VLEN-1:0]
 
-|`paddr_i` | in | Physical address | TO_BE_COMPLETED | logic[CVA6Cfg.PLEN-1:0]
+|`paddr_i` | in | Physical address | MMU | logic[CVA6Cfg.PLEN-1:0]
 
-|`ex_i` | in | Excepted which appears before load | TO_BE_COMPLETED | exception_t
+|`ex_i` | in | Excepted which appears before load | MMU | exception_t
 
-|`page_offset_o` | out | TO_BE_COMPLETED | TO_BE_COMPLETED | logic[11:0]
+|`page_offset_o` | out | Page offset for address checking | STORE_UNIT | logic[11:0]
 
-|`page_offset_matches_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic
+|`page_offset_matches_i` | in | Indicates if the page offset matches a store unit entry | STORE_UNIT | logic
 
-|`store_buffer_empty_i` | in | Store buffer is empty | TO_BE_COMPLETED | logic
+|`store_buffer_empty_i` | in | Store buffer is empty | STORE_UNIT | logic
 
-|`commit_tran_id_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+|`commit_tran_id_i` | in | Transaction ID of the committing instruction | COMMIT_STAGE | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
 
 |`req_port_i` | in | Data cache request out | CACHES | dcache_req_o_t
 
 |`req_port_o` | out | Data cache request in | CACHES | dcache_req_i_t
 
-|`dcache_wbuffer_not_ni_i` | in | TO_BE_COMPLETED | TO_BE_COMPLETED | logic
+|`dcache_wbuffer_not_ni_i` | in | Presence of non-idempotent operations in the D$ write buffer | CACHES | logic
 
 |===
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below

@@ -20,22 +20,25 @@ import io
 import os
 import re
 import yaml
+from yaml import BaseLoader
 import rstcloth
+import json
+from mako.template import Template
 import libs.isa_updater
 import libs.csr_updater
+import libs.spike_updater
 import libs.csr_factorizer
 from rstcloth import RstCloth
 from mdutils.mdutils import MdUtils
 from libs.isa_updater import isa_filter
 from libs.csr_updater import csr_formatter
+from libs.spike_updater import spike_formatter
 from libs.csr_factorizer import factorizer
 
-pattern_warl = (
-    r"\b(?:warl|wlrl|ro_constant|ro_variable|rw|ro)\b"  # pattern to detect warl in field
-)
+pattern_warl = r"\b(?:warl|wlrl|ro_constant|ro_variable|rw|ro)\b"  # pattern to detect warl in field
 pattern_legal_dict = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is dict
 pattern_legal_list = r"\[(0x[0-9A-Fa-f]+)(.*?(0x[0-9A-Fa-f]+))?\]"  # pattern to detect if warl field is a list
-Factorizer_pattern = r".*(\d).*"  # pattern to detect factorized fields
+Factorizer_pattern = r"\d+"  # pattern to detect factorized fields
 
 
 class DocumentClass:
@@ -132,15 +135,31 @@ class Render:
     for a specific output format."""
 
     @staticmethod
+    def is_decimal(value):
+        """return a bool checking if value is decimal"""
+        try:
+            int(
+                value
+            )  # Alternatively, use float(value) if you want to check for floating point numbers
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
     def range(start, end):
         """Return a string representing the range START..END, inclusive.
         START and END are strings representing numerical values."""
+        if Render.is_decimal(start):
+            start = hex(int(start))
+        if Render.is_decimal(end):
+            end = hex(int(end))
         return f"{start} - {end}"
 
     @staticmethod
     def value_set(values):
         """Return a string representing the set of values in VALUES.
         VALUES is a list of strings."""
+        # values = [hex(int(value, 16)) if '0x' in value and '-' not in value else value for value in values]
         return ", ".join(values)
 
     @staticmethod
@@ -162,6 +181,72 @@ class Render:
             return upcased
 
 
+class CoreConfig:
+    def __init__(
+        self,
+        isa,
+        marchid,
+        misa_we,
+        misa_we_enable,
+        misaligned,
+        mmu_mode,
+        mvendorid,
+        pmpaddr0,
+        pmpcfg0,
+        pmpregions,
+        priv,
+        status_fs_field_we,
+        status_fs_field_we_enable,
+        status_vs_field_we,
+        status_vs_field_we_enable,
+    ):
+        self.isa = isa
+        self.marchid = marchid
+        self.misa_we = misa_we
+        self.misa_we_enable = misa_we_enable
+        self.misaligned = misaligned
+        self.mmu_mode = mmu_mode
+        self.mvendorid = mvendorid
+        self.pmpaddr0 = pmpaddr0
+        self.pmpcfg0 = pmpcfg0
+        self.pmpregions = pmpregions
+        self.priv = priv
+        self.status_fs_field_we = status_fs_field_we
+        self.status_fs_field_we_enable = status_fs_field_we_enable
+        self.status_vs_field_we = status_vs_field_we
+        self.status_vs_field_we_enable = status_vs_field_we_enable
+
+
+class Spike:
+    def __init__(
+        self,
+        bootrom,
+        bootrom_base,
+        bootrom_size,
+        dram,
+        dram_base,
+        dram_size,
+        generic_core_config,
+        max_steps,
+        max_steps_enabled,
+        isa,
+        priv,
+        core_configs,
+    ):
+        self.bootrom = bootrom
+        self.bootrom_base = bootrom_base
+        self.bootrom_size = bootrom_size
+        self.dram = dram
+        self.dram_base = dram_base
+        self.dram_size = dram_size
+        self.generic_core_config = generic_core_config
+        self.max_steps = max_steps
+        self.max_steps_enabled = max_steps_enabled
+        self.isa = isa
+        self.priv = priv
+        self.core_configs = core_configs
+
+
 # --------------------------------------------------------------#
 class ISAdocumentClass:
     """ISA document class"""
@@ -175,7 +260,7 @@ class ISAdocumentClass:
 
 
 class InstructionMapClass:
-    """ISA instruction map class"""
+    """ISA instruction map c.2n lass"""
 
     def __init__(self, name):
         self.name = name
@@ -857,7 +942,7 @@ class MdAddressBlock(AddressBlockClass):
 class CsrParser:
     """parse CSR RISC-V config yaml file"""
 
-    def __init__(self, srcFile,customFile, target, modiFile=None):
+    def __init__(self, srcFile, customFile, target, modiFile=None):
         self.srcFile = srcFile
         self.customFile = customFile
         self.modiFile = modiFile
@@ -957,16 +1042,30 @@ class CsrParser:
                                             legal_value = matches.group(3)
                                         bitlegal = legal_value
                                 elif isinstance(legal_2, list):
-                                    pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(.)\s*((?:0x)?[0-9A-Fa-f]+)\s*"
-                                    matches = re.search(pattern, legal_2[0])
-                                    if matches:
-                                        legal_value = (
-                                            Render.range(
-                                                matches.group(1), matches.group(3)
-                                            )
-                                            if matches.group(2) == ":"
-                                            else Render.value_set(legal_2[0].split(","))
-                                        )
+                                    pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(:|,?)\s*((?:0x)?[0-9A-Fa-f]+)?"
+                                    for value in legal_2:
+                                        value_list = value.split(",")
+                                        processed_values = []
+                                        for val in value_list:
+                                            matches = re.search(pattern, val)
+                                            if matches:
+                                                first_value = matches.group(1)
+                                                separator = matches.group(2)
+                                                second_value = (
+                                                    matches.group(3)
+                                                    if matches.group(3)
+                                                    else first_value
+                                                )
+                                                if separator == ":":
+                                                    processed_value = Render.range(
+                                                        first_value, second_value
+                                                    )
+                                                else:
+                                                    processed_value = hex(
+                                                        int(first_value)
+                                                    )
+                                                processed_values.append(processed_value)
+                                        legal_value = Render.value_set(processed_values)
                                         bitlegal = legal_value
                                 else:
                                     legal_value = hex(legal_2)
@@ -976,9 +1075,13 @@ class CsrParser:
                     if match:
                         match_field = re.search(Factorizer_pattern, str(item))
                         if match_field:
+                            if match_field.group(0) not in {"0", "1", "2", "3"}:
+                                field_number = int(match_field.group(0)) - 8
+                            else:
+                                field_number = match_field.group(0)
                             fieldName = re.sub(
-                                match_field.group(1),
-                                f"[i*4 + {match_field.group(1)}]",
+                                Factorizer_pattern,
+                                f"[i*4 +{field_number}]",
                                 item,
                             )
                     else:
@@ -1095,18 +1198,32 @@ class CsrParser:
                                     legal_value = matches.group(3)
                                 bitlegal = legal_value
                         elif isinstance(legal_2, list):
-                            pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(.)\s*((?:0x)?[0-9A-Fa-f]+)\s*"
-                            matches = re.search(pattern, legal_2[0])
-                            if matches:
-                                legal_value = (
-                                    Render.range(matches.group(1), matches.group(3))
-                                    if matches.group(2) == ":"
-                                    else Render.value_set(legal_2[0].split(","))
-                                )
+                            pattern = r"\s*((?:0x)?[0-9A-Fa-f]+)\s*(:|,?)\s*((?:0x)?[0-9A-Fa-f]+)?"
+                            for value in legal_2:
+                                value_list = value.split(",")
+                                processed_values = []
+                                for val in value_list:
+                                    matches = re.search(pattern, val)
+                                    if matches:
+                                        first_value = matches.group(1)
+                                        separator = matches.group(2)
+                                        second_value = (
+                                            matches.group(3)
+                                            if matches.group(3)
+                                            else first_value
+                                        )
+                                        if separator == ":":
+                                            processed_value = Render.range(
+                                                first_value, second_value
+                                            )
+                                        else:
+                                            processed_value = hex(int(first_value))
+                                        processed_values.append(processed_value)
+                                legal_value = Render.value_set(processed_values)
                                 bitlegal = legal_value
                         else:
-                            bitmask = 0
-                            bitlegal = "0x" + hex(legal_2)[2:].zfill(int(size / 4))
+                            legal_value = hex(legal_2)
+                            bitlegal = legal_value
             fieldDesc = regDesc
             fieldreset = "0x" + hex(int(resetValue, 16))[2:].zfill(int(size / 4))
             if bitlsb is None:
@@ -1135,9 +1252,12 @@ class CsrParser:
     def returnDocument(self):
         with open(self.srcFile, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        data = csr_formatter(self.srcFile,self.customFile, self.modiFile)
-        Registers = factorizer(data)
         docName = data["hart0"]
+        size = int(
+            data["hart0"].get("supported_xlen", "")[0]
+        )  # depends on architecture
+        data = csr_formatter(self.srcFile, self.customFile, self.modiFile)
+        Registers = factorizer(data)
         d = DocumentClass(docName)
         m = MemoryMapClass(docName)
         a = AddressBlockClass("csr")
@@ -1151,7 +1271,7 @@ class CsrParser:
                     else hex(RegElement.get("address", None))
                 )
                 reset = hex(RegElement.get("reset-val", ""))
-                size = int(data["hart0"].get("supported_xlen", "")[0])
+
                 access = RegElement.get("priv_mode", "")
                 if Registers.get(register, {}).get("description", "") is not None:
                     desc = Registers.get(register, {}).get("description", "")
@@ -1267,6 +1387,96 @@ class IsaParser:
         return Inst
 
 
+class SpikeParser:
+    """A class to parse data related to Spike."""
+
+    def __init__(self, srcFile, target):
+        self.srcFile = srcFile
+        self.target = target
+
+    def returnDocument(self):
+        with open(self.srcFile, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        core_configs = []
+        pattern = r"pmpaddr(\d+)"
+        index = 0
+        bitWidth = 32
+        isa = ""
+        for entry in data["hart_ids"]:
+            M = (
+                "M"
+                if data[f"hart{entry}"]
+                .get("mstatus", {})
+                .get("rv32", "")
+                .get("accessible", [])
+                else ""
+            )
+            S = (
+                "S"
+                if data[f"hart{entry}"]
+                .get("sstatus", {})
+                .get("rv32", "")
+                .get("accessible", [])
+                else ""
+            )
+            U = (
+                "U"
+                if data[f"hart{entry}"]
+                .get("ustatus", {})
+                .get("rv32", "")
+                .get("accessible", [])
+                else ""
+            )
+            for k in data[f"hart{entry}"].keys():
+                match = re.search(pattern, str(k))
+                if match:
+                    index += int(match.group(1))
+            isa = data[f"hart{entry}"]["ISA"].lower()
+            core_config = CoreConfig(
+                isa=data[f"hart{entry}"]["ISA"].lower(),
+                marchid=data[f"hart{entry}"].get("marchid", {}).get("reset-val", ""),
+                misa_we=False,
+                misa_we_enable=True,
+                misaligned=data[f"hart{entry}"].get("hw_data_misaligned_support", ""),
+                mmu_mode=(
+                    "bare"
+                    if not (
+                        (int(data[f"hart{entry}"].get("satp", {}).get("reset-val", "")))
+                        >> 31
+                    )
+                    else "sv32"
+                ),
+                mvendorid=data[f"hart{entry}"]
+                .get("mvendorid", {})
+                .get("reset-val", ""),
+                pmpaddr0=data[f"hart{entry}"].get("pmpaddr0", {}).get("reset-val", ""),
+                pmpcfg0=data[f"hart{entry}"].get("pmpcfg0", {}).get("reset-val", ""),
+                pmpregions=index,
+                priv=f"{M}{S}{U}".format(M, S, U),
+                status_fs_field_we=False,
+                status_fs_field_we_enable=False,
+                status_vs_field_we=False,
+                status_vs_field_we_enable=False,
+            )
+            core_configs.append(core_config)
+        S = Spike(
+            bootrom=True,
+            bootrom_base=0x10000,
+            bootrom_size=0x1000,
+            dram=True,
+            dram_base=0x80000000,
+            dram_size=0x40000000,
+            generic_core_config=False,
+            max_steps=200000,
+            max_steps_enabled=False,
+            isa=isa,
+            priv=f"{M}{S}{U}".format(M, S, U),
+            core_configs=core_configs,
+        )
+
+        return S
+
+
 class IsaGenerator:
     """generate isa folder with isa docs"""
 
@@ -1306,7 +1516,6 @@ class CsrGenerator:
 
     def write(self, file_name, string):
         path = f"./{self.target}/csr/"
-        print(path)
         if not os.path.exists(path):
             os.makedirs(path)
         _dest = os.path.join(path, file_name)
@@ -1326,3 +1535,28 @@ class CsrGenerator:
                 s = block.returnAsString()
                 file_name = blockName + block.suffix
                 self.write(file_name, s)
+
+
+class SpikeGenerator:
+    """Generate spike folder with spike docs"""
+
+    def __init__(self, target, temp, modiFile=None):
+        self.target = target
+        self.temp = temp
+        self.modiFile = modiFile
+
+    def write(self, file_name, string):
+        path = f"./{self.target}/spike/"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        _dest = os.path.join(path, file_name)
+        print("writing file " + _dest)
+        with open(_dest, "w", encoding="utf-8") as f:
+            yaml.dump(string, f, default_flow_style=False, sort_keys=False)
+
+    def generateSpike(self, document):
+        template = Template(filename=self.temp)
+        s = template.render(spike=document)
+        data = spike_formatter(yaml.load(s, Loader=BaseLoader), self.modiFile)
+        file_name = "spike.yaml"
+        self.write(file_name, data)

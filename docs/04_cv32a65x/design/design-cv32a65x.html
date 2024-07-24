@@ -1054,7 +1054,7 @@ Commit stage. At least 6 cycles are needed to execute one instruction.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">NrNonIdempotentRules</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PMA non idempotent rules number</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">NonIdempotentAddrBase</p></td>
@@ -1069,7 +1069,7 @@ Commit stage. At least 6 cycles are needed to execute one instruction.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">NrExecuteRegionRules</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PMA regions with execute rules number</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ExecuteRegionAddrBase</p></td>
@@ -1208,7 +1208,7 @@ Commit stage. At least 6 cycles are needed to execute one instruction.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SuperscalarEn</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enable superscalar with 2 issue ports and 2 commit ports</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enable superscalar* with 2 issue ports and 2 commit ports.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">True</p></td>
 </tr>
 <tr>
@@ -8085,6 +8085,41 @@ traps, extension support.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CSR_REGFILE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">irq_ctrl_t</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>hart_id_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.XLEN-1:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>compressed_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>compressed_resp_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_compressed_resp_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>compressed_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>compressed_req_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_compressed_req_t</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -8700,14 +8735,14 @@ from the COMMIT_STAGE module.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.NrIssuePorts-1:0]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>xfu_valid_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF FU is valid</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EX_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.NrIssuePorts-1:0]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>xfu_ready_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF is FU ready</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EX_STAGE</p></td>
@@ -8719,6 +8754,83 @@ from the COMMIT_STAGE module.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF offloader instruction value</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EX_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[31:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>hart_id_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVA6 Hart ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SUBSYSTEM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.XLEN-1:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_resp_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_issue_resp_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_req_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_issue_req_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_register_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_commit_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_commit_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_commit_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_transaction_rejected_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF Transaction rejected &#8594; instruction is illegal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EX_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>trans_id_i</code></p></td>
@@ -8761,6 +8873,13 @@ from the COMMIT_STAGE module.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF write enable</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EX_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_rd_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF destination register</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[4:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>waddr_i</code></p></td>
@@ -8975,6 +9094,27 @@ registers are going to be clobbered by a previously issued instruction.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_transaction_accepted_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_writeback_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_id_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>rs1_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">rs1 operand address</p></td>
@@ -9148,6 +9288,13 @@ registers are going to be clobbered by a previously issued instruction.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Cvxif we for writeback</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_rd_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF destination register</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[4:0]</p></td>
 </tr>
 </tbody>
 </table>
@@ -9450,6 +9597,104 @@ registers are going to be clobbered by a previously issued instruction.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF offloaded instruction</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[31:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>hart_id_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVA6 Hart ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SUBSYSTEM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.XLEN-1:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_resp_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_issue_resp_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_req_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_issue_req_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_ready_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_register_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_register_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_commit_valid_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_commit_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_commit_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_transaction_accepted_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_transaction_rejected_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_issue_writeback_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_id_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>waddr_i</code></p></td>
@@ -10817,11 +11062,11 @@ become committed.</p>
 <div class="sect5">
 <h6 id="load_unit">4.4.3.5.2. load_unit</h6>
 <div class="paragraph">
-<p>The load_unit module manages the data load operations.</p>
+<p>The load unit module manages the data load operations.</p>
 </div>
 <div class="paragraph">
 <p>Before issuing a load, the load unit needs to check the store buffer for potential aliasing.
-It inserts stalls until it can satisfy the current request. This means:</p>
+It stalls until it can satisfy the current request. This means:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -10832,9 +11077,23 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <p>Two stores to the same address are allowed.</p>
 </li>
 <li>
-<p>A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the store buffer).</p>
+<p>A store after a load to the same address is allowed.</p>
+</li>
+<li>
+<p>A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>After the check of the store buffer, a read request is sent to the D$ with the index field of the address (1).
+The load unit stalls until the D$ acknowledges this request (2).
+In the next cycle, the tag field of the address is sent to the D$ (3).
+If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
+It also stalls until the incoming load instruction is the next instruction to be committed.
+When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArIAAAHOCAYAAABkceqnAAAAAXNSR0IArs4c6QAANwB0RVh0bXhmaWxlACUzQ214ZmlsZSUzRSUzQ2RpYWdyYW0lMjBuYW1lJTNEJTIyUGFnZS0xJTIyJTIwaWQlM0QlMjJjTEJyX0d3bnBRenUzQ2Q3Uk5BOSUyMiUzRSUzQ214R3JhcGhNb2RlbCUyMGR4JTNEJTIyMTY4OCUyMiUyMGR5JTNEJTIyOTU2JTIyJTIwZ3JpZCUzRCUyMjElMjIlMjBncmlkU2l6ZSUzRCUyMjEwJTIyJTIwZ3VpZGVzJTNEJTIyMSUyMiUyMHRvb2x0aXBzJTNEJTIyMSUyMiUyMGNvbm5lY3QlM0QlMjIxJTIyJTIwYXJyb3dzJTNEJTIyMSUyMiUyMGZvbGQlM0QlMjIxJTIyJTIwcGFnZSUzRCUyMjElMjIlMjBwYWdlU2NhbGUlM0QlMjIxJTIyJTIwcGFnZVdpZHRoJTNEJTIyODI3JTIyJTIwcGFnZUhlaWdodCUzRCUyMjExNjklMjIlMjBtYXRoJTNEJTIyMCUyMiUyMHNoYWRvdyUzRCUyMjAlMjIlM0UlM0Nyb290JTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIwJTIyJTJGJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxJTIyJTIwcGFyZW50JTNEJTIyMCUyMiUyRiUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyNzclMjIlMjB2YWx1ZSUzRCUyMkxTVSUyMiUyMHN0eWxlJTNEJTIyc3dpbWxhbmUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQmh0bWwlM0QxJTNCbW92YWJsZSUzRDElM0JyZXNpemFibGUlM0QxJTNCcm90YXRhYmxlJTNEMSUzQmRlbGV0YWJsZSUzRDElM0JlZGl0YWJsZSUzRDElM0Jjb25uZWN0YWJsZSUzRDElM0IlMjIlMjBwYXJlbnQlM0QlMjIxJTIyJTIwdmVydGV4JTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB4JTNEJTIyNzAlMjIlMjB5JTNEJTIyMjI1JTIyJTIwd2lkdGglM0QlMjIzNjAlMjIlMjBoZWlnaHQlM0QlMjIyNjUlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjI4NSUyMiUyMHZhbHVlJTNEJTIyU1RPUkUlMjBVTklUJTIyJTIwc3R5bGUlM0QlMjJyb3VuZGVkJTNEMCUzQndoaXRlU3BhY2UlM0R3cmFwJTNCaHRtbCUzRDElM0IlMjIlMjBwYXJlbnQlM0QlMjI3NyUyMiUyMHZlcnRleCUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIweCUzRCUyMjE5JTIyJTIweSUzRCUyMjE3NSUyMiUyMHdpZHRoJTNEJTIyMTIwJTIyJTIwaGVpZ2h0JTNEJTIyODAlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjI5NCUyMiUyMHZhbHVlJTNEJTIyJTI2bHQlM0Jmb250JTIwY29sb3IlM0QlMjZxdW90JTNCJTIzMDAwMDAwJTI2cXVvdCUzQiUyNmd0JTNCTE9BRCUyMFVOSVQlMjZsdCUzQiUyRmZvbnQlMjZndCUzQiUyMiUyMHN0eWxlJTNEJTIycm91bmRlZCUzRDAlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQmh0bWwlM0QxJTNCZmlsbENvbG9yJTNEJTIzQjhCOEI4JTNCJTIyJTIwcGFyZW50JTNEJTIyNzclMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjIyMTklMjIlMjB5JTNEJTIyMTc1JTIyJTIwd2lkdGglM0QlMjIxMjAlMjIlMjBoZWlnaHQlM0QlMjI4MCUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlMkYlM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjExMiUyMiUyMHZhbHVlJTNEJTIyJTIyJTIwc3R5bGUlM0QlMjJlbmRBcnJvdyUzRGNsYXNzaWMlM0JzdGFydEFycm93JTNEY2xhc3NpYyUzQmh0bWwlM0QxJTNCcm91bmRlZCUzRDAlM0JleGl0WCUzRDElM0JleGl0WSUzRDAuNSUzQmV4aXREeCUzRDAlM0JleGl0RHklM0QwJTNCZW50cnlYJTNEMCUzQmVudHJ5WSUzRDAuNSUzQmVudHJ5RHglM0QwJTNCZW50cnlEeSUzRDAlM0IlMjIlMjBwYXJlbnQlM0QlMjI3NyUyMiUyMHNvdXJjZSUzRCUyMjg1JTIyJTIwdGFyZ2V0JTNEJTIyOTQlMjIlMjBlZGdlJTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB3aWR0aCUzRCUyMjUwJTIyJTIwaGVpZ2h0JTNEJTIyNTAlMjIlMjByZWxhdGl2ZSUzRCUyMjElMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjIzNDklMjIlMjB5JTNEJTIyMjc1JTIyJTIwYXMlM0QlMjJzb3VyY2VQb2ludCUyMiUyRiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyMzk5JTIyJTIweSUzRCUyMjIyNSUyMiUyMGFzJTNEJTIydGFyZ2V0UG9pbnQlMjIlMkYlM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMTMlMjIlMjB2YWx1ZSUzRCUyMnBhZ2Vfb2Zmc2V0X21hdGNoZXMlMjIlMjBzdHlsZSUzRCUyMnRleHQlM0JodG1sJTNEMSUzQnN0cm9rZUNvbG9yJTNEbm9uZSUzQmZpbGxDb2xvciUzRG5vbmUlM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCcm90YXRpb24lM0QtNDUlM0IlMjIlMjBwYXJlbnQlM0QlMjI3NyUyMiUyMHZlcnRleCUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIweCUzRCUyMjE2OS40MSUyMiUyMHklM0QlMjIxOTUuOTklMjIlMjB3aWR0aCUzRCUyMjI3LjEzJTIyJTIwaGVpZ2h0JTNEJTIyMTUuODglMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNDklMjIlMjB2YWx1ZSUzRCUyMkxTVSUyMGJ5cGFzcyUyMiUyMHN0eWxlJTNEJTIycm91bmRlZCUzRDAlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQmh0bWwlM0QxJTNCJTIyJTIwcGFyZW50JTNEJTIyNzclMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjIxMjIuOTclMjIlMjB5JTNEJTIyNDUlMjIlMjB3aWR0aCUzRCUyMjEyMCUyMiUyMGhlaWdodCUzRCUyMjgwJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTUxJTIyJTIwc3R5bGUlM0QlMjJlZGdlU3R5bGUlM0Rub25lJTNCaHRtbCUzRDElM0JlbnRyeVglM0QwLjkyNSUzQmVudHJ5WSUzRDAlM0JlbnRyeUR4JTNEMCUzQmVudHJ5RHklM0QwJTNCcm91bmRlZCUzRDAlM0JlbnRyeVBlcmltZXRlciUzRDAlM0IlMjIlMjBlZGdlJTNEJTIyMSUyMiUyMHBhcmVudCUzRCUyMjc3JTIyJTIwc291cmNlJTNEJTIyMTQ5JTIyJTIwdGFyZ2V0JTNEJTIyOTQlMjIlM0UlM0NteEdlb21ldHJ5JTIwcmVsYXRpdmUlM0QlMjIxJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyMzEwJTIyJTIweSUzRCUyMjg1JTIyJTIwYXMlM0QlMjJ0YXJnZXRQb2ludCUyMiUyRiUzRSUzQ0FycmF5JTIwYXMlM0QlMjJwb2ludHMlMjIlM0UlM0NteFBvaW50JTIweCUzRCUyMjI3OSUyMiUyMHklM0QlMjI4NSUyMiUyRiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyMzMwJTIyJTIweSUzRCUyMjg1JTIyJTJGJTNFJTNDJTJGQXJyYXklM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNTIlMjIlMjB2YWx1ZSUzRCUyMmxzdV9jdHJsX2klMjIlMjBzdHlsZSUzRCUyMnRleHQlM0JodG1sJTNEMSUzQnN0cm9rZUNvbG9yJTNEbm9uZSUzQmZpbGxDb2xvciUzRG5vbmUlM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCJTIyJTIwdmVydGV4JTNEJTIyMSUyMiUyMHBhcmVudCUzRCUyMjc3JTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjIyNzIlMjIlMjB5JTNEJTIyNTklMjIlMjB3aWR0aCUzRCUyMjYwJTIyJTIwaGVpZ2h0JTNEJTIyMzAlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNTMlMjIlMjBzdHlsZSUzRCUyMmVkZ2VTdHlsZSUzRG5vbmUlM0Jyb3VuZGVkJTNEMCUzQmh0bWwlM0QxJTNCZW50cnlYJTNEMC45OTclM0JlbnRyeVklM0QwLjg4MyUzQmVudHJ5RHglM0QwJTNCZW50cnlEeSUzRDAlM0JlbnRyeVBlcmltZXRlciUzRDAlM0JleGl0WCUzRDAuNzUlM0JleGl0WSUzRDAlM0JleGl0RHglM0QwJTNCZXhpdER5JTNEMCUzQiUyMiUyMGVkZ2UlM0QlMjIxJTIyJTIwcGFyZW50JTNEJTIyNzclMjIlMjBzb3VyY2UlM0QlMjI5NCUyMiUyMHRhcmdldCUzRCUyMjE0OSUyMiUzRSUzQ214R2VvbWV0cnklMjByZWxhdGl2ZSUzRCUyMjElMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjIyNzklMjIlMjB5JTNEJTIyMTA1JTIyJTIwYXMlM0QlMjJ0YXJnZXRQb2ludCUyMiUyRiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyMjkwJTIyJTIweSUzRCUyMjE3NSUyMiUyMGFzJTNEJTIyc291cmNlUG9pbnQlMjIlMkYlM0UlM0NBcnJheSUyMGFzJTNEJTIycG9pbnRzJTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjIzMDklMjIlMjB5JTNEJTIyMTE1JTIyJTJGJTNFJTNDJTJGQXJyYXklM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNTQlMjIlMjB2YWx1ZSUzRCUyMnBvcF9sZF9vJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JzdHJva2VDb2xvciUzRG5vbmUlM0JmaWxsQ29sb3IlM0Rub25lJTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQnJvdGF0aW9uJTNEMCUzQiUyMiUyMHZlcnRleCUzRCUyMjElMjIlMjBwYXJlbnQlM0QlMjI3NyUyMiUzRSUzQ214R2VvbWV0cnklMjB4JTNEJTIyMjUwJTIyJTIweSUzRCUyMjg5JTIyJTIwd2lkdGglM0QlMjI2MCUyMiUyMGhlaWdodCUzRCUyMjMwJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyOTUlMjIlMjB2YWx1ZSUzRCUyMklTU1VFJTIwU1RBR0UlMjIlMjBzdHlsZSUzRCUyMnJvdW5kZWQlM0QwJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0JodG1sJTNEMSUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI4NSUyMiUyMHklM0QlMjI1MCUyMiUyMHdpZHRoJTNEJTIyMzMwJTIyJTIwaGVpZ2h0JTNEJTIyODAlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjI5NiUyMiUyMHZhbHVlJTNEJTIyTUVNJTIyJTIwc3R5bGUlM0QlMjJyb3VuZGVkJTNEMCUzQndoaXRlU3BhY2UlM0R3cmFwJTNCaHRtbCUzRDElM0IlMjIlMjBwYXJlbnQlM0QlMjIxJTIyJTIwdmVydGV4JTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB4JTNEJTIyNTk5JTIyJTIweSUzRCUyMjI4MCUyMiUyMHdpZHRoJTNEJTIyMTQwJTIyJTIwaGVpZ2h0JTNEJTIyNzAlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjI4NyUyMiUyMHZhbHVlJTNEJTIyRCUyNCUyMiUyMHN0eWxlJTNEJTIycm91bmRlZCUzRDAlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQmh0bWwlM0QxJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMHZlcnRleCUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIweCUzRCUyMjU5OSUyMiUyMHklM0QlMjI0MDAlMjIlMjB3aWR0aCUzRCUyMjE0MCUyMiUyMGhlaWdodCUzRCUyMjgwJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTA4JTIyJTIwdmFsdWUlM0QlMjIlMjIlMjBzdHlsZSUzRCUyMmVuZEFycm93JTNEY2xhc3NpYyUzQmh0bWwlM0QxJTNCcm91bmRlZCUzRDAlM0JleGl0WCUzRDElM0JleGl0WSUzRDAuNzUlM0JleGl0RHglM0QwJTNCZXhpdER5JTNEMCUzQmVudHJ5WCUzRDAlM0JlbnRyeVklM0QwLjc1JTNCZW50cnlEeCUzRDAlM0JlbnRyeUR5JTNEMCUzQmZpbGxDb2xvciUzRCUyMzYwYTkxNyUzQnN0cm9rZUNvbG9yJTNEZGVmYXVsdCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjBzb3VyY2UlM0QlMjI5NCUyMiUyMHRhcmdldCUzRCUyMjg3JTIyJTIwZWRnZSUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIwd2lkdGglM0QlMjI1MCUyMiUyMGhlaWdodCUzRCUyMjUwJTIyJTIwcmVsYXRpdmUlM0QlMjIxJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyNDQ5JTIyJTIweSUzRCUyMjU0MCUyMiUyMGFzJTNEJTIyc291cmNlUG9pbnQlMjIlMkYlM0UlM0NteFBvaW50JTIweCUzRCUyMjQ5OSUyMiUyMHklM0QlMjI0OTAlMjIlMjBhcyUzRCUyMnRhcmdldFBvaW50JTIyJTJGJTNFJTNDJTJGbXhHZW9tZXRyeSUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTE2JTIyJTIwdmFsdWUlM0QlMjIoNCklMjBsb2FkX3ZhbGlkX28lMjIlMjBzdHlsZSUzRCUyMnRleHQlM0JodG1sJTNEMSUzQnN0cm9rZUNvbG9yJTNEbm9uZSUzQmZpbGxDb2xvciUzRG5vbmUlM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMHZlcnRleCUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIweCUzRCUyMjI5MSUyMiUyMHklM0QlMjIxNzMlMjIlMjB3aWR0aCUzRCUyMjkwJTIyJTIwaGVpZ2h0JTNEJTIyMzAlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMTclMjIlMjB2YWx1ZSUzRCUyMmluZGV4JTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JzdHJva2VDb2xvciUzRG5vbmUlM0JmaWxsQ29sb3IlM0QlMjNCOEI4QjglM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCZm9udENvbG9yJTNEJTIzMDAwMDAwJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMHZlcnRleCUzRCUyMjElMjIlM0UlM0NteEdlb21ldHJ5JTIweCUzRCUyMjUyNiUyMiUyMHklM0QlMjIzOTElMjIlMjB3aWR0aCUzRCUyMjUxJTIyJTIwaGVpZ2h0JTNEJTIyMTUlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMjQlMjIlMjB2YWx1ZSUzRCUyMiUyMiUyMHN0eWxlJTNEJTIyZW5kQXJyb3clM0RjbGFzc2ljJTNCaHRtbCUzRDElM0JleGl0WCUzRDAuOTk0JTNCZXhpdFklM0QwLjA5NSUzQmV4aXREeCUzRDAlM0JleGl0RHklM0QwJTNCZXhpdFBlcmltZXRlciUzRDAlM0JlbnRyeVglM0QtMC4wMDUlM0JlbnRyeVklM0QwLjA5NSUzQmVudHJ5RHglM0QwJTNCZW50cnlEeSUzRDAlM0JlbnRyeVBlcmltZXRlciUzRDAlM0IlMjIlMjBwYXJlbnQlM0QlMjIxJTIyJTIwc291cmNlJTNEJTIyOTQlMjIlMjB0YXJnZXQlM0QlMjI4NyUyMiUyMGVkZ2UlM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHdpZHRoJTNEJTIyNTAlMjIlMjBoZWlnaHQlM0QlMjI1MCUyMiUyMHJlbGF0aXZlJTNEJTIyMSUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlM0UlM0NteFBvaW50JTIweCUzRCUyMjUyOSUyMiUyMHklM0QlMjI1ODUlMjIlMjBhcyUzRCUyMnNvdXJjZVBvaW50JTIyJTJGJTNFJTNDbXhQb2ludCUyMHglM0QlMjI1NzklMjIlMjB5JTNEJTIyNTM1JTIyJTIwYXMlM0QlMjJ0YXJnZXRQb2ludCUyMiUyRiUzRSUzQyUyRm14R2VvbWV0cnklM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjEyNSUyMiUyMHZhbHVlJTNEJTIyJTIyJTIwc3R5bGUlM0QlMjJlbmRBcnJvdyUzRGNsYXNzaWMlM0JodG1sJTNEMSUzQmV4aXRYJTNEMC45OTQlM0JleGl0WSUzRDAuMDk1JTNCZXhpdER4JTNEMCUzQmV4aXREeSUzRDAlM0JleGl0UGVyaW1ldGVyJTNEMCUzQmVudHJ5WCUzRC0wLjAwNSUzQmVudHJ5WSUzRDAuMDk1JTNCZW50cnlEeCUzRDAlM0JlbnRyeUR5JTNEMCUzQmVudHJ5UGVyaW1ldGVyJTNEMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjBlZGdlJTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB3aWR0aCUzRCUyMjUwJTIyJTIwaGVpZ2h0JTNEJTIyNTAlMjIlMjByZWxhdGl2ZSUzRCUyMjElMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjI1OTklMjIlMjB5JTNEJTIyNDM1JTIyJTIwYXMlM0QlMjJzb3VyY2VQb2ludCUyMiUyRiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyNDA4Ljk3OTk5OTk5OTk5OTk2JTIyJTIweSUzRCUyMjQzNSUyMiUyMGFzJTNEJTIydGFyZ2V0UG9pbnQlMjIlMkYlM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMjYlMjIlMjB2YWx1ZSUzRCUyMnRhZyUyMiUyMHN0eWxlJTNEJTIydGV4dCUzQmh0bWwlM0QxJTNCc3Ryb2tlQ29sb3IlM0Rub25lJTNCZmlsbENvbG9yJTNEJTIzQjhCOEI4JTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQmZvbnRDb2xvciUzRCUyMzAwMDAwMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI1MjYlMjIlMjB5JTNEJTIyNDQwLjUlMjIlMjB3aWR0aCUzRCUyMjUxJTIyJTIwaGVpZ2h0JTNEJTIyMTUlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMjclMjIlMjB2YWx1ZSUzRCUyMigxKSUyMGRhdGFfcmVxJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCZmlsbENvbG9yJTNEbm9uZSUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI0MzklMjIlMjB5JTNEJTIyMzkwJTIyJTIwd2lkdGglM0QlMjI3NSUyMiUyMGhlaWdodCUzRCUyMjE1JTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTM2JTIyJTIwdmFsdWUlM0QlMjIoMiklMjBkYXRhX2dudCUyMiUyMHN0eWxlJTNEJTIydGV4dCUzQmh0bWwlM0QxJTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQmZpbGxDb2xvciUzRG5vbmUlM0IlMjIlMjBwYXJlbnQlM0QlMjIxJTIyJTIwdmVydGV4JTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB4JTNEJTIyNDM5JTIyJTIweSUzRCUyMjQxNSUyMiUyMHdpZHRoJTNEJTIyNzUlMjIlMjBoZWlnaHQlM0QlMjIxNSUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlMkYlM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjEzNyUyMiUyMHZhbHVlJTNEJTIyKDMpJTIwdGFnX3ZhbGlkJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCZmlsbENvbG9yJTNEbm9uZSUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI0MzklMjIlMjB5JTNEJTIyNDQwLjUlMjIlMjB3aWR0aCUzRCUyMjc1JTIyJTIwaGVpZ2h0JTNEJTIyMTUlMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTJGJTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxMzglMjIlMjB2YWx1ZSUzRCUyMig0KSUyMGRhdGFfcnZhbGlkJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JhbGlnbiUzRGNlbnRlciUzQnZlcnRpY2FsQWxpZ24lM0RtaWRkbGUlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQnJvdW5kZWQlM0QwJTNCZmlsbENvbG9yJTNEbm9uZSUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI0NDIlMjIlMjB5JTNEJTIyNDYyJTIyJTIwd2lkdGglM0QlMjI4MCUyMiUyMGhlaWdodCUzRCUyMjE1JTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTM5JTIyJTIwdmFsdWUlM0QlMjIlMjIlMjBzdHlsZSUzRCUyMmVuZEFycm93JTNEY2xhc3NpYyUzQmh0bWwlM0QxJTNCZXhpdFglM0QwLjUlM0JleGl0WSUzRDElM0JleGl0RHglM0QwJTNCZXhpdER5JTNEMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjBlZGdlJTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB3aWR0aCUzRCUyMjUwJTIyJTIwaGVpZ2h0JTNEJTIyNTAlMjIlMjByZWxhdGl2ZSUzRCUyMjElMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjIzOTAlMjIlMjB5JTNEJTIyMjI1LjAwMDAwMDAwMDAwMDElMjIlMjBhcyUzRCUyMnNvdXJjZVBvaW50JTIyJTJGJTNFJTNDbXhQb2ludCUyMHglM0QlMjIzOTAlMjIlMjB5JTNEJTIyMTMwLjAwMDAwMDAwMDAwMDElMjIlMjBhcyUzRCUyMnRhcmdldFBvaW50JTIyJTJGJTNFJTNDJTJGbXhHZW9tZXRyeSUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTQwJTIyJTIwdmFsdWUlM0QlMjJyZGF0YSUyMiUyMHN0eWxlJTNEJTIydGV4dCUzQmh0bWwlM0QxJTNCc3Ryb2tlQ29sb3IlM0Rub25lJTNCZmlsbENvbG9yJTNEJTIzQjhCOEI4JTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQmZvbnRDb2xvciUzRCUyMzAwMDAwMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI1MjYlMjIlMjB5JTNEJTIyNDYyJTIyJTIwd2lkdGglM0QlMjI1MSUyMiUyMGhlaWdodCUzRCUyMjE1JTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTQxJTIyJTIwdmFsdWUlM0QlMjIlMjIlMjBzdHlsZSUzRCUyMmVuZEFycm93JTNEY2xhc3NpYyUzQmh0bWwlM0QxJTNCZXhpdFglM0QwLjAwMiUzQmV4aXRZJTNEMC45NTIlM0JleGl0RHglM0QwJTNCZXhpdER5JTNEMCUzQmV4aXRQZXJpbWV0ZXIlM0QwJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMGVkZ2UlM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHdpZHRoJTNEJTIyNTAlMjIlMjBoZWlnaHQlM0QlMjI1MCUyMiUyMHJlbGF0aXZlJTNEJTIyMSUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlM0UlM0NteFBvaW50JTIweCUzRCUyMjU5OSUyMiUyMHklM0QlMjI0NzkuMTU5OTk5OTk5OTk5OTclMjIlMjBhcyUzRCUyMnNvdXJjZVBvaW50JTIyJTJGJTNFJTNDbXhQb2ludCUyMHglM0QlMjI0MDguNzIlMjIlMjB5JTNEJTIyNDc5JTIyJTIwYXMlM0QlMjJ0YXJnZXRQb2ludCUyMiUyRiUzRSUzQyUyRm14R2VvbWV0cnklM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjE0MiUyMiUyMHZhbHVlJTNEJTIyJTIyJTIwc3R5bGUlM0QlMjJlbmRBcnJvdyUzRGNsYXNzaWMlM0JodG1sJTNEMSUzQmV4aXRYJTNEMC41JTNCZXhpdFklM0QxJTNCZXhpdER4JTNEMCUzQmV4aXREeSUzRDAlM0JlbnRyeVglM0QwLjEzNCUzQmVudHJ5WSUzRDAlM0JlbnRyeUR4JTNEMCUzQmVudHJ5RHklM0QwJTNCZW50cnlQZXJpbWV0ZXIlM0QwJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMHRhcmdldCUzRCUyMjE0OSUyMiUyMGVkZ2UlM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHdpZHRoJTNEJTIyNTAlMjIlMjBoZWlnaHQlM0QlMjI1MCUyMiUyMHJlbGF0aXZlJTNEJTIyMSUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlM0UlM0NteFBvaW50JTIweCUzRCUyMjIxMCUyMiUyMHklM0QlMjIxMzAuMDAwMDAwMDAwMDAwMSUyMiUyMGFzJTNEJTIyc291cmNlUG9pbnQlMjIlMkYlM0UlM0NteFBvaW50JTIweCUzRCUyMjIxMCUyMiUyMHklM0QlMjIyMjUuMDAwMDAwMDAwMDAwMSUyMiUyMGFzJTNEJTIydGFyZ2V0UG9pbnQlMjIlMkYlM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNDMlMjIlMjB2YWx1ZSUzRCUyMmluc3RydWN0aW9uJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JzdHJva2VDb2xvciUzRG5vbmUlM0JmaWxsQ29sb3IlM0Rub25lJTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjIxMzAlMjIlMjB5JTNEJTIyMTMzJTIyJTIwd2lkdGglM0QlMjI5MCUyMiUyMGhlaWdodCUzRCUyMjMwJTIyJTIwYXMlM0QlMjJnZW9tZXRyeSUyMiUyRiUzRSUzQyUyRm14Q2VsbCUzRSUzQ214Q2VsbCUyMGlkJTNEJTIyMTQ0JTIyJTIwdmFsdWUlM0QlMjIoNCklMjBsb2FkX3Jlc3VsdF9vJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JzdHJva2VDb2xvciUzRG5vbmUlM0JmaWxsQ29sb3IlM0Rub25lJTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjIyODglMjIlMjB5JTNEJTIyMTg3JTIyJTIwd2lkdGglM0QlMjIxMDAlMjIlMjBoZWlnaHQlM0QlMjIzMCUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlMkYlM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjE0OCUyMiUyMHZhbHVlJTNEJTIyJTIyJTIwc3R5bGUlM0QlMjJlbmRBcnJvdyUzRGNsYXNzaWMlM0JzdGFydEFycm93JTNEY2xhc3NpYyUzQmh0bWwlM0QxJTNCZXhpdFglM0QwLjUlM0JleGl0WSUzRDAlM0JleGl0RHglM0QwJTNCZXhpdER5JTNEMCUzQmVudHJ5WCUzRDAuNSUzQmVudHJ5WSUzRDElM0JlbnRyeUR4JTNEMCUzQmVudHJ5RHklM0QwJTNCJTIyJTIwcGFyZW50JTNEJTIyMSUyMiUyMHNvdXJjZSUzRCUyMjg3JTIyJTIwdGFyZ2V0JTNEJTIyOTYlMjIlMjBlZGdlJTNEJTIyMSUyMiUzRSUzQ214R2VvbWV0cnklMjB3aWR0aCUzRCUyMjUwJTIyJTIwaGVpZ2h0JTNEJTIyNTAlMjIlMjByZWxhdGl2ZSUzRCUyMjElMjIlMjBhcyUzRCUyMmdlb21ldHJ5JTIyJTNFJTNDbXhQb2ludCUyMHglM0QlMjI4NjAlMjIlMjB5JTNEJTIyNDUwJTIyJTIwYXMlM0QlMjJzb3VyY2VQb2ludCUyMiUyRiUzRSUzQ214UG9pbnQlMjB4JTNEJTIyOTEwJTIyJTIweSUzRCUyMjQwMCUyMiUyMGFzJTNEJTIydGFyZ2V0UG9pbnQlMjIlMkYlM0UlM0MlMkZteEdlb21ldHJ5JTNFJTNDJTJGbXhDZWxsJTNFJTNDbXhDZWxsJTIwaWQlM0QlMjIxNTclMjIlMjB2YWx1ZSUzRCUyMiUyMiUyMHN0eWxlJTNEJTIycm91bmRlZCUzRDAlM0J3aGl0ZVNwYWNlJTNEd3JhcCUzQmh0bWwlM0QxJTNCZmlsbENvbG9yJTNEbm9uZSUzQiUyMiUyMHZlcnRleCUzRCUyMjElMjIlMjBwYXJlbnQlM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI1MCUyMiUyMHklM0QlMjIxNzAlMjIlMjB3aWR0aCUzRCUyMjUzNSUyMiUyMGhlaWdodCUzRCUyMjM0MCUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlMkYlM0UlM0MlMkZteENlbGwlM0UlM0NteENlbGwlMjBpZCUzRCUyMjEyMyUyMiUyMHZhbHVlJTNEJTIyRVhFQ1VURSUyMFNUQUdFJTIyJTIwc3R5bGUlM0QlMjJ0ZXh0JTNCaHRtbCUzRDElM0JzdHJva2VDb2xvciUzRGRlZmF1bHQlM0JmaWxsQ29sb3IlM0Rub25lJTNCYWxpZ24lM0RjZW50ZXIlM0J2ZXJ0aWNhbEFsaWduJTNEbWlkZGxlJTNCd2hpdGVTcGFjZSUzRHdyYXAlM0Jyb3VuZGVkJTNEMCUzQiUyMiUyMHBhcmVudCUzRCUyMjElMjIlMjB2ZXJ0ZXglM0QlMjIxJTIyJTNFJTNDbXhHZW9tZXRyeSUyMHglM0QlMjI0NjUlMjIlMjB5JTNEJTIyMTcwJTIyJTIwd2lkdGglM0QlMjIxMjAlMjIlMjBoZWlnaHQlM0QlMjIzMCUyMiUyMGFzJTNEJTIyZ2VvbWV0cnklMjIlMkYlM0UlM0MlMkZteENlbGwlM0UlM0MlMkZyb290JTNFJTNDJTJGbXhHcmFwaE1vZGVsJTNFJTNDJTJGZGlhZ3JhbSUzRSUzQyUyRm14ZmlsZSUzRYVYy+QAACAASURBVHhe7b0N/GVVWff9AxEBBSRQKFBx1KCg8EEUFfAFHhuGfEkgIGAQo0QZRBEBA2FgCAyUUGJ4qTCTl+LOuB+9u8HxeSD5MJQZUmNikIpGUkjwYKOCIjH3vs7sNazZs885+3Xtvdf+7s9n4P8/Z+11Xet7rXP273/ta6+1kfp1rOmXO3gDAQhAoJcENuqlVzgFAQhAIDCBvn0ZrlmzBi0beA5gDgIQGBCBjTaafG337bt7QARxFQIQiIlA374MEbIxzS7GAgEINE4AIds4UjqEAAQGTAAhO+Dg4ToEIDA+AgjZ8cWcEUMAAtMJIGSZHRCAAAQGRAAhO6Bg4SoEINA6AYRs64gxAAEIQKA5AgjZ5ljSEwQgMHwCCNnhx5ARQAACIyKAkB1RsBkqBCAwlwBCdi4iGkAAAhDoDwGEbH9igScQgED3BBCy3ccADyAAAQgUJoCQLYyKhhCAwAgIIGRHEGSGCAEIxEMAIRtPLBkJBCBQnwBCtj5DeoAABCAQjABCNhhqDEEAAgMggJAdQJBwEQIQgIAjgJBlLkAAAhB4mgBCltkAAQhAYEAEELIDChauQgACrRNAyLaOGAMQgAAEmiOAkG2OJT1BAALDJ4CQHX4MGQEEIDAiAgjZEQWboUIAAnMJIGTnIqIBBCAAgf4QQMj2JxZ4AgEIdE8AIdt9DPAAAhCAQGECCNnCqGgIAQiMgABCdgRBZogQgEA8BBCy8cSSkUAAAvUJIGTrM6QHCEAAAsEIIGSDocYQBCAwAAII2QEECRchAAEIOAIIWeYCBCAAgacJIGSZDRCAAAQGRAAhO6Bg4SoEINA6AYRs64gxAAEIQKA5AgjZ5ljSEwQgMHwCCNnhx5ARQAACIyKAkB1RsBkqBCAwlwBCdi4iGkAAAhDoDwGEbH9igScQgED3BBCy3ccADyAAAQgUJoCQLYyKhhCAwAgIIGRHEGSGCAEIxEMAIRtPLBkJBCBQnwBCtj5DeoAABCAQjABCNhhqDEEAAgMggJAdQJBwEQIQgIAjgJBlLkAAAhB4mgBCltkAAQhAYEAEELIDChauQgACrRNAyLaOGAMQgAAEmiOAkG2OJT1BAALDJ4CQHX4MGQEEIDAiAgjZEQWboUIAAnMJIGTnIqIBBCAAgf4QQMj2JxZ4AgEIdE8AIdt9DPAAAhCAQGECCNnCqGgIAQiMgABCdgRBZogQgEA8BBCy8cSSkUAAAvUJIGTrM6QHCEAAAsEIIGSDocYQBCAwAAII2QEEKXYXr7vuOt13330666yzJkO99957dfjhh2vVqlWT348//nhdcskl2nzzzee+b+eedNJJuvTSS7XLLrusQ3feeedpwYIFOuqoo2T2jj766A2wLlu2bJ0P/pvT/LE2J598sq666qoN+vJ9vuOOO7RkyRLdcMMN6/lkJz3++OMb9HHttddO/LSjrK+xzxXGJyFkmQUQgAAEniaAkGU2dE7AF7JONC5fvlz77LPPxDcToQ888MBEzN5///0TkTvr/SJC9vbbb19PHE+DMM8fX1zn2TWhunTp0kn3e+yxxzqBar8/8sgjk99tnE7Eu9fsd3vd2BT1tfNA4kAQAgjZIJgxAgEIDIQAQnYggYrZTV/IWvbShKu9tu22206G7WdZH3744ZnvW/smhew8f1zWd1om2F6/+uqrdeSRR+rCCy/UZZddtm5c00SqzwMhG/PMrzY2hGw1bpwFAQjESQAhG2dcBzUqX7i5jOSDDz6Yeyt+3vtFSwuKZjnn2XOgp9m1sdlhmVcT6Pvvv/8k0+pKCvbbb7/1srTZwCFkBzWVgziLkA2CGSMQgMBACCBkBxKomN3M1sjaWP3aULsln60vnfZ+USGbVyO7cuXKdeUMeYLSnZPnT55dV1Zw3HHHTWpjLbt76623TsoInJBdvHjxeiUUZ5999sS0q7G98cYbc+t5Z/ka81xhbNTIMgcgAAEI+AQQssyHzgnkCVnfqbzb+9Pet9KDJksL8uCUKTfwH1qzvhYuXDgR6VtsscXkIa+8jKz1f80110xqeE3IFs0edx5IHAhCgIxsEMwYgQAEBkIAITuQQMXsZrYm1Mbqntq3n+32/oknnqhzzjlHd9555wTFtPe32267dW1d/Wr2Nn6Z2/V+aYCLge/PrBpZKyWwwz3IZT9nV0/IE6kI2Zhne/2xIWTrM6QHCEAgHgII2XhiOdiRZFctyGZU7X3LUNr/8zKu/vsu07njjjuuE5DZ5a/KCNm8kgHfXt4DaSZus6sPuOD4th977LGpqxbsvPPOZGQHO6PbdRwh2y5feocABIZFACE7rHhF6e28dWTd7XhfNPq37LPvZ9dmzda0TlubNbterYOdXUc2a8/aZQXvtHKIact5udpY66vIOrLTfI1ygjCo9QggZJkQEIAABJ4mgJBlNkAAAhAYEAGE7ICChasQgEDrBBCyrSPGAAQgAIHmCCBkm2NJTxCAwPAJIGSHH0NGAAEIjIgAQnZEwWaoEIDAXAII2bmIaAABCECgPwQQsv2JBZ5AAALdE0DIdh8DPIAABCBQmABCtjAqGkIAAiMggJAdQZAZIgQgEA8BhGw8sWQkEIBAfQII2foM6QECEIBAMAII2WCoMQQBCAyAAEJ2AEHCRQhAAAKOAEKWuQABCEDgaQIIWWYDBCAAgQERQMgOKFi4CgEItE4AIds6YgxAAAIQaI4AQrY5lvQEAQgMnwBCdvgxZAQQgMCICCBkRxRshgoBCMwlgJCdi4gGEIAABPpDACHbn1jgCQQg0D0BhGz3McADCEAAAoUJIGQLo6IhBCAwAgII2REEmSFCAALxEEDIxhNLRgIBCNQngJCtz5AeIAABCAQjgJANhhpDEIDAAAggZAcQJFyEAAQg4AggZJkLEIAABJ4mgJBlNkAAAhAYEAGE7ICChasQgEDrBBCyrSPGAAQgAIHmCCBkm2NJTxCAwPAJIGSHH0NGAAEIjIgAQnZEwWaoEIDAXAII2bmIaAABCECgPwQQsv2JBZ5AAALdE0DIdh8DPIAABCBQmABCtjAqGkIAAiMggJAdQZAZIgQgEA8BhGw8sWQkEIBAfQII2foM6QECEIBAMAII2WCoMQQBCAyAAEJ2AEHCRQhAAAKOAEKWuQABCEDgaQIIWWYDBCAAgQERQMgOKFi4CgEItE4AIds6YgxAAAIQaI4AQrY5lvQEAQgMnwBCdvgxZAQQgMCICCBkRxRshgoBCMwlgJCdi4gGEIAABPpDACHbn1jgCQQg0D0BhGz3McADCEAAAoUJIGQLo6IhBCAwAgII2REEmSFCAALxEEDIxhNLRgIBCNQngJCtz5AeIAABCAQjgJANhhpDEIDAAAggZAcQJFyEAAQg4AggZJkLEIAABJ4mgJBlNkAAAhAYEAGE7ICChasQgEDrBBCyrSPGAAQgAIHmCCBkm2NJTxCAwPAJIGSHH0NGAAEIjIgAQnZEwWaoEIDAXAII2bmIaAABCECgPwQQsv2JBZ5AAALdE+idkO0eCR5AAAIQ6D2Bvn139x4YDkIAAnES4MswzrgOZVQbS/qppGcMxWH8hMAMAltK+hNJ75T0A0hBAAIQgED7BBCy7TPGwnQCJmB/LOmZQIJABATOl3SqpI8mf6CdGcF4GAIEIACB3hNAyPY+RFE7aAL2R5I2jXqUDG4MBCwb+5+SniXpJ5KeR1Z2DGFnjBCAQNcEELJdR2Dc9u2i/1+SNhs3BkYfAQHLxn4w/aPsCUkfIysbQVQZAgQg0HsCCNnehyhqBzeX9IikLaIeJYOLnYCfjXVjJSsbe9QZHwQg0AsCCNlehGG0TpiAfSjJXj1ntAQYeAwELkjKCE5Js7E/TOezZWUvlnRGDANkDBCAAAT6SgAh29fIjMMvE7D/kVzwLaPFAYEhErC5a3cVTMDaChzPT/84s/pvm9/bUis7xLDiMwQgMBQCCNmhRCpOP7eS9G+Sto5zeIxqBAQsE7sszbx+QtIaSfa9+r7kwa+PSDorzcyOAAVDhAAEIBCeAEI2PHMsPk3guZK+LWkboEAgEgJOyEYyHIYBAQhAoN8EELL9jk/s3pmA/Zakn4l9oIxvNAQQsqMJNQOFAAT6QAAh24cojNcHqx+8V9J240XAyCMjgJCNLKAMBwIQ6DcBhGy/4xO7d7Zo/N3pAzKxj5XxjYMAQnYccWaUEIBATwggZHsSCEn7JLfZFycbBJws6fGSbllm87LknHPSDGfJ0zdo7vd3f/Iw1iWSrpF0R92OM+fbE95flbRDw/3SHQS6IoCQ7Yo8diEAgVESQMjGEfY2hazd+m/rMAH7D5J+ti0D9AuBwAQQsoGBYw4CEBg3AYRsf+LvMrK2gLotsP5AuqyPeXi2pPNSV205H1vux71uW2FaxvR4SauSVQDeIek9kmxFgMMlHSDpMC+jmhW99vt1khZKWpEsh3VcumRQtj+Xkd1F0g2S9kjbH5Wuo2n+n5j6dUTqi9mfJYR/TtLfS9qxP2HAEwjUIoCQrYWPkyEAAQiUI4CQLcerzdZZIWu2rMxgT0nLU1FqD0W58gN7/1xJVycC8mGvtMCVApgQNvFr28D6pQGzygZMlC5IalYvz+nPhOw9qei1n038mqg2Eer8XClpX0l3pTadD9O47ZQI6L9NxvCCNsHSNwQCEkDIBoSNKQhAAAII2f7MgayQvT0Vi77w9IWsX0ebJ07d+bOErI3e6motk2q7E7ljmtg1wey3t+zspZJOSlceMGHrMrROFLtMch5pE7Amfl/UnzDgCQRqEUDI1sLHyRCAAATKEUDIluPVZuuskHW38rOlACYQr00dOTpH7GYfzpolZE0Y++JznpC19/32s0R2ESFrAvY2STu3CZa+IRCQAEI2IGxMQQACEEDI9mcOFBWyzmNfoNotf7dqwTwh62dRra8mM7L+qgtFhOyLJd2SljP0JxJ4AoHqBBCy1dlxJgQgAIHSBBCypZG1dkIRIbtXKvpc7eusGlmX0XWC19WrmsA8Na25tVIBq3W1/mxpLXtvv/R3e4jMRK4vjOfVyJYVsi9JHxh7aWtU6RgCYQkgZMPyxhoEIDByAgjZ/kyAIkLWiUpbUcAOV1rgxOqrvVUL/HVf/ZUGPiDpValItRUF8lYheCx9WCuvv1mrFpQVsiZgb5L08/0JA55AoBYBhGwtfJwMAQhAoBwBhGw5XrRuloAJ2P+Viulme6Y3CHRDACHbDXesQgACIyWAkB1p4Hsy7F2T9Wj/Z7Iu7S/0xB/cgEBdAgjZugQ5HwIQgEAJAgjZErBo2jiBX5T0F8m/3RrvmQ4h0A0BhGw33LEKAQiMlABCdqSB78mwTcDaLmG798Qf3IBAXQII2boEOR8CEIBACQII2RKwaNo4gV9KV0345cZ7pkMIdEMAIdsNd6xCAAIjJYCQHWngezLsPST9qaSX98Qf3IBAXQII2boEOR8CEIBACQII2RKwaNo4gf9L0tWS9my8ZzqEQDcEELLdcMcqBCAwUgII2ZEGvifDNgH7R8kSXK/oiT+4AYG6BBCydQlyPgQgAIESBBCyJWDRtHECtlPZFZJe2XjPdAiBbgggZLvhjlUIQGCkBBCyIw18T4ZtO4z9gaS9e+IPbkCgLgGEbF2CnA8BCECgBAGEbAlYNG2cgAnYj0t6TeM90yEEuiGAkO2GO1YhAIGREkDIjjTwPRm2CdiLJb22J/7gBgTqEkDI1iXI+RCAAARKEEDIloBF08YJ7CPpQkn7Nt4zHUKgGwII2W64YxUCEBgpAYTsSAPfk2HvJ+l8Sa/riT+4AYG6BBCydQlyPgQgAIESBBCyJWDRtHECJmCXSXpD4z3TIQS6IYCQ7YY7ViEAgZESQMiONPA9GbYJ2KWS3tgTf3ADAnUJIGTrEuR8CEAAAiUIIGRLwKJp4wT2l3SmpAMa75kOIdANAYRsN9yxCgEIjJQAQnakge/JsP9vSadLelNP/MENCNQlgJCtS5DzIQABCJQgYELWvng5IAABCEAAAhCAQJMESJY1SZO+cgk4IctkY4J0QWChpJMlHdiFcWxCoAUCZGSLQ4VVcVZDbEl8hxi1AfqMkB1g0CJyeZGk90o6KKIxMZRxE+DiXTz+sCrOaogtie8QozZAnxGyAwxaRC7/qqT3SHpzRGNiKOMmwMW7ePxhVZzVEFsS3yFGbYA+I2QHGLSIXDYBe7ykt0Q0JoYybgJcvIvHH1bFWQ2xJfEdYtQG6DNCdoBBi8jlt0o6TtLbIhoTQxk3AS7exeMPq+KshtiS+A4xagP0GSE7wKBF5PKvSXqHpLdHNCaGMm4CXLyLxx9WxVkNsSXxHWLUBugzQnaAQYvI5YMlHSXpkIjGxFDGTYCLd/H4w6o4qyG2JL5DjNoAfUbIDjBoEblsAvY3JB0a0ZgYyrgJcPEuHn9YFWc1xJbEd4hRG6DPCNkBBi0il39dkv07LKIxMZRxE+DiXTz+sCrOaogtie8QozZAnxGyAwxaRC4fntbHHhHRmBjKuAlw8S4e/6KstpV0nSTbQMU/Vkmy75DtJC1Pf743bbCLpBskLZF0z5zz3Tn7SFrpGTg6Pc9esv4ulXRSchfJtbfXz5J0X7KE4J2pvT1yhm/9THt/RVpe9UjmvOyY/XZmc1mOHb+NP/47ctpm+zhb0nlpu3m8/fHPinbR+BafMbSEQA4BhCzToksCJmBt5YIju3QC2xBokAAX7+Iwi7JywsqEVp4oM4tWa79fulOg/X6JpNtTIVrkfBOxvhjePNPHPCFrQtsdvi+Pe8I6Twjn0XL+XuMJaetzcUb0zhqXCVV3OIFqv7tx2c+2q6L5lx1rEV5Folw0vkX6og0EphJAyDI5uiRgAtY2RbAvaQ4IxECAi3fxKBZlVURY+WLMPHCi1oTavPOzQs6NwMTrOZJOTLO+szKyTQrZPNGcN4Zp47LXz5f0+5LOTcfgZ51N5Np3rp8FNiFvQtnE7RapgJ71h0ORKBeNb5G+aAMBhCxzoJcE7Jab3S60L1CO5gjYhdDW512aZlxczy5LYxeoaW2srbuwW0ZoWgasjLfzhESZvvy2vp8Pe6Ije5s2L0NW1ea887h4zyP09PtFWRWdP+52ulmwkgMn3uadPy3b6o8kZEbWzWvbLGbfGZ/BaeMyUbp/WirgkgROaPvfAdMiNY9X0QgXjW/R/mgHgVwCZGSZGF0SOCa5/XdAupZsl37EZNsugpaFuTpTy+fq//xauOxFznEYopCdJbgRsv2c4UWFzrSazau82+P+H2D2s7ttbj/PO/+FM/4IcuSaELJWs5utofU/j9koZWt2s6J2muA0sXprKoCzf7C6ml4nbO2zcW1q2NXY2q95NclZ3vNmVdH4zuuH9yEwkwBClgnSJQHbDOGNko7t0onIbPvZGDc0d6vRfn8g81CH3YI8M3ObMStkXabLLsLZh1P8C6F7+MYyYX5WyS6AO6d2pwnOPPHsX3Tz7Nyf1jFa5jibkXUiwHz6QnKbdauMuMkL+6xxFp0mXLyLkpKKsiqaIbQ5Ytte2/FXXn3pvPP7lpGdNjezpQ2zyg38B+P8z+W0jKxfRuGELKUFxecyLTskgJDtED6m9c60lu03YdEYAT8b4zp1gnBB+oL/8Edee19Uuie+3YMn1n7HVBTumT617ert/Itktp09DT7rNqm5Zv2Yj+afXaQvS160GkV7Kt2v63N2PjZFyFp798T6XWkb69/P0mWBZx+w8f13D+wUCVJRcVakr9jbFGU1T4gaJ1+M2u++6Jt3/rQaWfcHoP2hZ4ebj65kYdp5dR/2yvtjNO8Pvbxx5dn2P1fWd16NLEI29k9bxONDyEYc3AEMzeo4XyPptwbg6xBczCsr8G8tfjBHyOaVF8yqPZ2VvXIXTF9gWga2aKmCf5Hd1Xv4JCsk8+z4Gdnsuf6DLNNEqX8htxrbIlm6vDlRVJwNYT617WNRVvOE6LSn/N0DX0UeXpq2aoG7g+HmsH9HI3uO41VXyOaNN89Wtt00Ye1/rh7L+cPOnWd3TfzvAzKybX8C6L8RAgjZRjDSSUUCvy3plZLeVfF8TlufgJ/FdLf3/XrZvNuK84SsWfAzOL4Nd2vfHkpxh9X8XZ556rmokPX7tk0ybH1Oq9XzyxR8O9MysgdmnlovImSzmaosy6Jzrag4K9pfzO2KsppW42psrMbebajiZ9x94enmY3YdWjvfv0uQrUnN1q9m56F/y96P0zQhm1cjO62P7Jjz2mWF7LQ/vqYJfVcba74XWUc2y2ve3Cwa33n98D4EZhJAyDJBuiRgAvYVknwh1KU/Q7edzcj6NZ/+2OY98FU0I7tXRjDWzcg60fy95AGUl3oPrGWFARnZoc/Utf4jdOKI47RREN+449ub0SFkexOKUTry7vQp3veMcvTtDDqv5tVZysvI1qmRPdgTsu72rZUS2C1JX3xaLW2RGlnz02XF/Cek/b58O9MystaPZXLND2pk25lnTfSK0GmCYn/7IL79jU1UniFkowrn4AZzgqTd0m0kB+d8Tx3Oe1BkmpD1H2bx114tumqBf/vTVjO4QtKizO5Klm03Ubpa0mcLrEubdxt0mp0zJF0gadaqBTZ288EyvNl1dbMhZNWCsJMaoROWd2hrxDc08ZHaQ8iONPA9GbbtmGPi4b098ScGN6atI5s3tmnryMbAoasxcPEuTh5WxVkNsSXxHWLUBugzQnaAQYvIZROwL5N0UkRj6sNQZu3a5fwr0qbpsUyr2TU7ZRdbL+tb3gNjro9pD9yUtWHtuXgXpwar4qyG2JL4DjFqA/QZITvAoEXk8vskvVjS+yMaE0MZNwEu3sXjD6virIbYkvgOMWoD9BkhO8CgReSyLZfzgqR+8gMRjYmhjJsAF+/i8YdVcVZDbEl8hxi1AfqMkB1g0CJy+ZTklvLPSnIL9Uc0NIYyUgJcvIsHHlbFWQ2xJfEdYtQG6DNCdoBBi8hlE7DbSzo1ojH1YSh5D3FlF0+ftbpBdperumOati1m3X7LnO9vimDzzm22UKaPIm25eBehtLYNrIqzGmJL4jvEqA3QZ4TsAIMWkcunSTKBdXpEY+p6KNMe4rL1YpdldjKatuYsQrZ6FLl4F2cHq+KshtiS+A4xagP0GSE7wKBF5PKHkn2/t5b0OxGNqeuh5IlTl420vdT9/dOnid6skPW37vRXF8huo+nvGOavUGCvWx+WKfbXq/VZuVUFnivp8FRwu80M3M5v/naiTphbH85unt+L03VtbVMG+/nvJH0yNXx0unHCtJhlVzrw7U87h4t38U8ArIqzGmJL4jvEqA3QZ4TsAIMWkcsmYLeUZAvbc9QnkLfBgb12WfrPxJ8vZKetOesLwu0k2R7xS7xdsh6Q5HbVuj0Vg/4+7w+nr9lGBbbDltktKmStb/PRDn8nMjt/eSpyzScnUK3duel2tvbzOZJsfWITzH45gROy9oBh0dICs7+jJ4Sd/XtnhIqLd/F5bKw44iZgGoMDAq0SQMi2ipfO5xA4U5KJqQ9DqhECeRlWVy/7eW/bVttG1h15GVxfyO7qicbHU3Fo52Szq04wm5DMCsoipQou++mEcbam199tzPp3QtZ8ckeRjGxRIZvd3Szr37SAIWQbmcp0EgEBPgsRBHEIQ0DIDiFK8fpoguiZ6a3heEcZbmR+BtIEni9st6goZA+UtF+alXR9uqynidyV3vDcxgKWMfXFbhkha1lcE9rZsgVnxpUDmJC+Nn3RvdakkM0KaTNlY5r3kBgX73DzHUv9JsBnod/xicY7hGw0oRzkQJYmt4VtDros3iAH0SOnsxlZX+z5bmZrTW9NxWNeZnNaRtZ2ZfsDr1ShqYysL2StJMLmxqxb+X7m1Eoa/NICG78T4WVLC8jI9mhi48ogCSBkBxm24TmNkB1ezGLy2ESHfdlZjSNHfQJ5NbKu17wMY50a2cszGV4TjbaMmj2odX/yEN8lklyZQJkaWSdkXQbU/m81s+7hMavVtYfWFqSv+2Owttl6XnvNygnKCllnnxrZ+vOSHsZJACE7zrgHHzVCNjhyDHoEbDmon3oP9wCnPoFpS2rlCdm6qxb4GV9bWcDEohOi/qoFtnOb/W410fNWLfCFbHbVAFdCMO11o+d8sjIHE9vmU1bIHpyWJbBqQf35Rg8QmEYAIcvcCEIAIRsEM0amEPjdZA1Zq7s8H0KNEZgmTvMMTBO9jTkzwo64eI8w6Aw5lwCfBSZGEAII2SCYMTKFwAWSfiDpIxBqlEDezl5ZA7N29mrUGa8zfz3arA1/Ddq27Ocx8B9W89+v6g8X71DRw07fCfBZ6HuEIvEPIRtJIAc6DBOw/yXp9wbqP25DIEuAizdzAgJrCfBZYCYEIYCQDYIZI1MIXJjWTF4EIQhEQoCLdySBZBi1CfBZqI2QDooQQMgWoUSbtgh8VNL30l2i2rJBvxAISYCLd0ja2OozAT4LfY5ORL4hZCMK5gCHcrEk25L09wfoOy5DII8AF2/mBQTWEuCzwEwIQgAhGwQzRqYQMAH7b+mao0CCQAwEuHjHEEXG0AQBPgtNUKSPuQQQsnMR0aBFAh+X9G1Jn2jRBl1DICQBLt4haWOrzwT4LPQ5OhH5hpCNKJgDHMqlyQL230i3Oh2g+7gMgQ0IcPFmUkBgLQE+C8yEIAQQskEwY2QKgcuSLU3/WdJyCEEgEgJcvCMJJMOoTYDPQm2EdFCEAEK2CCXatEXABOzd6VaibdmgXwiEJMDFOyRtbPWZAJ+FPkcnIt8QshEFc4BDuULSKklXDtB3XIZAHgEu3swLCKwlwGeBmRCEAEI2CGaMTCFwlaSvSPpDCEEgEgJcvCMJJMOoTYDPQm2EdFCEAEK2CCXatEXABOyXJf1xWwboFwKBCXDxDgwcc70lwGeht6GJyzGEbFzxHNpoTMD+raSrh+Y4/kJgCgEu3kwNCKwlwGeBmRCEAEI2CGaMTCHwSUm3S/oTCEEg/0iykAAAIABJREFUEgJcvCMJJMOoTYDPQm2EdFCEAEK2CCXatEXgU5L+WtKftmWAfiEQmAAX78DAMddbAnwWehuauBxDyMYVz6GNxgTsLZI+PTTH8RcCUwhw8WZqQGAtAT4LzIQgBBCyQTBjZAqBayStkHQthCAQCQEu3pEEkmHUJsBnoTZCOihCoHEh+9KXvvQ73/zmN19UxDhtIAABCEAgHIGXvOQl3/nWt7714nAWsTRiAgjZEQc/5NAbF7J2O2HNGpu/HBCYTeA3fuM39La3vU1HHHEEqCAAgQAENtrIvvI1+Q8HBFomgJBtGTDdryWAkGUmdEbABOzb3/52HX744Z35gGEIjIkAQnZM0e58rAjZzkMwDgcQsuOIcy9Hedhhh+nXf/3XJ/84IACB9gkgZNtnjIV1BBCyTIYgBBCyQTBjJI/AoYceKisvOOSQQwAEAQgEIICQDQAZE44AQpa5EIQAQjYIZozkETj44IO1ePHiSXkBBwQg0D4BhGz7jLFARpY5EJYAQjYsb6x5BEzAvuMd79Cv/dqvwQUCEAhAACEbADImyMgyB4ISQMgGxY0xn4CtWHDcccfprW99azAwjzzyiI466ijts88+Ouuss3LtujYrVtgSt9KyZcvWtT3vvPN0xx136LrrrtO22247eT/vtWADwhAEShBAyJaARdO6BCgtqEuQ8wsRQMgWwkSjNgi85S1v0fHHH683v/nNbXQ/U6TOErImTB944AFdcskluvHGG3X00Udr5cqVE/GLkA0WKgy1QAAh2wJUupxGACHL3AhCACEbBDNG8gj86q/+qpYsWaKDDjooGKB5GdnHH39cJ598sr70pS/phhtu0C677LKebwjZYKHCUAsEELItQKVLhCxzoFMCCNlO8Y/buAnY9773vVq0aFEwEEWF7FVXXTXxyWVinYMI2WChwlALBBCyLUClS4Qsc6BTAgjZTvGP2/iBBx44yX4uXLgwGIh5QtYcuffeeyebNKxatWril5U/WJnB5ptvTmlBsEhhqA0CCNk2qNLnFAKUFjA1ghBAyAbBjJE8Ar/yK7+iU089VW9605uCASoiZM0ZV2LgMrPXXnvt5CExMrLBQoWhFgggZFuASpdkZJkDnRJAyHaKf9zGTcB+6EMf0gEHHBAMRFEh6xxy2VnbtMFWObDVCq655hpWLQgWMQw1SQAh2yRN+ppDgIwsUyQIAYRsEMwYySNgAvbMM8/U/vvvHwzQPCGbFa7ud8scW0bWlt7ad9995TK08/oLNjAMQaAAAYRsAUg0aYoAQrYpkvQzkwBClgnSGYE3vvGNWrp0qd7whjcE8yG7Rqwz7NfBOrHq3vPXkbXXLCtrS3LlnRtsIBiCQAUCCNkK0DilKgGEbFVynFeKAEK2FC4aN0ng9a9//aTm9HWve12T3dIXBCAwhQBClqkRkABCNiDsMZtCyI45+h2P3QTsBRdcMLlVzwEBCLRPACHbPmMsrCOAkGUyBCGAkA2CGSN5BEzAXnjhhZMdszggAIH2CSBk22eMBYQscyAsAYRsWN5Y8wi89rWv1cUXX6zXvOY1cIEABAIQQMgGgIwJR4CMLHMhCAGEbBDMGMkj8OpXv1qf+MQntPfeewMIAhAIQAAhGwAyJhCyzIGgBBCyQXFjzCdgAvayyy7TK1/5SsBAAAIBCCBkA0DGBEKWORCUAEI2KG6M+QRMwF5xxRXaa6+9AAMBCAQggJANABkTCFnmQFACjQvZbbbZ5vuPPvro1kFHgTEIQAACEJhLYJtttvmvRx999LlzG9IAAvUJUCNbnyE9FCDQuJCVxOQtAJ4mEwL/IOmdkv4RHhCAQBACfD8HwYwRtABzIBQBhGwo0tjJI2AC9h2SVoEHAhAIQgAhGwQzRhCyzIFQBBCyoUhjJ4/AVyUdJemfwAMBCAQhgJANghkjCFnmQCgCCNlQpLGTR+Brkg6XdDd4IACBIAQQskEwYwQhyxwIRQAhG4o0dvIIfD3Jxh6SiNl/Bg8EIBCEAEI2CGaMIGSZA6EIIGRDkcZOHgETsG+XdA94IACBIAQQskEwYwQhyxwIRQAhG4o0dvII3CvpLZL+BTwQgEAQAgjZIJgxgpBlDoQigJANRRo7eQS+IWmRpG+CBwIQCEIAIRsEM0YQssyBUAQQsqFIYyePgAnYX5F0H3ggAIEgBBCyQTBjBCHLHAhFACEbijR28giYgD0gWUv22+CBAASCEEDIBsGMEYQscyAUAYRsKNLYySPwHUmvT3b3+lfwQAACQQggZINgxghCljkQigBCNhRp7OQRuF/SPpL+DTwQgEAQAgjZIJgxgpBlDoQigJANRRo7jsBWklanv5iAfbWkB8ADAQgEIYCQDYIZIwhZ5kAoAgjZUKSxYwSOkXS1pAslfSRdduuVkt4k6WOS/lDSmaCCAARaI4CQbQ0tHWcIMNeYEkEIIGSDYMaIR+BBSc+V9KSkZ0j6nqRnS9pG0u5sjsBcgUCrBBAXreKlc48Ac43pEIQAQjYIZox4BI6XdJEkKzH4YZKJfY6kpyRdL2kxpCAAgVYJIC5axUvnCFnmQGgCCNnQxLFnBCwru72H4r8l7crGCEwOCLROACHbOmIMpASYa0yFIAQQskEwYyRD4MS0TnYLSSZi/zRZueA4KEEAAq0TQFy0jhgDCFnmQEgCCNmQtLHlE3hY0rZpWcFLJNmashwQgEC7BBCy7fKl96cJMNeYDUEIIGSDYMZIDoEPSPq9dBWD90AIAhAIQgBxEQQzRlh+izkQigBCNhRp7OQR+Iyk97GOLJMDAsEIIGSDoR69Ieba6KdAGAAI2TCcY7SymaTHYxwYY1pLYJNNNnnyySeffCY8oiKAuIgqnL0eDHOt1+GJxzmEbDyxDD2SzTbZZJMf/PSnP90ktGHstU/gxz/+sbbcckuEbPuoQ1tAXIQmPl57zLXxxj7oyBGyQXFHZQwhG1U41x8MQjba4CIuog1t7wbGXOtdSOJ0CCEbZ1xDjAohG4JyRzYQsh2Bb98s4qJ9xlhYS4C5xkwIQgAhGwRzlEYQslGGde2gELLRBhdxEW1oezcw5lrvQhKnQwjZOOMaYlQI2RCUO7KBkO0IfPtmERftM8YCGVnmQEACCNmAsCMzhZCNLKD+cBCy0QYXIRttaHs3MOZa70ISp0MI2TjjGmJUCNkQlDuygZDtCHz7ZhEX7TPGAhlZ5kBAAgjZgLAjM4WQjSygZGQjDujTQ0PIjiLMvRgkc60XYYjfCYRs/DFua4QI2bbI9qBfMrI9CEI7LiAu2uFKrxsSYK4xK4IQQMgGwRylEYRslGFdOyiEbLTBRVxEG9reDazqXLPzOCBQmABCtjAqGmYIIGQjnhII2WiDW1VcRAuEgbVGoOpcW7NmDVq2tahE1vFGG20khGxkQQ04HIRsQNihTSFkQxMPZq+quAjmIIaiIVB1riFko5kC7Q8EIds+45gtIGQjji5CNtrgVhUX0QJhYK0RqDrXELKthSS+jhGy8cU05IgQsiFpB7aFkA0MPJy5quIinIdYioVA1bmGkI1lBgQYB0I2AOSITSBkIw4uQjba4FYVF9ECYWCtEag61xCyrYUkvo4RsvHFNOSIELIhaQe2hZANDDycuariIpyHWIqFQNW5hpCNZQYEGAdCNgDkiE0gZCMOLkI22uBWFRfRAmFgrRGoOtcQsq2FJL6OEbLxxTTkiBCyIWkHtoWQDQw8nLmq4iKch1iKhUDVuYaQjWUGBBgHQjYA5IhNIGQjDi5CNtrgVhUX0QJhYK0RqDrXELKthSS+jhGy8cU05IgQsiFpB7aFkA0MPJy5quIinIdYioVA1bmGkI1lBgQYB0I2AOSITSBkIw4uQjba4FYVF9ECYWCtEag61xCyrYUkvo4RsvHFNOSIELIhaQe2hZANDDycuariIpyHWIqFQNW5hpCNZQYEGAdCNgDkiE0gZCMOLkI22uBWFRfRAmFgrRGoOtcQsq2FJL6OEbLxxTTkiBCyIWkHttVDIbu5pEskXSPpjkA4zpJ0n6TrcuztI2mxpJMlPT7Fn12S18+RdKKkRwL5PM9MVXExr1/eh0CWQNW5hpBlLhUmgJAtjIqGOQQQshFPC4TsJLh1hWwfZ0hVcdHHseBTvwlUnWsI2X7HtVfeIWR7FY7BOYOQHVzIijs8ACFrInNZOqKzJZ0nKZsBLZI1dVD8/vaVtLOka9M3j5b0HUlmZ3tJX5L0PyQdRka2+Jyi5egIIGRHF/LwA0bIhmcek0WEbEzRzIyl50LWvHW39e3ncyVdnQ7Bv5VfVMgeJWlBjhg+wSstsL6WSzpc0r2SivRNaUHEnxGGNpcAQnYuIhrUJYCQrUtw3OcjZCOO/4CErF+fWiUjO6v21i8tMOFqv5votXpXhGzE85+hNUIAIdsIRjqZRQAhy/yoQwAhW4dez8/tuZC1h71MUPq3/u2BrCpCdtv0YS4rTcg+RJYVsv7DXQjZns9h3OucAEK28xDE7wBCNv4YtzlChGybdDvuewBC1hHyM6oPJy/6pQUmdvebU8daJiOLkO14XmJ+UAQQsoMK1zCdRcgOM2598Roh25dItOBHz4WsPYjlalpNiPo1sjdIWiLprnS5LqMza4kse98yr3a4B8YulXRS+jCXW34rm4ElI9vCvKPLqAggZKMKZz8Hg5DtZ1yG4hVCdiiRquBnz4WsE6nHp0OzVQXcWq+u5GCVpMsl7VlAyLqsrOvPVi3wyxfcqgVkZCvMJU4ZLQGE7GhDH27gCNlwrGO0hJCNMarpmHooZCOmHXRoVcVFUCcxFgWBqnONdWSjCH+YQSBkw3CO1QpCNtbISopMyFoZwMop4XJr0FaJZjaT6/dhGWG3VFeVvts6p6q4aMsf+o2XQNW5hpCNd040PjKEbONIR9VhcCF777336qSTTtKll16qXXaxB9TXP8477zydfbbpkrXHypUrtc8+pmEke8+Os85y5ZCS9XfOOefosssu07bb2sPra4/HH39cJ598shYvXrzu/FFFNj4hO7bwzRpvVXEBQwiUJVB1riFky5IecXuE7IiD38DQeyVkTag+8MADuuSSS7T55ptPROrhhx+u5cuXT8QoQrZcxCPLyJYbfNytq4qLuKkwujYIVJ1rCNk2ohFpnwjZSAMbaFi9EbIug7rffvvpqKPsWZ+1hy9eqwjZPffcU5dffrlWrVqla6+9dtK39bNgwYJ1dq67bu0zRnvttdcku/uqV71KH/jAB7THHnvohhtuWJc5tnZHH23PDGm99+644w7tu689WyQtXLhQ1s6yw9NeDxTb2EoLQmEbgp2q4mIIY8PHfhGoOtcQsv2KY6+9Qcj2Ojy9d643QtZIOaG4bNmy9coH8kSte21eacF3vvOdSb8PP/zwupIG+/maa66ZZH7tWLp0qY477rjJz5YBPuSQQyb27bzbb7990u6uu+6aCGAnUp2oPuGEE3TiiSdOBLCVSjhRfOCBB+a+7ov0tmcHGdm2CXfWf1Vx0ZnDGB4sgapzDSE72JCHdxwhG555TBZ7JWQN7COPPDLJlK5YsWLC2Re1VTKyfobXZWJNZJ555pk6//zzJwL36quv1rnnnqv7779/vfpd88UXqX7gTbDed999ygpZ12bWuaEmEEI2FOngdqqKi+COYnDwBKrONYTs4EMfbgAI2XCsY7TUOyHrQ86WG1QRsv7DXn5Jgf28//77yzK2dph4zmZ3fTH6whe+cPLw2FVXXbXORSeyXS2vlS8cf/zxG9T4Zl8PNZFMyD772c9+6qmnnto4lM0Cdm6T9PoC7YbQxMbyhg4crSouOnAVkwMnUHWuRS1k3Xf+q1/96nXf9xZnd8360pe+NClL22677dZLzLi54MrW7He7Czivn7wHowc+r9ZzHyEbUzTDj6U3QtZEo8uS+qsPuMynu9VvWVB/1QKrQ/Vv+TuEWRGc/d3O++xnPztpbmUF9kWRXVHB//3OO+9cV2ZgD6L5fvlhK/t6myEnI9sm3UnfVS/ydR3rym5dvzl/eASqzrXohaytvrPNNttM7uY5oWnXDCtVe/TRRycr8zgha9cst/qOPwXcNWZePwjZah+cqpO3mjXO6opAb4SsAchmXF2ZgWVVLWNq4nPJkiXrHsBy4nTHHXfcoKbWvWf9Wo1rXtmA9bnzzjtvkEE99dRTJ/b8Gtkbb7xxnZB97LHHJu/bF9Nhhx223vJf2QfH3LJg7nVqZLua6q3Y7ep7siu7rUCk014TqDrXohey7sHg5z//+es9OPzQQw/py1/+8uS6UETIFukHIVvtM1J18lazxlldEehEyNqtFLvd7g5/dYDsOrJupQHX1l8JwF6b9mCYE7L+qgX+mrROOPurF7jSgq233npSQuCvQODX7trr73nPe3TzzTdPRLCJXLeagV9a4K9y4L8eKthkZFsn3dX3ZFd2WweKgd4RqDrXRiFkjzjiiHXXAYucZWPf9ra3TdY1LyNk5/WDkK32uag6eatZ46yuCAQXsl0NNGs372GsaSsg9MXnsn4gZMsSK92+q+/JruyWBsQJgydQda6NQshaWYGJVxOtdtiDw1ZyYHf1fCHrHl52s8ElNuxOobWb1w9CttrnqOrkrWaNs7oiMEoh6wr1XQmBg4+Q7WoaDtZuV9+TXdkdbKBwvDKBqnNtFELWMq+2Trl7cDi7kk3R0oJ5/SBkq83fqpO3mjXO6orAKIVsV7BD2yUj2zrxrr4nu7LbOlAM9I5A1bk2GiF7zz33TB4cXr169WRL9F133XXdso1lhOysfhCy1T4XVSdvNWuc1RUBhGxX5APYRci2Drmr78mu7LYOFAO9I1B1ro1GyNpa5Pbcxw477LBuQxy3/ngZITurH4Rstc9F1clbzRpndUUAIdsV+QB2EbKtQ+7qe7Iru60DxUDvCFSda6MRsltsscVkjXG3eo7//MW0dWQtyvbwsb1vNbJWWjCrH4Rstc9F1clbzRpndUUAIdsV+QB2EbKtQ+7qe7Iru60DxUDvCFSda1EL2d5FaeAOsSHCwAPYsfsI2Y4D0KZ5hGybdCd9V73I13WsK7t1/eb84RGoOtcQssOLdWceI2Q7Qx+FYYRsFGHMHwRCtvXgVr3I13WsK7t1/eb84RGoOtcQssOLdWceI2Q7Qx+FYYRsFGFEyHYUxqoX+brudmW3rt+cPzwCVecaQnZ4se7MY4RsZ+ijMIyQjSKMCNmOwlj1Il/X3a7s1vWb84dHoOpcQ8gOL9adeYyQ7Qx9FIYRslGEcbBCdpfEc9sS50RJj2RGcZSk/SSdLOnxnoap6kW+7nC6slvXb84fHoGqcw0hO7xYd+YxQrYz9FEYRshGEUaEbEdhrHqRr+tuV3br+s35wyNQda4hZIcX6848Rsh2hj4KwwjZKMLYqJDdXNIlku6SdIKkPSQdLem61IplUW9IX18hyTKnlk3dR9JiSaslnSrJf28a5WxG1vpYKWmVpC9I2qpARnaaPyEiW/UiX9e3ruzW9Zvzh0eg6lxDyA4v1p15jJDtDH0UhhGyUYSxFSG7cypSt5N0qaSTkhKAh1NBe036/7Mk7ZiKzT1TEepEr71nx3kzEPtC1uyYQF6SimgT03bMKi3YdoY/IcoRql7k6866ruzW9Zvzh0eg6lxDyA4v1p15jJDtDH0UhhGyUYSxFSF7u5eFNVF6n6Q7E0t+TasJUSdyTYhaO5ehnVX/6hz22+yaZnSdcHUZ3llCNmvD9+feAKGtepGv61pXduv6zfnDI1B1riFkhxfrzjxGyHaGPgrDCNkowtiKkLWs6x1pz07IficjVi0jelkqbk3IWmmBE55lheyBmYe7ighZa+OLZ98fhGzEc5uhBSOAkA2GeryGELLjjX0TI0fINkGxp31U3BDB1ci6jKz/e5mMbFZk5lEiI1tt7lQVF9WscdaYCVSda2RkxzxrSo4dIVsSGM3XI4CQjXhC1BSyRsayqy8sWSO7b5rJLVsja/bsgTKrqbUHzaiRnT43q4qLiGc7Q2uJQNW5hpBtKSAxdouQjTGq4caEkA3HOrilmkL2AUnLUqedOLVfZ61aYOvB2nGEpKsKrjjg19y6VQusj+MlvVTS0jnryLJqQfCZhcEREUDIjijYXQ0VIdsV+TjsImTjiGPuKGoKWb9GtgilIjWtRfoZUpuqF/m6Y+zKbl2/OX94BKrONTKyw4t1Zx4jZDtDH4VhhGwUYcwfRA+ErKuvtexq9rC1Yg+XNOuhrLrntx3dqhf5un51Zbeu35w/PAJV5xpCdnix7sxjhGxn6KMwjJCNIoyNCtmIiTQ+tKoX+bqOdGW3rt+cPzwCVecaQnZ4se7MY4RsZ+ijMIyQjSKMCNmOwlj1Il/X3a7s1vWb84dHoOpcQ8gOL9adeYyQ7Qx9FIYRslGEsZKQ/aVkRYJPSvoLSRdFjKHNoVW9yNf1qSu7df3m/OERqDrXELLDi3VnHiNkO0MfhWGEbBRhLCVk7Sl/WxrrUElPpZsY/GXEGNocWtWLfF2furJb12/OHx6BqnMNITu8WHfmMUK2M/RRGEbIRhHGQkL2xZJ+R9KxaetnSrIHrl4eMYK2h1b1Il/Xr67s1vWb84dHoOpcQ8gOL9adeYyQ7Qx9FIYRslGEca6Q/YKkhZKekGQrAdjxmKQbJH012YTgGcmasRun/9zPZf9v55c9J9u+Th/zzrWdyt7QcLirXuTrutGV3bp+c/7wCFSdawjZ4cW6M48Rsp2hj8IwQjaKMM4VsquTOtgtJG3mtfyppJskfTspNfjvtMzASg3cz0X/X+acMm2b9ulJSRs1HO6qF/m6bnRlt67fnD88AlXnGkJ2eLHuzGOEbGfoozCMkI0ijHOFrJURHJIIuXMlvUjSc9Iz/j4Rs6+KGIE/tKoX5Fl42uizSDi6slvEN9rERaDqXEPIxjUPWh0NQrZVvNF3jpCNOMRTNkR4S/qwlz309SxJh0n6XMQY3NCqXpARsiOYHAxxKoGqnxuELJOqMAGEbGFUNMwhgJCNeFrM2dnrQEkfl2RZ2cURY0DIjiC4DLE1AgjZ1tDSsSOAkGUu1CGAkK1Dr+fnVtyituejquxe1QsyGdnKyDkxAgJVPzdkZCMIfqghIGRDkY7TDkI2zrhORoWQXS+4VS/ICNmIPyMMbS6Bqp8bhOxctDQgI8scaIIAQrYJij3tAyGLkO3p1MSt4RBAyA4nVoP1lIzsYEPXC8cRsr0IQztOIGQRsu3MLHodEQGE7IiC3dVQEbJdkY/DLkI2jjjmjgIhi5CNeHoztDAEELJhOI/aCkJ21OGvPXhbIP/x2r3QQW8JbLLJJk8++eSTto7s2I+qF+RZ3Nros0icurJbxDfaxEWg6lyz8zggUJiA7VZTdbJNM9J0f4UHQ0MIQAACLRBo4zutjT6LDL0ru0V8o01cBJhrzcVzy2RDmj+R9E5JP2iu2zh6QsjGEUdGAQEItEegjQtyG30WIdCV3SK+0SYuAsy15uJ5vqRTJX1U0pnNdRtHTwjZOOLIKCAAgfYItHFBbqPPIgS6slvEN9rERYC51kw8LRv7n+luij+R9DyysuuDRcg2M9HoBQIQiJdAGxfkNvosEoGu7BbxjTZxEWCuNRNPy8Z+UNKmkp6Q9DGysgjZZqYWvUAAAmMh0MYFuY0+i8SjK7tFfKNNXASYa/Xj6WdjXW9kZTNcycjWn2j0AAEIxE2gjQtyG30WiUJXdov4Rpu4CDDX6sfzgqSM4JQ0G/vDJBv7nDQre3Hy/zPqdx9HDwjZOOLIKCAAgfYItHFBbqPPIgS6slvEN9rERYC5Vi+elo19JCkrMAH7U0nPl/SQJFsS0QTtttTKrgWMkK030TgbAhCIn0AbF+Q2+iwSia7sFvGNNnERYK7Vi6dlYpelmddPeEulvi958Osjks6SZJnZ0R8I2dFPAQBAAAJzCLRxQW6jzyKB7MpuEd9oExcB5lqz8YTnFJ4I2WYnGr1BAALxEWjjAtJGn0XId2W3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMIrsKckAAAgAElEQVQTIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CEBgNATauIC00WeRgHRlt4hvtImLAHOt2XjCEyHb7IyiNwhAYDQE2riAtNFnkYB0ZbeIb7SJiwBzrdl4whMh2+yMojcIQGA0BNq4gLTRZ5GAdGW3iG+0iYsAc63ZeMITIdvsjKI3CPSAwMaSXiZpS0n/JOknPfApRhfauIC00WcR9l3ZLeIbbeIiwFxrNp7wRMg2O6PoDQIdE9hE0vsk/bykb0u6Kvn90Y59itV8GxeQNvoswr8ru0V8o01cBJhrzcYTngjZZmcUvUGgYwIHSNpb0kWSniFpYSpqb5R0X8e+xWa+jQtIG30W4d6V3SK+0SYuAsy1ZuMJT4RsszOK3iDQMYHDJb1A0lclnSzpm+nPr5B0iqQfdexfTObbuIC00WcR5l3ZLeJb9G1uvvnmc0IOcuONN17z1FNPbWQ2/Z9n+TCvnXvf/r9w4cJzZ/TFXGs22PBEyDY7o+gNAh0R2EzSk5KeJekDkl4o6bJUxG4n6UxJSxNx+18d+Rej2SYuIPbHxTJJZ0j6RBIj16eVh3xE0llJrfPFAeA1MZYAbsZpYsWKFUvXrFkTVMy2RXKjjTY6ByHbFt1Jv335zmh1kE10bn+pNf3F1nR/TYyTPiAwdAI/I+lsSS+XZD+b6LkuEUD/LWlHSY9Jeq+keyX9+dAH2zP/m/hOswfyHpH0w0TMPiFpe0kPSXqmpOdI2ja5cP0gwLjrjsUE962S7vB8tdesnMXmox15baYN7ShJ+6V3FR6fMf6sjQComjdhGdmNNtrI/tAc/LFmzZpzFy1aNEuU151rg2dUcwB9+c6oOYz2T0fIts8YCxCoS8BqYC2T97fJRf8WSa9MSgdOTS/+Jors9t4uki5J3vvfieB9qq5Bzl+PQFMXZMu8flCSPahnotUuVJZd/1iy4sTvBGJeZyz7SNo/qck+LyNiLdN8tCdkTZSfn94dMPE+60DITqHzxBNP6Morr9QBBxyg3XbbrdD0cOfsvvvu2n9/C1V7B0K2PbZez334zggy0DpGELJ16HEuBMIQ8IWBlQ+clgqFgyT9jaS7wrgxWit1xJ8PzYTrf6ZlIe51WzLteYGysWaz6lg2T/9gujrN+tvv9ofTA+lA/IysvWQC1Q6XpfU5mCBeKWmVpC9I2ir9o8zaWJ/Hp41tJQ6r/z5Y0rXpayaY7YHGvHazMrpm0+5oWCb8S2m/e6Z+WNfOlvXhxmZ+2OurU1/zxlLqQ9F2RhYhWyocQ2jch++M3nNCyPY+RDgIAT07ubhemIpWW63AMmD/mt7CNTHwORi1SqCq+MtzyjIsVvtmJQU/TUtEQmVj6whZy/gfl9ZfZwVj3m3/ae3t9RsSQb8k/QPMBKkdJlgtW22HZXztjzcTjvazlTH4Nuznae2mTQQTsssl2UOSVn5jflwq6SRJ93ui3Oz5WWKrQTd/PzpFlJeaeGVqZP2MrBn53OfWfsxvu+02LViwQGeccYZ22mmnyWvXX3+9Pv3pT+v1r3/95Pe99957kpF1fdx0002T1y+++GK97GUvWy/Tu3r1ai1fvlyLFy9e11+RQVEjW4RSI226/s5oZBBtdoKQbZMufUOgHAErIbCaVzu2TrJAb0/LBP5S0l7pxdYEgJUYWGbJBK19yX2nnBlalyTQpJD1Myyhs7E27KpjySsrcBjzhOy08gLrZ7FXE5v93fXpsqLX5AhZP3zZdrOErPlpItXKHbIlDc4PK+G5QNLtmZrfbMa55BRa27xMRjYrZE855ZT1hOh2222nI488UrfeeqtuueUWnX766TJResEFF+jQQw+dCFkTuHZYu7vvvnsiWE0Ab7XVVvrUpz6lY489Vnfeeae23377wuULbuCUFlSaAlVO6vo7o4rPQc9ByAbFjTEITCVgt5ftAa4r0hUILDP0rVSwviitibWLrdXDPpwK3A+nt0nB2i6BquJvmleu7i1kbew6/ZHMoclyTCUPE34LMvWxVYTsNAFpGVmX/dzD823fHCHrsrp57WYJWV9Amx+uXMGdsyLNOpvgdQLa3mvsQbM6GVkTpSZWTYSaeH3wwQcnAtVe32GHHdbVxLrf99prL1144YWTNlZjm625NWFrbV/84hfrmGOO0aabblpqSiBkS+Gq27jL74y6vrd+PkK2dcQYgEBhArYGrGVZb05XIfiTdLODdyRPir8uvfVqy2pZqYE9LGQPCnG0T6BpIWsZFovtOwPWxtYVsm1nZLOZ0GkZWVcf6zKmZTKyWSGbJ8xdf73LyFrW9d3vfvdEcDoha5lXeyDMf7grK2S/8pWvrPcJOe2009YrOyjzMJnfEUK2/S8ez0KX3xlBB1rFWN+FrF1AOOImUCU7FDMRE7NWy2dCxx40scOecvfFrD0wZAefj5hnwtqxNf35qCrKm6qR9Wtf7SFFVyObFbLugbBsRjYrZLPtps2IbAmDXyNrNbOWdbVl7NzDZSZ6LWtrD1c2ViNbp7QgT8jOy8jOqn01Mfz9739f3/3udyclBpbpLXO0KGT5XisTCNpOviSrfrFNw9dkf2uSxaMJU6QEkocF2rhQx0DLZWZ/N62HdWL2V9Knp92T4ms+//nPxzBexpBD4MADD2zj81H1+zm7aoHvcd6t9yKrFlgftjLAS9OHyPxVBGyFATtcbaorBbBVC6wm3FY9sCPbrqiQtXZOBNvPVlbg6mftdxuT3R2x182en6GtPF/bELKuRGBejawJVqufXbJkibbeemvZd4eVFHzjG9/QqlWrJiUIZY42hSzX/TKRGHdb0xEI2XHPgU5Hj5Bdh982OLCFxY9NskJ/lK4Zu3t6IfXFbDZeCNlOZ3C7xnsmZJ3wy64jmwehzDqy7UJspvfGamTbELI2RLdqwSte8QrZv+c+97m5qxZYWYHVzmYztdk62yLYELJFKNGmbQII2bYJ0/9MAgjZCR5/swPbMcl+t2WZ7MjLzPpMEbIRf8Z6KGSNdpFdu4q0aTpy/tqv2b5tiTq37FYVu50I2SqOhjwHIRuSNramEUDIMjc6JTBiIWuPB9uOXHbkZa/sNVtr1NautBq976cL6WfjhZDtdAa3a7ynQrbdQUfee5mMbN9RVBSyH09Xp7BlBP9jyhgpKex78HvkH0K2R8EYoysjFbK24oAtrWUPc9mqA99L1638Y0l3pvPAsrKnS7L1Y+1BlGkHQjbiDw5CNr7gImS1NN2O2f6YvzL9LswKWoRsfFO/tREhZFtDS8dFCIxUyBqa10j6RLLJwV+lItYeOrGnpT8k6Z7kC36H9OEXe9hkWtbC+kHIFploA22DkB1o4Ga4bUI2xKg23njjNU899dTUFS/y3q/y2qJFi2aNZ9qDhbbqit1pss1fNs4RtAjZEJMkEhsI2UgCOdRhjFjI2oNcJlxNsFrm9e5kdYKFki4qudkBQnaok3+O3/fcc4/e//73Wyt7qr/Jw5Z0a7rPJv2jr3gITJtrts32WyVtlg7VCdovSvpVW0ObVQvimQRtjwQh2zZh+p9JYKRC1jIQlqmwf5aZtd25TMx+LcnO2u02W/jaNjtwNbSzGCJkI/2MeUL2Dxse4rskNd1nwy7SXSQEps01W25tP0nPTMdpJVY/lPRounscGdlIJkCIYSBkQ1DGxlQCIxOyz5L0W+mSWv87fZjLbrE5MXt1IjB+Lvki/7Sk1QWnDUK2IKghNqO0YIhRw2ePwLTSgm8mWwC/JH1GwL7r/iktsfpCei5ClmlUmABCtjAqGrZBYERC1mrVTky3nf1zSZapMAH73vRhL1sI/tR0B6HPltixCyHbxsTsSZ8I2Z4EAjeqEsgTsrbrwieT77sfSfqqpI9IcgLW2UHIViU+wvMQsiMMep+GPCIh+6JEsL4nzcZa6YCVEjwoyQTs+1IxWyU0CNkq1AZyDkJ2IIHCzWkE8oSsbUW4U3LX6QM5AhYhy1wqTQAhWxoZJzRJYERC9mfTFQls2a13SPqH5KGGv5d0aVpOYBnaf63AFiFbAdpQTkHIDiVS+DmFQNXtkMnIMqUKE0DIFkZFwzYIRC5kN0kyDq9NH2i4I11q5peT22kHp0trWWbW9o239WTtQYcqB0K2CrWBnIOQHUigcLNMRrYILYRsEUq0mRBAyDIROiUQsZB1NbEmXLeW9I30YYZfSupkT0u2oD0zFbQrJd1WIwgI2Rrw+n4qQrbvEcK/OQTIyDJFWieAkG0dMQZmEYhYyG4j6bhk+9k/SMdv9WDPSdeJPULSgel7f13iwa48lAjZiD9iCNmIgzuOoSFkxxHnTkeJkO0UP8YjFLK2xNaxkhZL+nK6FeNPkidz7XUnZi9In9htYgIgZJug2NM+ELI9DQxuFSWAkC1KinaVCSBkK6PjxCYIRChkbVeal0n6/5LSnXMl/U9J10t6KhWzJyQ7eP1tkpH9UhP82KK2IYo97QYh29PA4FZRAgjZoqRoV5kAQrYyOk5sgkBEQtZqYt+cbq94iaR7JW0v6ROS/soTs01g8/sgI9s00R7111Mhu0taNrM0XT7O6rzdsa8ke7BxH0n7S7JVOuYd2yZ//F2XtrVzpx1Hpbs+Felzns0y73dlt4yPfW2LkO1rZCLyCyEbUTCHOJSIhKzh/4V0oe/fk2SbGtjhxOznJP1ZzXrYvBAjZIc48Qv63EMhu3l6p8F2oXs4WZHj/PTBxUdS8XpW8mCjCT/73X6+NRW2s0aMkC04HwbYDCE7wKANzWWE7NAiFpm/kQlZJ2YvT344x1uN4HmS7N/XWwgfQrYFqH3psodCdlamNStI/czt4xmmJojtzsXxkq6StLOXkTUhfG3afpWkwyVtJ8llfs9O2+a1szshRUTzwtSurShin1Xr33bes8Mexpxlty/TYwh+IGSHEKWB+4iQHXgAh+5+hEJ2mphtK1QI2bbI9qDfHgrZWVlWE662wcdJaWmNn73NCkzrZ0dJJ3vlCVaWYEc2q2uvWTmBf4vfBPW0drMiZ+f4/dm20L5QNh/uSkX2Azl2ezArBuUCQnZQ4RqmswjZYcYtGq8jFbJOzFqJgV0o/6XFgCFkW4Tbddc9E7KzhKnLsN6e1rs6dHnC17W9Ji07yP7uY/fF66xa1SJ1rJYxvizp3DKwJqz93y0j6wvjona7niJ9t4+Q7XuEIvAPIRtBEIc8hAEJWXuYy+pdv1eizvUZ6W5ebYYIIdsm3Y777pmQzQpBR8cJUZfB9KnlCdlsCYIvZF021EoO3OGXEixIs6R+aUK23bSoZTPGWSFrS+ZZhtjKIBCyzcx9hGwzHOllBgGELNOjUwIDErLPlvRRSZ9PgX0xWRd2dafw1hpHyPYgCG250DMhm5eRdaLUsqu28kD2KJuRtVrZ/QoIShOa09pNC8e8jCxCtvmJjJBtnik9ZgggZJkSnRIYkJA1TpYN+sN0jdiL0rVhZ/F7jaRXJJncK1rMzCJkO53B7RrvmZC1wfrCdFo5gYMyqxTBF6J7pg9yWX2qL2S3SMWxLcmVrZH1z8+2mxWUWTWyCNnmpzNCtnmm9IiQZQ70icDAhOxL061l3yjpj9PsrH1R5x0mYm1zhI80uItXnh2EbJ8mdMO+9FDI+qsW2K36G5JNP/bIDNutJVtm1QK7u2FL1t2TildbVWBF+kfgosxDYVZqYCuDWAY4r112hQTfPZdBtvNsp71XJW+6VQumCVkbs62Y4EocGo5y1N0hZKMObz8GR0a2H3EYrRcDErKbSLJ/P5b0Ikm/P0PMhhKxNm8QshF/enooZGdlWbORKLqObFcRzK580JUfMdtFyMYc3Z6MDSHbk0CM1Y0BCFkTr3Yb87clbSbpb9IMzpapmP3nZMmhn0lvudoi8CFFLEI28g9OD4WsEZ+VaXURKbOzV5NRNPG8bEqHByRrOR+Wrl1rTdxasfPWnm3Sv7H1hZAdW8Q7GC9CtgPomHyawACErF38TJzag172wNfH01uadttzB0kHS7Ilh/6pAxGLkI38w9RTIRs5dYbXIAGEbIMw6SqfAEKWmdEpgQEIWXd79B/TGjlbreBRSS9PhOyVGXj20Ml/S/pJQKiUFgSEHdoUQjY0cew1TAAh2zBQutuQAEKWWdEpgQEI2eOSLOxz0+yr7Rtvy2+9NsnAHpLUy35I0hOdAqRGtmP87ZqfI2Rte9VjkoX9/6CkF1XFRUkzNIeAqs61NWvWTHuOFqoQWJ8AQpYZ0SmBHgpZq4l9g6RfSp/Itgyr7QV/W7r9pm2MYE87W12dPWXd9UFGtusItGh/ipA1AXtaumvcT9OSlzJeVBUXZWzQFgJGoOpcQ8gyfwoTQMgWRkXDNgh0LGRNlO6VbmxgwtRErInUZ0q6M/1nD3C9LH2wy7axNOHwZ8k+8X8k6ck2mJTsEyFbEtiQmmeErBOwH/TWJbYtkJeXHFNVcVHSDM0hgJBlDrRPACHbPmMszCDQsZDdLRGjH04zW99NNy+wh7eWJuu/PkvSb0k6KF1m68ZEzG6VLr81a53K0PFGyIYmHtBeKmS3SefoKekmHLYElh0Ppdsml/UIIVuWGO2rEqg618jIViU+wvMQsnaP+N57dfjhh2vVKluNRTr++ON1ySWXTH4++eSTddVVdmd5/cO12XzzzTc4f9myZTrrLLeBjHTeeefp7LNtLe2njz322EM33HCDdtllFz3yyCM66qijtGKFPQif38Z/3fqzw7dhYzjnnHN02WWXTd6z/vbZZ5/12lx33XW67777Jq/5P+f5Z30sXLhw0m7bbW0N8XaODoWs7dK1fZqBPUPSz0t6UNL7Jf2dpGPT0oIvJA93vU/SuZL+tR0KtXoNKmRXr16tCy+8UEceeaR2283+DtjwuPvuu3XKKaa51h6nnXaa9t9//w0aXn/99Xr44Yf17ne/W5tuuunkfdf/V77ylfXaX3zxxbn2pvlz66236sEHH5z4+d3vflcXXHCBDj300PX8MPs77LDD5DX387777qsrr7xSN9100wb+HnTQQev5WitqBU9OhexfJncH3pz+ceXOfCpZZmrjgt3QDAKDIzDWGtm863FWU9h1+eijj57E1NcSgwtyQw6PXsg6Ebt8+fKJ8LPDJtIDDzwwEbMmVO2wdieddJIuvfTSifh0xx133KElS5asE6V55+cJT5uIt99++8TGY489NhGeJjCdD7PiW1TI2oXciWXrb5qQdbacoC7qRxNzcI6QtbVa3yXp4iZseX1YOcHvpKLV9mu3vzKWSLKHuWxXIquP/StJ90uy27lnJv+3v2z+o2E/inRnitC2xf3BlMa9ErImIG+55Radfvrp2mqrrfTEE09MhOF22203EZXuMHF5442W5JYOPvhg7bTTTpOf84SpE6L2OcuK5zJCdptttlnnl9nKE7K+4Da7V1xxhd7znves869IwJps42VkrSbW5oLVbJORbRIyfbVJgIxsSbrZ6/vjjz8+SajtuOOOE43gklbnnnuubrvtNv3iL/6irrnmmvX0SkmTg28+eiFrQtQmjp95zBOtea+5CbZ48eL1BGj29aLCs6iALNLfiSeeqBe84AUTYeAE+YCErAlYu3CfnrlwN/WBO1yS7e9+UZqRtVu3tqmBZV6/l2RfrXbW1o61GlhbQP2utC62i8doH0v+tnpG6qv5mxW0vRGyNtfsD0L7PDhh6sRp9nUTvO5wmdNpQtZet/Zf+9rXNsiIFhWy9kX/7Gc/ez1BPSAha/PRDvujyj4TTtDaa/Y5WXsbpvhRVVwUt0BLCKwlUHWujba0YNr13SXS7C6WfZ99+MMf1s0336zf/m3bq2fcx+iFrMtCZrOX2WkxTdy62/nZ2+/+ZOwiI2tC1rJilg1zQnsAQtYJWHuYxb4A7Z9lQ20TgiYP29jgQkkvSTc6sBUJfiO9fWti9vuJeH1rstTWqyX9j6RO9supL036ULQvK3U4P21st5I/lopaJ2h7I2StpMCysX6pgPntsrK777775Da+/f7pT39alm20rO2nPvUpHXvssZOfpwlTy47al7dlZa2dO8oI2WOOOWZi1wntAQpZN2wnaO1zYsu/PafoZErbVRUXJc3QHAII2bJzIE8v+MmxXXfddXIH1+4UPfTQQwhZyzxttNEk+9T0F1uT/QX5y2xezUlZITuvBtWvP51WI+vX4fofhqIZWRPZ9tebyzh//vOfz62RdX13WFpgysQyS07AuluntmKArRTQ9GFbzZqtRWmm1TY2sJpDu/dttYguM9u03ar9GQfLGNthD5rZZ9YJ2tUW11DHrBrZaULWfPNFo4lS89mEpdXG2ntW52VlA20KWRPBd95557rM7mc+85kNamR7WlrgMrLZMLOObKiJj52qBKpqgSDX/aqDavO8eULWL4F0z96sXLmyUFlim3532TdCNod+mXKDaRnZrJA1M1Y64P6y2m+//SZ/VdlRVkCWEbJWz2vtFyywZ5vUVyH75+lWr2uf+Fl78DDL+nMzy8MycVZkesTQhKyVCVx0kVVJPH2YqLUa2mlC1kSyCV5Xe+vOLJORNSG72WabTe5SHHDAAZOHO7MPew1MyFa9dlQVF1Xtcd54CVSdawhZ74HxPI1gr9lzBq973evWPejd5oPZfZ7CoxeyJjjtcKLSCUu7NW8i1T3Y1WSNbPYBs7JC1hfJbnL54tte8/13vlvWa8stt9xg1QLXR1k/mpjY6cNe0zKy/3+ya1GTSyZYBmuxpL1TEWiPpluZwUeSnbr+Kd1y1gnGPqwR6xA/7HHobUa2SI2slQVkVz3wz8t73yBMq5F1ZQsmTP0HwUz02uFWLfDLEpwo3n777eXKHfyMsYPeo4e9pmVkq34Eq4qLqvY4zyOQ1DWes9FGG9kSf4M/1qxZc+6iRYvOmTGQqnMNIesJWV9/2F0lW33ohBNOmAhZW71g6dKlOu6449Z7EH3wk6vEAEYvZPMEqglFu/DNewDMOHexakHWZvapRhOkWSHuSifcMh55YrhDIesu1H6NrAlKO5qqkX1eWltqWcx/SR/yMlFo/duasSZm7aEu2+jA2S7xUWqtqauRNUZ+SUHvamSd4Jy1akFeZtWvod1rr702ELqzVi0wm9llvLLt8+pr7Ryrl3VLgyFkW5u/dJwhgJAtNCUQsqmQzVu1wB78srKCr3/965NVC7IPrBciHFGj0QtZi2V2Hdm89VOnLb+Vd37eOrLWzl/31YlGe/DEHnrJW0fWzplW+2Ji1ta8dIdvM0/IZj8MPRWybjhO0FrdrC03tEUDnzl7eOu5kj6d9mWZWLu/beL16mSJL7NpO3s92oCtJrswsW2rFtjDab1ZtWDWOq+z1pH1M6U+JLdsl2UZLr/8chVdR9b14YSp+91fdzZPyLqSBMvk+uvIUlowd+raHRJ7+ND+ALTDbmktlGSLcNtqILZDntW427rL9rmy37OH1VRZrdPaBbG7P2zR7/vSuzS2zN41lqPIuGU+21J9J6d16pW9XrFixdJkjdRZWcxCfef98VXoxAYbJQLinIULF1qspx1kZEvyLrKOrH/9Zx1ZHvYqOcVo3jSBgOvI2oXInu72d7f45WSTg3cmT37bhgh92q3Lx9yrdWSbjj/9zSaQ2aK2KVxVxYXZN9Fna6eZ0PN/tkW47Xf7nNnDibbY9nHpLnnZz1ZfhezaOrP8AyGbwwUh29RHsnw/rkaW5bcQsuVnD2c0SiDgzl62DdXvp5sg/HM6iFel2aQLvL3rGx1fgM6CLr8VYDyY8Aj0TMjOEqeWqbX1bC3T6LKwvtB1ozLBuzL9xTYisaysicRr09eymV3LkB4vyR4ItcNsZLOlrm/LBGczqi7baiJ1mp1pGVnnq/lkO/xZLX/tjGwTpQX+A5NWHpPdkc7fhc7fLc9e/9GPfrTBWs9VP3TUyFYlx3lNEqC0oEma9FWaQEAha/Wlb5d0UrI17RVpBtY2O7DbpE7Ylva/BycgZHsQhLZc6JmQXbvMytpyguyRzcja+/aa7U2cLSHwM7LZ89ze3k7gutv5toGJCWCrp5omZM2m37cvrm0ZPz9j7NvJE7L2gOUN6Y5/Vn60ds/ynghZcyS7DrK9lrfyh1/OYwLYlp0744wzGtmtDiHb1ieffssQQMiWoUXbxgkEFLLO951TQWs7ZtmDX//Z+KDCdoiQDcs7qLWeCdm8DKvLglrW1DZ/90XutAzurNIC956tk+xnV/OyrXmx8IXxrukqJXlZVN+HPCFrfdsKJ+5c69f/vfI8aLtG1l/Jw3Z39HfVm7aySNXBUFpQlRznNUkAIdskTfoqTaADIVvax56fgJDteYDquNcjITtPSLr3b/fEbBEh6wthh8pKDi5P+7HMrGVg59l35/pZWLvjYg9xmbieZsf6zxOy9gev/3BXY0K2idKCbEbWrdRhyzK5wx543HrrrXXFFVdMdoGybaObFrJkZOt8ujm3KQII2aZI0k8lAgjZStj8kxCytRH2t4MeCVmDlJeR9eH5t+vt9SJCNvsQVd2MrPPze0nd7Uu9lROm2ZkmZFvLyDYtZF19rL8FtNv0o+2MLEK2v98dY/IMITumaPdwrA0LWVs+y/79eM5QrV72gHSpra/0EEsZlxCyZWgNrG3PhKxfI5vNkFom1DKfLoNqpIvUyPoC05bZsz4sA1u1RtbZtXpaW6HElQbMspOXkb3HG0+va2SzQtYtf+eWoKNGdmAfetwtTQAhWxoZJzRJoCEha+LVLlS/LWkzSX+T+GhPT9vOYNnDROyByVPQVj/3B5L6tINXFbQI2SrUBnJOz4RsNsPqxKutI2tHtkZ2WgbXrQbglxBYHyvSBzEXpQLU+nSrFnw0XTUgb43XbDSdX9bW1ez6vmbtfHDKOkbFI7EAAA+HSURBVLL+CgtWA2wZXtuRq9ZSfU1lZN3KBbZqge1Sd8optlKfZNs92+G2X/ZXLXjXu941WTfd1i+3UoO6BxnZugQ5vwkCCNkmKNJHZQINCVnLrr4m2W7WLna20cHH0wuYXbD8IzYRa2NDyFaeff0/sWdC1oDNKy9wUGct1VUFvPV3abrqSN4mC1X67OScpoRsFefzdtar0o87ByFbhx7nNkUAIdsUSfqpRKAhIesurv+YbC9rWZ4vpmUDL08SE1emjsUoYhGylWbdcE7qoZD1d/ayjQ/yjnk7exUNgH2ul3mNbektd5vfMqTZw1+DtqiN4O1CClm3gsFNN900GeeCBQsaW3pr8uWzZs25ixYtmrVLWdXNN0a7RW3wCRmBQYRsBEEc8hBqCFkrJ7Aygh+mOwjZ9rM7pLsOfT5ZwPy1kg5J6mU/lGyn+dPIygn8kJORHfIHYI7vPRSyEdMOM7SQQrbtESFk2yZM/0UIIGSLUKJNawRqCNm90q1lT5e0On2w47b09qNlXz+Q7jD02SSrs3FaE/svEdTEZmOBkG1tdnbfMUK2+xg07QFCthBRMrKFMNHICCBkmQedEqggZK0G1rKsz0sdf0G67az9alvQ2g4+loH9M0l/FKFwRch2OmPDGkfIhuWNtcYJTCstsCfT/lDSD6ZYRMg2Hop4O0TIxhvbQYysgpB9ayJQd0xrX+1L0h7yen8iWD+c7LzzreQp563T5bdqPVk8CHhrnSQjO6BglXUVIVuWGO17RmCakLWdFZ8h6aL0X1bQImR7Fsg+u4OQ7XN0RuBbBSF7XLqt7OdSPFZG8FuSDpV0YrIM1zdGgM0fIkI24oAjZCMO7jiGNk3IWvLh/BSBlX7ZlsQmap2gRciOY340MkqEbCMY6aQqgQpC1mpjbd3H90my3XvssCzt65M62Z9NX//Pqv4M8DyE7ACDVtRlhGxRUrTrKYFZqxbYqhc/k/ptd9AsKeEE7eo1a+xUDgjMJ4CQnc+IFi0SKCBkbXUCy7a+M1mQ/FpJfyHpvZJene7+Y97ZUjy2E9BvSvq7ZEeh/7dFl/vWNUK2bxFp0J9UyDbYI11BoFcEnkofxnVOPSHpRklHIGR7FadeO4OQ7XV44ndujpC1Giq7BWV/qf+vdFcd27XLHhKw2thj03rYC5MluP4tXcXAFkwc+razZQKPkC1Da2BtycgOLGC4myUwKyP7cLK7oq1LbAcZWeZOZQII2croOLEJAnOE7G5pNtZqqewL78xkC8vtJd2ePuxl28vaw10/lwpba2NbWg5929kyaBGyZWgNrC1CdmABK+DuzTff/IZk0xb7F+TYeOON1zz11FOWDJD/8yzj89p5739x0aJFtgHNtGNejaz55ZcUUCMbZFbEZQQhG1c8BzeaOUL2FZIOS77ozk0f5LKygfvTEgP78rRMrG1deYKkv0r//WRwEOo5jJCtx6/XZyNkex2eSs6tWLFiaXLbfNZuWJX67eKk5Pv7nIULF9r3c1khaxlYu+Nm3+H+Q16uHx726iKgA7WJkB1o4GJxe46QfVbyJbeFpD0l7Z1+4T0/zdLe4D3sFQuOKuNAyFahNpBzELIDCVQJN9kQYQKLdWRLzBmaziaAkGWGdEogI2RNuNoDW7Zb1zclXZCsRvDXko6U9OK0bODdyXazX5J0R6eO98c4QrY/sWjck54K2bPSraD9z6DdGblU0knpXRPL0l2d7q43j8tRkvaTdHJaK5nX3sqGLkvesEzmvfM6bOn9zdPvoGuSO0RW32m+2JJ/9vS9f8wcT9NC9tZbb9XXvvY1vfvd79amm246dejXX3+9dthhB+2///6N4WGL2sZQ0lENAgjZGvA4tT6BjJB9uyTbuct25bIL40cl2UXDygjsIvnLkn5H0v9jGwHUtx5FDwjZKMKYP4geCtl9JJkSslVC3OEEnq0kcngqNO3za2s+L50hTt35QxSys/6QRsg+PTdmPew165NLaUHE32tNDw0h2zRR+itFIBWytiD2m9N62N/1Mi6/IMmyP3Yb6j9KdTyexgjZiGPdMyFrgjUv02rCbY/0n2VkXcY0L3PromWCeKWkVZK+kGwvvVWakbVSouskLUwbnp2uLWoPcdoye9bexLJlRLPtfHGdNyvMpvVnD4zemTb4E+/ujvl7X9qvjcmW+7PD2bT6fPMjLyM7bTwb7DBYtkb27rvvlmVTH330Ue26666TzOs3vvENnXLKKVqwYIH23HNPPfbYY5PX7bjyyit10022eIt00EEHTV5fuXKlLrrISlGl0047Tfvuu29uu1kZ3TygNWpk531qEbLzCPH+OgIIWSZDpwS8jKyJ1k+mGRy7sNlhT7NaRsfWhaWUID9SCNlOZ3C7xnsmZPOyrPaa3WK32/4mEn0hm5e9NWB2jtW4L0k2M7krFYf2+hlpOZGtSmIi1S9XMOHqSgucoMxrN6vswPxZ7mWNTawuSLPLfunCdukf0Pa+lQ2YwLXDFuvPE7LWPm88uaUSZUsLTMguX75cZ5xxhnbaaSd997vf1QUXXKAlS5boZS972USQ2mGC9TOf+czk5yOPPFKrV6/WhRdeOPl5t912m4hhV1pgP09rV2ZGU1pQhhZt2yKAkG2LLP0WIpApLTAx+5Fk+awPJw90fS0tM7CLyFWSvl2ow/E1QshGHPOeCdk8YeqyriY0XY2sE5PTygusn8VeTWz2dxdRX1z6QjYrVovWz5od89cJVP/3XTM++bPKCd5pQjZ77rTxTPqsmpE9/fTTtdVWW8mE7S233LKuJjb7u3P8iSeemIjcAw44YAMh6w8u267MxwkhW4YWbdsigJBtiyz9FiKQs2qBidk/kvTvyV7cz0wyJp+mJnYmSoRsoZk2zEY9E7J+BtOA+sLWz57OE7LZGlJf+NkKJVZy4A6/lMB/2Mvdys+2m5eR9QW0L4BtmT9XVuBqfq2UwR1+iUO2tODAzMNqM4VslYysL1yzD3f5Qvahhx6aZGvvu8+Gsva4+OKLNxCyLqub167MJwUhW4YWbdsigJBtiyz9FiIwZfktE7OXJx3YLcvbCnU03kYI2Yhj3zMhm83IWnZzWQa/E54mKMtmZK3G1VY6sP9bKdG0jKyrj81rV0bImus2hu8l9bAv9VZZyArtRjOydYXstIzsb/7mb+qTn/ykdt9998nKBNMysq4+dlq7Mh8nhGwZWrRtiwBCti2y9FuIwIx1ZBGzhQgKIVuM0yBb9UzIzlqJIC8jO61G1gSq1cCaEPVrZLNC1gTkqd7DXS4jmxWyfruyQtZldq18ydW0+kLWPXxmwnpaaYHNrbzxNFYj62dk/dpXv0Y2K2RN8NoDYdmMbFbIZtuV+aAgZMvQom1bBBCybZGl30IE5myIYGLWtnK0UoMxbTtbiF3aCCFbhtbA2vZMyE5btcCo5gnZIqsW2Ll2C98yovZg58HeagH2upUa2K18J3jdEl97TWk366HQvFv+TlSbDROjdrjXbOWEFckqB1dIWuQ9jDZr1YLseDZYtaBuRtYMOPFpP5900kn693//dx1zzDHrVjOw1+13O9wDXlaSYCsX2KoF22+//UTk5rUr8xFByJahRdu2CCBk2yJLv4UIzBGyhfoYeSOEbMQToGdC1khPy7Jmo1BmHdmII7jh0MoK2T7DQcj2OTrj8Q0hO55Y93KkCNnaYUHI1kbY3w7mCFlbu3V1hRU9qi5S70DNyrRam1mZ2zZhu2W9jEv28EsH2vRhbt8I2bmIrAHryBbCRCMjgJBlHnRKACFbGz9CtjbC/nYwRcjuni5Rd4ikeyT9UskR1BWyJc3R3CeAkC00HxCyhTDRCCHLHOicAEK2dggQsrUR9reDjJA1wXqmpF9LHpR6RvLzT9Nb/f9QcgQI2ZLAmmx+8803W92//Wv12Hjjjdc89dRTtqlM7pH3foXXvrho0SLbQnzaUXWuIWRbnR1xdU5GNq54Dm40CNnaIUPI1kbY3w5SIftKSR/0BOwmybJR/52ur3xoBe+riosKpjhl5ASqzjWE7MgnTpnhI2TL0KJt4wQQsrWRImRrI+xvB6mQtc1Btk+zsM7ZH6Q735lQsMP9372f/d1vs2nyBP4TU87L66vOa7P88ME32a7Jvhj7hh+PMnPt55Mdc/+lwlz7hTVr8sLY388qnnVHYBBCtjs8WA5EYOrtr0D2h2yGb/shR6+Y7y4j+zZJlo11GdkbkxrZI+xZh0w3eZ8n/zUTsSZm57Wzbou0KdqOvp4OVBEWRdr0nb3bGMONvOhc/XqxjwatILCWgE2squn/aQyb7o9YQQACEBg7gV9Oa2TfmopZW1t572Tt1a+WBMP3c0lgNK9MgLlWGR0nliGAkC1Di7YQgAAEuiVggvbDac2sZa5eXtIdxEVJYDSvTIC5VhkdJ5YhgJAtQ4u2EIAABPpB4FWSHpH0rZLuIC5KAqN5ZQLMtcroOLEMAYRsGVq0hQAEIDBsAoiLYcdvSN4z14YUrQH7ipAdcPBwHQIQgEBJAoiLksBoXpkAc60yOk4sQwAhW4YWbSEAAQgMmwDiYtjxG5L3zLUhRWvAviJkBxw8XIcABCBQkgDioiQwmlcmwFyrjI4TyxBAyJahRVsIQAACwyaAuBh2/IbkPXNtSNEasK8I2QEHD9chAAEIlCSAuCgJjOaVCTDXKqPjxDIE2hCyX5T0+jJO0BYCEIAABIIQuE3SG4JYwsjYCSBkxz4DAo2/DSEbyHXMQAACEIAABCDQUwII2Z4GJja3ELKxRZTxQAACEIAABLongJDtPgaj8AAhO4owM0gIQAACEIBAUAII2aC4x2sMITve2DNyCEAAAhCAQFsEELJtkaXf9QggZJkQEIAABCAAAQg0TQAh2zRR+sslgJBlYkAAAhCAAAQg0DQBhGzTROkPIcscgAAEIAABCEAgCAGEbBDMGCEjyxyAAAQgAAEIQKBpAgjZponSHxlZ5gAEIAABCEAAAkEIIGSDYMYIGVnmAAQgAAEIQAACTRNAyDZNlP7IyDIHIAABCEAAAhAIQgAhGwQzRsjIMgcgAAEIQAACEGiaAEK2aaL0R0aWOQABCEAAAhCAQBACCNkgmDFCRpY5AAEIQAACEIBA0wQQsk0TpT8ysswBCEAAAhCAAASCEEDIBsGMETKyzAEIQAACEIAABJomgJBtmij9kZFlDkAAAhCAAAQgEIQAQjYIZoyQkWUOQAACEIAABCDQNAGEbNNE6Y+MLHMAAhCAAAQgAIEgBBCyQTBjxGVkIQEBCEAAAhCAAASaJGAagwMCrRJgkrWKl84hAAEIQAACEIAABNoi8H8AGeNl2i+Njp0AAAAASUVORK5CYII=" alt="Load unit&#8217;s interactions"></span></p>
 </div>
 <table id="_CVA6_load_unit_ports" class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 24. <strong>load_unit module</strong> IO ports</caption>
@@ -10872,113 +11131,113 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>flush_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flush signal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CONTROLLER</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>valid_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Load unit input port</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load request is valid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LSU_BYPASS</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>lsu_ctrl_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load request input</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LSU_BYPASS</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">lsu_ctrl_t</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>pop_ld_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pop the load request from the LSU bypass FIFO</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LSU_BYPASS</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>valid_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Load unit result is valid</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>trans_id_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Load transaction ID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>result_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Load result</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.XLEN-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>ex_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Load exception</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">exception_t</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>translation_req_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Request address translation</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MMU</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>vaddr_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Virtual address</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MMU</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.VLEN-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>paddr_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Physical address</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MMU</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.PLEN-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>ex_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Excepted which appears before load</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MMU</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">exception_t</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>page_offset_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Page offset for address checking</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STORE_UNIT</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[11:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>page_offset_matches_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Indicates if the page offset matches a store unit entry</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STORE_UNIT</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>store_buffer_empty_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Store buffer is empty</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STORE_UNIT</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>commit_tran_id_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Transaction ID of the committing instruction</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COMMIT_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
 </tr>
 <tr>
@@ -10998,8 +11257,8 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>dcache_wbuffer_not_ni_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TO_BE_COMPLETED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Presence of non-idempotent operations in the D$ write buffer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CACHES</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 </tbody>
@@ -11051,7 +11310,7 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <div class="sect5">
 <h6 id="lsu_bypass">4.4.3.5.3. lsu_bypass</h6>
 <div class="paragraph">
-<p>TO BE COMPLETED</p>
+<p>The LSU bypass is a FIFO which keeps instructions from the issue stage when the store unit or the load unit are not available immediately.</p>
 </div>
 <table id="_CVA6_lsu_bypass_ports" class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 25. <strong>lsu_bypass module</strong> IO ports</caption>
@@ -11178,13 +11437,6 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>fu_data_i</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FU data needed to execute instruction</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">fu_data_t</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_valid_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF instruction is valid</p></td>
@@ -11192,9 +11444,16 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_ready_o</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF is ready</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_trans_id_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Transaction ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_illegal_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Instruction is illegal, determined during CVXIF issue transaction</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
@@ -11206,9 +11465,16 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[31:0]</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_ready_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF is ready</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_trans_id_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF transaction ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF result transaction ID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.TRANS_ID_BITS-1:0]</p></td>
 </tr>
@@ -11241,38 +11507,35 @@ It inserts stalls until it can satisfy the current request. This means:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cvxif_req_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>x_rd_o</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF request</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SUBSYSTEM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">cvxif_pkg::cvxif_req_t</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF destination register</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISSUE_STAGE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[4:0]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cvxif_resp_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result_valid_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CVXIF response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SUBSYSTEM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">cvxif_pkg::cvxif_resp_t</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result_i</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x_result_t</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result_ready_o</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic</p></td>
 </tr>
 </tbody>
 </table>
-<div class="paragraph">
-<p>Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">As PRIV = MachineOnly,</dt>
-<dd>
-<div class="ulist">
-<ul>
-<li>
-<p><code>priv_lvl_i</code> input is tied to MachineMode</p>
-</li>
-</ul>
-</div>
-</dd>
-</dl>
-</div>
 </div>
 </div>
 </div>
@@ -12684,7 +12947,7 @@ by 4</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-07-24 12:06:08 +0200
+Last updated 2024-07-24 16:51:56 +0200
 </div>
 </div>
 </body>

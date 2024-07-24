@@ -40,6 +40,16 @@
 
 |`irq_ctrl_i` | in | Interrupt control status | CSR_REGFILE | irq_ctrl_t
 
+|`hart_id_i` | in | none | none | logic[CVA6Cfg.XLEN-1:0]
+
+|`compressed_ready_i` | in | none | none | logic
+
+|`compressed_resp_i` | in | none | none | x_compressed_resp_t
+
+|`compressed_valid_o` | out | none | none | logic
+
+|`compressed_req_o` | out | none | none | x_compressed_req_t
+
 |===
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
 

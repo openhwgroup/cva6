@@ -28,6 +28,12 @@
 
 |`rd_clobber_fpr_o` | out | TO_BE_COMPLETED | TO_BE_COMPLETED | ariane_pkg::fu_t[2**ariane_pkg::REG_ADDR_SIZE-1:0]
 
+|`x_transaction_accepted_i` | in | none | none | logic
+
+|`x_issue_writeback_i` | in | none | none | logic
+
+|`x_id_i` | in | none | none | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+
 |`rs1_i` | in | rs1 operand address | issue_read_operands | logic[CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0]
 
 |`rs1_o` | out | rs1 operand | issue_read_operands | logic[CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0]
@@ -77,6 +83,8 @@
 |`wt_valid_i` | in | Indicates valid results | TO_BE_COMPLETED | logic[CVA6Cfg.NrWbPorts-1:0]
 
 |`x_we_i` | in | Cvxif we for writeback | TO_BE_COMPLETED | logic
+
+|`x_rd_i` | in | CVXIF destination register | ISSUE_STAGE | logic[4:0]
 
 |===
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below
