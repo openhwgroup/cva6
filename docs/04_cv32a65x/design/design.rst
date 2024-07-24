@@ -11,4 +11,12 @@ CV32A65X DESIGN DOCUMENT
 ========================
 
 .. raw:: html
+   
+   <style>
+   .wy-nav-content {
+     max-width: none;
+   }
+   </style>
+
+.. raw:: html
    :file: design-cv32a65x.html
