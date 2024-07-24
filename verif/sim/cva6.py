@@ -1111,16 +1111,7 @@ def check_spike_version():
     logging.info("Spike version check ('$SPIKE_PATH/spike -v')")
     logging.info(f"- stdout:\n\n{user_spike_stdout_string}\n")
     logging.info(f"- stderr:\n\n{user_spike_stderr_string}")
-    # Print current configuration of dynamic linker cache.
-    ldconfig = subprocess.run(
-        "/sbin/ldconfig", capture_output=True, text=True, shell=True
-    )
-    ldconfig_stdout = ldconfig.stdout.strip()
-    ldconfig_stderr = ldconfig.stderr.strip()
-    logging.info("LDCONFIG cache state ('ldconfig -p')")
-    logging.info(f"- stdout:\n\n{ldconfig_stdout}\n")
-    logging.info(f"- stderr:\n\n{ldconfig_stderr}")
-     # Run 'ldd' on Spike binary and print contents of stdout and stderr.
+    # Run 'ldd' on Spike binary and print contents of stdout and stderr.
     spike_ldd = subprocess.run(
         "/bin/ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
     )
