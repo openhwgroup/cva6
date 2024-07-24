@@ -100,12 +100,12 @@ module cva6_mmu
 
     // PMP
     input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    input  logic                                    pmp_instr_allow_i,
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    input  exception_t                              pmp_fetch_exception_i,
-    input  exception_t                              pmp_exception_i,
-    input  exception_t                              pmp_misaligned_ex_i
+    input logic                                                      pmp_instr_allow_i,
+    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0]                   pmpcfg_i,
+    input logic           [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input exception_t                                                pmp_fetch_exception_i,
+    input exception_t                                                pmp_exception_i,
+    input exception_t                                                pmp_misaligned_ex_i
 );
 
   // memory management, pte for cva6
@@ -757,12 +757,12 @@ module cva6_mmu
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
     end else begin
-      lsu_vaddr_q     <= lsu_vaddr_n;
-      lsu_req_q       <= lsu_req_n;
-      dtlb_pte_q      <= dtlb_pte_n;
-      dtlb_hit_q      <= dtlb_hit_n;
-      lsu_is_store_q  <= lsu_is_store_n;
-      dtlb_is_page_q  <= dtlb_is_page_n;
+      lsu_vaddr_q    <= lsu_vaddr_n;
+      lsu_req_q      <= lsu_req_n;
+      dtlb_pte_q     <= dtlb_pte_n;
+      dtlb_hit_q     <= dtlb_hit_n;
+      lsu_is_store_q <= lsu_is_store_n;
+      dtlb_is_page_q <= dtlb_is_page_n;
 
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
