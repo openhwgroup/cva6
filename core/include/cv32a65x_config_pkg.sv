@@ -85,7 +85,7 @@ package cva6_config_pkg;
       DcacheSetAssoc: unsigned'(2),
       DcacheLineWidth: unsigned'(128),
       DataUserEn: unsigned'(1),
-      WtDcacheWbufDepth: int'(2),
+      WtDcacheWbufDepth: int'(8),
       FetchUserWidth: unsigned'(32),
       FetchUserEn: unsigned'(1),
       InstrTlbEntries: int'(2),
