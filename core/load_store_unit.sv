@@ -305,7 +305,7 @@ module load_store_unit
 
     assign mmu_exception = pmp_exception;
     assign icache_areq_o = pmp_icache_areq_o;
-    assign pmp_translation = pmp_translation_valid;
+    assign translation_valid = pmp_translation_valid;
     assign mmu_paddr = pmp_paddr;
 
     assign dcache_req_ports_o[0].address_index = '0;
@@ -320,7 +320,7 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = mmu_vaddr[CVA6Cfg.PLEN-1:12];
+    assign dtlb_ppn                            = pmp_paddr[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
   end
