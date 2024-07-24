@@ -35,8 +35,8 @@ module cvxif_issue_register_commit_if_driver #(
     input  logic                                                        valid_i,
     input  logic          [                     31:0]                   x_off_instr_i,
     input  logic          [CVA6Cfg.TRANS_ID_BITS-1:0]                   x_trans_id_i,
-    input  logic          [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] register_i,
-    input  logic          [  CVA6Cfg.NrRgprPorts-1:0]                   rs_valid_i,
+    input  [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0][CVA6Cfg.XLEN-1:0] register_i,
+    input  logic          [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0] rs_valid_i,
     output logic                                                        cvxif_busy_o
 );
   // X_ISSUE_REGISTER_SPLIT = 0 : Issue and register transactions are synchrone

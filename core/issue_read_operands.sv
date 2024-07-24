@@ -152,6 +152,7 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] stall, stall_rs1, stall_rs2, stall_rs3;
   logic [CVA6Cfg.NrIssuePorts-1:0] fu_busy;  // functional unit is busy
   fus_busy_t [CVA6Cfg.NrIssuePorts-1:0] fus_busy;  // which functional units are considered busy
+  logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack;
   // operands coming from regfile
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
@@ -186,9 +187,10 @@ module issue_read_operands
 
   // CVXIF Signals
   logic cvxif_busy;
+  logic cvxif_req_allowed;
   logic x_transaction_rejected;
-  logic [CVA6Cfg.NrRgprPorts-1:0] rs_valid;
-  logic [CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rs;
+  logic [OPERANDS_PER_INSTR-1:0] rs_valid;
+  logic [OPERANDS_PER_INSTR-1:0][CVA6Cfg.XLEN-1:0] rs;
 
   cvxif_issue_register_commit_if_driver #(
       .CVA6Cfg       (CVA6Cfg),
@@ -226,7 +228,7 @@ module issue_read_operands
   end
 
   // TODO check only for 1st instruction ??
-  assign cvxif_instruction_valid = (!issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && (issue_instr_i[0].fu == CVXIF));
+  assign cvxif_instruction_valid = !issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && cvxif_req_allowed;
   assign x_transaction_accepted_o = x_issue_valid_o && x_issue_ready_i && x_issue_resp_i.accept;
   assign x_transaction_rejected = x_issue_valid_o && x_issue_ready_i && ~x_issue_resp_i.accept;
   assign x_issue_writeback_o = x_issue_resp_i.writeback;
@@ -259,7 +261,10 @@ module issue_read_operands
 
   always_comb begin : structural_hazards
     fus_busy = '0;
-
+    // CVXIF is always ready to try a new transaction on 1st issue port
+    // If a transaction is already pending then we stall until the transaction is done.(issue_ack_o[0] = 0)
+    // Since we can not have two CVXIF instruction on 1st issue port, CVXIF is always ready for the pending instruction.
+    fus_busy[0].cvxif = 1'b0;
     if (!flu_ready_i) begin
       fus_busy[0].alu = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
@@ -286,15 +291,13 @@ module issue_read_operands
       fus_busy[0].store = 1'b1;
     end
 
-    if (cvxif_busy) begin
-      fus_busy[0].cvxif = 1'b1;
-    end
-
     if (CVA6Cfg.SuperscalarEn) begin
       fus_busy[1] = fus_busy[0];
 
       // Never issue CSR instruction on second issue port.
       fus_busy[1].csr = 1'b1;
+      // Never issue CVXIF instruction on second issue port.
+      fus_busy[1].cvxif = 1'b1;
 
       unique case (issue_instr_i[0].fu)
         NONE:  fus_busy[1].none = 1'b1;
@@ -346,6 +349,7 @@ module issue_read_operands
           fus_busy[1].load  = 1'b1;
           fus_busy[1].store = 1'b1;
         end
+        // Never issue on second port for CVXIF
         CVXIF: fus_busy[1].cvxif = 1'b1;
       endcase
     end
@@ -670,7 +674,7 @@ module issue_read_operands
   always_comb begin : issue_scoreboard
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // default assignment
-      issue_ack_o[i] = 1'b0;
+      issue_ack[i] = 1'b0;
       // check that we didn't stall, that the instruction we got is valid
       // and that the functional unit we need is not busy
       if (issue_instr_valid_i[i] && !fu_busy[i]) begin
@@ -684,7 +688,7 @@ module issue_read_operands
                   issue_instr_i[i].op
               )) ? (rd_clobber_fpr_i[issue_instr_i[i].rd] == NONE) :
                   (rd_clobber_gpr_i[issue_instr_i[i].rd] == NONE)) begin
-            issue_ack_o[i] = 1'b1;
+            issue_ack[i] = 1'b1;
           end
           // or check that the target destination register will be written in this cycle by the
           // commit stage
@@ -693,12 +697,12 @@ module issue_read_operands
                     issue_instr_i[i].op
                 )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
                     (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
-              issue_ack_o[i] = 1'b1;
+              issue_ack[i] = 1'b1;
             end
           end
           if (i > 0) begin
             if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
-              issue_ack_o[i] = 1'b0;
+              issue_ack[i] = 1'b0;
             end
           end
         end
@@ -708,23 +712,28 @@ module issue_read_operands
         // need any functional unit or if an exception occurred previous to the execute stage.
         // 1. we already got an exception
         if (issue_instr_i[i].ex.valid) begin
-          issue_ack_o[i] = 1'b1;
+          issue_ack[i] = 1'b1;
         end
         // 2. it is an instruction which does not need any functional unit
         if (issue_instr_i[i].fu == NONE) begin
-          issue_ack_o[i] = 1'b1;
-        end
-        if (issue_instr_i[i].fu == CVXIF) begin
-          issue_ack_o[i] = (x_transaction_accepted_o || x_transaction_rejected);
+          issue_ack[i] = 1'b1;
         end
       end
     end
-
+    // Allow a cvxif transaction if we WaW condition are ok.
+    cvxif_req_allowed = (issue_instr_i[0].fu == CVXIF) && issue_ack[0];
     if (CVA6Cfg.SuperscalarEn) begin
-      if (!issue_ack_o[0]) begin
-        issue_ack_o[1] = 1'b0;
+      if (!issue_ack[0]) begin
+        issue_ack[1] = 1'b0;
       end
     end
+    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+      issue_ack_o[i] = issue_ack[i];
+    end
+    // Do not acknoledge the issued instruction if transaction is not completed.
+    if (cvxif_req_allowed && !(x_transaction_accepted_o || x_transaction_rejected)) begin
+        issue_ack_o[0] = 1'b0;
+      end
   end
 
   // ----------------------

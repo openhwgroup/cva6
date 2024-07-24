@@ -8,8 +8,9 @@
 // Original Author: Guillaume Chauvon
 
 module instr_decoder
-  import cvxif_instr_pkg::*;
 #(
+    parameter type copro_issue_resp_t                    = logic,
+    parameter type opcode_t                              = logic,
     parameter int                NbInstr                 = 1,
     parameter copro_issue_resp_t CoproInstr    [NbInstr] = {0},
     parameter int unsigned       NrRgprPorts             = 2,
@@ -53,7 +54,7 @@ module instr_decoder
     issue_resp_o.writeback     = '0;
     issue_resp_o.register_read = '0;
     registers_o                = '0;
-    opcode_o                   = ILLEGAL;
+    opcode_o                   = opcode_t'(0); // == ILLEGAL see cvxif_instr_pkg.sv
     hartid_o                   = '0;
     id_o                       = '0;
     rd_o                       = '0;
