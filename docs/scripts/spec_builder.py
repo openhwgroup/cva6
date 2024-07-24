@@ -111,7 +111,7 @@ if __name__ == "__main__":
     try:
         generate_file_type = sys.argv[1].lower()
     except IndexError:
-        generate_file_type = "rst"
+        generate_file_type = "adoc"
 
     PATH = "04_cv32a65x"
     [spec_number, target] = PATH.split("_")
