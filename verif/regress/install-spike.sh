@@ -50,8 +50,8 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   fi
   # Build both shared and static versions of the yaml-cpp library in sequence
   # prior to building Spike.
-  make yaml-cpp
   make yaml-cpp-static
+  make yaml-cpp
   make -j${NUM_JOBS}
   echo "Installing Spike in '$SPIKE_INSTALL_DIR'..."
   make install

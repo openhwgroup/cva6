@@ -334,13 +334,13 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 vcs: vcs_build
 	cd $(vcs-library) && \
 	 ./simv +permissive $(if $(VERDI), -verdi -do $(root-dir)/init_testharness.do,) \
-		+elf_file=$(elf_file) ++$(elf_file) $(if $(spike-tandem),-sv_lib $(SPIKE_INSTALL_DIR)/libriscv) \
+		+elf_file=$(elf_file) ++$(elf_file) $(if $(spike-tandem), -sv_lib $(SPIKE_INSTALL_DIR)/libyaml-cpp) -sv_lib $(SPIKE_INSTALL_DIR)/libriscv \
 		-sv_lib ../work-dpi/ariane_dpi | tee vcs.log
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/lifesvr  $(vopt_flag)
+	$(VOPT) -64 -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis -dpilib $(SPIKE_INSTALL_DIR)/lib/libriscv -dpilib $(SPIKE_INSTALL_DIR)/lib/libfesvr -dpilib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp $(vopt_flag)
 
 # src files
 $(library)/.build-srcs: $(library)
@@ -368,13 +368,13 @@ $(dpi-library)/%.o: corev_apu/tb/dpi/%.cc $(dpi_hdr)
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv
+	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -lyaml-cpp
 
 $(dpi-library)/xrun_ariane_dpi.so: $(dpi)
 	# Make Dir work-dpi
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/xrun_ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv
+	$(CXX) -shared -m64 -o $(dpi-library)/xrun_ariane_dpi.so $? -L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -lyaml-cpp
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
@@ -386,8 +386,8 @@ generate-trace-vsim:
 
 sim: build
 	$(VSIM) +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
-	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm  \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	-sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	${top_level}_optimized +permissive-off +elf_file=$(elf_file) ++$(elf_file) ++$(target-options)
 
 $(riscv-asm-tests): build
@@ -618,7 +618,7 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     $(if $(DEBUG), --trace-structs,)                                                             \
                     $(if $(TRACE_COMPACT), --trace-fst $(VL_INC_DIR)/verilated_fst_c.cpp)                        \
                     $(if $(TRACE_FAST), --trace $(VL_INC_DIR)/verilated_vcd_c.cpp)                               \
-                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -ldisasm $(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
+                    -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_INSTALL_DIR)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_INSTALL_DIR)/lib -lfesvr -lriscv -ldisasm -lyaml-cpp $(if $(PROFILE), -g -pg,) -lpthread $(if $(TRACE_COMPACT), -lz,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) -DVL_DEBUG -I$(SPIKE_INSTALL_DIR)"               \
                     $(if $(SPIKE_TANDEM), +define+SPIKE_TANDEM, )                                                \
                     --cc --vpi                                                                                   \
