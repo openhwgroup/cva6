@@ -2247,7 +2247,7 @@ module csr_regfile
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
         if (access_priv < csr_addr.csr_decode.priv_lvl) begin
-          if (v_q && csr_addr.csr_decode.priv_lvl == riscv::PRIV_LVL_HS)
+          if (v_q && csr_addr.csr_decode.priv_lvl <= riscv::PRIV_LVL_HS)
             virtual_privilege_violation = 1'b1;
           else privilege_violation = 1'b1;
         end
