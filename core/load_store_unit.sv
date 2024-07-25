@@ -541,17 +541,22 @@ module load_store_unit
     data_misaligned = 1'b0;
 
     if (lsu_ctrl.valid) begin
-      case (lsu_ctrl.operation)
-        // double word
-        LD, SD, FLD, FSD,
-                AMO_LRD, AMO_SCD,
-                AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
-                AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
-                AMO_MINDU, HLV_D, HSV_D: begin
-          if (CVA6Cfg.IS_XLEN64 && lsu_ctrl.vaddr[2:0] != 3'b000) begin
-            data_misaligned = 1'b1;
+      if (CVA6Cfg.IS_XLEN64) begin
+        case (lsu_ctrl.operation)
+          // double word
+          LD, SD, FLD, FSD,
+                  AMO_LRD, AMO_SCD,
+                  AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
+                  AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
+                  AMO_MINDU, HLV_D, HSV_D: begin
+            if (lsu_ctrl.vaddr[2:0] != 3'b000) begin
+              data_misaligned = 1'b1;
+            end
           end
-        end
+          default: ;
+        endcase
+      end
+      case (lsu_ctrl.operation)
         // word
         LW, LWU, SW, FLW, FSW,
                 AMO_LRW, AMO_SCW,
@@ -585,8 +590,8 @@ module load_store_unit
           misaligned_exception.tinst = lsu_ctrl.tinst;
           misaligned_exception.gva   = ld_st_v_i;
         end
-
-      end else if (lsu_ctrl.fu == STORE) begin
+      end
+      if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
@@ -611,8 +616,8 @@ module load_store_unit
           misaligned_exception.tinst = lsu_ctrl.tinst;
           misaligned_exception.gva   = ld_st_v_i;
         end
-
-      end else if (lsu_ctrl.fu == STORE) begin
+      end
+      if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::STORE_PAGE_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)
@@ -637,7 +642,8 @@ module load_store_unit
           misaligned_exception.tinst = lsu_ctrl.tinst;
           misaligned_exception.gva   = ld_st_v_i;
         end
-      end else if (lsu_ctrl.fu == STORE) begin
+      end
+      if (lsu_ctrl.fu == STORE) begin
         misaligned_exception.cause = riscv::STORE_GUEST_PAGE_FAULT;
         misaligned_exception.valid = 1'b1;
         if (CVA6Cfg.TvalEn)

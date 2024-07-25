@@ -367,12 +367,19 @@ module issue_read_operands
         CTRL_FLOW: fu_busy[i] = fus_busy[i].ctrl_flow;
         CSR: fu_busy[i] = fus_busy[i].csr;
         MULT: fu_busy[i] = fus_busy[i].mult;
-        FPU: fu_busy[i] = fus_busy[i].fpu;
-        FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
-        default: fu_busy[i] = 1'b0;
+        default:
+        if (CVA6Cfg.FpPresent) begin
+          unique case (issue_instr_i[i].fu)
+            FPU: fu_busy[i] = fus_busy[i].fpu;
+            FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
+            default: fu_busy[i] = 1'b0;
+          endcase
+        end else begin
+          fu_busy[i] = 1'b0;
+        end
       endcase
     end
   end
