@@ -99,8 +99,8 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_i,
+    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
   // memory management, pte for cva6
