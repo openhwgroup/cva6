@@ -454,11 +454,7 @@ This allows to clearly represent read-write registers holding a single legal val
                         field.name.upper(),
                         field.fieldreset,
                         field.fieldaccess,
-                        (
-                            Render.bitmask(field.andMask, field.orMask)
-                            if field.andMask and field.orMask
-                            else field.bitlegal
-                        ),
+                        field.bitlegal,
                     ]
                     _line.append(field.fieldDesc)
                     reg_table.append(_line)
@@ -1014,9 +1010,11 @@ class CsrParser:
                                     if matches:
                                         expr_type = str(matches.group(2))
                                         if expr_type == "bitmask":
-                                            # legal_value is left at default, cf. Render.bitmask().
                                             andMask = str(matches.group(4))
                                             orMask = str(matches.group(5))
+                                            legal_value = Render.bitmask(
+                                                andMask, orMask
+                                            )
                                         elif expr_type == "in":
                                             if matches.group(3).find(",") >= 0:
                                                 # list ==> set of values
