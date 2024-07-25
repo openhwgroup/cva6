@@ -2241,7 +2241,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp0cfg[7:0] in [0x00:0xFF]
+                          - pmp0cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2255,7 +2255,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp1cfg[7:0] in [0x00:0xFF]
+                          - pmp1cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2269,7 +2269,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp2cfg[7:0] in [0x00:0xFF]
+                          - pmp2cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2283,7 +2283,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp3cfg[7:0] in [0x00:0xFF]
+                          - pmp3cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2311,7 +2311,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp4cfg[7:0] in [0x00:0xFF]
+                          - pmp4cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2325,7 +2325,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp5cfg[7:0] in [0x00:0xFF]
+                          - pmp5cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2339,7 +2339,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp6cfg[7:0] in [0x00:0xFF]
+                          - pmp6cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
@@ -2353,7 +2353,7 @@ hart0:
                     warl:
                         dependency_fields: []
                         legal:
-                          - pmp7cfg[7:0] in [0x00:0xFF]
+                          - pmp7cfg[7:0] bitmask [0x8f, 0x0]
                         wr_illegal:
                           - unchanged
                 description: pmp configuration bits
