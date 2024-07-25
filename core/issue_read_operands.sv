@@ -186,7 +186,6 @@ module issue_read_operands
   assign orig_instr = riscv::instruction_t'(orig_instr_i[0]);
 
   // CVXIF Signals
-  logic cvxif_busy;
   logic cvxif_req_allowed;
   logic x_transaction_rejected;
   logic [OPERANDS_PER_INSTR-1:0] rs_valid;
@@ -217,7 +216,7 @@ module issue_read_operands
       .x_trans_id_i    (issue_instr_i[0].trans_id),
       .register_i      (rs),
       .rs_valid_i      (rs_valid),
-      .cvxif_busy_o    (cvxif_busy)
+      .cvxif_busy_o    ()
   );
   if (OPERANDS_PER_INSTR == 3) begin
     assign rs_valid = {~stall_rs3[0], ~stall_rs2[0], ~stall_rs1[0]};
@@ -349,8 +348,7 @@ module issue_read_operands
           fus_busy[1].load  = 1'b1;
           fus_busy[1].store = 1'b1;
         end
-        // Never issue on second port for CVXIF
-        CVXIF: fus_busy[1].cvxif = 1'b1;
+        CVXIF: ;
       endcase
     end
   end
@@ -460,7 +458,7 @@ module issue_read_operands
           )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) ||
               ((CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3 &&
                 x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[2]) &&
-               rd_clobber_gpr_i[issue_instr_i[i].result] != NONE)) begin
+               rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE)) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
         if (rs3_valid_i[i]) begin
           forward_rs3[i] = 1'b1;
@@ -727,9 +725,7 @@ module issue_read_operands
         issue_ack[1] = 1'b0;
       end
     end
-    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-      issue_ack_o[i] = issue_ack[i];
-    end
+    issue_ack_o = issue_ack;
     // Do not acknoledge the issued instruction if transaction is not completed.
     if (cvxif_req_allowed && !(x_transaction_accepted_o || x_transaction_rejected)) begin
       issue_ack_o[0] = 1'b0;
