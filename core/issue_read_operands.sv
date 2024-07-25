@@ -732,8 +732,8 @@ module issue_read_operands
     end
     // Do not acknoledge the issued instruction if transaction is not completed.
     if (cvxif_req_allowed && !(x_transaction_accepted_o || x_transaction_rejected)) begin
-        issue_ack_o[0] = 1'b0;
-      end
+      issue_ack_o[0] = 1'b0;
+    end
   end
 
   // ----------------------

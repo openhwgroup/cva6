@@ -15,29 +15,29 @@ module cvxif_issue_register_commit_if_driver #(
     parameter type x_commit_t = logic
 ) (
     // CVA6 inputs
-    input  logic                                                        clk_i,
-    input  logic                                                        rst_ni,
-    input  logic                                                        flush_i,
-    input  logic          [         CVA6Cfg.XLEN-1:0]                   hart_id_i,
+    input logic clk_i,
+    input logic rst_ni,
+    input logic flush_i,
+    input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
     // CVXIF Issue interface
-    input  logic                                                        issue_ready_i,
-    input  x_issue_resp_t                                               issue_resp_i,
-    output logic                                                        issue_valid_o,
-    output x_issue_req_t                                                issue_req_o,
+    input logic issue_ready_i,
+    input x_issue_resp_t issue_resp_i,
+    output logic issue_valid_o,
+    output x_issue_req_t issue_req_o,
     // CVXIF Register interface
-    input  logic                                                        register_ready_i,
-    output logic                                                        register_valid_o,
-    output x_register_t                                                 register_o,
+    input logic register_ready_i,
+    output logic register_valid_o,
+    output x_register_t register_o,
     // CVXIF Commit interface
-    output logic                                                        commit_valid_o,
-    output x_commit_t                                                   commit_o,
+    output logic commit_valid_o,
+    output x_commit_t commit_o,
     // IRO in/out
-    input  logic                                                        valid_i,
-    input  logic          [                     31:0]                   x_off_instr_i,
-    input  logic          [CVA6Cfg.TRANS_ID_BITS-1:0]                   x_trans_id_i,
-    input  [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0][CVA6Cfg.XLEN-1:0] register_i,
-    input  logic          [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0] rs_valid_i,
-    output logic                                                        cvxif_busy_o
+    input logic valid_i,
+    input logic [31:0] x_off_instr_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_i,
+    input [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0][CVA6Cfg.XLEN-1:0] register_i,
+    input logic [(CVA6Cfg.NrRgprPorts/CVA6Cfg.NrIssuePorts)-1:0] rs_valid_i,
+    output logic cvxif_busy_o
 );
   // X_ISSUE_REGISTER_SPLIT = 0 : Issue and register transactions are synchrone
   // Mandatory assignement

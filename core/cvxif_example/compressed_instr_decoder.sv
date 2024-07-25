@@ -7,13 +7,12 @@
 //
 // Original Author: Guillaume Chauvon
 
-module compressed_instr_decoder
-#(
-    parameter type                    copro_compressed_resp_t      = logic,
-    parameter int                     NbInstr                      = 1,
-    parameter copro_compressed_resp_t CoproInstr         [NbInstr] = {0},
-    parameter type                    x_compressed_req_t           = logic,
-    parameter type                    x_compressed_resp_t          = logic
+module compressed_instr_decoder #(
+    parameter type                    copro_compressed_resp_t          = logic,
+    parameter int                     NbInstr                          = 1,
+    parameter copro_compressed_resp_t CoproInstr             [NbInstr] = {0},
+    parameter type                    x_compressed_req_t               = logic,
+    parameter type                    x_compressed_resp_t              = logic
 ) (
     input  logic               clk_i,
     input  logic               rst_ni,
