@@ -14,7 +14,7 @@
 #
 # Original Author: Oukalrazqou Abdessamii
 
-""" Module is used to gather all utils and function to generate the csr and isa documents"""
+"""Module is used to gather all utils and function to generate the csr and isa documents"""
 
 import io
 import os
@@ -757,9 +757,10 @@ class MdAddressBlock(AddressBlockClass):
 class CsrParser:
     """parse CSR RISC-V config yaml file"""
 
-    def __init__(self, srcFile, customFile, target, modiFile=None):
+    def __init__(self, srcFile, customFile, debugfile, target, modiFile=None):
         self.srcFile = srcFile
         self.customFile = customFile
+        self.debugfile = debugfile
         self.modiFile = modiFile
         self.target = target
 
@@ -1071,7 +1072,9 @@ class CsrParser:
         size = int(
             data["hart0"].get("supported_xlen", "")[0]
         )  # depends on architecture
-        data = csr_formatter(self.srcFile, self.customFile, self.modiFile)
+        data = csr_formatter(
+            self.srcFile, self.customFile, self.debugfile, self.modiFile
+        )
         Registers = factorizer(data)
         d = DocumentClass(docName)
         m = MemoryMapClass(docName)

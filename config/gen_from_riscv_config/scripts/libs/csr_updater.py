@@ -22,25 +22,30 @@ def csr_recursive_update(original_dict, csr_update):
                 original_dict[key] = value
 
 
-def csr_formatter(srcfile, customfile, modifile):
+def csr_formatter(srcfile, customfile, debugfile, modifile):
     # Read original dictionary from YAML source file
     with open(srcfile, "r", encoding="utf-8") as file:
         original_dict = yaml.safe_load(file)
     with open(customfile, "r", encoding="utf-8") as file:
         custom_dict = yaml.safe_load(file)
-
-    isa_data = original_dict.copy()
-    isa_data["hart0"].update(custom_dict["hart0"])
-    updated_values = {}
+    debug_dict = {}
+    riscv_config_data = original_dict.copy()
+    if debugfile is not None:
+        with open(debugfile, "r", encoding="utf-8") as file:
+            debug_dict = yaml.safe_load(file)
+        if debug_dict["hart0"]["debug_mode"]:
+            riscv_config_data["hart0"].update(debug_dict["hart0"])
+    riscv_config_data["hart0"].update(custom_dict["hart0"])
+    update_dict = {}
     if modifile is not None:
         with open(modifile, "r", encoding="utf-8") as file:
-            updated_values = yaml.safe_load(file)
-
+            update_dict = yaml.safe_load(file)
+    print(riscv_config_data["hart0"])
     # Update original_dict with values from updated_values recursively
-    csr_recursive_update(isa_data["hart0"], updated_values)
+    csr_recursive_update(riscv_config_data["hart0"], update_dict)
     # Identify and remove keys within the range specified for each register
     keys_to_remove = []
-    for key, value in updated_values.items():
+    for key, value in update_dict.items():
         if "range" in value:
             range_value = value["range"]
             pattern = rf"{key}(\d+)"
@@ -51,7 +56,7 @@ def csr_formatter(srcfile, customfile, modifile):
                     if index >= range_value:
                         keys_to_remove.append(k)
     # Remove excluded keys based on the condition
-    exclude_data = updated_values.get("exclude")
+    exclude_data = update_dict.get("exclude")
     if exclude_data:
         exclude_key = exclude_data.get("key")
         sub_key = exclude_data.get("sub_key")
@@ -71,12 +76,12 @@ def csr_formatter(srcfile, customfile, modifile):
             for k in keys_to_remove:
                 dictionary.pop(k)
 
-        remove_keys_recursive(isa_data["hart0"])
-        remove_keys_recursive(isa_data["hart0"])
+        remove_keys_recursive(riscv_config_data["hart0"])
+        remove_keys_recursive(riscv_config_data["hart0"])
     # Remove keys from original_dict
     for k in keys_to_remove:
-        isa_data["hart0"].pop(k, None)
+        riscv_config_data["hart0"].pop(k, None)
     # Remove keys from original_dict
     for k in keys_to_remove:
-        isa_data.pop(k, None)
-    return isa_data["hart0"]
+        riscv_config_data.pop(k, None)
+    return riscv_config_data["hart0"]
