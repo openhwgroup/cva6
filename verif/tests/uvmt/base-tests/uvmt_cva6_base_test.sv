@@ -58,6 +58,8 @@ class uvmt_cva6_base_test_c extends uvm_test;
 
    uvm_factory             factory;
 
+   config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
+
 
    `uvm_component_utils_begin(uvmt_cva6_base_test_c)
       `uvm_field_object(test_cfg , UVM_DEFAULT)
@@ -347,6 +349,8 @@ function void uvmt_cva6_base_test_c::create_cfg();
 
    test_cfg = uvmt_cva6_test_cfg_c::type_id::create("test_cfg");
    env_cfg  = uvme_cva6_cfg_c     ::type_id::create("env_cfg" );
+
+   env_cfg.CVA6Cfg = CVA6Cfg;
    //ral      = env_cfg.ral;
 
 endfunction : create_cfg

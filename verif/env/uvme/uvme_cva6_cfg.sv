@@ -60,7 +60,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand bit                      MmuPresent;
 
    // Handle to RTL configuration
-   rand cva6_cfg_t         CVA6Cfg;
+   cva6_cfg_t         CVA6Cfg;
 
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -112,7 +112,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zba_supported      == CVA6Cfg.RVB;
       ext_zbb_supported      == CVA6Cfg.RVB;
       ext_zbc_supported      == CVA6Cfg.RVB;
-      ext_zbe_supported      == 0;
+      ext_zbe_supported      == CVA6Cfg.RVB;
       ext_zbf_supported      == 0;
       ext_zbm_supported      == 0;
       ext_zbp_supported      == 0;
@@ -131,6 +131,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       mode_h_supported       == CVA6Cfg.RVH;
 
       pmp_supported          == (CVA6Cfg.NrPMPEntries > 0);
+      pmp_regions            == CVA6Cfg.NrPMPEntries;
       nr_pmp_entries         == 64;
       debug_supported        == CVA6Cfg.DebugEn;
 
@@ -146,11 +147,22 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == 1;
+      HPDCache_supported      == (CVA6Cfg.DCacheType == 2);
 
       DirectVecOnly           == CVA6Cfg.DirectVecOnly;
       TvalEn                  == CVA6Cfg.TvalEn;
       MmuPresent              == CVA6Cfg.MmuPresent;
+
+      marchid                 == ariane_pkg::ARIANE_MARCHID;
+      mvendorid               == ariane_pkg::OPENHWGROUP_MVENDORID;
+
+      ext_cv32a60x_supported  == 1;
+
+      dram_base               == CVA6Cfg.ExecuteRegionAddrBase[2];
+      dram_size               == CVA6Cfg.ExecuteRegionLength[2];
+      dram_valid              == 1;
+
+      disable_all_csr_checks  == 0;
    }
 
    constraint ext_const {
