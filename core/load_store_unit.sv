@@ -579,83 +579,93 @@ module load_store_unit
     end
 
     if (data_misaligned) begin
+      case (lsu_ctrl.fu)
+        LOAD: begin
+          misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
+        end
+        STORE: begin
 
-      if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception.cause = riscv::LD_ADDR_MISALIGNED;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
+          misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
         end
-      end
-      if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception.cause = riscv::ST_ADDR_MISALIGNED;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
-        end
-      end
+        default: ;
+      endcase
     end
 
     if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
-      if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception.cause = riscv::LOAD_PAGE_FAULT;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
+      case (lsu_ctrl.fu)
+        LOAD: begin
+          misaligned_exception.cause = riscv::LOAD_PAGE_FAULT;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
         end
-      end
-      if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception.cause = riscv::STORE_PAGE_FAULT;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
+        STORE: begin
+          misaligned_exception.cause = riscv::STORE_PAGE_FAULT;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
         end
-      end
+        default: ;
+      endcase
     end
 
     if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
 
-      if (lsu_ctrl.fu == LOAD) begin
-        misaligned_exception.cause = riscv::LOAD_GUEST_PAGE_FAULT;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
+      case (lsu_ctrl.fu)
+        LOAD: begin
+          misaligned_exception.cause = riscv::LOAD_GUEST_PAGE_FAULT;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
         end
-      end
-      if (lsu_ctrl.fu == STORE) begin
-        misaligned_exception.cause = riscv::STORE_GUEST_PAGE_FAULT;
-        misaligned_exception.valid = 1'b1;
-        if (CVA6Cfg.TvalEn)
-          misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
-        if (CVA6Cfg.RVH) begin
-          misaligned_exception.tval2 = '0;
-          misaligned_exception.tinst = lsu_ctrl.tinst;
-          misaligned_exception.gva   = ld_st_v_i;
+        STORE: begin
+          misaligned_exception.cause = riscv::STORE_GUEST_PAGE_FAULT;
+          misaligned_exception.valid = 1'b1;
+          if (CVA6Cfg.TvalEn)
+            misaligned_exception.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl.vaddr};
+          if (CVA6Cfg.RVH) begin
+            misaligned_exception.tval2 = '0;
+            misaligned_exception.tinst = lsu_ctrl.tinst;
+            misaligned_exception.gva   = ld_st_v_i;
+          end
         end
-      end
+        default: ;
+      endcase
     end
   end
+
 
   // ------------------
   // LSU Control
@@ -695,4 +705,5 @@ module load_store_unit
   assign rvfi_lsu_ctrl_o = lsu_ctrl;
 
 endmodule
+
 
