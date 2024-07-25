@@ -8,17 +8,14 @@
 #     Working Directory: /home/akassimi/rhel8/cva6_synthesis/cva6/spyglass
 #     SpyGlass Version : SpyGlass_vS-2021.09-SP2-3
 #     Policy Name      : SpyGlass(SpyGlass_vS-2021.09-SP2-03)
-#                        clock-reset(SpyGlass_vS-2021.09-SP2-03)
 #                        erc(SpyGlass_vS-2021.09-SP2-03)
 #                        latch(SpyGlass_vS-2021.09-SP2-03)
 #                        lint(SpyGlass_vS-2021.09-SP2-03)
 #                        morelint(SpyGlass_vS-2021.09-SP2-03)
 #                        openmore(SpyGlass_vS-2021.09-SP2-03)
-#                        power_est(SpyGlass_vS-2021.09-SP2-03)
 #                        simulation(SpyGlass_vS-2021.09-SP2-03)
 #                        starc(SpyGlass_vS-2021.09-SP2-03)
 #                        starc2005(SpyGlass_vS-2021.09-SP2-03)
-#                        txv(SpyGlass_vS-2021.09-SP2-03)
 #
 #     Total Number of Generated Messages :       1501
 #     Number of Waived Messages          :          2
