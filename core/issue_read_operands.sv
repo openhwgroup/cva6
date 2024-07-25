@@ -670,7 +670,7 @@ module issue_read_operands
 
 
   always_comb begin : gen_check_waw_dependencies
-    stall_waw = 1'b1;
+    stall_waw = '1;
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       if (issue_instr_valid_i[i] && !fu_busy[i]) begin
         // -----------------------------------------
@@ -708,10 +708,9 @@ module issue_read_operands
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // default assignment
       issue_ack[i] = 1'b0;
-      // check that we didn't stall, that the instruction we got is valid
+      // check that the instruction we got is valid
       // and that the functional unit we need is not busy
       if (issue_instr_valid_i[i] && !fu_busy[i]) begin
-        // check that the corresponding functional unit is not busy
         if (!stall_raw[i] && !stall_waw[i]) begin
           issue_ack[i] = 1'b1;
         end
