@@ -1003,7 +1003,7 @@ hart0: &hart0
                          - unchanged 
             pmp1cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1012,7 +1012,7 @@ hart0: &hart0
                          - unchanged 
             pmp2cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1021,7 +1021,7 @@ hart0: &hart0
                          - unchanged 
             pmp3cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1036,7 +1036,7 @@ hart0: &hart0
             accessible: true
             pmp4cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1045,7 +1045,7 @@ hart0: &hart0
                          - unchanged 
             pmp5cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1054,7 +1054,7 @@ hart0: &hart0
                          - unchanged 
             pmp6cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1063,7 +1063,7 @@ hart0: &hart0
                          - unchanged 
             pmp7cfg:
                 implemented: true
-                type: 
+                type:
                     warl:
                        dependency_fields: []
                        legal:
@@ -1078,40 +1078,20 @@ hart0: &hart0
             accessible: true
             pmp8cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp8cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp9cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp9cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp10cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp10cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp11cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp11cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
@@ -1120,119 +1100,291 @@ hart0: &hart0
             accessible: true
             pmp12cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp12cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp13cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp13cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp14cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp14cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
             pmp15cfg:
                 implemented: true
-                type: 
-                    warl:
-                       dependency_fields: []
-                       legal:
-                         - pmp15cfg[7:0] in [0x00:0xFF]
-                       wr_illegal:
-                         - unchanged 
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg4:
         rv32:
-            accessible: false
+            accessible: true
+            pmp16cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp17cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp18cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp19cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg5:
         rv32:
-            accessible: false
+            accessible: true
+            pmp20cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp21cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp22cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp23cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg6:
         rv32:
-            accessible: false
+            accessible: true
+            pmp24cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp25cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp26cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp27cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg7:
         rv32:
-            accessible: false
+            accessible: true
+            pmp28cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp29cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp30cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp31cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg8:
         rv32:
-            accessible: false
+            accessible: true
+            pmp32cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp33cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp34cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp35cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg9:
         rv32:
-            accessible: false
+            accessible: true
+            pmp36cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp37cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp38cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp39cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg10:
         rv32:
-            accessible: false
+            accessible: true
+            pmp40cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp41cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp42cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp43cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg11:
         rv32:
-            accessible: false
+            accessible: true
+            pmp44cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp45cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp46cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp47cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg12:
         rv32:
-            accessible: false
+            accessible: true
+            pmp48cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp49cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp50cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp51cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg13:
         rv32:
-            accessible: false
+            accessible: true
+            pmp52cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp53cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp54cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp55cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg14:
         rv32:
-            accessible: false
+            accessible: true
+            pmp56cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp57cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp58cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp59cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpcfg15:
         rv32:
-            accessible: false
+            accessible: true
+            pmp60cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp61cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp62cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
+            pmp63cfg:
+                implemented: true
+                type:
+                    ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   mcycle:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1245,7 +1397,7 @@ hart0: &hart0
   minstret:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1258,7 +1410,7 @@ hart0: &hart0
   mcycleh:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1271,7 +1423,7 @@ hart0: &hart0
   minstreth:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1284,7 +1436,7 @@ hart0: &hart0
   pmpaddr0:
         rv32:
             accessible: true            
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1297,7 +1449,7 @@ hart0: &hart0
   pmpaddr1:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1310,7 +1462,7 @@ hart0: &hart0
   pmpaddr2:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1323,7 +1475,7 @@ hart0: &hart0
   pmpaddr3:
         rv32:
             accessible: true            
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1336,7 +1488,7 @@ hart0: &hart0
   pmpaddr4:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1349,7 +1501,7 @@ hart0: &hart0
   pmpaddr5:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1362,7 +1514,7 @@ hart0: &hart0
   pmpaddr6:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1375,7 +1527,7 @@ hart0: &hart0
   pmpaddr7:
         rv32:
             accessible: true
-            type: 
+            type:
                 warl:
                     dependency_fields: []
                     legal:
@@ -1388,7 +1540,7 @@ hart0: &hart0
   pmpaddr8:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1396,7 +1548,7 @@ hart0: &hart0
   pmpaddr9:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1404,7 +1556,7 @@ hart0: &hart0
   pmpaddr10:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1412,7 +1564,7 @@ hart0: &hart0
   pmpaddr11:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1420,7 +1572,7 @@ hart0: &hart0
   pmpaddr12:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1428,7 +1580,7 @@ hart0: &hart0
   pmpaddr13:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1436,7 +1588,7 @@ hart0: &hart0
   pmpaddr14:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
@@ -1444,296 +1596,392 @@ hart0: &hart0
   pmpaddr15:
         rv32:
             accessible: true
-            type: 
+            type:
                 ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0
   pmpaddr16:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr17:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr18:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr19:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr20:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr21:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr22:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr23:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr24:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr25:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr26:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr27:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr28:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr29:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr30:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr31:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr32:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr33:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr34:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr35:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr36:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr37:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr38:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr39:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr40:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr41:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr42:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr43:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr44:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr45:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr46:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr47:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr48:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr49:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr50:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr51:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr52:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr53:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr54:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr55:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr56:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr57:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr58:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr59:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr60:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr61:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr62:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
   pmpaddr63:
         rv32:
-            accessible: false
+            accessible: true
+            type:
+                ro_constant: 0x0
         rv64:
             accessible: false
         reset-val: 0 
