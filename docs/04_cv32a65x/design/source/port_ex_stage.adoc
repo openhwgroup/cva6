@@ -126,9 +126,9 @@
 
 |`dcache_wbuffer_not_ni_i` | in | TO_BE_COMPLETED | CACHE | logic
 
-|`pmpcfg_i` | in | Report the PMP configuration | CSR_REGFILE | riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries:0]
+|`pmpcfg_i` | in | Report the PMP configuration | CSR_REGFILE | riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries-1:0]
 
-|`pmpaddr_i` | in | Report the PMP addresses | CSR_REGFILE | logic[CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0]
+|`pmpaddr_i` | in | Report the PMP addresses | CSR_REGFILE | logic[CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0]
 
 |===
 Due to cv32a65x configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below

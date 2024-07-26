@@ -1,4 +1,3 @@
-[[CV32A6_GLOSSARY]]
 [[glossary]]
 Glossary
 --------
