@@ -48,8 +48,10 @@ This allows to clearly represent read-write registers holding a single legal val
 |0x342| `<<_MCAUSE,MCAUSE>>`|MRW|The mcause register stores the information regarding the trap.
 |0x343| `<<_MTVAL,MTVAL>>`|MRW|The mtval is a warl register that holds the address of the instruction which caused the exception.
 |0x344| `<<_MIP,MIP>>`|MRW|The mip register is an MXLEN-bit read/write register containing information on pending interrupts.
-|0x3a0-0x3a3| `<<_PMPCFG0-3,PMPCFG[0-3]>>`|MRW|PMP configuration register
-|0x3b0-0x3bf| `<<_PMPADDR0-15,PMPADDR[0-15]>>`|MRW|Physical memory protection address register
+|0x3a0-0x3a1| `<<_PMPCFG0-1,PMPCFG[0-1]>>`|MRW|PMP configuration register
+|0x3a2-0x3af| `<<_PMPCFG2-15,PMPCFG[2-15]>>`|MRW|PMP configuration register
+|0x3b0-0x3b7| `<<_PMPADDR0-7,PMPADDR[0-7]>>`|MRW|Physical memory protection address register
+|0x3b8-0x3ef| `<<_PMPADDR8-63,PMPADDR[8-63]>>`|MRW|Physical memory protection address register
 |0x7c0| `<<_ICACHE,ICACHE>>`|MRW|the register controls the operation of the i-cache unit.
 |0x7c1| `<<_DCACHE,DCACHE>>`|MRW|the register controls the operation of the d-cache unit.
 |0xb00| `<<_MCYCLE,MCYCLE>>`|MRW|Counts the number of clock cycles executed from an arbitrary point in time.
@@ -81,11 +83,11 @@ Description:: The mstatus register keeps track of and controls the hart's curren
 | 0 | UIE | 0x0 | ROCST | 0x0 | Stores the state of the user mode interrupts. 
 | 1 | SIE | 0x0 | ROCST | 0x0 | Stores the state of the supervisor mode interrupts. 
 | 2 | RESERVED_2 | 0x0 | WPRI |  | *Reserved* 
-| 3 | MIE | 0x0 | WLRL | 0 - 1 | Stores the state of the machine mode interrupts. 
+| 3 | MIE | 0x0 | WLRL | 0x0 - 0x1 | Stores the state of the machine mode interrupts. 
 | 4 | UPIE | 0x0 | ROCST | 0x0 | Stores the state of the user mode interrupts prior to the trap. 
 | 5 | SPIE | 0x0 | ROCST | 0x0 | Stores the state of the supervisor mode interrupts prior to the trap. 
 | 6 | UBE | 0x0 | ROCST | 0x0 | control the endianness of memory accesses other than instruction fetches for user mode 
-| 7 | MPIE | 0x0 | WLRL | 0 - 1 | Stores the state of the machine mode interrupts prior to the trap. 
+| 7 | MPIE | 0x0 | WLRL | 0x0 - 0x1 | Stores the state of the machine mode interrupts prior to the trap. 
 | 8 | SPP | 0x0 | ROCST | 0x0 | Stores the previous priority mode for supervisor. 
 | [10:9] | RESERVED_9 | 0x0 | WPRI |  | *Reserved* 
 | [12:11] | MPP | 0x3 | WARL | 0x3 | Stores the previous priority mode for machine. 
@@ -136,11 +138,11 @@ Description:: The mie register is an MXLEN-bit read/write register containing in
 | 4 | UTIE | 0x0 | ROCST | 0x0 | User Timer Interrupt enable. 
 | 5 | STIE | 0x0 | ROCST | 0x0 | Supervisor Timer Interrupt enable. 
 | 6 | VSTIE | 0x0 | ROCST | 0x0 | VS-level Timer Interrupt enable. 
-| 7 | MTIE | 0x0 | WLRL | 0 - 1 | Machine Timer Interrupt enable. 
+| 7 | MTIE | 0x0 | WLRL | 0x0 - 0x1 | Machine Timer Interrupt enable. 
 | 8 | UEIE | 0x0 | ROCST | 0x0 | User External Interrupt enable. 
 | 9 | SEIE | 0x0 | ROCST | 0x0 | Supervisor External Interrupt enable. 
 | 10 | VSEIE | 0x0 | ROCST | 0x0 | VS-level External Interrupt enable. 
-| 11 | MEIE | 0x0 | WLRL | 0 - 1 | Machine External Interrupt enable. 
+| 11 | MEIE | 0x0 | WLRL | 0x0 - 0x1 | Machine External Interrupt enable. 
 | 12 | SGEIE | 0x0 | ROCST | 0x0 | HS-level External Interrupt enable. 
 | [31:13] | RESERVED_13 | 0x0 | WPRI |  | *Reserved* 
 |===
@@ -192,7 +194,7 @@ Description:: The mhpmevent is a MXLEN-bit event register which controls mhpmcou
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MHPMEVENT[I] | 0x00000000 | ROCST | 0x00000000 | The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3. 
+| [31:0] | MHPMEVENT[I] | 0x00000000 | ROCST | 0x0 | The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3. 
 |===
 
 [[_MSCRATCH]]
@@ -234,7 +236,7 @@ Description:: The mcause register stores the information regarding the trap.
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [30:0] | EXCEPTION_CODE | 0x0 | WLRL | 0 - 15 | Encodes the exception code. 
+| [30:0] | EXCEPTION_CODE | 0x0 | WLRL | 0x0 - 0x8, 0xb | Encodes the exception code. 
 | 31 | INTERRUPT | 0x0 | WLRL | 0x0 - 0x1 | Indicates whether the trap was due to an interrupt. 
 |===
 
@@ -249,7 +251,7 @@ Description:: The mtval is a warl register that holds the address of the instruc
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MTVAL | 0x00000000 | ROCST | 0x00000000 | The mtval is a warl register that holds the address of the instruction which caused the exception. 
+| [31:0] | MTVAL | 0x00000000 | ROCST | 0x0 | The mtval is a warl register that holds the address of the instruction which caused the exception. 
 |===
 
 [[_MIP]]
@@ -270,19 +272,19 @@ Description:: The mip register is an MXLEN-bit read/write register containing in
 | 4 | UTIP | 0x0 | ROCST | 0x0 | User Timer Interrupt Pending. 
 | 5 | STIP | 0x0 | ROCST | 0x0 | Supervisor Timer Interrupt Pending. 
 | 6 | VSTIP | 0x0 | ROCST | 0x0 | VS-level Timer Interrupt Pending. 
-| 7 | MTIP | 0x0 | ROVAR | 0x1 | Machine Timer Interrupt Pending. 
+| 7 | MTIP | 0x0 | ROVAR | 0x0 - 0x1 | Machine Timer Interrupt Pending. 
 | 8 | UEIP | 0x0 | ROCST | 0x0 | User External Interrupt Pending. 
 | 9 | SEIP | 0x0 | ROCST | 0x0 | Supervisor External Interrupt Pending. 
 | 10 | VSEIP | 0x0 | ROCST | 0x0 | VS-level External Interrupt Pending. 
-| 11 | MEIP | 0x0 | ROVAR | 0x1 | Machine External Interrupt Pending. 
+| 11 | MEIP | 0x0 | ROVAR | 0x0 - 0x1 | Machine External Interrupt Pending. 
 | 12 | SGEIP | 0x0 | ROCST | 0x0 | HS-level External Interrupt Pending. 
 | [31:13] | RESERVED_13 | 0x0 | WPRI |  | *Reserved* 
 |===
 
-[[_PMPCFG0-3]]
-===== PMPCFG[0-3]
+[[_PMPCFG0-1]]
+===== PMPCFG[0-1]
 
-Address:: 0x3a0-0x3a3
+Address:: 0x3a0-0x3a1
 Reset Value:: 0x00000000
 Privilege:: MRW
 Description:: PMP configuration register
@@ -290,16 +292,33 @@ Description:: PMP configuration register
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [7:0] | PMP[I*4 + 0]CFG | 0x0 | WARL | 0x00 - 0xFF | pmp configuration bits 
-| [15:8] | PMP[I*4 + 1]CFG | 0x0 | WARL | 0x00 - 0xFF | pmp configuration bits 
-| [23:16] | PMP[I*4 + 2]CFG | 0x0 | WARL | 0x00 - 0xFF | pmp configuration bits 
-| [31:24] | PMP[I*4 + 3]CFG | 0x0 | WARL | 0x00 - 0xFF | pmp configuration bits 
+| [7:0] | PMP[I*4 +0]CFG | 0x0 | WARL | masked: & 0x8f | 0x0 | pmp configuration bits 
+| [15:8] | PMP[I*4 +1]CFG | 0x0 | WARL | masked: & 0x8f | 0x0 | pmp configuration bits 
+| [23:16] | PMP[I*4 +2]CFG | 0x0 | WARL | masked: & 0x8f | 0x0 | pmp configuration bits 
+| [31:24] | PMP[I*4 +3]CFG | 0x0 | WARL | masked: & 0x8f | 0x0 | pmp configuration bits 
 |===
 
-[[_PMPADDR0-15]]
-===== PMPADDR[0-15]
+[[_PMPCFG2-15]]
+===== PMPCFG[2-15]
 
-Address:: 0x3b0-0x3bf
+Address:: 0x3a2-0x3af
+Reset Value:: 0x00000000
+Privilege:: MRW
+Description:: PMP configuration register
+
+|===
+| Bits | Field Name | Reset Value | Type | Legal Values | Description
+
+| [7:0] | PMP[I*4 +0]CFG | 0x0 | ROCST | 0x0 | pmp configuration bits 
+| [15:8] | PMP[I*4 +1]CFG | 0x0 | ROCST | 0x0 | pmp configuration bits 
+| [23:16] | PMP[I*4 +2]CFG | 0x0 | ROCST | 0x0 | pmp configuration bits 
+| [31:24] | PMP[I*4 +3]CFG | 0x0 | ROCST | 0x0 | pmp configuration bits 
+|===
+
+[[_PMPADDR0-7]]
+===== PMPADDR[0-7]
+
+Address:: 0x3b0-0x3b7
 Reset Value:: 0x00000000
 Privilege:: MRW
 Description:: Physical memory protection address register
@@ -308,6 +327,20 @@ Description:: Physical memory protection address register
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
 | [31:0] | PMPADDR[I] | 0x00000000 | WARL | 0x00000000 - 0xFFFFFFFF | Physical memory protection address register 
+|===
+
+[[_PMPADDR8-63]]
+===== PMPADDR[8-63]
+
+Address:: 0x3b8-0x3ef
+Reset Value:: 0x00000000
+Privilege:: MRW
+Description:: Physical memory protection address register
+
+|===
+| Bits | Field Name | Reset Value | Type | Legal Values | Description
+
+| [31:0] | PMPADDR[I] | 0x00000000 | ROCST | 0x0 | Physical memory protection address register 
 |===
 
 [[_ICACHE]]
@@ -379,7 +412,7 @@ Description:: The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MHPMCOUNTER[I] | 0x00000000 | ROCST | 0x00000000 | The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode. 
+| [31:0] | MHPMCOUNTER[I] | 0x00000000 | ROCST | 0x0 | The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode. 
 |===
 
 [[_MCYCLEH]]
@@ -421,7 +454,7 @@ Description:: The mhpmcounterh returns the upper half word in RV32I systems.
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MHPMCOUNTER[I]H | 0x00000000 | ROCST | 0x00000000 | The mhpmcounterh returns the upper half word in RV32I systems. 
+| [31:0] | MHPMCOUNTER[I]H | 0x00000000 | ROCST | 0x0 | The mhpmcounterh returns the upper half word in RV32I systems. 
 |===
 
 [[_MVENDORID]]
@@ -435,7 +468,7 @@ Description:: 32-bit read-only register providing the JEDEC manufacturer ID of t
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MVENDORID | 0x00000602 | ROCST | 0x00000602 | 32-bit read-only register providing the JEDEC manufacturer ID of the provider of the core. 
+| [31:0] | MVENDORID | 0x00000602 | ROCST | 0x602 | 32-bit read-only register providing the JEDEC manufacturer ID of the provider of the core. 
 |===
 
 [[_MARCHID]]
@@ -449,7 +482,7 @@ Description:: MXLEN-bit read-only register encoding the base microarchitecture o
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MARCHID | 0x00000003 | ROCST | 0x00000003 | MXLEN-bit read-only register encoding the base microarchitecture of the hart. 
+| [31:0] | MARCHID | 0x00000003 | ROCST | 0x3 | MXLEN-bit read-only register encoding the base microarchitecture of the hart. 
 |===
 
 [[_MIMPID]]
@@ -463,7 +496,7 @@ Description:: Provides a unique encoding of the version of the processor impleme
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MIMPID | 0x00000000 | ROCST | 0x00000000 | Provides a unique encoding of the version of the processor implementation. 
+| [31:0] | MIMPID | 0x00000000 | ROCST | 0x0 | Provides a unique encoding of the version of the processor implementation. 
 |===
 
 [[_MHARTID]]
@@ -477,7 +510,7 @@ Description:: MXLEN-bit read-only register containing the integer ID of the hard
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MHARTID | 0x00000000 | ROCST | 0x00000000 | MXLEN-bit read-only register containing the integer ID of the hardware thread running the code. 
+| [31:0] | MHARTID | 0x00000000 | ROCST | 0x0 | MXLEN-bit read-only register containing the integer ID of the hardware thread running the code. 
 |===
 
 [[_MCONFIGPTR]]
@@ -491,6 +524,6 @@ Description:: MXLEN-bit read-only register that holds the physical address of a 
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | MCONFIGPTR | 0x00000000 | ROCST | 0x00000000 | MXLEN-bit read-only register that holds the physical address of a configuration data structure. 
+| [31:0] | MCONFIGPTR | 0x00000000 | ROCST | 0x0 | MXLEN-bit read-only register that holds the physical address of a configuration data structure. 
 |===
 

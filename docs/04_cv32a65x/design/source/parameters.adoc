@@ -71,7 +71,7 @@
 |DcacheSetAssoc | Data cache associativity (number of ways) | 2
 |DcacheLineWidth | Data cache line width | 128
 |DataUserEn | User field on data bus enable | 1
-|WtDcacheWbufDepth | Write-through data cache write buffer depth | 2
+|WtDcacheWbufDepth | Write-through data cache write buffer depth | 8
 |FetchUserEn | User field on fetch bus enable | 1
 |FetchUserWidth | Width of fetch user field | 32
 |FpgaEn | Is FPGA optimization of CV32A6 | False

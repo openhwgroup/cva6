@@ -8,7 +8,7 @@
    Original Author: Jean-Roch COULON - Thales
 ////
 
-[[CV32A6_FRONTEND]]
+[[CVA6_FRONTEND]]
 
 FRONTEND Module
 ~~~~~~~~~~~~~~~
@@ -60,17 +60,17 @@ RAS provides next PC as a prediction.
 2.  When the instruction is a JALR which *does not* correspond to areturn.
 If BTB (Branch Target Buffer) returns a valid address, then BTBpredicts next PC.
 Else JALR is not considered as a control flow instruction, which will generate a mispredict.
-3.  When the instruction is a conditional branch. 
-If BHT (Branch History table) returns a valid address, then BHT predicts next PC. 
+3.  When the instruction is a conditional branch.
+If BHT (Branch History table) returns a valid address, then BHT predicts next PC.
 Else the prediction depends on the PC relative jump offset sign: if sign is negative the prediction is taken, otherwise the prediction is not taken.
 ________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 +
 Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
 
-* *Default:* The next 32-bit block is fetched. 
+* *Default:* The next 32-bit block is fetched.
 PC Gen fetches word boundary 32-bits block from CACHES module. And the fetch stage identifies the instructions from the 32-bits blocks.
 
-* *Mispredict:* Misprediction are feedbacked by EX_STAGE module. 
+* *Mispredict:* Misprediction are feedbacked by EX_STAGE module.
 In any case we need to correct our action and start fetching from the correct address.
 
 * *Replay instruction fetch:* When the instruction queue is full, the instr_queue submodule asks the fetch replay and provides the address to be replayed.
@@ -83,7 +83,7 @@ The trap vector base address can be different depending on whether the exception
 It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
 endif::[]
 
-* *Pipeline starting fetching from COMMIT PC:* When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC takes the value of the PC coming from the COMMIT submodule. 
+* *Pipeline starting fetching from COMMIT PC:* When the commit stage is halted by a WFI instruction or when the pipeline has been flushed due to CSR change, next PC takes the value of the PC coming from the COMMIT submodule.
 As CSR instructions do not exist in a compressed form, PC is unconditionally incremented by 4.
 
 ifeval::[{DebugEn} == true]

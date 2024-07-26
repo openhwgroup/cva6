@@ -1184,7 +1184,7 @@ Commit stage. At least 6 cycles are needed to execute one instruction.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WtDcacheWbufDepth</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Write-through data cache write buffer depth</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FetchUserEn</p></td>
@@ -10630,14 +10630,14 @@ If the LSU encounters a misaligned load or store, it throws a misaligned excepti
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PMP configuration</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CSR_REGFILE</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries:0]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">riscv::pmpcfg_t[CVA6Cfg.NrPMPEntries-1:0]</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>pmpaddr_i</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">in</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PMP address</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CSR_REGFILE</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logic[CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0]</p></td>
 </tr>
 </tbody>
 </table>
@@ -12947,7 +12947,7 @@ by 4</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-07-24 16:51:56 +0200
+Last updated 2024-07-26 10:49:21 +0200
 </div>
 </div>
 </body>
