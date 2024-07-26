@@ -1,0 +1,42 @@
+////
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+////
+
+[[CVA6_COMMIT_STAGE]]
+COMMIT_STAGE Module
+~~~~~~~~~~~~~~~~~~~
+
+[[commit_stage-description]]
+Description
+^^^^^^^^^^^
+
+The COMMIT_STAGE module implements the commit stage, which is the last
+stage in the processor’s pipeline. For the instructions for which the
+execution is completed, it updates the architectural state: writing CSR
+registers, committing stores and writing back data to the register file.
+The commit stage controls the stalling and the flushing of the
+processor.
+
+The commit stage also manages the exceptions. An exception can occur
+during the first four pipeline stages (PCgen cannot generate an
+exception) or happen in commit stage, coming from the CSR_REGFILE or
+from an interrupt. Exceptions are precise: they are considered during
+the commit only and associated with the related instruction.
+
+The module is connected to:
+
+* TO BE COMPLETED
+
+include::port_commit_stage.adoc[]
+
+[[commit_stage-functionality]]
+Functionality
+^^^^^^^^^^^^^
+
+TO BE COMPLETED

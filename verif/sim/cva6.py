@@ -1103,15 +1103,39 @@ def check_spike_version():
   # Get Spike User version
   get_env_var("SPIKE_PATH")
   user_spike_version = subprocess.run("$SPIKE_PATH/spike -v", capture_output=True, text=True, shell=True)
-  user_spike_version_string = user_spike_version.stderr.strip()
+  user_spike_stdout_string = user_spike_version.stdout.strip()
+  user_spike_stderr_string = user_spike_version.stderr.strip()
 
   if user_spike_version.returncode != 0:
+    # Re-run 'spike -v' and print contents of stdout and stderr.
+    logging.info("Spike version check ('$SPIKE_PATH/spike -v')")
+    logging.info(f"- stdout:\n\n{user_spike_stdout_string}\n")
+    logging.info(f"- stderr:\n\n{user_spike_stderr_string}")
+    # Run 'ldd' on Spike binary and print contents of stdout and stderr.
+    spike_ldd = subprocess.run(
+        "/bin/ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
+    )
+    spike_ldd_stdout = spike_ldd.stdout.strip()
+    spike_ldd_stderr = spike_ldd.stderr.strip()
+    logging.info("Spike LDD check ('ldd $SPIKE_PATH/spike')")
+    logging.info(f"- stdout:\n\n{spike_ldd_stdout}\n")
+    logging.info(f"- stderr:\n\n{spike_ldd_stderr}")
+    # Run 'ls -l' on Spike lib directory and print contents of stdout and stderr.
+    spike_lib_ls = subprocess.run(
+        "ls -l $SPIKE_PATH/../lib", capture_output=True, text=True, shell=True
+    )
+    spike_lib_stdout = spike_lib_ls.stdout.strip()
+    spike_lib_stderr = spike_lib_ls.stderr.strip()
+    logging.info("Stdout of Spike library check ('ls -l $SPIKE_PATH/../lib')")
+    logging.info(f"- stdout:\n\n{spike_lib_stdout}\n")
+    logging.info(f"- stderr:\n\n{spike_lib_stderr}")
+
     incorrect_version_exit("Spike", "- unknown -", spike_version)
 
-  logging.info(f"Spike Version: {user_spike_version_string}")
+  logging.info(f"Spike Version: {user_spike_stderr_string}")
 
-  if user_spike_version_string != spike_version:
-    incorrect_version_exit("Spike", user_spike_version_string, spike_version)
+  if user_spike_stderr_string != spike_version:
+    incorrect_version_exit("Spike", user_spike_stderr_string, spike_version)
 
 
 def check_verilator_version():

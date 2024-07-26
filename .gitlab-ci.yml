@@ -25,6 +25,10 @@ include:
   - project: '$CI_PROJECT_NAMESPACE/setup-ci'
     ref: '$SETUP_CI_CVV_BRANCH'
     file: 'cva6/core-v-verif-cva6.yml'
+  - local: '.gitlab-ci-custom.yml'
+    rules:
+      - exists:
+        - '.gitlab-ci-custom.yml'
 
 workflow:
   rules:
@@ -32,6 +36,9 @@ workflow:
       variables:
         CI_KIND: verif
     - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        CI_KIND: regress
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       variables:
         CI_KIND: regress
     - if: $CI_COMMIT_BRANCH =~ /.*_PR_.*/
@@ -107,13 +114,17 @@ build_tools:
     - mkdir -p artifacts/tools/
     - mv tools/spike artifacts/tools/
 
+.copy_spike_artifacts: &copy_spike_artifacts
+  - mkdir -p tools
+  - mv artifacts/tools/spike tools
+  - /sbin/ldconfig -N tools/spike/lib
+
 .fe_smoke_test:
   stage: light tests
   rules: *on_dev
   before_script:
     - git -C verif/core-v-verif fetch --unshallow
-    - mkdir -p tools
-    - mv artifacts/tools/spike tools
+    - !reference [.copy_spike_artifacts]
     - rm -rf artifacts/
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
@@ -471,8 +482,7 @@ simu-gate:
     TARGET: $DV_TARGET
   script:
     - git -C verif/core-v-verif fetch --unshallow
-    - mkdir -p tools
-    - mv artifacts/tools/spike tools
+    - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}

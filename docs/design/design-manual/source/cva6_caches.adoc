@@ -1,0 +1,38 @@
+////
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+////
+
+[[CVA6_CACHES]]
+CACHES Module
+~~~~~~~~~~~~~
+
+[[caches-description]]
+Description
+^^^^^^^^^^^
+
+The CACHES module implements an instruction cache, a data cache and an
+AXI adapter.
+
+The module is connected to:
+
+* TO_BE_COMPLETED
+
+include::port_cva6_hpdcache_subsystem.adoc[]
+
+[[caches-functionality]]
+Functionality
+^^^^^^^^^^^^^
+
+TO BE COMPLETED
+
+[[caches-submodules]]
+Submodules
+^^^^^^^^^^
+
+image:caches.png[CACHES submodules]

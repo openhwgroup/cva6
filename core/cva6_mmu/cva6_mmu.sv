@@ -99,14 +99,14 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-    input logic                                                      pmp_data_allow_i,
-    input logic                                                      pmp_instr_allow_i,
-    input logic                                                      match_any_execute_region_i,
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0]                   pmpcfg_i,
-    input logic           [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    input exception_t                                                pmp_fetch_exception_i,
-    input exception_t                                                pmp_exception_i,
-    input exception_t                                                pmp_misaligned_ex_i
+    input logic                                                        pmp_data_allow_i,
+    input logic                                                        pmp_instr_allow_i,
+    input logic                                                        match_any_execute_region_i,
+    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0]                   pmpcfg_i,
+    input logic           [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input exception_t                                                  pmp_fetch_exception_i,
+    input exception_t                                                  pmp_exception_i,
+    input exception_t                                                  pmp_misaligned_ex_i
 );
 
   // memory management, pte for cva6

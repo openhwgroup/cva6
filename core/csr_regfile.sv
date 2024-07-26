@@ -163,9 +163,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic perf_we_o,
     // PMP configuration containing pmpcfg for max 64 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_o,
+    output riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
+    output logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -293,8 +293,8 @@ module csr_regfile
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
-  assign pmpcfg_o  = pmpcfg_q[CVA6Cfg.NrPMPEntries:0];
-  assign pmpaddr_o = pmpaddr_q[CVA6Cfg.NrPMPEntries:0];
+  assign pmpcfg_o  = pmpcfg_q[CVA6Cfg.NrPMPEntries-1:0];
+  assign pmpaddr_o = pmpaddr_q[CVA6Cfg.NrPMPEntries-1:0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
   // ----------------
@@ -2247,7 +2247,7 @@ module csr_regfile
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
         if (access_priv < csr_addr.csr_decode.priv_lvl) begin
-          if (v_q && csr_addr.csr_decode.priv_lvl == riscv::PRIV_LVL_HS)
+          if (v_q && csr_addr.csr_decode.priv_lvl <= riscv::PRIV_LVL_HS)
             virtual_privilege_violation = 1'b1;
           else privilege_violation = 1'b1;
         end
@@ -2302,7 +2302,7 @@ module csr_regfile
       // if we are reading or writing, check for the correct privilege level this has
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
-        if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+        if (CVA6Cfg.RVU && (riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
           privilege_violation = 1'b1;
         end
         // check access to debug mode only CSRs
