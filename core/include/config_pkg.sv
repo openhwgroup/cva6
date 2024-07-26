@@ -391,15 +391,11 @@ package config_pkg;
   function automatic logic is_inside_execute_regions(cva6_cfg_t Cfg, logic [63:0] address);
     // if we don't specify any region we assume everything is accessible
     logic [NrMaxRules-1:0] pass;
-    if (Cfg.NrExecuteRegionRules == 0) begin
-      pass = '0;
-      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
-        pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
-      end
-      return |pass;
-    end else begin
-      return 1;
+    pass = '0;
+    for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
+      pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
     end
+    return |pass;
   endfunction : is_inside_execute_regions
 
   function automatic logic is_inside_cacheable_regions(cva6_cfg_t Cfg, logic [63:0] address);
