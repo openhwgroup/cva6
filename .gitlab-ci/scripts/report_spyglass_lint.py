@@ -69,7 +69,7 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                comparison_results.append((*key, *value, "PASS", message))
+                comparison_results.append((*key, *value, "FAIL", message))
 
     severity_order = {"ERROR": 1, "WARNING": 2, "INFO": 3}
     comparison_results.sort(key=lambda x: severity_order[x[0]])
