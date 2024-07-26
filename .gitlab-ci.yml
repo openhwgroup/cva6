@@ -25,6 +25,10 @@ include:
   - project: '$CI_PROJECT_NAMESPACE/setup-ci'
     ref: '$SETUP_CI_CVV_BRANCH'
     file: 'cva6/core-v-verif-cva6.yml'
+  - local: '.gitlab-ci-custom.yml'
+    rules:
+      - exists:
+        - '.gitlab-ci-custom.yml'
 
 workflow:
   rules:
@@ -32,6 +36,9 @@ workflow:
       variables:
         CI_KIND: verif
     - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        CI_KIND: regress
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       variables:
         CI_KIND: regress
     - if: $CI_COMMIT_BRANCH =~ /.*_PR_.*/
