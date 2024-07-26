@@ -552,7 +552,7 @@ class AdocAddressBlock(AddressBlockClass):
             return "RO"
         else:
             return "RW"
-        
+
     def generate_label(self, name):
         return "_" + name.replace('[','').replace(']','').upper()
 
@@ -573,24 +573,24 @@ class AdocAddressBlock(AddressBlockClass):
         r += "  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n"
         r += "  Author: Abdessamii Oukalrazqou\n"
         r += "////\n\n"
-        
+
         r += "=== %s\n\n"%self.name
         r += "==== Conventions\n\n"
-        
+
         r += "In the subsequent sections, register fields are labeled with one of the following abbreviations:\n\n"
-        
+
         r += "* WPRI (Writes Preserve Values, Reads Ignore Values): read/write field reserved\n"
         r += "for future use.  For forward compatibility, implementations that do not\n"
         r += "furnish these fields must make them read-only zero.\n"
-        
+
         r += "* WLRL (Write/Read Only Legal Values): read/write CSR field that specifies\n"
         r += "behavior for only a subset of possible bit encodings, with other bit encodings\n"
         r += "reserved.\n"
-        
+
         r += "* WARL (Write Any Values, Reads Legal Values): read/write CSR fields which are\n"
         r += "only defined for a subset of bit encodings, but allow any value to be written\n"
         r += "while guaranteeing to return a legal value whenever read.\n"
-       
+
         r += "* ROCST (Read-Only Constant): A special case of WARL field which admits only one\n"
         r += "legal value, and therefore, behaves as a constant field that silently ignores\n"
         r += "writes.\n"
@@ -598,12 +598,12 @@ class AdocAddressBlock(AddressBlockClass):
         r += "* ROVAR (Read-Only Variable): A special case of WARL field which can take\n"
         r += "multiple legal values but cannot be modified by software and depends only on\n"
         r += "the architectural state of the hart.\n\n"
-        
+
         r += "In particular, a register that is not internally divided\n"
         r += "into multiple fields can be considered as containing a single field of XLEN bits.\n"
         r += "This allows to clearly represent read-write registers holding a single legal value\n"
         r += "(typically zero).\n\n"
-        
+
         r += "==== Register Summary\n\n"
 
         r += "|===\n"
@@ -629,7 +629,7 @@ class AdocAddressBlock(AddressBlockClass):
                     # RO/RW privileges are encoded in register address.
                     r += "Privilege:: %s\n"%(reg.access + self.get_access_privilege(reg))
                     r += "Description:: %s\n\n"%(reg.desc)
-                    
+
                 reg_table = []
                 for field in reg.field:
                     if field.bitWidth == 1:  # only one bit -> no range needed
@@ -658,10 +658,12 @@ class AdocAddressBlock(AddressBlockClass):
                 r += "| Bits | Field Name | Reset Value | Type | Legal Values | Description\n\n"
                 for reg in reg_table:
                     for col in reg:
-                        r +="| %s "%col.replace('\n','')
+                        if col == 'Reserved':
+                            col = "_Reserved_"
+                        r +="| %s "%col.replace('\n','').replace('|', '\|')
                     r += "\n"
                 r += "|===\n\n"
-                        
+
         return r
 
 class InstadocBlock(InstructionBlockClass):
@@ -678,7 +680,7 @@ class InstadocBlock(InstructionBlockClass):
         InstrNameList = [reg.key for reg in self.Instructionlist]
         InstrDescrList = [reg.descr for reg in self.Instructionlist]
         InstrExtList = [reg.Extension_Name for reg in self.Instructionlist]
-        
+
         r += "////\n"
         r += "  Copyright (c) 2024 OpenHW Group\n"
         r += "  Copyright (c) 2024 Thales\n"
@@ -688,7 +690,7 @@ class InstadocBlock(InstructionBlockClass):
 
         r += "=== %s\n\n"%self.name
         r += "==== Instructions\n\n"
-            
+
         r += "|===\n"
         r += "|Subset Name | Name | Description\n\n"
         for i, _ in enumerate(InstrNameList):
@@ -696,7 +698,7 @@ class InstadocBlock(InstructionBlockClass):
                     str(InstrNameList[i]),
                     str(InstrDescrList[i]).replace('\n',''))
         r += "|===\n\n"
-                    
+
         for reg in self.Instructionlist:
             reg_table = []
             if len(reg.Name) > 0:
@@ -1106,7 +1108,7 @@ class CsrParser:
                         legal = ""
                         fieldaccess = "WPRI"
                         bitWidth = int(item_[len(item_) - 1]) - int(item_[0]) + 1
-                        fieldDesc = "*Reserved*"
+                        fieldDesc = "Reserved"
                         bitlegal = legal
                         fieldreset = hex(
                             int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
