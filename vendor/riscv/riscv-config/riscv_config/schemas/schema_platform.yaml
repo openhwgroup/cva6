@@ -326,3 +326,69 @@ zicbo_cache_block_sz:
       check_with: cache_block_size
   default:
     implemented: False
+
+###
+#memory_map
+#--------
+#
+# - **Description**: Memory map - list of memory regions with their attributes
+# - **Constraints**:
+#
+#   - All addresses must be non-negative (0 or higher)
+#   - All sizes must be non-negative (0 or higher)
+#
+# - **Examples**:
+#
+#   .. code-block:: yaml
+#
+#     memory_map:
+#       - memory_region:
+#           name: bootrom
+#           base_addr: 0x10000
+#           size: 0x1000
+#           description: System boot ROM
+#           attributes:
+#             read_only: True
+#       - memory_region:
+#           name: dram
+#           base_addr: 0x80000000
+#           size: 0x40000000
+#           description: Main memory
+
+memory_map:
+  type: list
+  schema:
+    type: dict
+    schema:
+      memory_region:
+        type: dict
+        schema:
+          description:
+            type: string
+            default: A homogeneous memory region
+          name:
+            type: string
+            required: True
+          base_addr:
+            type: integer
+            min: 0
+            required: True
+          size:
+            type: integer
+            min: 0
+            required: True
+          attributes:
+            type: dict
+            schema:
+              executable:
+                type: boolean
+              cached:
+                type: boolean
+              non_idempotent:
+                type: boolean
+              read_only:
+                type: boolean
+            default: { executable: True, cached: True, non_idempotent: False, read_only: False }
+            required: True
+        required: True
+    required: True
