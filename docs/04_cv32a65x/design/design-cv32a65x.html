@@ -511,21 +511,23 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_MCAUSE">3.4.3.9. MCAUSE</a></li>
 <li><a href="#_MTVAL">3.4.3.10. MTVAL</a></li>
 <li><a href="#_MIP">3.4.3.11. MIP</a></li>
-<li><a href="#_PMPCFG0-3">3.4.3.12. PMPCFG[0-3]</a></li>
-<li><a href="#_PMPADDR0-15">3.4.3.13. PMPADDR[0-15]</a></li>
-<li><a href="#_ICACHE">3.4.3.14. ICACHE</a></li>
-<li><a href="#_DCACHE">3.4.3.15. DCACHE</a></li>
-<li><a href="#_MCYCLE">3.4.3.16. MCYCLE</a></li>
-<li><a href="#_MINSTRET">3.4.3.17. MINSTRET</a></li>
-<li><a href="#_MHPMCOUNTER3-31">3.4.3.18. MHPMCOUNTER[3-31]</a></li>
-<li><a href="#_MCYCLEH">3.4.3.19. MCYCLEH</a></li>
-<li><a href="#_MINSTRETH">3.4.3.20. MINSTRETH</a></li>
-<li><a href="#_MHPMCOUNTER3-31H">3.4.3.21. MHPMCOUNTER[3-31]H</a></li>
-<li><a href="#_MVENDORID">3.4.3.22. MVENDORID</a></li>
-<li><a href="#_MARCHID">3.4.3.23. MARCHID</a></li>
-<li><a href="#_MIMPID">3.4.3.24. MIMPID</a></li>
-<li><a href="#_MHARTID">3.4.3.25. MHARTID</a></li>
-<li><a href="#_MCONFIGPTR">3.4.3.26. MCONFIGPTR</a></li>
+<li><a href="#_PMPCFG0-1">3.4.3.12. PMPCFG[0-1]</a></li>
+<li><a href="#_PMPCFG2-15">3.4.3.13. PMPCFG[2-15]</a></li>
+<li><a href="#_PMPADDR0-7">3.4.3.14. PMPADDR[0-7]</a></li>
+<li><a href="#_PMPADDR8-63">3.4.3.15. PMPADDR[8-63]</a></li>
+<li><a href="#_ICACHE">3.4.3.16. ICACHE</a></li>
+<li><a href="#_DCACHE">3.4.3.17. DCACHE</a></li>
+<li><a href="#_MCYCLE">3.4.3.18. MCYCLE</a></li>
+<li><a href="#_MINSTRET">3.4.3.19. MINSTRET</a></li>
+<li><a href="#_MHPMCOUNTER3-31">3.4.3.20. MHPMCOUNTER[3-31]</a></li>
+<li><a href="#_MCYCLEH">3.4.3.21. MCYCLEH</a></li>
+<li><a href="#_MINSTRETH">3.4.3.22. MINSTRETH</a></li>
+<li><a href="#_MHPMCOUNTER3-31H">3.4.3.23. MHPMCOUNTER[3-31]H</a></li>
+<li><a href="#_MVENDORID">3.4.3.24. MVENDORID</a></li>
+<li><a href="#_MARCHID">3.4.3.25. MARCHID</a></li>
+<li><a href="#_MIMPID">3.4.3.26. MIMPID</a></li>
+<li><a href="#_MHARTID">3.4.3.27. MHARTID</a></li>
+<li><a href="#_MCONFIGPTR">3.4.3.28. MCONFIGPTR</a></li>
 </ul>
 </li>
 </ul>
@@ -3368,14 +3370,26 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">The mip register is an MXLEN-bit read/write register containing information on pending interrupts.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x3a0-0x3a3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPCFG0-3">PMPCFG[0-3]</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x3a0-0x3a1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPCFG0-1">PMPCFG[0-1]</a></code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MRW</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PMP configuration register</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x3b0-0x3bf</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPADDR0-15">PMPADDR[0-15]</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x3a2-0x3af</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPCFG2-15">PMPCFG[2-15]</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MRW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP configuration register</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x3b0-0x3b7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPADDR0-7">PMPADDR[0-7]</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MRW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Physical memory protection address register</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x3b8-0x3ef</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="#_PMPADDR8-63">PMPADDR[8-63]</a></code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MRW</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Physical memory protection address register</p></td>
 </tr>
@@ -3533,7 +3547,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MIE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WLRL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0 - 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Stores the state of the machine mode interrupts.</p></td>
 </tr>
 <tr>
@@ -3565,7 +3579,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MPIE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WLRL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0 - 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Stores the state of the machine mode interrupts prior to the trap.</p></td>
 </tr>
 <tr>
@@ -3855,7 +3869,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MTIE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WLRL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0 - 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Machine Timer Interrupt enable.</p></td>
 </tr>
 <tr>
@@ -3887,7 +3901,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MEIE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WLRL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0 - 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Machine External Interrupt enable.</p></td>
 </tr>
 <tr>
@@ -4126,7 +4140,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MHPMEVENT[I]</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The mhpmevent is a MXLEN-bit event register which controls mhpmcounter3.</p></td>
 </tr>
 </tbody>
@@ -4285,7 +4299,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">EXCEPTION_CODE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WLRL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0 - 15</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x8, 0xb</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Encodes the exception code.</p></td>
 </tr>
 <tr>
@@ -4346,7 +4360,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MTVAL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The mtval is a warl register that holds the address of the instruction which caused the exception.</p></td>
 </tr>
 </tbody>
@@ -4455,7 +4469,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MTIP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROVAR</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Machine Timer Interrupt Pending.</p></td>
 </tr>
 <tr>
@@ -4487,7 +4501,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MEIP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROVAR</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0 - 0x1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Machine External Interrupt Pending.</p></td>
 </tr>
 <tr>
@@ -4510,12 +4524,12 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_PMPCFG0-3">3.4.3.12. PMPCFG[0-3]</h5>
+<h5 id="_PMPCFG0-1">3.4.3.12. PMPCFG[0-1]</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
 <dd>
-<p>0x3a0-0x3a3</p>
+<p>0x3a0-0x3a1</p>
 </dd>
 <dt class="hdlist1">Reset Value</dt>
 <dd>
@@ -4553,46 +4567,123 @@ This allows to clearly represent read-write registers holding a single legal val
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">[7:0]</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 + 0]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +0]CFG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WARL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00 - 0xFF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">masked: &amp; 0x8f | 0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">[15:8]</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 + 1]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +1]CFG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WARL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00 - 0xFF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">masked: &amp; 0x8f | 0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">[23:16]</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 + 2]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +2]CFG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WARL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00 - 0xFF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">masked: &amp; 0x8f | 0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">[31:24]</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 + 3]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +3]CFG</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WARL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00 - 0xFF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">masked: &amp; 0x8f | 0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_PMPADDR0-15">3.4.3.13. PMPADDR[0-15]</h5>
+<h5 id="_PMPCFG2-15">3.4.3.13. PMPCFG[2-15]</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
 <dd>
-<p>0x3b0-0x3bf</p>
+<p>0x3a2-0x3af</p>
+</dd>
+<dt class="hdlist1">Reset Value</dt>
+<dd>
+<p>0x00000000</p>
+</dd>
+<dt class="hdlist1">Privilege</dt>
+<dd>
+<p>MRW</p>
+</dd>
+<dt class="hdlist1">Description</dt>
+<dd>
+<p>PMP configuration register</p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Bits</th>
+<th class="tableblock halign-left valign-top">Field Name</th>
+<th class="tableblock halign-left valign-top">Reset Value</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Legal Values</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[7:0]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +0]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[15:8]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +1]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[23:16]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +2]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[31:24]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMP[I*4 +3]CFG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pmp configuration bits</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_PMPADDR0-7">3.4.3.14. PMPADDR[0-7]</h5>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Address</dt>
+<dd>
+<p>0x3b0-0x3b7</p>
 </dd>
 <dt class="hdlist1">Reset Value</dt>
 <dd>
@@ -4640,7 +4731,60 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_ICACHE">3.4.3.14. ICACHE</h5>
+<h5 id="_PMPADDR8-63">3.4.3.15. PMPADDR[8-63]</h5>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Address</dt>
+<dd>
+<p>0x3b8-0x3ef</p>
+</dd>
+<dt class="hdlist1">Reset Value</dt>
+<dd>
+<p>0x00000000</p>
+</dd>
+<dt class="hdlist1">Privilege</dt>
+<dd>
+<p>MRW</p>
+</dd>
+<dt class="hdlist1">Description</dt>
+<dd>
+<p>Physical memory protection address register</p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Bits</th>
+<th class="tableblock halign-left valign-top">Field Name</th>
+<th class="tableblock halign-left valign-top">Reset Value</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Legal Values</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[31:0]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PMPADDR[I]</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Physical memory protection address register</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_ICACHE">3.4.3.16. ICACHE</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4701,7 +4845,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_DCACHE">3.4.3.15. DCACHE</h5>
+<h5 id="_DCACHE">3.4.3.17. DCACHE</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4762,7 +4906,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MCYCLE">3.4.3.16. MCYCLE</h5>
+<h5 id="_MCYCLE">3.4.3.18. MCYCLE</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4815,7 +4959,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MINSTRET">3.4.3.17. MINSTRET</h5>
+<h5 id="_MINSTRET">3.4.3.19. MINSTRET</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4868,7 +5012,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MHPMCOUNTER3-31">3.4.3.18. MHPMCOUNTER[3-31]</h5>
+<h5 id="_MHPMCOUNTER3-31">3.4.3.20. MHPMCOUNTER[3-31]</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4914,14 +5058,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MHPMCOUNTER[I]</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MCYCLEH">3.4.3.19. MCYCLEH</h5>
+<h5 id="_MCYCLEH">3.4.3.21. MCYCLEH</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -4974,7 +5118,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MINSTRETH">3.4.3.20. MINSTRETH</h5>
+<h5 id="_MINSTRETH">3.4.3.22. MINSTRETH</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5027,7 +5171,7 @@ This allows to clearly represent read-write registers holding a single legal val
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MHPMCOUNTER3-31H">3.4.3.21. MHPMCOUNTER[3-31]H</h5>
+<h5 id="_MHPMCOUNTER3-31H">3.4.3.23. MHPMCOUNTER[3-31]H</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5073,14 +5217,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MHPMCOUNTER[I]H</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The mhpmcounterh returns the upper half word in RV32I systems.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MVENDORID">3.4.3.22. MVENDORID</h5>
+<h5 id="_MVENDORID">3.4.3.24. MVENDORID</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5126,14 +5270,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MVENDORID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000602</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000602</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x602</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">32-bit read-only register providing the JEDEC manufacturer ID of the provider of the core.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MARCHID">3.4.3.23. MARCHID</h5>
+<h5 id="_MARCHID">3.4.3.25. MARCHID</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5179,14 +5323,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MARCHID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000003</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x3</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MXLEN-bit read-only register encoding the base microarchitecture of the hart.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MIMPID">3.4.3.24. MIMPID</h5>
+<h5 id="_MIMPID">3.4.3.26. MIMPID</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5232,14 +5376,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MIMPID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Provides a unique encoding of the version of the processor implementation.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MHARTID">3.4.3.25. MHARTID</h5>
+<h5 id="_MHARTID">3.4.3.27. MHARTID</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5285,14 +5429,14 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MHARTID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MXLEN-bit read-only register containing the integer ID of the hardware thread running the code.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_MCONFIGPTR">3.4.3.26. MCONFIGPTR</h5>
+<h5 id="_MCONFIGPTR">3.4.3.28. MCONFIGPTR</h5>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Address</dt>
@@ -5338,7 +5482,7 @@ This allows to clearly represent read-write registers holding a single legal val
 <td class="tableblock halign-left valign-top"><p class="tableblock">MCONFIGPTR</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ROCST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0x00000000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0x0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MXLEN-bit read-only register that holds the physical address of a configuration data structure.</p></td>
 </tr>
 </tbody>
@@ -12947,7 +13091,7 @@ by 4</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-07-26 10:49:21 +0200
+Last updated 2024-07-26 14:42:57 +0200
 </div>
 </div>
 </body>
