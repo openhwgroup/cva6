@@ -167,7 +167,7 @@ package build_config_pkg;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
 
-    cfg.X_NUM_RS = cfg.NrRgprPorts;
+    cfg.X_NUM_RS = cfg.NrRgprPorts / cfg.NrIssuePorts;
     cfg.X_ID_WIDTH = cfg.TRANS_ID_BITS;
     cfg.X_RFR_WIDTH = cfg.XLEN;
     cfg.X_RFW_WIDTH = cfg.XLEN;

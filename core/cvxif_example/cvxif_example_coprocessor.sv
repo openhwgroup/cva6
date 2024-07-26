@@ -71,6 +71,7 @@ module cvxif_example_coprocessor
   assign register_valid                = cvxif_req_i.register_valid;
 
   compressed_instr_decoder #(
+      .copro_compressed_resp_t(cvxif_instr_pkg::copro_compressed_resp_t),
       .NbInstr(cvxif_instr_pkg::NbCompInstr),
       .CoproInstr(cvxif_instr_pkg::CoproCompInstr),
       .x_compressed_req_t(x_compressed_req_t),
@@ -85,6 +86,8 @@ module cvxif_example_coprocessor
   );
 
   instr_decoder #(
+      .copro_issue_resp_t (cvxif_instr_pkg::copro_issue_resp_t),
+      .opcode_t (cvxif_instr_pkg::opcode_t),
       .NbInstr   (cvxif_instr_pkg::NbInstr),
       .CoproInstr(cvxif_instr_pkg::CoproInstr),
       .NrRgprPorts(NrRgprPorts),
