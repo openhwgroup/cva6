@@ -149,14 +149,29 @@ smoke:
     matrix:
       - DV_SIMULATORS:
         - "veri-testharness,spike"
-        - "vcs-testharness"
+        - "vcs-testharness,spike"
         - "questa-testharness,spike"
-        - "vcs-uvm"
+        - "vcs-uvm,spike"
   script:
     - source $QUESTA_BASHRC
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi
     - bash verif/regress/smoke-tests.sh
+    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
+
+smoke_tandem:
+  extends:
+    - smoke
+  stage: heavy tests
+  rules: &on_regress
+    - if: $CI_KIND == "regress"
+    - if: $CI_KIND == "verif"
+    - when: manual
+      allow_failure: true
+  parallel:
+    matrix:
+      - DV_SIMULATORS:
+        - "vcs-testharness"
+        - "vcs-uvm"
 
 gen_smoke:
   extends:

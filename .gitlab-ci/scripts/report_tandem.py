@@ -21,7 +21,9 @@ def main():
     check_provided_args()
     add_table_legend(metrics_table, with_logs)
     passed_tests_count, total_tests_count = fill_table(sys.argv[1], metrics_table, with_logs)
-    report(metrics_table, passed_tests_count, total_tests_count)
+
+    if not report(metrics_table, passed_tests_count, total_tests_count):
+        sys.exit(1)
 
 
 def check_provided_args():
@@ -85,6 +87,7 @@ def report(metrics_table, passed_test_count, total_test_count):
     report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
     report.add_metric(metrics_table)
     report.dump()
+    return not report.failed
 
 
 if __name__ == "__main__":

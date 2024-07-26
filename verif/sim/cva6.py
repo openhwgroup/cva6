@@ -530,7 +530,6 @@ def analyze_tandem_report(yaml_path):
     else:
         logging.info("TANDEM YAML not found")
 
-
 def generate_yaml_report(yaml_path, target, isa, test, testlist, iss):
   if(os.path.exists(yaml_path)):
     with open(yaml_path, 'r') as f:
@@ -545,7 +544,6 @@ def generate_yaml_report(yaml_path, target, isa, test, testlist, iss):
 
   with open(yaml_path, "w") as f:
     yaml.dump(report, f)
-
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
 def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
