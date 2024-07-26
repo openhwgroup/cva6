@@ -658,6 +658,8 @@ class AdocAddressBlock(AddressBlockClass):
                 r += "| Bits | Field Name | Reset Value | Type | Legal Values | Description\n\n"
                 for reg in reg_table:
                     for col in reg:
+                        if col == 'Reserved':
+                            col = "_Reserved_"
                         r +="| %s "%col.replace('\n','').replace('|', '\|')
                     r += "\n"
                 r += "|===\n\n"
@@ -1106,7 +1108,7 @@ class CsrParser:
                         legal = ""
                         fieldaccess = "WPRI"
                         bitWidth = int(item_[len(item_) - 1]) - int(item_[0]) + 1
-                        fieldDesc = "*Reserved*"
+                        fieldDesc = "Reserved"
                         bitlegal = legal
                         fieldreset = hex(
                             int(resetValue, 16) >> (bitlsb) & ((1 << ((bitWidth))) - 1)
