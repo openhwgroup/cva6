@@ -84,7 +84,6 @@ INFO       ElabSummary          1     Generates Elaborated design units
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Severity   Rule Name            Count Short Help                               
 ===============================================================================
-<<<<<<< HEAD
 ERROR      InferLatch           2     Latch inferred 
 ERROR      UndrivenInTerm-ML    3     Undriven but loaded input terminal of 
                                       an instance detected 
