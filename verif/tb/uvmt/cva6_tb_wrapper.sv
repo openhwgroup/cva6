@@ -114,28 +114,13 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .noc_resp_i           ( axi_ariane_resp           )
   );
 
-  if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
-    cvxif_example_coprocessor #(
-      .NrRgprPorts (CVA6Cfg.NrRgprPorts),
-      .readregflags_t (readregflags_t),
-      .writeregflags_t (writeregflags_t),
-      .id_t (id_t),
-      .hartid_t (hartid_t),
-      .x_compressed_req_t (x_compressed_req_t),
-      .x_compressed_resp_t (x_compressed_resp_t),
-      .x_issue_req_t (x_issue_req_t),
-      .x_issue_resp_t (x_issue_resp_t),
-      .x_register_t (x_register_t),
-      .x_commit_t (x_commit_t),
-      .x_result_t (x_result_t),
-      .cvxif_req_t (cvxif_req_t),
-      .cvxif_resp_t (cvxif_resp_t)
-    ) i_cvxif_coprocessor (
-      .clk_i                ( clk_i                          ),
-      .rst_ni               ( rst_ni                         ),
-      .cvxif_req_i          ( cvxif_req                      ),
-      .cvxif_resp_o         ( cvxif_resp                     )
-    );
+  if (CVA6Cfg.CvxifEn) begin : gen_cvxif_default_response
+    always_comb begin
+      cvxif_resp = '0;
+      cvxif_resp.compressed_ready = 1'b1;
+      cvxif_resp.issue_ready = 1'b1;
+      cvxif_resp.register_ready = 1'b1;
+    end
   end
 
   //----------------------------------------------------------------------------

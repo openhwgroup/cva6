@@ -111,6 +111,7 @@ module ariane import ariane_pkg::*; #(
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
     cvxif_example_coprocessor #(
       .NrRgprPorts (CVA6Cfg.NrRgprPorts),
+      .XLEN (CVA6Cfg.XLEN),
       .readregflags_t (readregflags_t),
       .writeregflags_t (writeregflags_t),
       .id_t (id_t),
