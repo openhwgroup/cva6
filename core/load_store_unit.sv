@@ -607,7 +607,7 @@ module load_store_unit
       endcase
     end
 
-    else if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
+    if (CVA6Cfg.MmuPresent && en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
       case (lsu_ctrl.fu)
         LOAD: begin
@@ -636,7 +636,7 @@ module load_store_unit
       endcase
     end
 
-    else if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
+    if (CVA6Cfg.MmuPresent && CVA6Cfg.RVH && en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
 
       case (lsu_ctrl.fu)
         LOAD: begin
