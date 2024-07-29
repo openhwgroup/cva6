@@ -530,7 +530,7 @@ def analyze_tandem_report(yaml_path):
     else:
         logging.info("TANDEM YAML not found")
 
-def generate_yaml_report(yaml_path, target, isa, test, testlist, iss):
+def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration = None):
   if(os.path.exists(yaml_path)):
     with open(yaml_path, 'r') as f:
       report = yaml.safe_load(f)
@@ -541,6 +541,8 @@ def generate_yaml_report(yaml_path, target, isa, test, testlist, iss):
   report["test"] = test
   report["testlist"] = testlist
   report["simulator"] = iss
+  if iteration != None:
+    report["iteration"] = iteration
 
   with open(yaml_path, "w") as f:
     yaml.dump(report, f)
@@ -739,7 +741,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           logging.debug(cmd)
           if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
             analyze_tandem_report(yaml)
-            generate_yaml_report(yaml, target, isa, test['test'], "generated tests", iss)
+            generate_yaml_report(yaml, target, isa, test['test'], "generated tests", iss, i)
 
 
 
