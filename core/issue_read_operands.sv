@@ -449,9 +449,9 @@ module issue_read_operands
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
-      if (((CVA6Cfg.FpPresent && is_imm_fpr(
+      if ((CVA6Cfg.FpPresent && is_imm_fpr(
               issue_instr_i[i].op
-          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0)) begin
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
         if (rs3_valid_i[i]) begin
           forward_rs3[i] = 1'b1;
