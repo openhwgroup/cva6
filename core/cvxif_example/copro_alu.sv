@@ -17,19 +17,19 @@ module copro_alu
     parameter type registers_t = logic
 
 ) (
-    input  logic              clk_i,
-    input  logic              rst_ni,
-    input  registers_t        registers_i,
-    input  opcode_t           opcode_i,
-    input  hartid_t           hartid_i,
-    input  id_t               id_i,
-    input  logic       [ 4:0] rd_i,
+    input  logic                  clk_i,
+    input  logic                  rst_ni,
+    input  registers_t            registers_i,
+    input  opcode_t               opcode_i,
+    input  hartid_t               hartid_i,
+    input  id_t                   id_i,
+    input  logic       [     4:0] rd_i,
     output logic       [XLEN-1:0] result_o,
-    output hartid_t           hartid_o,
-    output id_t               id_o,
-    output logic       [ 4:0] rd_o,
-    output logic              valid_o,
-    output logic              we_o
+    output hartid_t               hartid_o,
+    output id_t                   id_o,
+    output logic       [     4:0] rd_o,
+    output logic                  valid_o,
+    output logic                  we_o
 );
 
   logic [XLEN-1:0] result_n, result_q;

@@ -54,7 +54,7 @@ module cvxif_example_coprocessor
   id_t issue_id, id;
   logic [4:0] issue_rd, rd;
   logic [XLEN-1:0] result;
-  logic        we;
+  logic            we;
 
   // Issue and Register interface
   // Mandatory when X_ISSUE_REGISTER_SPLIT = 0

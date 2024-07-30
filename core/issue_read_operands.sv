@@ -394,10 +394,10 @@ module issue_read_operands
   // check that all operands are available, otherwise stall
   // forward corresponding register
   always_comb begin : operands_available
-    stall_raw = '{default: stall_i};
-    stall_rs1 = '{default: stall_i};
-    stall_rs2 = '{default: stall_i};
-    stall_rs3 = '{default: stall_i};
+    stall_raw   = '{default: stall_i};
+    stall_rs1   = '{default: stall_i};
+    stall_rs2   = '{default: stall_i};
+    stall_rs3   = '{default: stall_i};
     // operand forwarding signals
     forward_rs1 = '0;
     forward_rs2 = '0;
@@ -466,15 +466,15 @@ module issue_read_operands
       if (x_issue_valid_o && x_issue_resp_i.accept) begin
         if (~x_issue_resp_i.register_read[0]) begin
           forward_rs1[0] = 1'b0;
-          stall_rs1[0] = 1'b0;
+          stall_rs1[0]   = 1'b0;
         end
         if (~x_issue_resp_i.register_read[1]) begin
           forward_rs2[0] = 1'b0;
-          stall_rs2[0] = 1'b0;
+          stall_rs2[0]   = 1'b0;
         end
         if (OPERANDS_PER_INSTR == 3 && ~x_issue_resp_i.register_read[2]) begin
           forward_rs3[0] = 1'b0;
-          stall_rs3[0] = 1'b0;
+          stall_rs3[0]   = 1'b0;
         end
       end
       stall_raw[0] = stall_rs1[0] || stall_rs2[0] || stall_rs3[0];
