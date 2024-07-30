@@ -131,6 +131,13 @@ module ariane import ariane_pkg::*; #(
       .cvxif_req_i          ( cvxif_req                      ),
       .cvxif_resp_o         ( cvxif_resp                     )
     );
+  end else begin
+    always_comb begin
+      cvxif_resp = '0;
+      cvxif_resp.compressed_ready = 1'b1;
+      cvxif_resp.issue_ready = 1'b1;
+      cvxif_resp.register_ready = 1'b1;
+    end
   end
 
 
