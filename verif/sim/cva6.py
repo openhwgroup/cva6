@@ -519,9 +519,10 @@ def analize_result_yaml(yaml_path):
         mismatches = data["mismatches"]
         mismatches_count =  (data["mismatches_count"])
         instr_count = (data["instr_count"])
+        exit_code = (data["exit_code"])
         matches_count =  instr_count - mismatches_count
-        logging.info("TANDEM Result : %s with %s mismatches and %s matches"
-            % (data["exit_cause"], mismatches_count, matches_count))
+        logging.info("TANDEM Result : %s (exit code %s) with %s mismatches and %s matches"
+            % (data["exit_cause"], exit_code, mismatches_count, matches_count))
     else:
         logging.info("TANDEM YAML not found")
 
