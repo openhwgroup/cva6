@@ -94,6 +94,8 @@ def report_spyglass_lint(comparison_results):
 
     report = rb.Report()
     report.add_metric(metric)
+    for value in metric.values:
+        print(" | ".join(map(str, value)))
     report.dump()
 
 
