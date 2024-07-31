@@ -160,6 +160,7 @@ vendor/openhwgroup/cvfpu/src/fpnew_rounding.sv
 vendor/openhwgroup/cvfpu/src/fpnew_top.sv
 core/pmp/src/pmp.sv
 core/pmp/src/pmp_entry.sv
+core/pmp/src/pmp_data_if.sv
 common/local/util/instr_tracer.sv
 core/cvxif_example/cvxif_example_coprocessor.sv
 core/cvxif_example/instr_decoder.sv
