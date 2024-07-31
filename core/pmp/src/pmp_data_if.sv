@@ -150,7 +150,7 @@ module pmp_data_if
       if (CVA6Cfg.TvalEn) begin
         if (en_ld_st_translation_i || en_ld_st_g_translation_i) begin
           lsu_exception_o.tval = {
-            {CVA6Cfg.XLEN - CVA6Cfg.PLEN{lsu_vaddr_q[CVA6Cfg.PLEN-1]}}, lsu_vaddr_q
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
           };
         end else begin
           lsu_exception_o.tval = CVA6Cfg.XLEN'(lsu_paddr_o[CVA6Cfg.PLEN-1:(CVA6Cfg.PLEN>CVA6Cfg.VLEN)?(CVA6Cfg.PLEN-CVA6Cfg.VLEN) : 0]);
