@@ -112,7 +112,8 @@ module decoder
     SBIMM,
     UIMM,
     JIMM,
-    RS3
+    RS3,
+    MUX_RD_RS3
   } imm_select;
 
   logic [CVA6Cfg.XLEN-1:0] imm_i_type;
@@ -1422,13 +1423,16 @@ module decoder
       endcase
     end
     if (CVA6Cfg.CvxifEn) begin
-      if (is_illegal_i || illegal_instr) begin
-        instruction_o.fu       = CVXIF;
+      if (~ex_i.valid && (is_illegal_i || illegal_instr)) begin
+        instruction_o.fu = CVXIF;
         instruction_o.rs1[4:0] = instr.r4type.rs1;
         instruction_o.rs2[4:0] = instr.r4type.rs2;
-        instruction_o.rd[4:0]  = instr.r4type.rd;
-        instruction_o.op       = ariane_pkg::OFFLOAD;
-        imm_select             = RS3;
+        instruction_o.rd[4:0] = instr.r4type.rd;
+        instruction_o.op = ariane_pkg::OFFLOAD;
+        imm_select             = instr.rtype.opcode == riscv::OpcodeMadd ||
+                                 instr.rtype.opcode == riscv::OpcodeMsub ||
+                                 instr.rtype.opcode == riscv::OpcodeNmadd ||
+                                 instr.rtype.opcode == riscv::OpcodeNmsub ? RS3 : MUX_RD_RS3;
       end
     end
 
@@ -1502,6 +1506,11 @@ module decoder
       RS3: begin
         // result holds address of fp operand rs3
         instruction_o.result  = {{CVA6Cfg.XLEN - 5{1'b0}}, instr.r4type.rs3};
+        instruction_o.use_imm = 1'b0;
+      end
+      MUX_RD_RS3: begin
+        // result holds address of operand rs3 which is in rd field
+        instruction_o.result  = {{CVA6Cfg.XLEN - 5{1'b0}}, instr.rtype.rd};
         instruction_o.use_imm = 1'b0;
       end
       default: begin

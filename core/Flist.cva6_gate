@@ -27,12 +27,11 @@ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
 
 //CVXIF
-${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/include/cvxif_instr_pkg.sv
-${CVA6_REPO_DIR}/core/cvxif_fu.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
-${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
+${CVA6_REPO_DIR}/core/cvxif_example/compressed_instr_decoder.sv
+${CVA6_REPO_DIR}/core/cvxif_example/copro_alu.sv
 
 
 // Common Cells

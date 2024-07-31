@@ -21,7 +21,9 @@ module id_stage #(
     parameter type irq_ctrl_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type interrupts_t = logic,
-    parameter interrupts_t INTERRUPTS = '0
+    parameter interrupts_t INTERRUPTS = '0,
+    parameter type x_compressed_req_t = logic,
+    parameter type x_compressed_resp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -76,7 +78,13 @@ module id_stage #(
     // Trap sret - CSR_REGFILE
     input logic tsr_i,
     // Hypervisor user mode - CSR_REGFILE
-    input logic hu_i
+    input logic hu_i,
+    // CVXIF Compressed interface
+    input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
+    input logic compressed_ready_i,
+    input x_compressed_resp_t compressed_resp_i,
+    output logic compressed_valid_o,
+    output x_compressed_req_t compressed_req_o
 );
   // ID/ISSUE register stage
   typedef struct packed {
@@ -93,12 +101,17 @@ module id_stage #(
 
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_illegal;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_illegal_cmp;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_illegal_cvxif;
   logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction;
   logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] compressed_instr;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction_cvxif;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_cmp;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_cvxif;
+
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_macro_instr_i;
   logic                                               stall_instr_fetch;
+  logic                                               stall_macro_deco;
   logic                                               is_last_macro_instr_o;
   logic                                               is_double_rd_macro_instr_o;
 
@@ -126,25 +139,64 @@ module id_stage #(
           .is_macro_instr_i          (is_macro_instr_i[0]),
           .clk_i                     (clk_i),
           .rst_ni                    (rst_ni),
-          .instr_o                   (instruction[0]),
+          .instr_o                   (instruction_cvxif[0]),
           .illegal_instr_i           (is_illegal[0]),
           .is_compressed_i           (is_compressed[0]),
           .issue_ack_i               (issue_instr_ack_i[0]),
-          .illegal_instr_o           (is_illegal_cmp[0]),
-          .is_compressed_o           (is_compressed_cmp[0]),
-          .fetch_stall_o             (stall_instr_fetch),
+          .illegal_instr_o           (is_illegal_cvxif[0]),
+          .is_compressed_o           (is_compressed_cvxif[0]),
+          .fetch_stall_o             (stall_macro_deco),
           .is_last_macro_instr_o     (is_last_macro_instr_o),
           .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
       );
       if (CVA6Cfg.SuperscalarEn) begin
-        assign instruction[CVA6Cfg.NrIssuePorts-1] = '0;
-        assign is_illegal_cmp[CVA6Cfg.NrIssuePorts-1] = '0;
-        assign is_compressed_cmp[CVA6Cfg.NrIssuePorts-1] = '0;
+        assign instruction_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
+        assign is_illegal_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
+        assign is_compressed_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
       end
+      cvxif_compressed_if_driver #(
+          .CVA6Cfg(CVA6Cfg),
+          .x_compressed_req_t(x_compressed_req_t),
+          .x_compressed_resp_t(x_compressed_resp_t)
+      ) i_cvxif_compressed_if_driver_i (
+          .clk_i             (clk_i),
+          .rst_ni            (rst_ni),
+          .hart_id_i         (hart_id_i),
+          .is_compressed_i   (is_compressed_cvxif),
+          .is_illegal_i      (is_illegal_cvxif),
+          .instruction_i     (instruction_cvxif),
+          .is_compressed_o   (is_compressed_cmp),
+          .is_illegal_o      (is_illegal_cmp),
+          .instruction_o     (instruction),
+          .stall_i           (stall_macro_deco),
+          .stall_o           (stall_instr_fetch),
+          .compressed_ready_i(compressed_ready_i),
+          .compressed_resp_i (compressed_resp_i),
+          .compressed_valid_o(compressed_valid_o),
+          .compressed_req_o  (compressed_req_o)
+      );
     end else begin
-      assign instruction = compressed_instr;
-      assign is_illegal_cmp = is_illegal;
-      assign is_compressed_cmp = is_compressed;
+      cvxif_compressed_if_driver #(
+          .CVA6Cfg(CVA6Cfg),
+          .x_compressed_req_t(x_compressed_req_t),
+          .x_compressed_resp_t(x_compressed_resp_t)
+      ) i_cvxif_compressed_if_driver_i (
+          .clk_i             (clk_i),
+          .rst_ni            (rst_ni),
+          .hart_id_i         (hart_id_i),
+          .is_compressed_i   (is_compressed),
+          .is_illegal_i      (is_illegal),
+          .instruction_i     (compressed_instr),
+          .is_compressed_o   (is_compressed_cmp),
+          .is_illegal_o      (is_illegal_cmp),
+          .instruction_o     (instruction),
+          .stall_i           (1'b0),
+          .stall_o           (stall_instr_fetch),
+          .compressed_ready_i(compressed_ready_i),
+          .compressed_resp_i (compressed_resp_i),
+          .compressed_valid_o(compressed_valid_o),
+          .compressed_req_o  (compressed_req_o)
+      );
       assign is_last_macro_instr_o = '0;
       assign is_double_rd_macro_instr_o = '0;
     end
@@ -157,6 +209,11 @@ module id_stage #(
     assign is_macro_instr_i = '0;
     assign is_last_macro_instr_o = '0;
     assign is_double_rd_macro_instr_o = '0;
+    if (CVA6Cfg.CvxifEn) begin
+      assign compressed_valid_o = '0;
+      assign compressed_req_o.instr = '0;
+      assign compressed_req_o.hartid = hart_id_i;
+    end  // TODO Add else to map x_compressed_if outputs to '0 ?
   end
 
   assign rvfi_is_compressed_o = is_compressed_cmp;

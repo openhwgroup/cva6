@@ -89,7 +89,7 @@ module store_unit
   // align data to address e.g.: shift data to be naturally 64
   function automatic [CVA6Cfg.XLEN-1:0] data_align(logic [2:0] addr, logic [63:0] data);
     // Set addr[2] to 1'b0 when 32bits
-    logic [ 2:0] addr_tmp = {(addr[2] && CVA6Cfg.IS_XLEN64), addr[1:0]};
+    logic [2:0] addr_tmp = {(addr[2] && CVA6Cfg.IS_XLEN64), addr[1:0]};
     logic [63:0] data_tmp = {64{1'b0}};
     case (addr_tmp)
       3'b000: data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-1:0]};
@@ -99,10 +99,16 @@ module store_unit
       data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-17:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-16]};
       3'b011:
       data_tmp[CVA6Cfg.XLEN-1:0] = {data[CVA6Cfg.XLEN-25:0], data[CVA6Cfg.XLEN-1:CVA6Cfg.XLEN-24]};
-      3'b100: data_tmp = {data[31:0], data[63:32]};
-      3'b101: data_tmp = {data[23:0], data[63:24]};
-      3'b110: data_tmp = {data[15:0], data[63:16]};
-      3'b111: data_tmp = {data[7:0], data[63:8]};
+      default:
+      if (CVA6Cfg.IS_XLEN64) begin
+        case (addr_tmp)
+          3'b100:  data_tmp = {data[31:0], data[63:32]};
+          3'b101:  data_tmp = {data[23:0], data[63:24]};
+          3'b110:  data_tmp = {data[15:0], data[63:16]};
+          3'b111:  data_tmp = {data[7:0], data[63:8]};
+          default: data_tmp = {data[63:0]};
+        endcase
+      end
     endcase
     return data_tmp[CVA6Cfg.XLEN-1:0];
   endfunction
@@ -273,8 +279,8 @@ module store_unit
   logic store_buffer_ready, amo_buffer_ready;
 
   // multiplex between store unit and amo buffer
-  assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);
-  assign amo_buffer_valid = st_valid & (amo_op_q != AMO_NONE);
+  assign store_buffer_valid = st_valid & (!CVA6Cfg.RVA || (amo_op_q == AMO_NONE));
+  assign amo_buffer_valid = st_valid & (CVA6Cfg.RVA && (amo_op_q != AMO_NONE));
 
   assign st_ready = store_buffer_ready & amo_buffer_ready;
 

@@ -24,6 +24,7 @@ def address_to_key(address):
 
 def factorizer(yaml_data):
     privname = None
+    legalname= None
     fieldname = []
     regname = []
     regdescr = []
@@ -37,9 +38,9 @@ def factorizer(yaml_data):
     suffix_address = []
     suffix_number = []
     key_to_remove = []
-    for key, value in yaml_data["hart0"].items():
+    for key, value in yaml_data.items():
         if isinstance(value, dict):
-            regelement = yaml_data["hart0"].get(key, {})
+            regelement = yaml_data.get(key, {})
             if regelement.get("address", None):
                 regaddress = hex(regelement.get("address", None))
             else:
@@ -49,11 +50,16 @@ def factorizer(yaml_data):
             else:
                 desc = ""
             if regelement.get("rv32", "")["accessible"]:
+                fields = regelement.get("rv32", "").get("fields", [])
+                if not fields :
+                  legal = regelement.get("rv32", "").get("type", None).keys() if regelement.get("rv32", "").get("type", None) is not None else None
+                else :
+                  legal = [regelement.get("rv32", "").get(item, {}).get("type").keys()for item in fields if not isinstance(item, list) and regelement.get("rv32", "").get(item, {}).get("type") is not None]
                 pattern = r"(\D+)(\d+)(.*)"
                 match = re.search(pattern, key)
                 if match:
                     key_to_remove.append(key)
-                    if privname and match.group(1) == privname.group(1):
+                    if privname and match.group(1) == privname.group(1) and legalname == legal:
                         if len(match.group(3)) > 0:
                             suffix_name.append(match.group(0))
                             field_suffix.append(match.group(1))
@@ -75,7 +81,7 @@ def factorizer(yaml_data):
                             start_address = hex(int(regadress[0], 16))
                             desc = str(regdescr[0])
                             desc = re.sub(str(regname[0]), fieldname[0], desc)
-                            modified_data = yaml_data["hart0"][regname[0]].copy()
+                            modified_data = yaml_data[regname[0]].copy()
                             modified_data["address"] = (
                                 f"{str(start_address)}-{str(regadress[-1])}"
                             )
@@ -98,13 +104,14 @@ def factorizer(yaml_data):
                             suffix_address = sorted(suffix_address, key=address_to_key)
                             desc = str(suffix_descr[0])
                             desc = re.sub(str(suffix_name[0]), field_suffix[0], desc)
-                            modified_data = yaml_data["hart0"][suffix_name[0]].copy()
+                            modified_data = yaml_data[suffix_name[0]].copy()
                             modified_data["address"] = (
                                 f"{str(suffix_address[0])}-{str(suffix_address[-1])}"
                             )
                             new_regname.append(
                                 f"{field_suffix[0]}[{suffix_number[0]}-{suffix_number[-1]}]h"
                             )
+                            print(new_regname)
                             data.append(modified_data)
                         suffix_name = []
                         field_suffix = []
@@ -112,12 +119,13 @@ def factorizer(yaml_data):
                         suffix_number = [match.group(2)]
                         suffix_address = []
                     privname = match
+                    legalname = legal
     if regname:
         start_address = hex(int(regadress[0], 16))
         end_address = str(regadress[-1])
         desc = str(regdescr[0])
         desc = re.sub(str(regname[0]), fieldname[0], desc)
-        modified_data = yaml_data["hart0"][regname[0]].copy()
+        modified_data = yaml_data[regname[0]].copy()
         modified_data["description"] = desc
         modified_data["address"] = f"{str(start_address)}-{str(end_address)}"
         new_regname.append(f"{fieldname[0]}[{reg_number[0]}-{reg_number[-1]}]")
@@ -129,7 +137,7 @@ def factorizer(yaml_data):
     if suffix_name:
         desc = str(suffix_descr[0])
         desc = re.sub(str(suffix_name[0]), field_suffix[0], desc)
-        modified_data = yaml_data["hart0"][suffix_name[0]].copy()
+        modified_data = yaml_data[suffix_name[0]].copy()
         modified_data["description"] = desc
         modified_data["address"] = (
             f"{str(hex(int(suffix_address[0],16)))}-{str(suffix_address[-1])}"
@@ -143,7 +151,7 @@ def factorizer(yaml_data):
         regdescr = []
         regadress = []
     for index, reg in enumerate(new_regname):
-        yaml_data["hart0"][reg] = data[index]
+        yaml_data[reg] = data[index]
     for key in key_to_remove:
-        del yaml_data["hart0"][key]
-    return yaml_data["hart0"]
+        del yaml_data[key]
+    return yaml_data

@@ -3621,31 +3621,13 @@ endif::[]
 
 
 ifdef::archi-CVA6[]
-[{ohg-config}] PMAs are inherent properties of the underlying hardware. The PMAs of
-some memory regions are fixed at chip design time.
-
-[{ohg-config}] Some PMAs are dynamically
-checked in hardware later in the execution pipeline after the physical
-address is known, as some operations will not be supported at all
-physical memory addresses, and some operations require knowing the
-setting of a PMA attribute.
-
-[{ohg-config}] For RISC-V, we separate out specification and checking of PMAs into a
-separate hardware structure, the _PMA checker_. In {ohg-config}, the
-attributes are known at system design time for each physical address
-region, and are hardwired into the PMA checker.
-PMAs are checked for any access to physical memory, including accesses
-that have undergone virtual to physical memory translation. To aid in
-system debugging, we strongly recommend that, where possible, RISC-V
-processors precisely trap physical memory accesses that fail PMA checks.
-Precisely trapped PMA violations manifest as instruction, load, or store
-access-fault exceptions, distinct from virtual-memory page-fault
-exceptions. Precise PMA traps might not always be possible, for example,
-when probing a legacy bus architecture that uses access failures as part
-of the discovery mechanism. In this case, error responses from
-peripheral devices will be reported as imprecise bus-error interrupts.
-
-[{ohg-config}] PMAs are not readable by software.
+[{ohg-config}] PMA is not implemented by {ohg-config} but information
+is sent outside the processor to be able to check PMA outside processor.
+These checkers are based on the following information contained in the
+memory accesses requested by the processor.
+- The information which indicates whether memory access is read, write or
+execution,
+- The access length information to check the subword and subblock access rights.
 endif::[]
 
 ==== Main Memory versus I/O Regions
@@ -4003,15 +3985,13 @@ modes’ uncacheable accesses.
 endif::[]
 
 ifndef::archi-default,DCacheEn-true[]
-[{ohg-config}] Write accesses are not cached. No cache-coherence scheme
+[{ohg-config}] Caches are not implemented. No cache-coherence scheme
 is implemented.
-
-If a PMA indicates non-cacheability, then accesses to that region must
-be satisfied by the memory itself, not by any caches.
 endif::[]
 
 ==== Idempotency PMAs
 
+ifdef::archi-default[]
 Idempotency PMAs describe whether reads and writes to an address region
 are idempotent. Main memory regions are assumed to be idempotent. For
 I/O regions, idempotency on reads and writes can be specified separately
@@ -4022,6 +4002,7 @@ write access, then speculative or redundant accesses must be avoided.
 For the purposes of defining the idempotency PMAs, changes in observed
 memory ordering created by redundant accesses are not considered a side
 effect.
+endif::[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -4039,6 +4020,7 @@ could cause unexpected side effects.
 ====
 endif::[]
 
+ifdef::archi-default[]
 For non-idempotent regions, implicit reads and writes must not be
 performed early or speculatively, with the following exceptions. When a
 non-speculative implicit read is performed, an implementation is
@@ -4053,6 +4035,11 @@ may be used to satisfy subsequent early or speculative implicit reads.
 The size of these naturally aligned power-of-2 regions is
 implementation-defined, but, for systems with page-based virtual memory,
 must not exceed the smallest supported page size.
+endif::[]
+
+ifdef::archi-CVA6[]
+[{ohg-config}] All memory accesses are idempotent.
+endif::[]
 
 [[pmp]]
 === Physical Memory Protection

@@ -1,0 +1,150 @@
+[[CVA6_EX_STAGE]]
+
+EX_STAGE Module
+~~~~~~~~~~~~~~~
+
+[[ex_stage-description]]
+Description
+^^^^^^^^^^^
+
+The EX_STAGE module is a logical stage which implements the execute stage.
+It encapsulates the following functional units: ALU, Branch Unit, CSR buffer, Mult, load and store and CVXIF.
+
+The module is connected to:
+
+* ID_STAGE module provides scoreboard entry.
+* 
+
+[[ex_stage-functionality]]
+Functionality
+^^^^^^^^^^^^^
+
+TO BE COMPLETED
+
+[[ex_stage-submodules]]
+Submodules
+^^^^^^^^^^
+
+image:ex_stage_modules.png[EX_STAGE submodules]
+
+[[alu]]
+alu
++++
+
+The arithmetic logic unit (ALU) is a small piece of hardware which performs 32 and 64-bit arithmetic and bitwise operations: subtraction, addition, shifts, comparisons...
+It always completes its operation in a single cycle.
+
+include::port_alu.adoc[]
+
+[[branch_unit]]
+branch_unit
++++++++++++
+
+The branch unit module manages all kinds of control flow changes i.e.: conditional and unconditional jumps.
+It calculates the target address and decides whether to take the branch or not.
+It also decides if a branch was mis-predicted or not and reports corrective actions to the pipeline stages.
+
+include::port_branch_unit.adoc[]
+
+[[csr_buffer]]
+CSR_buffer
+++++++++++
+
+The CSR buffer module stores the CSR address at which the instruction is going to read/write.
+As the CSR instruction alters the processor architectural state, this instruction has to be buffered until the commit stage decides to execute the instruction.
+
+include::port_csr_buffer.adoc[]
+
+[[mult]]
+mult
+++++
+
+The multiplier module supports the division and multiplication operations.
+
+image:mult_modules.png[mult submodules]
+
+include::port_mult.adoc[]
+
+[[multiplier]]
+====== multiplier
+
+Multiplication is performed in two cycles and is fully pipelined.
+
+include::port_multiplier.adoc[]
+
+[[serdiv]]
+====== serdiv
+
+The division is a simple serial divider which needs 64 cycles in the worst case.
+
+include::port_serdiv.adoc[]
+
+[[load_store_unit-lsu]]
+load_store_unit (LSU)
++++++++++++++++++++++
+
+The load store module interfaces with the data cache (D$) to manage the load and store operations.
+
+The LSU does not handle misaligned accesses.
+Misaligned accesses are double word accesses which are not aligned to a 64-bit boundary, word accesses which are not aligned to a 32-bit boundary and half word accesses which are not aligned on 16-bit boundary.
+If the LSU encounters a misaligned load or store, it throws a misaligned exception.
+
+image:load_store_unit_modules.png[load_store_unit submodules]
+
+include::port_load_store_unit.adoc[]
+
+[[store_unit]]
+====== store_unit
+
+The store_unit module manages the data store operations.
+
+As stores can be speculative, the store instructions need to be committed by ISSUE_STAGE module before possibily altering the processor state.
+Store buffer keeps track of store requests.
+Outstanding store instructions (which are speculative) are differentiated from committed stores.
+When ISSUE_STAGE module commits a store instruction, outstanding stores
+become committed.
+
+When commit buffer is not empty, the buffer automatically tries to write the oldest store to the data cache.
+
+Furthermore, the store_unit module provides information to the load_unit to know if an outstanding store matches addresses with a load.
+
+include::port_store_unit.adoc[]
+
+[[load_unit]]
+====== load_unit
+
+The load unit module manages the data load operations.
+
+Before issuing a load, the load unit needs to check the store buffer for potential aliasing.
+It stalls until it can satisfy the current request. This means:
+
+* Two loads to the same address are allowed.
+* Two stores to the same address are allowed.
+* A store after a load to the same address is allowed.
+* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.
+
+After the check of the store buffer, a read request is sent to the D$ with the index field of the address (1).
+The load unit stalls until the D$ acknowledges this request (2).
+In the next cycle, the tag field of the address is sent to the D$ (3).
+If the load request address is non-idempotent, it stalls until the write buffer of the D$ is empty of non-idempotent requests and the store buffer is empty.
+It also stalls until the incoming load instruction is the next instruction to be committed.
+When the D$ allows the read of the data, the data is sent to the load unit and the load instruction can be committed (4).
+
+image:schema_fsm_load_control.png[Load unit's interactions]
+
+include::port_load_unit.adoc[]
+
+[[lsu_bypass]]
+====== lsu_bypass
+
+The LSU bypass is a FIFO which keeps instructions from the issue stage when the store unit or the load unit are not available immediately.
+
+include::port_lsu_bypass.adoc[]
+
+[[cvxif_fu]]
+CVXIF_fu
+++++++++
+
+TO BE COMPLETED
+
+include::port_cvxif_fu.adoc[]

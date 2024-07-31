@@ -79,3 +79,29 @@ def writeout_parameter_table(fileout, parameters, module):
             fout.write(f"   * - {name}\n")
             fout.write(f"     - {parameters[name].description}\n")
             fout.write(f"     - {parameters[name].value}\n")
+
+def writeout_parameter_table_adoc(fileout, parameters, module):
+
+    with open(fileout, "w") as fout:
+        fout.write("////\n")
+        fout.write("   Copyright 2024 Thales DIS France SAS\n")
+        fout.write(
+            '   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");\n'
+        )
+        fout.write(
+            "   you may not use this file except in compliance with the License.\n"
+        )
+        fout.write("   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1\n")
+        fout.write(
+            "   You may obtain a copy of the License at https://solderpad.org/licenses/\n\n"
+        )
+        fout.write("   Original Author: Jean-Roch COULON - Thales\n")
+        fout.write("////\n\n")
+
+        fout.write(f"[[{module}_PARAMETERS]]\n\n")
+        fout.write(f".{module} parameter configuration\n")
+        fout.write("|===\n")
+        fout.write("|Name | description | description\n\n")
+        for name in parameters:
+            fout.write(f"|{name} | {parameters[name].description} | {parameters[name].value}\n")
+        fout.write("|===\n")

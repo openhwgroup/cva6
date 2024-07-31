@@ -354,7 +354,7 @@ testlist:
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32mi/src/scall.S
 
   - test: rv32mi-ma_addr
-    iterations: 1
+    iterations: 0 # spike needs to be configured with tval_en=1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32mi/src/ma_addr.S
 
@@ -409,7 +409,7 @@ testlist:
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-SB-01.S
 
   - test: rv32i-I-MISALIGN_LDST-01
-    iterations: 1
+    iterations: 0 # spike needs to be configured with tval_en=1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-MISALIGN_LDST-01.S
 
@@ -468,8 +468,8 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-DELAY_SLOTS-01.S
 
-  - test: rv32i-I-EBREAK-01    # infinite loop with spike
-    iterations: 0
+  - test: rv32i-I-EBREAK-01
+    iterations: 0 # infinite loop with spike
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-EBREAK-01.S
 
@@ -488,8 +488,8 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-OR-01.S
 
-  - test: rv32i-I-MISALIGN_JMP-01   # infinite loop with spike
-    iterations: 0
+  - test: rv32i-I-MISALIGN_JMP-01
+    iterations: 0 # infinite loop with spike
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-MISALIGN_JMP-01.S
 
@@ -624,32 +624,32 @@ testlist:
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32i/src/I-ADD-01.S
 
   - test: rv32si-sbreak
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/sbreak.S
 
   - test: rv32si-scall
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/scall.S
 
   - test: rv32si-ma_fetch
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/ma_fetch.S
 
   - test: rv32si-wfi
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/wfi.S
 
   - test: rv32si-dirty
-    iterations: 0 # exception on spike
+    iterations: 0 # exception on spike # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/dirty.S
 
   - test: rv32si-csr
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/csr.S
 

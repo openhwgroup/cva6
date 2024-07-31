@@ -21,7 +21,12 @@ module issue_read_operands
     parameter type branchpredict_sbe_t = logic,
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
-    parameter type rs3_len_t = logic
+    parameter type rs3_len_t = logic,
+    parameter type x_issue_req_t = logic,
+    parameter type x_issue_resp_t = logic,
+    parameter type x_register_t = logic,
+    parameter type x_commit_t = logic
+
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -106,6 +111,25 @@ module issue_read_operands
     input logic cvxif_ready_i,
     // CVXIF offloaded instruction - TO_BE_COMPLETED
     output logic [31:0] cvxif_off_instr_o,
+    // CVA6 Hart ID - SUBSYSTEM
+    input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
+    // CVXIF Issue interface
+    input logic x_issue_ready_i,
+    input x_issue_resp_t x_issue_resp_i,
+    output logic x_issue_valid_o,
+    output x_issue_req_t x_issue_req_o,
+    // CVXIF Register interface
+    input logic x_register_ready_i,
+    output logic x_register_valid_o,
+    output x_register_t x_register_o,
+    // CVXIF Commit interface
+    output logic x_commit_valid_o,
+    output x_commit_t x_commit_o,
+    // Writeback Handling of CVXIF
+    output logic x_transaction_accepted_o,
+    output logic x_transaction_rejected_o,
+    output logic x_issue_writeback_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -125,9 +149,10 @@ module issue_read_operands
     logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
   } fus_busy_t;
 
-  logic [CVA6Cfg.NrIssuePorts-1:0] stall;
+  logic [CVA6Cfg.NrIssuePorts-1:0] stall_raw, stall_waw, stall_rs1, stall_rs2, stall_rs3;
   logic [CVA6Cfg.NrIssuePorts-1:0] fu_busy;  // functional unit is busy
   fus_busy_t [CVA6Cfg.NrIssuePorts-1:0] fus_busy;  // which functional units are considered busy
+  logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack;
   // operands coming from regfile
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
@@ -148,6 +173,8 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_q;
   logic [                    31:0] cvxif_off_instr_q;
+  logic                            cvxif_instruction_valid;
+
 
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_n, tinst_q;  // transformed instruction
 
@@ -157,6 +184,56 @@ module issue_read_operands
   // original instruction
   riscv::instruction_t orig_instr;
   assign orig_instr = riscv::instruction_t'(orig_instr_i[0]);
+
+  // CVXIF Signals
+  logic cvxif_req_allowed;
+  logic x_transaction_rejected;
+  logic [OPERANDS_PER_INSTR-1:0] rs_valid;
+  logic [OPERANDS_PER_INSTR-1:0][CVA6Cfg.XLEN-1:0] rs;
+
+  cvxif_issue_register_commit_if_driver #(
+      .CVA6Cfg       (CVA6Cfg),
+      .x_issue_req_t (x_issue_req_t),
+      .x_issue_resp_t(x_issue_resp_t),
+      .x_register_t  (x_register_t),
+      .x_commit_t    (x_commit_t)
+  ) i_cvxif_issue_register_commit_if_driver (
+      .clk_i           (clk_i),
+      .rst_ni          (rst_ni),
+      .flush_i         (flush_i),
+      .hart_id_i       (hart_id_i),
+      .issue_ready_i   (x_issue_ready_i),
+      .issue_resp_i    (x_issue_resp_i),
+      .issue_valid_o   (x_issue_valid_o),
+      .issue_req_o     (x_issue_req_o),
+      .register_ready_i(x_register_ready_i),
+      .register_valid_o(x_register_valid_o),
+      .register_o      (x_register_o),
+      .commit_valid_o  (x_commit_valid_o),
+      .commit_o        (x_commit_o),
+      .valid_i         (cvxif_instruction_valid),
+      .x_off_instr_i   (orig_instr_i[0]),
+      .x_trans_id_i    (issue_instr_i[0].trans_id),
+      .register_i      (rs),
+      .rs_valid_i      (rs_valid),
+      .cvxif_busy_o    ()
+  );
+  if (OPERANDS_PER_INSTR == 3) begin
+    assign rs_valid = {~stall_rs3[0], ~stall_rs2[0], ~stall_rs1[0]};
+    assign rs = {fu_data_n[0].imm, fu_data_n[0].operand_b, fu_data_n[0].operand_a};
+  end else begin
+    assign rs_valid = {~stall_rs2[0], ~stall_rs1[0]};
+    assign rs = {fu_data_n[0].operand_b, fu_data_n[0].operand_a};
+  end
+
+  // TODO check only for 1st instruction ??
+  // Allow a cvxif transaction if we WaW condition are ok.
+  assign cvxif_req_allowed = (issue_instr_i[0].fu == CVXIF) && !stall_waw[0];
+  assign cvxif_instruction_valid = !issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && cvxif_req_allowed;
+  assign x_transaction_accepted_o = x_issue_valid_o && x_issue_ready_i && x_issue_resp_i.accept;
+  assign x_transaction_rejected = x_issue_valid_o && x_issue_ready_i && ~x_issue_resp_i.accept;
+  assign x_issue_writeback_o = x_issue_resp_i.writeback;
+  assign x_id_o = x_issue_req_o.id;
 
   // ID <-> EX registers
 
@@ -177,7 +254,7 @@ module issue_read_operands
   assign alu2_valid_o = alu2_valid_q;
   assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
-  assign stall_issue_o = stall[0];
+  assign stall_issue_o = stall_raw[0];
   assign tinst_o = CVA6Cfg.RVH ? tinst_q : '0;
   // ---------------
   // Issue Stage
@@ -185,7 +262,10 @@ module issue_read_operands
 
   always_comb begin : structural_hazards
     fus_busy = '0;
-
+    // CVXIF is always ready to try a new transaction on 1st issue port
+    // If a transaction is already pending then we stall until the transaction is done.(issue_ack_o[0] = 0)
+    // Since we can not have two CVXIF instruction on 1st issue port, CVXIF is always ready for the pending instruction.
+    fus_busy[0].cvxif = 1'b0;
     if (!flu_ready_i) begin
       fus_busy[0].alu = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
@@ -212,15 +292,13 @@ module issue_read_operands
       fus_busy[0].store = 1'b1;
     end
 
-    if (!cvxif_ready_i) begin
-      fus_busy[0].cvxif = 1'b1;
-    end
-
     if (CVA6Cfg.SuperscalarEn) begin
       fus_busy[1] = fus_busy[0];
 
       // Never issue CSR instruction on second issue port.
       fus_busy[1].csr = 1'b1;
+      // Never issue CVXIF instruction on second issue port.
+      fus_busy[1].cvxif = 1'b1;
 
       unique case (issue_instr_i[0].fu)
         NONE:  fus_busy[1].none = 1'b1;
@@ -272,7 +350,7 @@ module issue_read_operands
           fus_busy[1].load  = 1'b1;
           fus_busy[1].store = 1'b1;
         end
-        CVXIF: fus_busy[1].cvxif = 1'b1;
+        CVXIF: ;
       endcase
     end
   end
@@ -293,12 +371,19 @@ module issue_read_operands
         CTRL_FLOW: fu_busy[i] = fus_busy[i].ctrl_flow;
         CSR: fu_busy[i] = fus_busy[i].csr;
         MULT: fu_busy[i] = fus_busy[i].mult;
-        FPU: fu_busy[i] = fus_busy[i].fpu;
-        FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
-        default: fu_busy[i] = 1'b0;
+        default:
+        if (CVA6Cfg.FpPresent) begin
+          unique case (issue_instr_i[i].fu)
+            FPU: fu_busy[i] = fus_busy[i].fpu;
+            FPU_VEC: fu_busy[i] = fus_busy[i].fpu_vec;
+            default: fu_busy[i] = 1'b0;
+          endcase
+        end else begin
+          fu_busy[i] = 1'b0;
+        end
       endcase
     end
   end
@@ -309,7 +394,10 @@ module issue_read_operands
   // check that all operands are available, otherwise stall
   // forward corresponding register
   always_comb begin : operands_available
-    stall = '{default: stall_i};
+    stall_raw = '{default: stall_i};
+    stall_rs1 = '{default: stall_i};
+    stall_rs2 = '{default: stall_i};
+    stall_rs3 = '{default: stall_i};
     // operand forwarding signals
     forward_rs1 = '0;
     forward_rs2 = '0;
@@ -323,12 +411,16 @@ module issue_read_operands
 
       // 0. check that we are not using the zimm type in RS1
       //    as this is an immediate we do not have to wait on anything here
+      // 0.bis check that rs1 is required by coprocessor if not do not wait here
       // 1. check if the source registers are clobbered --> check appropriate clobber list (gpr/fpr)
       // 2. poll the scoreboard
       if (!issue_instr_i[i].use_zimm && ((CVA6Cfg.FpPresent && is_rs1_fpr(
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs1] != NONE :
-              rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
+              rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE) ||
+              ((CVA6Cfg.CvxifEn && x_issue_valid_o &&
+                x_issue_resp_i.accept && x_issue_resp_i.register_read[0]) &&
+               rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
         // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
         // be fetched through the register file since they can't be forwarded
         // if the operand is available, forward it. CSRs don't write to/from FPR
@@ -338,14 +430,18 @@ module issue_read_operands
                         (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
           forward_rs1[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall[i] = 1'b1;
+          stall_raw[i] = 1'b1;
+          stall_rs1[i] = 1'b1;
         end
       end
 
-      if ((CVA6Cfg.FpPresent && is_rs2_fpr(
+      if (((CVA6Cfg.FpPresent && is_rs2_fpr(
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs2] != NONE :
-              rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE) begin
+              rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE) ||
+              ((CVA6Cfg.CvxifEn &&
+                x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[1]) &&
+               rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE)) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR
         if (rs2_valid_i[i] && (CVA6Cfg.FpPresent && is_rs2_fpr(
                 issue_instr_i[i].op
@@ -353,21 +449,24 @@ module issue_read_operands
                         (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)))) begin
           forward_rs2[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall[i] = 1'b1;
+          stall_raw[i] = 1'b1;
+          stall_rs2[i] = 1'b1;
         end
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
-      if ((CVA6Cfg.FpPresent && is_imm_fpr(
+      if (((CVA6Cfg.FpPresent && is_imm_fpr(
               issue_instr_i[i].op
-          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE :
-              issue_instr_i[i].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
-              rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) ||
+              ((CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3 &&
+                x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[2]) &&
+               rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE)) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
         if (rs3_valid_i[i]) begin
           forward_rs3[i] = 1'b1;
         end else begin  // the operand is not available -> stall
-          stall[i] = 1'b1;
+          stall_raw[i] = 1'b1;
+          stall_rs3[i] = 1'b1;
         end
       end
     end
@@ -378,7 +477,7 @@ module issue_read_operands
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd && issue_instr_i[1].rs1 != '0) begin
-        stall[1] = 1'b1;
+        stall_raw[1] = 1'b1;
       end
 
       if ((!CVA6Cfg.FpPresent || (is_rs2_fpr(
@@ -386,7 +485,7 @@ module issue_read_operands
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd && issue_instr_i[1].rs2 != '0) begin
-        stall[1] = 1'b1;
+        stall_raw[1] = 1'b1;
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
@@ -395,15 +494,15 @@ module issue_read_operands
           )) ? is_rd_fpr(
               issue_instr_i[0].op
           ) && issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] :
-              issue_instr_i[1].op == OFFLOAD && CVA6Cfg.NrRgprPorts == 3 ?
+              issue_instr_i[1].op == OFFLOAD && OPERANDS_PER_INSTR == 3 ?
               issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] : 1'b0) begin
-        stall[1] = 1'b1;
+        stall_raw[1] = 1'b1;
       end
     end
   end
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
-  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_gp_rs3
+  if (OPERANDS_PER_INSTR == 3) begin : gen_gp_rs3
     assign imm_forward_rs3 = rs3_i[0];
   end else begin : gen_fp_rs3
     assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_i[0]};
@@ -418,7 +517,7 @@ module issue_read_operands
 
       // immediates are the third operands in the store case
       // for FP operations, the imm field can also be the third operand from the regfile
-      if (CVA6Cfg.NrRgprPorts == 3) begin
+      if (OPERANDS_PER_INSTR == 3) begin
         fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
             {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} :
             issue_instr_i[i].op == OFFLOAD ? operand_c_regfile[i] : issue_instr_i[i].result;
@@ -440,7 +539,7 @@ module issue_read_operands
       if (forward_rs2[i]) begin
         fu_data_n[i].operand_b = rs2_i[i];
       end
-      if (CVA6Cfg.FpPresent && forward_rs3[i]) begin
+      if ((CVA6Cfg.FpPresent || (CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3)) && forward_rs3[i]) begin
         fu_data_n[i].imm = imm_forward_rs3;
       end
 
@@ -555,7 +654,7 @@ module issue_read_operands
             case (issue_instr_i[i].fu)
               CVXIF: begin
                 cvxif_valid_q[i]  <= 1'b1;
-                cvxif_off_instr_q <= orig_instr;
+                cvxif_off_instr_q <= orig_instr[i];
               end
               default: ;
             endcase
@@ -569,43 +668,51 @@ module issue_read_operands
     end
   end
 
+
+  always_comb begin : gen_check_waw_dependencies
+    stall_waw = '1;
+    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+      if (issue_instr_valid_i[i] && !fu_busy[i]) begin
+        // -----------------------------------------
+        // WAW - Write After Write Dependency Check
+        // -----------------------------------------
+        // no other instruction has the same destination register -> issue the instruction
+        if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+                issue_instr_i[i].op
+            )) ? (rd_clobber_fpr_i[issue_instr_i[i].rd] == NONE) :
+                (rd_clobber_gpr_i[issue_instr_i[i].rd] == NONE)) begin
+          stall_waw[i] = 1'b0;
+        end
+        // or check that the target destination register will be written in this cycle by the
+        // commit stage
+        for (int unsigned c = 0; c < CVA6Cfg.NrCommitPorts; c++) begin
+          if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+                  issue_instr_i[i].op
+              )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
+                  (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
+            stall_waw[i] = 1'b0;
+          end
+        end
+        if (i > 0) begin
+          if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
+            stall_waw[i] = 1'b1;
+          end
+        end
+      end
+    end
+  end
   // We can issue an instruction if we do not detect that any other instruction is writing the same
   // destination register.
   // We also need to check if there is an unresolved branch in the scoreboard.
   always_comb begin : issue_scoreboard
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // default assignment
-      issue_ack_o[i] = 1'b0;
-      // check that we didn't stall, that the instruction we got is valid
+      issue_ack[i] = 1'b0;
+      // check that the instruction we got is valid
       // and that the functional unit we need is not busy
       if (issue_instr_valid_i[i] && !fu_busy[i]) begin
-        // check that the corresponding functional unit is not busy
-        if (!stall[i]) begin
-          // -----------------------------------------
-          // WAW - Write After Write Dependency Check
-          // -----------------------------------------
-          // no other instruction has the same destination register -> issue the instruction
-          if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-                  issue_instr_i[i].op
-              )) ? (rd_clobber_fpr_i[issue_instr_i[i].rd] == NONE) :
-                  (rd_clobber_gpr_i[issue_instr_i[i].rd] == NONE)) begin
-            issue_ack_o[i] = 1'b1;
-          end
-          // or check that the target destination register will be written in this cycle by the
-          // commit stage
-          for (int unsigned c = 0; c < CVA6Cfg.NrCommitPorts; c++) begin
-            if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
-                    issue_instr_i[i].op
-                )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
-                    (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
-              issue_ack_o[i] = 1'b1;
-            end
-          end
-          if (i > 0) begin
-            if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
-              issue_ack_o[i] = 1'b0;
-            end
-          end
+        if (!stall_raw[i] && !stall_waw[i]) begin
+          issue_ack[i] = 1'b1;
         end
         // we can also issue the instruction under the following two circumstances:
         // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
@@ -613,19 +720,24 @@ module issue_read_operands
         // need any functional unit or if an exception occurred previous to the execute stage.
         // 1. we already got an exception
         if (issue_instr_i[i].ex.valid) begin
-          issue_ack_o[i] = 1'b1;
+          issue_ack[i] = 1'b1;
         end
         // 2. it is an instruction which does not need any functional unit
         if (issue_instr_i[i].fu == NONE) begin
-          issue_ack_o[i] = 1'b1;
+          issue_ack[i] = 1'b1;
         end
       end
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
-      if (!issue_ack_o[0]) begin
-        issue_ack_o[1] = 1'b0;
+      if (!issue_ack[0]) begin
+        issue_ack[1] = 1'b0;
       end
+    end
+    issue_ack_o = issue_ack;
+    // Do not acknoledge the issued instruction if transaction is not completed.
+    if (issue_instr_i[0].fu == CVXIF && !(x_transaction_accepted_o || x_transaction_rejected)) begin
+      issue_ack_o[0] = 1'b0;
     end
   end
 
@@ -749,14 +861,14 @@ module issue_read_operands
     end
   endgenerate
 
-  if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
+  if (OPERANDS_PER_INSTR == 3) begin : gen_operand_c
     assign operand_c_fpr = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[2]};
   end else begin
     assign operand_c_fpr = fprdata[2];
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    if (CVA6Cfg.NrRgprPorts == 3) begin : gen_operand_c
+    if (OPERANDS_PER_INSTR == 3) begin : gen_operand_c
       assign operand_c_gpr[i] = rdata[i*OPERANDS_PER_INSTR+2];
     end
 
@@ -766,7 +878,7 @@ module issue_read_operands
     assign operand_b_regfile[i] = (CVA6Cfg.FpPresent && is_rs2_fpr(
         issue_instr_i[i].op
     )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
-    assign operand_c_regfile[i] = (CVA6Cfg.NrRgprPorts == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
+    assign operand_c_regfile[i] = (OPERANDS_PER_INSTR == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
         issue_instr_i[i].op
     )) ? operand_c_fpr : operand_c_gpr[i]) : operand_c_fpr;
   end
@@ -780,9 +892,10 @@ module issue_read_operands
       if (CVA6Cfg.RVH) begin
         tinst_q <= '0;
       end
-      pc_o                  <= '0;
-      is_compressed_instr_o <= 1'b0;
-      branch_predict_o      <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
+      pc_o                     <= '0;
+      is_compressed_instr_o    <= 1'b0;
+      branch_predict_o         <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
+      x_transaction_rejected_o <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
       if (CVA6Cfg.RVH) begin
@@ -799,6 +912,10 @@ module issue_read_operands
         pc_o                  <= issue_instr_i[0].pc;
         is_compressed_instr_o <= issue_instr_i[0].is_compressed;
         branch_predict_o      <= issue_instr_i[0].bp;
+      end
+      x_transaction_rejected_o <= 1'b0;
+      if (issue_instr_i[0].fu == CVXIF) begin
+        x_transaction_rejected_o <= x_transaction_rejected;
       end
     end
   end

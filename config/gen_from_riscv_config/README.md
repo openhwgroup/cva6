@@ -34,10 +34,13 @@ pip3 install -r requirements.txt
 
 ```bash
 #Generate Restructred-text documentation for Control and Status Registers (CSR)
-python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -c <../riscv-config/Config_Name/generated/custom_gen>.yaml-m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
+python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -c <../riscv-config/Config_Name/generated/custom_gen>.yaml -d <../riscv-config/Config_Name/generated/debug_gen>.yaml -m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
 
 #Generate Restructred-text documentation for ISA extensions
 python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
+
+#Generate  the Yaml spike configuration file 
+python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -c <../riscv-config/Config_Name/generated/custom_gen>.yaml  -i <templates/spike>.mako -m <updaters/Config_Name/spike_updater>.yaml -t < Config_Name>
 
 ```
 
@@ -45,10 +48,13 @@ python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/
 
 ```bash
 #Generate  the Restructred-text documentation for Control and Status Registers (CSR)
-python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
+python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml  -d ../riscv-config/cv32a65x/generated/debug_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
 
 #Generate  the Restructred-text documentation for ISA extensions
 python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/cv32a65x/isa_updater.yaml -t cv32a65x
+
+#Generate  the Yaml spike configuration file  
+python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml -i templates/spike.mako -m updaters/cv32a65x/spike_updater.yaml -t cv32a65x
 
 ```
  
@@ -59,12 +65,18 @@ if the output is ISA Documentation:
                 
 if the output is CSR Documentation :
                 `<Config_Name>/csr/`
+                
+if the output is Spike yaml :
+                `<Config_Name>/spike/`
+
                
                 
                 
-for more details about How to write CSR or ISA Updater,see [UPDATERS](##Updaters) section
+for more details about How to write CSR or ISA Updater,see [Updaters](#updaters) section
 
-for more details about How to write ISA template ,see [Annexes2](##Annexes2) section
+for more details about How to write ISA template ,see [Annexes2](#annexes2) section
+
+for more details about How to write spike template , see [mako](https://www.makotemplates.org/) section
 
 
 
@@ -130,7 +142,7 @@ Example : ISA_Updater.yaml
      
 -If  you want to modify any parameter for registers in RISC CONFIG YAML  :
       
- Format : 
+- Format :  
  
                 Register name :
                        sub_feature : 
@@ -146,7 +158,7 @@ Example : ISA_Updater.yaml
                     
 -If you want to exclude any registers base on condition :
        
- Format : 
+- Format :  
                 
                 exclude :
                         
@@ -155,7 +167,7 @@ Example : ISA_Updater.yaml
                         sub_key : sub_value (if exist if not dont include it )
                         
                         cond: value
- Exemple : 
+- Exemple : 
                
                 exclude : 
                 
@@ -168,12 +180,12 @@ Example : ISA_Updater.yaml
        
     Example : (PMPADDR , MHPMCOUNTER, ...)
              
-Format :
+- Format :
            
                   Register Name :
             
                         range : number
-Exemple : 
+- Exemple : 
            
                     pmpaddr :
                     
@@ -183,6 +195,56 @@ Exemple :
 CSR/ISA Updater read RISC-CONFIG.yaml and update the registers so if you want to add register in Risc-V Config  you need to respect it architecture.
 
 
+
+### SPIKE Updater
+
+     
+-If  you want to modify any parameter Spike yaml:
+       
+- Format : 
+ 
+                <parameter name> : <parameter value> 
+
+- Example :
+ 
+ 
+                bootrom: false
+         
+-If you want to to modify any parameter in core config in Spike yaml :
+       
+- Format : 
+                
+                cores:
+                        
+                       <parameter name> : <parameter value> 
+- Exemple : 
+
+                Bootroom : true
+- Exemple : 
+               
+                cores: 
+                   isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
+                   boot_addr: 0x80000000
+                   marchid: 0x3
+                   misa_we: false
+                   misa_we_enable: true
+                   pmpaddr0: 0x0
+                   pmpcfg0: 0x0
+                   pmpregions: 0x40
+                   usable_pmpregions : 0x8
+                   priv: M
+                   status_fs_field_we: false
+                   status_fs_field_we_enable: false
+                   status_vs_field_we: false
+                   status_vs_field_we_enable: false
+                   misa_we: false
+                   mstatus_write_mask: 0x00000088
+                   mstatus_override_mask: 0x00001800
+                   mtval_write_mask: 0x00000000
+                   unified_traps: true
+
+                 
+Spike Updater read spike.yaml and update the parameters  so if you want to add parameter in spike.yaml  you need to respect it architecture.
 
 
 ## Annexes

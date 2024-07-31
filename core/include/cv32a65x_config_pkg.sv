@@ -18,13 +18,11 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
 
-  localparam CVA6ConfigNrScoreboardEntries = 4;  // cvxif_pkg.sv
-
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       FpgaEn: bit'(0),
       TechnoCut: bit'(1),
-      SuperscalarEn: bit'(0),
+      SuperscalarEn: bit'(1),
       NrCommitPorts: unsigned'(1),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
@@ -49,7 +47,7 @@ package cva6_config_pkg;
       RVZiCond: bit'(0),
       RVZicntr: bit'(0),
       RVZihpm: bit'(0),
-      NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
+      NrScoreboardEntries: unsigned'(8),
       PerfCounterEn: bit'(0),
       MmuPresent: bit'(0),
       RVS: bit'(0),
@@ -67,10 +65,10 @@ package cva6_config_pkg;
       PMPAddrRstVal: {64{64'h0}},
       PMPEntryReadOnly: 64'd0,
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
-      NrNonIdempotentRules: unsigned'(2),
+      NrNonIdempotentRules: unsigned'(0),
       NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
       NonIdempotentLength: 1024'({64'b0, 64'b0}),
-      NrExecuteRegionRules: unsigned'(3),
+      NrExecuteRegionRules: unsigned'(0),
       ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
       ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
       NrCachedRegionRules: unsigned'(1),
@@ -87,7 +85,7 @@ package cva6_config_pkg;
       DcacheSetAssoc: unsigned'(2),
       DcacheLineWidth: unsigned'(128),
       DataUserEn: unsigned'(1),
-      WtDcacheWbufDepth: int'(2),
+      WtDcacheWbufDepth: int'(8),
       FetchUserWidth: unsigned'(32),
       FetchUserEn: unsigned'(1),
       InstrTlbEntries: int'(2),

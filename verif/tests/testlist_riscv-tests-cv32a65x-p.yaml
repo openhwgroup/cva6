@@ -255,7 +255,7 @@ testlist:
     asm_tests: <path_var>/riscv-tests/isa/rv32mi/illegal.S
 
   - test: rv32mi-p-ma_addr
-    iterations: 1
+    iterations: 0 # spike needs to be configured with tval_en = 1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32mi/ma_addr.S
 
@@ -280,32 +280,32 @@ testlist:
     asm_tests: <path_var>/riscv-tests/isa/rv32mi/shamt.S
 
   - test: rv32si-p-csr
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/csr.S
 
   - test: rv32si-p-ma_fetch
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/ma_fetch.S
 
   - test: rv32si-p-scall
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/scall.S
 
   - test: rv32si-p-wfi
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/wfi.S
 
   - test: rv32si-p-sbreak
-    iterations: 1
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/sbreak.S
 
   - test: rv32si-p-dirty
-    iterations: 0 # to be explained
+    iterations: 0 # needs supervisor mode
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32si/dirty.S
 

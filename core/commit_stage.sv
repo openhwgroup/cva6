@@ -314,7 +314,7 @@ module commit_stage
                                 && !halt_i
                                 && !(commit_instr_i[0].fu inside {CSR})
                                 && !flush_dcache_i
-                                && !instr_0_is_amo
+                                && !(CVA6Cfg.RVA && instr_0_is_amo)
                                 && !single_step_i) begin
         // only if the first instruction didn't throw an exception and this instruction won't throw an exception
         // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
@@ -334,15 +334,16 @@ module commit_stage
 
             // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
             // exception flags
-            if (CVA6Cfg.FpPresent && commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
-              if (csr_write_fflags_o)
-                csr_wdata_o = {
-                  {CVA6Cfg.XLEN - 5{1'b0}},
-                  (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
-                };
-              else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
-
-              csr_write_fflags_o = 1'b1;
+            if (CVA6Cfg.FpPresent) begin
+              if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+                if (csr_write_fflags_o)
+                  csr_wdata_o = {
+                    {CVA6Cfg.XLEN - 5{1'b0}},
+                    (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
+                  };
+                else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
+                csr_write_fflags_o = 1'b1;
+              end
             end
           end
         end

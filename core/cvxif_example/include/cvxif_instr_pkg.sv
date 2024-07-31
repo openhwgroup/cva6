@@ -7,40 +7,144 @@
 //
 // Original Author: Guillaume Chauvon (guillaume.chauvon@thalesgroup.com)
 
+
+
 package cvxif_instr_pkg;
 
+  typedef enum logic [3:0] {
+    ILLEGAL = 4'b0000,
+    NOP = 4'b0001,
+    ADD = 4'b0010,
+    DOUBLE_RS1 = 4'b0011,
+    DOUBLE_RS2 = 4'b0100,
+    ADD_MULTI = 4'b0101,
+    ADD_RS3_R4 = 4'b0110,
+    ADD_RS3_R = 4'b0111
+  } opcode_t;
+
+
   typedef struct packed {
-    logic [31:0]              instr;
-    logic [31:0]              mask;
-    cvxif_pkg::x_issue_resp_t resp;
+    logic accept;
+    logic writeback;  // TODO depends on dualwrite
+    logic [2:0] register_read;  // TODO Nr read ports
+  } issue_resp_t;
+
+  typedef struct packed {
+    logic        accept;
+    logic [31:0] instr;
+  } compressed_resp_t;
+
+  typedef struct packed {
+    logic [31:0] instr;
+    logic [31:0] mask;
+    issue_resp_t resp;
+    opcode_t     opcode;
   } copro_issue_resp_t;
 
-  // 2 Possible RISCV instructions for Coprocessor
-  parameter int unsigned NbInstr = 2;
+
+  typedef struct packed {
+    logic [15:0]      instr;
+    logic [15:0]      mask;
+    compressed_resp_t resp;
+  } copro_compressed_resp_t;
+
+  // 4 Possible RISCV instructions for Coprocessor
+  parameter int unsigned NbInstr = 10;
   parameter copro_issue_resp_t CoproInstr[NbInstr] = '{
       '{
-          instr: 32'b00000_00_00000_00000_0_00_00000_0101011,  // custom1 opcode
-          mask: 32'b00000_00_00000_00000_0_00_00000_1111111,
-          resp : '{
-              accept : 1'b1,
-              writeback : 1'b0,
-              dualwrite : 1'b0,
-              dualread : 1'b0,
-              loadstore : 1'b0,
-              exc : 1'b0
-          }
+          // Custom Nop
+          instr:
+          32'b00000_00_00000_00000_0_00_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b0, register_read : {1'b0, 1'b0, 1'b0}},
+          opcode : NOP
       },
       '{
-          instr: 32'b00000_00_00000_00000_0_00_00000_1011011,  // custom2 opcode
-          mask: 32'b00000_00_00000_00000_0_00_00000_1111111,
-          resp : '{
-              accept : 1'b1,
-              writeback : 1'b1,
-              dualwrite : 1'b0,
-              dualread : 1'b0,
-              loadstore : 1'b0,
-              exc : 1'b0
-          }
+          // Custom Add : cus_add rd, rs1, rs2
+          instr:
+          32'b00000_00_00000_00000_0_01_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b0, 1'b1, 1'b1}},
+          opcode : ADD
+      },
+      '{
+          // Custom Add rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_01_00000_00000_0_01_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b0, 1'b0, 1'b1}},
+          opcode : DOUBLE_RS1
+      },
+      '{
+          // Custom Add rs2 : cus_add rd, rs2, rs2
+          instr:
+          32'b00000_10_00000_00000_0_01_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b0, 1'b1, 1'b0}},
+          opcode : DOUBLE_RS2
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_11_00000_00000_0_01_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b0, 1'b1, 1'b1}},
+          opcode : ADD_MULTI
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00001_00_00000_00000_0_01_00000_1111011,  // custom3 opcode
+          mask: 32'b11111_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b1, 1'b1, 1'b1}},
+          opcode : ADD_RS3_R
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_00_00000_00000_0_00_00000_1000011,  // MADD opcode
+          mask: 32'b00000_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b1, 1'b1, 1'b1}},
+          opcode : ADD_RS3_R4
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_00_00000_00000_0_00_00000_1000111,  // MSUB opcode
+          mask: 32'b00000_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b1, 1'b1, 1'b1}},
+          opcode : ADD_RS3_R4
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_00_00000_00000_0_00_00000_1001011,  // NMSUB opcode
+          mask: 32'b00000_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b1, 1'b1, 1'b1}},
+          opcode : ADD_RS3_R4
+      },
+      '{
+          // Custom Add Multi rs1 : cus_add rd, rs1, rs1
+          instr:
+          32'b00000_00_00000_00000_0_00_00000_1001111,  // NMADD opcode
+          mask: 32'b00000_11_00000_00000_1_11_00000_1111111,
+          resp : '{accept : 1'b1, writeback : 1'b1, register_read : {1'b1, 1'b1, 1'b1}},
+          opcode : ADD_RS3_R4
+      }
+  };
+
+  parameter int unsigned NbCompInstr = 2;
+  parameter copro_compressed_resp_t CoproCompInstr[NbCompInstr] = '{
+      // C_NOP
+      '{
+          instr : 16'b111_0_00000_00000_00,
+          mask : 16'b111_1_00000_00000_11,
+          resp : '{accept : 1'b1, instr : 32'b00000_00_00000_00000_0_00_00000_1111011}
+      },
+      '{
+          instr : 16'b111_1_00000_00000_00,
+          mask : 16'b111_1_00000_00000_11,
+          resp : '{accept : 1'b1, instr : 32'b00000_00_00000_00000_0_01_01010_1111011}
       }
   };
 

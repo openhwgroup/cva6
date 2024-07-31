@@ -25,6 +25,10 @@ include:
   - project: '$CI_PROJECT_NAMESPACE/setup-ci'
     ref: '$SETUP_CI_CVV_BRANCH'
     file: 'cva6/core-v-verif-cva6.yml'
+  - local: '.gitlab-ci-custom.yml'
+    rules:
+      - exists:
+        - '.gitlab-ci-custom.yml'
 
 workflow:
   rules:
@@ -32,6 +36,9 @@ workflow:
       variables:
         CI_KIND: verif
     - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        CI_KIND: regress
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       variables:
         CI_KIND: regress
     - if: $CI_COMMIT_BRANCH =~ /.*_PR_.*/
@@ -107,13 +114,17 @@ build_tools:
     - mkdir -p artifacts/tools/
     - mv tools/spike artifacts/tools/
 
+.copy_spike_artifacts: &copy_spike_artifacts
+  - mkdir -p tools
+  - mv artifacts/tools/spike tools
+  - /sbin/ldconfig -N tools/spike/lib
+
 .fe_smoke_test:
   stage: light tests
   rules: *on_dev
   before_script:
     - git -C verif/core-v-verif fetch --unshallow
-    - mkdir -p tools
-    - mv artifacts/tools/spike tools
+    - !reference [.copy_spike_artifacts]
     - rm -rf artifacts/
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
@@ -155,6 +166,7 @@ gen_smoke:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-uvm,spike"
+    SPIKE_TANDEM: 1
     COLLECT_SIMU_LOGS: 1
   script:
     - bash verif/regress/smoke-gen_tests.sh
@@ -296,7 +308,6 @@ riscv_arch_test:
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -309,7 +320,6 @@ compliance:
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -324,7 +334,6 @@ riscv-tests-v:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -338,7 +347,6 @@ riscv-tests-p:
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
-    COLLECT_SIMU_LOGS: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -398,7 +406,7 @@ generated_tests:
     - mv verif/sim/seedlist.yaml artifacts/coverage
     - python3 .gitlab-ci/scripts/report_pass.py
 
-generated_xif_tests:
+.generated_xif_tests:
   extends:
     - .verif_test
   variables:
@@ -474,9 +482,7 @@ simu-gate:
     TARGET: $DV_TARGET
   script:
     - git -C verif/core-v-verif fetch --unshallow
-    - mkdir -p tools
-    - mv artifacts/tools/spike tools
-    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
@@ -520,7 +526,7 @@ code_coverage-report:
   needs:
     - generated_tests
     - directed_isacov-tests
-    - generated_xif_tests
+#    - generated_xif_tests
     - csr_embedded_tests
   variables:
     DASHBOARD_JOB_TITLE: "Report merge coverage"

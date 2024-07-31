@@ -48,10 +48,10 @@ upstream toolchain (default: GCC 13.1.0) for bare-metal 32-bit and 64-bit applic
     INSTALL_DIR=$RISCV
 
     # 2. Fetch the source code of the toolchain (assumes Internet access.)
-    sh get-toolchain.sh
+    bash get-toolchain.sh
 
     # 3. Build and install the toolchain (requires write+create permissions for $INSTALL_DIR.)
-    sh build-toolchain.sh $INSTALL_DIR
+    bash build-toolchain.sh $INSTALL_DIR
 
 ## File and directory structure
 
@@ -93,9 +93,9 @@ missing directories of the installation location._
 Once a configuration name `CONFIG_NAME` and an installation
 location `INSTALL_DIR` are chosen, use
 
-    sh get-toolchain.sh CONFIG_NAME
+    bash get-toolchain.sh CONFIG_NAME
     # E.g.,
-    # sh get-toolchain.sh gcc-13.1.0-baremetal
+    # bash get-toolchain.sh gcc-13.1.0-baremetal
 
 to fetch/update the source code and to check out the matching baseline of code.
 
@@ -109,9 +109,9 @@ will be selected implicitly.  _The default configuration is currently named
 
 To build the toolchain from the retrieved source baseline, use
 
-    sh build-toolchain.sh CONFIG_NAME INSTALL_DIR
+    bash build-toolchain.sh CONFIG_NAME INSTALL_DIR
     # E.g.,
-    # sh build-toolchain.sh gcc-13.1.0-baremetal $RISCV
+    # bash build-toolchain.sh gcc-13.1.0-baremetal $RISCV
 
 To speedup the building it is recommended to set the number of threads to use
 
@@ -126,9 +126,9 @@ code such as a change of baseline configuration.  _Whenever the source
 configuration is changed, please use the `-f` (or `--force`)
 option to forcibly rebuild the entire toolchain_:
 
-    sh build-toolchain.sh -f CONFIG_NAME INSTALL_DIR
+    bash build-toolchain.sh -f CONFIG_NAME INSTALL_DIR
     # E.g.,
-    # sh build-toolchain.sh -f gcc-13.1.0-baremetal $RISCV
+    # bash build-toolchain.sh -f gcc-13.1.0-baremetal $RISCV
 
 ## Defining new configurations
 

@@ -1,5 +1,0 @@
-sphinx
-sphinx-rtd-theme
-recommonmark
-sphinxcontrib-svg2pdfconverter
-sphinx_github_changelog

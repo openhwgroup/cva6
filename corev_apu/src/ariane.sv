@@ -12,6 +12,7 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level module
 
+`include "cvxif_types.svh"
 
 module ariane import ariane_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
@@ -21,6 +22,21 @@ module ariane import ariane_pkg::*; #(
     logic csr;
     logic instr;
   },
+  // CVXIF Types
+  localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
+  localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
+  localparam type id_t                = `ID_T(CVA6Cfg),
+  localparam type hartid_t            = `HARTID_T(CVA6Cfg),
+  localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
+  localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
+  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+  localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
+  localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
+  localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
+  localparam type x_result_t          = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
+  localparam type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+  localparam type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
+  // AXI Types
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -50,8 +66,8 @@ module ariane import ariane_pkg::*; #(
   input  noc_resp_t                    noc_resp_i
 );
 
-  cvxif_pkg::cvxif_req_t  cvxif_req;
-  cvxif_pkg::cvxif_resp_t cvxif_resp;
+  cvxif_req_t  cvxif_req;
+  cvxif_resp_t cvxif_resp;
 
   cva6 #(
     .CVA6Cfg ( CVA6Cfg ),
@@ -62,7 +78,20 @@ module ariane import ariane_pkg::*; #(
     .axi_aw_chan_t (axi_aw_chan_t),
     .axi_w_chan_t (axi_w_chan_t),
     .noc_req_t (noc_req_t),
-    .noc_resp_t (noc_resp_t)
+    .noc_resp_t (noc_resp_t),
+    .readregflags_t (readregflags_t),
+    .writeregflags_t (writeregflags_t),
+    .id_t (id_t),
+    .hartid_t (hartid_t),
+    .x_compressed_req_t (x_compressed_req_t),
+    .x_compressed_resp_t (x_compressed_resp_t),
+    .x_issue_req_t (x_issue_req_t),
+    .x_issue_resp_t (x_issue_resp_t),
+    .x_register_t (x_register_t),
+    .x_commit_t (x_commit_t),
+    .x_result_t (x_result_t),
+    .cvxif_req_t (cvxif_req_t),
+    .cvxif_resp_t (cvxif_resp_t)
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
@@ -81,7 +110,20 @@ module ariane import ariane_pkg::*; #(
 
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
     cvxif_example_coprocessor #(
-      .CVA6Cfg ( CVA6Cfg )
+      .NrRgprPorts (CVA6Cfg.NrRgprPorts),
+      .readregflags_t (readregflags_t),
+      .writeregflags_t (writeregflags_t),
+      .id_t (id_t),
+      .hartid_t (hartid_t),
+      .x_compressed_req_t (x_compressed_req_t),
+      .x_compressed_resp_t (x_compressed_resp_t),
+      .x_issue_req_t (x_issue_req_t),
+      .x_issue_resp_t (x_issue_resp_t),
+      .x_register_t (x_register_t),
+      .x_commit_t (x_commit_t),
+      .x_result_t (x_result_t),
+      .cvxif_req_t (cvxif_req_t),
+      .cvxif_resp_t (cvxif_resp_t)
     ) i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),
@@ -89,5 +131,7 @@ module ariane import ariane_pkg::*; #(
       .cvxif_resp_o         ( cvxif_resp                     )
     );
   end
+
+
 
 endmodule // ariane

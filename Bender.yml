@@ -76,7 +76,6 @@ sources:
       - core/include/std_cache_pkg.sv
 
       # Extension Interface
-      - core/include/cvxif_pkg.sv
       - core/cvxif_example/include/cvxif_instr_pkg.sv
       - core/cvxif_fu.sv
       - core/cvxif_example/cvxif_example_coprocessor.sv
@@ -110,7 +109,6 @@ sources:
       - core/ariane_regfile_ff.sv
       - core/ariane_regfile_fpga.sv
       - core/scoreboard.sv
-      - core/round_interval.sv
       - core/store_buffer.sv
       - core/amo_buffer.sv
       - core/store_unit.sv

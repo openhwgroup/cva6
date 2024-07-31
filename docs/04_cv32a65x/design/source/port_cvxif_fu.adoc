@@ -1,0 +1,50 @@
+////
+   Copyright 2024 Thales DIS France SAS
+   Licensed under the Solderpad Hardware License, Version 2.1 (the "License");
+   you may not use this file except in compliance with the License.
+   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   You may obtain a copy of the License at https://solderpad.org/licenses/
+
+   Original Author: Jean-Roch COULON - Thales
+////
+
+[[_CVA6_cvxif_fu_ports]]
+
+.*cvxif_fu module* IO ports
+|===
+|Signal | IO | Description | connexion | Type
+
+|`clk_i` | in | Subsystem Clock | SUBSYSTEM | logic
+
+|`rst_ni` | in | Asynchronous reset active low | SUBSYSTEM | logic
+
+|`x_valid_i` | in | CVXIF instruction is valid | ISSUE_STAGE | logic
+
+|`x_trans_id_i` | in | Transaction ID | ISSUE_STAGE | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+
+|`x_illegal_i` | in | Instruction is illegal, determined during CVXIF issue transaction | ISSUE_STAGE | logic
+
+|`x_off_instr_i` | in | Offloaded instruction | ISSUE_STAGE | logic[31:0]
+
+|`x_ready_o` | out | CVXIF is ready | ISSUE_STAGE | logic
+
+|`x_trans_id_o` | out | CVXIF result transaction ID | ISSUE_STAGE | logic[CVA6Cfg.TRANS_ID_BITS-1:0]
+
+|`x_exception_o` | out | CVXIF exception | ISSUE_STAGE | exception_t
+
+|`x_result_o` | out | CVXIF FU result | ISSUE_STAGE | logic[CVA6Cfg.XLEN-1:0]
+
+|`x_valid_o` | out | CVXIF result valid | ISSUE_STAGE | logic
+
+|`x_we_o` | out | CVXIF write enable | ISSUE_STAGE | logic
+
+|`x_rd_o` | out | CVXIF destination register | ISSUE_STAGE | logic[4:0]
+
+|`result_valid_i` | in | none | none | logic
+
+|`result_i` | in | none | none | x_result_t
+
+|`result_ready_o` | out | none | none | logic
+
+|===
+

@@ -33,13 +33,16 @@ module scoreboard #(
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_gpr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
-
+    // Writeback Handling of CVXIF
+    input logic x_transaction_accepted_i,
+    input logic x_issue_writeback_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
     // rs1 operand address - issue_read_operands
-    input  logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs1_i,
     // rs1 operand - issue_read_operands
-    output logic [CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs1_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_o,
     // rs1 operand is valid - issue_read_operands
-    output logic [CVA6Cfg.NrIssuePorts-1:0]                                rs1_valid_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0] rs1_valid_o,
 
     // rs2 operand address - issue_read_operands
     input  logic [CVA6Cfg.NrIssuePorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rs2_i,
@@ -96,6 +99,8 @@ module scoreboard #(
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // Cvxif we for writeback - TO_BE_COMPLETED
     input logic x_we_i,
+    // CVXIF destination register - ISSUE_STAGE
+    input logic [4:0] x_rd_i,
 
     // TO_BE_COMPLETED - RVFI
     output logic [ CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
@@ -225,8 +230,9 @@ module scoreboard #(
         if (CVA6Cfg.DebugEn) begin
           mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
         end
-        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
-          mem_n[trans_id_i[i]].sbe.rd = 5'b0;
+        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF) begin
+          if (x_we_i) mem_n[trans_id_i[i]].sbe.rd = x_rd_i;
+          else mem_n[trans_id_i[i]].sbe.rd = 5'b0;
         end
         // write the exception back if it is valid
         if (ex_i[i].valid) mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
@@ -242,10 +248,8 @@ module scoreboard #(
     // ------------
     if (CVA6Cfg.SpeculativeSb) begin
       if (bmiss) begin
-        for (int unsigned i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
-          if (speculative_instrs[i]) begin
-            mem_n[i].cancelled = 1'b1;
-          end
+        if (after_flu_wb != issue_pointer[0]) begin
+          mem_n[after_flu_wb].cancelled = 1'b1;
         end
       end
     end
@@ -279,16 +283,6 @@ module scoreboard #(
 
   assign bmiss = resolved_branch_i.valid && resolved_branch_i.is_mispredict;
   assign after_flu_wb = trans_id_i[ariane_pkg::FLU_WB] + 'd1;
-
-  if (CVA6Cfg.SpeculativeSb) begin : find_speculative_instrs
-    round_interval #(
-        .S(CVA6Cfg.TRANS_ID_BITS)
-    ) i_speculative_instrs (
-        .start_i (after_flu_wb),
-        .stop_i  (issue_pointer_q),
-        .active_o(speculative_instrs)
-    );
-  end
 
   // FIFO counter updates
   if (CVA6Cfg.NrCommitPorts == 2) begin : gen_commit_ports
@@ -504,8 +498,9 @@ module scoreboard #(
       commit_pointer_q <= '0;
       issue_pointer_q  <= '0;
     end else begin
-      issue_pointer_q  <= issue_pointer_n;
-      mem_q            <= mem_n;
+      issue_pointer_q <= issue_pointer_n;
+      mem_q <= mem_n;
+      mem_q[x_id_i].sbe.rd <= (x_transaction_accepted_i && ~x_issue_writeback_i) ? 5'b0 : mem_n[x_id_i].sbe.rd;
       commit_pointer_q <= commit_pointer_n;
     end
   end
