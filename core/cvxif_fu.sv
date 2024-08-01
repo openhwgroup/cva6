@@ -56,7 +56,7 @@ module cvxif_fu
 
   assign x_ready_o = 1'b1; // Readyness of cvxif_fu is determined in issue stage by CVXIF issue interface
   // Result signals
-  assign x_valid_o = x_illegal_i ? 1'b1 : result_valid_i;
+  assign x_valid_o = x_illegal_i && x_valid_i ? 1'b1 : result_valid_i;
   assign x_result_o = result_i.data;
   assign x_trans_id_o = x_illegal_i ? x_trans_id_i : result_i.id;
   assign x_we_o = result_i.we;
@@ -65,7 +65,7 @@ module cvxif_fu
   // Handling of illegal instruction exception
   always_comb begin
     x_exception_o = '0;  // No exception in this interface
-    if (x_illegal_i) begin
+    if (x_illegal_i && x_valid_i) begin
       x_exception_o.valid = '1;
       x_exception_o.cause = riscv::ILLEGAL_INSTR;
       if (CVA6Cfg.TvalEn)

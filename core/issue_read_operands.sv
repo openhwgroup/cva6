@@ -394,10 +394,10 @@ module issue_read_operands
   // check that all operands are available, otherwise stall
   // forward corresponding register
   always_comb begin : operands_available
-    stall_raw = '{default: stall_i};
-    stall_rs1 = '{default: stall_i};
-    stall_rs2 = '{default: stall_i};
-    stall_rs3 = '{default: stall_i};
+    stall_raw   = '{default: stall_i};
+    stall_rs1   = '{default: stall_i};
+    stall_rs2   = '{default: stall_i};
+    stall_rs3   = '{default: stall_i};
     // operand forwarding signals
     forward_rs1 = '0;
     forward_rs2 = '0;
@@ -417,10 +417,7 @@ module issue_read_operands
       if (!issue_instr_i[i].use_zimm && ((CVA6Cfg.FpPresent && is_rs1_fpr(
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs1] != NONE :
-              rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE) ||
-              ((CVA6Cfg.CvxifEn && x_issue_valid_o &&
-                x_issue_resp_i.accept && x_issue_resp_i.register_read[0]) &&
-               rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
+              rd_clobber_gpr_i[issue_instr_i[i].rs1] != NONE)) begin
         // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
         // be fetched through the register file since they can't be forwarded
         // if the operand is available, forward it. CSRs don't write to/from FPR
@@ -438,10 +435,7 @@ module issue_read_operands
       if (((CVA6Cfg.FpPresent && is_rs2_fpr(
               issue_instr_i[i].op
           )) ? rd_clobber_fpr_i[issue_instr_i[i].rs2] != NONE :
-              rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE) ||
-              ((CVA6Cfg.CvxifEn &&
-                x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[1]) &&
-               rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE)) begin
+              rd_clobber_gpr_i[issue_instr_i[i].rs2] != NONE)) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR
         if (rs2_valid_i[i] && (CVA6Cfg.FpPresent && is_rs2_fpr(
                 issue_instr_i[i].op
@@ -455,12 +449,9 @@ module issue_read_operands
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
-      if (((CVA6Cfg.FpPresent && is_imm_fpr(
+      if ((CVA6Cfg.FpPresent && is_imm_fpr(
               issue_instr_i[i].op
-          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) ||
-              ((CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3 &&
-                x_issue_valid_o && x_issue_resp_i.accept && x_issue_resp_i.register_read[2]) &&
-               rd_clobber_gpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE)) begin
+          )) ? rd_clobber_fpr_i[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
         // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
         if (rs3_valid_i[i]) begin
           forward_rs3[i] = 1'b1;
@@ -469,6 +460,24 @@ module issue_read_operands
           stall_rs3[i] = 1'b1;
         end
       end
+    end
+    if (CVA6Cfg.CvxifEn) begin
+      // Remove unecessary forward and stall in case source register is not needed by coprocessor.
+      if (x_issue_valid_o && x_issue_resp_i.accept) begin
+        if (~x_issue_resp_i.register_read[0]) begin
+          forward_rs1[0] = 1'b0;
+          stall_rs1[0]   = 1'b0;
+        end
+        if (~x_issue_resp_i.register_read[1]) begin
+          forward_rs2[0] = 1'b0;
+          stall_rs2[0]   = 1'b0;
+        end
+        if (OPERANDS_PER_INSTR == 3 && ~x_issue_resp_i.register_read[2]) begin
+          forward_rs3[0] = 1'b0;
+          stall_rs3[0]   = 1'b0;
+        end
+      end
+      stall_raw[0] = stall_rs1[0] || stall_rs2[0] || stall_rs3[0];
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
