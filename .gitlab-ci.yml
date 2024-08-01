@@ -232,6 +232,24 @@ spyglass:
     - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
     - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
 
+cvxif-regression:
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "CVXIF non-regression test $DV_SIMULATORS"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most CoreV-X-Interface in testharness"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    COLLECT_SIMU_LOGS: 1
+  parallel:
+    matrix:
+      - DV_SIMULATORS:
+        - "veri-testharness,spike"
+        - "vcs-testharness,spike"
+  script:
+    - bash verif/regress/cvxif_verif_regression.sh
+    - !reference [.simu_after_script]
+
 asic-synthesis:
   extends:
     - .synthesis_test
