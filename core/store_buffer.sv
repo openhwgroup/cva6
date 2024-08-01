@@ -208,12 +208,15 @@ module store_buffer
   // checks if the requested load is in the store buffer
   // page offsets are virtually and physically the same
   always_comb begin : address_checker
+    localparam MatchMsb = $clog2(4096) - 1; // Page Size is 4 KiB
+    localparam MatchLsb = $clog2(CVA6Cfg.XLEN/8); // Memory accesses must not overlap
+
     page_offset_matches_o = 1'b0;
 
     // check if the LSBs are identical and the entry is valid
     for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
       // Check if the page offset matches and whether the entry is valid, for the commit queue
-      if ((page_offset_i[11:3] == commit_queue_q[i].address[11:3]) && commit_queue_q[i].valid) begin
+      if ((page_offset_i[MatchMsb:MatchLsb] == commit_queue_q[i].address[MatchMsb:MatchLsb]) && commit_queue_q[i].valid) begin
         page_offset_matches_o = 1'b1;
         break;
       end
@@ -221,13 +224,13 @@ module store_buffer
 
     for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
       // do the same for the speculative queue
-      if ((page_offset_i[11:3] == speculative_queue_q[i].address[11:3]) && speculative_queue_q[i].valid) begin
+      if ((page_offset_i[MatchMsb:MatchLsb] == speculative_queue_q[i].address[MatchMsb:MatchLsb]) && speculative_queue_q[i].valid) begin
         page_offset_matches_o = 1'b1;
         break;
       end
     end
     // or it matches with the entry we are currently putting into the queue
-    if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_without_flush_i) begin
+    if ((page_offset_i[MatchMsb:MatchLsb] == paddr_i[MatchMsb:MatchLsb]) && valid_without_flush_i) begin
       page_offset_matches_o = 1'b1;
     end
   end
