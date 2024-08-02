@@ -208,8 +208,8 @@ module store_buffer
   // checks if the requested load is in the store buffer
   // page offsets are virtually and physically the same
   always_comb begin : address_checker
-    localparam MatchMsb = $clog2(4096) - 1; // Page Size is 4 KiB
-    localparam MatchLsb = $clog2(CVA6Cfg.XLEN/8); // Memory accesses must not overlap
+    localparam MatchMsb = $clog2(4096) - 1;  // Page Size is 4 KiB
+    localparam MatchLsb = $clog2(CVA6Cfg.XLEN / 8);  // Memory accesses must not overlap
 
     page_offset_matches_o = 1'b0;
 
