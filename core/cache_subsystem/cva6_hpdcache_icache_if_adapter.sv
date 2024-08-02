@@ -7,7 +7,7 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Authors: Akiho Kawada
-// Date: June, 2024
+// Date: July, 2024
 // Description: Icache Interface adapter for the CVA6 core
 module cva6_hpdcache_icache_if_adapter
 //  Parameters
@@ -89,14 +89,30 @@ module cva6_hpdcache_icache_if_adapter
       CVA6Cfg,
       {
         {64 - CVA6Cfg.PLEN{1'b0}},
-        fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH],
+        fetch_obi_req_i.a.addr[CVA6Cfg.ICACHE_TAG_WIDTH+CVA6Cfg.ICACHE_INDEX_WIDTH-1:CVA6Cfg.ICACHE_INDEX_WIDTH], // TODO
         {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}
       }
   );
 
+
+  logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
+  assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
+
+
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      vaddr_q <= '0;
+    end else begin
+      vaddr_q <= vaddr_d;
+    end
+  end
+
   //    Request forwarding
   assign hpdcache_req_valid_o = dreq_i.req,
-      hpdcache_req_o.addr_offset = dreq_i.vaddr[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH],
+      hpdcache_req_o.addr_offset = {
+        vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3], 3'b0
+      },
       hpdcache_req_o.wdata = '0,
       hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
       hpdcache_req_o.be = fetch_obi_req_i.a.be,
@@ -116,9 +132,18 @@ module cva6_hpdcache_icache_if_adapter
   //    Response forwarding
   assign dreq_o.ready = hpdcache_req_ready_i;  // TODO
   //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
+  logic obi_gnt;  // TODO, need to fix
 
-  assign fetch_obi_rsp_o.gnt = hpdcache_req_ready_i,
-      fetch_obi_rsp_o.gntpar = !hpdcache_req_ready_i,
+  always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen
+    if (!rst_ni) begin
+      obi_gnt <= '0;
+    end else begin
+      obi_gnt <= hpdcache_req_ready_i;
+    end
+  end
+
+  assign fetch_obi_rsp_o.gnt = obi_gnt,
+      fetch_obi_rsp_o.gntpar = !obi_gnt,
       fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.rvalidpar = !hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.r.rid = hpdcache_rsp_i.tid,
