@@ -598,8 +598,7 @@ _debugger_wfi_test:
     j  _debugger_end
 
 _debugger_end:
-    // Check counter values. They should have increased while in debug
-    // regardless of stopcount bit in csr
+    // Check counter values.
     csrr t1, mcycle
     la a1, glb_mcycle_start
     lw t2, 0(a1)
