@@ -75,7 +75,7 @@ def compare_summaries(baseline_info, new_info):
     return comparison_results
 
 
-def report_spyglass_lint(comparison_results):
+def generate_spyglass_lint_report(comparison_results):
     metric = rb.TableStatusMetric("")
     metric.add_column("SEVERITY", "text")
     metric.add_column("RULE NAME", "text")
@@ -83,27 +83,19 @@ def report_spyglass_lint(comparison_results):
     metric.add_column("SHORT HELP", "text")
     metric.add_column("DIFF", "text")
 
-    failed_metric = False
-
     for severity, rule_name, count, short_help, check, status in comparison_results:
         line = [severity, rule_name, count, short_help, status]
         if check == "PASS":
             metric.add_pass(*line)
         else:
             metric.add_fail(*line)
-            failed_metric = True
 
     report = rb.Report()
     report.add_metric(metric)
 
-    if failed_metric:
-        report.fail()
-
     for value in metric.values:
         print(" | ".join(map(str, value)))
-    report.dump()
-
-    return not failed_metric
+    return report
 
 
 if __name__ == "__main__":
@@ -116,7 +108,8 @@ if __name__ == "__main__":
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
+    report = generate_spyglass_lint_report(comparison_results)
+    report.dump()
 
-    if not report_spyglass_lint(comparison_results):
-        print("Job failed due to differences in summaries")
+    if report.failed:
         sys.exit(1)
