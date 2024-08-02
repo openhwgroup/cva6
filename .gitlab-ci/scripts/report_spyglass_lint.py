@@ -11,7 +11,6 @@
 
 import re
 import sys
-import subprocess
 import report_builder as rb
 
 
@@ -73,7 +72,6 @@ def compare_summaries(baseline_info, new_info):
 
     severity_order = {"ERROR": 1, "WARNING": 2, "INFO": 3}
     comparison_results.sort(key=lambda x: severity_order[x[0]])
-
     return comparison_results
 
 
@@ -85,38 +83,27 @@ def report_spyglass_lint(comparison_results):
     metric.add_column("SHORT HELP", "text")
     metric.add_column("DIFF", "text")
 
+    failed_metric = False
+
     for severity, rule_name, count, short_help, check, status in comparison_results:
         line = [severity, rule_name, count, short_help, status]
         if check == "PASS":
             metric.add_pass(*line)
         else:
             metric.add_fail(*line)
+            failed_metric = True
 
     report = rb.Report()
     report.add_metric(metric)
+
+    if failed_metric:
+        report.fail()
+
     for value in metric.values:
         print(" | ".join(map(str, value)))
     report.dump()
 
-
-def run_diff(ref_file, new_file):
-    result = subprocess.run(
-        [
-            "diff",
-            "-I",
-            r"#\s+Report Name\s+:\s*[^#]*#\s+Report Created by\s*:\s*[^#]*#\s+Report Created on\s*:\s*[^#]*#\s+Working Directory\s*:\s*[^#]*",
-            ref_file,
-            new_file,
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if result.stdout:
-        print("Found differences between reference and new summary")
-        return False
-    else:
-        print("No differences found between reference and new summary")
-        return True
+    return not failed_metric
 
 
 if __name__ == "__main__":
@@ -126,13 +113,10 @@ if __name__ == "__main__":
     summary_ref_results = sys.argv[1]
     summary_rpt = sys.argv[2]
 
-    no_diff = run_diff(summary_ref_results, summary_rpt)
-
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
-    report_spyglass_lint(comparison_results)
 
-    if not no_diff:
+    if not report_spyglass_lint(comparison_results):
         print("Job failed due to differences in summaries")
         sys.exit(1)
