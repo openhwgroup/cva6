@@ -110,4 +110,52 @@ typedef struct {
     bit[31:0]    pc;
 } ins_t;
 
+typedef struct packed {
+      logic                                ready;  // icache is ready
+      logic                                valid;  // signals a valid read
+      logic [RTLCVA6Cfg.FETCH_WIDTH-1:0]   data;   // 2+ cycle out: tag
+      logic [RTLCVA6Cfg.VLEN-1:0]          vaddr;  // virtual address out
+} uvme_frontend_icache_req_t;
+
+typedef struct packed {
+      logic                       req;      // we request a new word
+      logic                       kill_s1;  // kill the current request
+      logic                       kill_s2;  // kill the last request
+      logic [RTLCVA6Cfg.VLEN-1:0] vaddr;    // 1st cycle: 12 bit index is taken for lookup
+} uvme_frontend_icache_rsp_t;
+
+typedef enum logic [2:0] {
+  NoCF,    // No control flow prediction
+  Branch,  // Branch
+  Jump,    // Jump to address from immediate
+  JumpR,   // Jump to address from registers
+  Return   // Return Address Prediction
+} uvme_frontend_prediction_t;
+
+typedef struct packed {
+      logic [RTLCVA6Cfg.VLEN-1:0] address;  // instruction word
+      logic [31:0]                instruction;  // instruction word
+      uvme_frontend_prediction_t  predict; // this field contains branch prediction information regarding the forward branch path
+      logic [RTLCVA6Cfg.VLEN-1:0] predicted_address;
+} uvme_frontend_fetched_data_t;
+
+typedef  struct packed{
+   logic                        valid;           // prediction with all its values is valid
+   logic [RTLCVA6Cfg.VLEN-1:0]  pc;              // PC of predict or mis-predict
+   logic [RTLCVA6Cfg.VLEN-1:0]  target_address;  // target address at which to jump, or not
+   logic                        is_mispredict;   // set if this was a mis-predict
+   logic                        is_taken;        // branch is taken
+   uvme_frontend_prediction_t   cf_type;         // Type of control flow change
+} uvme_frontend_bp_resolve_t;
+
+typedef struct packed {
+      logic [1:0]      saturation;
+      logic            valid;
+} uvme_frontend_bht_t;
+
+typedef struct packed {
+      logic [RTLCVA6Cfg.VLEN-1:0] predicted_address;
+      logic                       valid;
+} uvme_frontend_ras_t;
+
 `endif // __UVME_CVA6_TDEFS_SV__

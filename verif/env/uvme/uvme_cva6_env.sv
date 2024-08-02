@@ -360,6 +360,7 @@ function void uvme_cva6_env_c::connect_scoreboard();
 
     if (cfg.scoreboard_enabled) begin
        isacov_agent.monitor.ap.connect(sb.instr_trn_fifo.analysis_export);
+       isacov_agent.monitor.ap.connect(sb.frontend_sb.isa_trn_fifo.analysis_export);
     end
 
 endfunction: connect_scoreboard

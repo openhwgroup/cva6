@@ -81,6 +81,14 @@ module uvmt_cva6_tb;
 
     uvmt_default_inputs_intf         default_inputs_vif();
 
+
+   uvmt_frontend_intf #(
+      CVA6Cfg
+   )  cva6_frontend_bus(
+      clknrst_if.clk,
+      clknrst_if.reset_n
+   );
+
    //bind assertion module for axi interface
    bind uvmt_cva6_dut_wrap
       uvmt_axi_assert #(CVA6Cfg.DCacheType)           axi_assert(.axi_assert_if(axi_if));
@@ -120,6 +128,7 @@ module uvmt_cva6_tb;
                     .axi_if    (axi_if),
                     .axi_switch_vif    (axi_switch_vif),
                     .default_inputs_vif    (default_inputs_vif),
+                    .frontend_intf    (cva6_frontend_bus),
                     .core_cntrl_if(core_cntrl_if),
                     .interrupt_vif(interrupt_vif),
                     .tb_exit_o(tb_exit_if.tb_exit_o),
@@ -384,6 +393,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*"), .field_name("interrupt_vif"),  .value(interrupt_vif));
 
      uvm_config_db#(virtual uvmt_tb_exit_if)::set(.cntxt(null), .inst_name("*"), .field_name("tb_exit_vif"), .value(tb_exit_if));
+     uvm_config_db#(virtual uvmt_frontend_intf)::set(.cntxt(null), .inst_name("*"), .field_name("cva6_frontend_bus"), .value(cva6_frontend_bus));
 
      // DUT and ENV parameters
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );

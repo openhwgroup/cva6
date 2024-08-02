@@ -76,7 +76,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
-  uvmt_default_inputs_intf             default_inputs_vif
+  uvmt_default_inputs_intf             default_inputs_vif,
+  uvmt_frontend_intf                   cva6_frontend_bus
 );
 
   ariane_axi::req_t    axi_ariane_req;
@@ -123,6 +124,25 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
       cvxif_resp.register_ready = 1'b1;
     end
   end
+
+  assign cva6_frontend_bus.boot_addr_i         = i_cva6.i_frontend.boot_addr_i;
+  assign cva6_frontend_bus.flush_bp_i          = i_cva6.i_frontend.flush_bp_i;
+  assign cva6_frontend_bus.flush_i             = i_cva6.i_frontend.flush_i;
+  assign cva6_frontend_bus.halt_i              = i_cva6.i_frontend.halt_i;
+  assign cva6_frontend_bus.set_pc_commit_i     = i_cva6.i_frontend.set_pc_commit_i;
+  assign cva6_frontend_bus.pc_commit_i         = i_cva6.i_frontend.pc_commit_i;
+  assign cva6_frontend_bus.ex_valid_i          = i_cva6.i_frontend.ex_valid_i;
+  assign cva6_frontend_bus.resolved_branch_i   = i_cva6.i_frontend.resolved_branch_i;
+  assign cva6_frontend_bus.eret_i              = i_cva6.i_frontend.eret_i;
+  assign cva6_frontend_bus.epc_i               = i_cva6.i_frontend.epc_i;
+  assign cva6_frontend_bus.trap_vector_base_i  = i_cva6.i_frontend.trap_vector_base_i;
+  assign cva6_frontend_bus.set_debug_pc_i      = i_cva6.i_frontend.set_debug_pc_i;
+  assign cva6_frontend_bus.debug_mode_i        = i_cva6.i_frontend.debug_mode_i;
+  assign cva6_frontend_bus.icache_dreq_o       = i_cva6.i_frontend.icache_dreq_o;
+  assign cva6_frontend_bus.icache_dreq_i       = i_cva6.i_frontend.icache_dreq_i;
+  assign cva6_frontend_bus.fetch_entry_o       = i_cva6.i_frontend.fetch_entry_o;
+  assign cva6_frontend_bus.fetch_entry_valid_o = i_cva6.i_frontend.fetch_entry_valid_o;
+  assign cva6_frontend_bus.fetch_entry_ready_i = i_cva6.i_frontend.fetch_entry_ready_i;
 
   //----------------------------------------------------------------------------
   // RVFI

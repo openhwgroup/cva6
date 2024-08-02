@@ -26,6 +26,8 @@ parameter uvme_cva6_debug_default_clk_period = 10_000; // 10ns
 
 parameter XLEN = 32;
 parameter ILEN = 32;
+parameter FETCH_FIFO_DEPTH   = 4;
+parameter ADDRESS_FIFO_DEPTH = 2;
 
 
 // Control how often to print core scoreboard checked heartbeat messages

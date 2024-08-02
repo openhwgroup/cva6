@@ -65,6 +65,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Software interrupt supported
    rand bit                      sw_int_supported;
 
+   rand bit                      enable_frontend_model;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -103,6 +105,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft trn_log_enabled         == 1;
       soft force_disable_csr_checks == 0;
       soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
+      soft enable_frontend_model   == 1; // see uvme_cva6_constants.sv
    }
 
    constraint cva6_riscv_cons {
