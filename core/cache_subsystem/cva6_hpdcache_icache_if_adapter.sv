@@ -110,9 +110,9 @@ module cva6_hpdcache_icache_if_adapter
 
   //    Request forwarding
   assign hpdcache_req_valid_o = dreq_i.req,
-      hpdcache_req_o.addr_offset = {
+      hpdcache_req_o.addr_offset = hpdcache_req_is_uncacheable ?{
         vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3], 3'b0
-      },
+      }:{ vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}},
       hpdcache_req_o.wdata = '0,
       hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
       hpdcache_req_o.be = fetch_obi_req_i.a.be,
@@ -142,6 +142,23 @@ module cva6_hpdcache_icache_if_adapter
     end
   end
 
+  logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;
+
+  assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? (dreq_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS :
+                         ( hpdcache_req_is_uncacheable  & fetch_obi_req_i.req ) ? {{ICACHE_OFFSET_WIDTH-1{1'b0}}, cl_offset_q[2]} <<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
+      cl_offset_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : gen_offset
+    if (!rst_ni) begin
+      cl_offset_q <= '0;
+    end else begin
+      cl_offset_q <= cl_offset_d;
+    end
+  end
+
+  logic [10:0] offset_start;
+  assign offset_start = {cl_offset_q, 3'b0};
+
   assign fetch_obi_rsp_o.gnt = obi_gnt,
       fetch_obi_rsp_o.gntpar = !obi_gnt,
       fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
@@ -150,7 +167,8 @@ module cva6_hpdcache_icache_if_adapter
       fetch_obi_rsp_o.r.r_optional.exokay = '0,  // need this?
       fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
       fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
-      fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata,
+      // fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH], // data_d = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
+      fetch_obi_rsp_o.r.rdata = (offset_start[5] == 1'b0) ? hpdcache_rsp_i.rdata[0][31:0] : (offset_start[5] == 1'b1) ? hpdcache_rsp_i.rdata[0][63:32] : hpdcache_rsp_i.rdata[0][31:0],
       fetch_obi_rsp_o.r.r_optional.ruser = '0;  // TODO
   //  }}}
   //  }}}
