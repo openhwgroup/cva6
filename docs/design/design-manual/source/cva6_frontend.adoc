@@ -163,11 +163,12 @@ These outputs are used by the branch prediction feature.
 
 include::port_instr_scan.adoc[]
 
+ifeval::[{BHTEntries} > 0]
 [[bht-branch-history-table-submodule]]
 BHT (Branch History Table) submodule
 ++++++++++++++++++++++++++++++++++++
 
-BHT is implemented as a memory which is composed of **BHTDepth configuration parameter** entries. The lower address bits of the virtual address point to the memory entry.
+BHT is implemented as a memory which is composed of {BHTEntries} entries. The lower address bits of the virtual address point to the memory entry.
 
 When a branch instruction is resolved by the EX_STAGE module, the branch PC and the taken (or not taken) status information is stored in the Branch History Table.
 
@@ -185,14 +186,15 @@ When a branch instruction is pre-decoded by instr_scan submodule, the BHT valids
 
 The BHT is never flushed.
 
-
 include::port_bht.adoc[]
+endif::[]
 
+ifeval::[{BTBEntries} > 0]
 [[btb-branch-target-buffer-submodule]]
 BTB (Branch Target Buffer) submodule
 ++++++++++++++++++++++++++++++++++++
 
-BTB is implemented as an array which is composed of **BTBDepth configuration parameter** entries.
+BTB is implemented as an array which is composed of {BTBEntries} entries.
 The lower address bits of the virtual address point to the memory entry.
 
 When an JALR instruction is found mispredicted by the EX_STAGE module, the JALR PC and the target address are stored into the BTB.
@@ -207,12 +209,14 @@ In this case, the BTB provides the predicted target address.
 The BTB is never flushed.
 
 include::port_btb.adoc[]
+endif::[]
 
+ifeval::[{RASDepth} > 0]
 [[ras-return-address-stack-submodule]]
 RAS (Return Address Stack) submodule
 ++++++++++++++++++++++++++++++++++++
 
-RAS is implemented as a LIFO which is composed of **RASDepth configuration parameter** entries.
+RAS is implemented as a LIFO which is composed of {RASDepth} entries.
 
 When a JAL instruction is pre-decoded by the instr_scan, the PC of the instruction following JAL instruction is pushed into the RAS when the JAL instruction is added to the instruction queue.
 
@@ -222,3 +226,4 @@ If the predicted return address is wrong due for instance to speculation or RAS 
 The RAS is never flushed.
 
 include::port_ras.adoc[]
+endif::[]
