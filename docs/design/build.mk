@@ -26,8 +26,8 @@ setup:
 
 	cp -rf source/* build/source
 
-	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/cv32a65x/isa_updater.yaml -t cv32a65x -f adoc
-	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x -f adoc
+	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/$(CONFIG)/isa_updater.yaml -t $(CONFIG) -f adoc
+	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -c ../riscv-config/$(CONFIG)/generated/custom_gen.yaml -m updaters/$(CONFIG)/csr_updater.yaml -t $(CONFIG) -f adoc
 	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
 
 	cd ../.. && python3 scripts/spec_builder.py --target $(CONFIG) --gen-config $(current_dir)/build/source/config.adoc --gen-parameters $(current_dir)/build/source/parameters.adoc --gen-ports $(current_dir)/build/source

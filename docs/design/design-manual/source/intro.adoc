@@ -74,7 +74,7 @@ https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
 University,
 https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf.
 
-CV32A6 is a standards-compliant 32-bit processor fully compliant with
+{ohg-config} is a standards-compliant {XLEN}-bit processor fully compliant with
 RISC-V specifications: [RVunpriv], [RVpriv] and [RVdbg] and passes
 [RVcompat] compatibility tests, as requested by [GEN-10] in [CVA6req].
 

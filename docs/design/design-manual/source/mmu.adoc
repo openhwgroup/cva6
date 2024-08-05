@@ -622,7 +622,7 @@ shows the entry selection for replacement.
 |*Path Traverse* |*PLRU Bits* |*Entry to replace*
 a|
 0 -> 1 -> 3::
-  * 
+  *
 
  a|
 ___
@@ -642,7 +642,7 @@ _
 
 a|
 0 -> 1 -> 4::
-  * 
+  *
 
  a|
 ___
@@ -662,7 +662,7 @@ _
 
 a|
 0 -> 2 -> 5::
-  * 
+  *
 
  a|
 ___
@@ -682,7 +682,7 @@ _
 
 a|
 0 -> 2 -> 6::
-  * 
+  *
 
  a|
 ___
@@ -931,7 +931,7 @@ Page Table Walker
 -----------------
 
 The "CVA6 Page Table Walker (PTW) for MMU Sv32" is a hardware module
-developed for the CV32A6 processor architecture, designed to facilitate
+developed for the CVA6 processor architecture, designed to facilitate
 the translation of virtual addresses into physical addresses, a crucial
 task in memory access management.
 
@@ -946,7 +946,7 @@ Key features of this PTW module include support for two levels of page
 tables (LVL1 and LVL2) in the Sv32 standard, accommodating instruction
 and data page table walks. It rigorously validates and verifies page
 table entries (PTEs) to ensure translation accuracy and adherence to
-access permissions. This module seamlessly integrates with the CV32A6
+access permissions. This module seamlessly integrates with the CVA6
 processor's memory management unit (MMU), which governs memory access
 control. It also takes into account global mapping, access flags, and
 privilege levels during the translation process, ensuring that memory
