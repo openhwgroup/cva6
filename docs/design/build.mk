@@ -17,14 +17,15 @@ all: design-pdf design-html
 
 setup:
 	mkdir -p build
-	pwd 
+	pwd
 	echo $(design_dir)
 	cp -r $(design_dir)/design-manual/* build
 	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
 	cp -r $(design_dir)/../riscv-isa/riscv-isa-manual/docs-resources build
-	cp ../config/config.adoc build/source
 	cp $(design_dir)/../common/*.adoc build/source
-	cp -rf source build
+	cp ../generated/config.adoc build/source
+	cp -rf generated/* build/source
+	cp -rf source/* build/source
 
 design-pdf: setup
 	cd build; make SKIP_DOCKER=true build/design.pdf

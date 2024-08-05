@@ -11,6 +11,7 @@
 
 import re
 import sys
+import os
 
 from classes import Parameter
 from classes import PortIO
@@ -43,6 +44,31 @@ HEADER_ADOC = """\
 ////
 
 """
+
+DEFAULT_PARAMS = {
+    'RVE': False,
+    'RVQ': False,
+    'RVZabha': False,
+    'RVZacas': False,
+    'RVZawrs': False,
+    'RVZfa': False,
+    'RVZfbf-RZvfbf': False,
+    'RVZfh': False,
+    'RVZfinx': False,
+    'RVZicbo': False,
+    'RVZicfilp': False,
+    'RVZpm': False,
+    'RVZsmepmp': False,
+    'RVZsmmpm': False,
+    'RVZsmrnmi': False,
+    'RVZsmstateen': False,
+    'RVZsscofpmf': False,
+    'RVZssdbltrp': False,
+    'RVZsstc': False,
+    'RVZtso': False,
+    'RVZvk': False,
+    'SV': 'SV0'
+}
 
 def print_to_rst(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.rst"
@@ -107,12 +133,22 @@ def print_to_adoc(pathout, target, module, ports, comments):
                 fout.write(f"{comment[0]},::\n*   {comment[1]}\n")
         fout.write("\n")
 
-def main():
-    PATH = "04_cv32a65x"
-    generate_file_type = "adoc"
-    [spec_number, target] = PATH.split("_")
+def _format_parameter_adoc(name, value):
+    if type(value) is bool:
+        ret = str(value).lower()
+    else:
+        ret = str(value)
+    return f":{name}: {ret}\n"
 
-    print(spec_number, target)
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_folder")
+    args = parser.parse_args()
+
+    [spec_number, target] = args.config_folder.split("_", 1)
+    generate_file_type = "adoc"
 
     # Parameters
     parameters = parameters_extractor(spec_number, target)
@@ -122,11 +158,22 @@ def main():
         fileout = f"{pathout}/parameters_{target}.rst"
         writeout_parameter_table(fileout, parameters, target)
     elif generate_file_type in ['adoc']:
-        pathout = f"./{spec_number}_{target}/design/source"
-        fileout = f"{pathout}/parameters.adoc"
+        pathout_design = f"./{spec_number}_{target}/design/generated"
+        os.makedirs(pathout_design, exist_ok=True)
+        fileout = f"{pathout_design}/parameters.adoc"
         writeout_parameter_table_adoc(fileout, parameters, target)
     else:
         raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
+
+    # Config
+    pathout_common = f"./{spec_number}_{target}/generated"
+    os.makedirs(pathout_common, exist_ok=True)
+    with open(f"{pathout_common}/config.adoc", "w") as fout:
+        fout.write(f":ohg-config: {target.upper()}\n")
+        for name, value in DEFAULT_PARAMS.items():
+            fout.write(_format_parameter_adoc(name, value))
+        for name, parameter in parameters.items():
+            fout.write(_format_parameter_adoc(name, parameter.value))
 
     # User_cfg
     export_user_cfg_doc("01_cva6_user/user_cfg_doc.rst", parameters)
@@ -229,7 +276,7 @@ def main():
         if generate_file_type in ['rst']:
             print_to_rst(pathout, target, module, ports, comments)
         elif generate_file_type in ['adoc']:
-            print_to_adoc(pathout, target, module, ports, comments)
+            print_to_adoc(pathout_design, target, module, ports, comments)
         else:
             raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
 

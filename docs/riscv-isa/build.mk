@@ -20,7 +20,7 @@ setup:
 	cp -r $(riscv-isa_dir)/riscv-isa-manual/* build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/src build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/../common/*.adoc build/riscv-isa-manual/src
-	cp ../config/config.adoc build/riscv-isa-manual/src
+	cp ../generated/config.adoc build/riscv-isa-manual/src
 
 priv-pdf: setup
 	cd build/riscv-isa-manual; make SKIP_DOCKER=true build/riscv-privileged.pdf
