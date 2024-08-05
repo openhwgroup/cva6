@@ -274,7 +274,7 @@ module cva6_rvfi
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
-      exception = commit_instr_valid[i] && ex_commit_valid && !commit_drop[i];
+      exception = (i == 0) && commit_instr_valid[i] && ex_commit_valid && !commit_drop[i];
       rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid && !commit_drop[i]) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
