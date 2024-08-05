@@ -19,7 +19,7 @@ from classes import Parameter
 sys.path.append(os.getcwd() + "/../util")
 from user_config import get_config
 
-def parameters_extractor(spec_number, target):
+def parameters_extractor(target):
 
     parameters = {}
     file_in = "../core/include/config_pkg.sv"
