@@ -794,7 +794,7 @@ ifndef::archi-default,MTvalEn-true[]
 [{ohg-config}] The `stval` register is an MXLEN-bit read-only 0 register.
 endif::[]
 
-
+[[sec:senvcfg]]
 ==== Supervisor Environment Configuration (`senvcfg`) Register 
 
 The `senvcfg` CSR is an SXLEN-bit read/write register, formatted as
@@ -1273,13 +1273,6 @@ integer register _rs2_, except for entries containing global mappings.
 If the value held in _rs1_ is not a valid virtual address, then the
 SFENCE.VMA instruction has no effect. No exception is raised in this
 case.
-
-When __rs2__&#8800;``x0``, bits SXLEN-1:ASIDMAX of the value held
-in _rs2_ are reserved for future standard use. Until their use is
-defined by a standard extension, they should be zeroed by software and
-ignored by current implementations. Furthermore, if
-ASIDLEN<ASIDMAX, the implementation shall ignore bits
-ASIDMAX-1:ASIDLEN of the value held in _rs2_.
 endif::[]
 
 ifeval::[{note} == true]
@@ -1296,6 +1289,13 @@ in _rs1_ facilitates this type of simplification.
 endif::[]
 
 ifdef::archi-default[]
+When __rs2__&#8800;``x0``, bits SXLEN-1:ASIDMAX of the value held
+in _rs2_ are reserved for future standard use. Until their use is
+defined by a standard extension, they should be zeroed by software and
+ignored by current implementations. Furthermore, if
+ASIDLEN<ASIDMAX, the implementation shall ignore bits
+ASIDMAX-1:ASIDLEN of the value held in _rs2_.
+
 An implicit read of the memory-management data structures may return any
 translation for an address that was valid at any time since the most
 recent SFENCE.VMA that subsumes that address. The ordering implied by
@@ -1357,7 +1357,7 @@ Likewise, changes to `satp`.ASID take effect immediately.
 endif::[]
 
 ifeval::[{note} == true]
-[TIP]
+[NOTE]
 ====
 The following common situations typically require executing an
 SFENCE.VMA instruction:

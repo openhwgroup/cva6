@@ -4,7 +4,7 @@ include::config.adoc[]
 = The RISC-V Instruction Set Manual for {ohg-config}: Volume II: Privileged Architecture
 include::../docs-resources/global-config.adoc[]
 :description: Volume II - Privileged Architecture
-:revnumber: 20240703
+:revnumber: 20240801
 //:revremark: Pre-release version
 //development: assume everything can change
 //stable: assume everything could change
