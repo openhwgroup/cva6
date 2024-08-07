@@ -8,24 +8,25 @@ spike_param_tree:
   generic_core_config: false
   max_steps: 200000
   max_steps_enabled: false
-  isa: rv32imczicsr_zicntr_zifencei_zcb_zba_zbb_zbc_zbs
+  isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
   priv: M
-  cores:
-  - isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
-    boot_addr: 2147483648
-    marchid: 3
-    misa_we: false
-    misa_we_enable: true
-    pmpaddr0: 0
-    pmpcfg0: 0
-    pmpregions: 64
-    usable_pmpregions: 8
-    priv: M
-    status_fs_field_we: false
-    status_fs_field_we_enable: false
-    status_vs_field_we: false
-    status_vs_field_we_enable: false
-    mstatus_write_mask: 136
-    mstatus_override_mask: 6144
-    mtval_write_mask: 0
-    unified_traps: true
+  core_configs:
+    -
+      isa: rv32imc_zba_zbb_zbs_zbc_zicsr
+      boot_addr: 2147483648
+      marchid: 3
+      misa_we: false
+      misa_we_enable: true
+      pmpaddr0: 0
+      pmpcfg0: 0
+      pmpregions: 64
+      usable_pmpregions: 8
+      priv: M
+      status_fs_field_we: false
+      status_fs_field_we_enable: false
+      status_vs_field_we: false
+      status_vs_field_we_enable: false
+      mstatus_write_mask: 136
+      mstatus_override_mask: 6144
+      mtval_write_mask: 0
+      unified_traps: true
