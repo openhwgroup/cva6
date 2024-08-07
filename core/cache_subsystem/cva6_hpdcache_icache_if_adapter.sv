@@ -58,7 +58,8 @@ module cva6_hpdcache_icache_if_adapter
 );
   //  }}}
 
-  localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
+  // localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
+  localparam ICACHE_OFFSET_WIDTH = 3;
   localparam int ICACHE_CL_SIZE = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
   localparam int ICACHE_WORD_SIZE = 3;
   localparam int ICACHE_MEM_REQ_CL_SIZE =
@@ -156,9 +157,6 @@ module cva6_hpdcache_icache_if_adapter
     end
   end
 
-  logic [10:0] offset_start;
-  assign offset_start = {cl_offset_q, 3'b0};
-
   assign fetch_obi_rsp_o.gnt = obi_gnt,
       fetch_obi_rsp_o.gntpar = !obi_gnt,
       fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
@@ -168,7 +166,9 @@ module cva6_hpdcache_icache_if_adapter
       fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
       fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
       // fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH], // data_d = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
-      fetch_obi_rsp_o.r.rdata = (offset_start[5] == 1'b0) ? hpdcache_rsp_i.rdata[0][31:0] : (offset_start[5] == 1'b1) ? hpdcache_rsp_i.rdata[0][63:32] : hpdcache_rsp_i.rdata[0][31:0],
+      fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{
+        cl_offset_q, 3'b0
+      }+:CVA6Cfg.FETCH_WIDTH],
       fetch_obi_rsp_o.r.r_optional.ruser = '0;  // TODO
   //  }}}
   //  }}}
