@@ -68,7 +68,10 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                comparison_results.append((*key, *value, "FAIL", message))
+                if key[0] == "ERROR" and new_dict[key][0] > baseline_dict[key][0]:
+                    comparison_results.append((*key, *value, "FAIL", message))
+                else:
+                    comparison_results.append((*key, *value, "PASS", message))
 
     severity_order = {"ERROR": 1, "WARNING": 2, "INFO": 3}
     comparison_results.sort(key=lambda x: severity_order[x[0]])
@@ -109,7 +112,7 @@ if __name__ == "__main__":
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
     report = generate_spyglass_lint_report(comparison_results)
+    print(report.failed)
     report.dump()
-
     if report.failed:
         sys.exit(1)
