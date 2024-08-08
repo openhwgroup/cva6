@@ -131,7 +131,7 @@ build_tools:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
 .simu_after_script: &simu_after_script
-  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" -o name "*.yaml" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" -o -name "*.yaml" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
