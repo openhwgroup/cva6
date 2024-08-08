@@ -478,8 +478,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
     if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-        analyze_tandem_report(yaml)
-        generate_yaml_report(yaml, target, isa, test_log_name, testlist, iss)
+        tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -514,6 +513,12 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
         save_regr_report(report)
   else:
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
+
+
+def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss):
+    analyze_tandem_report(tandem_report)
+    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss)
+    process_verilator_sim_log(log, log + ".csv")
 
 
 def analyze_tandem_report(yaml_path):
@@ -663,8 +668,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
 
     if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-        analyze_tandem_report(yaml)
-        generate_yaml_report(yaml, target, isa, test_log_name, testlist, iss)
+        tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -740,9 +744,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
           if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-            analyze_tandem_report(yaml)
-            generate_yaml_report(yaml, target, isa, test['test'], "generated tests", iss, i)
-
+            tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss)
 
 
 def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):
