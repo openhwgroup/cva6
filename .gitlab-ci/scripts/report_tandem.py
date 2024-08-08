@@ -77,7 +77,7 @@ def add_test_row(report_file, metrics_table, with_logs):
         row.append(tb_log)
         row.append(disassembly)
 
-    if report["exit_cause"] == "SUCCESS":
+    if report["exit_cause"] == "SUCCESS" and report["exit_code"] == 0:
         metrics_table.add_pass(*row)
         return 1
 
