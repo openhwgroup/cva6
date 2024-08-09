@@ -270,26 +270,7 @@ module cva6_hpdcache_subsystem
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, cl_tag_d, {CVA6Cfg.ICACHE_INDEX_WIDTH{1'b0}}}
   ));
 
-  // always_comb begin : blockName
-  //   if (~paddr_is_nc) begin
-  //     icache_miss_ready = icache_miss_uc_ready;
-  //     icache_miss_uc = icache_miss;
-  //     icache_uc_read_ready = 0;
-
-  //     icache_miss_resp = icache_miss_uc_resp;
-  //     icache_miss_resp_valid = icache_miss_uc_resp_valid;
-  //     icache_uc_read_resp_valid = 0;
-  //   end else begin
-  //     icache_uc_read_ready = icache_miss_uc_ready;
-  //     icache_miss_uc = icache_uc_read; //
-  //     icache_miss_ready = 0; //
-
-  //     icache_uc_read_resp = icache_miss_uc_resp;
-  //     icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
-  //     icache_miss_resp_valid = 0;
-  //   end
-  // end
-  always_comb begin : blockName
+  always_comb begin : switch_icache_miss_uc
     if (paddr_is_nc) begin
       icache_miss_uc = icache_uc_read;
       icache_miss_uc_valid = icache_uc_read_valid;  //
@@ -299,17 +280,19 @@ module cva6_hpdcache_subsystem
       icache_miss_uc_resp_ready = icache_uc_read_resp_ready;  //
       icache_uc_read_resp = icache_miss_uc_resp;
       icache_uc_read_resp_valid = icache_miss_uc_resp_valid;
+      icache_miss_resp = '0;
       icache_miss_resp_valid = 0;
     end else begin
       icache_miss_uc = icache_miss;
       icache_miss_uc_valid = icache_miss_valid;  //
-      icache_miss_ready = icache_miss_uc_ready;
       icache_uc_read_ready = 0;
+      icache_miss_ready = icache_miss_uc_ready;
 
       icache_miss_uc_resp_ready = icache_miss_resp_ready;  //
+      icache_uc_read_resp = '0;
+      icache_uc_read_resp_valid = '0;
       icache_miss_resp = icache_miss_uc_resp;
       icache_miss_resp_valid = icache_miss_uc_resp_valid;
-      icache_uc_read_valid = 0;
     end
   end
 
