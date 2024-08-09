@@ -1,8 +1,8 @@
-# Copyright 2024 Thales Silicon Security
+# Copyright 2024 Thales DIS France SAS
 #
-# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# Licensed under the Solderpad Hardware Licence, Version 0.51 (the "License");
 # you may not use this file except in compliance with the License.
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
 # Original Author: Valentin Thomazic (valentin.thomazic@thalesgroup.com)
@@ -89,7 +89,7 @@ def add_test_row(report_file, metrics_table, with_logs):
 def report(metrics_table, passed_test_count, total_test_count):
     report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
     report.add_metric(metrics_table)
-    report.dump()
+    report.dump("bjr")
     return not report.failed
 
 
