@@ -516,8 +516,8 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 
 def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss, iterations = None):
-    analyze_tandem_report(tandem_report)
-    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations)
+    report_ok = analyze_tandem_report(tandem_report)
+    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations, report_ok)
     process_verilator_sim_log(log, log + ".csv")
 
 
@@ -525,18 +525,24 @@ def analyze_tandem_report(yaml_path):
     if (os.path.exists(yaml_path)):
         with open(yaml_path, 'r') as f:
             data = yaml.safe_load(f)
-        mismatches = data["mismatches"]
-        mismatches_count =  (data["mismatches_count"])
-        instr_count = (data["instr_count"])
-        exit_code = (data["exit_code"])
-        matches_count =  instr_count - mismatches_count
-        logging.info("TANDEM Result : %s (exit code %s) with %s mismatches and %s matches"
-            % (data["exit_cause"], exit_code, mismatches_count, matches_count))
+        try:
+          mismatches = data["mismatches"]
+          mismatches_count =  (data["mismatches_count"])
+          instr_count = (data["instr_count"])
+          exit_code = (data["exit_code"])
+          matches_count =  instr_count - mismatches_count
+          logging.info("TANDEM Result : %s (exit code %s) with %s mismatches and %s matches"
+              % (data["exit_cause"], exit_code, mismatches_count, matches_count))
+          return True
+        except KeyError:
+          logging.info("Incomplete TANDEM YAML report")
+          return False
     else:
         logging.info("TANDEM YAML not found")
+        return True
 
-def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration = None):
-  if(os.path.exists(yaml_path)):
+def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration, report_ok):
+  if(os.path.exists(yaml_path) and report_ok):
     with open(yaml_path, 'r') as f:
       report = yaml.safe_load(f)
   else:
