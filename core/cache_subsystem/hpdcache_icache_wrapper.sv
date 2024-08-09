@@ -275,7 +275,7 @@ module hpdcache_icache_wrapper
       .hpdcache_rsp_i      (dcache_rsp[NumPorts])
   );
 
-  localparam logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID = 8;
+  localparam logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   hpdcache #(
       .hpdcacheCfg          (HPDcacheCfg),
