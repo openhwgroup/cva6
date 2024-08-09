@@ -1269,8 +1269,6 @@ module cva6
         .dbus_rsp_t(dbus_rsp_t),
         .obi_fetch_req_t(obi_fetch_req_t),
         .obi_fetch_rsp_t(obi_fetch_rsp_t),
-        .obi_dbus_req_t(obi_dbus_req_t),
-        .obi_dbus_rsp_t(obi_dbus_rsp_t),
         .NumPorts  (NumPorts),
         .axi_ar_chan_t(axi_ar_chan_t),
         .axi_aw_chan_t(axi_aw_chan_t),
