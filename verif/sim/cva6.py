@@ -515,9 +515,9 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
 
 
-def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss):
+def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss, iterations = None):
     analyze_tandem_report(tandem_report)
-    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss)
+    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations)
     process_verilator_sim_log(log, log + ".csv")
 
 
@@ -744,7 +744,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
           if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-            tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss)
+            tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss, i)
 
 
 def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):
