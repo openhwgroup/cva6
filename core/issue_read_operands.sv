@@ -265,7 +265,6 @@ module issue_read_operands
     // CVXIF is always ready to try a new transaction on 1st issue port
     // If a transaction is already pending then we stall until the transaction is done.(issue_ack_o[0] = 0)
     // Since we can not have two CVXIF instruction on 1st issue port, CVXIF is always ready for the pending instruction.
-    fus_busy[0].cvxif = 1'b0;
     if (!flu_ready_i) begin
       fus_busy[0].alu = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
