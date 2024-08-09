@@ -413,7 +413,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
+                 setting_dir, debug_cmd, linker, priv, spike_params, test_name=None, iss_timeout=500, testlist=None):
   """Run a directed assembly test with ISS
 
   Args:
@@ -429,6 +429,9 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     linker      : Path to the linker
     iss_timeout : Timeout for ISS simulation
   """
+  if testlist != None:
+    testlist = testlist.split('/')[-1].strip("testlist_").split('.')[0]
+
   if not asm_test.endswith(".S"):
     logging.error("%s is not an assembly .S file" % asm_test)
     return
@@ -475,7 +478,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
     if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-        analize_result_yaml(yaml)
+        tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -511,8 +514,14 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
   else:
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
 
-def analize_result_yaml(yaml_path):
 
+def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss, iterations = None):
+    analyze_tandem_report(tandem_report)
+    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations)
+    process_verilator_sim_log(log, log + ".csv")
+
+
+def analyze_tandem_report(yaml_path):
     if (os.path.exists(yaml_path)):
         with open(yaml_path, 'r') as f:
             data = yaml.safe_load(f)
@@ -526,6 +535,22 @@ def analize_result_yaml(yaml_path):
     else:
         logging.info("TANDEM YAML not found")
 
+def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration = None):
+  if(os.path.exists(yaml_path)):
+    with open(yaml_path, 'r') as f:
+      report = yaml.safe_load(f)
+  else:
+    report = {"exit_cause": "UNKNOWN"}
+  report["target"] = target
+  report["isa"] = isa
+  report["test"] = test
+  report["testlist"] = testlist
+  report["simulator"] = iss
+  if iteration != None:
+    report["iteration"] = iteration
+
+  with open(yaml_path, "w") as f:
+    yaml.dump(report, f)
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
 def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
@@ -579,7 +604,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     compare_iss_log(iss_list, log_list, report)
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500):
+          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500, testlist="custom"):
   """Run a directed c test with ISS
 
   Args:
@@ -595,6 +620,9 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     linker      : Path to the linker
     iss_timeout : Timeout for ISS simulation
   """
+  if testlist != None:
+    testlist = testlist.split('/')[-1].strip("testlist_").split('.')[0]
+
   if not c_test.endswith(".c"):
     logging.error("%s is not a .c file" % c_test)
     return
@@ -640,7 +668,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
 
     if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-        analize_result_yaml(yaml)
+        tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -716,7 +744,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
           if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-            analize_result_yaml(yaml)
+            tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss, i)
 
 
 def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd):
@@ -1396,12 +1424,12 @@ def main():
               if os.path.isdir(path_asm_test):
                 run_assembly_from_dir(path_asm_test, args.iss_yaml, args.isa, args.mabi,
                                       gcc_opts, args.iss, output_dir,
-                                      args.core_setting_dir, args.debug, args.priv, iss_timeout=args.iss_timeout)
+                                      args.core_setting_dir, args.debug, args.priv, iss_timeout=args.iss_timeout, testlist=args.testlist)
               # path_asm_test is an assembly file
               elif os.path.isfile(path_asm_test):
                 run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                              args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
-                             args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout)
+                             args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout, testlist=args.testlist)
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_asm_test)
