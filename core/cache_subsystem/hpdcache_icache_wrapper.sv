@@ -149,7 +149,11 @@ module hpdcache_icache_wrapper
 
     output logic                 dcache_mem_resp_uc_write_ready_o,
     input  logic                 dcache_mem_resp_uc_write_valid_i,
-    input  hpdcache_mem_resp_w_t dcache_mem_resp_uc_write_i
+    input  hpdcache_mem_resp_w_t dcache_mem_resp_uc_write_i,
+
+    input logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID,
+    input logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_WRITE_ID
+
 );
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
@@ -275,7 +279,7 @@ module hpdcache_icache_wrapper
       .hpdcache_rsp_i      (dcache_rsp[NumPorts])
   );
 
-  localparam logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID = 8;
+  // localparam logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_READ_ID = 8;
 
   hpdcache #(
       .hpdcacheCfg          (HPDcacheCfg),
@@ -376,7 +380,8 @@ module hpdcache_icache_wrapper
       .cfg_prefetch_updt_plru_i           (1'b1),
       .cfg_error_on_cacheable_amo_i       (1'b0),
       .cfg_rtab_single_entry_i            (1'b0),
-      .HPDCACHE_UC_READ_ID                (HPDCACHE_UC_READ_ID)
+      .HPDCACHE_UC_READ_ID                (HPDCACHE_UC_READ_ID),
+      .HPDCACHE_UC_WRITE_ID               (HPDCACHE_UC_WRITE_ID)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;

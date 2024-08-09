@@ -137,17 +137,6 @@ module cva6_hpdcache_subsystem
     return y < x ? x : y;
   endfunction
 
-  // //  I$ instantiation
-  // //  {{{
-  // logic icache_miss_valid, icache_miss_ready;
-  // icache_req_t icache_miss;
-
-  // logic icache_miss_resp_valid;
-  // icache_rtrn_t icache_miss_resp;
-
-  // localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
-
-  //  }}}
 
   //  D$ instantiation
   //  {{{
@@ -219,7 +208,12 @@ module cva6_hpdcache_subsystem
                           hpdcache_req_tid_t);
 
   typedef logic [hpdcacheCfg.u.wbufTimecntWidth-1:0] hpdcache_wbuf_timecnt_t;
-  ////////////////////////////
+
+
+  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
+  localparam logic [hpdcacheCfg.u.memIdWidth-1:0] HPDCACHE_DCACHE_UC_READ_ID = {hpdcacheCfg.u.memIdWidth{1'b1}};
+  localparam logic [hpdcacheCfg.u.memIdWidth-1:0] HPDCACHE_DCACHE_UC_WRITE_ID = {hpdcacheCfg.u.memIdWidth{1'b1}};
+
 
   //  {{{
   logic                 icache_miss_uc_ready;
@@ -390,7 +384,10 @@ module cva6_hpdcache_subsystem
 
       .dcache_mem_resp_uc_write_ready_o(  /* unused */),
       .dcache_mem_resp_uc_write_valid_i('0),
-      .dcache_mem_resp_uc_write_i(  /* unused */)
+      .dcache_mem_resp_uc_write_i(  /* unused */),
+
+      .HPDCACHE_UC_READ_ID (ICACHE_RDTXID),
+      .HPDCACHE_UC_WRITE_ID(  /* unused */)
 
   );
 
@@ -530,10 +527,12 @@ module cva6_hpdcache_subsystem
 
       .dcache_mem_resp_uc_write_ready_o(dcache_uc_write_resp_ready),
       .dcache_mem_resp_uc_write_valid_i(dcache_uc_write_resp_valid),
-      .dcache_mem_resp_uc_write_i(dcache_uc_write_resp)
+      .dcache_mem_resp_uc_write_i(dcache_uc_write_resp),
+
+      .HPDCACHE_UC_READ_ID (HPDCACHE_DCACHE_UC_READ_ID),
+      .HPDCACHE_UC_WRITE_ID(HPDCACHE_DCACHE_UC_WRITE_ID)
 
   );
-  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   //  AXI arbiter instantiation
   //  {{{
@@ -594,7 +593,7 @@ module cva6_hpdcache_subsystem
       .dcache_uc_read_ready_o(dcache_uc_read_ready),
       .dcache_uc_read_valid_i(dcache_uc_read_valid),
       .dcache_uc_read_i      (dcache_uc_read),
-      .dcache_uc_read_id_i   ('1),
+      .dcache_uc_read_id_i   (hpdcache_mem_id_t'(HPDCACHE_DCACHE_UC_READ_ID)),
 
       .dcache_uc_read_resp_ready_i(dcache_uc_read_resp_ready),
       .dcache_uc_read_resp_valid_o(dcache_uc_read_resp_valid),
@@ -603,7 +602,7 @@ module cva6_hpdcache_subsystem
       .dcache_uc_write_ready_o(dcache_uc_write_ready),
       .dcache_uc_write_valid_i(dcache_uc_write_valid),
       .dcache_uc_write_i      (dcache_uc_write),
-      .dcache_uc_write_id_i   ('1),
+      .dcache_uc_write_id_i   (hpdcache_mem_id_t'(HPDCACHE_DCACHE_UC_WRITE_ID)),
 
       .dcache_uc_write_data_ready_o(dcache_uc_write_data_ready),
       .dcache_uc_write_data_valid_i(dcache_uc_write_data_valid),
