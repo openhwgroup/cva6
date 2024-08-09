@@ -63,6 +63,7 @@ def add_test_row(report_file, metrics_table, with_logs):
     with open(report_file) as f:
         report = yaml.safe_load(f)
     mismatches_count = str(report["mismatches_count"]) if "mismatches_count" in report else "Not found"
+
     row = [report["target"], report["isa"], report["test"], report["testlist"], report["simulator"], mismatches_count]
 
     if with_logs:
@@ -71,7 +72,7 @@ def add_test_row(report_file, metrics_table, with_logs):
         log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
             if "iteration" in report else logs_path + report['test'] + "." + report["target"]
         tb_log = log_prefix + '.log.iss.head'
-        disassembly = log_prefix + '.csv.head'
+        disassembly = log_prefix + '.log.csv.head'
 
         row.append(output_log)
         row.append(tb_log)
