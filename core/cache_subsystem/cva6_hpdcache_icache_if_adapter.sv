@@ -67,6 +67,10 @@ module cva6_hpdcache_icache_if_adapter
       $clog2(
       CVA6Cfg.AxiDataWidth / 8
   ) : ICACHE_CL_SIZE;
+
+  //  Internal nets and registers
+  //  {{{
+  logic hpdcache_req_is_uncacheable;
   logic va_transferred_q, va_transferred_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : transferred_state_magnegement
@@ -78,8 +82,10 @@ module cva6_hpdcache_icache_if_adapter
   end
 
   assign va_transferred_d = dreq_i.req & hpdcache_req_ready_i;
+  //  }}}
 
-  logic hpdcache_req_is_uncacheable;
+  //  Request forwarding
+  //  {{{
   assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
@@ -89,9 +95,25 @@ module cva6_hpdcache_icache_if_adapter
       }
   );
 
+
+  logic [CVA6Cfg.VLEN-1:0] vaddr_d, vaddr_q;
+  assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
+
+
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      vaddr_q <= '0;
+    end else begin
+      vaddr_q <= vaddr_d;
+    end
+  end
+
   //    Request forwarding
   assign hpdcache_req_valid_o = dreq_i.req,
-      hpdcache_req_o.addr_offset = dreq_i.vaddr[CVA6Cfg.ICACHE_INDEX_WIDTH-1:0],
+      hpdcache_req_o.addr_offset = hpdcache_req_is_uncacheable ?{
+        vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:3], 3'b0
+      }:{ vaddr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}},
       hpdcache_req_o.wdata = '0,
       hpdcache_req_o.op = hpdcache_pkg::HPDCACHE_REQ_LOAD,
       hpdcache_req_o.be = fetch_obi_req_i.a.be,
@@ -108,8 +130,6 @@ module cva6_hpdcache_icache_if_adapter
       hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable,
       hpdcache_req_pma_o.io = 1'b0;
 
-  logic which_half_q, which_half_d;
-
   //    Response forwarding
   assign dreq_o.ready = hpdcache_req_ready_i;  // TODO
   //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
@@ -122,19 +142,22 @@ module cva6_hpdcache_icache_if_adapter
       obi_gnt <= hpdcache_req_ready_i;
     end
   end
-  // assign which_half_d = (dreq_o.ready & dreq_i.req) ? ((dreq_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS)[2]: which_half_q;
-  assign which_half_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr[2] : which_half_q;
 
+  logic [ICACHE_OFFSET_WIDTH-1:0] cl_offset_d, cl_offset_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : gen_which_half
+  assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? (dreq_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS :
+                         ( hpdcache_req_is_uncacheable  & fetch_obi_req_i.req ) ? {{ICACHE_OFFSET_WIDTH-1{1'b0}}, cl_offset_q[2]} <<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
+      cl_offset_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : gen_offset
     if (!rst_ni) begin
-      which_half_q <= '0;
+      cl_offset_q <= '0;
     end else begin
-      which_half_q <= which_half_d;
+      cl_offset_q <= cl_offset_d;
     end
   end
 
-  assign fetch_obi_rsp_o.gnt = obi_gnt,  //
+  assign fetch_obi_rsp_o.gnt = obi_gnt,
       fetch_obi_rsp_o.gntpar = !obi_gnt,
       fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.rvalidpar = !hpdcache_rsp_valid_i,
@@ -142,8 +165,12 @@ module cva6_hpdcache_icache_if_adapter
       fetch_obi_rsp_o.r.r_optional.exokay = '0,  // need this?
       fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
       fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
+      // fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH], // data_d = mem_rtrn_i.data[{cl_offset_q, 3'b0}+:CVA6Cfg.FETCH_WIDTH];
       fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{
-        which_half_q, 3'b0
+        cl_offset_q, 3'b0
       }+:CVA6Cfg.FETCH_WIDTH],
       fetch_obi_rsp_o.r.r_optional.ruser = '0;  // TODO
+  //  }}}
+  //  }}}
+
 endmodule
