@@ -39,7 +39,6 @@ module compressed_decoder #(
   // -------------------
   always_comb begin
     illegal_instr_o  = 1'b0;
-    instr_o          = '0;
     is_compressed_o  = 1'b1;
     instr_o          = instr_i;
     is_macro_instr_o = 0;
