@@ -113,6 +113,7 @@ module rvfi_tracer #(
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
               end_of_test_q <= rvfi_i[i].mem_wdata[31:0];
+              $display("*** [rvfi_tracer] INFO: Simulation terminated after %d cycles!\n", cycles);
             end
           end
         end
