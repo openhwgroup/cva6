@@ -10,6 +10,7 @@
 
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+`include "axi/typedef.svh"
 
 module ariane_xilinx (
 // WARNING: Do not define input parameters. This causes the FPGA build to fail.
