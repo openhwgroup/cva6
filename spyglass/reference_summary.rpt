@@ -5,6 +5,7 @@
 #     Report Name      : summary
 #     Report Created by: asintzoff
 #     Report Created on:  Wed Aug 14 07:46:49 2024
+#     Report Created on:  Wed Aug 14 15:02:57 2024
 #     Working Directory: /home/asintzoff/git-repo/tss/cva6/spyglass
 #     SpyGlass Version : SpyGlass_vS-2021.09-SP2-3
 #     Policy Name      : SpyGlass(SpyGlass_vS-2021.09-SP2-03)
@@ -17,9 +18,9 @@
 #                        starc(SpyGlass_vS-2021.09-SP2-03)
 #                        starc2005(SpyGlass_vS-2021.09-SP2-03)
 #
-#     Total Number of Generated Messages :       1024
+#     Total Number of Generated Messages :       1021
 #     Number of Waived Messages          :        322
-#     Number of Reported Messages        :        702
+#     Number of Reported Messages        :        699
 #     Number of Overlimit Messages       :          0
 #
 #
@@ -67,10 +68,6 @@ WARNING    SYNTH_5064           38    Non-synthesizable statements are
 WARNING    SYNTH_5143           11    Initial block is ignored for synthesis 
 WARNING    SYNTH_89             4     Initial Assignment at Declaration is 
                                       ignored by synthesis. 
-WARNING    WRN_1024             3     Signed argument is passed to $signed 
-                                      system function call, or unsigned 
-                                      argument passed to $unsigned system 
-                                      function call. 
 WARNING    WRN_27               1     Bit-select should not be out-of-range. 
 INFO       DetectTopDesignUnits 1     Identify the top-level design units in 
                                       user design. 

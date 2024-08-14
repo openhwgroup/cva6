@@ -127,7 +127,7 @@ module serdiv
   assign shift_a = (lzc_a_no_one) ? WIDTH : {1'b0, lzc_a_result};
   assign div_shift = {1'b0, lzc_b_result} - shift_a;
 
-  assign op_b = op_b_i <<< $unsigned(div_shift);
+  assign op_b = op_b_i <<< div_shift;
 
   // the division is zero if |opB| > |opA| and can be terminated
   assign div_res_zero_d = (load_en) ? div_shift[$high(div_shift)] : div_res_zero_q;
