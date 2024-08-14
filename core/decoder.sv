@@ -121,7 +121,6 @@ module decoder
   logic [CVA6Cfg.XLEN-1:0] imm_sb_type;
   logic [CVA6Cfg.XLEN-1:0] imm_u_type;
   logic [CVA6Cfg.XLEN-1:0] imm_uj_type;
-  logic [CVA6Cfg.XLEN-1:0] imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
@@ -179,7 +178,6 @@ module decoder
     instruction_o.use_zimm                 = 1'b0;
     instruction_o.bp                       = branch_predict_i;
     instruction_o.vfp                      = 1'b0;
-    tinst                                  = '0;
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
@@ -1351,16 +1349,18 @@ module decoder
           end else begin
             illegal_instr = 1'b1;
           end
-          tinst = {
-            instr.atype.funct5,
-            instr.atype.aq,
-            instr.atype.rl,
-            instr.atype.rs2,
-            5'b0,
-            instr.atype.funct3,
-            instr.atype.rd,
-            instr.atype.opcode
-          };
+          if (CVA6Cfg.RVH) begin
+            tinst = {
+              instr.atype.funct5,
+              instr.atype.aq,
+              instr.atype.rl,
+              instr.atype.rs2,
+              5'b0,
+              instr.atype.funct3,
+              instr.atype.rd,
+              instr.atype.opcode
+            };
+          end
         end
 
         // --------------------------------
@@ -1478,9 +1478,8 @@ module decoder
       instruction_i[30:21],
       1'b0
     };
-    imm_bi_type = {{CVA6Cfg.XLEN - 5{instruction_i[24]}}, instruction_i[24:20]};
 
-    // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3
+    // NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3
     // select immediate
     case (imm_select)
       IIMM: begin
