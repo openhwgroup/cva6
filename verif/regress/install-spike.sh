@@ -45,8 +45,10 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   if [[ ! -z "$BOOST_INSTALL_DIR" ]]; then
       WITH_BOOST="--with-boost=${BOOST_INSTALL_DIR}"
   fi
-  if [[ ! -f config.log ]]; then
+  if [ ! -f config.log ]; then
       ../configure --prefix="$SPIKE_INSTALL_DIR" ${WITH_BOOST}
+  else
+      echo "Spike build dir contains 'config.log', skipping 'configure' step ..."
   fi
   # Build both shared and static versions of the yaml-cpp library in sequence
   # prior to building Spike.
