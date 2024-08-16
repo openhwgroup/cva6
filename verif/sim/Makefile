@@ -66,8 +66,7 @@ spike_yaml ?= $(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spik
 spike_params_final = $(spike_params)
 ifneq ($(wildcard $(spike_yaml)),)
   spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
-  # TODO Renable yaml plusarg
-  #spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
+  spike-yaml-plusarg = +config_file=$(spike_yaml)
 endif
 
 ##############################################
