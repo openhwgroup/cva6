@@ -12,7 +12,7 @@ spike_param_tree:
   priv: M
   core_configs:
     -
-      isa: rv32imc_zba_zbb_zbs_zbc_zicsr
+      isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
       boot_addr: 2147483648
       marchid: 3
       misa_we: false
