@@ -307,7 +307,7 @@ ifdef preload
 endif
 
 ifdef spike-tandem
-    questa-cmd += -gblso $(SPIKE_INSTALL_DIR)/lib/libriscv.so
+    questa-cmd += -gblso $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp.so -gblso $(SPIKE_INSTALL_DIR)/lib/libriscv.so
 endif
 
 # remote bitbang is enabled
