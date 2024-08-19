@@ -110,7 +110,7 @@ module alu
   assign adder_in_b         = operand_b_neg;
 
   // actual adder
-  assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
+  assign adder_result_ext_o = adder_in_a + adder_in_b;
   assign adder_result       = adder_result_ext_o[CVA6Cfg.XLEN:1];
   assign adder_z_flag       = ~|adder_result;
 
