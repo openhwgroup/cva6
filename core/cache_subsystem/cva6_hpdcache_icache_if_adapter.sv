@@ -119,7 +119,7 @@ module cva6_hpdcache_icache_if_adapter
   //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
   logic obi_gnt;  // TODO, need to fix
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen // TODO
+  always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen  // TODO
     if (!rst_ni) begin
       obi_gnt <= '0;
     end else begin
@@ -127,11 +127,9 @@ module cva6_hpdcache_icache_if_adapter
     end
   end
 
-  logic [ICACHE_OFFSET_WIDTH-1:0] which_half_d, which_half_q;
+  logic which_half_d, which_half_q;
+  assign which_half_d = (fetch_obi_req_i.req) ? fetch_obi_req_i.a.addr[2] : which_half_q;
 
-  assign which_half_d = ( dreq_o.ready & dreq_i.req)      ? (dreq_i.vaddr >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS :
-                         ( hpdcache_req_is_uncacheable  & fetch_obi_req_i.req ) ? {{ICACHE_OFFSET_WIDTH-1{1'b0}}, which_half_q[2]} <<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
-      which_half_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : gen_offset
     if (!rst_ni) begin
@@ -150,7 +148,7 @@ module cva6_hpdcache_icache_if_adapter
       fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
       fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
       fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{
-        which_half_q, 3'b0
+        which_half_q, 5'b0
       }+:CVA6Cfg.FETCH_WIDTH],
       fetch_obi_rsp_o.r.r_optional.ruser = '0;  // TODO
   //  }}}
