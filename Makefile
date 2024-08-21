@@ -262,6 +262,7 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
           $(CVA6_REPO_DIR)/corev_apu/register_interface/include/ $(CVA6_REPO_DIR)/corev_apu/tb/common/ \
           $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
+          $(CVA6_REPO_DIR)/vendor/pulp-platform/obi/include/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_reference_model/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_scoreboard/ \
