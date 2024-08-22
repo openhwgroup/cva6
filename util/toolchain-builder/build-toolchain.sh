@@ -149,6 +149,10 @@ build_llvm() {
         ln -sv clang riscv32-unknown-elf-$TOOL
         ln -sv clang riscv64-unknown-elf-$TOOL
     done
+    for TOOL in ar nm objcopy objdump ranlib size strings strip; do
+        ln -sv llvm-$TOOL riscv32-unknown-elf-$TOOL
+    done
+    ln -sv lld riscv32-unknown-elf-ld
 }
 
 
@@ -171,7 +175,7 @@ build_compiler_rt() {
     cd "$BUILD_DIR/compiler-rt-$1"
 
     COMPILER_RT_CONFIGURE_OPTS $1
-    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/compiler-rt $(COMPILER_RT_CONFIGURE_OPTS $1)
+    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/compiler-rt $(COMPILER_RT_CONFIGURE_OPTS $1) -DCMAKE_C_FLAGS="-fuse-ld=lld" -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
     make -j$NUM_JOBS
     make install
 }
@@ -194,25 +198,15 @@ build_gcc_toolchain() {
 build_llvm_toolchain() {
     [ $FORCE_REBUILD = "yes" ] && rm -rf $BUILD_DIR/{llvm,*-unknown-elf}
 
-    echo "### Building Binutils ..."
-    build_binutils riscv32-unknown-elf
-
     echo "### Building LLVM ..."
     build_llvm
 
     echo "### Building Newlib 32 bits ..."
     build_newlib riscv32-unknown-elf
 
-    echo "### Building Newlib 64 bits ..."
-    build_newlib riscv64-unknown-elf
-
     echo "### Building Compiler-RT 32 bits ..."
     build_compiler_rt riscv32-unknown-elf
-
-    echo "### Building Compiler-RT 64 bits ..."
-    build_compiler_rt riscv64-unknown-elf
 }
-
 
 
 # Absolute path of the toolchain-builder directory

@@ -86,7 +86,6 @@ LLVM_CONFIGURE_OPTS() {
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
         -DLLVM_ENABLE_PROJECTS='clang;lld'
-        -DLLVM_BINUTILS_INCDIR=${SRC_DIR}/${BINUTILS_DIR}/include
         -DLLVM_DISTRIBUTION_COMPONENTS='clang;clang-resource-headers;lld;llvm-ar;llvm-cov;llvm-cxxfilt;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-profdata;llvm-symbolizer'
         -DLLVM_TARGETS_TO_BUILD='RISCV'
         -DLLVM_OPTIMIZED_TABLEGEN=ON

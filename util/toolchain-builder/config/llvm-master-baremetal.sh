@@ -26,9 +26,6 @@
 # Each *_COMMIT variable can designate any valid 'commit-ish' entity:
 # typically a tag, a commit or the output of "git describe" of a Git tree.
 
-# Binutils
-BINUTILS_COMMIT=master
-
 # LLVM
 LLVM_COMMIT=main
 
