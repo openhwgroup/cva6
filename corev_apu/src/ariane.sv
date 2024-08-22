@@ -12,16 +12,18 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level module
 
+`include "rvfi_types.svh"
 `include "cvxif_types.svh"
 
 module ariane import ariane_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter type rvfi_probes_instr_t = logic,
-  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
+  parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
   parameter type rvfi_probes_t = struct packed {
     logic csr;
-    logic instr;
+    rvfi_probes_instr_t instr;
   },
+
   // CVXIF Types
   localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
   localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
