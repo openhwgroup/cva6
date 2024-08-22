@@ -174,6 +174,8 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       `uvm_info("CVA6Cfg", $sformatf("Found RTL configuration handle:\n%p", cfg.CVA6Cfg), UVM_DEBUG)
    end
 
+   cfg.rvfi_cfg.nret = cfg.CVA6Cfg.NrCommitPorts;
+
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cva6_cntxt_c)::get(this, "", "cntxt", cntxt));
       if (!cntxt) begin
