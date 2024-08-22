@@ -12,17 +12,72 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
+`include "wt_l15_types.svh"
 
 module ariane_verilog_wrap
     import ariane_pkg::*;
+    import config_pkg::*;
 #(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
   parameter int unsigned               BHTEntries            = 128,
+  parameter int unsigned               NrCommitPorts         = 2,
+  parameter int unsigned               NrLoadBufEntries      = 2,
+  parameter int unsigned               NrRgprPorts           = 0,
+  parameter int unsigned               NrWbPorts             = 0,
+  parameter int unsigned               MaxOutstandingStores  = 7,
+  parameter logic [63:0]               HaltAddress           = 64'h800,
+  parameter logic [63:0]               ExceptionAddress      = 64'h808,
+  parameter bit                        EnableAccelerator     = 0,
+  parameter bit                        SupervisorModeEn      = 1,
+  parameter bit                        TvalEn                = 1,
+  parameter bit                        DebugEn               = 1,
+  parameter bit                        NonIdemPotenceEn      = 0,
+  parameter int unsigned               XLEN                  = 64,
+  parameter int unsigned               VLEN                  = 64,
+  parameter bit                        FpgaEn                = 0,
+  parameter bit                        FpgaAlteraEn          = 0,
+  // RISCV extensions
+  parameter bit                        FpuEn                 = 1,
+  parameter bit                        F16En                 = 0,
+  parameter bit                        F16AltEn              = 0,
+  parameter bit                        F8En                  = 0,
+  parameter bit                        FVecEn                = 0,
+  parameter bit                        CvxifEn               = 0,
+  parameter bit                        CExtEn                = 1,
+  parameter bit                        ZcbExtEn              = 0,
+  parameter bit                        AExtEn                = 1,
+  parameter bit                        BExtEn                = 0,
+  parameter bit                        VExtEn                = 0,
+  parameter bit                        ZcmpExtEn             = 0,
+  parameter bit                        FExtEn                = 0,
+  parameter bit                        DExtEn                = 0,
+  parameter bit                        RVUEn                 = 1,
+  parameter bit                        RVZicntrEn            = 0,
+  parameter bit                        RVZiCondEn            = 0,
+  parameter bit                        RVZihpmEn             = 0,
+  parameter bit                        HExtEn                = 0,
+  parameter bit                        RVFEn                 = 1,
+  parameter bit                        RVDEn                 = 1,
+  // extended
+  parameter bit                        FpPresent             = 0,
+  parameter int unsigned               FLen                  = 0,
+  parameter bit                        NSXEn                 = 0, // non standard extensions present
+  parameter bit                        RVFVecEn              = 0,
+  parameter bit                        XF16VecEn             = 0,
+  parameter bit                        XF16ALTVecEn          = 0,
+  parameter bit                        XF8VecEn              = 0,
+  parameter bit                        PerfCounterEn         = 0,
   // debug module base address
   parameter logic [63:0]               DmBaseAddress         = 64'h0,
   // swap endianness in l15 adapter
   parameter bit                        SwapEndianess         = 1,
+  // AXI Configuration
+  parameter int unsigned               AxiAddrWidth          = 64,
+  parameter int unsigned               AxiDataWidth          = 64,
+  parameter int unsigned               AxiIdWidth            = 4,
+  parameter int unsigned               AxiUserWidth          = 64,
+  parameter int unsigned               AxiBurstWriteEn       = 0,
   // PMA configuration
   // idempotent region
   parameter int unsigned               NrNonIdempotentRules  =  1,
@@ -43,8 +98,8 @@ module ariane_verilog_wrap
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   output                      spc_grst_l,   // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   // Core ID, Cluster ID and boot address are considered more or less static
-  input  [riscv::VLEN-1:0]               boot_addr_i,  // reset boot address
-  input  [riscv::XLEN-1:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input  [VLEN-1:0]               boot_addr_i,  // reset boot address
+  input  [XLEN-1:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
   // Interrupt inputs
   input  [1:0]                irq_i,        // level sensitive IR lines, mip & sip (async)
   input                       ipi_i,        // inter-processor interrupts (async)
@@ -53,14 +108,100 @@ module ariane_verilog_wrap
   input                       debug_req_i,  // debug request (async)
 
   // L15 (memory side)
-  output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
-  input  [$size(wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+  output [`L15_REQ_WIDTH-1:0]  l15_req_o,
+  input  [`L15_RTRN_WIDTH-1:0] l15_rtrn_i
  );
+
+  localparam cva6_user_cfg_t cva6_user_cfg = '{
+    XLEN:                   XLEN,
+    VLEN:                   VLEN,
+    RVA:                    AExtEn,
+    RVB:                    BExtEn,
+    RVV:                    VExtEn,
+    RVC:                    CExtEn,
+    RVH:                    HExtEn,
+    RVZCB:                  ZcbExtEn,
+    RVZCMP:                 ZcmpExtEn,
+    RVZiCond:               RVZiCondEn,
+    RVZicntr:               RVZicntrEn,
+    RVZihpm:                RVZihpmEn,
+    RVF:                    RVFEn,
+    RVD:                    RVDEn,
+    XF16:                   F16En,
+    XF16ALT:                F16AltEn,
+    XF8:                    F8En,
+    XFVec:                  FVecEn,
+    PerfCounterEn:          PerfCounterEn,
+    MmuPresent:             1'b1,
+    RVS:                    SupervisorModeEn,
+    RVU:                    RVUEn,
+    DebugEn:                DebugEn,
+    DmBaseAddress:          DmBaseAddress,
+    HaltAddress:            HaltAddress,
+    ExceptionAddress:       ExceptionAddress,
+    TvalEn:                 TvalEn,
+    DirectVecOnly:          1'b0,
+    NrPMPEntries:           NrPMPEntries,
+    PMPCfgRstVal:           {16{64'h0}},
+    PMPAddrRstVal:          {16{64'h0}},
+    PMPEntryReadOnly:       16'd0,
+    NrNonIdempotentRules:   NrNonIdempotentRules,
+    NonIdempotentAddrBase:  NonIdempotentAddrBase,
+    NonIdempotentLength:    NonIdempotentLength,
+    NrExecuteRegionRules:   NrExecuteRegionRules,
+    ExecuteRegionAddrBase:  ExecuteRegionAddrBase,
+    ExecuteRegionLength:    ExecuteRegionLength,
+    NrCachedRegionRules:    NrCachedRegionRules,
+    CachedRegionAddrBase:   CachedRegionAddrBase,
+    CachedRegionLength:     CachedRegionLength,
+    CvxifEn:                CvxifEn,
+    NOCType:                SwapEndianess ? NOC_TYPE_L15_BIG_ENDIAN : NOC_TYPE_AXI4_ATOP,
+    AxiAddrWidth:           AxiAddrWidth,
+    AxiDataWidth:           AxiDataWidth,
+    AxiIdWidth:             AxiIdWidth,
+    AxiUserWidth:           AxiUserWidth,
+    AxiBurstWriteEn:        AxiBurstWriteEn,
+    MemTidWidth:            1,
+    IcacheByteSize:         16384,
+    IcacheSetAssoc:         4,
+    IcacheLineWidth:        256,
+    DCacheType:             config_pkg::WT,
+    DcacheIdWidth:          1,
+    DcacheByteSize:         8192,
+    DcacheSetAssoc:         4,
+    DcacheLineWidth:        128,
+    DataUserEn:             1'b0,
+    WtDcacheWbufDepth:      8,
+    FetchUserEn:            0,
+    FetchUserWidth:         64,
+    FpgaEn:                 FpgaEn,
+    FpgaAlteraEn:           FpgaAlteraEn,
+    TechnoCut:              1'b0,
+    SuperscalarEn:          1'b0,
+    NrCommitPorts:          NrCommitPorts,
+    NrLoadPipeRegs:         2,
+    NrStorePipeRegs:        0,
+    NrScoreboardEntries:    8,
+    NrLoadBufEntries:       NrLoadBufEntries,
+    MaxOutstandingStores:   MaxOutstandingStores,
+    RASDepth:               RASDepth,
+    BTBEntries:             BTBEntries,
+    BHTEntries:             BHTEntries,
+    InstrTlbEntries:        16,
+    DataTlbEntries:         16,
+    UseSharedTlb:           0,
+    SharedTlbDepth:         64
+  };
+
+  localparam cva6_cfg_t cva6_cfg = build_config_pkg::build_config(cva6_user_cfg);
+
+  localparam type l15_req_t  = `L15_REQ_T(cva6_cfg);
+  localparam type l15_rtrn_t = `L15_RTRN_T(cva6_cfg);
 
 // assign bitvector to packed struct and vice versa
   // L15 (memory side)
-  wt_cache_pkg::l15_req_t  l15_req;
-  wt_cache_pkg::l15_rtrn_t l15_rtrn;
+  l15_req_t  l15_req;
+  l15_rtrn_t l15_rtrn;
 
   assign l15_req_o = l15_req;
   assign l15_rtrn  = l15_rtrn_i;
@@ -156,33 +297,10 @@ module ariane_verilog_wrap
   // ariane instance
   /////////////////////////////
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
-    RASDepth:              RASDepth,
-    BTBEntries:            BTBEntries,
-    BHTEntries:            BHTEntries,
-    // idempotent region
-    NrNonIdempotentRules:  NrNonIdempotentRules,
-    NonIdempotentAddrBase: NonIdempotentAddrBase,
-    NonIdempotentLength:   NonIdempotentLength,
-    NrExecuteRegionRules:  NrExecuteRegionRules,
-    ExecuteRegionAddrBase: ExecuteRegionAddrBase,
-    ExecuteRegionLength:   ExecuteRegionLength,
-    // cached region
-    NrCachedRegionRules:   NrCachedRegionRules,
-    CachedRegionAddrBase:  CachedRegionAddrBase,
-    CachedRegionLength:    CachedRegionLength,
-    // cache config
-    AxiCompliant:          1'b0,
-    SwapEndianess:         SwapEndianess,
-    // debug
-    DmBaseAddress:         DmBaseAddress,
-    NrPMPEntries:          NrPMPEntries
-  };
-
   ariane #(
-    .ArianeCfg ( ArianeOpenPitonCfg ),
-    .noc_req_t  ( wt_cache_pkg::l15_req_t ),
-    .noc_resp_t ( wt_cache_pkg::l15_rtrn_t )
+    .CVA6Cfg    ( cva6_cfg ),
+    .noc_req_t  ( l15_req_t  ),
+    .noc_resp_t ( l15_rtrn_t )
   ) ariane (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),

@@ -253,6 +253,7 @@ package ariane_pkg;
   localparam int unsigned ICACHE_SET_ASSOC = `CONFIG_L1I_ASSOCIATIVITY;
   localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
   localparam int unsigned ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;
+  localparam int unsigned AXI_USER_WIDTH = 64;
   localparam int unsigned ICACHE_USER_LINE_WIDTH = (AXI_USER_WIDTH == 1) ? 4 : 128;  // in bit
   // D$
   localparam int unsigned DCACHE_LINE_WIDTH = `CONFIG_L1D_CACHELINE_WIDTH;
