@@ -328,7 +328,7 @@ module cva6_hpdcache_subsystem
     end
   end
 
-  hpdcache_icache_wrapper #(
+  cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
       .HPDcacheCfg(hpdcacheDcacheCfg),
       .USE_AS_ICACHE('1),
@@ -481,6 +481,11 @@ module cva6_hpdcache_subsystem
   cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
       .HPDcacheCfg(hpdcacheIcacheCfg),
+      .USE_AS_ICACHE('0),
+      .fetch_dreq_t(fetch_dreq_t),
+      .fetch_drsp_t(fetch_drsp_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .dcache_req_i_t(dbus_req_t),
       .dcache_req_o_t(dbus_rsp_t),
       .NumPorts(NumPorts),
@@ -509,6 +514,10 @@ module cva6_hpdcache_subsystem
   ) i_dcache (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
+      .fetch_dreq_i(  /* unused */),
+      .fetch_dreq_o(  /* unused */),
+      .fetch_obi_req_i(  /* unused */),
+      .fetch_obi_rsp_o(  /* unused */),
       .dcache_enable_i(dcache_enable_i),
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
