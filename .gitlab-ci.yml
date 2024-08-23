@@ -131,9 +131,9 @@ build_tools:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
 .simu_after_script: &simu_after_script
-  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
+  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" -o name "*.yaml" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
-  - python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log
+  - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
 smoke:
   extends:
@@ -149,12 +149,13 @@ smoke:
     matrix:
       - DV_SIMULATORS:
         - "veri-testharness,spike"
-        - "vcs-testharness,spike"
+        - "vcs-testharness"
         - "questa-testharness,spike"
-        - "vcs-uvm,spike"
+        - "vcs-uvm"
   script:
     - source $QUESTA_BASHRC
     - bash verif/regress/smoke-tests.sh
+    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
 gen_smoke:
@@ -165,9 +166,9 @@ gen_smoke:
     DASHBOARD_JOB_DESCRIPTION: "Short generated tests to challenge the CVA6-DV on STEP1 configuration"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
-    DV_SIMULATORS: "vcs-uvm,spike"
-    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "vcs-uvm"
     COLLECT_SIMU_LOGS: 1
+    SPIKE_TANDEM: 1
   script:
     - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
@@ -326,7 +327,8 @@ riscv_arch_test:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -338,7 +340,8 @@ compliance:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -350,9 +353,10 @@ riscv-tests-v:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
     DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -364,8 +368,9 @@ riscv-tests-p:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
     DASHBOARD_SORT_INDEX: 4
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -387,8 +392,9 @@ mmu_sv32_tests:
     DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness"
     DV_TARGET: cv32a6_imac_sv32
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-mmu-sv32-test.sh
   after_script: *simu_after_script
 

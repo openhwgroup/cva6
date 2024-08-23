@@ -2515,7 +2515,7 @@ module csr_regfile
   // determine if mprv needs to be considered if in debug mode
   assign mprv = (CVA6Cfg.DebugEn && debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
   assign debug_mode_o = debug_mode_q;
-  assign single_step_o = dcsr_q.step;
+  assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : 1'b0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
   // sequential process
