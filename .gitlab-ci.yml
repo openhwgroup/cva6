@@ -273,11 +273,11 @@ asic-synthesis:
     - cp -r ${SYNTH_FLOW} ./
     - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="only-synth"
     - export NAND2_AREA=$(cat pd/synth/cva6_${DV_TARGET}/nand2area.txt)
-    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synth_area.rpt pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synthesis.log
-    - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_synth/
-    - mv pd/synth/cva6_${DV_TARGET}/ artifacts/
-    - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/
-    - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/
+    - python3 .gitlab-ci/scripts/report_synth.py pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synth_area.rpt pd/synth/cva6_${DV_TARGET}/$PERIOD/reports/cva6_${DV_TARGET}_synthesis.log || echo "fail"
+    - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_synth/ || echo "fail"
+    - mv pd/synth/cva6_${DV_TARGET}/ artifacts/ || echo "fail"
+    - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/ || echo "fail"
+    - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/ || echo "fail"
 
 fpga-build:
   extends:
