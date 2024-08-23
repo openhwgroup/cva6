@@ -89,7 +89,7 @@ def add_test_row(report_file, metrics_table, with_logs):
 def report(metrics_table, passed_test_count, total_test_count):
     report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
     report.add_metric(metrics_table)
-    report.dump("bjr")
+    report.dump()
     return not report.failed
 
 
