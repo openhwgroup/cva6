@@ -1,0 +1,129 @@
+diff --git a/core/Flist.cva6 b/core/Flist.cva6
+index aa885261..b22d2849 100644
+--- a/core/Flist.cva6
++++ b/core/Flist.cva6
+@@ -69,6 +69,9 @@ ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
+ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
+ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
+ ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
++${CVA6_REPO_DIR}/core/include/ahb_pkg.sv
++${CVA6_REPO_DIR}/core/include/address_decoder_pkg.sv
++${CVA6_REPO_DIR}/core/include/scratchpad_pkg.sv
+ 
+ //CVXIF
+ ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+@@ -193,4 +196,4 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
+ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
+ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
+ 
+-// end of manifest
++// end of manifest
+\ No newline at end of file
+diff --git a/core/include/address_decoder_pkg.sv b/core/include/address_decoder_pkg.sv
+new file mode 100644
+index 00000000..4f4073e7
+--- /dev/null
++++ b/core/include/address_decoder_pkg.sv
+@@ -0,0 +1,23 @@
++//-----------------------------------------------------------------------------
++// Copyright 2024 Robert Bosch GmbH
++//
++// SPDX-License-Identifier: SHL-0.51
++//
++// Original Author: Coralie Allioux - Robert Bosch France SAS
++//-----------------------------------------------------------------------------
++
++package address_decoder_pkg;
++
++  // ----------------------
++  // Address Decoder Mode
++  // ----------------------
++
++  localparam DECODER_MODE_WIDTH = 2;
++  typedef enum logic [DECODER_MODE_WIDTH-1:0] {
++    DECODER_MODE_CACHE,
++    DECODER_MODE_DSCR,
++    DECODER_MODE_ISCR,
++    DECODER_MODE_AHB_PERIPH
++  } addr_dec_mode_e;
++
++endpackage
+diff --git a/core/include/ahb_pkg.sv b/core/include/ahb_pkg.sv
+new file mode 100644
+index 00000000..ed9be392
+--- /dev/null
++++ b/core/include/ahb_pkg.sv
+@@ -0,0 +1,29 @@
++//-----------------------------------------------------------------------------
++// Copyright 2024 Robert Bosch GmbH
++//
++// SPDX-License-Identifier: SHL-0.51
++//
++// Original Author: Coralie Allioux - Robert Bosch France SAS
++//-----------------------------------------------------------------------------
++
++package ahb_pkg;
++
++  localparam AHBSizeWidth = 3;
++  localparam AHBTransWidth = 2;
++  localparam AHBBurstWidth = 3;
++  localparam AHBProtWidth = 4;
++
++  typedef logic [AHBSizeWidth-1:0] size_t;
++  typedef logic [AHBTransWidth-1:0] trans_t;
++  typedef logic [AHBBurstWidth-1:0] burst_t;
++  typedef logic [AHBProtWidth-1:0] prot_t;
++
++  // htrans values
++  typedef enum logic [AHBTransWidth-1:0] {
++    AHB_TRANS_IDLE,
++    AHB_TRANS_BUSY,
++    AHB_TRANS_NONSEQ,
++    AHB_TRANS_SEQ
++  } ahb_trans_e;
++
++endpackage
+diff --git a/core/include/scratchpad_pkg.sv b/core/include/scratchpad_pkg.sv
+new file mode 100644
+index 00000000..f9173ae5
+--- /dev/null
++++ b/core/include/scratchpad_pkg.sv
+@@ -0,0 +1,38 @@
++//-----------------------------------------------------------------------------
++// Copyright 2024 Robert Bosch GmbH
++//
++// SPDX-License-Identifier: SHL-0.51
++//
++// Original Author: Coralie Allioux - Robert Bosch France SAS
++//-----------------------------------------------------------------------------
++
++package scratchpad_pkg;
++
++  // ----------------------
++  // Instruction Scratchpad Mode
++  // ----------------------
++  typedef enum logic {
++    ISCR_MODE_FUNCTIONAL,
++    ISCR_MODE_PRELOAD
++  } iscr_mode_t;
++
++  // ----------------------
++  // Arbit values
++  // ----------------------
++  localparam DSCR_ARBIT_NUM_IN = 3;
++  localparam ISCR_ARBIT_NUM_IN = 4;
++
++  typedef enum logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] {
++    ISCR_ARBIT_LOAD,
++    ISCR_ARBIT_STORE,
++    ISCR_ARBIT_AHB,
++    ISCR_ARBIT_FRONTEND
++  } iscr_arbit_e;
++
++  typedef enum logic [$clog2(DSCR_ARBIT_NUM_IN)-1:0] {
++    DSCR_ARBIT_LOAD,
++    DSCR_ARBIT_STORE,
++    DSCR_ARBIT_AHB
++  } dscr_arbit_e;
++
++endpackage

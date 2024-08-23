@@ -69,6 +69,9 @@ ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
+${CVA6_REPO_DIR}/core/include/ahb_pkg.sv
+${CVA6_REPO_DIR}/core/include/address_decoder_pkg.sv
+${CVA6_REPO_DIR}/core/include/scratchpad_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
