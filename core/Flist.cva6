@@ -196,4 +196,7 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
 
+// Scratchpads
+${CVA6_REPO_DIR}/core/address_decoder/address_decoder.sv
+
 // end of manifest
