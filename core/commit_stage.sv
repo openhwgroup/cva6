@@ -321,7 +321,7 @@ module commit_stage
         if (!exception_o.valid && !commit_instr_i[1].ex.valid
                                        && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-          if (commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
+          if (CVA6Cfg.RVZCMP && commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
             commit_macro_ack[1] = 1'b1;
           else commit_macro_ack[1] = 1'b0;
 
