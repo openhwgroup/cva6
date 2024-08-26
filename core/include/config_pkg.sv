@@ -198,6 +198,19 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    /// Set Data scratchpad
+    bit                          DataScrPresent;
+    logic [63:0] DataScrRegionAddrBase;
+    logic [63:0] DataScrRegionLength;
+    /// Set Instruction scratchpad
+    bit InstrScrPresent;
+    logic [63:0] InstrScrRegionAddrBase;
+    logic [63:0] InstrScrRegionLength;
+    /// Set AHB peripheral bus
+    bit                          AHBPeriphPresent;
+    int unsigned                 NrAHBPeriphRegionRules;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionLength;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -337,6 +350,17 @@ package config_pkg;
     vm_mode_t MODE_SV;
     int unsigned SV;
     int unsigned SVX;
+
+    bit DataScrPresent;
+    int unsigned DataScrRegionAddrBase;
+    int unsigned DataScrRegionLength;
+    bit InstrScrPresent;
+    int unsigned InstrScrRegionAddrBase;
+    int unsigned InstrScrRegionLength;
+    bit AHBPeriphPresent;
+    int unsigned NrAHBPeriphRegionRules;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionLength;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
