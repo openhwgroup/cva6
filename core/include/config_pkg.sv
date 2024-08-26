@@ -418,4 +418,33 @@ package config_pkg;
     return |pass;
   endfunction : is_inside_cacheable_regions
 
+  function automatic logic is_inside_ahbperiph_regions(cva6_cfg_t Cfg, logic [63:0] address);
+    logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    if (Cfg.AHBPeriphPresent) begin
+      for (int unsigned k = 0; k < Cfg.NrAHBPeriphRegionRules; k++) begin
+        pass[k] = range_check(Cfg.AHBPeriphRegionAddrBase[k], Cfg.AHBPeriphRegionLength[k], address);
+      end
+    end
+    return |pass;
+  endfunction : is_inside_ahbperiph_regions
+
+  function automatic logic is_inside_data_scratchpad(cva6_cfg_t Cfg, logic [63:0] address);
+    logic pass;
+    pass = '0;
+    if (Cfg.DataScrPresent) begin
+      pass = range_check(Cfg.DataScrRegionAddrBase, Cfg.DataScrRegionLength, address);
+    end
+    return pass;
+  endfunction : is_inside_data_scratchpad
+
+  function automatic logic is_inside_instruction_scratchpad(cva6_cfg_t Cfg, logic [63:0] address);
+    logic pass;
+    pass = '0;
+    if (Cfg.InstrScrPresent) begin
+      pass = range_check(Cfg.InstrScrRegionAddrBase, Cfg.InstrScrRegionLength, address);
+    end
+    return pass;
+  endfunction : is_inside_instruction_scratchpad
+
 endpackage
