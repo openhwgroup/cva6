@@ -42,8 +42,8 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
 
     // FIXME TODO: Temporary solution. We need explicit info on memory map.
     // FORNOW The solution below relies on specific region ordering.
-    cfg.dram_base = CVA6Cfg.ExecuteRegionAddrBase[2];
-    cfg.dram_size = CVA6Cfg.ExecuteRegionLength[2];
+    cfg.dram_base = 'h40000000;
+    cfg.dram_size = 'h80000000;
     cfg.dram_valid = 1;
 
     cfg.disable_all_csr_checks = 0;

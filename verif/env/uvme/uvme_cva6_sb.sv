@@ -46,21 +46,41 @@ class uvme_cva6_sb_c extends uvm_scoreboard;
    uvma_isacov_instr_c instr_prev;
 
    // Store MTVEC value
-   bit [XLEN-1:0]  mtvec_value = 'h0;
+   bit [XLEN-1:0]  mtvec_value = 0;
 
    // Store MEPC value
    bit [XLEN-1:0]  mepc_value;
 
    // Store trap pc value
    bit [XLEN-1:0]  trap_pc;
+   bit [XLEN:0]  mcycle_update;
 
    // Flag to see if mtvec/mepc has been changed
-   bit  mtvec_change = 'h0;
-   bit  mepc_change = 'h0;
+   bit  mtvec_change = 0;
+   bit  mepc_change = 0;
    static bit  has_trap = 0;
 
    // Flag for compressed instruction
    bit trap_is_compressed;
+
+   bit signed [XLEN-1:0] cycle;
+   bit signed [XLEN-1:0] cycleh;
+   bit signed [XLEN-1:0] write_cycle;
+   bit signed [XLEN-1:0] read_cycle;
+
+   // can't initialize it by 0 because it's a legal value
+   bit unsigned [XLEN-1:0] mcycle_read = 'hx;
+   bit unsigned [XLEN-1:0] mcycle_prev;
+
+   // can't initialize it by 0 because it's a legal value
+   bit unsigned [XLEN-1:0] mcycleh_read = 'hx;
+   bit unsigned [XLEN-1:0] mcycleh_prev;
+
+   int  mcycle_value;
+   bit  mcycle_change = 0;
+   bit  overflow = 0;
+   bit  write_in_mcycle;
+   bit  write_in_mcycleh;
 
    `uvm_component_utils_begin(uvme_cva6_sb_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -109,6 +129,11 @@ class uvme_cva6_sb_c extends uvm_scoreboard;
     * Check after a trap mepc has the pc trap
     */
    extern virtual function void check_mepc(uvma_isacov_instr_c instr);
+
+   /**
+    * Check mcycle[h] CSRs
+    */
+   extern virtual function bit [XLEN:0] check_mcycle_h(uvma_isacov_instr_c instr, uvma_isacov_instr_c instr_prev, int cycle_count);
 
    /**
     * Creates sub-scoreboard components.
@@ -215,12 +240,18 @@ function void uvme_cva6_sb_c::check_pc_trap(uvma_isacov_instr_c instr,
   if (instr_prev != null) begin
      if (instr_prev.trap) begin
         if (mtvec_change) begin
-           if (instr.rvfi.pc_rdata[31:2] == mtvec_value[31:2]) begin
-              //we only support MTVEC Direct mode
-              `uvm_info(get_type_name(), $sformatf("After a trap, PC matches MTVEC value"), UVM_DEBUG)
+           if(cfg.xlen == 32) begin
+              if (instr.rvfi.pc_rdata[31:2] == mtvec_value[31:2]) begin
+                 //we only support MTVEC Direct mode
+                 `uvm_info(get_type_name(), $sformatf("After a trap, PC matches MTVEC value"), UVM_DEBUG)
+              end
+              else begin
+                 `uvm_fatal(get_type_name(), "ERROR -> Doesn't jump to MTVEC")
+              end
            end
            else begin
-              `uvm_fatal(get_type_name(), "ERROR -> Doesn't jump to MTVEC")
+              //TODO add 64 bit configuration support
+              `uvm_info(get_type_name(), $sformatf("We only support 32 bit configuration"), UVM_DEBUG)
            end
         end
         else begin
@@ -237,7 +268,7 @@ function void uvme_cva6_sb_c::check_mepc(uvma_isacov_instr_c instr);
 
   if (instr.trap) begin
      trap_pc = instr.rvfi.pc_rdata[31:0];
-     `uvm_info(get_type_name(), $sformatf("Trap PC : 0x%h ", trap_pc), UVM_NONE)
+     `uvm_info(get_type_name(), $sformatf("Trap PC : 0x%h ", trap_pc), UVM_DEBUG)
      if (instr.rvfi.insn[1:0] == 2'h3) begin
         trap_is_compressed = 1'h0;
      end
@@ -289,17 +320,178 @@ function void uvme_cva6_sb_c::check_mepc(uvma_isacov_instr_c instr);
 
 endfunction : check_mepc
 
+function bit [XLEN:0] uvme_cva6_sb_c::check_mcycle_h(uvma_isacov_instr_c instr, uvma_isacov_instr_c instr_prev, int cycle_count);
+
+   // Check mcycle value after a CSR read
+   if (instr_prev == null) return;
+
+   write_in_mcycle  = (instr_prev.is_csr_write() && instr_prev.csr_val == 12'hb00) ? 1 : 0;
+   if (cfg.xlen == 32) begin
+      write_in_mcycleh = (instr_prev.is_csr_write() && instr_prev.csr_val == 12'hb80) ? 1 : 0;
+   end
+
+   mcycle_prev = mcycle_read;
+   mcycle_read = instr.rvfi.name_csrs["mcycle"].rdata;
+   // Check MCYCLE in a range because of a delay in the UVM RFVI agent while sending an instruction transaction
+   if (mcycle_read inside {cycle-2 , cycle-1}) begin
+      `uvm_info(get_type_name(), $sformatf("MCYCLE Match range [0x%h - 0x%h]",cycle-2, cycle-1), UVM_DEBUG)
+   end
+   else begin
+      `uvm_error(get_type_name(), $sformatf("ERROR : MCYCLE value out of range [0x%h - 0x%h]",cycle-2, cycle-1))
+   end
+
+   // Ignore check if there's no write into the MCYCLE
+   if (!write_in_mcycle) begin
+      // Check if the CSR is really incremented
+      if (mcycle_read > mcycle_prev) begin
+         `uvm_info(get_type_name(), $sformatf("MCYCLE is incremented !!"), UVM_DEBUG)
+         overflow = 0;
+      end
+      else if (mcycle_read < mcycle_prev) begin
+         `uvm_info(get_type_name(), $sformatf("MCYCLE overflow !!"), UVM_DEBUG)
+         cycleh += 1;
+         overflow = 1;
+      end
+      else begin
+         `uvm_error(get_type_name(), $sformatf("ERROR : No overflow - MCYCLE isn't incremented, %d - %d", mcycle_read, mcycle_prev))
+         overflow = 0;
+      end
+   end
+
+   // MCYCLEH is only supported in RV32
+   if (cfg.xlen == 32) begin
+      mcycleh_prev = mcycleh_read;
+      mcycleh_read = instr.rvfi.name_csrs["mcycleh"].rdata;
+      // Check MCYCLEH only if there an overflow or a write into the MCYCLEH
+      if (overflow || write_in_mcycleh) begin
+         if (mcycleh_read == cycleh) begin
+             `uvm_info(get_type_name(), $sformatf("MCYCLEH Match value 0x%h", cycleh), UVM_DEBUG)
+          end
+          else begin
+             `uvm_error(get_type_name(), $sformatf("ERROR : MCYCLEH value didn't Match value 0x%h", cycleh))
+          end
+      end
+      // Ignore check if there's no write into the MCYCLEH or an overflow of MCYCLE is present
+      if (!write_in_mcycleh && overflow) begin
+         if (mcycleh_read > mcycleh_prev) begin
+            `uvm_info(get_type_name(), $sformatf("MCYCLE overflow -> MCYCLEH is incremented !!"), UVM_DEBUG)
+         end
+         else if (mcycleh_read < mcycleh_prev) begin
+            `uvm_info(get_type_name(), $sformatf("MCYCLEH overflow !!"), UVM_DEBUG)
+         end
+         else begin
+            `uvm_error(get_type_name(), $sformatf("ERROR : No overflow - MCYCLEH isn't incremented"))
+         end
+      end
+      // Update the value after a write into the MCYCLEH
+      if ((instr.is_csr_write() && instr.csr_val == 12'hb80)) begin
+        if (instr.name == uvma_isacov_pkg::CSRRWI) begin
+           cycleh = instr.rs1;
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+        if (instr.name == uvma_isacov_pkg::CSRRSI) begin
+           cycleh = instr.rvfi.rd1_wdata | instr.rs1;
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+        if (instr.name == uvma_isacov_pkg::CSRRCI) begin
+           cycleh = instr.rvfi.rd1_wdata & ~(instr.rs1);
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+        if (instr.name == uvma_isacov_pkg::CSRRW) begin
+           cycleh = instr.rs1_value;
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+        if (instr.name == uvma_isacov_pkg::CSRRC) begin
+           cycleh = instr.rvfi.rd1_wdata & ~(instr.rs1_value);
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+        if (instr.name == uvma_isacov_pkg::CSRRS) begin
+           cycleh = instr.rvfi.rd1_wdata | instr.rs1_value;
+           `uvm_info(get_type_name(), $sformatf("Write into MCYCLEH the value = 0x%h", cycleh), UVM_DEBUG)
+        end
+      end
+   end
+
+  // Update the counter value after a write into the MCYCLE
+  if (instr.group == uvma_isacov_pkg::CSR_GROUP && instr.is_csr_write() && instr.csr_val == 12'hb00) begin
+     if (instr.name == uvma_isacov_pkg::CSRRWI) begin
+        mcycle_value = instr.rs1;
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRSI) begin
+        mcycle_value = instr.rvfi.rd1_wdata | instr.rs1;
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRCI) begin
+        mcycle_value = instr.rvfi.rd1_wdata & ~(instr.rs1);
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRW) begin
+        mcycle_value = instr.rs1_value;
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRC) begin
+        mcycle_value = instr.rvfi.rd1_wdata & ~(instr.rs1_value);
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+     if (instr.name == uvma_isacov_pkg::CSRRS) begin
+        mcycle_value = instr.rvfi.rd1_wdata | instr.rs1_value;
+        mcycle_change = 1'h1;
+        `uvm_info(get_type_name(), $sformatf("Write into MCYCLE the value = 0x%h", mcycle_value), UVM_DEBUG)
+     end
+  end
+  else begin
+     mcycle_change = 0;
+  end
+
+  return {mcycle_change, mcycle_value};
+
+endfunction : check_mcycle_h
+
 task uvme_cva6_sb_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
-  forever begin
-     instr_trn_fifo.get(instr_trn);
-     check_pc_trap(instr_trn.instr, instr_prev);
-     check_mepc(instr_trn.instr);
-    // Move instructions down the pipeline
-     instr_prev = instr_trn.instr;
-  end
+  fork
+      begin
+          forever begin
+              if (!cntxt.clknrst_cntxt.vif.reset_n) begin
+                 cycle = 0;
+              end
+              else begin
+                 if (mcycle_update[XLEN]) begin
+                    read_cycle = write_cycle;
+                    write_cycle = cycle;
+                    cycle = mcycle_update + 2;
+                    mcycle_update[XLEN] = 0;
+                 end
+                 else begin
+                    read_cycle = write_cycle;
+                    write_cycle = cycle;
+                    cycle = cycle + 1;
+                 end
+              end
+              @(posedge cntxt.clknrst_cntxt.vif.clk);
+          end
+      end
+      begin
+          forever begin
+              instr_trn_fifo.get(instr_trn);
+              check_pc_trap(instr_trn.instr, instr_prev);
+              check_mepc(instr_trn.instr);
+              if (instr_trn.instr.rvfi.nret_id == 0) begin
+                 mcycle_update = check_mcycle_h(instr_trn.instr, instr_prev, read_cycle);
+              end
+              // Move instructions down the pipeline
+              instr_prev = instr_trn.instr;
+          end    
+      end
+  join_none
 
 endtask : run_phase
 

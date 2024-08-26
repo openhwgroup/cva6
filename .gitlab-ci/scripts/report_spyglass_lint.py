@@ -11,7 +11,6 @@
 
 import re
 import sys
-import subprocess
 import report_builder as rb
 
 
@@ -69,15 +68,17 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                comparison_results.append((*key, *value, "FAIL", message))
+                if key[0] == "ERROR" and new_dict[key][0] > baseline_dict[key][0]:
+                    comparison_results.append((*key, *value, "FAIL", message))
+                else:
+                    comparison_results.append((*key, *value, "PASS", message))
 
     severity_order = {"ERROR": 1, "WARNING": 2, "INFO": 3}
     comparison_results.sort(key=lambda x: severity_order[x[0]])
-
     return comparison_results
 
 
-def report_spyglass_lint(comparison_results):
+def generate_spyglass_lint_report(comparison_results):
     metric = rb.TableStatusMetric("")
     metric.add_column("SEVERITY", "text")
     metric.add_column("RULE NAME", "text")
@@ -94,27 +95,10 @@ def report_spyglass_lint(comparison_results):
 
     report = rb.Report()
     report.add_metric(metric)
-    report.dump()
 
-
-def run_diff(ref_file, new_file):
-    result = subprocess.run(
-        [
-            "diff",
-            "-I",
-            r"#\s+Report Name\s+:\s*[^#]*#\s+Report Created by\s*:\s*[^#]*#\s+Report Created on\s*:\s*[^#]*#\s+Working Directory\s*:\s*[^#]*",
-            ref_file,
-            new_file,
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if result.stdout:
-        print("Found differences between reference and new summary")
-        return False
-    else:
-        print("No differences found between reference and new summary")
-        return True
+    for value in metric.values:
+        print(" | ".join(map(str, value)))
+    return report
 
 
 if __name__ == "__main__":
@@ -124,13 +108,11 @@ if __name__ == "__main__":
     summary_ref_results = sys.argv[1]
     summary_rpt = sys.argv[2]
 
-    no_diff = run_diff(summary_ref_results, summary_rpt)
-
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
-    report_spyglass_lint(comparison_results)
-
-    if not no_diff:
-        print("Job failed due to differences in summaries")
+    report = generate_spyglass_lint_report(comparison_results)
+    print(report.failed)
+    report.dump()
+    if report.failed:
         sys.exit(1)

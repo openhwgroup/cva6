@@ -166,9 +166,8 @@ module scoreboard #(
 
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
   always_comb begin
-    decoded_instr_ack_o = '0;
-    issue_instr_o       = decoded_instr_i;
-    orig_instr_o        = orig_instr_i;
+    issue_instr_o = decoded_instr_i;
+    orig_instr_o  = orig_instr_i;
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       // make sure we assign the correct trans ID
       issue_instr_o[i].trans_id = issue_pointer[i];

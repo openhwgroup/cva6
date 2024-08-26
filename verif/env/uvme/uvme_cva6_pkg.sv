@@ -79,6 +79,8 @@ package uvme_cva6_pkg;
    `include "uvme_cva6_constants.sv"
    `include "uvme_cva6_tdefs.sv"
 
+   `include "uvml_mem_vp.sv"
+
    // Objects
    `include "uvma_cva6_core_cntrl_cntxt.sv"
    `include "uvme_cva6_cfg.sv"

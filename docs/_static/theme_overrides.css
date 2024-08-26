@@ -1,0 +1,12 @@
+@media screen {
+	/* content column
+	 *
+	 * RTD theme's default is 800px as max width for the content, but we have
+	 * tables with tons of columns, which need the full width of the view-port.
+	 *
+	 * Comment from yocto project theme_overrides.css
+	 */
+
+	.wy-nav-content{ max-width: none; }
+
+}

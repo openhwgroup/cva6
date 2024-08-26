@@ -62,6 +62,9 @@ class uvmt_cva6_test_cfg_c extends uvm_object;
    bit    cli_uvm_banner_select_override = 0;
    string cli_uvm_banner_name_str        = "";
 
+   // Virtual Peripherals
+   bit mem_vp_enabled = 0;
+
    // Run-time control
    bit    run_riscv_gcc_toolchain  = 0;
    bit    print_uvm_runflow_banner = 0;
@@ -141,6 +144,11 @@ function void uvmt_cva6_test_cfg_c::process_cli_args();
          print_uvm_runflow_banner       = 1;
          `uvm_info("TEST_CFG", $sformatf("process_cli_args() cli_uvm_banner_select_str=%s", cli_uvm_banner_name_str), UVM_LOW)
       end
+   end
+
+   mem_vp_enabled = 0; // default
+   if ($value$plusargs("mem_vp_enabled=%b", mem_vp_enabled)) begin
+      `uvm_info("TEST_CFG", $sformatf("process_cli_args() virtual peripherals mem_vp_enabled=0x%0x", mem_vp_enabled), UVM_LOW)
    end
 
    `uvm_info("TEST_CFG", "process_cli_args() complete", UVM_HIGH)

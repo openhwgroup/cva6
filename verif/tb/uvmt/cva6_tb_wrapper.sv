@@ -73,6 +73,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_o,
   output rvfi_csr_t                    rvfi_csr_o,
   input  logic [2:0]                   irq_i,
+  uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
@@ -106,7 +107,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .irq_i                ( {1'b0, irq_i[0]}             ),
     .ipi_i                ( irq_i[1]                     ),
     .time_irq_i           ( irq_i[2]                     ),
-    .debug_req_i          ( default_inputs_vif.debug_req ),
+    .debug_req_i          ( debug_if.debug_req           ),
     .rvfi_probes_o        ( rvfi_probes                  ),
     .cvxif_req_o          ( cvxif_req                    ),
     .cvxif_resp_i         ( cvxif_resp                   ),
@@ -114,28 +115,13 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .noc_resp_i           ( axi_ariane_resp           )
   );
 
-  if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
-    cvxif_example_coprocessor #(
-      .NrRgprPorts (CVA6Cfg.NrRgprPorts),
-      .readregflags_t (readregflags_t),
-      .writeregflags_t (writeregflags_t),
-      .id_t (id_t),
-      .hartid_t (hartid_t),
-      .x_compressed_req_t (x_compressed_req_t),
-      .x_compressed_resp_t (x_compressed_resp_t),
-      .x_issue_req_t (x_issue_req_t),
-      .x_issue_resp_t (x_issue_resp_t),
-      .x_register_t (x_register_t),
-      .x_commit_t (x_commit_t),
-      .x_result_t (x_result_t),
-      .cvxif_req_t (cvxif_req_t),
-      .cvxif_resp_t (cvxif_resp_t)
-    ) i_cvxif_coprocessor (
-      .clk_i                ( clk_i                          ),
-      .rst_ni               ( rst_ni                         ),
-      .cvxif_req_i          ( cvxif_req                      ),
-      .cvxif_resp_o         ( cvxif_resp                     )
-    );
+  if (CVA6Cfg.CvxifEn) begin : gen_cvxif_default_response
+    always_comb begin
+      cvxif_resp = '0;
+      cvxif_resp.compressed_ready = 1'b1;
+      cvxif_resp.issue_ready = 1'b1;
+      cvxif_resp.register_ready = 1'b1;
+    end
   end
 
   //----------------------------------------------------------------------------

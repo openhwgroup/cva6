@@ -271,12 +271,12 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
 # Compile and sim flags
-compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 -permissive -svinputport=compat +define+$(defines) -suppress 8386 -suppress vlog-2577
+compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 +permissive -svinputport=compat +define+$(defines) -suppress 8386 -suppress vlog-2577
 vopt_flag += -suppress 2085 -suppress 7063 -suppress 2698 -suppress 13262
 
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
 questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) \
-			+tohost_addr=$(hell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+			+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
 			+core_name=$(target) +define+QUESTA -suppress 3356 -suppress 3579
 compile_flag_vhd += -64 -nologo -quiet -2008
 
@@ -307,7 +307,7 @@ ifdef preload
 endif
 
 ifdef spike-tandem
-    questa-cmd += -gblso $(SPIKE_INSTALL_DIR)/lib/libriscv.so
+    questa-cmd += -gblso $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp.so -gblso $(SPIKE_INSTALL_DIR)/lib/libriscv.so
 endif
 
 # remote bitbang is enabled
@@ -726,6 +726,8 @@ fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 fpga_filter += $(addprefix $(root-dir), vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_peripherals.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_testharness.sv)
 
 src/bootrom/bootrom_$(XLEN).sv:
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) bootrom_$(XLEN).sv

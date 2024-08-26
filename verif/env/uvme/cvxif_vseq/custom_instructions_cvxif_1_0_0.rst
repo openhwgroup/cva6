@@ -11,7 +11,9 @@
 Custom Instruction to challenge CV-X-IF protocol
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This section describes some custom instruction, for stress or challenge the CV-X-IF protocol for the 3 implemented interfaces, it's just to interact with the cvxif agent.
-All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
+Most instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
+Except for 4 of them using opcode `MADD, MSUB, NMADD, NMSUB`
+
 - **CUS_NOP**: Custom No Operation
 
     **Format**: cus_nop -> |0000000000000000000000000|111_1011|
@@ -20,8 +22,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: cus_nop
 
-    **Invalid values**: NONE
-
 - **CUS_ADD**: Custom Add
 
     **Format**: cus_add rd, rs1, rs2 -> |0000000|rs2|rs1|001|rd|111_1011|
@@ -29,8 +29,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
     **Description**: add register rs1 to rs2, and store the result in rd.
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2]
-
-    **Invalid values**: NONE
 
 - **CUS_DOUBLE_RS1**: Custom Double RS1
 
@@ -42,8 +40,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs1]
 
-    **Invalid values**: NONE
-
 - **CUS_DOUBLE_RS2**: Custom Double RS2
 
     **Format**: cus_add rd, rs2, rs2 -> |0000010|rs2|rs1|001|rd|111_1011|
@@ -54,8 +50,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: x[rd] = x[rs2] + x[rs2]
 
-    **Invalid values**: NONE
-
 - **CUS_ADD_MULTI**: Custom Multicycle Add
 
     **Format**: addi rd, rs1, rs2 -> |0000011|rs2|rs1|001|rd|111_1011|
@@ -63,8 +57,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
     **Description**: add register rs1 to rs2, and store the result in rd. Coprocessor should randomly delays the result
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2]
-
-    **Invalid values**: NONE
 
 - **CUS_ADD_RS3_MADD**: Custom Add with RS3 opcode == MADD
 
@@ -74,8 +66,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
 
-    **Invalid values**: NONE
-
 - **CUS_ADD_RS3_MSUB**: Custom Add with RS3 opcode == MSUB
 
     **Format**: addi rd, rs1, rs2, rs3 -> |rs3|00|rs2|rs1|000|rd|100_0111|
@@ -83,8 +73,6 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
     **Description**: add register rs1, rs2 to rs3, and store the result in rd.
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
-
-    **Invalid values**: NONE
 
 - **CUS_ADD_RS3_NMADD**: Custom Add with RS3 opcode == NMADD
 
@@ -94,17 +82,13 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
 
-    **Invalid values**: NONE
+- **CUS_ADD_RS3_NMSUB**: Custom Add with RS3 opcode == NMSUB
 
-- **CUS_ADD_RS3_NMADD**: Custom Add with RS3 opcode == NMSUB
-
-    **Format**: addi rd, rs1, rs2, rs3 -> |rs3|00|rs2|rs1|000|rd|100_0011|
+    **Format**: addi rd, rs1, rs2, rs3 -> |rs3|00|rs2|rs1|000|rd|100_1011|
 
     **Description**: add register rs1, rs2 to rs3, and store the result in rd.
 
     **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
-
-    **Invalid values**: NONE
 
 - **CUS_ADD_RS3_RTYPE**: Custom Add with RS3, rd is x10 (a0)
 
@@ -114,17 +98,13 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
 
     **Pseudocode**: x[10] = x[rs1] + x[rs2] + x[rs3]
 
-    **Invalid values**: NONE
-
 - **CUS_CNOP** : Custom Compressed NOP
 
-    **Format**: cus_cnop -> |111|0|00000|00000|00|
+    **Format**: cus_cnop -> |111|0|rs1|rs2|00|
 
     **Description**: Extends to CUS_NOP : do nothing, it's just a hint instruction.
 
     **Pseudocode**: cus_cnop
-
-    **Invalid values**: NONE
 
 - **CUS_CADD** : Custom Compressed ADD
 
@@ -133,5 +113,3 @@ All instructions use opcode `CUSTOM_3`(0x7b, 0b111_1011).
     **Description**: Extends to CUS_ADD rs1, rs2 -> x10 : Add rs1 + rs2 into x10 (a0).
 
     **Pseudocode**: cus_cadd
-
-    **Invalid values**: NONE
