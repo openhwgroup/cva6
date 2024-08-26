@@ -1,6 +1,8 @@
 ![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)
 
 
+[CVA6 dashboard](util/toolchain-builder/README.md#Prerequisites)
+
 # CVA6 RISC-V CPU
 
 CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore, it is compliant to the draft external debug spec 0.13.
@@ -31,12 +33,14 @@ git submodule update --init --recursive
 
 :warning: It is **strongly recommended** to use the toolchain built with the provided scripts.
 
-3. Set the RISCV environment variable.
+3. Install `cmake`, version 3.14 or higher.
+
+4. Set the RISCV environment variable.
 ```sh
 export RISCV=/path/to/toolchain/installation/directory
 ```
 
-4. Install `help2man` and `device-tree-compiler` packages. 
+5. Install `help2man` and `device-tree-compiler` packages.
 
 For Debian-based Linux distributions, run :
 
@@ -44,13 +48,13 @@ For Debian-based Linux distributions, run :
 sudo apt-get install help2man device-tree-compiler
 ```
 
-5. Install the riscv-dv requirements:
+6. Install the riscv-dv requirements:
 
 ```sh
 pip3 install -r verif/sim/dv/requirements.txt
 ```
 
-6. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
+7. Run these commands to install a custom Spike and Verilator (i.e. these versions must be used to simulate the CVA6) and [these](#running-regression-tests-simulations) tests suites.
 ```sh
 # DV_SIMULATORS is detailed in the next section
 export DV_SIMULATORS=veri-testharness,spike

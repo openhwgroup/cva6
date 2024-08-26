@@ -21,6 +21,7 @@
 covergroup cg_exception(
     string name,
     bit pmp_supported,
+    bit MmuPresent,
     bit unaligned_access_supported,
     bit ext_c_supported,
     bit mode_u_supported,
@@ -63,6 +64,7 @@ covergroup cg_exception(
 
     bins ENV_CALL_MMODE = {11} iff (instr.trap);
 
+    ignore_bins IGN_PAGE_FAULT_EXC = {12, 13, 15} iff (!MmuPresent);
     bins INSTR_PAGE_FAULT = {12} iff (instr.trap);
 
     bins LOAD_PAGE_FAULT  = {13} iff (instr.trap);
@@ -199,6 +201,7 @@ function void uvme_exception_cov_model_c::build_phase(uvm_phase phase);
 
    exception_cg = new("exception_cg",
                       .pmp_supported(cfg.pmp_supported),
+                      .MmuPresent(cfg.MmuPresent),
                       .unaligned_access_supported(cfg.unaligned_access_supported),
                       .ext_c_supported(cfg.ext_c_supported),
                       .mode_u_supported(cfg.mode_u_supported),

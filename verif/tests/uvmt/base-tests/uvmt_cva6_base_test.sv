@@ -236,6 +236,12 @@ function void uvmt_cva6_base_test_c::build_phase(uvm_phase phase);
    pkg_to_cfg       ();
    cfg_hrtbt_monitor();
    assign_cfg       ();
+
+   if (test_cfg.mem_vp_enabled == 1) begin
+     set_type_override_by_type(uvml_mem_c#(cva6_config_pkg::CVA6ConfigAxiAddrWidth)::get_type(),
+                               uvml_mem_vp_c#(cva6_config_pkg::CVA6ConfigAxiAddrWidth)::get_type());
+   end
+
    create_cntxt     ();
    assign_cntxt     ();
    create_env       ();

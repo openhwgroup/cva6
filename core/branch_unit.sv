@@ -108,8 +108,6 @@ module branch_unit #(
   always_comb begin : exception_handling
 
     // Do a jump if it is either unconditional jump (JAL | JALR) or `taken` conditional jump
-    jump_taken = !(ariane_pkg::op_is_branch(fu_data_i.operation)) ||
-        ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
     branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
     branch_exception_o.valid = 1'b0;
     if (CVA6Cfg.TvalEn)
@@ -121,6 +119,8 @@ module branch_unit #(
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump
     if (!CVA6Cfg.RVC) begin
+      jump_taken = !(ariane_pkg::op_is_branch(fu_data_i.operation)) ||
+          ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
       if (branch_valid_i && (target_address[0] || target_address[1]) && jump_taken) begin
         branch_exception_o.valid = 1'b1;
       end

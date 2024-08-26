@@ -51,6 +51,9 @@ class uvme_cva6_env_c extends uvm_env;
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
 
+   // Handle to debug_req interface
+   virtual uvma_debug_if  debug_vif;
+
    //CSR register model
    cva6_csr_reg_block                             csr_reg_block;
    cva6_csr_reg_adapter                           csr_reg_adapter;
@@ -170,6 +173,8 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
    else begin
       `uvm_info("CVA6Cfg", $sformatf("Found RTL configuration handle:\n%p", cfg.CVA6Cfg), UVM_DEBUG)
    end
+
+   cfg.rvfi_cfg.nret = cfg.CVA6Cfg.NrCommitPorts;
 
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cva6_cntxt_c)::get(this, "", "cntxt", cntxt));
@@ -323,6 +328,13 @@ function void uvme_cva6_env_c::retrieve_vif();
       axi_switch_vif.active <= 1;
    end
 
+   if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif", debug_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(debug_vif)))
+   end
+   else begin
+      cntxt.debug_vif = debug_vif;
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(debug_vif)), UVM_DEBUG)
+   end
 endfunction : retrieve_vif
 
 function void uvme_cva6_env_c::connect_predictor();

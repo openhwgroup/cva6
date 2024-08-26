@@ -103,7 +103,7 @@ module alu
   assign adder_in_b         = operand_b_neg;
 
   // actual adder
-  assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
+  assign adder_result_ext_o = adder_in_a + adder_in_b;
   assign adder_result       = adder_result_ext_o[CVA6Cfg.XLEN:1];
   assign adder_z_flag       = ~|adder_result;
 
@@ -296,10 +296,10 @@ module alu
     if (CVA6Cfg.RVB) begin
       // Index for Bitwise Rotation
       bit_indx = 1 << (fu_data_i.operand_b & (CVA6Cfg.XLEN - 1));
-      // rolw, roriw, rorw
-      rolw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
-      rorw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
       if (CVA6Cfg.IS_XLEN64) begin
+        // rolw, roriw, rorw
+        rolw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
+        rorw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
         unique case (fu_data_i.operation)
           CLZW, CTZW:
           result_o = (lz_tz_wempty) ? 32 : {{CVA6Cfg.XLEN - 5{1'b0}}, lz_tz_wcount};  // change

@@ -1,4 +1,4 @@
-CV32A65X documentation
+CV64A6_MMU documentation
 ======================
 
 .. toctree::

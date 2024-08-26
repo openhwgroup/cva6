@@ -384,6 +384,27 @@ main:
   c.lhu         a4, 0(a4)
   c.lhu         a5, 0(a5)
 
+  li         s0, 0x80000000
+  li         s1, 0x80000000
+  li         a0, 0x80000000
+  li         a1, 0x80000000
+  li         a2, 0x80000000
+  li         a3, 0x80000000
+  li         a4, 0x80000000
+  li         a5, 0x80000000
+
+  c.lw          s0, 0(s0)
+  c.lw          s1, 0(s1)
+  c.lw          a0, 0(a0)
+  c.lw          a1, 0(a1)
+  c.lw          a2, 0(a2)
+  c.lw          a3, 0(a3)
+  c.lw          a4, 0(a4)
+  c.lw          a5, 0(a5)
+
+  li         sp, 0x80000000
+  c.lwsp     sp, 0(sp)
+
   #End of test
   j test_pass
 

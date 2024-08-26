@@ -20,7 +20,7 @@
 module instr_tracer #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
   parameter type bp_resolve_t = logic,
-  parameter type scoreboard_entry_t = logic,
+  parameter type scoreboard_entry_t = logic[303:0], // Fix for xcelium bug at runtime: does not have enough memory space reserved for scoreboard_entry
   parameter type interrupts_t = logic,
   parameter type exception_t = logic,
   parameter interrupts_t INTERRUPTS = '0

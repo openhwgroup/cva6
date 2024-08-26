@@ -27,58 +27,15 @@ Main contributor: Jean-Roch Coulon - Thales
 Parameters
 ----------
 
-.. csv-table::
-   :widths: auto
-   :align: left
-   :header: "Parameter", "Category", "Description"
+.. include:: user_cfg_doc.rst
 
-   "``Cva6MArchID``",               "Archi",            "Cva6 architecture ID"
-   "``Xlen``",                      "Variant",          "Data length"
-   "``CExtEn``",                    "Variant",          "C extension enable"
-   "``AExtEn``",                    "Variant",          "A extension enable"
-   "``BMExtEn``",                   "Variant",          "Bit Manipulation extension enable"
-   "``FpuEn``",                     "Variant",          "FPU enable"
-   "``F16En``",                     "Variant",          "FPU 16bits enable"
-   "``F16AltEn``",                  "Variant",          "FPU Alt 16bits enable"
-   "``F8En``",                      "Variant",          "FPU 8bits enable"
-   "``FVecEn``",                    "Variant",          "Vector FPU enable"
-   "``MMUEn``",                     "Memory",           "MMU Present"
-   "``InstrTlbEntries``",           "Memory",           "Instruction TLB entry number"
-   "``DataTlbEntries``",            "Memory",           "Data TLB entry number"
-   "``RASDepth``",                  "Memory",           "Depth of Return Address Stack"
-   "``BTBEntries``",                "Memory",           "BTB entry number"
-   "``BHTEntries``",                "Memory",           "BHT entry number"
-   "``NrNonIdempotentRules``",      "Memory",           "Number of non idempotent region"
-   "``NonIdempotentAddrBase``",     "Memory",           "Base address of non idempotent region"
-   "``NonIdempotentLength``",       "Memory",           "Length of non idempotent region"
-   "``NrExecuteRegionRules``",      "Memory",           "Number of excution regions"
-   "``ExecuteRegionAddrBase``",     "Memory",           "Execution region of base address (DRAM, Boot ROM and Debug Module)"
-   "``ExecuteRegionLength``",       "Memory",           "Length of execution region"
-   "``NrCachedRegionRules``",       "Memory",           "Number of cached region"
-   "``CachedRegionAddrBase``",      "Memory",           "Base address of cached region"
-   "``CachedRegionLength``",        "Memory",           "Length of cached regions"
-   "``NrPMPEntries``",              "Memory",           "Number of PMP entries"
-   "``DmBaseAddress``",             "Debug",            "Base address of debug"
-   "``CvxifEn``",                   "Ports",            "CV-X-IF interface enable"
-   "``RVFI_TRACE (define)``",       "Ports",            "RVFI interface enable"
-   "``FIRESIM_TRACE (define)``",    "Ports",            "FIRESIM interface enable"
-   "``PITON_ARIANE (define)``",     "Ports",            "Piton interface enable, and AXI interface disable"
-   "``WT_CACHE (define)``",         "Caches",           "Write through cache enable, write back cache disable"
-   "``DepthStoreBuffer``",          "Caches",           "Depth of store buffer"
-   "``IcacheSetAssoc``",            "Caches",           "Instruction cache way number"
-   "``DcacheSetAssoc``",            "Caches",           "Data cache way number"
-   "``NrLoadPipeRegs``",            "Caches",           "Number of stall on load operation"
-   "``NrStorePipeRegs``",           "Caches",           "Number of stall on store operation"
-   "``AxiCompliant``",              "Caches",           "Cache configuration: AXI or XXXX"
-   "``SwapEndianess``",             "Caches",           "Endianess of cache: XXXX"
-   "``FetchUserEn``",               "Users",            "Fetch AXI user bit enable"
-   "``FetchUserWidth``",            "Users",            "Fetch user bit number when enabled"
-   "``DataUserEn``",                "Users",            "Data AXI user bit enable"
-   "``DataUserWidth``",             "Users",            "Data user bit number when enabled"
-   "``RenameEn``",                  "Pipeline",         "Register renaming feature enable"
-   "``NrCommitPorts``",             "Pipeline",         "Commit port number"
-   "``NrScoreboardEntries``",       "Pipeline",         "Scoreboard entry number"
-   "``FpgaEn``",                    "Technology",       "FPGA optimization enable"
+\*: Some parameters are incompatible with others:
+
+- ``SuperscalarEn``:
+
+   - Not compatible with floating point (``RVF``, ``RVD``, ``XF16``, ``XF16ALT``, ``XF8``, ``XFVec``) yet.
+   - Not compatible with macro instructions (``RVZCMP``) yet.
+   - Recommended to set ``NrScoreboardEntries`` to at least 8 for performance.
 
 
 Configurations

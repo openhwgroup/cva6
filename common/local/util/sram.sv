@@ -106,8 +106,8 @@ end
           // synthesis translate_off
           begin: i_tc_sram_wrapper_user
             begin: i_tc_sram
-              logic init_val;
               localparam type data_t = logic [63:0];
+              data_t init_val [0:0];
               data_t sram [NUM_WORDS-1:0] /* verilator public_flat */;
             end
           end

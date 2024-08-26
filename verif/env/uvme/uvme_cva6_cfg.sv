@@ -56,6 +56,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Zihpm extension
    rand bit                      ext_zihpm_supported;
 
+   // MMU support
+   rand bit                      MmuPresent;
+
    // Handle to RTL configuration
    rand cva6_cfg_t         CVA6Cfg;
 
@@ -70,6 +73,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
+      `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -142,10 +146,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == (CVA6Cfg.DCacheType == 2);
+      HPDCache_supported      == 1;
 
       DirectVecOnly           == CVA6Cfg.DirectVecOnly;
       TvalEn                  == CVA6Cfg.TvalEn;
+      MmuPresent              == CVA6Cfg.MmuPresent;
    }
 
    constraint ext_const {

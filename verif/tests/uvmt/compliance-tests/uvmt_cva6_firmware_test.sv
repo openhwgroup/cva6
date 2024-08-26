@@ -168,9 +168,14 @@ task uvmt_cva6_firmware_test_c::run_phase(uvm_phase phase);
    uvm_config_db#(int)::set(null, "", "test_exit_code", { 0'b0, tb_exit_vif.tb_exit_o[31:1] });
    // Let the termination-triggering instruction appear in the log.
    @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+   // Let all pending AXI requests settle.
+   // FIXME TODO: Insert this delay in AXI agent rather than here,
+   // based on AXI state and latency setting.
+   `uvm_info("TEST", "Running a 100-cycle delay to settle AXI requests...", UVM_NONE);
+   repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+   `uvm_info("TEST", "Running a 100-cycle delay to settle AXI requests... DONE", UVM_NONE);
    // Allow termination from now on.
    phase.drop_objection(this);
-   repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
 
 endtask : run_phase
 

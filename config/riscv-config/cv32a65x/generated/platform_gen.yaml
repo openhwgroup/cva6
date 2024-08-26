@@ -21,6 +21,27 @@ reset:
 mtime:
     implemented: true
     address: 0x20000
+memory_map:
+  -
+    memory_region:
+        name: bootrom
+        base_addr: 0x10000
+        size: 0x10000
+        description: System boot ROM
+        attributes:
+            read_only: true
+            cached: false
+  -
+    memory_region:
+        name: dram
+        base_addr: 0x80000000
+        size: 0x40000000
+        description: System (D)RAM
+        attributes:
+            executable: true
+            cached: true
+            non_idempotent: false
+            read_only: false
 mtimecmp:
     implemented: false
 mtval_condition_writes:

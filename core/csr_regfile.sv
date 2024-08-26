@@ -163,9 +163,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic perf_we_o,
     // PMP configuration containing pmpcfg for max 64 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0] pmpcfg_o,
+    output riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
+    output logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -293,8 +293,8 @@ module csr_regfile
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
-  assign pmpcfg_o  = pmpcfg_q[CVA6Cfg.NrPMPEntries:0];
-  assign pmpaddr_o = pmpaddr_q[CVA6Cfg.NrPMPEntries:0];
+  assign pmpcfg_o  = pmpcfg_q[CVA6Cfg.NrPMPEntries-1:0];
+  assign pmpaddr_o = pmpaddr_q[CVA6Cfg.NrPMPEntries-1:0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
   // ----------------
@@ -2247,7 +2247,7 @@ module csr_regfile
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
         if (access_priv < csr_addr.csr_decode.priv_lvl) begin
-          if (v_q && csr_addr.csr_decode.priv_lvl == riscv::PRIV_LVL_HS)
+          if (v_q && csr_addr.csr_decode.priv_lvl <= riscv::PRIV_LVL_HS)
             virtual_privilege_violation = 1'b1;
           else privilege_violation = 1'b1;
         end
@@ -2302,7 +2302,7 @@ module csr_regfile
       // if we are reading or writing, check for the correct privilege level this has
       // precedence over interrupts
       if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
-        if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+        if (CVA6Cfg.RVU && (riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
           privilege_violation = 1'b1;
         end
         // check access to debug mode only CSRs
@@ -2415,8 +2415,10 @@ module csr_regfile
 
     epc_o = mepc_q[CVA6Cfg.VLEN-1:0];
     // we are returning from supervisor or virtual supervisor mode, so take the sepc register
-    if (CVA6Cfg.RVS && sret) begin
-      epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
+    if (CVA6Cfg.RVS) begin
+      if (sret) begin
+        epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
+      end
     end
     // we are returning from debug mode, to take the dpc register
     if (CVA6Cfg.DebugEn) begin
@@ -2457,10 +2459,14 @@ module csr_regfile
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
   // MMU outputs
-  assign satp_ppn_o = satp_q.ppn;
+  assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
-  assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  if (CVA6Cfg.RVS) begin
+    assign asid_o = satp_q.asid[CVA6Cfg.ASID_WIDTH-1:0];
+  end else begin
+    assign asid_o = '0;
+  end
   assign vs_asid_o = CVA6Cfg.RVH ? vsatp_q.asid[CVA6Cfg.ASID_WIDTH-1:0] : '0;
   assign vmid_o = CVA6Cfg.RVH ? hgatp_q.vmid[CVA6Cfg.VMID_WIDTH-1:0] : '0;
   assign sum_o = mstatus_q.sum;
@@ -2483,12 +2489,20 @@ module csr_regfile
                              : 1'b0;
     assign en_g_translation_o = 1'b0;
   end
-  assign mxr_o = mstatus_q.mxr;
+  assign mxr_o  = mstatus_q.mxr;
   assign vmxr_o = CVA6Cfg.RVH ? vsstatus_q.mxr : '0;
-  assign tvm_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
-  assign tw_o = mstatus_q.tw;
+  if (CVA6Cfg.RVH) begin
+    assign tvm_o = (v_q) ? hstatus_q.vtvm : mstatus_q.tvm;
+  end else begin
+    assign tvm_o = mstatus_q.tvm;
+  end
+  assign tw_o  = mstatus_q.tw;
   assign vtw_o = CVA6Cfg.RVH ? hstatus_q.vtw : '0;
-  assign tsr_o = (CVA6Cfg.RVH && v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  if (CVA6Cfg.RVH) begin
+    assign tsr_o = (v_q) ? hstatus_q.vtsr : mstatus_q.tsr;
+  end else begin
+    assign tsr_o = mstatus_q.tsr;
+  end
   assign halt_csr_o = wfi_q;
 `ifdef PITON_ARIANE
   assign icache_en_o = icache_q[0];
@@ -2501,7 +2515,7 @@ module csr_regfile
   // determine if mprv needs to be considered if in debug mode
   assign mprv = (CVA6Cfg.DebugEn && debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
   assign debug_mode_o = debug_mode_q;
-  assign single_step_o = dcsr_q.step;
+  assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : 1'b0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
   // sequential process

@@ -170,7 +170,7 @@ package config_pkg;
     bit                          FpgaEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
-    // Enable superscalar with 2 issue ports and 2 commit ports
+    // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;
     // Number of commit ports. Forced to 2 if SuperscalarEn.
     int unsigned                 NrCommitPorts;
@@ -366,6 +366,8 @@ package config_pkg;
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
     assert (Cfg.NrPMPEntries <= 64);
+    assert (!(Cfg.SuperscalarEn && Cfg.RVF));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
 `endif
     // pragma translate_on
   endfunction
@@ -389,11 +391,15 @@ package config_pkg;
   function automatic logic is_inside_execute_regions(cva6_cfg_t Cfg, logic [63:0] address);
     // if we don't specify any region we assume everything is accessible
     logic [NrMaxRules-1:0] pass;
-    pass = '0;
-    for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
-      pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
+    if (Cfg.NrExecuteRegionRules != 0) begin
+      pass = '0;
+      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
+        pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
+      end
+      return |pass;
+    end else begin
+      return 1;
     end
-    return |pass;
   endfunction : is_inside_execute_regions
 
   function automatic logic is_inside_cacheable_regions(cva6_cfg_t Cfg, logic [63:0] address);

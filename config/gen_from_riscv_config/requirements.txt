@@ -4,3 +4,4 @@ mdutils
 restructuredtext-lint
 rstcloth
 regex
+Mako

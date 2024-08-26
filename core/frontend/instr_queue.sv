@@ -103,23 +103,18 @@ module instr_queue
 
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] branch_index;
   // instruction queues
-  logic [CVA6Cfg.INSTR_PER_FETCH-1:0][$clog2(
-ariane_pkg::FETCH_FIFO_DEPTH
-)-1:0] instr_queue_usage;
   instr_data_t [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_data_in, instr_data_out;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] push_instr, push_instr_fifo;
-  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] pop_instr;
-  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_full;
-  logic [             CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_empty;
-  logic                                            instr_overflow;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] pop_instr;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_full;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_queue_empty;
+  logic                               instr_overflow;
   // address queue
-  logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
-  logic [                        CVA6Cfg.VLEN-1:0] address_out;
-  logic                                            pop_address;
-  logic                                            push_address;
-  logic                                            full_address;
-  logic                                            empty_address;
-  logic                                            address_overflow;
+  logic [           CVA6Cfg.VLEN-1:0] address_out;
+  logic                               pop_address;
+  logic                               push_address;
+  logic                               full_address;
+  logic                               address_overflow;
   // input stream counter
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH-1:0] idx_is_d, idx_is_q;
 
@@ -137,7 +132,6 @@ ariane_pkg::FETCH_FIFO_DEPTH
 
   logic [CVA6Cfg.INSTR_PER_FETCH*2-2:0] branch_mask_extended;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] branch_mask;
-  logic branch_empty;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken;
   // shift amount, e.g.: instructions we want to retire
   logic [CVA6Cfg.LOG2_INSTR_PER_FETCH:0] popcount;
@@ -167,7 +161,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
     ) i_lzc_branch_index (
         .in_i   (taken),         // we want to count trailing zeros
         .cnt_o  (branch_index),  // first branch on branch_index
-        .empty_o(branch_empty)
+        .empty_o()
     );
 
 
@@ -237,7 +231,6 @@ ariane_pkg::FETCH_FIFO_DEPTH
   end else begin : gen_multiple_instr_per_fetch_without_C
 
     assign taken = '0;
-    assign branch_empty = '0;
     assign branch_index = '0;
     assign branch_mask_extended = '0;
     assign branch_mask = '0;
@@ -478,7 +471,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
         .testmode_i(1'b0),
         .full_o    (instr_queue_full[i]),
         .empty_o   (instr_queue_empty[i]),
-        .usage_o   (instr_queue_usage[i]),
+        .usage_o   (),
         .data_i    (instr_data_in[i]),
         .push_i    (push_instr_fifo[i]),
         .data_o    (instr_data_out[i]),
@@ -496,7 +489,7 @@ ariane_pkg::FETCH_FIFO_DEPTH
   end
 
   cva6_fifo_v3 #(
-      .DEPTH     (ariane_pkg::FETCH_FIFO_DEPTH),  // TODO(zarubaf): Fork out to separate param
+      .DEPTH     (ariane_pkg::FETCH_ADDR_FIFO_DEPTH),
       .DATA_WIDTH(CVA6Cfg.VLEN),
       .FPGA_EN   (CVA6Cfg.FpgaEn)
   ) i_fifo_address (
@@ -505,19 +498,16 @@ ariane_pkg::FETCH_FIFO_DEPTH
       .flush_i   (flush_i),
       .testmode_i(1'b0),
       .full_o    (full_address),
-      .empty_o   (empty_address),
-      .usage_o   (address_queue_usage),
+      .empty_o   (),
+      .usage_o   (),
       .data_i    (predict_address_i),
       .push_i    (push_address & ~full_address),
       .data_o    (address_out),
       .pop_i     (pop_address)
   );
 
-  unread i_unread_address_fifo (.d_i(|{empty_address, address_queue_usage}));
   unread i_unread_branch_mask (.d_i(|branch_mask_extended));
-  unread i_unread_lzc (.d_i(|{branch_empty}));
   unread i_unread_fifo_pos (.d_i(|fifo_pos_extended));  // we don't care about the lower signals
-  unread i_unread_instr_fifo (.d_i(|instr_queue_usage));
 
   if (CVA6Cfg.RVC) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin

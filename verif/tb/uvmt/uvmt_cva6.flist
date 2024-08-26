@@ -23,6 +23,7 @@
 
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
+-f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
 -f ${DV_UVMA_AXI_PATH}/src/uvma_axi_pkg.flist
 -f ${DV_UVMA_CORE_CNTRL_PATH}/uvma_core_cntrl_pkg.flist
 -f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist

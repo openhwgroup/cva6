@@ -18,6 +18,11 @@
    # read_file -type waiver <waiver-file>
 ########################################################################################################
 
+# ignore multiple assignment bitwise or violations (W415a) in for loop
+set_parameter ignore_bitwiseor_assignment yes
+# ignore multiple assignment violations (W415a) in if/else or case
+set_parameter ignore_if_case_statement yes
+
 ## Goal:cdc/cdc_verify_struct ##################
    current_goal cdc/cdc_verify_struct 
    set_goal_option report {count moresimple moresimple_sevclass sign_off summary waiver CKSGDCInfo Clock-Reset-Summary CDC-report Ac_sync_group_detail Glitch_detailed CrossingInfo SynchInfo Clock-Reset-Detail}

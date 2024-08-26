@@ -1,30 +1,32 @@
 spike_param_tree:
   bootrom: true
-  bootrom_base: 0x10000
-  bootrom_size: 0x1000
+  bootrom_base: 65536
+  bootrom_size: 4096
   dram: true
-  dram_base: 0x80000000
-  dram_size: 0x40000000
+  dram_base: 2147483648
+  dram_size: 1073741824
   generic_core_config: false
   max_steps: 200000
   max_steps_enabled: false
-  isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
+  isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
   priv: M
-  cores:
-    - isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
-      boot_addr: 0x80000000
-      marchid: 0x3
+  core_configs:
+    -
+      isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
+      boot_addr: 2147483648
+      marchid: 3
       misa_we: false
       misa_we_enable: true
-      misaligned: false
-      mmu_mode: sv39
-      mvendorid: 0x00000602
-      pmpaddr0: 0x0
-      pmpcfg0: 0x0
-      pmpregions: 0x0
+      pmpaddr0: 0
+      pmpcfg0: 0
+      pmpregions: 64
+      usable_pmpregions: 8
       priv: M
-      misa_we: false
-      mstatus_write_mask: 0x00000088
-      mstatus_override_mask: 0x00001800
-      mtval_write_mask: 0x00000000
+      status_fs_field_we: false
+      status_fs_field_we_enable: false
+      status_vs_field_we: false
+      status_vs_field_we_enable: false
+      mstatus_write_mask: 136
+      mstatus_override_mask: 6144
+      mtval_write_mask: 0
       unified_traps: true
