@@ -200,12 +200,12 @@ package config_pkg;
     int unsigned                 SharedTlbDepth;
     /// Set Data scratchpad
     bit                          DataScrPresent;
-    logic [63:0] DataScrRegionAddrBase;
-    logic [63:0] DataScrRegionLength;
+    logic [63:0]                 DataScrRegionAddrBase;
+    logic [63:0]                 DataScrRegionLength;
     /// Set Instruction scratchpad
-    bit InstrScrPresent;
-    logic [63:0] InstrScrRegionAddrBase;
-    logic [63:0] InstrScrRegionLength;
+    bit                          InstrScrPresent;
+    logic [63:0]                 InstrScrRegionAddrBase;
+    logic [63:0]                 InstrScrRegionLength;
     /// Set AHB peripheral bus
     bit                          AHBPeriphPresent;
     int unsigned                 NrAHBPeriphRegionRules;
@@ -423,7 +423,8 @@ package config_pkg;
     pass = '0;
     if (Cfg.AHBPeriphPresent) begin
       for (int unsigned k = 0; k < Cfg.NrAHBPeriphRegionRules; k++) begin
-        pass[k] = range_check(Cfg.AHBPeriphRegionAddrBase[k], Cfg.AHBPeriphRegionLength[k], address);
+        pass[k] =
+            range_check(Cfg.AHBPeriphRegionAddrBase[k], Cfg.AHBPeriphRegionLength[k], address);
       end
     end
     return |pass;
