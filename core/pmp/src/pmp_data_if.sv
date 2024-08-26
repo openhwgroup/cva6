@@ -59,6 +59,8 @@ module pmp_data_if
   logic [CVA6Cfg.PLEN-1:0] mmu_vaddr_plen, fetch_vaddr_plen;
   logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_q;
   logic [31:0] lsu_tinst_q;
+  
+  logic no_locked_data, no_locked_if;
 
   always_comb begin : vaddr_plen
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin
@@ -209,4 +211,43 @@ module pmp_data_if
       end
     end
   end
+  
+  
+  // ----------------
+  // Assert for PMPs
+  // ----------------
+
+  // synthesis translate_off
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      no_locked_data <= 1'b0;
+    end else begin
+      if (ld_st_priv_lvl_i == riscv::PRIV_LVL_M) begin
+        no_locked_data <= 1'b1;
+        for (int i = 0; i < CVA6Cfg.NrPMPEntries; i++) begin
+          if (pmpcfg_i[i].locked && pmpcfg_i[i].addr_mode != riscv::OFF) begin
+            no_locked_data <= no_locked_data & 1'b0;
+          end else no_locked_data <= no_locked_data & 1'b1;
+        end
+        if (no_locked_data == 1'b1) assert (data_allow_o == 1'b1);
+      end
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      no_locked_if <= 1'b0;
+    end else begin
+      if (priv_lvl_i == riscv::PRIV_LVL_M) begin
+        no_locked_if <= 1'b1;
+        for (int i = 0; i < CVA6Cfg.NrPMPEntries; i++) begin
+          if (pmpcfg_i[i].locked && pmpcfg_i[i].addr_mode != riscv::OFF) begin
+            no_locked_if = no_locked_if & 1'b0;
+          end else no_locked_if = no_locked_if & 1'b1;
+        end
+        if (no_locked_if == 1'b1) assert (instr_allow_o == 1'b1);
+      end
+    end
+  end
+  // synthesis translate_on
 endmodule
