@@ -15,13 +15,13 @@ spike_param_tree:
       isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
       extensions: cv32a60x,cvxif
       boot_addr: 2147483648
-      marchid: 3
-      misa_we: false
-      misa_we_enable: true
+      marchid_override_mask: 0xFFFFFFFF
+      marchid_override_value: 0x3
+      misa_write_mask: 0x0
       pmpaddr0: 0
       pmpcfg0: 0
-      pmpregions: 64
-      usable_pmpregions: 8
+      pmpregions_max: 64
+      pmpregions_writable: 8
       priv: M
       status_fs_field_we: false
       status_fs_field_we_enable: false
@@ -30,4 +30,18 @@ spike_param_tree:
       mstatus_write_mask: 136
       mstatus_override_mask: 6144
       mtval_write_mask: 0
+      tinfo_accessible: 0
+      mscontext_accessible: 0
+      mcontext_accessible: 0
+      mcountinhibit_accessible: 0
+      tdata1_accessible: 0
+      tdata2_accessible: 0
+      tdata3_accessible: 0
+      tselect_accessible: 0
+      mhartid: 0
+      mvendorid_override_mask : 0xFFFFFFFF
+      mvendorid_override_value: 1538
+      csr_counters_injection: true
       unified_traps: true
+      mcycleh_implemented: false
+      mhpmevent31_implemented: false
