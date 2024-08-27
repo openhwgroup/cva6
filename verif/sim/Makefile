@@ -67,6 +67,7 @@ spike_params_final = $(spike_params)
 ifneq ($(wildcard $(spike_yaml)),)
   spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
   spike-yaml-plusarg = +config_file=$(spike_yaml)
+  spike-yaml-makearg = config_file=$(spike_yaml)
 endif
 
 ##############################################
@@ -430,7 +431,7 @@ xrun-testharness:
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
-	    report_file=$(log).yaml iss_yaml=$(spike_yaml)
+	    report_file=$(log).yaml $(spike-yaml-makearg)
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
