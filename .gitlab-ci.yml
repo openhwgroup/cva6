@@ -473,11 +473,12 @@ csr_embedded_tests:
     DASHBOARD_SORT_INDEX: 15
     DASHBOARD_JOB_CATEGORY: "CSR tests"
     DV_SIMULATORS: "vcs-uvm"
+    SPIKE_TANDEM: 1
   script:
     - mkdir -p artifacts/coverage
     - source verif/regress/dv-csr-embedded-tests.sh
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
-    - python3 .gitlab-ci/scripts/report_pass.py
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim
 
 .backend_test:
   stage: backend tests
