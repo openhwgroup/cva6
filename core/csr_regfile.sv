@@ -167,7 +167,7 @@ module csr_regfile
     // PMP addresses - ACC_DISPATCHER
     output logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
-    output logic [31:0] mcountinhibit_o,
+    output logic [31:0] mcount_o,
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o
 );
@@ -276,7 +276,7 @@ module csr_regfile
 
   riscv::pmpcfg_t [63:0] pmpcfg_q, pmpcfg_d, pmpcfg_next;
   logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
-  logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
+  logic [MHPMCounterNum+3-1:0] mcount_d, mcount_q;
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -553,9 +553,7 @@ module csr_regfile
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
-        if (CVA6Cfg.PerfCounterEn)
-          csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
-        else read_access_exception = '0;
+        csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
         // Counters and Timers
         riscv::CSR_MCYCLE: csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
         riscv::CSR_MCYCLEH:
