@@ -519,6 +519,8 @@ def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss
     report_ok = analyze_tandem_report(tandem_report)
     generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations, report_ok)
     process_verilator_sim_log(log, log + ".csv")
+    if not report_ok:
+      sys.exit(RET_FAIL)
 
 
 def analyze_tandem_report(yaml_path):
@@ -540,6 +542,7 @@ def analyze_tandem_report(yaml_path):
     else:
         logging.info("TANDEM YAML not found")
         return True
+
 
 def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration, report_ok):
   if(os.path.exists(yaml_path) and report_ok):
