@@ -553,9 +553,7 @@ module csr_regfile
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
-        if (CVA6Cfg.PerfCounterEn)
-          csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
-        else read_access_exception = 1'b1;
+        csr_rdata = {{(CVA6Cfg.XLEN - (MHPMCounterNum + 3)) {1'b0}}, mcountinhibit_q};
         // Counters and Timers
         riscv::CSR_MCYCLE: csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
         riscv::CSR_MCYCLEH:
@@ -1494,7 +1492,7 @@ module csr_regfile
         riscv::CSR_MCOUNTINHIBIT:
         if (CVA6Cfg.PerfCounterEn)
           mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
-        else update_access_exception = 1'b1;
+        else mcountinhibit_d = '0;
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
         riscv::CSR_MCYCLEH:
