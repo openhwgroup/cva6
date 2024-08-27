@@ -165,6 +165,17 @@ package build_config_pkg;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
 
+    cfg.DataScrPresent = CVA6Cfg.DataScrPresent;
+    cfg.DataScrRegionAddrBase = CVA6Cfg.DataScrRegionAddrBase;
+    cfg.DataScrRegionLength = CVA6Cfg.DataScrRegionLength;
+    cfg.InstrScrPresent = CVA6Cfg.InstrScrPresent;
+    cfg.InstrScrRegionAddrBase = CVA6Cfg.InstrScrRegionAddrBase;
+    cfg.InstrScrRegionLength = CVA6Cfg.InstrScrRegionLength;
+    cfg.AHBPeriphPresent = CVA6Cfg.AHBPeriphPresent;
+    cfg.NrAHBPeriphRegionRules = CVA6Cfg.NrAHBPeriphRegionRules;
+    cfg.AHBPeriphRegionAddrBase = CVA6Cfg.AHBPeriphRegionAddrBase;
+    cfg.AHBPeriphRegionLength = CVA6Cfg.AHBPeriphRegionLength;
+
     return cfg;
   endfunction
 

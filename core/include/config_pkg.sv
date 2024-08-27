@@ -198,6 +198,19 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    /// Set Data scratchpad
+    bit                          DataScrPresent;
+    logic [63:0]                 DataScrRegionAddrBase;
+    logic [63:0]                 DataScrRegionLength;
+    /// Set Instruction scratchpad
+    bit                          InstrScrPresent;
+    logic [63:0]                 InstrScrRegionAddrBase;
+    logic [63:0]                 InstrScrRegionLength;
+    /// Set AHB peripheral bus
+    bit                          AHBPeriphPresent;
+    int unsigned                 NrAHBPeriphRegionRules;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionLength;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -337,6 +350,17 @@ package config_pkg;
     vm_mode_t MODE_SV;
     int unsigned SV;
     int unsigned SVX;
+
+    bit DataScrPresent;
+    int unsigned DataScrRegionAddrBase;
+    int unsigned DataScrRegionLength;
+    bit InstrScrPresent;
+    int unsigned InstrScrRegionAddrBase;
+    int unsigned InstrScrRegionLength;
+    bit AHBPeriphPresent;
+    int unsigned NrAHBPeriphRegionRules;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] AHBPeriphRegionLength;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
@@ -393,5 +417,35 @@ package config_pkg;
     end
     return |pass;
   endfunction : is_inside_cacheable_regions
+
+  function automatic logic is_inside_ahbperiph_regions(cva6_cfg_t Cfg, logic [63:0] address);
+    logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    if (Cfg.AHBPeriphPresent) begin
+      for (int unsigned k = 0; k < Cfg.NrAHBPeriphRegionRules; k++) begin
+        pass[k] =
+            range_check(Cfg.AHBPeriphRegionAddrBase[k], Cfg.AHBPeriphRegionLength[k], address);
+      end
+    end
+    return |pass;
+  endfunction : is_inside_ahbperiph_regions
+
+  function automatic logic is_inside_data_scratchpad(cva6_cfg_t Cfg, logic [63:0] address);
+    logic pass;
+    pass = '0;
+    if (Cfg.DataScrPresent) begin
+      pass = range_check(Cfg.DataScrRegionAddrBase, Cfg.DataScrRegionLength, address);
+    end
+    return pass;
+  endfunction : is_inside_data_scratchpad
+
+  function automatic logic is_inside_instruction_scratchpad(cva6_cfg_t Cfg, logic [63:0] address);
+    logic pass;
+    pass = '0;
+    if (Cfg.InstrScrPresent) begin
+      pass = range_check(Cfg.InstrScrRegionAddrBase, Cfg.InstrScrRegionLength, address);
+    end
+    return pass;
+  endfunction : is_inside_instruction_scratchpad
 
 endpackage
