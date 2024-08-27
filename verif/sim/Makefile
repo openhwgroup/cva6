@@ -131,10 +131,6 @@ else
 	cov-run-opt  =
 endif
 
-ifdef cvxif
-	spike_extension = --extension=cvxif
-endif
-
 ###############################################################################
 # Spike specific commands, variables
 ###############################################################################
@@ -434,6 +430,7 @@ xrun-testharness:
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
+	    report_file=$(log).yaml iss_yaml=$(spike_yaml)
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm

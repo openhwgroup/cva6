@@ -33,7 +33,6 @@ spike_param_tree:
       tinfo_accessible: 0
       mscontext_accessible: 0
       mcontext_accessible: 0
-      mcountinhibit_accessible: 0
       tdata1_accessible: 0
       tdata2_accessible: 0
       tdata3_accessible: 0
