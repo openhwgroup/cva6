@@ -264,22 +264,22 @@ task uvme_axi_covg_c::run_phase(uvm_phase phase);
      disable fork;
 
      if(aw_item != null) begin
-         `uvm_info(get_type_name(), $sformatf("WRITE REQ ITEM DETECTED"), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("WRITE REQ ITEM DETECTED"), UVM_HIGH)
          w_axi_cg.sample(aw_item, RVA);
       end
 
      if(b_item != null) begin
-         `uvm_info(get_type_name(), $sformatf("WRITE RESP ITEM DETECTED"), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("WRITE RESP ITEM DETECTED"), UVM_HIGH)
          b_axi_cg.sample(b_item, RVA, HPDCache);
       end
 
       if(ar_item != null) begin
-         `uvm_info(get_type_name(), $sformatf("READ ADDRESS ITEM DETECTED"), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("READ ADDRESS ITEM DETECTED"), UVM_HIGH)
          ar_axi_cg.sample(ar_item, RVA, HPDCache);
       end
 
       if(r_item != null) begin
-         `uvm_info(get_type_name(), $sformatf("READ DATA ITEM DETECTED"), UVM_LOW)
+         `uvm_info(get_type_name(), $sformatf("READ DATA ITEM DETECTED"), UVM_HIGH)
          for(int i = 0; i <= r_item.m_len; i++) begin
             r_axi_cg.sample(r_item, i, RVA, HPDCache);
          end

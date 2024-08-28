@@ -41,6 +41,7 @@ spike_param_tree:
       mvendorid_override_mask : 0xFFFFFFFF
       mvendorid_override_value: 1538
       csr_counters_injection: true
+      interrupts_injection: true
       unified_traps: true
       mcycleh_implemented: false
       mhpmevent31_implemented: false
