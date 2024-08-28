@@ -243,13 +243,15 @@ cvxif-regression:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Basic"
     COLLECT_SIMU_LOGS: 1
+    SPIKE_TANDEM: 1
   parallel:
     matrix:
       - DV_SIMULATORS:
         - "veri-testharness,spike"
-        - "vcs-testharness,spike"
+        - "vcs-testharness"
   script:
     - bash verif/regress/cvxif_verif_regression.sh
+    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
 asic-synthesis:
@@ -327,7 +329,8 @@ riscv_arch_test:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -339,7 +342,8 @@ compliance:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -351,7 +355,7 @@ riscv-tests-v:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
     DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
   script: source verif/regress/dv-riscv-tests.sh
@@ -365,7 +369,8 @@ riscv-tests-p:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
     DASHBOARD_SORT_INDEX: 4
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
@@ -388,7 +393,7 @@ mmu_sv32_tests:
     DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "veri-testharness,spike"
     DV_TARGET: cv32a6_imac_sv32
   script: source verif/regress/dv-riscv-mmu-sv32-test.sh
   after_script: *simu_after_script
@@ -399,6 +404,8 @@ generated_tests:
   variables:
     DASHBOARD_SORT_INDEX: 11
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
+    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "vcs-uvm"
   parallel:
     matrix:
       - list_num: 1
@@ -432,6 +439,8 @@ generated_tests:
   variables:
     DASHBOARD_SORT_INDEX: 12
     DASHBOARD_JOB_CATEGORY: "Code Coverage"
+    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "vcs-uvm"
   parallel:
     matrix:
       - list_num: 1
@@ -450,6 +459,8 @@ directed_isacov-tests:
   variables:
     DASHBOARD_SORT_INDEX: 13
     DASHBOARD_JOB_CATEGORY: "Functional Coverage"
+    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "vcs-uvm"
   parallel:
     matrix:
       - list_num: 0
@@ -470,11 +481,12 @@ csr_embedded_tests:
     DASHBOARD_SORT_INDEX: 15
     DASHBOARD_JOB_CATEGORY: "CSR tests"
     DV_SIMULATORS: "vcs-uvm"
+    SPIKE_TANDEM: 1
   script:
     - mkdir -p artifacts/coverage
     - source verif/regress/dv-csr-embedded-tests.sh
     - mv verif/sim/vcs_results/default/vcs.d/simv.vdb artifacts/coverage
-    - python3 .gitlab-ci/scripts/report_pass.py
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim
 
 .backend_test:
   stage: backend tests
