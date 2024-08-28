@@ -283,9 +283,9 @@ module cva6_rvfi
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
       rvfi_instr_o[i].valid <= valid;
-      rvfi_instr_o[i].insn <= mem_q[commit_pointer[i]].instr;
+      rvfi_instr_o[i].insn  <= mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
-      rvfi_instr_o[i].trap <= exception;
+      rvfi_instr_o[i].trap  <= exception;
 
       if (exception && ex_commit_cause[31]) begin
         rvfi_intr[i] <= 'b101;
