@@ -329,7 +329,8 @@ riscv_arch_test:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -341,7 +342,8 @@ compliance:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness"
+    DV_SIMULATORS: "vcs-testharness"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
