@@ -327,8 +327,7 @@ riscv_arch_test:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "vcs-testharness"
-    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "veri-testharness"
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
@@ -340,8 +339,7 @@ compliance:
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
     DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "vcs-testharness"
-    SPIKE_TANDEM: 1
+    DV_SIMULATORS: "veri-testharness"
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
@@ -353,10 +351,9 @@ riscv-tests-v:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
     DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "vcs-testharness"
+    DV_SIMULATORS: "veri-testharness"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -368,9 +365,8 @@ riscv-tests-p:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
     DASHBOARD_SORT_INDEX: 4
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "vcs-testharness"
+    DV_SIMULATORS: "veri-testharness"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
-    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -392,9 +388,8 @@ mmu_sv32_tests:
     DASHBOARD_JOB_DESCRIPTION: "MMU SV32 regression suite"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "vcs-testharness"
+    DV_SIMULATORS: "veri-testharness"
     DV_TARGET: cv32a6_imac_sv32
-    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-mmu-sv32-test.sh
   after_script: *simu_after_script
 
