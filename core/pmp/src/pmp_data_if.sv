@@ -59,7 +59,7 @@ module pmp_data_if
   logic [CVA6Cfg.PLEN-1:0] mmu_vaddr_plen, fetch_vaddr_plen;
   logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_q;
   logic [31:0] lsu_tinst_q;
-  
+
   logic no_locked_data, no_locked_if;
 
   always_comb begin : vaddr_plen
@@ -211,8 +211,8 @@ module pmp_data_if
       end
     end
   end
-  
-  
+
+
   // ----------------
   // Assert for PMPs
   // ----------------
