@@ -11,27 +11,28 @@ module copro_alu
   import cvxif_instr_pkg::*;
 #(
     parameter int unsigned NrRgprPorts = 2,
+    parameter int unsigned XLEN = 32,
     parameter type hartid_t = logic,
     parameter type id_t = logic,
     parameter type registers_t = logic
 
 ) (
-    input  logic              clk_i,
-    input  logic              rst_ni,
-    input  registers_t        registers_i,
-    input  opcode_t           opcode_i,
-    input  hartid_t           hartid_i,
-    input  id_t               id_i,
-    input  logic       [ 4:0] rd_i,
-    output logic       [31:0] result_o,     // TODO parametrize to 64 bits
-    output hartid_t           hartid_o,
-    output id_t               id_o,
-    output logic       [ 4:0] rd_o,
-    output logic              valid_o,
-    output logic              we_o
+    input  logic                  clk_i,
+    input  logic                  rst_ni,
+    input  registers_t            registers_i,
+    input  opcode_t               opcode_i,
+    input  hartid_t               hartid_i,
+    input  id_t                   id_i,
+    input  logic       [     4:0] rd_i,
+    output logic       [XLEN-1:0] result_o,
+    output hartid_t               hartid_o,
+    output id_t                   id_o,
+    output logic       [     4:0] rd_o,
+    output logic                  valid_o,
+    output logic                  we_o
 );
 
-  logic [31:0] result_n, result_q;
+  logic [XLEN-1:0] result_n, result_q;
   hartid_t hartid_n, hartid_q;
   id_t id_n, id_q;
   logic valid_n, valid_q;

@@ -66,7 +66,10 @@ spike_yaml ?= $(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spik
 spike_params_final = $(spike_params)
 ifneq ($(wildcard $(spike_yaml)),)
   spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
-  spike-yaml-plusarg = +config_file=$(CVA6_REPO_DIR)/config/gen_from_riscv_config/$(target)/spike/spike.yaml
+  spike-yaml-plusarg = +config_file=$(spike_yaml)
+  spike-yaml-makearg = config_file=$(spike_yaml)
+else
+  spike_params_final := $(spike_params_final) --extension=cvxif
 endif
 
 ##############################################
@@ -129,10 +132,6 @@ ifdef cov
 else
 	cov-comp-opt =
 	cov-run-opt  =
-endif
-
-ifdef cvxif
-	spike_extension = --extension=cvxif
 endif
 
 ###############################################################################
@@ -225,8 +224,8 @@ ALL_XRUN_UVM_FLAGS      = -elaborate -messages -sv +incdir+$(XCELIUM_HOME)/tools
 	  -xmerror CUNOTB -nowarn CUDEFB -nowarn CUSRCH -warn_multiple_driver -relax_svbtis -timescale 1ns/1ps -status -access +rwc -log   $(XRUN_WORK_DIR)/tb_compile.log
 
 ALL_XRUN_SIMV_UVM_FLAGS      =  +sv_lib=$(CVA6_REPO_DIR)/tools/spike/lib/libdisasm +signature=I-ADD-01.signature_output
-		          
-XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -log xrun.log -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1 		
+
+XRUN_RUN_FLAGS := -R -messages -status -64bit -licqueue -noupdate -log xrun.log -uvmhome CDNS-1.2  +UVM_VERBOSITY=UVM_LOW -svseed 1
 
 XRUN_DISABLED_WARNINGS := BIGWIX 	\
                         ZROMCW 		\
@@ -239,7 +238,7 @@ XRUN_DISABLED_WARNINGS 	:= $(patsubst %, -nowarn %, $(XRUN_DISABLED_WARNINGS))
 
 XRUN_RUN = $(XRUN_RUN_FLAGS) 		\
 	   $(ALL_XRUN_SIMV_UVM_FLAGS)	\
-	   $(XRUN_DISABLED_WARNINGS)	
+	   $(XRUN_DISABLED_WARNINGS)
 
 ifneq ($(DEBUG),)               # If RTL DEBUG support requested
   ifneq ($(VERDI),)             #   If VERDI interactive mode requested, use GUI and do not run simulation
@@ -298,7 +297,7 @@ vcs-uvm: vcs_uvm_comp vcs_uvm_run
 
 
 ### XRUN UVM rules
-xrun_uvm_comp: 
+xrun_uvm_comp:
 	@echo "[XRUN] Building Model"
 	mkdir -p $(XRUN_WORK_DIR)
 	cd $(XRUN_WORK_DIR) && \
@@ -325,7 +324,7 @@ xrun_uvm_run:
 	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
 	  +tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
 	  $(cov-comp-opt) $(issrun_opts)
-	  			
+
 
 xrun-uvm: xrun_uvm_comp xrun_uvm_run
 	$(tool_path)/spike-dasm --isa=$(variant) < ./xrun_results/trace_rvfi_hart_00.dasm > $(log)
@@ -434,6 +433,7 @@ xrun-testharness:
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
+	    report_file=$(log).yaml $(spike-yaml-makearg)
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm

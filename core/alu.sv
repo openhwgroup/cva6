@@ -22,6 +22,7 @@ module alu
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter bit HasBranch = 1'b1,
     parameter type fu_data_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -68,15 +69,7 @@ module alu
   logic [CVA6Cfg.XLEN-1:0] adder_result;
   logic [CVA6Cfg.XLEN-1:0] operand_a_bitmanip, bit_indx;
 
-  always_comb begin
-    adder_op_b_negate = 1'b0;
-
-    unique case (fu_data_i.operation)
-      // ADDER OPS
-      EQ, NE, SUB, SUBW, ANDN, ORN, XNOR: adder_op_b_negate = 1'b1;
-      default: ;
-    endcase
-  end
+  assign adder_op_b_negate = fu_data_i.operation inside {EQ, NE, SUB, SUBW, ANDN, ORN, XNOR};
 
   always_comb begin
     operand_a_bitmanip = fu_data_i.operand_a;
@@ -110,21 +103,24 @@ module alu
   assign adder_in_b         = operand_b_neg;
 
   // actual adder
-  assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
+  assign adder_result_ext_o = adder_in_a + adder_in_b;
   assign adder_result       = adder_result_ext_o[CVA6Cfg.XLEN:1];
   assign adder_z_flag       = ~|adder_result;
 
   // get the right branch comparison result
-  always_comb begin : branch_resolve
-    // set comparison by default
-    alu_branch_res_o = 1'b1;
-    case (fu_data_i.operation)
-      EQ:       alu_branch_res_o = adder_z_flag;
-      NE:       alu_branch_res_o = ~adder_z_flag;
-      LTS, LTU: alu_branch_res_o = less;
-      GES, GEU: alu_branch_res_o = ~less;
-      default:  alu_branch_res_o = 1'b1;
-    endcase
+  if (HasBranch) begin
+    always_comb begin : branch_resolve
+      // set comparison by default
+      case (fu_data_i.operation)
+        EQ:       alu_branch_res_o = adder_z_flag;
+        NE:       alu_branch_res_o = ~adder_z_flag;
+        LTS, LTU: alu_branch_res_o = less;
+        GES, GEU: alu_branch_res_o = ~less;
+        default:  alu_branch_res_o = 1'b1;
+      endcase
+    end
+  end else begin
+    assign alu_branch_res_o = 1'b0;
   end
 
   // ---------
@@ -300,10 +296,10 @@ module alu
     if (CVA6Cfg.RVB) begin
       // Index for Bitwise Rotation
       bit_indx = 1 << (fu_data_i.operand_b & (CVA6Cfg.XLEN - 1));
-      // rolw, roriw, rorw
-      rolw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
-      rorw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
       if (CVA6Cfg.IS_XLEN64) begin
+        // rolw, roriw, rorw
+        rolw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
+        rorw = ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{CVA6Cfg.XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (CVA6Cfg.XLEN-32-fu_data_i.operand_b[4:0]));
         unique case (fu_data_i.operation)
           CLZW, CTZW:
           result_o = (lz_tz_wempty) ? 32 : {{CVA6Cfg.XLEN - 5{1'b0}}, lz_tz_wcount};  // change

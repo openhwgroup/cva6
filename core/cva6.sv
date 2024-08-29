@@ -1062,7 +1062,7 @@ module cva6
       .*
   );
 
-  assign commit_ack = commit_ack_commit_id & ~commit_drop_id_commit;
+  assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
 
   // ---------
   // CSR
@@ -1078,7 +1078,7 @@ module cva6
       .flush_o                 (flush_csr_ctrl),
       .halt_csr_o              (halt_csr_ctrl),
       .commit_instr_i          (commit_instr_id_commit),
-      .commit_ack_i            (commit_macro_ack),
+      .commit_ack_i            (commit_ack),
       .boot_addr_i             (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
       .ex_i                    (ex_commit),
@@ -1508,6 +1508,7 @@ module cva6
     assign halt_acc_ctrl              = '0;
     assign stall_st_pending_ex        = '0;
     assign flush_acc                  = '0;
+    assign single_step_acc_commit     = '0;
 
     // D$ connection is unused
     assign dcache_req_ports_acc_cache = '0;
@@ -1714,7 +1715,7 @@ module cva6
 
       .lsu_ctrl_i  (rvfi_lsu_ctrl),
       .wbdata_i    (wbdata_ex_id),
-      .commit_ack_i(commit_macro_ack),
+      .commit_ack_i(commit_ack),
       .mem_paddr_i (rvfi_mem_paddr),
       .debug_mode_i(debug_mode),
       .wdata_i     (wdata_commit_id),

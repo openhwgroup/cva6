@@ -48,6 +48,7 @@ exclude_patterns = ['_build', '**/build', 'Thumbs.db', '.DS_Store', '*.yaml', '*
 #
 #html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
+pygments_style = 'monokai'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -61,7 +62,11 @@ html_logo = '_static/openhw-landscape.svg'
 # so a file named "default.css" will overwrite the builtin "default.css".
 #html_static_path = ['ystatic']
 # Set html_static_path to null on the advice of RTDs:
-html_static_path = []
+html_static_path = ['_static']
+
+# Add customm CSS and JS files
+html_css_files = ['theme_overrides.css']
+html_js_files = []
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

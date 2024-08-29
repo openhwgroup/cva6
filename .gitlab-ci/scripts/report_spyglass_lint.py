@@ -11,7 +11,6 @@
 
 import re
 import sys
-
 import report_builder as rb
 
 
@@ -69,15 +68,17 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                comparison_results.append((*key, *value, "PASS", message))
+                if key[0] == "ERROR" and new_dict[key][0] > baseline_dict[key][0]:
+                    comparison_results.append((*key, *value, "FAIL", message))
+                else:
+                    comparison_results.append((*key, *value, "PASS", message))
 
     severity_order = {"ERROR": 1, "WARNING": 2, "INFO": 3}
     comparison_results.sort(key=lambda x: severity_order[x[0]])
-
     return comparison_results
 
 
-def report_spyglass_lint(comparison_results):
+def generate_spyglass_lint_report(comparison_results):
     metric = rb.TableStatusMetric("")
     metric.add_column("SEVERITY", "text")
     metric.add_column("RULE NAME", "text")
@@ -94,7 +95,10 @@ def report_spyglass_lint(comparison_results):
 
     report = rb.Report()
     report.add_metric(metric)
-    report.dump()
+
+    for value in metric.values:
+        print(" | ".join(map(str, value)))
+    return report
 
 
 if __name__ == "__main__":
@@ -107,4 +111,8 @@ if __name__ == "__main__":
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
     comparison_results = compare_summaries(baseline_info, new_info)
-    report_spyglass_lint(comparison_results)
+    report = generate_spyglass_lint_report(comparison_results)
+    print(report.failed)
+    report.dump()
+    if report.failed:
+        sys.exit(1)

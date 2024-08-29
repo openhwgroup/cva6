@@ -38,12 +38,12 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_zicsr_supported = 1;
     cfg.ext_zicntr_supported = 0;
 
-    cfg.ext_cv32a60x_supported = 1;
+    cfg.ext_cv32a60x_supported = 0;
 
     // FIXME TODO: Temporary solution. We need explicit info on memory map.
     // FORNOW The solution below relies on specific region ordering.
-    cfg.dram_base = CVA6Cfg.ExecuteRegionAddrBase[2];
-    cfg.dram_size = CVA6Cfg.ExecuteRegionLength[2];
+    cfg.dram_base = 'h40000000;
+    cfg.dram_size = 'h80000000;
     cfg.dram_valid = 1;
 
     cfg.disable_all_csr_checks = 0;
@@ -78,7 +78,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
 
     void'(spike_set_param_bool(base, "hide_csrs_based_on_priv", 1));
     void'(spike_set_param_uint64_t(base, "mtvec_vectored_alignment", 64 * 4));
-    void'(spike_set_param_str(base, "extensions", "cv32a60x"));
+    void'(spike_set_param_str(base, "extensions", "cvxif"));
 
     // All enabled except XS and TW bits
     void'(spike_set_param_uint64_t(base, "mstatus_write_mask", 'hFFDE_7FFF));
