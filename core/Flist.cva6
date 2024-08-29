@@ -198,5 +198,9 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
 
 // Scratchpads
 ${CVA6_REPO_DIR}/core/address_decoder/address_decoder.sv
+${CVA6_REPO_DIR}/core/ahb_adapter/ahb_master_adapter.sv
+${CVA6_REPO_DIR}/core/ahb_adapter/ahb_slave_adapter.sv
+${CVA6_REPO_DIR}/core/periph_bus/ahb_peripheral_bus_controller.sv
+${CVA6_REPO_DIR}/core/scratchpad/sram_controller.sv
 
 // end of manifest
