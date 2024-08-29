@@ -203,5 +203,6 @@ ${CVA6_REPO_DIR}/core/ahb_adapter/ahb_slave_adapter.sv
 ${CVA6_REPO_DIR}/core/periph_bus/ahb_peripheral_bus_controller.sv
 ${CVA6_REPO_DIR}/core/scratchpad/sram_controller.sv
 ${CVA6_REPO_DIR}/core/scratchpad/dscr_controller.sv
+${CVA6_REPO_DIR}/core/scratchpad/iscr_controller.sv
 
 // end of manifest
