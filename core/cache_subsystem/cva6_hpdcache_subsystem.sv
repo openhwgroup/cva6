@@ -155,7 +155,7 @@ module cva6_hpdcache_subsystem
 
 
   localparam hpdcache_pkg::hpdcache_user_cfg_t hpdcacheIcacheUserCfg = '{
-      nRequesters: HPDCACHE_NREQUESTERS,
+      nRequesters: 4,
       paWidth: CVA6Cfg.PLEN,
       wordWidth: CVA6Cfg.XLEN,
       sets: CVA6Cfg.DCACHE_NUM_WORDS,
@@ -245,7 +245,7 @@ module cva6_hpdcache_subsystem
 
   cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
-      .HPDcacheCfg(hpdcacheDcacheCfg),
+      .HPDcacheCfg(hpdcacheIcacheCfg),
       .USE_AS_ICACHE('1),
       .fetch_dreq_t(fetch_dreq_t),
       .fetch_drsp_t(fetch_drsp_t),
@@ -253,7 +253,7 @@ module cva6_hpdcache_subsystem
       .obi_fetch_rsp_t(obi_fetch_rsp_t),
       .dcache_req_i_t(dbus_req_t),
       .dcache_req_o_t(dbus_rsp_t),
-      .NumPorts(4),
+      .NumPorts(2),
       .NrHwPrefetchers(6),
       .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
       .hpdcache_mem_id_t(hpdcache_mem_id_t),
@@ -449,7 +449,7 @@ module cva6_hpdcache_subsystem
 
   cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
-      .HPDcacheCfg(hpdcacheIcacheCfg),
+      .HPDcacheCfg(hpdcacheDcacheCfg),
       .USE_AS_ICACHE('0),
       .fetch_dreq_t(fetch_dreq_t),
       .fetch_drsp_t(fetch_drsp_t),

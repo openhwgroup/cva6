@@ -164,18 +164,16 @@ module cva6_hpdcache_wrapper
     input logic [HPDcacheCfg.u.memIdWidth-1:0] HPDCACHE_UC_WRITE_ID
 
 );
-  localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
-
   typedef logic [63:0] hwpf_stride_param_t;
 
-  logic                        dcache_req_valid[HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_ready[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_req_t               dcache_req      [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_req_abort[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_tag_t               dcache_req_tag  [HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDCACHE_NREQUESTERS-1:0];
-  logic                        dcache_rsp_valid[HPDCACHE_NREQUESTERS-1:0];
-  hpdcache_rsp_t               dcache_rsp      [HPDCACHE_NREQUESTERS-1:0];
+  logic                        dcache_req_valid[HPDcacheCfg.u.nRequesters-1:0];
+  logic                        dcache_req_ready[HPDcacheCfg.u.nRequesters-1:0];
+  hpdcache_req_t               dcache_req      [HPDcacheCfg.u.nRequesters-1:0];
+  logic                        dcache_req_abort[HPDcacheCfg.u.nRequesters-1:0];
+  hpdcache_tag_t               dcache_req_tag  [HPDcacheCfg.u.nRequesters-1:0];
+  hpdcache_pkg::hpdcache_pma_t dcache_req_pma  [HPDcacheCfg.u.nRequesters-1:0];
+  logic                        dcache_rsp_valid[HPDcacheCfg.u.nRequesters-1:0];
+  hpdcache_rsp_t               dcache_rsp      [HPDcacheCfg.u.nRequesters-1:0];
   logic dcache_read_miss, dcache_write_miss;
 
   logic                                   [                2:0] snoop_valid;
@@ -190,7 +188,7 @@ module cva6_hpdcache_wrapper
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
 
   generate
-    dcache_req_i_t dcache_req_ports[HPDCACHE_NREQUESTERS-1:0];
+    dcache_req_i_t dcache_req_ports[HPDcacheCfg.u.nRequesters-1:0];
 
     for (genvar r = 0; r < (NumPorts - 1); r++) begin : gen_cva6_hpdcache_load_if_adapter
       assign dcache_req_ports[r] = dcache_req_ports_i[r];
