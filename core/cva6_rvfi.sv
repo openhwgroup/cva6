@@ -67,6 +67,8 @@ module cva6_rvfi
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_forwarding;
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding;
 
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_intr;
+
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] commit_instr_pc;
   fu_op [CVA6Cfg.NrCommitPorts-1:0] commit_instr_op;
   logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE-1:0] commit_instr_rs1;
@@ -274,14 +276,28 @@ module cva6_rvfi
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception;
+      logic valid;
       exception = (i == 0) && commit_instr_valid[i] && ex_commit_valid && !commit_drop[i];
-      rvfi_instr_o[i].valid    <= (commit_ack[i] && !ex_commit_valid && !commit_drop[i]) ||
+      valid     = (commit_ack[i] && !ex_commit_valid && !commit_drop[i]) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
-      rvfi_instr_o[i].insn <= mem_q[commit_pointer[i]].instr;
+      rvfi_instr_o[i].valid <= valid;
+      rvfi_instr_o[i].insn  <= mem_q[commit_pointer[i]].instr;
       // when trap, the instruction is not executed
-      rvfi_instr_o[i].trap <= exception;
+      rvfi_instr_o[i].trap  <= exception;
+
+      if (exception && ex_commit_cause[31]) begin
+        rvfi_intr[i] <= 'b101;
+      end else if (exception) begin
+        rvfi_intr[i] <= 'b11;
+      end
+      if (valid) begin
+        rvfi_intr[i] <= 0;
+      end
+
+      rvfi_instr_o[i].intr <= rvfi_intr[i];
+
       rvfi_instr_o[i].cause <= ex_commit_cause;
       rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
       rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
