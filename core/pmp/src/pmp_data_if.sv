@@ -242,8 +242,8 @@ module pmp_data_if
         no_locked_if <= 1'b1;
         for (int i = 0; i < CVA6Cfg.NrPMPEntries; i++) begin
           if (pmpcfg_i[i].locked && pmpcfg_i[i].addr_mode != riscv::OFF) begin
-            no_locked_if = no_locked_if & 1'b0;
-          end else no_locked_if = no_locked_if & 1'b1;
+            no_locked_if <= no_locked_if & 1'b0;
+          end else no_locked_if <= no_locked_if & 1'b1;
         end
         if (no_locked_if == 1'b1) assert (instr_allow_o == 1'b1);
       end
