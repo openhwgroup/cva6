@@ -378,9 +378,6 @@ module uvmt_cva6_tb;
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_DATA_WIDTH"),  .value(ENV_PARAM_INSTR_DATA_WIDTH) );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_RAM_ADDR_WIDTH"),    .value(ENV_PARAM_RAM_ADDR_WIDTH)   );
 
-     // Set RTL parameters
-     uvm_config_db#(config_pkg::cva6_cfg_t)::set(.cntxt(null), .inst_name("*.env"), .field_name("CVA6Cfg"),    .value(CVA6Cfg)   );
-
      // Run test
      uvm_top.enable_print_topology = 0; // ENV coders enable this as a debug aid
      uvm_top.finish_on_completion  = 1;
