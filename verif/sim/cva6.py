@@ -1025,71 +1025,72 @@ def load_config(args, cwd):
   if not args.custom_target:
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
-    if args.target in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
-      args.mabi = "lp64d"
-      args.isa  = "rv64gc_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a60x": # step1 configuration
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a65x":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
-      args.priv  = "m"
-    elif args.target == "cv64a6_mmu":
-      args.mabi = "lp64"
-      args.isa  = "rv64imac_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a6_imac_sv0":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "cv32a6_imac_sv32":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "cv32a6_imafc_sv32":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32imafc"
-    elif args.target == "rv32imc":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imc"
-    elif args.target == "rv32imac":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "rv32ima":
-      args.mabi = "ilp32"
-      args.isa  = "rv32ima"
-    elif args.target == "rv32gc":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32gc"
-    elif args.target == "multi_harts":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32gc"
-    elif args.target == "rv32imcb":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imcb"
-    elif args.target == "rv32i":
-      args.mabi = "ilp32"
-      args.isa  = "rv32i"
-    elif args.target == "rv64imc":
-      args.mabi = "lp64"
-      args.isa  = "rv64imc"
-    elif args.target == "rv64gc":
-      args.mabi = "lp64d"
-      args.isa  = "rv64gc"
-    elif args.target == "rv64imac":
-      args.mabi = "lp64"
-      args.isa = "rv64imac"
-    elif args.target == "rv64gcv":
-      args.mabi = "lp64d"
-      args.isa  = "rv64gcv"
-    elif args.target == "ml":
-      args.mabi = "lp64"
-      args.isa  = "rv64imc"
-    elif args.target == "hwconfig":
+    if args.target == "hwconfig":
       base, changes = user_config.parse_derive_args(args.hwconfig_opts.split())
       input_file = f"../../core/include/{base}_config_pkg.sv"
       output_file = "../../core/include/hwconfig_config_pkg.sv"
       user_config.derive_config(input_file, output_file, changes)
       args.hwconfig_opts = user_config.get_config(output_file)
-      args.mabi = 'ilp32' if args.hwconfig_opts['XLEN'] == 32 else 'lp64'
+    else:
+      base = args.target
+    if base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
+      args.mabi = "lp64d"
+      args.isa  = "rv64gc_zba_zbb_zbs_zbc"
+    elif base == "cv32a60x": # step1 configuration
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac_zba_zbb_zbs_zbc"
+    elif base == "cv32a65x":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv64a6_mmu":
+      args.mabi = "lp64"
+      args.isa  = "rv64imac_zba_zbb_zbs_zbc"
+    elif base == "cv32a6_imac_sv0":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "cv32a6_imac_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "cv32a6_imafc_sv32":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32imafc"
+    elif base == "rv32imc":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc"
+    elif base == "rv32imac":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "rv32ima":
+      args.mabi = "ilp32"
+      args.isa  = "rv32ima"
+    elif base == "rv32gc":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32gc"
+    elif base == "multi_harts":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32gc"
+    elif base == "rv32imcb":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imcb"
+    elif base == "rv32i":
+      args.mabi = "ilp32"
+      args.isa  = "rv32i"
+    elif base == "rv64imc":
+      args.mabi = "lp64"
+      args.isa  = "rv64imc"
+    elif base == "rv64gc":
+      args.mabi = "lp64d"
+      args.isa  = "rv64gc"
+    elif base == "rv64imac":
+      args.mabi = "lp64"
+      args.isa = "rv64imac"
+    elif base == "rv64gcv":
+      args.mabi = "lp64d"
+      args.isa  = "rv64gcv"
+    elif base == "ml":
+      args.mabi = "lp64"
+      args.isa  = "rv64imc"
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
@@ -1372,7 +1373,7 @@ def main():
       if test_executed ==0:
         if not args.co:
           openhw_process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
-          logging.info('CVA6 Configuration is %s'% args.hwconfig_opts)
+          logging.info('CVA6 Configuration is %s and target is %s'% (args.hwconfig_opts, args.target))
           for entry in list(matched_list):
             yaml_needs = entry["needs"] if "needs" in entry else []
             if yaml_needs:
