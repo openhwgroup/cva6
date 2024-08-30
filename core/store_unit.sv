@@ -19,71 +19,84 @@ module store_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type scratchpad_req_i_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input logic clk_i,
+    input  logic                                          clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input logic rst_ni,
+    input  logic                                          rst_ni,
     // Flush - CONTROLLER
-    input logic flush_i,
+    input  logic                                          flush_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic stall_st_pending_i,
+    input  logic                                          stall_st_pending_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic no_st_pending_o,
+    output logic                                          no_st_pending_o,
     // Store buffer is empty - TO_BE_COMPLETED
-    output logic store_buffer_empty_o,
+    output logic                                          store_buffer_empty_o,
     // Store instruction is valid - ISSUE_STAGE
-    input logic valid_i,
+    input  logic                                          valid_i,
     // Data input - ISSUE_STAGE
-    input lsu_ctrl_t lsu_ctrl_i,
+    input  lsu_ctrl_t                                     lsu_ctrl_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic pop_st_o,
+    output logic                                          pop_st_o,
     // Instruction commit - TO_BE_COMPLETED
-    input logic commit_i,
+    input  logic                                          commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic commit_ready_o,
+    output logic                                          commit_ready_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic amo_valid_commit_i,
+    input  logic                                          amo_valid_commit_i,
     // Store result is valid - ISSUE_STAGE
-    output logic valid_o,
+    output logic                                          valid_o,
     // Transaction ID - ISSUE_STAGE
-    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
+    output logic              [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Store result - ISSUE_STAGE
-    output logic [CVA6Cfg.XLEN-1:0] result_o,
+    output logic              [         CVA6Cfg.XLEN-1:0] result_o,
     // Store exception output - TO_BE_COMPLETED
-    output exception_t ex_o,
+    output exception_t                                    ex_o,
     // Address translation request - TO_BE_COMPLETED
-    output logic translation_req_o,
+    output logic                                          translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
+    output logic              [         CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    output                    [         CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     // Transformed trap instruction out - TO_BE_COMPLETED
-    output logic [31:0] tinst_o,
+    output logic              [                     31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic hs_ld_st_inst_o,
+    output logic                                          hs_ld_st_inst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic hlvx_inst_o,
+    output logic                                          hlvx_inst_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
+    input  logic              [         CVA6Cfg.PLEN-1:0] paddr_i,
     // Exception raised before store - TO_BE_COMPLETED
-    input exception_t ex_i,
+    input  exception_t                                    ex_i,
     // Data TLB hit - lsu
-    input logic dtlb_hit_i,
+    input  logic                                          dtlb_hit_i,
     // Address to be checked - load_unit
-    input logic [11:0] page_offset_i,
+    input  logic              [                     11:0] page_offset_i,
     // Address check result - load_unit
-    output logic page_offset_matches_o,
+    output logic                                          page_offset_matches_o,
+    // DScratchpad interface
+    input  logic                                          dscr_ready_i,
+    input  logic                                          dscr_ex_i,
+    output scratchpad_req_i_t                             dscr_req_port_o,
+    // IScratchpad interface
+    input  logic                                          iscr_ready_i,
+    input  logic                                          iscr_ex_i,
+    output scratchpad_req_i_t                             iscr_req_port_o,
+    // Peripheral bus interface
+    input  logic                                          ahbperiph_ready_i,
+    input  logic                                          ahbperiph_ex_i,
+    output scratchpad_req_i_t                             ahbperiph_req_port_o,
     // AMO request - CACHES
-    output amo_req_t amo_req_o,
+    output amo_req_t                                      amo_req_o,
     // AMO response - CACHES
-    input amo_resp_t amo_resp_i,
+    input  amo_resp_t                                     amo_resp_i,
     // Data cache request - CACHES
-    input dcache_req_o_t req_port_i,
+    input  dcache_req_o_t                                 dcache_req_port_i,
     // Data cache response - CACHES
-    output dcache_req_i_t req_port_o
+    output dcache_req_i_t                                 dcache_req_port_o
 );
 
   // align data to address e.g.: shift data to be naturally 64
@@ -132,6 +145,31 @@ module store_unit
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
+  address_decoder_pkg::addr_dec_mode_e st_select_mem;
+  exception_t                          store_buffer_ex;
+  logic                                ongoing_exception;
+  logic                                dscr_ex_confirmed;
+  logic                                iscr_ex_confirmed;
+  logic                                ahbperiph_ex_confirmed;
+  logic                                cache_ex_confirmed;
+
+  assign dscr_ex_confirmed = dscr_ex_i & (st_select_mem == address_decoder_pkg::DECODER_MODE_DSCR);
+  assign iscr_ex_confirmed = iscr_ex_i & (st_select_mem == address_decoder_pkg::DECODER_MODE_ISCR);
+  assign ahbperiph_ex_confirmed = ahbperiph_ex_i & (st_select_mem == address_decoder_pkg::DECODER_MODE_AHB_PERIPH);
+  assign cache_ex_confirmed = ex_i.valid & (st_select_mem == address_decoder_pkg::DECODER_MODE_CACHE);
+  assign ongoing_exception = ahbperiph_ex_confirmed | dscr_ex_confirmed | iscr_ex_confirmed | cache_ex_confirmed;
+
+  always_comb begin : store_ex
+    ex_o = ex_i;
+    if (ahbperiph_ex_confirmed | dscr_ex_confirmed | iscr_ex_confirmed) begin
+      ex_o.cause = riscv::ST_ACCESS_FAULT;
+      ex_o.valid = 1'b1;
+      ex_o.tval  = riscv::XLEN'(paddr_i);
+    end else if (store_buffer_ex.valid) begin
+      ex_o = store_buffer_ex;
+    end
+  end
+
   // output assignments
   assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
   assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
@@ -145,7 +183,6 @@ module store_unit
     st_valid               = 1'b0;
     st_valid_without_flush = 1'b0;
     pop_st_o               = 1'b0;
-    ex_o                   = ex_i;
     trans_id_n             = lsu_ctrl_i.trans_id;
     state_d                = state_q;
 
@@ -227,7 +264,7 @@ module store_unit
     // Access Exception
     // -----------------
     // we got an address translation exception (access rights, misaligned or page fault)
-    if (ex_i.valid && (state_q != IDLE)) begin
+    if (ongoing_exception && (state_q != IDLE)) begin
       // the only difference is that we do not want to store this request
       pop_st_o = 1'b1;
       st_valid = 1'b0;
@@ -284,7 +321,9 @@ module store_unit
   store_buffer #(
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dcache_req_o_t(dcache_req_o_t),
+      .scratchpad_req_i_t(scratchpad_req_i_t),
+      .exception_t(exception_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,
@@ -309,8 +348,16 @@ module store_unit
       .data_i               (st_data_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
-      .req_port_i           (req_port_i),
-      .req_port_o           (req_port_o)
+      .st_select_mem_o      (st_select_mem),
+      .ex_o                 (store_buffer_ex),
+      .dscr_ready_i         (dscr_ready_i),
+      .dscr_req_port_o      (dscr_req_port_o),
+      .iscr_ready_i         (iscr_ready_i),
+      .iscr_req_port_o      (iscr_req_port_o),
+      .ahbperiph_ready_i    (ahbperiph_ready_i),
+      .ahbperiph_req_port_o (ahbperiph_req_port_o),
+      .dcache_req_port_i    (dcache_req_port_i),
+      .dcache_req_port_o    (dcache_req_port_o)
   );
 
   if (CVA6Cfg.RVA) begin
