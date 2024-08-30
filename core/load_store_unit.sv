@@ -19,6 +19,7 @@ module load_store_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type scratchpad_req_i_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type icache_areq_t = logic,
@@ -133,7 +134,27 @@ module load_store_unit
     output logic                                      itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
     output logic                                      dtlb_miss_o,
-
+    // interface to dscr
+    output scratchpad_req_i_t                          dscr_ld_req_port_o,
+    input  dcache_req_o_t                              dscr_ld_req_port_i,
+    input  logic                                       dscr_ld_ex_i,
+    output scratchpad_req_i_t                          dscr_st_req_port_o,
+    input  logic                                       dscr_st_ready_i,
+    input  logic                                       dscr_st_ex_i,
+    // interface to iscr
+    output scratchpad_req_i_t                          iscr_ld_req_port_o,
+    input  dcache_req_o_t                              iscr_ld_req_port_i,
+    input  logic                                       iscr_ld_ex_i,
+    output scratchpad_req_i_t                          iscr_st_req_port_o,
+    input  logic                                       iscr_st_ready_i,
+    input  logic                                       iscr_st_ex_i,
+    // interface to ahbperiph
+    output scratchpad_req_i_t                          ahbperiph_ld_req_port_o,
+    input  dcache_req_o_t                              ahbperiph_ld_req_port_i,
+    input  logic                                       ahbperiph_ld_ex_i,
+    output scratchpad_req_i_t                          ahbperiph_st_req_port_o,
+    input  logic                                       ahbperiph_st_ready_i,
+    input  logic                                       ahbperiph_st_ex_i,
     // Data cache request output - CACHES
     input  dcache_req_o_t [2:0] dcache_req_ports_i,
     // Data cache request input - CACHES
@@ -190,21 +211,24 @@ module load_store_unit
     assign g_overflow = 1'b0;
   end
 
-  logic                    st_valid_i;
-  logic                    ld_valid_i;
-  logic                    ld_translation_req;
-  logic                    st_translation_req;
-  logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
-  logic [            31:0] ld_tinst;
-  logic                    ld_hs_ld_st_inst;
-  logic                    ld_hlvx_inst;
-  logic [CVA6Cfg.VLEN-1:0] st_vaddr;
-  logic [            31:0] st_tinst;
-  logic                    st_hs_ld_st_inst;
-  logic                    st_hlvx_inst;
-  logic                    translation_req;
-  logic                    translation_valid;
-  logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
+  address_decoder_pkg::addr_dec_mode_e                    ld_select_mem;
+  address_decoder_pkg::addr_dec_mode_e                    st_select_mem;
+
+  logic                                                   st_valid_i;
+  logic                                                   ld_valid_i;
+  logic                                                   ld_translation_req;
+  logic                                                   st_translation_req;
+  logic                                [CVA6Cfg.VLEN-1:0] ld_vaddr;
+  logic                                [            31:0] ld_tinst;
+  logic                                                   ld_hs_ld_st_inst;
+  logic                                                   ld_hlvx_inst;
+  logic                                [CVA6Cfg.VLEN-1:0] st_vaddr;
+  logic                                [            31:0] st_tinst;
+  logic                                                   st_hs_ld_st_inst;
+  logic                                                   st_hlvx_inst;
+  logic                                                   translation_req;
+  logic                                                   translation_valid;
+  logic                                [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   logic       [                     31:0] mmu_tinst;
   logic                                   mmu_hs_ld_st_inst;
@@ -339,6 +363,7 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .scratchpad_req_i_t(scratchpad_req_i_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
@@ -377,9 +402,19 @@ module load_store_unit
       .amo_req_o,
       .amo_resp_i,
       // to memory arbiter
-      .req_port_i           (dcache_req_ports_i[2]),
-      .req_port_o           (dcache_req_ports_o[2])
+      .dscr_ready_i         (dscr_st_ready_i),
+      .dscr_ex_i            (dscr_st_ex_i),
+      .dscr_req_port_o      (dscr_st_req_port_o),
+      .iscr_ready_i         (iscr_st_ready_i),
+      .iscr_ex_i            (iscr_st_ex_i),
+      .iscr_req_port_o      (iscr_st_req_port_o),
+      .ahbperiph_ready_i    (ahbperiph_st_ready_i),
+      .ahbperiph_ex_i       (ahbperiph_st_ex_i),
+      .ahbperiph_req_port_o (ahbperiph_st_req_port_o),
+      .dcache_req_port_i    (dcache_req_ports_i[2]),
+      .dcache_req_port_o    (dcache_req_ports_o[2])
   );
+
 
   // ------------------
   // Load Unit
@@ -388,6 +423,7 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .scratchpad_req_i_t(scratchpad_req_i_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
@@ -414,8 +450,17 @@ module load_store_unit
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
       // to memory arbiter
-      .req_port_i           (dcache_req_ports_i[1]),
-      .req_port_o           (dcache_req_ports_o[1]),
+      .dscr_ex_i            (dscr_ld_ex_i),
+      .dscr_req_port_i      (dscr_ld_req_port_i),
+      .dscr_req_port_o      (dscr_ld_req_port_o),
+      .iscr_ex_i            (iscr_ld_ex_i),
+      .iscr_req_port_i      (iscr_ld_req_port_i),
+      .iscr_req_port_o      (iscr_ld_req_port_o),
+      .ahbperiph_ex_i       (ahbperiph_ld_ex_i),
+      .ahbperiph_req_port_i (ahbperiph_ld_req_port_i),
+      .ahbperiph_req_port_o (ahbperiph_ld_req_port_o),
+      .dcache_req_port_i    (dcache_req_ports_i[1]),
+      .dcache_req_port_o    (dcache_req_ports_o[1]),
       .dcache_wbuffer_not_ni_i,
       .commit_tran_id_i,
       .*
@@ -689,4 +734,3 @@ module load_store_unit
   assign rvfi_lsu_ctrl_o = lsu_ctrl;
 
 endmodule
-
