@@ -721,8 +721,8 @@ module cva6
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .icache_dreq_i      (icache_dreq_cache_if),
-      .icache_dreq_o      (icache_dreq_if_cache),
+      .icache_dreq_i      (frontend_dreq_dec_if),
+      .icache_dreq_o      (frontend_dreq_if_dec),
       .resolved_branch_i  (resolved_branch),
       .pc_commit_i        (pc_commit),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
@@ -736,6 +736,49 @@ module cva6
       .fetch_entry_ready_i(fetch_ready_id_if),
       .*
   );
+
+  if (CVA6Cfg.InstrScrPresent) begin : gen_address_decoder_frontend
+    address_decoder #(
+        .CVA6Cfg    (CVA6Cfg),
+        .exception_t(exception_t),
+        .ADDR_WIDTH (CVA6Cfg.VLEN)
+    ) i_address_decoder_frontend (
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .addr_valid_i(frontend_dreq_if_dec.req),
+        .addr_i(frontend_dreq_if_dec.vaddr),
+        .ahb_periph_en_i(1'b0),  // Access to ahbperiph should raise an exception if accessed
+        .dscr_en_i(1'b0),  // Access to dscr should raise an exception if accessed
+        .iscr_en_i(1'b1),
+        .exception_code_i(riscv::INSTR_ACCESS_FAULT),
+        .ex_o(ex_dec_if),
+        .select_mem_o(if_select_mem)
+    );
+
+    // TODO: see if missing interaction with PMP instruction without MMU
+    always_comb begin : p_frontend_dreq
+      frontend_dreq_dec_if    = '0;
+      frontend_dreq_dec_if.ex = ex_dec_if;
+      icache_dreq_if_cache    = '0;
+      iscr_dreq_if_scr        = '0;
+      if (if_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) begin
+        frontend_dreq_dec_if = icache_dreq_cache_if;
+        icache_dreq_if_cache = frontend_dreq_if_dec;
+      end else if (if_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+        frontend_dreq_dec_if = iscr_dreq_scr_if;
+        iscr_dreq_if_scr = frontend_dreq_if_dec;
+      end
+    end
+
+  end else begin : gen_no_address_decoder_frontend
+    assign ex_dec_if            = '0;
+    assign if_select_mem        = address_decoder_pkg::DECODER_MODE_CACHE;
+
+    assign frontend_dreq_dec_if = icache_dreq_cache_if;
+    assign icache_dreq_if_cache = frontend_dreq_if_dec;
+
+    assign iscr_dreq_if_scr     = '0;
+  end
 
   // ---------
   // ID
