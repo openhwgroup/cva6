@@ -19,7 +19,9 @@ module store_buffer
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic
+    parameter type dcache_req_o_t = logic,
+    parameter type scratchpad_req_i_t = logic,
+    parameter type exception_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -41,14 +43,30 @@ module store_buffer
     input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
 
     input  logic [CVA6Cfg.PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    output logic [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
+    // Address decoder
+    output address_decoder_pkg::addr_dec_mode_e st_select_mem_o,
+    output exception_t    ex_o,
+
+    // DScratchpad interface
+    input  logic              dscr_ready_i,
+    output scratchpad_req_i_t dscr_req_port_o,
+
+    // IScratchpad interface
+    input  logic              iscr_ready_i,
+    output scratchpad_req_i_t iscr_req_port_o,
+
+    // Peripheral bus interface
+    input  logic              ahbperiph_ready_i,
+    output scratchpad_req_i_t ahbperiph_req_port_o,
+
     // D$ interface
-    input  dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o
+    input  dcache_req_o_t dcache_req_port_i,
+    output dcache_req_i_t dcache_req_port_o
 );
 
   // the store queue has two parts:
@@ -73,8 +91,11 @@ module store_buffer
   logic [$clog2(DEPTH_SPEC)-1:0] speculative_read_pointer_n, speculative_read_pointer_q;
   logic [$clog2(DEPTH_SPEC)-1:0] speculative_write_pointer_n, speculative_write_pointer_q;
   // Commit Queue
+  logic commit_queue_not_full;
   logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n, commit_read_pointer_q;
   logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
+
+  address_decoder_pkg::addr_dec_mode_e st_select_mem;
 
   assign store_buffer_empty_o = (speculative_status_cnt_q == 0) & no_st_pending_o;
   // ----------------------------------------
@@ -82,13 +103,18 @@ module store_buffer
   // ----------------------------------------
   always_comb begin : core_if
     automatic logic [$clog2(DEPTH_SPEC):0] speculative_status_cnt;
-    speculative_status_cnt      = speculative_status_cnt_q;
+    speculative_status_cnt        = speculative_status_cnt_q;
 
     // default assignments
-    speculative_status_cnt_n    = speculative_status_cnt_q;
-    speculative_read_pointer_n  = speculative_read_pointer_q;
-    speculative_write_pointer_n = speculative_write_pointer_q;
-    speculative_queue_n         = speculative_queue_q;
+    speculative_status_cnt_n      = speculative_status_cnt_q;
+    speculative_read_pointer_n    = speculative_read_pointer_q;
+    speculative_write_pointer_n   = speculative_write_pointer_q;
+    speculative_queue_n           = speculative_queue_q;
+
+    dscr_req_port_o.data_req      = 1'b0;
+    iscr_req_port_o.data_req      = 1'b0;
+    ahbperiph_req_port_o.data_req = 1'b0;
+
     // LSU interface
     // we are ready to accept a new entry and the input data is valid
     if (valid_i) begin
@@ -102,8 +128,29 @@ module store_buffer
       speculative_status_cnt++;
     end
 
+    // there should be no request to peripheral bus or scratchpads when we are flushing
+    // if the entry in the speculative queue is valid we can forward that instruction directly to the target
+    // this operation is done only if the instruction targets the peripheral bus or the scratchpads
+    if (speculative_queue_q[speculative_read_pointer_q].valid && !stall_st_pending_i && (st_select_mem != address_decoder_pkg::DECODER_MODE_CACHE)) begin
+      if (CVA6Cfg.DataScrPresent) begin : gen_dscr_data_req
+        if (st_select_mem == address_decoder_pkg::DECODER_MODE_DSCR) begin
+          dscr_req_port_o.data_req = 1'b1;
+        end
+      end
+      if (CVA6Cfg.InstrScrPresent) begin : gen_iscr_data_req
+        if (st_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+          iscr_req_port_o.data_req = 1'b1;
+        end
+      end
+      if (CVA6Cfg.AHBPeriphPresent) begin : gen_ahbperiph_data_req
+        if (st_select_mem == address_decoder_pkg::DECODER_MODE_AHB_PERIPH) begin
+          ahbperiph_req_port_o.data_req = 1'b1;
+        end
+      end
+    end
+
     // evict the current entry out of this queue, the commit queue will thankfully take it and commit it
-    // to the memory hierarchy
+    // to the memory hierarchy (only if the address does not target peripheral bus or scratchpads)
     if (commit_i) begin
       // invalidate
       speculative_queue_n[speculative_read_pointer_q].valid = 1'b0;
@@ -131,47 +178,88 @@ module store_buffer
   // ----------------------------------------
   // Commit Queue - Memory Interface
   // ----------------------------------------
+  assign dcache_req_port_o.data_wuser = '0;
 
   // we will never kill a request in the store buffer since we already know that the translation is valid
   // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
-  assign req_port_o.kill_req = 1'b0;
-  assign req_port_o.data_we = 1'b1;  // we will always write in the store queue
-  assign req_port_o.tag_valid = 1'b0;
+  assign dcache_req_port_o.kill_req = 1'b0;
+  assign dscr_req_port_o.kill_req = 1'b0;
+  assign iscr_req_port_o.kill_req = 1'b0;
+  assign ahbperiph_req_port_o.kill_req = 1'b0;
+
+  assign dcache_req_port_o.data_we = 1'b1;  // we will always write in the store queue
+  assign dscr_req_port_o.data_we = 1'b1;
+  assign iscr_req_port_o.data_we = 1'b1;
+  assign ahbperiph_req_port_o.data_we = 1'b1;
+
+  assign dcache_req_port_o.tag_valid = 1'b0;
 
   // we do not require an acknowledgement for writes, thus we do not need to identify uniquely the responses
-  assign req_port_o.data_id = '0;
-  // those signals can directly be output to the memory
-  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-  // if we got a new request we already saved the tag from the previous cycle
-  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
-  assign req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;
-  assign req_port_o.data_be = commit_queue_q[commit_read_pointer_q].be;
-  assign req_port_o.data_size = commit_queue_q[commit_read_pointer_q].data_size;
+  assign dcache_req_port_o.data_id = '0;
+  assign dscr_req_port_o.data_id = '0;
+  assign iscr_req_port_o.data_id = '0;
+  assign ahbperiph_req_port_o.data_id = '0;
 
-  assign rvfi_mem_paddr_o = commit_queue_n[commit_read_pointer_n].address;
+  // those signals can directly be output to the memory
+  assign dcache_req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  // if we got a new request we already saved the tag from the previous cycle
+  assign dcache_req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                                                                         CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                                                                         CVA6Cfg.DCACHE_INDEX_WIDTH];
+  if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin : gen_addr_plen_smaller_vlen
+    assign dscr_req_port_o.vaddr = {
+      {(CVA6Cfg.VLEN - CVA6Cfg.PLEN) {1'b0}},
+      speculative_queue_q[speculative_read_pointer_q].address
+    };
+    assign iscr_req_port_o.vaddr = {
+      {(CVA6Cfg.VLEN - CVA6Cfg.PLEN) {1'b0}},
+      speculative_queue_q[speculative_read_pointer_q].address
+    };
+    assign ahbperiph_req_port_o.vaddr = {
+      {(CVA6Cfg.VLEN - CVA6Cfg.PLEN) {1'b0}},
+      speculative_queue_q[speculative_read_pointer_q].address
+    };
+  end else begin : gen_addr_plen_greater_vlen
+    assign dscr_req_port_o.vaddr      = speculative_queue_q[speculative_read_pointer_q].address[CVA6Cfg.VLEN-1:0];
+    assign iscr_req_port_o.vaddr      = speculative_queue_q[speculative_read_pointer_q].address[CVA6Cfg.VLEN-1:0];
+    assign ahbperiph_req_port_o.vaddr = speculative_queue_q[speculative_read_pointer_q].address[CVA6Cfg.VLEN-1:0];
+  end
+
+  assign dcache_req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;
+  assign dscr_req_port_o.data_wdata = speculative_queue_q[speculative_read_pointer_q].data;
+  assign iscr_req_port_o.data_wdata = speculative_queue_q[speculative_read_pointer_q].data;
+  assign ahbperiph_req_port_o.data_wdata = speculative_queue_q[speculative_read_pointer_q].data;
+
+  assign dcache_req_port_o.data_be = commit_queue_q[commit_read_pointer_q].be;
+  assign dscr_req_port_o.data_be = speculative_queue_q[speculative_read_pointer_q].be;
+  assign iscr_req_port_o.data_be = speculative_queue_q[speculative_read_pointer_q].be;
+  assign ahbperiph_req_port_o.data_be = speculative_queue_q[speculative_read_pointer_q].be;
+
+  assign dcache_req_port_o.data_size = commit_queue_q[commit_read_pointer_q].data_size;
+  assign dscr_req_port_o.data_size = speculative_queue_q[speculative_read_pointer_q].data_size;
+  assign iscr_req_port_o.data_size = speculative_queue_q[speculative_read_pointer_q].data_size;
+  assign ahbperiph_req_port_o.data_size = speculative_queue_q[speculative_read_pointer_q].data_size;
 
   always_comb begin : store_if
     automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
-    commit_status_cnt      = commit_status_cnt_q;
+    commit_status_cnt          = commit_status_cnt_q;
 
-    commit_ready_o         = (commit_status_cnt_q < DEPTH_COMMIT);
+    commit_queue_not_full      = (commit_status_cnt_q < DEPTH_COMMIT);
     // no store is pending if we don't have any element in the commit queue e.g.: it is empty
-    no_st_pending_o        = (commit_status_cnt_q == 0);
+    no_st_pending_o            = (commit_status_cnt_q == 0);
     // default assignments
-    commit_read_pointer_n  = commit_read_pointer_q;
-    commit_write_pointer_n = commit_write_pointer_q;
+    commit_read_pointer_n      = commit_read_pointer_q;
+    commit_write_pointer_n     = commit_write_pointer_q;
 
-    commit_queue_n         = commit_queue_q;
+    commit_queue_n             = commit_queue_q;
 
-    req_port_o.data_req    = 1'b0;
+    dcache_req_port_o.data_req = 1'b0;
 
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
-      req_port_o.data_req = 1'b1;
-      if (req_port_i.data_gnt) begin
+      dcache_req_port_o.data_req = 1'b1;
+      if (dcache_req_port_i.data_gnt) begin
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
         // advance the read_pointer
@@ -184,13 +272,68 @@ module store_buffer
 
     // shift the store request from the speculative buffer to the non-speculative
     if (commit_i) begin
-      commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
-      commit_write_pointer_n = commit_write_pointer_n + 1'b1;
-      commit_status_cnt++;
+      // Store request in commit queue from speculative one only if the target address is for datacache
+      if (st_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) begin
+        commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
+        commit_write_pointer_n = commit_write_pointer_n + 1'b1;
+        commit_status_cnt++;
+      end
     end
 
     commit_status_cnt_n = commit_status_cnt;
   end
+
+  if (CVA6Cfg.DataScrPresent || CVA6Cfg.InstrScrPresent || CVA6Cfg.AHBPeriphPresent) begin : gen_commit_ready_select
+    always_comb begin : commit_ready
+      commit_ready_o   = 1'b0;
+      rvfi_mem_paddr_o = '0;
+      unique if (st_select_mem == address_decoder_pkg::DECODER_MODE_DSCR) begin
+        commit_ready_o   = dscr_ready_i;
+        rvfi_mem_paddr_o = speculative_queue_n[speculative_read_pointer_q].address;
+      end else if (st_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+        commit_ready_o   = iscr_ready_i;
+        rvfi_mem_paddr_o = speculative_queue_n[speculative_read_pointer_q].address;
+      end else if (st_select_mem == address_decoder_pkg::DECODER_MODE_AHB_PERIPH) begin
+        commit_ready_o   = ahbperiph_ready_i;
+        rvfi_mem_paddr_o = speculative_queue_n[speculative_read_pointer_q].address;
+      end else if (st_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) begin // DCACHE
+        commit_ready_o   = commit_queue_not_full;
+        rvfi_mem_paddr_o = commit_queue_n[commit_read_pointer_n].address;
+      end
+    end
+  end else begin : gen_commit_ready
+    assign commit_ready_o   = commit_queue_not_full;
+    assign rvfi_mem_paddr_o = commit_queue_n[commit_read_pointer_n].address;
+  end
+
+
+  // ------------------
+  // Address Decoder
+  // ------------------
+  if (CVA6Cfg.DataScrPresent || CVA6Cfg.InstrScrPresent || CVA6Cfg.AHBPeriphPresent) begin : gen_address_decoder
+    address_decoder #(
+        .CVA6Cfg    (CVA6Cfg),
+        .exception_t(exception_t),
+        .ADDR_WIDTH (CVA6Cfg.PLEN)
+    ) i_address_decoder_store (
+        .clk_i           (clk_i),
+        .rst_ni          (rst_ni),
+        .addr_valid_i    (speculative_queue_q[speculative_read_pointer_q].valid),
+        .addr_i          (speculative_queue_q[speculative_read_pointer_q].address),
+        .ahb_periph_en_i (1'b1),
+        .dscr_en_i       (1'b1),
+        .iscr_en_i       (1'b1),
+        .exception_code_i(riscv::ST_ACCESS_FAULT),
+        .ex_o            (ex_o),
+        .select_mem_o    (st_select_mem)
+    );
+  end else begin : gen_only_dcache
+    assign ex_o = '0;
+    assign st_select_mem = address_decoder_pkg::DECODER_MODE_CACHE;
+  end
+
+  assign st_select_mem_o = st_select_mem;
+
 
   // ------------------
   // Address Checker
@@ -288,6 +431,3 @@ module store_buffer
   else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
   //pragma translate_on
 endmodule
-
-
-
