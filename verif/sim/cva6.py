@@ -463,6 +463,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   # ISS simulation
   test_log_name = test_name or asm
   for iss in iss_list:
+    tandem_sim = iss != "spike" and os.environ.get('SPIKE_TANDEM') != None
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
       log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
@@ -475,10 +476,12 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "spike" in iss: ratio = 10
     else: ratio = 1
+    if tandem_sim:
+      generate_yaml_report(yaml, target, isa, test_log_name, testlist, iss, True)
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
-    if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
-        tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
+    if tandem_sim:
+      tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -516,33 +519,26 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 
 def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss, iterations = None):
-    report_ok = analyze_tandem_report(tandem_report)
-    generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, iterations, report_ok)
-    process_verilator_sim_log(log, log + ".csv")
-
+  analyze_tandem_report(tandem_report)
+  process_verilator_sim_log(log, log + ".csv")
+  generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, False , iterations)
 
 def analyze_tandem_report(yaml_path):
-    if (os.path.exists(yaml_path)):
-        with open(yaml_path, 'r') as f:
-            data = yaml.safe_load(f)
-        try:
-          mismatches = data["mismatches"]
-          mismatches_count =  (data["mismatches_count"])
-          instr_count = (data["instr_count"])
-          exit_code = (data["exit_code"])
-          matches_count =  instr_count - mismatches_count
-          logging.info("TANDEM Result : %s (exit code %s) with %s mismatches and %s matches"
-              % (data["exit_cause"], exit_code, mismatches_count, matches_count))
-          return True
-        except KeyError:
-          logging.info("Incomplete TANDEM YAML report")
-          return False
-    else:
-        logging.info("TANDEM YAML not found")
-        return True
+  with open(yaml_path, 'r') as f:
+      data = yaml.safe_load(f)
+  try:
+    mismatches_count =  (data["mismatches_count"])
+    instr_count = (data["instr_count"])
+    exit_code = (data["exit_code"])
+    matches_count =  instr_count - mismatches_count
+    logging.info("TANDEM Result : %s (exit code %s) with %s mismatches and %s matches"
+        % (data["exit_cause"], exit_code, mismatches_count, matches_count))
+  except KeyError:
+    logging.info("Incomplete TANDEM YAML report")
 
-def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, iteration, report_ok):
-  if(os.path.exists(yaml_path) and report_ok):
+
+def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, initial_creation , iteration = None):
+  if not initial_creation:
     with open(yaml_path, 'r') as f:
       report = yaml.safe_load(f)
   else:
@@ -658,6 +654,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   # ISS simulation
   test_log_name = test_name or c
   for iss in iss_list:
+    tandem_sim = iss != "spike" and os.environ.get('SPIKE_TANDEM') != None
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     if log_format == 1:
       log = ("%s/%s_sim/%s_%d.%s.log" % (output_dir, iss, test_log_name, test_iteration, target))
@@ -670,8 +667,12 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "spike" in iss: ratio = 10
     else: ratio = 1
+    if tandem_sim:
+      generate_yaml_report(yaml, target, isa, test_log_name, testlist, iss, True)
     run_cmd(cmd, iss_timeout//ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+    if tandem_sim:
+      tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
 
     if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
         tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss)
@@ -730,6 +731,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
+    tandem_sim = iss != "spike" and os.environ.get('SPIKE_TANDEM') != None
     for test in test_list:
       if 'no_iss' in test and test['no_iss'] == 1:
         continue
@@ -744,12 +746,14 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
             cmd += ' '
             cmd += test['iss_opts']
           logging.info("Running %s sim: %s" % (iss, elf))
+          if tandem_sim:
+            generate_yaml_report(yaml, target, isa, test['test'], "generated tests", iss, True, i)
           if iss == "ovpsim":
             run_cmd(cmd, timeout_s, check_return_code=False, debug_cmd = debug_cmd)
           else:
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
-          if (iss != "spike" and os.environ.get('SPIKE_TANDEM') != None):
+          if tandem_sim:
             tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss, i)
 
 
@@ -1025,71 +1029,72 @@ def load_config(args, cwd):
   if not args.custom_target:
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
-    if args.target in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
-      args.mabi = "lp64d"
-      args.isa  = "rv64gc_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a60x": # step1 configuration
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a65x":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
-      args.priv  = "m"
-    elif args.target == "cv64a6_mmu":
-      args.mabi = "lp64"
-      args.isa  = "rv64imac_zba_zbb_zbs_zbc"
-    elif args.target == "cv32a6_imac_sv0":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "cv32a6_imac_sv32":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "cv32a6_imafc_sv32":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32imafc"
-    elif args.target == "rv32imc":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imc"
-    elif args.target == "rv32imac":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imac"
-    elif args.target == "rv32ima":
-      args.mabi = "ilp32"
-      args.isa  = "rv32ima"
-    elif args.target == "rv32gc":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32gc"
-    elif args.target == "multi_harts":
-      args.mabi = "ilp32f"
-      args.isa  = "rv32gc"
-    elif args.target == "rv32imcb":
-      args.mabi = "ilp32"
-      args.isa  = "rv32imcb"
-    elif args.target == "rv32i":
-      args.mabi = "ilp32"
-      args.isa  = "rv32i"
-    elif args.target == "rv64imc":
-      args.mabi = "lp64"
-      args.isa  = "rv64imc"
-    elif args.target == "rv64gc":
-      args.mabi = "lp64d"
-      args.isa  = "rv64gc"
-    elif args.target == "rv64imac":
-      args.mabi = "lp64"
-      args.isa = "rv64imac"
-    elif args.target == "rv64gcv":
-      args.mabi = "lp64d"
-      args.isa  = "rv64gcv"
-    elif args.target == "ml":
-      args.mabi = "lp64"
-      args.isa  = "rv64imc"
-    elif args.target == "hwconfig":
+    if args.target == "hwconfig":
       base, changes = user_config.parse_derive_args(args.hwconfig_opts.split())
       input_file = f"../../core/include/{base}_config_pkg.sv"
       output_file = "../../core/include/hwconfig_config_pkg.sv"
       user_config.derive_config(input_file, output_file, changes)
       args.hwconfig_opts = user_config.get_config(output_file)
-      args.mabi = 'ilp32' if args.hwconfig_opts['XLEN'] == 32 else 'lp64'
+    else:
+      base = args.target
+    if base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
+      args.mabi = "lp64d"
+      args.isa  = "rv64gc_zba_zbb_zbs_zbc"
+    elif base == "cv32a60x": # step1 configuration
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac_zba_zbb_zbs_zbc"
+    elif base == "cv32a65x":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv64a6_mmu":
+      args.mabi = "lp64"
+      args.isa  = "rv64imac_zba_zbb_zbs_zbc"
+    elif base == "cv32a6_imac_sv0":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "cv32a6_imac_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "cv32a6_imafc_sv32":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32imafc"
+    elif base == "rv32imc":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc"
+    elif base == "rv32imac":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif base == "rv32ima":
+      args.mabi = "ilp32"
+      args.isa  = "rv32ima"
+    elif base == "rv32gc":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32gc"
+    elif base == "multi_harts":
+      args.mabi = "ilp32f"
+      args.isa  = "rv32gc"
+    elif base == "rv32imcb":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imcb"
+    elif base == "rv32i":
+      args.mabi = "ilp32"
+      args.isa  = "rv32i"
+    elif base == "rv64imc":
+      args.mabi = "lp64"
+      args.isa  = "rv64imc"
+    elif base == "rv64gc":
+      args.mabi = "lp64d"
+      args.isa  = "rv64gc"
+    elif base == "rv64imac":
+      args.mabi = "lp64"
+      args.isa = "rv64imac"
+    elif base == "rv64gcv":
+      args.mabi = "lp64d"
+      args.isa  = "rv64gcv"
+    elif base == "ml":
+      args.mabi = "lp64"
+      args.isa  = "rv64imc"
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
@@ -1372,7 +1377,7 @@ def main():
       if test_executed ==0:
         if not args.co:
           openhw_process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
-          logging.info('CVA6 Configuration is %s'% args.hwconfig_opts)
+          logging.info('CVA6 Configuration is %s and target is %s'% (args.hwconfig_opts, args.target))
           for entry in list(matched_list):
             yaml_needs = entry["needs"] if "needs" in entry else []
             if yaml_needs:

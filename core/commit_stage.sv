@@ -103,7 +103,7 @@ module commit_stage
   // );
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_waddr
-    assign waddr_o[i] = commit_instr_i[i].rd[4:0];
+    assign waddr_o[i] = commit_instr_i[i].rd;
   end
 
   assign pc_o = commit_instr_i[0].pc;

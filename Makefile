@@ -274,10 +274,15 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
 compile_flag     += -incr -64 -nologo -quiet -suppress 13262 -suppress 8607 +permissive -svinputport=compat +define+$(defines) -suppress 8386 -suppress vlog-2577
 vopt_flag += -suppress 2085 -suppress 7063 -suppress 2698 -suppress 13262
 
+ifdef config-file
+  spike-yaml-plusarg = +config_file=$(spike_yaml)
+endif
+
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
 questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) \
 			+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
-			+core_name=$(target) +define+QUESTA -suppress 3356 -suppress 3579
+			+core_name=$(target) +define+QUESTA -suppress 3356 -suppress 3579 +report_file=$(report_file) \
+			$(spike-yaml-plusarg)
 compile_flag_vhd += -64 -nologo -quiet -2008
 
 # Iterate over all include directories and write them with +incdir+ prefixed
