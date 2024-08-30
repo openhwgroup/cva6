@@ -466,7 +466,7 @@ module frontend
             obi_vaddr_d = vaddr_d;
             data_valid_under_ex = '1;
             custom_state_d = WAIT_FLUSH;
-          end else if (obi_a_ready && spec_req_non_idempot) begin
+          end else if (obi_a_ready && !spec_req_non_idempot) begin
             obi_a_req = '1;
             obi_vaddr_d = vaddr_d;
             vaddr_d = npc_fetch_address;
@@ -517,7 +517,7 @@ module frontend
           end else begin
             custom_state_d = WAIT_NEW_REQ;
           end
-        end else if (obi_a_ready && spec_req_non_idempot) begin
+        end else if (obi_a_ready && !spec_req_non_idempot) begin
           obi_a_req = '1;
           obi_vaddr_d = vaddr_d;
           vaddr_d = npc_fetch_address;
@@ -731,7 +731,7 @@ module frontend
   logic speculative_q, speculative_d;
   assign speculative_d = (speculative_q && !resolved_branch_i.valid || |is_branch || |is_return || |is_jalr) && !flush_i;
 
-  assign spec_req_non_idempot = (speculative_d || ((CVA6Cfg.NonIdemPotenceEn && !paddr_nonidempotent) || (!CVA6Cfg.NonIdemPotenceEn)));
+  assign spec_req_non_idempot = CVA6Cfg.NonIdemPotenceEn ? speculative_d && paddr_nonidempotent : 1'b0;
 
 
   assign bht_update.valid = resolved_branch_i.valid
