@@ -23,11 +23,29 @@ module cva6
     ),
 
     // RVFI PROBES
-    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
+    parameter type rvfi_probes_instr_t =
+    `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t =
+    `RVFI_PROBES_CSR_T(CVA6Cfg),
     parameter type rvfi_probes_t = struct packed {
       logic csr;
       rvfi_probes_instr_t instr;
+    },
+    // AHB types
+    localparam type ahb_resp_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] hrdata;
+      logic hresp;
+      logic hready;
+    },
+
+    localparam type ahb_req_t = struct packed {
+      logic [CVA6Cfg.PLEN-1:0] haddr;
+      ahb_pkg::size_t hsize;
+      ahb_pkg::trans_t htrans;
+      logic [CVA6Cfg.XLEN-1:0] hwdata;
+      logic hwrite;
+      ahb_pkg::burst_t hburst;
+      ahb_pkg::prot_t hprot;
     },
 
     // branchpredict scoreboard entry
@@ -204,6 +222,18 @@ module cva6
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
+    // Scratchpad data request
+    localparam type scratchpad_req_i_t = struct packed {
+      logic [CVA6Cfg.VLEN-1:0]          vaddr;
+      logic [CVA6Cfg.XLEN-1:0]          data_wdata;
+      logic                             data_req;
+      logic                             data_we;
+      logic [(CVA6Cfg.XLEN/8)-1:0]      data_be;
+      logic [1:0]                       data_size;
+      logic [CVA6Cfg.DcacheIdWidth-1:0] data_id;
+      logic                             kill_req;
+    },
+
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
       logic [CVA6Cfg.AxiIdWidth-1:0]   id;
@@ -297,6 +327,12 @@ module cva6
     output cvxif_req_t cvxif_req_o,
     // CVXIF response - SUBSYSTEM
     input cvxif_resp_t cvxif_resp_i,
+    // AHB slave interface (scratchpad side)
+    input ahb_req_t ahb_s_req_i,
+    output ahb_resp_t ahb_s_resp_o,
+    // AHB master interface (periph side)
+    output ahb_req_t ahb_p_req_o,
+    input ahb_resp_t ahb_p_resp_i,
     // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t noc_req_o,
     // noc response, can be AXI or OpenPiton - SUBSYSTEM
