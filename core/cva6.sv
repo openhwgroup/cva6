@@ -606,6 +606,85 @@ module cva6
   amo_resp_t amo_resp;
   logic sb_full;
 
+  // ----------------------
+  // PERIPHERAL BUS <-> EX
+  // ----------------------
+  scratchpad_req_i_t ahbperiph_req_port_ld_periph;
+  dcache_req_o_t ahbperiph_req_port_periph_ld;
+  logic ahbperiph_ex_periph_ld;
+  scratchpad_req_i_t ahbperiph_req_port_st_periph;
+  logic ahbperiph_ready_periph_st;
+  logic ahbperiph_ex_periph_st;
+
+  // ----------------
+  // DSCR <-> EX
+  // ----------------
+  scratchpad_req_i_t dscr_req_port_ld_scr;
+  dcache_req_o_t dscr_req_port_scr_ld;
+  logic dscr_ex_scr_ld;
+  scratchpad_req_i_t dscr_req_port_st_scr;
+  logic dscr_ready_scr_st;
+  logic dscr_ex_scr_st;
+
+  // ----------------
+  // DSCR <-> SRAM
+  // ----------------
+  logic dscr_req_ctrl_sram;
+  logic dscr_we_ctrl_sram;
+  logic [$clog2(CVA6Cfg.DataScrRegionLength / 4)-1:0] dscr_addr_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] dscr_wdata_ctrl_sram;
+  logic [(CVA6Cfg.XLEN+7)/8-1:0] dscr_be_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] dscr_rdata_sram_ctrl;
+
+  // --------------------
+  // DSCR <-> AHB Slave
+  // --------------------
+  ahb_req_t dscr_ahb_s_req_i;
+  ahb_resp_t dscr_ahb_s_resp_o;
+  logic [1:0] ahb_select_mem;
+  logic trigger_hresp_d, trigger_hresp_q;
+  logic hresp_q, hready_q;
+
+  // ----------------
+  // ISCR <-> EX
+  // ----------------
+  scratchpad_req_i_t iscr_req_port_ld_scr;
+  dcache_req_o_t iscr_req_port_scr_ld;
+  logic iscr_ex_scr_ld;
+  scratchpad_req_i_t iscr_req_port_st_scr;
+  logic iscr_ready_scr_st;
+  logic iscr_ex_scr_st;
+
+  // ------------------
+  // ISCR <-> FRONTEND
+  // ------------------
+  icache_dreq_t iscr_dreq_if_scr;
+  icache_drsp_t iscr_dreq_scr_if;
+
+  // --------------------
+  // ISCR <-> AHB Slave
+  // --------------------
+  ahb_req_t iscr_ahb_s_req_i;
+  ahb_resp_t iscr_ahb_s_resp_o;
+
+  // -----------------------------
+  // FRONTEND <-> Address decoder
+  // -----------------------------
+  icache_dreq_t frontend_dreq_if_dec;
+  icache_drsp_t frontend_dreq_dec_if;
+  exception_t ex_dec_if;
+  address_decoder_pkg::addr_dec_mode_e if_select_mem;
+
+  // ----------------
+  // ISCR <-> SRAM
+  // ----------------
+  logic iscr_req_ctrl_sram;
+  logic iscr_we_ctrl_sram;
+  logic [$clog2(CVA6Cfg.InstrScrRegionLength / 4)-1:0] iscr_addr_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] iscr_wdata_ctrl_sram;
+  logic [(CVA6Cfg.XLEN+7)/8-1:0] iscr_be_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] iscr_rdata_sram_ctrl;
+
   // ----------------
   // DCache <-> *
   // ----------------
