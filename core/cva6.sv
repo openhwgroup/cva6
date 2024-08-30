@@ -915,6 +915,7 @@ module cva6
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .scratchpad_req_i_t(scratchpad_req_i_t),
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .icache_areq_t(icache_areq_t),
@@ -1028,6 +1029,27 @@ module cva6
       .vmid_i                  (vmid_csr_ex),                    // from CSR
       .icache_areq_i           (icache_areq_cache_ex),
       .icache_areq_o           (icache_areq_ex_cache),
+      // DSCR interface
+      .dscr_ld_req_port_o      (dscr_req_port_ld_scr),
+      .dscr_ld_req_port_i      (dscr_req_port_scr_ld),
+      .dscr_ld_ex_i            (dscr_ex_scr_ld),
+      .dscr_st_req_port_o      (dscr_req_port_st_scr),
+      .dscr_st_ready_i         (dscr_ready_scr_st),
+      .dscr_st_ex_i            (dscr_ex_scr_st),
+      // ISCR interface
+      .iscr_ld_req_port_o      (iscr_req_port_ld_scr),
+      .iscr_ld_req_port_i      (iscr_req_port_scr_ld),
+      .iscr_ld_ex_i            (iscr_ex_scr_ld),
+      .iscr_st_req_port_o      (iscr_req_port_st_scr),
+      .iscr_st_ready_i         (iscr_ready_scr_st),
+      .iscr_st_ex_i            (iscr_ex_scr_st),
+      // AHB Peripheral bus interface
+      .ahbperiph_ld_req_port_o (ahbperiph_req_port_ld_periph),
+      .ahbperiph_ld_req_port_i (ahbperiph_req_port_periph_ld),
+      .ahbperiph_ld_ex_i       (ahbperiph_ex_periph_ld),
+      .ahbperiph_st_req_port_o (ahbperiph_req_port_st_periph),
+      .ahbperiph_st_ready_i    (ahbperiph_ready_periph_st),
+      .ahbperiph_st_ex_i       (ahbperiph_ex_periph_st),
       // DCACHE interfaces
       .dcache_req_ports_i      (dcache_req_ports_cache_ex),
       .dcache_req_ports_o      (dcache_req_ports_ex_cache),
