@@ -23,11 +23,29 @@ module cva6
     ),
 
     // RVFI PROBES
-    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
+    parameter type rvfi_probes_instr_t =
+    `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t =
+    `RVFI_PROBES_CSR_T(CVA6Cfg),
     parameter type rvfi_probes_t = struct packed {
       logic csr;
       rvfi_probes_instr_t instr;
+    },
+    // AHB types
+    localparam type ahb_resp_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] hrdata;
+      logic hresp;
+      logic hready;
+    },
+
+    localparam type ahb_req_t = struct packed {
+      logic [CVA6Cfg.PLEN-1:0] haddr;
+      ahb_pkg::size_t hsize;
+      ahb_pkg::trans_t htrans;
+      logic [CVA6Cfg.XLEN-1:0] hwdata;
+      logic hwrite;
+      ahb_pkg::burst_t hburst;
+      ahb_pkg::prot_t hprot;
     },
 
     // branchpredict scoreboard entry
@@ -204,6 +222,18 @@ module cva6
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
+    // Scratchpad data request
+    localparam type scratchpad_req_i_t = struct packed {
+      logic [CVA6Cfg.VLEN-1:0]          vaddr;
+      logic [CVA6Cfg.XLEN-1:0]          data_wdata;
+      logic                             data_req;
+      logic                             data_we;
+      logic [(CVA6Cfg.XLEN/8)-1:0]      data_be;
+      logic [1:0]                       data_size;
+      logic [CVA6Cfg.DcacheIdWidth-1:0] data_id;
+      logic                             kill_req;
+    },
+
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
       logic [CVA6Cfg.AxiIdWidth-1:0]   id;
@@ -291,12 +321,18 @@ module cva6
     input logic time_irq_i,
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
-    // Probes to build RVFI, can be left open when not used - RVFI
+        // Probes to build RVFI, can be left open when not used - RVFI
     output rvfi_probes_t rvfi_probes_o,
     // CVXIF request - SUBSYSTEM
     output cvxif_req_t cvxif_req_o,
     // CVXIF response - SUBSYSTEM
     input cvxif_resp_t cvxif_resp_i,
+    // AHB slave interface (scratchpad side)
+    input ahb_req_t ahb_s_req_i,
+    output ahb_resp_t ahb_s_resp_o,
+    // AHB master interface (periph side)
+    output ahb_req_t ahb_p_req_o,
+    input ahb_resp_t ahb_p_resp_i,
     // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t noc_req_o,
     // noc response, can be AXI or OpenPiton - SUBSYSTEM
@@ -570,6 +606,85 @@ module cva6
   amo_resp_t amo_resp;
   logic sb_full;
 
+  // ----------------------
+  // PERIPHERAL BUS <-> EX
+  // ----------------------
+  scratchpad_req_i_t ahbperiph_req_port_ld_periph;
+  dcache_req_o_t ahbperiph_req_port_periph_ld;
+  logic ahbperiph_ex_periph_ld;
+  scratchpad_req_i_t ahbperiph_req_port_st_periph;
+  logic ahbperiph_ready_periph_st;
+  logic ahbperiph_ex_periph_st;
+
+  // ----------------
+  // DSCR <-> EX
+  // ----------------
+  scratchpad_req_i_t dscr_req_port_ld_scr;
+  dcache_req_o_t dscr_req_port_scr_ld;
+  logic dscr_ex_scr_ld;
+  scratchpad_req_i_t dscr_req_port_st_scr;
+  logic dscr_ready_scr_st;
+  logic dscr_ex_scr_st;
+
+  // ----------------
+  // DSCR <-> SRAM
+  // ----------------
+  logic dscr_req_ctrl_sram;
+  logic dscr_we_ctrl_sram;
+  logic [$clog2(CVA6Cfg.DataScrRegionLength / 4)-1:0] dscr_addr_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] dscr_wdata_ctrl_sram;
+  logic [(CVA6Cfg.XLEN+7)/8-1:0] dscr_be_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] dscr_rdata_sram_ctrl;
+
+  // --------------------
+  // DSCR <-> AHB Slave
+  // --------------------
+  ahb_req_t dscr_ahb_s_req_i;
+  ahb_resp_t dscr_ahb_s_resp_o;
+  logic [1:0] ahb_select_mem;
+  logic trigger_hresp_d, trigger_hresp_q;
+  logic hresp_q, hready_q;
+
+  // ----------------
+  // ISCR <-> EX
+  // ----------------
+  scratchpad_req_i_t iscr_req_port_ld_scr;
+  dcache_req_o_t iscr_req_port_scr_ld;
+  logic iscr_ex_scr_ld;
+  scratchpad_req_i_t iscr_req_port_st_scr;
+  logic iscr_ready_scr_st;
+  logic iscr_ex_scr_st;
+
+  // ------------------
+  // ISCR <-> FRONTEND
+  // ------------------
+  icache_dreq_t iscr_dreq_if_scr;
+  icache_drsp_t iscr_dreq_scr_if;
+
+  // --------------------
+  // ISCR <-> AHB Slave
+  // --------------------
+  ahb_req_t iscr_ahb_s_req_i;
+  ahb_resp_t iscr_ahb_s_resp_o;
+
+  // -----------------------------
+  // FRONTEND <-> Address decoder
+  // -----------------------------
+  icache_dreq_t frontend_dreq_if_dec;
+  icache_drsp_t frontend_dreq_dec_if;
+  exception_t ex_dec_if;
+  address_decoder_pkg::addr_dec_mode_e if_select_mem;
+
+  // ----------------
+  // ISCR <-> SRAM
+  // ----------------
+  logic iscr_req_ctrl_sram;
+  logic iscr_we_ctrl_sram;
+  logic [$clog2(CVA6Cfg.InstrScrRegionLength / 4)-1:0] iscr_addr_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] iscr_wdata_ctrl_sram;
+  logic [(CVA6Cfg.XLEN+7)/8-1:0] iscr_be_ctrl_sram;
+  logic [CVA6Cfg.XLEN-1:0] iscr_rdata_sram_ctrl;
+
   // ----------------
   // DCache <-> *
   // ----------------
@@ -606,8 +721,8 @@ module cva6
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .icache_dreq_i      (icache_dreq_cache_if),
-      .icache_dreq_o      (icache_dreq_if_cache),
+      .icache_dreq_i      (frontend_dreq_dec_if),
+      .icache_dreq_o      (frontend_dreq_if_dec),
       .resolved_branch_i  (resolved_branch),
       .pc_commit_i        (pc_commit),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
@@ -621,6 +736,49 @@ module cva6
       .fetch_entry_ready_i(fetch_ready_id_if),
       .*
   );
+
+  if (CVA6Cfg.InstrScrPresent) begin : gen_address_decoder_frontend
+    address_decoder #(
+        .CVA6Cfg    (CVA6Cfg),
+        .exception_t(exception_t),
+        .ADDR_WIDTH (CVA6Cfg.VLEN)
+    ) i_address_decoder_frontend (
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .addr_valid_i(frontend_dreq_if_dec.req),
+        .addr_i(frontend_dreq_if_dec.vaddr),
+        .ahb_periph_en_i(1'b0),  // Access to ahbperiph should raise an exception if accessed
+        .dscr_en_i(1'b0),  // Access to dscr should raise an exception if accessed
+        .iscr_en_i(1'b1),
+        .exception_code_i(riscv::INSTR_ACCESS_FAULT),
+        .ex_o(ex_dec_if),
+        .select_mem_o(if_select_mem)
+    );
+
+    // TODO: see if missing interaction with PMP instruction without MMU
+    always_comb begin : p_frontend_dreq
+      frontend_dreq_dec_if    = '0;
+      frontend_dreq_dec_if.ex = ex_dec_if;
+      icache_dreq_if_cache    = '0;
+      iscr_dreq_if_scr        = '0;
+      if (if_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) begin
+        frontend_dreq_dec_if = icache_dreq_cache_if;
+        icache_dreq_if_cache = frontend_dreq_if_dec;
+      end else if (if_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+        frontend_dreq_dec_if = iscr_dreq_scr_if;
+        iscr_dreq_if_scr = frontend_dreq_if_dec;
+      end
+    end
+
+  end else begin : gen_no_address_decoder_frontend
+    assign ex_dec_if            = '0;
+    assign if_select_mem        = address_decoder_pkg::DECODER_MODE_CACHE;
+
+    assign frontend_dreq_dec_if = icache_dreq_cache_if;
+    assign icache_dreq_if_cache = frontend_dreq_if_dec;
+
+    assign iscr_dreq_if_scr     = '0;
+  end
 
   // ---------
   // ID
@@ -800,6 +958,7 @@ module cva6
       .branchpredict_sbe_t(branchpredict_sbe_t),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
+      .scratchpad_req_i_t(scratchpad_req_i_t),
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .icache_areq_t(icache_areq_t),
@@ -913,6 +1072,27 @@ module cva6
       .vmid_i                  (vmid_csr_ex),                    // from CSR
       .icache_areq_i           (icache_areq_cache_ex),
       .icache_areq_o           (icache_areq_ex_cache),
+      // DSCR interface
+      .dscr_ld_req_port_o      (dscr_req_port_ld_scr),
+      .dscr_ld_req_port_i      (dscr_req_port_scr_ld),
+      .dscr_ld_ex_i            (dscr_ex_scr_ld),
+      .dscr_st_req_port_o      (dscr_req_port_st_scr),
+      .dscr_st_ready_i         (dscr_ready_scr_st),
+      .dscr_st_ex_i            (dscr_ex_scr_st),
+      // ISCR interface
+      .iscr_ld_req_port_o      (iscr_req_port_ld_scr),
+      .iscr_ld_req_port_i      (iscr_req_port_scr_ld),
+      .iscr_ld_ex_i            (iscr_ex_scr_ld),
+      .iscr_st_req_port_o      (iscr_req_port_st_scr),
+      .iscr_st_ready_i         (iscr_ready_scr_st),
+      .iscr_st_ex_i            (iscr_ex_scr_st),
+      // AHB Peripheral bus interface
+      .ahbperiph_ld_req_port_o (ahbperiph_req_port_ld_periph),
+      .ahbperiph_ld_req_port_i (ahbperiph_req_port_periph_ld),
+      .ahbperiph_ld_ex_i       (ahbperiph_ex_periph_ld),
+      .ahbperiph_st_req_port_o (ahbperiph_req_port_st_periph),
+      .ahbperiph_st_ready_i    (ahbperiph_ready_periph_st),
+      .ahbperiph_st_ex_i       (ahbperiph_ex_periph_st),
       // DCACHE interfaces
       .dcache_req_ports_i      (dcache_req_ports_cache_ex),
       .dcache_req_ports_o      (dcache_req_ports_ex_cache),
@@ -1349,6 +1529,261 @@ module cva6
     );
     assign dcache_commit_wbuffer_not_ni = 1'b1;
     assign inval_ready                  = 1'b1;
+  end
+
+  // -------------------------------
+  // Scratchpads
+  // -------------------------------
+
+  if (CVA6Cfg.DataScrPresent) begin : gen_dscr_sram
+    sram #(
+        .DATA_WIDTH(CVA6Cfg.XLEN),
+        .NUM_WORDS (CVA6Cfg.DataScrRegionLength / 4)
+    ) i_dscr_sram (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .req_i  (dscr_req_ctrl_sram),
+        .we_i   (dscr_we_ctrl_sram),
+        .addr_i (dscr_addr_ctrl_sram),
+        .wuser_i(1'b0),
+        .wdata_i(dscr_wdata_ctrl_sram),
+        .be_i   (dscr_be_ctrl_sram),
+        .ruser_o(),
+        .rdata_o(dscr_rdata_sram_ctrl)
+    );
+  end else begin : gen_no_dscr_sram
+    assign dscr_rdata_sram_ctrl = '0;
+  end
+
+  if (CVA6Cfg.InstrScrPresent) begin : gen_iscr_sram
+    sram #(
+        .DATA_WIDTH(CVA6Cfg.XLEN),
+        .NUM_WORDS (CVA6Cfg.InstrScrRegionLength / 4)
+    ) i_iscr_sram (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .req_i  (iscr_req_ctrl_sram),
+        .we_i   (iscr_we_ctrl_sram),
+        .addr_i (iscr_addr_ctrl_sram),
+        .wuser_i(1'b0),
+        .wdata_i(iscr_wdata_ctrl_sram),
+        .be_i   (iscr_be_ctrl_sram),
+        .ruser_o(),
+        .rdata_o(iscr_rdata_sram_ctrl)
+    );
+  end else begin : gen_no_iscr_sram
+    assign iscr_rdata_sram_ctrl = '0;
+  end
+
+  // -------------------------------
+  // Scratchpad Controllers
+  // -------------------------------
+
+  if (CVA6Cfg.DataScrPresent) begin : gen_dscr_controller
+    dscr_controller #(
+        .CVA6Cfg           (CVA6Cfg),
+        .DATA_WIDTH        (CVA6Cfg.XLEN),
+        .NUM_WORDS         (CVA6Cfg.DataScrRegionLength / 4),
+        .dcache_req_i_t    (dcache_req_i_t),
+        .dcache_req_o_t    (dcache_req_o_t),
+        .scratchpad_req_i_t(scratchpad_req_i_t),
+        .ahb_resp_t        (ahb_resp_t),
+        .ahb_req_t         (ahb_req_t)
+    ) i_dscr_controller (
+        .clk_i        (clk_i),
+        .rst_ni       (rst_ni),
+        .ahb_s_req_i  (dscr_ahb_s_req_i),
+        .ahb_s_resp_o (dscr_ahb_s_resp_o),
+        .ld_req_port_i(dscr_req_port_ld_scr),
+        .ld_req_port_o(dscr_req_port_scr_ld),
+        .ld_ex_o      (dscr_ex_scr_ld),
+        .st_req_port_i(dscr_req_port_st_scr),
+        .st_ready_o   (dscr_ready_scr_st),
+        .st_ex_o      (dscr_ex_scr_st),
+        .sram_req_o   (dscr_req_ctrl_sram),
+        .sram_we_o    (dscr_we_ctrl_sram),
+        .sram_addr_o  (dscr_addr_ctrl_sram),
+        .sram_wdata_o (dscr_wdata_ctrl_sram),
+        .sram_be_o    (dscr_be_ctrl_sram),
+        .sram_rdata_i (dscr_rdata_sram_ctrl)
+    );
+  end else begin : gen_no_dscr_controller
+    assign dscr_ahb_s_resp_o    = '0;
+    assign dscr_req_port_scr_ld = '0;
+    assign dscr_ex_scr_ld       = '0;
+    assign dscr_ready_scr_st    = '0;
+    assign dscr_ex_scr_st       = '0;
+    assign dscr_req_ctrl_sram   = '0;
+    assign dscr_we_ctrl_sram    = '0;
+    assign dscr_addr_ctrl_sram  = '0;
+    assign dscr_wdata_ctrl_sram = '0;
+    assign dscr_be_ctrl_sram    = '0;
+  end
+
+  if (CVA6Cfg.InstrScrPresent) begin : gen_iscr_controller
+    iscr_controller #(
+        .CVA6Cfg           (CVA6Cfg),
+        .DATA_WIDTH        (CVA6Cfg.XLEN),
+        .NUM_WORDS         (CVA6Cfg.InstrScrRegionLength / 4),
+        .icache_dreq_t     (icache_dreq_t),
+        .icache_drsp_t     (icache_drsp_t),
+        .dcache_req_i_t    (dcache_req_i_t),
+        .dcache_req_o_t    (dcache_req_o_t),
+        .scratchpad_req_i_t(scratchpad_req_i_t),
+        .ahb_resp_t        (ahb_resp_t),
+        .ahb_req_t         (ahb_req_t)
+    ) i_iscr_controller (
+        .clk_i        (clk_i),
+        .rst_ni       (rst_ni),
+        .ahb_s_req_i  (iscr_ahb_s_req_i),
+        .ahb_s_resp_o (iscr_ahb_s_resp_o),
+        .if_dreq_i    (iscr_dreq_if_scr),
+        .if_drsp_o    (iscr_dreq_scr_if),
+        .ld_req_port_i(iscr_req_port_ld_scr),
+        .ld_req_port_o(iscr_req_port_scr_ld),
+        .ld_ex_o      (iscr_ex_scr_ld),
+        .st_req_port_i(iscr_req_port_st_scr),
+        .st_ready_o   (iscr_ready_scr_st),
+        .st_ex_o      (iscr_ex_scr_st),
+        .sram_req_o   (iscr_req_ctrl_sram),
+        .sram_we_o    (iscr_we_ctrl_sram),
+        .sram_addr_o  (iscr_addr_ctrl_sram),
+        .sram_wdata_o (iscr_wdata_ctrl_sram),
+        .sram_be_o    (iscr_be_ctrl_sram),
+        .sram_rdata_i (iscr_rdata_sram_ctrl)
+    );
+  end else begin : gen_no_iscr_controller
+    assign iscr_ahb_s_resp_o    = '0;
+    assign iscr_dreq_scr_if     = '0;
+    assign iscr_req_port_scr_ld = '0;
+    assign iscr_ex_scr_ld       = '0;
+    assign iscr_ready_scr_st    = '0;
+    assign iscr_ex_scr_st       = '0;
+    assign iscr_req_ctrl_sram   = '0;
+    assign iscr_we_ctrl_sram    = '0;
+    assign iscr_addr_ctrl_sram  = '0;
+    assign iscr_wdata_ctrl_sram = '0;
+    assign iscr_be_ctrl_sram    = '0;
+  end
+
+  if (CVA6Cfg.DataScrPresent && CVA6Cfg.InstrScrPresent) begin : gen_address_decoder_ahb_slave
+    address_decoder #(
+        .CVA6Cfg    (CVA6Cfg),
+        .exception_t(exception_t),
+        .ADDR_WIDTH (CVA6Cfg.PLEN)
+    ) i_address_decoder_ahbslave (
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .addr_valid_i((ahb_s_req_i.htrans == ahb_pkg::AHB_TRANS_NONSEQ)),
+        .addr_i(ahb_s_req_i.haddr),
+        .ahb_periph_en_i(1'b0),  // Should not be targeted by AHB slave
+        .dscr_en_i(1'b1),
+        .iscr_en_i(1'b1),
+        .exception_code_i(riscv::INSTR_ACCESS_FAULT),
+        .ex_o(),
+        .select_mem_o(ahb_select_mem)
+    );
+
+    always_comb begin : p_ahb_slave_arbit
+      iscr_ahb_s_req_i   = '0;
+      dscr_ahb_s_req_i   = '0;
+      ahb_s_resp_o.hrdata = '0;
+      ahb_s_resp_o.hready = 1'b1;
+      ahb_s_resp_o.hresp = 1'b0;
+      trigger_hresp_d = 1'b0;
+      if (trigger_hresp_q) begin
+        trigger_hresp_d = 1'b0;
+        ahb_s_resp_o.hready = hready_q;
+        ahb_s_resp_o.hresp = hresp_q;
+      end else if (ahb_select_mem == address_decoder_pkg::DECODER_MODE_DSCR) begin
+        dscr_ahb_s_req_i = ahb_s_req_i;
+        ahb_s_resp_o     = dscr_ahb_s_resp_o;
+      end else if (ahb_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+        iscr_ahb_s_req_i = ahb_s_req_i;
+        ahb_s_resp_o     = iscr_ahb_s_resp_o;
+      end else if (ahb_s_req_i.htrans == ahb_pkg::AHB_TRANS_IDLE) begin
+        ahb_s_resp_o.hready = 1'b1;
+        ahb_s_resp_o.hresp  = 1'b0;
+      end else begin
+        // ahb_select_mem == DCACHE or AHB PERIPH
+        // This state is illegal, should create an error
+        trigger_hresp_d = 1'b1;
+      end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_ahb_slave_hresp
+      if (~rst_ni) begin
+        hresp_q <= 1'b0;
+        hready_q <= 1'b0;
+        trigger_hresp_q <= 1'b0;
+      end else begin
+        if (trigger_hresp_d && !trigger_hresp_q) begin
+          trigger_hresp_q <= 1'b1;
+          hresp_q <= 1'b0;
+          hready_q <= 1'b0;
+        end else if (!hresp_q && trigger_hresp_q) begin
+          hresp_q <= 1'b1;
+        end else if (hresp_q && !hready_q) begin
+          hready_q <= 1'b1;
+        end else if (hresp_q && hready_q) begin
+          hresp_q <= 1'b0;
+          trigger_hresp_q <= 1'b0;
+        end
+      end
+    end
+
+  end else if (CVA6Cfg.DataScrPresent) begin : gen_connect_ahb_slave_dscr
+
+    always_comb begin : p_ahb_slave_dscr
+      iscr_ahb_s_req_i = '0;
+      dscr_ahb_s_req_i = ahb_s_req_i;
+      ahb_s_resp_o     = dscr_ahb_s_resp_o;
+    end
+
+  end else if (CVA6Cfg.InstrScrPresent) begin : gen_connect_ahb_slave_iscr
+
+    always_comb begin : p_ahb_slave_dscr
+      dscr_ahb_s_req_i = '0;
+      iscr_ahb_s_req_i = ahb_s_req_i;
+      ahb_s_resp_o     = iscr_ahb_s_resp_o;
+    end
+
+  end else begin : gen_connect_ahb_slave
+    assign dscr_ahb_s_req_i = '0;
+    assign iscr_ahb_s_req_i = '0;
+    assign ahb_s_resp_o     = '0;
+  end
+
+  // -------------------------------
+  // AHB Peripheral Bus Controller
+  // -------------------------------
+
+  if (CVA6Cfg.AHBPeriphPresent) begin : gen_periph_bus_controller
+    ahb_peripheral_bus_controller #(
+        .CVA6Cfg   (CVA6Cfg),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
+        .scratchpad_req_i_t(scratchpad_req_i_t),
+        .ahb_resp_t (ahb_resp_t),
+        .ahb_req_t (ahb_req_t)
+    ) i_ahb_peripheral_bus_controller (
+        .clk_i          (clk_i),
+        .rst_ni         (rst_ni),
+        .ahb_p_resp_i   (ahb_p_resp_i),
+        .ahb_p_req_o    (ahb_p_req_o),
+        .ld_req_port_i  (ahbperiph_req_port_ld_periph),
+        .ld_req_port_o  (ahbperiph_req_port_periph_ld),
+        .ld_ex_o        (ahbperiph_ex_periph_ld),
+        .st_req_port_i  (ahbperiph_req_port_st_periph),
+        .st_ready_o     (ahbperiph_ready_periph_st),
+        .st_ex_o        (ahbperiph_ex_periph_st)
+    );
+  end else begin : gen_no_ahb_master
+    assign ahb_p_req_o                  = '0;
+    assign ahbperiph_req_port_periph_ld = '0;
+    assign ahbperiph_ex_periph_ld       = '0;
+    assign ahbperiph_ready_periph_st    = '0;
+    assign ahbperiph_ex_periph_st       = '0;
   end
 
   // ----------------
