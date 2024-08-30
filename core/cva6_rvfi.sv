@@ -301,9 +301,9 @@ module cva6_rvfi
       rvfi_instr_o[i].cause <= ex_commit_cause;
       rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
       rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
-      rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i][4:0];
-      rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i][4:0];
-      rvfi_instr_o[i].rd_addr <= commit_instr_rd[i][4:0];
+      rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i];
+      rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i];
+      rvfi_instr_o[i].rd_addr <= commit_instr_rd[i];
       rvfi_instr_o[i].rd_wdata <= (CVA6Cfg.FpPresent && is_rd_fpr(
           commit_instr_op[i]
       )) ? commit_instr_result[i] : wdata[i];
