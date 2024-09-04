@@ -21,7 +21,7 @@ jobs:
       id: core-v-submodule-hash
       run: |
         cd verif/core-v-verif
-        echo "::set-output name=hash::$(git rev-parse HEAD)"
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
     - name: Cache toolchain
       id: cache-toolchain
@@ -80,7 +80,7 @@ jobs:
       id: core-v-submodule-hash
       run: |
         cd verif/core-v-verif
-        echo "::set-output name=hash::$(git rev-parse HEAD)"
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
     - name: Cache toolchain
       id: cache-toolchain
@@ -146,7 +146,7 @@ jobs:
       id: core-v-submodule-hash
       run: |
         cd verif/core-v-verif
-        echo "::set-output name=hash::$(git rev-parse HEAD)"
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
     - name: Cache toolchain
       id: cache-toolchain
