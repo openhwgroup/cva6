@@ -42,7 +42,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh'}}-${{ steps.core-v-submodule-hash.outputs.hash }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh')}}-${{ steps.core-v-submodule-hash.outputs.hash }}
 
     - name: Prepare
       run: |
@@ -95,7 +95,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh'}}-${{ steps.core-v-submodule-hash.outputs.hash }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh')}}-${{ steps.core-v-submodule-hash.outputs.hash }}
 
     - name: Run Tests
       run: |
@@ -161,7 +161,7 @@ jobs:
           cache-name: cache-spike
       with:
           path: tools/spike/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh'}}-${{ steps.core-v-submodule-hash.outputs.hash }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('verif/regress/install-spike.sh')}}-${{ steps.core-v-submodule-hash.outputs.hash }}
 
     - name: Run Tests
       run: |
