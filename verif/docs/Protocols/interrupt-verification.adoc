@@ -1,0 +1,27 @@
+= Interrupt Verification protocol
+
+== Scope
+
+In the rest of this section it is assumed that the design-under-test is limited to a hart (or 'core') with its internal CSRs.  The hart supports only Machine mode, explicitly excluding User and Supervisor modes as not implemented.
+
+Arbitration between multiple sources of external interrupts is under the responsibility of the "platform" and thus performed outside of the hart.
+
+Therefore, the verification of interrupt handling at hart level covers two co-ordinated aspects:
+- the detection of "interrupt present" state for all implemented interrupt types among those listed in MIP/MIE;
+- the generation of the response to the "interrupt present" state according to the fixed interrupt priority (see https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_interrupt_mip_and_mie_registers[Machine Interrupt Registers, CV32A65X Privileged ISA spec, section 3.1.9]).
+
+== Interfaces
+
+The interface for raising interrupts (from the platform to the hart) is a set of bits in the `MIP` (Machine Interrupt Present) CSR.  These bits are controlled by the verification platform by driving hardware inputs of the hart.
+The interface for clearing pending interrupts (from the hart to the platform) can either rely on writable "interrupt pending" bits in `MIP`, or "the implementation must provide some other mechanism for clearing the pending interrupt."
+
+On CV32A65X the "interrupt pending" bits in `MIP` are read-only and therefore, they cannot be used to acknowledge (clear) a pending interrupt.  Hence, for the purpose of verification we introduce a 64-bit memory-mapped register `int_ack`.  To acknowledge a pending interrupt represented by bit N in the `MIP` register, the hart performs a memory store at the address of `int_ack` with bit N set in the value being stored.  All stores into `int_ack` shall be monitored by the platform and shall eventually result in clearing a pending interrupt if both the corresponding "interrupt pending" bit in MIP is set and the value written into `int_ack` has a bit set at the same bit position.  The clearing of the corresponding pending interrupt by the platform may be immediate or delayed.
+
+The `int_ack` memory location has no fixed address.  Test programs used for interrupt verification shall reserve the necessary memory storage and shall make the value of the `int_ack` symbol available to verification software.
+
+== Rationale ==
+
+. The storage allocated for `int_ack` is 64 bits wide to support a single test program source for XLEN=32 and XLEN=64.
+. The interrupt acknowledge mechanism abstracts from the Machine Timer Interrupt logic (cf. https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_timer_mtime_and_mtimecmp_registers[Machine Timer Registers, CV32A65X Privileged ISA spec, section 3.2.1]).
+  In particular, it does not require the verification platform to maintain consistent `MTIME` and `MTIMECMP` values.
+
