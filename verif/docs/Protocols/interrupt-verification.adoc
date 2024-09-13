@@ -7,8 +7,8 @@ In the rest of this section it is assumed that the design-under-test is limited 
 Arbitration between multiple sources of external interrupts is under the responsibility of the "platform" and thus performed outside of the hart.
 
 Therefore, the verification of interrupt handling at hart level covers two co-ordinated aspects:
-- the detection of "interrupt present" state for all implemented interrupt types among those listed in MIP/MIE;
-- the generation of the response to the "interrupt present" state according to the fixed interrupt priority (see https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_interrupt_mip_and_mie_registers[Machine Interrupt Registers, CV32A65X Privileged ISA spec, section 3.1.9]).
+* the detection of "interrupt present" state for all implemented interrupt types among those listed in MIP/MIE;
+* the generation of the response to the "interrupt present" state according to the fixed interrupt priority (see https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_interrupt_mip_and_mie_registers[Machine Interrupt Registers, CV32A65X Privileged ISA spec, section 3.1.9]).
 
 == Interfaces
 
@@ -23,5 +23,5 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 . The storage allocated for `int_ack` is 64 bits wide to support a single test program source for XLEN=32 and XLEN=64.
 . The interrupt acknowledge mechanism abstracts from the Machine Timer Interrupt logic (cf. https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_timer_mtime_and_mtimecmp_registers[Machine Timer Registers, CV32A65X Privileged ISA spec, section 3.2.1]).
-  In particular, it does not require the verification platform to maintain consistent `MTIME` and `MTIMECMP` values.
+  In particular, it does relieves the verification platform from maintaining consistent `MTIME` and `MTIMECMP` values.
 
