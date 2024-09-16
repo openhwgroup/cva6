@@ -26,3 +26,18 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 . The interrupt acknowledge mechanism abstracts from the Machine Timer Interrupt logic (cf. https://cva6.readthedocs.io/en/latest/04_cv32a65x/riscv/priv.html#_machine_timer_mtime_and_mtimecmp_registers[Machine Timer Registers, CV32A65X Privileged ISA spec, section 3.2.1]).
   In particular, it does relieves the verification platform from maintaining consistent `MTIME` and `MTIMECMP` values.
 
+== The protocol
+
+The basic operation of the interrupt verification environment is presented in Figure ....
+
+image::figures/interrupt-ack-uvm.svg[Embedded,300,opts=inline]
+
+Figure ancher and caption go here.
+
+The platform/testbench initiates the interrupt by setting bin N in the `mip` CSR according to the interrupt event being triggered.  It does so by setting appropriate hardware inputs of the hart.
+
+The hart detects the presence of interrupt at posiiton N pending, and if that interrupt is enabled it starts executing the interrupt handler.
+
+While executing the handler, the hart performs a memory store to the symbolic location `int_ack` with bit N set to acknowledge the servicing of interrupt at position N in `mip`.
+
+The platform responds by clearing bit N in `mip` *and* by performing a memory store that clears bit N in `int_ack`.  Both operations shall occur in finite time but quickly enough to clear the interrupt pending bit before the core hart enables interrupts qt the end of the interrupt handler.
