@@ -28,8 +28,9 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 == The protocol
 
-The basic operation of the interrupt verification protocol is shown in xref:Basic interrupt raise-acknowledge protocol[xref-style=short].
+The basic operation of the interrupt verification protocol is shown in xref:fig-basic-raise-clear-protocol[xref-style=short].
 
+[#fig-basic-raise-clear-protocol]
 .Basic interrupt raise-acknowledge protocol
 image::figures/interrupt-ack-uvm.svg[Basic interrupt verification protocol,800,opts=inline]
 
@@ -41,4 +42,4 @@ The hart detects the presence of a pending interrupt at position N in `mip`, and
 
 While executing the handler, the hart performs a memory store to the symbolic location `int_ack` with bit N set to acknowledge the servicing of interrupt at position N in `mip` (markers `s` for "store" and `w` for "write")..
 
-The platform responds by clearing the interrupt (marker `c` for "clear"): it clears bit N in `mip` *and* performs a memory store that clears bit N in `int_ack` (marker `z` for "zero ACK").  Both operations shall occur in finite time but quickly enough to clear the interrupt pending bit before the core hart enables interrupts at the end of the interrupt handler.
+The platform responds by clearing the interrupt (marker `c` for "clear"): it clears bit N in `mip` *and* performs a memory store that clears bit N in `int_ack` (marker `z` for "zero the ACK").  Both operations shall occur in finite time but quickly enough to clear the interrupt pending bit in `mip` before the hart enables interrupts at the end of the interrupt handler.
