@@ -28,16 +28,15 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 == The protocol
 
-The basic operation of the interrupt verification protocl is shown in Figure ....
+The basic operation of the interrupt verification protocol is shown in xref:"Basic interrupt raise-acknowledge protocol"[xref-style=short].
 
-image::figures/interrupt-ack-uvm.svg[Embedded,1200,opts=inline]
+.Basic interrupt raise-acknowledge protocol
+image::figures/interrupt-ack-uvm.svg[Basic interrupt verification protocol,800,opts=inline]
 
-Figure ancher and caption go here.
+The platform/testbench notifies the hart of raising an interrupt by setting bit N in the `mip` CSR according to the interrupt event being triggered (marker `r` for "raise").  It does so by setting appropriate hardware inputs of the hart.
 
-The platform/testbench initiates the interrupt by setting bit N in the `mip` CSR according to the interrupt event being triggered.  It does so by setting appropriate hardware inputs of the hart.
+The hart detects the presence of a pending interrupt at position N in `mip`, and if that interrupt is enabled it starts executing the interrupt handler.
 
-The hart detects the presence of interrupt at position N pending, and if that interrupt is enabled it starts executing the interrupt handler.
+While executing the handler, the hart performs a memory store to the symbolic location `int_ack` with bit N set to acknowledge the servicing of interrupt at position N in `mip` (markers `s` for "store" and `w` for "write")..
 
-While executing the handler, the hart performs a memory store to the symbolic location `int_ack` with bit N set to acknowledge the servicing of interrupt at position N in `mip`.
-
-The platform responds by clearing bit N in `mip` *and* by performing a memory store that clears bit N in `int_ack`.  Both operations shall occur in finite time but quickly enough to clear the interrupt pending bit before the core hart enables interrupts qt the end of the interrupt handler.
+The platform responds by clearing the interrupt (marker `c` for "clear"): it clears bit N in `mip` *and* performs a memory store that clears bit N in `int_ack` (marker `z` for "zero ACK").  Both operations shall occur in finite time but quickly enough to clear the interrupt pending bit before the core hart enables interrupts at the end of the interrupt handler.
