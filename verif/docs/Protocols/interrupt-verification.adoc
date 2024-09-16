@@ -28,10 +28,12 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 == The protocol
 
-The basic operation of the interrupt verification protocol is shown in xref:"Basic interrupt raise-acknowledge protocol"[xref-style=short].
+The basic operation of the interrupt verification protocol is shown in xref:Basic interrupt raise-acknowledge protocol[xref-style=short].
 
 .Basic interrupt raise-acknowledge protocol
 image::figures/interrupt-ack-uvm.svg[Basic interrupt verification protocol,800,opts=inline]
+
+
 
 The platform/testbench notifies the hart of raising an interrupt by setting bit N in the `mip` CSR according to the interrupt event being triggered (marker `r` for "raise").  It does so by setting appropriate hardware inputs of the hart.
 
