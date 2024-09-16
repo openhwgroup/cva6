@@ -28,15 +28,15 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 == The protocol
 
-The basic operation of the interrupt verification environment is presented in Figure ....
+The basic operation of the interrupt verification protocl is shown in Figure ....
 
-image::figures/interrupt-ack-uvm.svg[Embedded,300,opts=inline]
+image::figures/interrupt-ack-uvm.svg[Embedded,1200,opts=inline]
 
 Figure ancher and caption go here.
 
-The platform/testbench initiates the interrupt by setting bin N in the `mip` CSR according to the interrupt event being triggered.  It does so by setting appropriate hardware inputs of the hart.
+The platform/testbench initiates the interrupt by setting bit N in the `mip` CSR according to the interrupt event being triggered.  It does so by setting appropriate hardware inputs of the hart.
 
-The hart detects the presence of interrupt at posiiton N pending, and if that interrupt is enabled it starts executing the interrupt handler.
+The hart detects the presence of interrupt at position N pending, and if that interrupt is enabled it starts executing the interrupt handler.
 
 While executing the handler, the hart performs a memory store to the symbolic location `int_ack` with bit N set to acknowledge the servicing of interrupt at position N in `mip`.
 
