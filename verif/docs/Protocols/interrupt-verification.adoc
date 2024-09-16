@@ -30,8 +30,8 @@ The `int_ack` memory location has no fixed address.  Test programs used for inte
 
 The basic operation of the interrupt verification protocol is shown in xref:fig-basic-raise-clear-protocol[xref-style=short].
 
-[#fig-basic-raise-clear-protocol]
 .Basic interrupt raise-acknowledge protocol
+[#fig-basic-raise-clear-protocol]
 image::figures/interrupt-ack-uvm.svg[Basic interrupt verification protocol,800,opts=inline]
 
 
