@@ -8,7 +8,7 @@
 # Original Author: Zbigniew CHAMSKI - Thales
 
 FIGDIR=figures
-WAVEFIR=wavedrom
+WAVEDIR=wavedrom
 
 # Names of figure files, without directory prefix nor .svg suffix
 FIGURES=interrupt-ack-uvm
