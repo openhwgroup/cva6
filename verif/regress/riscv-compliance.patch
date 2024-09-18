@@ -1,5 +1,5 @@
 diff --git a/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h b/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
-index 318b7498..922040d0 100644
+index 318b7498..4d6dd039 100644
 --- a/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
 +++ b/riscv-target/sifive-formal/formalspec-env/p/riscv_test.h
 @@ -63,10 +63,10 @@
@@ -15,18 +15,6 @@ index 318b7498..922040d0 100644
    .align 2;                                                             \
  1:
  
-@@ -154,7 +154,10 @@ end_testcode:                                                           \
-         .align 8; .global tohost; tohost: .dword 0;                     \
-         .align 8; .global fromhost; fromhost: .dword 0;                 \
-         .popsection;                                                    \
--        .align 4; .global begin_signature; begin_signature:
-+        .pushsection .uvmif,"aw",@progbits;                             \
-+        .align 8; .global int_ack; int_ack: .dword 0;                   \
-+        .popsection;                                                    \
-+       .align 4; .global begin_signature; begin_signature:
- 
- #define RVTEST_DATA_END                                                 \
-         .align 4; .global end_signature; end_signature:                 \
 diff --git a/riscv-test-env/p/link.ld b/riscv-test-env/p/link.ld
 index 392e74f9..cc4a58e1 100644
 --- a/riscv-test-env/p/link.ld
