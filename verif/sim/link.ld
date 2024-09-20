@@ -24,6 +24,8 @@ SECTIONS
   . = ALIGN(0x1000);
   .tohost : { *(.tohost) }
   . = ALIGN(0x1000);
+  .uvmif : { *(.uvmif) }
+  . = ALIGN(0x1000);
   .text : { *(.text) }
   . = ALIGN(0x1000);
   .text.startup : { *(.text.startup) }
