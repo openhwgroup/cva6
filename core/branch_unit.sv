@@ -118,12 +118,12 @@ module branch_unit #(
     branch_exception_o.gva   = CVA6Cfg.RVH ? v_i : 1'b0;
     // Only throw instruction address misaligned exception if this is indeed a `taken` conditional branch or
     // an unconditional jump
-    if (!CVA6Cfg.RVC) begin
-      jump_taken = !(ariane_pkg::op_is_branch(fu_data_i.operation)) ||
-          ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
-      if (branch_valid_i && (target_address[0] || target_address[1]) && jump_taken) begin
-        branch_exception_o.valid = 1'b1;
-      end
+    jump_taken = !(ariane_pkg::op_is_branch(fu_data_i.operation)) ||
+      ((ariane_pkg::op_is_branch(fu_data_i.operation)) && branch_comp_res_i);
+    if (CVA6Cfg.RVC) begin
+      if (branch_valid_i && target_address[0] && jump_taken) branch_exception_o.valid = 1'b1;
+    end else begin
+      if (branch_valid_i && |target_address[1:0] && jump_taken) branch_exception_o.valid = 1'b1;
     end
   end
 endmodule
