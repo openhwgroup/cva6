@@ -214,7 +214,7 @@ endfunction : build_phase
 
 function void uvme_cva6_config_covg_c::sample_cva6_config();
 
-   config_cg.sample(cfg.CVA6Cfg);
+   config_cg.sample(RTLCVA6Cfg);
    boot_addr_cg.sample(cfg);
    clock_period_cg.sample(cfg.sys_clk_period);
    

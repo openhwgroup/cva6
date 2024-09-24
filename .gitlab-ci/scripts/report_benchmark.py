@@ -17,7 +17,7 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    'dhrystone': 220885,
+    'dhrystone': 215902,
     'coremark': 534419,
 }
 

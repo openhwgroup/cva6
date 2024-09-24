@@ -19,14 +19,14 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_a_supported = CVA6Cfg.RVA;
     cfg.ext_m_supported = 1;
     cfg.ext_c_supported = CVA6Cfg.RVC;
-    cfg.ext_p_supported = 1;
+    cfg.ext_p_supported = 0;
     cfg.ext_v_supported = CVA6Cfg.RVV;
     cfg.ext_f_supported = CVA6Cfg.RVF;
     cfg.ext_d_supported = CVA6Cfg.RVD;
     cfg.ext_zba_supported = CVA6Cfg.RVB;
     cfg.ext_zbb_supported = CVA6Cfg.RVB;
     cfg.ext_zbc_supported = CVA6Cfg.RVB;
-    cfg.ext_zbe_supported = CVA6Cfg.RVB;
+    cfg.ext_zbe_supported = 0;
     cfg.ext_zbf_supported = 0;
     cfg.ext_zbm_supported = 0;
     cfg.ext_zbp_supported = 0;
@@ -38,7 +38,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_zicsr_supported = 1;
     cfg.ext_zicntr_supported = 0;
 
-    cfg.ext_cv32a60x_supported = 1;
+    cfg.ext_cv32a60x_supported = 0;
 
     // FIXME TODO: Temporary solution. We need explicit info on memory map.
     // FORNOW The solution below relies on specific region ordering.
@@ -78,7 +78,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
 
     void'(spike_set_param_bool(base, "hide_csrs_based_on_priv", 1));
     void'(spike_set_param_uint64_t(base, "mtvec_vectored_alignment", 64 * 4));
-    void'(spike_set_param_str(base, "extensions", "cv32a60x"));
+    void'(spike_set_param_str(base, "extensions", "cvxif"));
 
     // All enabled except XS and TW bits
     void'(spike_set_param_uint64_t(base, "mstatus_write_mask", 'hFFDE_7FFF));

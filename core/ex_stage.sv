@@ -294,6 +294,7 @@ module ex_stage
   // 1. ALU (combinatorial)
   alu #(
       .CVA6Cfg  (CVA6Cfg),
+      .HasBranch(1'b1),
       .fu_data_t(fu_data_t)
   ) alu_i (
       .clk_i,
@@ -460,6 +461,7 @@ module ex_stage
 
     alu #(
         .CVA6Cfg  (CVA6Cfg),
+        .HasBranch(1'b0),
         .fu_data_t(fu_data_t)
     ) alu2_i (
         .clk_i,

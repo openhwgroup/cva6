@@ -696,13 +696,13 @@ module issue_read_operands
         for (int unsigned c = 0; c < CVA6Cfg.NrCommitPorts; c++) begin
           if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
                   issue_instr_i[i].op
-              )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
-                  (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
+              )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd) :
+                  (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd)) begin
             stall_waw[i] = 1'b0;
           end
         end
         if (i > 0) begin
-          if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
+          if ((issue_instr_i[i].rd == issue_instr_i[i-1].rd) && (issue_instr_i[i].rd != '0)) begin
             stall_waw[i] = 1'b1;
           end
         end
@@ -761,8 +761,8 @@ module issue_read_operands
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1[4:0];
-    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2[4:0];
+    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1;
+    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2;
     if (OPERANDS_PER_INSTR == 3) begin
       assign raddr_pack[i*OPERANDS_PER_INSTR+2] = issue_instr_i[i].result[4:0];
     end

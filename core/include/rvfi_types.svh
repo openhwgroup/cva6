@@ -7,9 +7,9 @@
   logic [config_pkg::NRET*64-1:0]               order; \
   logic [config_pkg::NRET*config_pkg::ILEN-1:0] insn; \
   logic [config_pkg::NRET-1:0]                  trap; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      cause; \
+  logic [config_pkg::NRET*Cfg.XLEN-1:0]        cause; \
   logic [config_pkg::NRET-1:0]                  halt; \
-  logic [config_pkg::NRET-1:0]                  intr; \
+  logic [config_pkg::NRET*Cfg.XLEN-1:0]         intr; \
   logic [config_pkg::NRET*2-1:0]                mode; \
   logic [config_pkg::NRET*2-1:0]                ixl; \
   logic [config_pkg::NRET*5-1:0]                rs1_addr; \

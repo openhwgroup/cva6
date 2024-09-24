@@ -15,8 +15,21 @@ index 318b7498..4d6dd039 100644
    .align 2;                                                             \
  1:
  
+diff --git a/riscv-test-env/p/link.ld b/riscv-test-env/p/link.ld
+index 392e74f9..cc4a58e1 100644
+--- a/riscv-test-env/p/link.ld
++++ b/riscv-test-env/p/link.ld
+@@ -12,6 +12,8 @@ SECTIONS
+   . = ALIGN(0x1000);
+   .tohost : { *(.tohost) }
+   . = ALIGN(0x1000);
++  .uvmif : { *(.uvmif) }
++  . = ALIGN(0x1000);
+   .text : { *(.text) }
+   . = ALIGN(0x1000);
+   .data : { *(.data) }
 diff --git a/riscv-test-env/p/riscv_test.h b/riscv-test-env/p/riscv_test.h
-index eaa67585..966e2ac0 100644
+index eaa67585..91abcde0 100644
 --- a/riscv-test-env/p/riscv_test.h
 +++ b/riscv-test-env/p/riscv_test.h
 @@ -63,10 +63,10 @@
@@ -74,6 +87,42 @@ index eaa67585..966e2ac0 100644
  
  //-----------------------------------------------------------------------
  // Data Section Macro
+@@ -238,6 +238,9 @@ end_testcode:                                                           \
+         .align 8; .global tohost; tohost: .dword 0;                     \
+         .align 8; .global fromhost; fromhost: .dword 0;                 \
+         .popsection;                                                    \
++        .pushsection .uvmif,"aw",@progbits;                             \
++        .align 8; .global int_ack; int_ack: .dword 0;                   \
++        .popsection;                                                    \
+         .align 4; .global begin_signature; begin_signature:
+ 
+ #define RVTEST_DATA_END                                                 \
+diff --git a/riscv-test-env/pm/link.ld b/riscv-test-env/pm/link.ld
+index b3e315e7..5baa819e 100644
+--- a/riscv-test-env/pm/link.ld
++++ b/riscv-test-env/pm/link.ld
+@@ -8,6 +8,8 @@ SECTIONS
+   . = ALIGN(0x1000);
+   .tohost : { *(.tohost) }
+   . = ALIGN(0x1000);
++  .uvmif : { *(.uvmif) }
++  . = ALIGN(0x1000);
+   .text : { *(.text) }
+   . = ALIGN(0x1000);
+   .data : { *(.data) }
+diff --git a/riscv-test-env/pt/link.ld b/riscv-test-env/pt/link.ld
+index b3e315e7..5baa819e 100644
+--- a/riscv-test-env/pt/link.ld
++++ b/riscv-test-env/pt/link.ld
+@@ -8,6 +8,8 @@ SECTIONS
+   . = ALIGN(0x1000);
+   .tohost : { *(.tohost) }
+   . = ALIGN(0x1000);
++  .uvmif : { *(.uvmif) }
++  . = ALIGN(0x1000);
+   .text : { *(.text) }
+   . = ALIGN(0x1000);
+   .data : { *(.data) }
 diff --git a/riscv-test-env/v/entry.S b/riscv-test-env/v/entry.S
 index 97196620..37a68ba1 100644
 --- a/riscv-test-env/v/entry.S
@@ -87,6 +136,19 @@ index 97196620..37a68ba1 100644
    STORE  t0,34*REGBYTES(sp)
    csrr   t0,scause
    STORE  t0,35*REGBYTES(sp)
+diff --git a/riscv-test-env/v/link.ld b/riscv-test-env/v/link.ld
+index b3e315e7..5baa819e 100644
+--- a/riscv-test-env/v/link.ld
++++ b/riscv-test-env/v/link.ld
+@@ -8,6 +8,8 @@ SECTIONS
+   . = ALIGN(0x1000);
+   .tohost : { *(.tohost) }
+   . = ALIGN(0x1000);
++  .uvmif : { *(.uvmif) }
++  . = ALIGN(0x1000);
+   .text : { *(.text) }
+   . = ALIGN(0x1000);
+   .data : { *(.data) }
 diff --git a/riscv-test-env/v/vm.c b/riscv-test-env/v/vm.c
 index 6ab7fd15..1b365a9f 100644
 --- a/riscv-test-env/v/vm.c

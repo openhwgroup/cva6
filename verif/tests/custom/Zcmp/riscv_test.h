@@ -262,6 +262,9 @@ reset_vector:                                                           \
         .align 6; .global tohost; tohost: .dword 0;                     \
         .align 6; .global fromhost; fromhost: .dword 0;                 \
         .popsection;                                                    \
+        .pushsection .uvmif,"aw",@progbits;                             \
+        .align 6; .global int_ack; int_ack: .dword 0;                   \
+        .popsection;                                                    \
         .align 4; .global begin_signature; begin_signature:
 
 #define RVTEST_DATA_END .align 4; .global end_signature; end_signature:

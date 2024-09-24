@@ -121,7 +121,6 @@ module decoder
   logic [CVA6Cfg.XLEN-1:0] imm_sb_type;
   logic [CVA6Cfg.XLEN-1:0] imm_u_type;
   logic [CVA6Cfg.XLEN-1:0] imm_uj_type;
-  logic [CVA6Cfg.XLEN-1:0] imm_bi_type;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
@@ -179,7 +178,6 @@ module decoder
     instruction_o.use_zimm                 = 1'b0;
     instruction_o.bp                       = branch_predict_i;
     instruction_o.vfp                      = 1'b0;
-    tinst                                  = '0;
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
@@ -188,9 +186,9 @@ module decoder
       case (instr.rtype.opcode)
         riscv::OpcodeSystem: begin
           instruction_o.fu = CSR;
-          instruction_o.rs1[4:0] = instr.itype.rs1;
-          instruction_o.rs2[4:0] = instr.rtype.rs2;   //TODO: needs to be checked if better way is available
-          instruction_o.rd[4:0] = instr.itype.rd;
+          instruction_o.rs1 = instr.itype.rs1;
+          instruction_o.rs2 = instr.rtype.rs2;   //TODO: needs to be checked if better way is available
+          instruction_o.rd = instr.itype.rd;
 
           unique case (instr.itype.funct3)
             3'b000: begin
@@ -329,13 +327,13 @@ module decoder
                 if (instr.instr[25] != 1'b0) begin
                   instruction_o.fu = STORE;
                   imm_select = NOIMM;
-                  instruction_o.rs1[4:0] = instr.stype.rs1;
-                  instruction_o.rs2[4:0] = instr.stype.rs2;
+                  instruction_o.rs1 = instr.stype.rs1;
+                  instruction_o.rs2 = instr.stype.rs2;
                 end else begin
                   instruction_o.fu = LOAD;
                   imm_select = NOIMM;
-                  instruction_o.rs1[4:0] = instr.itype.rs1;
-                  instruction_o.rd[4:0] = instr.itype.rd;
+                  instruction_o.rs1 = instr.itype.rs1;
+                  instruction_o.rd = instr.itype.rd;
                 end
 
                 // Hypervisor load/store instructions when V=1 cause virtual instruction
@@ -402,25 +400,25 @@ module decoder
             3'b010: begin  // CSRRS
               imm_select = IIMM;
               // this is just a read
-              if (instr.itype.rs1 == 5'b0) instruction_o.op = ariane_pkg::CSR_READ;
+              if (instr.itype.rs1 == '0) instruction_o.op = ariane_pkg::CSR_READ;
               else instruction_o.op = ariane_pkg::CSR_SET;
             end
             // atomically clear values in the CSR and write back to rd
             3'b011: begin  // CSRRC
               imm_select = IIMM;
               // this is just a read
-              if (instr.itype.rs1 == 5'b0) instruction_o.op = ariane_pkg::CSR_READ;
+              if (instr.itype.rs1 == '0) instruction_o.op = ariane_pkg::CSR_READ;
               else instruction_o.op = ariane_pkg::CSR_CLEAR;
             end
             // use zimm and iimm
             3'b101: begin  // CSRRWI
-              instruction_o.rs1[4:0] = instr.itype.rs1;
+              instruction_o.rs1 = instr.itype.rs1;
               imm_select = IIMM;
               instruction_o.use_zimm = 1'b1;
               instruction_o.op = ariane_pkg::CSR_WRITE;
             end
             3'b110: begin  // CSRRSI
-              instruction_o.rs1[4:0] = instr.itype.rs1;
+              instruction_o.rs1 = instr.itype.rs1;
               imm_select = IIMM;
               instruction_o.use_zimm = 1'b1;
               // this is just a read
@@ -428,11 +426,11 @@ module decoder
               else instruction_o.op = ariane_pkg::CSR_SET;
             end
             3'b111: begin  // CSRRCI
-              instruction_o.rs1[4:0] = instr.itype.rs1;
+              instruction_o.rs1 = instr.itype.rs1;
               imm_select = IIMM;
               instruction_o.use_zimm = 1'b1;
               // this is just a read
-              if (instr.itype.rs1 == 5'b0) instruction_o.op = ariane_pkg::CSR_READ;
+              if (instr.itype.rs1 == '0) instruction_o.op = ariane_pkg::CSR_READ;
               else instruction_o.op = ariane_pkg::CSR_CLEAR;
             end
             default: illegal_instr = 1'b1;
@@ -468,24 +466,24 @@ module decoder
             if (CVA6Cfg.FpPresent && CVA6Cfg.XFVec && fs_i != riscv::Off && ((CVA6Cfg.RVH && (!v_i || vfs_i != riscv::Off)) || !CVA6Cfg.RVH)) begin
               automatic logic allow_replication;  // control honoring of replication flag
 
-              instruction_o.fu       = FPU_VEC;  // Same unit, but sets 'vectorial' signal
-              instruction_o.rs1[4:0] = instr.rvftype.rs1;
-              instruction_o.rs2[4:0] = instr.rvftype.rs2;
-              instruction_o.rd[4:0]  = instr.rvftype.rd;
-              check_fprm             = 1'b1;
-              allow_replication      = 1'b1;
+              instruction_o.fu  = FPU_VEC;  // Same unit, but sets 'vectorial' signal
+              instruction_o.rs1 = instr.rvftype.rs1;
+              instruction_o.rs2 = instr.rvftype.rs2;
+              instruction_o.rd  = instr.rvftype.rd;
+              check_fprm        = 1'b1;
+              allow_replication = 1'b1;
               // decode vectorial FP instruction
               unique case (instr.rvftype.vecfltop)
                 5'b00001: begin
-                  instruction_o.op       = ariane_pkg::FADD;  // vfadd.vfmt - Vectorial FP Addition
-                  instruction_o.rs1      = '0;  // Operand A is set to 0
-                  instruction_o.rs2[4:0] = instr.rvftype.rs1;  // Operand B is set to rs1
-                  imm_select             = IIMM;  // Operand C is set to rs2
+                  instruction_o.op  = ariane_pkg::FADD;  // vfadd.vfmt - Vectorial FP Addition
+                  instruction_o.rs1 = '0;  // Operand A is set to 0
+                  instruction_o.rs2 = instr.rvftype.rs1;  // Operand B is set to rs1
+                  imm_select        = IIMM;  // Operand C is set to rs2
                 end
                 5'b00010: begin
                   instruction_o.op = ariane_pkg::FSUB;  // vfsub.vfmt - Vectorial FP Subtraction
                   instruction_o.rs1 = '0;  // Operand A is set to 0
-                  instruction_o.rs2[4:0] = instr.rvftype.rs1;  // Operand B is set to rs1
+                  instruction_o.rs2 = instr.rvftype.rs1;  // Operand B is set to rs1
                   imm_select = IIMM;  // Operand C is set to rs2
                 end
                 5'b00011:
@@ -516,7 +514,7 @@ module decoder
                 5'b01100: begin
                   unique case (instr.rvftype.rs2) inside // operation encoded in rs2, `inside` for matching ?
                     5'b00000: begin
-                      instruction_o.rs2[4:0] = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                      instruction_o.rs2 = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                       if (instr.rvftype.repl)
                         instruction_o.op = ariane_pkg::FMV_X2F;  // vfmv.vfmt.x - GPR to FPR Move
                       else instruction_o.op = ariane_pkg::FMV_F2X;  // vfmv.x.vfmt - FPR to GPR Move
@@ -533,7 +531,7 @@ module decoder
                     instruction_o.op = ariane_pkg::FCVT_I2F; // vfcvt.vfmt.x - Vectorial Int to FP Conversion
                     5'b001??: begin
                       instruction_o.op       = ariane_pkg::FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
-                      instruction_o.rs2[4:0] = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
+                      instruction_o.rs2 = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
                       imm_select = IIMM;  // rs2 holds part of the intruction
                       // TODO CHECK R bit for valid fmt combinations
                       // determine source format
@@ -716,9 +714,9 @@ module decoder
             end else begin
               instruction_o.fu = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
             end
-            instruction_o.rs1[4:0] = instr.rtype.rs1;
-            instruction_o.rs2[4:0] = instr.rtype.rs2;
-            instruction_o.rd[4:0]  = instr.rtype.rd;
+            instruction_o.rs1 = instr.rtype.rs1;
+            instruction_o.rs2 = instr.rtype.rs2;
+            instruction_o.rd  = instr.rtype.rd;
 
             unique case ({
               instr.rtype.funct7, instr.rtype.funct3
@@ -819,10 +817,10 @@ module decoder
         // 32bit Reg-Reg Operations
         // --------------------------
         riscv::OpcodeOp32: begin
-          instruction_o.fu = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-          instruction_o.rs1[4:0] = instr.rtype.rs1;
-          instruction_o.rs2[4:0] = instr.rtype.rs2;
-          instruction_o.rd[4:0] = instr.rtype.rd;
+          instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
+          instruction_o.rs1 = instr.rtype.rs1;
+          instruction_o.rs2 = instr.rtype.rs2;
+          instruction_o.rd  = instr.rtype.rd;
           if (CVA6Cfg.IS_XLEN64) begin
             unique case ({
               instr.rtype.funct7, instr.rtype.funct3
@@ -875,8 +873,8 @@ module decoder
         riscv::OpcodeOpImm: begin
           instruction_o.fu = ALU;
           imm_select = IIMM;
-          instruction_o.rs1[4:0] = instr.itype.rs1;
-          instruction_o.rd[4:0] = instr.itype.rd;
+          instruction_o.rs1 = instr.itype.rs1;
+          instruction_o.rd = instr.itype.rd;
           unique case (instr.itype.funct3)
             3'b000: instruction_o.op = ariane_pkg::ADD;  // Add Immediate
             3'b010: instruction_o.op = ariane_pkg::SLTS;  // Set to one if Lower Than Immediate
@@ -940,8 +938,8 @@ module decoder
         riscv::OpcodeOpImm32: begin
           instruction_o.fu = ALU;
           imm_select = IIMM;
-          instruction_o.rs1[4:0] = instr.itype.rs1;
-          instruction_o.rd[4:0] = instr.itype.rd;
+          instruction_o.rs1 = instr.itype.rs1;
+          instruction_o.rd = instr.itype.rd;
           if (CVA6Cfg.IS_XLEN64) begin
             unique case (instr.itype.funct3)
               3'b000:  instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
@@ -989,8 +987,8 @@ module decoder
         riscv::OpcodeStore: begin
           instruction_o.fu = STORE;
           imm_select = SIMM;
-          instruction_o.rs1[4:0] = instr.stype.rs1;
-          instruction_o.rs2[4:0] = instr.stype.rs2;
+          instruction_o.rs1 = instr.stype.rs1;
+          instruction_o.rs2 = instr.stype.rs2;
           // determine store size
           unique case (instr.stype.funct3)
             3'b000: instruction_o.op = ariane_pkg::SB;
@@ -1010,8 +1008,8 @@ module decoder
         riscv::OpcodeLoad: begin
           instruction_o.fu = LOAD;
           imm_select = IIMM;
-          instruction_o.rs1[4:0] = instr.itype.rs1;
-          instruction_o.rd[4:0] = instr.itype.rd;
+          instruction_o.rs1 = instr.itype.rs1;
+          instruction_o.rd = instr.itype.rd;
           // determine load size and signed type
           unique case (instr.itype.funct3)
             3'b000: instruction_o.op = ariane_pkg::LB;
@@ -1040,8 +1038,8 @@ module decoder
           if (CVA6Cfg.FpPresent && fs_i != riscv::Off && ((CVA6Cfg.RVH && (!v_i || vfs_i != riscv::Off)) || !CVA6Cfg.RVH)) begin // only generate decoder if FP extensions are enabled (static)
             instruction_o.fu = STORE;
             imm_select = SIMM;
-            instruction_o.rs1[4:0] = instr.stype.rs1;
-            instruction_o.rs2[4:0] = instr.stype.rs2;
+            instruction_o.rs1 = instr.stype.rs1;
+            instruction_o.rs2 = instr.stype.rs2;
             // determine store size
             unique case (instr.stype.funct3)
               // Only process instruction if corresponding extension is active (static)
@@ -1070,8 +1068,8 @@ module decoder
           if (CVA6Cfg.FpPresent && fs_i != riscv::Off && ((CVA6Cfg.RVH && (!v_i || vfs_i != riscv::Off)) || !CVA6Cfg.RVH)) begin // only generate decoder if FP extensions are enabled (static)
             instruction_o.fu = LOAD;
             imm_select = IIMM;
-            instruction_o.rs1[4:0] = instr.itype.rs1;
-            instruction_o.rd[4:0] = instr.itype.rd;
+            instruction_o.rs1 = instr.itype.rs1;
+            instruction_o.rd = instr.itype.rd;
             // determine load size
             unique case (instr.itype.funct3)
               // Only process instruction if corresponding extension is active (static)
@@ -1101,12 +1099,12 @@ module decoder
         // ----------------------------------
         riscv::OpcodeMadd, riscv::OpcodeMsub, riscv::OpcodeNmsub, riscv::OpcodeNmadd: begin
           if (CVA6Cfg.FpPresent && fs_i != riscv::Off && ((CVA6Cfg.RVH && (!v_i || vfs_i != riscv::Off)) || !CVA6Cfg.RVH)) begin // only generate decoder if FP extensions are enabled (static)
-            instruction_o.fu       = FPU;
-            instruction_o.rs1[4:0] = instr.r4type.rs1;
-            instruction_o.rs2[4:0] = instr.r4type.rs2;
-            instruction_o.rd[4:0]  = instr.r4type.rd;
-            imm_select             = RS3;  // rs3 into result field
-            check_fprm             = 1'b1;
+            instruction_o.fu  = FPU;
+            instruction_o.rs1 = instr.r4type.rs1;
+            instruction_o.rs2 = instr.r4type.rs2;
+            instruction_o.rd  = instr.r4type.rd;
+            imm_select        = RS3;  // rs3 into result field
+            check_fprm        = 1'b1;
             // select the correct fused operation
             unique case (instr.r4type.opcode)
               default: instruction_o.op = ariane_pkg::FMADD;  // fmadd.fmt - FP Fused multiply-add
@@ -1156,24 +1154,24 @@ module decoder
 
         riscv::OpcodeOpFp: begin
           if (CVA6Cfg.FpPresent && fs_i != riscv::Off && ((CVA6Cfg.RVH && (!v_i || vfs_i != riscv::Off)) || !CVA6Cfg.RVH)) begin // only generate decoder if FP extensions are enabled (static)
-            instruction_o.fu       = FPU;
-            instruction_o.rs1[4:0] = instr.rftype.rs1;
-            instruction_o.rs2[4:0] = instr.rftype.rs2;
-            instruction_o.rd[4:0]  = instr.rftype.rd;
-            check_fprm             = 1'b1;
+            instruction_o.fu  = FPU;
+            instruction_o.rs1 = instr.rftype.rs1;
+            instruction_o.rs2 = instr.rftype.rs2;
+            instruction_o.rd  = instr.rftype.rd;
+            check_fprm        = 1'b1;
             // decode FP instruction
             unique case (instr.rftype.funct5)
               5'b00000: begin
-                instruction_o.op       = ariane_pkg::FADD;  // fadd.fmt - FP Addition
-                instruction_o.rs1      = '0;  // Operand A is set to 0
-                instruction_o.rs2[4:0] = instr.rftype.rs1;  // Operand B is set to rs1
-                imm_select             = IIMM;  // Operand C is set to rs2
+                instruction_o.op  = ariane_pkg::FADD;  // fadd.fmt - FP Addition
+                instruction_o.rs1 = '0;  // Operand A is set to 0
+                instruction_o.rs2 = instr.rftype.rs1;  // Operand B is set to rs1
+                imm_select        = IIMM;  // Operand C is set to rs2
               end
               5'b00001: begin
-                instruction_o.op       = ariane_pkg::FSUB;  // fsub.fmt - FP Subtraction
-                instruction_o.rs1      = '0;  // Operand A is set to 0
-                instruction_o.rs2[4:0] = instr.rftype.rs1;  // Operand B is set to rs1
-                imm_select             = IIMM;  // Operand C is set to rs2
+                instruction_o.op  = ariane_pkg::FSUB;  // fsub.fmt - FP Subtraction
+                instruction_o.rs1 = '0;  // Operand A is set to 0
+                instruction_o.rs2 = instr.rftype.rs1;  // Operand B is set to rs1
+                imm_select        = IIMM;  // Operand C is set to rs2
               end
               5'b00010: instruction_o.op = ariane_pkg::FMUL;  // fmul.fmt - FP Multiplication
               5'b00011: instruction_o.op = ariane_pkg::FDIV;  // fdiv.fmt - FP Division
@@ -1204,7 +1202,7 @@ module decoder
               end
               5'b01000: begin
                 instruction_o.op = ariane_pkg::FCVT_F2F;  // fcvt.fmt.fmt - FP to FP Conversion
-                instruction_o.rs2[4:0] = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
+                instruction_o.rs2 = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
                 imm_select = IIMM;  // rs2 holds part of the intruction
                 if (|instr.rftype.rs2[24:23])
                   illegal_instr = 1'b1;  // bits [22:20] used, other bits must be 0
@@ -1242,7 +1240,7 @@ module decoder
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
               end
               5'b11100: begin
-                instruction_o.rs2[4:0] = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                 check_fprm = 1'b0;  // instruction encoded in rm, do the check here
                 if (instr.rftype.rm == 3'b000 || (CVA6Cfg.XF16ALT && instr.rftype.rm == 3'b100)) // FP16ALT has separate encoding
                   instruction_o.op = ariane_pkg::FMV_F2X;  // fmv.ifmt.fmt - FPR to GPR Move
@@ -1254,7 +1252,7 @@ module decoder
               end
               5'b11110: begin
                 instruction_o.op = ariane_pkg::FMV_X2F;  // fmv.fmt.ifmt - GPR to FPR Move
-                instruction_o.rs2[4:0] = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                 check_fprm = 1'b0;  // instruction encoded in rm, do the check here
                 if (!(instr.rftype.rm == 3'b000 || (CVA6Cfg.XF16ALT && instr.rftype.rm == 3'b100)))
                   illegal_instr = 1'b1;
@@ -1305,10 +1303,10 @@ module decoder
         // ----------------------------------
         riscv::OpcodeAmo: begin
           // we are going to use the load unit for AMOs
-          instruction_o.fu = STORE;
-          instruction_o.rs1[4:0] = instr.atype.rs1;
-          instruction_o.rs2[4:0] = instr.atype.rs2;
-          instruction_o.rd[4:0] = instr.atype.rd;
+          instruction_o.fu  = STORE;
+          instruction_o.rs1 = instr.atype.rs1;
+          instruction_o.rs2 = instr.atype.rs2;
+          instruction_o.rd  = instr.atype.rd;
           // TODO(zarubaf): Ordering
           // words
           if (CVA6Cfg.RVA && instr.stype.funct3 == 3'h2) begin
@@ -1351,16 +1349,18 @@ module decoder
           end else begin
             illegal_instr = 1'b1;
           end
-          tinst = {
-            instr.atype.funct5,
-            instr.atype.aq,
-            instr.atype.rl,
-            instr.atype.rs2,
-            5'b0,
-            instr.atype.funct3,
-            instr.atype.rd,
-            instr.atype.opcode
-          };
+          if (CVA6Cfg.RVH) begin
+            tinst = {
+              instr.atype.funct5,
+              instr.atype.aq,
+              instr.atype.rl,
+              instr.atype.rs2,
+              5'b0,
+              instr.atype.funct3,
+              instr.atype.rd,
+              instr.atype.opcode
+            };
+          end
         end
 
         // --------------------------------
@@ -1369,8 +1369,8 @@ module decoder
         riscv::OpcodeBranch: begin
           imm_select              = SBIMM;
           instruction_o.fu        = CTRL_FLOW;
-          instruction_o.rs1[4:0]  = instr.stype.rs1;
-          instruction_o.rs2[4:0]  = instr.stype.rs2;
+          instruction_o.rs1       = instr.stype.rs1;
+          instruction_o.rs2       = instr.stype.rs2;
 
           is_control_flow_instr_o = 1'b1;
 
@@ -1391,9 +1391,9 @@ module decoder
         riscv::OpcodeJalr: begin
           instruction_o.fu        = CTRL_FLOW;
           instruction_o.op        = ariane_pkg::JALR;
-          instruction_o.rs1[4:0]  = instr.itype.rs1;
+          instruction_o.rs1       = instr.itype.rs1;
           imm_select              = IIMM;
-          instruction_o.rd[4:0]   = instr.itype.rd;
+          instruction_o.rd        = instr.itype.rd;
           is_control_flow_instr_o = 1'b1;
           // invalid jump and link register -> reserved for vector encoding
           if (instr.itype.funct3 != 3'b0) illegal_instr = 1'b1;
@@ -1402,21 +1402,21 @@ module decoder
         riscv::OpcodeJal: begin
           instruction_o.fu        = CTRL_FLOW;
           imm_select              = JIMM;
-          instruction_o.rd[4:0]   = instr.utype.rd;
+          instruction_o.rd        = instr.utype.rd;
           is_control_flow_instr_o = 1'b1;
         end
 
         riscv::OpcodeAuipc: begin
-          instruction_o.fu      = ALU;
-          imm_select            = UIMM;
-          instruction_o.use_pc  = 1'b1;
-          instruction_o.rd[4:0] = instr.utype.rd;
+          instruction_o.fu     = ALU;
+          imm_select           = UIMM;
+          instruction_o.use_pc = 1'b1;
+          instruction_o.rd     = instr.utype.rd;
         end
 
         riscv::OpcodeLui: begin
-          imm_select            = UIMM;
-          instruction_o.fu      = ALU;
-          instruction_o.rd[4:0] = instr.utype.rd;
+          imm_select       = UIMM;
+          instruction_o.fu = ALU;
+          instruction_o.rd = instr.utype.rd;
         end
 
         default: illegal_instr = 1'b1;
@@ -1425,9 +1425,9 @@ module decoder
     if (CVA6Cfg.CvxifEn) begin
       if (~ex_i.valid && (is_illegal_i || illegal_instr)) begin
         instruction_o.fu = CVXIF;
-        instruction_o.rs1[4:0] = instr.r4type.rs1;
-        instruction_o.rs2[4:0] = instr.r4type.rs2;
-        instruction_o.rd[4:0] = instr.r4type.rd;
+        instruction_o.rs1 = instr.r4type.rs1;
+        instruction_o.rs2 = instr.r4type.rs2;
+        instruction_o.rd = instr.r4type.rd;
         instruction_o.op = ariane_pkg::OFFLOAD;
         imm_select             = instr.rtype.opcode == riscv::OpcodeMadd ||
                                  instr.rtype.opcode == riscv::OpcodeMsub ||
@@ -1478,9 +1478,8 @@ module decoder
       instruction_i[30:21],
       1'b0
     };
-    imm_bi_type = {{CVA6Cfg.XLEN - 5{instruction_i[24]}}, instruction_i[24:20]};
 
-    // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3
+    // NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3
     // select immediate
     case (imm_select)
       IIMM: begin

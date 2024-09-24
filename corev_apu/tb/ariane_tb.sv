@@ -54,7 +54,7 @@ module ariane_tb;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
-    localparam NUM_WORDS = 2**16;
+    localparam NUM_WORDS = 2**18;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
