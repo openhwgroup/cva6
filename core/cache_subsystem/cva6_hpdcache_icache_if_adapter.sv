@@ -115,15 +115,17 @@ module cva6_hpdcache_icache_if_adapter
       hpdcache_req_pma_o.io = 1'b0;
 
   //    Response forwarding
-  assign dreq_o.ready = hpdcache_req_ready_i;  // TODO
+  assign dreq_o.ready = hpdcache_req_ready_i;
   //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
-  logic obi_gnt;  // TODO, need to fix
+  logic obi_gnt_q, obi_gnt_d;  // TODO, need to fix
+
+  assign obi_gnt_d = fetch_obi_req_i.req;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen  // TODO
     if (!rst_ni) begin
-      obi_gnt <= '0;
+      obi_gnt_q <= '0;
     end else begin
-      obi_gnt <= hpdcache_req_ready_i;
+      obi_gnt_q <= obi_gnt_d;
     end
   end
 
@@ -139,14 +141,14 @@ module cva6_hpdcache_icache_if_adapter
     end
   end
 
-  assign fetch_obi_rsp_o.gnt = obi_gnt,
-      fetch_obi_rsp_o.gntpar = !obi_gnt,
+  assign fetch_obi_rsp_o.gnt = obi_gnt_q,
+      fetch_obi_rsp_o.gntpar = !obi_gnt_q,
       fetch_obi_rsp_o.rvalid = hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.rvalidpar = !hpdcache_rsp_valid_i,
       fetch_obi_rsp_o.r.rid = hpdcache_rsp_i.tid,
-      fetch_obi_rsp_o.r.r_optional.exokay = '0,  // need this?
-      fetch_obi_rsp_o.r.r_optional.rchk = '0,  // need this?
-      fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,  // need this?
+      fetch_obi_rsp_o.r.r_optional.exokay = '0,
+      fetch_obi_rsp_o.r.r_optional.rchk = '0,
+      fetch_obi_rsp_o.r.err = hpdcache_rsp_i.error,
       fetch_obi_rsp_o.r.rdata = hpdcache_rsp_i.rdata[0][{
         which_half_q, 5'b0
       }+:CVA6Cfg.FETCH_WIDTH],
