@@ -116,12 +116,11 @@ module cva6_hpdcache_icache_if_adapter
 
   //    Response forwarding
   assign dreq_o.ready = hpdcache_req_ready_i;
-  //   dreq_o.invalid_data = hpdcache_req_ready_i; // need this? (valid or killed)
-  logic obi_gnt_q, obi_gnt_d;  // TODO, need to fix
+  logic obi_gnt_q, obi_gnt_d;  // TODO
 
-  assign obi_gnt_d = fetch_obi_req_i.req;
+  assign obi_gnt_d = dreq_i.req;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen  // TODO
+  always_ff @(posedge clk_i or negedge rst_ni) begin : obi_gnt_gen
     if (!rst_ni) begin
       obi_gnt_q <= '0;
     end else begin
