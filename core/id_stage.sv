@@ -112,10 +112,10 @@ module id_stage #(
 );
   // ID/ISSUE register stage
   typedef struct packed {
-    logic              valid;
-    scoreboard_entry_t sbe;
-    logic [31:0]       orig_instr;
-    logic              is_ctrl_flow;
+    logic                                 valid;
+    logic [$bits(scoreboard_entry_t)-1:0] sbe;
+    logic [31:0]                          orig_instr;
+    logic                                 is_ctrl_flow;
   } issue_struct_t;
   issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
   // stall required for ZCMP ZCMT CVXIF
