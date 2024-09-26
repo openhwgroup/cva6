@@ -20,15 +20,19 @@ CVA6 was designed by the [PULP Platform team](https://www.pulp-platform.org/). Y
 
 ## Technical resources
 
-### Software
+### SW Tools and OSes
 
-[github.com/openhwgroup/cva6-sdk](https://github.com/openhwgroup/cva6-sdk) contains the RISC-V tools for CVA6 and Buildroot Linux support.
+RISC-V tools for CVA6 and Buildroot Linux support are available [here](https://github.com/openhwgroup/cva6-sdk).
 
-[github.com/openhwgroup/meta-cva6-yocto](https://github.com/openhwgroup/meta-cva6-yocto) contains Yocto Linux support for CVA6.
+Yocto Linux support for CVA6 is available [here](https://github.com/openhwgroup/meta-cva6-yocto).
 
-### Tutorials
+FreeRTOS support for CVA6 is available [here](https://github.com/FreeRTOS/FreeRTOS-Partner-Supported-Demos/tree/main/RISC-V_cva6).
 
-[github.com/ThalesGroup/cva6-eclipse-demo](https://github.com/ThalesGroup/cva6-eclipse-demo) offers resources to debug CVA6 under Eclipse IDE.
+Zephyr support for CV64A6 will soon be available.
+
+This [tutorial](https://github.com/ThalesGroup/cva6-eclipse-demo) offers resources to debug CVA6 under Eclipse IDE.
+
+The OS ports below are on Digilent Genesys 2 board.
 
 ### Related building blocks
 
@@ -42,8 +46,7 @@ These building blocks fit very nicely with CVA6:
 
 The CVA6 repository contains the CVA6 core and a basic CPU design, the "APU" and its implementation on a Digilent Genesys 2 FPGA board. Here is a list of other CVA6-based FPGA designs:
 
-
-[github.com/thalesgroup/cva6-softcore-contest](https://github.com/thalesgroup/cva6-softcore-contest) is the reference for a student contest in France. It can be used as an educational resource and as an easy way to get CVA6 up and running with a cheaper Digilent Zybo Z7-20 board. You will find in it:
+The [technical kits](https://github.com/thalesgroup/cva6-softcore-contest) of a student contest organized in France can be used as educational resources or as an easy way to get CVA6 up and running with a cheaper Digilent Zybo Z7-20 board. You will find in it:
 - The 2020-2021 contest, focusing on PPA optimization;
 - The 2021-2022 contest, focusing on energy optimization;
 - The 2022-2023 contest, focusing on cybersecurity, including a port of Zephyr OS;
@@ -51,7 +54,7 @@ The CVA6 repository contains the CVA6 core and a basic CPU design, the "APU" and
 - The 2024-2025 contest, focusing on the frequency increase (_not released yet_);
 - A treat with the support of Linux and a VGA output.
 
-[github.com/cispa/CVA6-Vivado-Project-with-Xilinx-AXI-Ethernet/](https://github.com/cispa/CVA6-Vivado-Project-with-Xilinx-AXI-Ethernet/) is an alternative design which implements [Xilinx 1G/2.5G Ethernet Subsystem](https://www.xilinx.com/products/intellectual-property/axi_ethernet.html) on the Digilent Genesys 2 FPGA board. It has been tested with TFTP boot in u-boot and SSH in Linux.
+[CVA6 with Xilinx Ethernet](https://github.com/cispa/CVA6-Vivado-Project-with-Xilinx-AXI-Ethernet/) is an alternative design which implements Xilinx 1G/2.5G Ethernet Subsystem on the Digilent Genesys 2 FPGA board. It has been tested with TFTP boot in u-boot and SSH in Linux.
 
 ### Designs (ASIC)
 
