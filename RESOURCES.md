@@ -6,8 +6,8 @@ Please help improve this page, by filing an [issue](https://github.com/openhwgro
 
 > [!NOTE]
 > We only collect here pointers to resources that are mature enough to be used by external users.
-> Resources that reach the TRL-5 maturity (ready to integrate into productions ICs) is clearly be mentioned.
-> Otherwise, you can assume that the resources below are TRL-4.
+> Resources that reach the TRL-5 maturity (ready to integrate into productions ICs) are clearly mentioned.
+> Otherwise, you can assume a TRL-4 maturity.
 
 > [!WARNING]  
 > The CVA6 team is not liable for the other repositories.
@@ -65,7 +65,7 @@ To be completed
 
 ### Service offer
 
-These companies are OpenHW members, have a good CVA6 knowledge, and have a commercial offering with CVA6 stuff inside.
+These companies are OpenHW members, have a good CVA6 knowledge, and offer CVA6-related service:
 
  (To be completed based on companies's requests. Max 1 URL and 60 words per company)
 
