@@ -226,8 +226,8 @@ For example, 123 in decimal = 0x7B in hexadecimal = 0x123 in binary-coded decima
       Register rd is written with a binary-coded decimal (BCD) sum of BCD integers in registers rs1 and rs2.
 
     Note: The existing CVA6 example supports only register-to-register instructions with up to three
-    source registers and a single destination register. New memory operations will need substantail modifications
-    to the coprocssor and CVA6 system-on-chip.
+    source registers and a single destination register. New memory operations will need substantial modifications
+    to the coprocessor and CVA6 system-on-chip.
 
 #. Branch CVA6 repo
 
