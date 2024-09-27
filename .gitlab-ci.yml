@@ -148,9 +148,8 @@ smoke:
   parallel:
     matrix:
       - DV_SIMULATORS:
-        - "veri-testharness,spike"
         - "vcs-testharness"
-        - "questa-testharness,spike"
+        - "questa-testharness"
         - "vcs-uvm"
   script:
     - source $QUESTA_BASHRC
@@ -181,9 +180,10 @@ coremark:
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
+    SPIKE_TANDEM: 1
   script:
     - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/veri-testharness_sim/core_main.*.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/vcs-uvm_sim/core_main.*.log
 
 hwconfig:
   extends:
@@ -317,9 +317,10 @@ dhrystone:
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
+    SPIKE_TANDEM: 1
   script:
     - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/veri-testharness_sim/dhrystone_main.*.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/vcs-uvm_sim/dhrystone_main.*.log
 
 riscv_arch_test:
   extends:
@@ -348,6 +349,7 @@ compliance:
   after_script: *simu_after_script
 
 riscv-tests-v:
+  timeout : 2 hours
   extends:
     - .regress_test
   variables:
@@ -355,9 +357,10 @@ riscv-tests-v:
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
     DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
-    DV_SIMULATORS: "veri-testharness,spike"
+    DV_SIMULATORS: "vcs-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
