@@ -202,4 +202,174 @@ How to design a coprocessor for the CV-X-IF interface
 
 How to program a CV-X-IF coprocessor
 ------------------------------------
-*The team is looking for a contributor to write this section.*
+
+#. Specify your new instructions
+
+    The example coprocessor defines instructions for both the custom 0 and custom 1 major opcodes.  Using a standard R-type format, each of these allows 1024 distinct instructions to be defined using the 7-bit funct7 field and the 3-bit funct3 field.
+
+    .. image:: rtype_format.png
+      :width: 400
+      :alt: Rtype RISC-V instruction format
+
+    Example:
+
+    .. code-block::
+
+      opcode=custom1, funct7=0x00, funct3=0x00: BCDfromBin
+      rf[rd] <- BCD(rf[rs1])
+      Register rd is written with the binary-coded decimal equivalent of the binary integer value in rs1.
+      Note: rs2 is not used.
+
+      opcode=custom1, funct7=0x00, funct3=0x01: BCDADD
+      rf[rd] <- ADD.BCD(rf[rs1], rf[rs2])
+      Register rd is written with a binary-coded decimal (BCD) sum of BCD integers in registers rs1 and rs2.
+
+    Note: The existing CVA6 example supports only register-to-register instructions with up to three
+    source registers and a single destination register. New memory operations will need substantail modifications
+    to the coprocssor and CVA6 system-on-chip.
+
+#. Branch CVA6 repo
+
+    .. code-block::
+
+        git branch new_coprocessor
+        git checkout new_coprocessor
+
+#. Specialise the decoder function in core/cvxif_example/include/cvxif_instr_pkg.sv
+
+    Example new lines in cvxif_instr_pkg:
+
+    .. code-block::
+
+        // 1 RISCV instruction class for our Coprocessor
+        parameter int unsigned NbInstr = 1;
+        parameter copro_issue_resp_t CoproInstr[NbInstr] = '{
+          '{
+            instr: 32'b0000000_00000_00000_000_00000_0101011, // custom1 opcode
+            mask:  32'b1111111_00000_00000_110_00000_1111111, // bits that must match
+            resp : '{
+              accept : 1'b1,    // We will process this instruction
+              writeback : 1'b1, // We will write a general-purpose register
+              dualwrite : 1'b0,
+              dualread : 1'b0,
+              loadstore : 1'b0, // No memory operation  (Not supported in pipeline)
+              exc : 1'b0        // Cannot throw exception
+            }
+          }
+        };
+
+4. Write execution logic in core/cvxifexample/cvxif_examplecoprocesor.sv
+
+    Example new lines in cvxif_examplecoprocessor.sv:
+
+    .. code-block::
+
+      localparam W = X_RFR_WIDTH;
+      function automatic logic [W-1:0] BCDfromBin (logic [W-1:0] bin);
+        // Code adapted from https://en.wikipedia.org/wiki/Double_dabble
+        logic [W+(W-4)/3:0] bcd = 0;  // initialize with zeros
+        bcd[W-1:0] = bin;    // initialize with input vector
+        for(int i = 0; i <= W-4; i = i+1)     // iterate on structure depth
+          for(int j = 0; j <= i/3; j = j+1)   // iterate on structure width
+            if (bcd[W-i+4*j -: 4] > 4)        // if > 4
+              bcd[W-i+4*j -: 4] = bcd[W-i+4*j -: 4] + 4'd3; // add 3
+        return bcd[W-1:0];
+      endfunction
+      function automatic logic [W-1:0] BCDADD (logic [W-1:0] x, logic [W-1:0] y);
+        logic [W-1:0] sum;   // full sum result
+        logic [4:0] tmp = 0; // temporary digit result (could be up to 9+9+8=24)
+        logic [3:0] c = 0;   // carry bits
+        for(int i = 3; i<W; i = i+4) begin // For each nibble
+          tmp = {1'b0,x[i-:4]} + {1'b0,y[i-:4]} + {1'b0,c}; // Add the next nibble with room for overflow
+          c = 0;
+          for (int j = 0; j < 2; j = j+1)
+            if (tmp >= 10) begin // Add one to carry for each "10" in temp.
+              c += 1;
+              tmp = tmp - 10;   // Leave tmp less than 10.
+            end
+            sum[i-:4] = tmp[3:0] ;
+          end
+          return sum;
+        endfunction
+
+    In final always_comb block of cvxif_examplecoprocessor.sv:
+
+    .. code-block::
+
+        // Choose the function to apply based on the one bit that differs
+        // between our two instructions
+        x_result_o.data = (req_o.req.instr[12]==1'b0) ?
+          BCDfromBin(req_o.req.rs[0]) :
+          BCDADD(req_o.req.rs[0],req_o.req.rs[1]);
+
+    Note: To support new memory operations, the memory interface would be needed
+    in this coprocessor to load and store from the main pipeline.  Alternatively,
+    one could add a dedicated memory interface to the coprocessor, though care would
+    need to be taken for memory coherence and consistency with the data cache.
+
+5. Write a simple test
+
+    For example, add the following to verif/tests/custom/cv_xif/cvxif_macros.h:
+
+    .. code-block::
+
+        #define CUS_BCDfromBin(rs1,rd)   .word 0b####000000000000##rs1##000##rd##0101011
+        #define CUS_BCDADD(rs1,rs2,rd) .word 0b####0000000##rs2####rs1##001##rd##0101011
+
+    Copy similar test:
+
+    .. code-block::
+
+        cp verif/tests/custom/cv_xif/cvxif_add_nop.S verif/tests/custom/cv_xif/cvxif_bcd.S
+
+    Change the body of the test:
+
+    .. code-block::
+
+        // core of the test
+
+        // Load constant values into a0 and a1
+        LOAD_RS(a0, 12345678);
+        LOAD_RS(a1, 23456789);
+
+        // Transform a0 and a1 into BCD form
+        CUS_BCDfromBin(01010,01010); // a0 = 5'b01010
+        CUS_BCDfromBin(01011,01011); // a1 = 5'b01011
+
+        // Perform BCD add on the operands into a2 and a3
+        CUS_BCDADD(01010,01011,01100);
+        CUS_BCDADD(01011,01010,01101);
+
+        // (example of) final self-check test
+        xor a2, a3, a2;
+        beqz a2, pass;
+
+6. Now build a simulation and run it
+
+    Example:
+
+    .. code-block::
+
+        cd ~/cva6/verif/sim
+        export DV_SIMULATORS=veri-testharness
+        TRACE_FAST=1 python3 cva6.py --target cv64a6_imafdc_sv39 \
+          --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
+          --asm_tests ../tests/custom/cv_xif/cvxif_bcd.S \
+          --linker=../tests/custom/common/test.ld \
+          --gcc_opts="-static -mcmodel=medany \
+            -fvisibility=hidden -nostdlib \
+            -nostartfiles -g ../tests/custom/common/syscalls.c \
+            ../tests/custom/common/crt.S -lgcc \
+            -I../tests/custom/env -I../tests/custom/common"
+
+    Check verilog build errors in verif/sim/out_*/veri-testharness_sim/cvxif_bcd.cv64a6_imafdc_sv39.log.iss.
+
+    Check instruction trace of the execution in verif/sim/out_*/veri-testharness_sim/cvxif_bcd.cv64a6_imafdc_sv39.log.
+
+    View the simulated waveform output using:
+
+    .. code-block::
+
+        gtkwave verif/sim/out_*/veri-testharness_sim/cvxif_bcd.cv64a6_imafdc_sv39.vcd
+
+    The signals in TOP.ariane_testharness.i_ariane.cvxif_req/resp should be useful.
