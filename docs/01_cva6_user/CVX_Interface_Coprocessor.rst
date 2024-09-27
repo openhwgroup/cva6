@@ -1,4 +1,4 @@
-﻿..
+..
    Copyright (c) 2023 OpenHW Group
    Copyright (c) 2023 Thales
 
@@ -198,10 +198,11 @@ Never let the CV-X-IF interface unconnected with the ``CVA6ConfigCvxifEn`` param
 
 How to design a coprocessor for the CV-X-IF interface
 -----------------------------------------------------
-*The team is looking for a contributor to write this section.*
 
-How to program a CV-X-IF coprocessor
-------------------------------------
+We can add a custom coprocessor that implements custom instructions by modifying the example coprocessor in this repository.
+This section is structured as a tutorial to implement two instructions that manipulate binary-coded decimal numbers.
+That is, numbers where each 4-bit nibble represents a single base-10 digit with the value 0-9.
+For example, 123 in decimal = 0x7B in hexadecimal = 0x123 in binary-coded decimal.
 
 #. Specify your new instructions
 
@@ -373,3 +374,7 @@ How to program a CV-X-IF coprocessor
         gtkwave verif/sim/out_*/veri-testharness_sim/cvxif_bcd.cv64a6_imafdc_sv39.vcd
 
     The signals in TOP.ariane_testharness.i_ariane.cvxif_req/resp should be useful.
+
+How to program a CV-X-IF coprocessor
+------------------------------------
+*The team is looking for a contributor to write this section.*
