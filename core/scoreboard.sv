@@ -63,7 +63,7 @@ module scoreboard #(
     output logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_valid_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_ack_i,
-    // Forwarding - IRO
+    // Forwarding - issue_read_operands
     output forwarding_t                                        fwd_o,
 
     // TO_BE_COMPLETED - TO_BE_COMPLETED
