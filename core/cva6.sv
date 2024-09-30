@@ -114,6 +114,12 @@ module cva6
       logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
     },
+    localparam type writeback_t = struct packed {
+      logic valid;  // wb data is valid
+      logic [CVA6Cfg.XLEN-1:0] data;  //wb data
+      logic ex_valid;  // exception from WB
+      logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;  //transaction ID
+    },
 
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update
@@ -785,6 +791,7 @@ module cva6
       .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t),
+      .writeback_t(writeback_t),
       .x_issue_req_t(x_issue_req_t),
       .x_issue_resp_t(x_issue_resp_t),
       .x_register_t(x_register_t),
