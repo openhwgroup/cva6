@@ -90,7 +90,7 @@ module btb #(
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_btb_output
       assign btb_ram_csel_prediction[i] = 1'b1;
       assign btb_ram_we_prediction[i] = 1'b0;
-      assign btb_ram_wdata_prediction = '0;
+      assign btb_ram_wdata_prediction[i*BRAM_WORD_BITS+:BRAM_WORD_BITS] = '0;
       assign btb_ram_addr_prediction[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
       assign btb_prediction_o[i] = btb_ram_rdata_prediction[i*BRAM_WORD_BITS+:BRAM_WORD_BITS];
     end
