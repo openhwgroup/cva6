@@ -70,7 +70,15 @@ To be completed
 
 These companies are OpenHW members, have a good CVA6 knowledge, and offer CVA6-related service:
 
- (To be completed based on companies's requests. Max 1 URL and 60 words per company)
+**Zero-Day Labs** provides design and development services primarily related to embedded software/firmware security and hardware (RTL) for RISC-V.
+With major contributions in the scope of RISC-V virtualization, the company has developed and maintains the RISC-V Hypervisor extension in CVA6
+and has recently made open-source the RISC-V AIA and IOMMU IPs.
+Contact: [geral@zero-day-labs.com](mailto:geral@zero-day-labs.com).
+
+RISC-V made easy - experienced ASIC/FPGA service providers, [**PlanV**](https://planv.tech/) will help you navigate the IP landscape,
+optimize your design workflows, and bring your RISC-V chip to life.
+
+ _(To be completed based on companies's requests. Max 1 URL and 60 words per company)_
 
 ### Product ICs
 
