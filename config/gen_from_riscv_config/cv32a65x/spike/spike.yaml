@@ -29,6 +29,12 @@ spike_param_tree:
       status_vs_field_we_enable: false
       mstatus_write_mask: 136
       mstatus_override_mask: 6144
+      mie_write_mask: 0x00000880
+      mie_override_mask: 0xfffff77f
+      mie_override_value: 0x00000000
+      mip_write_mask: 0x00000000
+      mip_override_mask: 0xfffff77f
+      mip_override_value: 0x00000000
       mtval_write_mask: 0
       tinfo_accessible: 0
       mscontext_accessible: 0
