@@ -174,7 +174,7 @@ gen_smoke:
 
 coremark:
   extends:
-    - .fe_smoke_test
+    - .regress_test
   variables:
     DASHBOARD_JOB_TITLE: "CoreMark"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
@@ -311,7 +311,7 @@ fpga-build:
 
 dhrystone:
   extends:
-    - .regress_test
+    - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "Dhrystone"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
