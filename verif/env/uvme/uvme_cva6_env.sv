@@ -166,15 +166,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
    end
 
-   void'(uvm_config_db#(cva6_cfg_t)::get(this, "", "CVA6Cfg", cfg.CVA6Cfg));
-   if (!cfg.CVA6Cfg) begin
-      `uvm_fatal("CVA6Cfg", "RTL Configuration handle is null")
-   end
-   else begin
-      `uvm_info("CVA6Cfg", $sformatf("Found RTL configuration handle:\n%p", cfg.CVA6Cfg), UVM_DEBUG)
-   end
-
-   cfg.rvfi_cfg.nret = cfg.CVA6Cfg.NrCommitPorts;
+   cfg.rvfi_cfg.nret = RTLCVA6Cfg.NrCommitPorts;
 
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cva6_cntxt_c)::get(this, "", "cntxt", cntxt));

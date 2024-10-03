@@ -189,21 +189,21 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
    assign axi_ariane_resp.r.last = (axi_switch_vif.active) ? axi_slave.r_last : cva6_axi_bus.r_last;
    assign axi_ariane_resp.r.user = (axi_switch_vif.active) ? axi_slave.r_user : cva6_axi_bus.r_user;
 
-   assign axi_slave.aw_ready  = (axi_switch_vif.active) ? axi_slave.aw_ready : cva6_axi_bus.aw_ready;
-   assign axi_slave.ar_ready  = (axi_switch_vif.active) ? axi_slave.ar_ready : cva6_axi_bus.ar_ready;
-   assign axi_slave.w_ready   = (axi_switch_vif.active) ? axi_slave.w_ready  : cva6_axi_bus.w_ready;
-   assign axi_slave.b_valid   = (axi_switch_vif.active) ? axi_slave.b_valid  : cva6_axi_bus.b_valid;
-   assign axi_slave.r_valid   = (axi_switch_vif.active) ? axi_slave.r_valid  : cva6_axi_bus.r_valid;
+   assign axi_slave.aw_ready  = (axi_switch_vif.active) ? 'z : cva6_axi_bus.aw_ready;
+   assign axi_slave.ar_ready  = (axi_switch_vif.active) ? 'z : cva6_axi_bus.ar_ready;
+   assign axi_slave.w_ready   = (axi_switch_vif.active) ? 'z : cva6_axi_bus.w_ready;
+   assign axi_slave.b_valid   = (axi_switch_vif.active) ? 'z : cva6_axi_bus.b_valid;
+   assign axi_slave.r_valid   = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_valid;
 
-   assign axi_slave.b_id      = (axi_switch_vif.active) ? axi_slave.b_id   : cva6_axi_bus.b_id;
-   assign axi_slave.b_resp    = (axi_switch_vif.active) ? axi_slave.b_resp : cva6_axi_bus.b_resp;
-   assign axi_slave.b_user    = (axi_switch_vif.active) ? axi_slave.b_user : cva6_axi_bus.b_user;
+   assign axi_slave.b_id      = (axi_switch_vif.active) ? 'z : cva6_axi_bus.b_id;
+   assign axi_slave.b_resp    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.b_resp;
+   assign axi_slave.b_user    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.b_user;
 
-   assign axi_slave.r_id      = (axi_switch_vif.active) ? axi_slave.r_id   : cva6_axi_bus.r_id;
-   assign axi_slave.r_data    = (axi_switch_vif.active) ? axi_slave.r_data : cva6_axi_bus.r_data;
-   assign axi_slave.r_resp    = (axi_switch_vif.active) ? axi_slave.r_resp : cva6_axi_bus.r_resp;
-   assign axi_slave.r_last    = (axi_switch_vif.active) ? axi_slave.r_last : cva6_axi_bus.r_last;
-   assign axi_slave.r_user    = (axi_switch_vif.active) ? axi_slave.r_user : cva6_axi_bus.r_user;
+   assign axi_slave.r_id      = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_id;
+   assign axi_slave.r_data    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_data;
+   assign axi_slave.r_resp    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_resp;
+   assign axi_slave.r_last    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_last;
+   assign axi_slave.r_user    = (axi_switch_vif.active) ? 'z : cva6_axi_bus.r_user;
 
    // Request structs
    assign axi_slave.aw_valid = axi_ariane_req.aw_valid;

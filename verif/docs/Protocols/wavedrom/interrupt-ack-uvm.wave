@@ -1,0 +1,39 @@
+// Copyright 2024 Thales DIS France SAS
+//
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+// You may obtain a copy of the License at https://solderpad.org/licenses/
+//
+// Original Author: Zbigniew CHAMSKI - Thales
+
+{signal: [
+  {    name: 'clk',   wave: 'p..|..|...'},
+  ['Platform',
+    ['int active',
+      {name: 'int #0', wave: '0..|..|...'},
+      {name: 'int #n', wave: '01.|..|0..',
+                       node: '.r.....c..' },
+    ]
+  ],
+  {},
+  ['hart',
+    ['mip',
+      {name: 'bit[0]', wave: 'x..|......'},
+      {name: 'bit[n]', wave: '01.|..|0..',
+                       node: '..........'},
+    ],
+    {name: 'exec', wave: '7.4|..|.7.', data: 'normal handler normal',
+                   node: '....s.....'},
+  ],
+  {                node: '.RE....ZX.'},
+  {},
+  ['mem',
+    {name: '@int_ack[0]', wave: '...|..|...'},
+    {name: '@int_ack[n]', wave: '0..|.1|0..',
+                          node: '.....w.z..'}
+  ]
+],
+     edge:
+   ['R+E >0', 'Z+X >0', 's|->w ACK', 'r|R', 'c|z'],
+}

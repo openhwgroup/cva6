@@ -75,6 +75,8 @@ package uvme_cva6_pkg;
   bit [6:0]  legal_i_funct7[$] = '{7'b0000000,
                                    7'b0100000};
 
+  parameter config_pkg::cva6_cfg_t RTLCVA6Cfg = build_config_pkg::build_config(cva6_config_pkg::cva6_cfg);
+
    // Constants / Structs / Enums
    `include "uvme_cva6_constants.sv"
    `include "uvme_cva6_tdefs.sv"

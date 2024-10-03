@@ -29,6 +29,9 @@ SECTIONS
   .tohost : { *(.tohost) }
 
   . = ALIGN(0x1000);
+  .uvmif : { *(.uvmif) }
+
+  . = ALIGN(0x1000);
   .text : { *(.text) }
 
   /* data segment */

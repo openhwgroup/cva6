@@ -260,3 +260,9 @@ tohost: .dword 0
 .align 6
 .globl fromhost
 fromhost: .dword 0
+
+.section ".uvmif","aw",@progbits
+# Alignment is 2**6 == 64 bytes
+.align 6
+.globl int_ack
+int_ack: .dword 0

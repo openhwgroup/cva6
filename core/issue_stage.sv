@@ -23,6 +23,7 @@ module issue_stage
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
+    parameter type writeback_t = logic,
     parameter type x_issue_req_t = logic,
     parameter type x_issue_resp_t = logic,
     parameter type x_register_t = logic,
@@ -155,29 +156,21 @@ module issue_stage
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
   // ---------------------------------------------------
   typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
+  typedef struct packed {
+    logic [CVA6Cfg.NR_SB_ENTRIES-1:0] still_issued;
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
+    writeback_t [CVA6Cfg.NrWbPorts-1:0] wb;
+    scoreboard_entry_t [CVA6Cfg.NR_SB_ENTRIES-1:0] sbe;
+  } forwarding_t;
 
-  fu_t               [    2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
-  fu_t               [    2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
+  forwarding_t                                                    fwd;
+  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]                   issue_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][            31:0] orig_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                   issue_instr_valid_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]                   issue_ack_iro_sb;
 
-  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs1_iro_sb;
-  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs1_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs1_valid_sb_iro;
-
-  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs2_iro_sb;
-  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs2_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs2_valid_iro_sb;
-
-  logic              [CVA6Cfg.NrIssuePorts-1:0][REG_ADDR_SIZE-1:0] rs3_iro_sb;
-  rs3_len_t          [CVA6Cfg.NrIssuePorts-1:0]                    rs3_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                    rs3_valid_iro_sb;
-
-  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]                    issue_instr_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0][             31:0] orig_instr_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                    issue_instr_valid_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                    issue_ack_iro_sb;
-
-  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
-  logic              [CVA6Cfg.NrIssuePorts-1:0][ CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_xlen;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_xlen;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign rs1_forwarding_o[i] = rs1_forwarding_xlen[i][CVA6Cfg.VLEN-1:0];
@@ -190,7 +183,6 @@ module issue_stage
   logic x_transaction_accepted_iro_sb, x_issue_writeback_iro_sb;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_iro_sb;
 
-
   // ---------------------------------------------------------
   // 2. Manage instructions in a scoreboard
   // ---------------------------------------------------------
@@ -198,32 +190,23 @@ module issue_stage
       .CVA6Cfg   (CVA6Cfg),
       .rs3_len_t (rs3_len_t),
       .bp_resolve_t(bp_resolve_t),
+      .writeback_t(writeback_t),
+      .forwarding_t(forwarding_t),
       .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
       .sb_full_o               (sb_full_o),
-      .rd_clobber_gpr_o        (rd_clobber_gpr_sb_iro),
-      .rd_clobber_fpr_o        (rd_clobber_fpr_sb_iro),
       .x_transaction_accepted_i(x_transaction_accepted_iro_sb),
       .x_issue_writeback_i     (x_issue_writeback_iro_sb),
       .x_id_i                  (x_id_iro_sb),
-      .rs1_i                   (rs1_iro_sb),
-      .rs1_o                   (rs1_sb_iro),
-      .rs1_valid_o             (rs1_valid_sb_iro),
-      .rs2_i                   (rs2_iro_sb),
-      .rs2_o                   (rs2_sb_iro),
-      .rs2_valid_o             (rs2_valid_iro_sb),
-      .rs3_i                   (rs3_iro_sb),
-      .rs3_o                   (rs3_sb_iro),
-      .rs3_valid_o             (rs3_valid_iro_sb),
-
-      .decoded_instr_i      (decoded_instr_i),
-      .decoded_instr_valid_i(decoded_instr_valid_i),
-      .decoded_instr_ack_o  (decoded_instr_ack_o),
-      .issue_instr_o        (issue_instr_sb_iro),
-      .orig_instr_o         (orig_instr_sb_iro),
-      .issue_instr_valid_o  (issue_instr_valid_sb_iro),
-      .issue_ack_i          (issue_ack_iro_sb),
+      .fwd_o                   (fwd),
+      .decoded_instr_i         (decoded_instr_i),
+      .decoded_instr_valid_i   (decoded_instr_valid_i),
+      .decoded_instr_ack_o     (decoded_instr_ack_o),
+      .issue_instr_o           (issue_instr_sb_iro),
+      .orig_instr_o            (orig_instr_sb_iro),
+      .issue_instr_valid_o     (issue_instr_valid_sb_iro),
+      .issue_ack_i             (issue_ack_iro_sb),
 
       .resolved_branch_i(resolved_branch_i),
       .trans_id_i       (trans_id_i),
@@ -241,6 +224,8 @@ module issue_stage
       .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t),
+      .writeback_t(writeback_t),
+      .forwarding_t(forwarding_t),
       .x_issue_req_t(x_issue_req_t),
       .x_issue_resp_t(x_issue_resp_t),
       .x_register_t(x_register_t),
@@ -253,17 +238,7 @@ module issue_stage
       .issue_ack_o             (issue_ack_iro_sb),
       .fu_data_o               (fu_data_o),
       .flu_ready_i             (flu_ready_i),
-      .rs1_o                   (rs1_iro_sb),
-      .rs1_i                   (rs1_sb_iro),
-      .rs1_valid_i             (rs1_valid_sb_iro),
-      .rs2_o                   (rs2_iro_sb),
-      .rs2_i                   (rs2_sb_iro),
-      .rs2_valid_i             (rs2_valid_iro_sb),
-      .rs3_o                   (rs3_iro_sb),
-      .rs3_i                   (rs3_sb_iro),
-      .rs3_valid_i             (rs3_valid_iro_sb),
-      .rd_clobber_gpr_i        (rd_clobber_gpr_sb_iro),
-      .rd_clobber_fpr_i        (rd_clobber_fpr_sb_iro),
+      .fwd_i                   (fwd),
       .alu_valid_o             (alu_valid_o),
       .alu2_valid_o            (alu2_valid_o),
       .branch_valid_o          (branch_valid_o),
