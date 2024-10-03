@@ -19,8 +19,6 @@ module sram_controller
 
     // Req interface
     input logic                             req_data_req_i,
-    input logic                             req_kill_s1_i,
-    input logic                             req_kill_s2_i,
     input logic                             req_data_we_i,
     input logic [           DATA_WIDTH-1:0] req_data_wdata_i,
     input logic [     (CVA6Cfg.XLEN/8)-1:0] req_data_be_i,
@@ -31,7 +29,6 @@ module sram_controller
     output logic                             resp_rdata_valid_o,
     output logic                             resp_data_gnt_o,
     output logic [         CVA6Cfg.VLEN-1:0] resp_address_o,
-    output logic                             resp_killed_o,
     output logic [CVA6Cfg.DcacheIdWidth-1:0] resp_data_rid_o,
 
     // SRAM Interface
@@ -53,7 +50,8 @@ module sram_controller
 
   // Direct assign signals
   // CVA6Cfg.VLEN should not be lower than $clog2(NUM_WORDS)
-  assign sram_addr_o = req_address_i[$clog2(NUM_WORDS)-1:0];
+  // Shift address: memory in word, not in byte
+  assign sram_addr_o = $clog2(NUM_WORDS)'(req_address_i >> 2);
 
   // TODO: generalize for NUM_WAIT_STATE > 1
   if (NUM_WAIT_STATE == 1) begin : gen_fsm_wait_state
@@ -72,7 +70,7 @@ module sram_controller
       case (state_q)
         IDLE: begin
           // If a new req and this req is not killed
-          if (req_data_req_i && !req_kill_s1_i) begin
+          if (req_data_req_i) begin
             if (req_data_we_i) state_d = WRITE;
             else state_d = READ;
           end else begin
@@ -95,13 +93,11 @@ module sram_controller
       sram_wdata_o = '0;
       sram_be_o = '0;
       resp_rdata_o = '0;
-      resp_killed_o = 1'b0;
       resp_rdata_valid_o = 1'b0;
 
       case (state_q)
         IDLE: begin
-          resp_killed_o = req_kill_s1_i;
-          if (req_data_req_i && !req_kill_s1_i) begin
+          if (req_data_req_i) begin
             resp_data_gnt_o = '1;
             sram_req_o = '1;
             sram_we_o = req_data_we_i;
@@ -114,11 +110,8 @@ module sram_controller
         WRITE: ;
 
         READ: begin
-          resp_killed_o = req_kill_s1_i || req_kill_s2_i;
-          if (!req_kill_s1_i) begin
-            resp_rdata_valid_o = ~req_kill_s2_i;
-            resp_rdata_o = sram_rdata_i;
-          end
+          resp_rdata_valid_o = 1'b1;
+          resp_rdata_o = sram_rdata_i;
         end
 
         default: ;
@@ -132,17 +125,16 @@ module sram_controller
     assign sram_be_o    = req_data_be_i;
 
     assign resp_rdata_o = sram_rdata_i;
-    assign resp_data_gnt_o = req_data_req_i;
-    assign resp_killed_o = req_data_req_i && req_kill_s1_i && req_data_we_i;
+    assign resp_data_gnt_o = req_data_req_i; // with no wait state gnt can be combinatorial
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         resp_rdata_valid_o <= 1'b0;
       end else begin
         if (req_data_req_i && !req_data_we_i) begin
-          resp_rdata_valid_o <= ~req_kill_s1_i;
-        end else if (~req_data_req_i && resp_rdata_valid_o) begin
-          resp_rdata_valid_o <= '0;
+          resp_rdata_valid_o <= 1'b1;
+        end else if ((~req_data_req_i || req_data_we_i) && resp_rdata_valid_o) begin
+          resp_rdata_valid_o <= 1'b0;
         end
       end
     end

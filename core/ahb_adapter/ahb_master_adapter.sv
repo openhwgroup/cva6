@@ -50,8 +50,8 @@ module ahb_master_adapter
     SINGLE,
     PIPELINE_STALL,
     SINGLE_STALL
-  } ahb_ctrl_e;
-  ahb_ctrl_e ahb_ctrl_fsm;
+  } ahb_ctrl_m_e;
+  ahb_ctrl_m_e ahb_ctrl_fsm;
 
   // Not supported
   assign req_port_o.data_ruser = '0;
@@ -157,12 +157,12 @@ module ahb_master_adapter
   assign ahb_p_req_o.hprot  = ahb_pkg::AHBProtWidth'('b0011);
 
   always_comb begin
-    htrans_d = '0;
+    htrans_d = ahb_pkg::AhbTransIdle;
     haddr_d  = '0;
-    hsize_d  = '0;
+    hsize_d  = ahb_pkg::AhbSizeByte;
     hwrite_d = '0;
     if (ahb_ctrl_fsm == PIPELINE_STALL) begin  //send the registered value during stall
-      htrans_d = ahb_pkg::AHB_TRANS_NONSEQ;
+      htrans_d = ahb_pkg::AhbTransNonseq;
       haddr_d  = haddr_q;
       hsize_d  = hsize_q;
       hwrite_d = hwrite_q;
@@ -170,10 +170,10 @@ module ahb_master_adapter
       haddr_d  = req_port_i.vaddr;
       hsize_d  = {1'b0, req_port_i.data_size};
       hwrite_d = req_port_i.data_we;
-      if (req_port_i.data_req) begin
-        htrans_d = ahb_pkg::AHB_TRANS_NONSEQ;
+      if (transfer_req) begin
+        htrans_d = ahb_pkg::AhbTransNonseq;
       end else begin
-        htrans_d = ahb_pkg::AHB_TRANS_IDLE;
+        htrans_d = ahb_pkg::AhbTransIdle;
       end
     end
   end

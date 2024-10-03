@@ -43,12 +43,12 @@ module dscr_controller
 );
 
   // Arbitrer signals
-  logic [DSCR_ARBIT_NUM_IN-1:0] arb_req;
-  logic                         arb_gnt;
-  dscr_arbit_e                  arb_idx;
-  logic                         arb_idx_valid;
+  logic [        DSCR_ARBIT_NUM_IN-1:0] arb_req;
+  logic                                 arb_gnt;
+  logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] arb_idx;
+  logic                                 arb_idx_valid;
   logic ahb_read_ongoing, load_ongoing;
-  logic ahb_ack, ahb_store_ready_o, ahb_burst;
+  logic ahb_store_ready_o;
   // AHB slave adapter signals
   scratchpad_req_i_t ahb_req_port_o;
   dcache_req_o_t ahb_req_port_i;
@@ -113,8 +113,6 @@ module dscr_controller
       .rst_ni      (rst_ni),
       .ahb_s_req_i (ahb_s_req_i),
       .ahb_s_resp_o(ahb_s_resp_o),
-      .req_ack_i   (ahb_ack),
-      .ahb_burst_o (ahb_burst),
       .req_port_i  (ahb_req_port_i),
       .req_port_o  (ahb_req_port_o)
   );
@@ -153,21 +151,21 @@ module dscr_controller
     // arb_idx has only 3 possible values
     unique if (arb_idx == DSCR_ARBIT_LOAD && arb_idx_valid) begin
       sram_ctrl_req = ld_req_port_i.data_req && !load_ongoing && !ld_req_port_i.kill_req;
-      sram_ctrl_addr            = ld_req_port_i.vaddr;
-      sram_ctrl_we              = ld_req_port_i.data_we;
-      sram_ctrl_be              = ld_req_port_i.data_be;
-      sram_ctrl_wdata           = ld_req_port_i.data_wdata;
-      sram_req_id               = ld_req_port_i.data_id;
+      sram_ctrl_addr = ld_req_port_i.vaddr;
+      sram_ctrl_we = ld_req_port_i.data_we;
+      sram_ctrl_be = ld_req_port_i.data_be;
+      sram_ctrl_wdata = ld_req_port_i.data_wdata;
+      sram_req_id = ld_req_port_i.data_id;
 
-      ld_req_port_o.data_rdata  = sram_resp_rdata;
-      ld_req_port_o.data_gnt    = sram_resp_gnt;
+      ld_req_port_o.data_rdata = sram_resp_rdata;
+      ld_req_port_o.data_gnt = sram_resp_gnt;
       ld_req_port_o.data_rvalid = sram_resp_rdata_valid;
-      ld_req_port_o.data_rid    = sram_resp_rid;
-      ld_req_port_o.data_ruser  = '0;
+      ld_req_port_o.data_rid = sram_resp_rid;
+      ld_req_port_o.data_ruser = '0;
 
-      ahb_req_port_i            = '0;
+      ahb_req_port_i = '0;
     end else if (arb_idx == DSCR_ARBIT_STORE && arb_idx_valid) begin
-      sram_ctrl_req = st_req_port_i.data_req && !st_req_sent && !st_req_port_i.kill_req;
+      sram_ctrl_req   = st_req_port_i.data_req && !st_req_sent && !st_req_port_i.kill_req;
       sram_ctrl_addr  = st_req_port_i.vaddr;
       sram_ctrl_we    = st_req_port_i.data_we;
       sram_ctrl_be    = st_req_port_i.data_be;
@@ -177,7 +175,7 @@ module dscr_controller
       ld_req_port_o   = '0;
       ahb_req_port_i  = '0;
     end else if (arb_idx == DSCR_ARBIT_AHB && arb_idx_valid) begin
-      sram_ctrl_req = ahb_req_port_o.data_req;
+      sram_ctrl_req              = ahb_req_port_o.data_req;
       sram_ctrl_addr             = ahb_req_port_o.vaddr;
       sram_ctrl_we               = ahb_req_port_o.data_we;
       sram_ctrl_be               = ahb_req_port_o.data_be;
@@ -185,7 +183,7 @@ module dscr_controller
       sram_req_id                = '0;
 
       ahb_req_port_i.data_rdata  = sram_resp_rdata;
-      ahb_req_port_i.data_gnt    = arb_gnt;
+      ahb_req_port_i.data_gnt    = sram_resp_gnt;
       ahb_req_port_i.data_rvalid = sram_resp_rdata_valid;
       ahb_req_port_i.data_rid    = sram_resp_rid;
       ahb_req_port_i.data_ruser  = '0;
@@ -209,8 +207,7 @@ module dscr_controller
   assign arb_req[DSCR_ARBIT_LOAD] = ld_req_port_i.data_req || load_ongoing;
   assign arb_req[DSCR_ARBIT_STORE] = st_req_port_i.data_req;
   assign arb_req[DSCR_ARBIT_AHB] = ahb_req_port_o.data_req || ahb_read_ongoing;
-  assign arb_gnt = (st_ready_o || sram_resp_rdata_valid) && !(ahb_ack && ahb_burst);
-  assign ahb_ack = ahb_store_ready_o || (sram_resp_rdata_valid && ahb_read_ongoing);
+  assign arb_gnt = (st_ready_o || sram_resp_rdata_valid || (ahb_req_port_o.data_req && ahb_req_port_o.data_we && sram_resp_gnt)  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin

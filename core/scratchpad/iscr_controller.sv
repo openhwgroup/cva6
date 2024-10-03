@@ -49,12 +49,12 @@ module iscr_controller
 );
 
   // Dynamic arbitrer signals
-  logic [        ISCR_ARBIT_NUM_IN-1:0] arb_req;
-  logic                                 arb_gnt;
-  iscr_arbit_e                          arb_idx;
-  logic                                 arb_idx_valid;
+  logic [ISCR_ARBIT_NUM_IN-1:0] arb_req;
+  logic                         arb_gnt;
+  logic [                  1:0] arb_idx;
+  logic                         arb_idx_valid;
   logic ahb_read_ongoing, load_ongoing, frontend_ongoing;
-  logic ahb_ack, ahb_store_ready_o, ahb_burst;
+  logic ahb_store_ready_o;
   // AHB slave adapter signals
   scratchpad_req_i_t ahb_req_port_o;
   dcache_req_o_t ahb_req_port_i;
@@ -119,8 +119,6 @@ module iscr_controller
       .rst_ni      (rst_ni),
       .ahb_s_req_i (ahb_s_req_i),
       .ahb_s_resp_o(ahb_s_resp_o),
-      .req_ack_i   (ahb_ack),
-      .ahb_burst_o (ahb_burst),
       .req_port_i  (ahb_req_port_i),
       .req_port_o  (ahb_req_port_o)
   );
@@ -171,8 +169,8 @@ module iscr_controller
       if_drsp_o.vaddr = sram_resp_addr;
       if_drsp_o.ex    = '0;
 
-      ld_req_port_o  = '0;
-      ahb_req_port_i = '0;
+      ld_req_port_o   = '0;
+      ahb_req_port_i  = '0;
     end else if (arb_idx == ISCR_ARBIT_LOAD && arb_idx_valid) begin
       sram_ctrl_addr            = ld_req_port_i.vaddr;
       sram_ctrl_req             = ld_req_port_i.data_req && !ld_req_port_i.kill_req;
@@ -239,8 +237,7 @@ module iscr_controller
   assign arb_req[ISCR_ARBIT_STORE] = st_req_port_i.data_req;
   assign arb_req[ISCR_ARBIT_AHB] = ahb_req_port_o.data_req || ahb_read_ongoing;
   assign arb_req[ISCR_ARBIT_FRONTEND] = if_dreq_i.req || frontend_ongoing;
-  assign arb_gnt = (st_ready_o || sram_resp_rdata_valid && !(ahb_ack && ahb_burst));
-  assign ahb_ack = ahb_store_ready_o || (sram_resp_rdata_valid && ahb_read_ongoing);
+  assign arb_gnt = (st_ready_o || sram_resp_rdata_valid || (ahb_req_port_o.data_req && ahb_req_port_o.data_we && sram_resp_gnt)  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
