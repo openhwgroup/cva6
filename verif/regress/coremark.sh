@@ -30,6 +30,10 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
 fi
 
+if ! [ -n "$DV_HWCONFIG_OPTS" ]; then
+  DV_HWCONFIG_OPTS="cv32a65x"
+fi
+
 if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
@@ -82,7 +86,8 @@ isa="rv32imc_zba_zbb_zbc_zbs"
 
 set -x
 python3 cva6.py \
-        --target cv32a65x \
+        --target hwconfig \
+        --hwconfig_opts="$DV_HWCONFIG_OPTS" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
