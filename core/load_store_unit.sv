@@ -205,11 +205,18 @@ module load_store_unit
   logic                    translation_req;
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
-  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
+  logic [CVA6Cfg.PLEN-1:0] pmp_paddr, mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
   logic       [                     31:0] mmu_tinst;
   logic                                   mmu_hs_ld_st_inst;
   logic                                   mmu_hlvx_inst;
   exception_t                             mmu_exception;
+  exception_t                             pmp_exception;
+  exception_t                             pmp_misaligned_ex;
+  icache_areq_t                           pmp_icache_areq_o;
+  logic                                   pmp_data_allow;
+  logic                                   pmp_instr_allow;
+  logic                                   pmp_translation_valid;
+  logic                                   match_any_execute_region;
   logic                                   dtlb_hit;
   logic       [         CVA6Cfg.PPNW-1:0] dtlb_ppn;
 
@@ -283,24 +290,23 @@ module load_store_unit
 
         .req_port_i(dcache_req_ports_i[0]),
         .req_port_o(dcache_req_ports_o[0]),
+
+        .pmp_data_allow_i(pmp_data_allow),
+        .pmp_instr_allow_i(pmp_instr_allow),
+        .match_any_execute_region_i(match_any_execute_region),
+        .pmp_fetch_exception_i(pmp_icache_areq_o.fetch_exception),
+        .pmp_misaligned_ex_i(pmp_misaligned_ex),
+        .pmp_exception_i(pmp_exception),
         .pmpcfg_i,
         .pmpaddr_i,
         .*
     );
-
   end else begin : gen_no_mmu
 
-    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
-      assign mmu_vaddr_plen   = mmu_vaddr[CVA6Cfg.PLEN-1:0];
-      assign fetch_vaddr_plen = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
-    end else begin
-      assign mmu_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, mmu_vaddr};
-      assign fetch_vaddr_plen = {{{CVA6Cfg.PLEN - CVA6Cfg.VLEN} {1'b0}}, icache_areq_i.fetch_vaddr};
-    end
-
-    assign icache_areq_o.fetch_valid           = icache_areq_i.fetch_req;
-    assign icache_areq_o.fetch_paddr           = fetch_vaddr_plen;
-    assign icache_areq_o.fetch_exception       = '0;
+    assign mmu_exception = pmp_exception;
+    assign icache_areq_o = pmp_icache_areq_o;
+    assign translation_valid = pmp_translation_valid;
+    assign mmu_paddr = pmp_paddr;
 
     assign dcache_req_ports_o[0].address_index = '0;
     assign dcache_req_ports_o[0].address_tag   = '0;
@@ -314,21 +320,48 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = mmu_vaddr_plen[CVA6Cfg.PLEN-1:12];
+    assign dtlb_ppn                            = pmp_paddr[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-        mmu_paddr         <= '0;
-        translation_valid <= '0;
-        mmu_exception     <= '0;
-      end else begin
-        mmu_paddr         <= mmu_vaddr_plen;
-        translation_valid <= translation_req;
-        mmu_exception     <= misaligned_exception;
-      end
-    end
   end
+
+  // ------------------
+  // PMP
+  // ------------------
+
+  pmp_data_if #(
+        .CVA6Cfg      (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
+        .icache_arsp_t(icache_arsp_t),
+        .exception_t  (exception_t)
+    ) i_pmp_data_if (
+        .clk_i                 (clk_i),
+        .rst_ni                (rst_ni),
+        .enable_translation_i  (enable_translation_i),
+        .enable_g_translation_i(enable_g_translation_i),
+        .en_ld_st_translation_i(en_ld_st_translation_i),
+        .en_ld_st_g_translation_i(en_ld_st_g_translation_i),
+        .icache_areq_i         (icache_areq_i),
+        .icache_areq_o         (pmp_icache_areq_o),
+        .misaligned_ex_i       (misaligned_exception),
+        .lsu_req_i             (translation_req),
+        .lsu_vaddr_i           (mmu_vaddr),
+        .lsu_tinst_i(mmu_tinst),
+        .lsu_is_store_i        (st_translation_req),
+        .lsu_valid_o           (pmp_translation_valid),
+        .lsu_paddr_o           (pmp_paddr),
+        .lsu_exception_o       (pmp_exception),
+        .priv_lvl_i            (priv_lvl_i),
+        .v_i                   (v_i),
+        .ld_st_priv_lvl_i      (ld_st_priv_lvl_i),
+        .ld_st_v_i             (ld_st_v_i),
+        .pmpcfg_i              (pmpcfg_i),
+        .pmpaddr_i             (pmpaddr_i),
+        .data_allow_o          (pmp_data_allow),
+        .instr_allow_o         (pmp_instr_allow),
+        .match_any_execute_region_o (match_any_execute_region),
+        .misaligned_ex_o       (pmp_misaligned_ex)
+    );
 
 
   logic store_buffer_empty;
