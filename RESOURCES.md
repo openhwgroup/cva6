@@ -41,6 +41,7 @@ These building blocks fit very nicely with CVA6:
 - [OpenPiton](https://github.com/PrincetonUniversity/openpiton) is a many-core framework that supports CVA6.
 - [Culsans/CV-TCCC](https://github.com/pulp-platform/culsans) is a multi-core infrastructure for a few CVA6 cores.
 - [ARA/CV-VEC](https://github.com/pulp-platform/ara) is a vector unit for CVA6.
+- [HPDcache](https://github.com/openhwgroup/cv-hpdcache) is a flexible (highly configurable) and high-throughput L1 cache.
 
 ### Design examples (FPGA)
 
