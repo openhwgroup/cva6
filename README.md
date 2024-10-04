@@ -417,6 +417,10 @@ If you use CVA6 in your academic work you can cite us:
 <br/>
 
 
+# Resources and Ecosystem
+
+The CVA6 core is part of a vivid ecosystem. In [this document](RESOURCES.md), we gather pointers to this ecosystem (building blocks, designs, partners...)
+
 # Acknowledgements
 
 Check out the [acknowledgements](ACKNOWLEDGEMENTS.md).
