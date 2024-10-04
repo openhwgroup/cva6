@@ -181,9 +181,15 @@ coremark:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+  parallel:
+    matrix:
+      - DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        ISSUE: "coremark_single"
+      - DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        ISSUE: "coremark_dual"
   script:
     - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/vcs-uvm_sim/core_main.*.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --$ISSUE verif/sim/out_*/vcs-uvm_sim/core_main.*.log
 
 hwconfig:
   extends:
@@ -318,9 +324,15 @@ dhrystone:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+  parallel:
+    matrix:
+      - DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        ISSUE: "dhrystone_single"
+      - DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        ISSUE: "dhrystone_dual"
   script:
     - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/vcs-uvm_sim/dhrystone_main.*.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --$ISSUE verif/sim/out_*/vcs-uvm_sim/dhrystone_main.*.log
 
 riscv_arch_test:
   extends:
