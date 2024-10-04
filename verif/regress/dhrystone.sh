@@ -22,7 +22,7 @@ source verif/regress/install-riscv-tests.sh
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness
+  DV_SIMULATORS=vcs-uvm
 fi
 
 make clean
@@ -55,11 +55,10 @@ cflags=(
 
 set -x
 python3 cva6.py \
-        --target hwconfig \
-        --isa rv64imafdc \
-        --hwconfig_opts="cv64a6_imafdc_sv39 +CVA6ConfigNrLoadPipeRegs=0" \
+        --target cv32a65x \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
+        --iss_timeout=1000 \
         --linker ../tests/custom/common/test.ld

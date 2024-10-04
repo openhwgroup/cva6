@@ -292,10 +292,18 @@ Description:: PMP configuration register
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [7:0] | PMP[I*4 +0]CFG | 0x0 | WARL | masked: & 0x8f \| 0x0 | pmp configuration bits 
-| [15:8] | PMP[I*4 +1]CFG | 0x0 | WARL | masked: & 0x8f \| 0x0 | pmp configuration bits 
-| [23:16] | PMP[I*4 +2]CFG | 0x0 | WARL | masked: & 0x8f \| 0x0 | pmp configuration bits 
-| [31:24] | PMP[I*4 +3]CFG | 0x0 | WARL | masked: & 0x8f \| 0x0 | pmp configuration bits 
+| [2:0] | PMP[I*4 +0]CFG.RWX | 0x0 | WARL | 0x0, 0x1, 0x3, 0x4, 0x5, 0x7 | PMP[I*4 +0]CFG collective R, W and X field (R is bit 0, X is bit 2)
+| [5:4] | PMP[I*4 +0]CFG.A | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +0]CFG address-matching mode (A)
+| 7 | PMP[I*4 +0]CFG.L | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +0]CFG entry locked (L)
+| [2:0] | PMP[I*4 +1]CFG | 0x0 | WARL | 0x0, 0x1, 0x3, 0x4, 0x5, 0x7 | PMP[I*4 +1]CFG collective R, W and X field (R is bit 0, X is bit 2)
+| [13:12] | PMP[I*4 +1]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +1]CFG address-matching mode (A)
+| 15 | PMP[I*4 +1]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +1]CFG entry locked (L)
+| [18:16] | PMP[I*4 +2]CFG | 0x0 | WARL | 0x0, 0x1, 0x3, 0x4, 0x5, 0x7 | PMP[I*4 +2]CFG collective R, W and X field (R is bit 0, X is bit 2)
+| [21:20] | PMP[I*4 +2]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +2]CFG address-matching mode (A)
+| 23 | PMP[I*4 +2]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +2]CFG entry locked (L)
+| [26:24] | PMP[I*4 +3]CFG | 0x0 | WARL | 0x0, 0x1, 0x3, 0x4, 0x5, 0x7 | PMP[I*4 +3]CFG collective R, W and X field (R is bit 0, X is bit 2)
+| [29:28] | PMP[I*4 +3]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +3]CFG address matching mode (A)
+| 31 | PMP[I*4 +3]CFG | 0x0 | WARL | 0x0 - 0x1 | PMP[I*4 +3]CFG entry locked (L)
 |===
 
 [[_PMPCFG2-15]]
