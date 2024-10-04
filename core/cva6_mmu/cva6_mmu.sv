@@ -99,13 +99,9 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    input logic                                                      pmp_instr_allow_i,
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries:0]                   pmpcfg_i,
-    input logic           [CVA6Cfg.NrPMPEntries:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
-    input exception_t                                                pmp_fetch_exception_i,
-    input exception_t                                                pmp_exception_i,
-    input exception_t                                                pmp_misaligned_ex_i
+
+    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0]                   pmpcfg_i,
+    input logic           [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
   // memory management, pte for cva6
@@ -442,8 +438,6 @@ module cva6_mmu
             icache_areq_o.fetch_exception.tinst = '0;
             icache_areq_o.fetch_exception.gva   = v_i;
           end
-        end else if (!pmp_instr_allow_i) begin
-          icache_areq_o.fetch_exception = pmp_fetch_exception_i;
         end
       end else if (ptw_active && walking_instr) begin
         // ---------//
@@ -474,7 +468,7 @@ module cva6_mmu
         end else begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
-          if (CVA6Cfg.TvalEn)  //To confirm this is the right TVAL 
+          if (CVA6Cfg.TvalEn)  //To confirm this is the right TVAL
             icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
           if (CVA6Cfg.RVH) begin
             icache_areq_o.fetch_exception.tval2 = '0;
@@ -482,16 +476,6 @@ module cva6_mmu
             icache_areq_o.fetch_exception.gva   = v_i;
           end
         end
-      end
-    end
-
-    // if it didn't match any execute region throw an `Instruction Access Fault`
-    // or: if we are not translating, check PMPs immediately on the paddr
-    if ((!match_any_execute_region_i && !ptw_error) || (!(enable_translation_i || enable_g_translation_i) && !pmp_instr_allow_i)) begin
-      icache_areq_o.fetch_exception = pmp_fetch_exception_i;
-      if (CVA6Cfg.TvalEn) begin  // To confirm this is the right TVAL
-        if (enable_translation_i || enable_g_translation_i)
-          icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
       end
     end
   end
@@ -526,7 +510,7 @@ module cva6_mmu
     dtlb_is_page_n = dtlb_is_page;
 
     lsu_valid_o = lsu_req_q;
-    lsu_exception_o = pmp_misaligned_ex_i;
+    lsu_exception_o = misaligned_ex_i;
 
     // Check if the User flag is set, then we may only access it in supervisor mode
     // if SUM is enabled
@@ -547,7 +531,7 @@ module cva6_mmu
     lsu_dtlb_ppn_o        = (CVA6Cfg.PPNW)'(lsu_vaddr_n[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):12]);
 
     // translation is enabled and no misaligned exception occurred
-    if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !pmp_misaligned_ex_i.valid) begin
+    if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !misaligned_ex_i.valid) begin
       lsu_valid_o = 1'b0;
 
       lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_g_content.ppn :dtlb_content.ppn;
@@ -606,9 +590,6 @@ module cva6_mmu
               lsu_exception_o.tinst = lsu_tinst_q;
               lsu_exception_o.gva   = ld_st_v_i;
             end
-            // Check if any PMPs are violated
-          end else if (!pmp_data_allow_i) begin
-            lsu_exception_o = pmp_exception_i;
           end
           // this is a load
         end else begin
@@ -637,9 +618,6 @@ module cva6_mmu
               lsu_exception_o.tinst = lsu_tinst_q;
               lsu_exception_o.gva   = ld_st_v_i;
             end
-            // Check if any PMPs are violated
-          end else if (!pmp_data_allow_i) begin
-            lsu_exception_o = pmp_exception_i;
           end
         end
       end else
@@ -735,9 +713,6 @@ module cva6_mmu
           end
         end
       end
-      // If translation is not enabled, check the paddr immediately against PMPs
-    end else if (lsu_req_q && !pmp_misaligned_ex_i.valid && !pmp_data_allow_i) begin
-      lsu_exception_o = pmp_exception_i;
     end
   end
 
