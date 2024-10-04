@@ -78,6 +78,10 @@ Contact: [geral@zero-day-labs.com](mailto:geral@zero-day-labs.com).
 RISC-V made easy - experienced ASIC/FPGA service providers, [**PlanV**](https://planv.tech/) will help you navigate the IP landscape,
 optimize your design workflows, and bring your RISC-V chip to life.
 
+[**MU-Electronics**](https://www.mu-e.com/) is a services company having its design center in Rabat-Morocco since 2003, specialized in ICs design from datasheet to GDSII generation
+(RTL design, DFT, verification, full custom layout, place and route), firmware, driver & application development, test & validation, security implementation & support to certification.
+MU-E has designed IPs and Chips down to 7nm. MU-E is participating in the European TRISTAN project and working for Thales on the verification of CVA6.
+
  _(To be completed based on companies's requests. Max 1 URL and 60 words per company)_
 
 ### Product ICs
