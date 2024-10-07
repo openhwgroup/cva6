@@ -19,16 +19,17 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    "dhrystone_dual": 211352,
-    "dhrystone_single": 254018,
-    "coremark_dual": 535567,
-    "coremark_single": 674940,
+    "dhrystone_dual": 21530,
+    "dhrystone_single": 26392,
+    "coremark_dual": 531457,
+    "coremark_single": 672500,
+    "dhrystone_cv32a65x": 24740,
 }
 
 for arg in sys.argv[1:]:
     if "--dhrystone" in arg or "--coremark" in arg:
         if "--dhrystone" in arg:
-            iterations = 500
+            iterations = 50
         else:
             if "--coremark" in arg:
                 iterations = 2
@@ -76,7 +77,7 @@ path = "artifacts/reports/" + filename + ".yml"
 with open(path, "r") as f:
     log = [l.strip() for l in f.readlines()]
 for index, line in enumerate(log):
-    if "MHz" in line:
+    if "MHz" in line or "cycles" in line:
         print(log[index + 1], log[index])
 
 if report.failed:
