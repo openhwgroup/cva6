@@ -3,20 +3,21 @@
 
 This section describes the OHG functional verification environment based on lockstep ("tandem") simulation of a RISC-V reference model and an RTL implementation of a RISC-V core.
 
-it discusses the principle, the architecture and the usage of the envirnment, and outlines future work.
+It discusses the principle, the architecture and the usage of the environment, and outlines future work.
 
 === Scope of verification
 
 The verification is applied the CVA6 core, with the exclusion of interrupt controllers, platform-related mechanisms (real-time timer), peripherals etc.
 
 The behaviors that are verified are:
-- instruction completion
-- general-purpose register value changes
-- CSR value changes
-- memory operations (as seen by the CVA6 core)
-- raising of exceptions
-- raising of interrupts
-- trap entry and return
+
+* instruction completion
+* general-purpose register value changes
+* CSR value changes
+* memory operations (as seen by the CVA6 core)
+* raising of exceptions
+* raising of interrupts
+* trap entry and return
 
 === Basic Architecture and Design Choices
 
@@ -42,26 +43,27 @@ The RTL testbenches use DPI functions to control Spike stepping, inject CSR valu
 TODO where is the hook to call Spike 'step()' function?
 
 To limit the impact on the upstream code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
-- by adding a new base class below the original base class (used for CSRs)
-- by specializing a class to provide additional interfaces (Processor and Simulation)
+* by adding a new base class below the original base class (used for CSRs)
+* by specializing a class to provide additional interfaces (Processor and Simulation)
 
 Spike was modified to run a single-instruction step function instead of "insn batch" mode.
 
 Spike is **an implementation** of RISC-V (has its own archid value assigned), so in order to support multiple configurations it was extended with a parameter mechanism:
-- three ways of control: command-line, configuration files (Yaml) and API
-- CSR control:
-  - initialization mask+values
-  - write-enable masks with bit granularity
-- CSR injection for architecture-dependent CSRs (mcycles etc.)
+
+* three ways of control: command-line, configuration files (Yaml) and API
+* CSR control:
+** initialization mask+values
+** write-enable masks with bit granularity
+* CSR injection for architecture-dependent CSRs (mcycles etc.)
 
 Parameters are organized into a tree (hierarchical directory) structure so that related parameters can be designated using a common prefix.
 
 === Fundamental limitations
 
-- Spike has only the notion of instruction commits, so it is not capable of representing the behaviors between commits (transient signals, micro-architectural artefacts such as stalls etc.) Such behaviors must be verified by other means.
-- interrupt presence and the results of interrupt arbitration are passed to Spike (there are no input signals in 
-- same error in both reference model and RTL implementation will not be detected since the two behaviors will match
-- purely sequential vs. concurrent events: Spike executes instructions in sequence whereas a superscalar architecture may commit multiple instructions in a single cycle; this means that some CSR updates may differ between Spike and RTL, typically MINSTRET may advance by 2+ in RTL but Spike will increment it by 1 at every instruction committed.
+* Spike has only the notion of instruction commits, so it is not capable of representing the behaviors between commits (transient signals, micro-architectural artefacts such as stalls etc.) Such behaviors must be verified by other means.
+* interrupt presence and the results of interrupt arbitration are passed to Spike (there are no input signals in 
+* same error in both reference model and RTL implementation will not be detected since the two behaviors will match
+* purely sequential vs. concurrent events: Spike executes instructions in sequence whereas a superscalar architecture may commit multiple instructions in a single cycle; this means that some CSR updates may differ between Spike and RTL, typically MINSTRET may advance by 2+ in RTL but Spike will increment it by 1 at every instruction committed.
 
 === QuickStart Guide
 
@@ -69,8 +71,9 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
   Spike extensions are built by default when rebuilding the vendorized Spike delivered as part of the `core-v-verif` tree.
 - understanding the Spike configuration file
   Spike configuration files provide represent a Spike parameter tree in the form of nested Yaml dictionaries under a common root node `spike_param_tree`:
-  [,yaml]
-  ----
++
+[,yaml]
+----
   spike_param_tree:
     bootrom: true
     bootrom_base: 65536
@@ -89,7 +92,7 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
         marchid_override_mask: 0xFFFFFFFF
         marchid_override_value: 0x3
         misa_write_mask: 0x0
-  ----
+----
 
 - SPIKE_TANDEM variable
   Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value.
@@ -100,10 +103,11 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 1. Enable (make "accessible") or disable (make "inaccessible") a CSR
    A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in generic or per-core configuration, indicates whether the given register should be accessible or not.
    Example:
-   [,yaml]
-   ----
++
+[,yaml]
+----
    tinfo_accessible: False
-   ----
+----
    makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an illegal instruction exception upon accessing `tinfo`.
 
 1. Make modifiable or constant specific bits in a CSR
@@ -124,11 +128,10 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 
 === Future work
 
-- multi-core simulations
-  - per-core configurations
-  - integration with platform models
-
-- alternative reference models
-  - advent of Sail
+* multi-core simulations
+** per-core configurations
+** integration with complex platform models
+* alternative reference models
+** advent of Sail
 
 
