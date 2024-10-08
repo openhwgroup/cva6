@@ -275,7 +275,8 @@ vcs_uvm_comp:
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
 	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
 	  -ignore initializer_driver_checks \
-	  -top uvmt_cva6_tb
+	  -top uvmt_cva6_tb \
+	  $(if $(gate), -sdf Max:uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6:$(CVA6_REPO_DIR)/pd/synth/cva6_$(TARGET_CFG)_synth.sdf +neg_tchk, +notimingcheck)
 
 vcs_uvm_run: vcs_uvm_comp
 	$(if $(TRACE_FAST), unset VERDI_HOME ;) \

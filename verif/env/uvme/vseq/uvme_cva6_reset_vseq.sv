@@ -41,8 +41,8 @@ class uvme_cva6_reset_vseq_c extends uvme_cva6_base_vseq_c;
 
    constraint defaults_cons {
       soft num_clk_before_reset ==    50;
-      soft rst_deassert_period  == 7_400; // 7.4 ns
-      soft post_rst_wait        == 7_400; // 7.4 ns
+      soft rst_deassert_period  == 20_000; // 20 ns
+      soft post_rst_wait        == 20_000; // 20 ns
    }
 
 
