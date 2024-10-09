@@ -21,6 +21,7 @@ The behaviors that are verified are:
 
 === Basic Architecture and Design Choices
 
+==== High-level requirements
 
 Use RVFI (https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md); events are collected from ISS and RTL side and a scoreboard is used to compare the state.  RVFI is based on commit/exception state.
 
@@ -30,12 +31,18 @@ The reference model is a slave to the RTL model.
 
 Since out-of-core behaviors (platform CSRs, interrupt control) are out of the scope of verification, the reference model (Spike) includes only the core; CLIC/PLIC interrupt controllers are explicitly disabled and platform CSRs are not maintained.
 
+Use basic UVM infrastructure to provide uniform SYstemVerilog interface for all simulators, whether commercial or open-source.
+
+TODO Add figure of overall structure
+
 ==== Operation
 
 The RTL simulation runs through successive clock cycles until reaching an instruction commit or an exception in the current cycle.  The scoreboard stores the current general-purpose and CSR register state.
 
 Volatile state information (interrupt status, values of selected CSRs which are driven by the microarchitecture) is injected into the reference model which then executes as many instructions as were committed in the current RTL cycle.  If an exception is detected in the RTL model, the reference model is expected to detect the same exception.
 TODO what happens if in superscalar mode the second instruction triggers an exception (both insns are cancelled? First insn gets committed?)
+
+TODO Add timing diagram of the basic operation cycle
 
 ==== Implementation
 
@@ -51,7 +58,8 @@ Spike was modified to run a single-instruction step function instead of "insn ba
 Spike is **an implementation** of RISC-V (has its own archid value assigned), so in order to support multiple configurations it was extended with a parameter mechanism:
 
 * three ways of control: command-line, configuration files (Yaml) and API
-* CSR control:
+* scope of CSR control:
+** availability of CSR
 ** initialization mask+values
 ** write-enable masks with bit granularity
 * CSR injection for architecture-dependent CSRs (mcycles etc.)
@@ -67,9 +75,11 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 
 === QuickStart Guide
 
-- build instructions:
+* build instructions:
++
   Spike extensions are built by default when rebuilding the vendorized Spike delivered as part of the `core-v-verif` tree.
-- understanding the Spike configuration file
+* understanding the Spike configuration file
++
   Spike configuration files provide represent a Spike parameter tree in the form of nested Yaml dictionaries under a common root node `spike_param_tree`:
 +
 [,yaml]
@@ -94,15 +104,26 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
         misa_write_mask: 0x0
 ----
 
-- SPIKE_TANDEM variable
+* SPIKE_TANDEM variable
++
   Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value.
-- analyzing the results
+
+* obtaining the list of all available parameters
+
+=== How to analyze tandem verification results
+
+To simplify failure analysis, the tandem scoreboard reports any discrepancies between commit states of the reference model and the RTL model but produces no output if the commit states are identical.
+
+A failure is represented by a pair of TODO
+
 
 === Recipe book
 
 1. Enable (make "accessible") or disable (make "inaccessible") a CSR
++
    A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in generic or per-core configuration, indicates whether the given register should be accessible or not.
-   Example:
++
+   **Example**:
 +
 [,yaml]
 ----
@@ -115,15 +136,18 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 
 === Integration with the RISC-V Open Source ecosystem
 
-- infrastructure available as Open Source (under SHL 2.0+, an Apache-type license)
-- use of Spike
+* infrastructure available as Open Source (under SHL 2.0+, an Apache-type license)
+* use of Spike as reference model
++
   The tandem verification approach is a general template and is not bound to a single ISS or RTL simulator.  However, it requires that the ISS provides a basic platform capable of running software matching the capabilities of the RTL testbench, including a model of memory and busses.
   Because of this constraint the current tandem framework relies on Spike which is fully Open Source and provides all necessary components.
-- Verilator-based tandem
+* Verilator-based tandem
++
   Starting with version 5.016, Verilator supports tandem simulations.  Earlier versions did not provide sufficient support for structrured types in DPI interface.
-- riscv_config and the generation of configuration files
+* `riscv_config` and the generation of configuration files
++
   The `riscv-config` utility provides a formalized way of capturing ISA and CSR specifications of RISC-V implementations.
-  Scripts developed in the CVA6 projects post-process validated `riscv-config` output to generate a Spike parameter tree corresponding to the configuration described in `riscv-confg` source.
+  Scripts developed in the CVA6 projects post-process validated `riscv-config` output and generate a Spike parameter tree corresponding to the configuration described in `riscv-confg` source.
   The scripts and their output are published in the CVA6 repository under `config/gen_from_riscv_config`.
 
 === Future work
@@ -134,4 +158,4 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 * alternative reference models
 ** advent of Sail
 
-
+include::reference.adoc

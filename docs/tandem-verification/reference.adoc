@@ -1,0 +1,98 @@
+== Programming reference
+
+Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME`.  Recognized values of `PREFIX` are:
+
+* `/top`: parameter values apply to the complete platform (which may consist of several harts.)
+* `/top/cores`: parameter values apply to all harts, and can be overridden on a hart-by-hart basis using hart-specific values.
+* `/top/core/<number>`: parameter values apply only to hart (core) with ID `<number>`.
+
+Parameters are explicitly typed.  Three parameter types are supported:
+
+* `bool`: Boolean type with two values: `True` (non-zero, by convention noted `1`) and `False` (zero).
+* `uint64_t`: A 64-bit unsigned integer,represented using any of the formats supported in the given context (SystemVerilog or C/C\+\+). 
+* `string`: A string, appropriately quoted depending on use context (SystemVerilog, C++ source code or Spike command line in Unix shell).
+
+Parameter names are not constained by the C/C\+\+/SystemVerilog syntax<  However, they cannot contain forward slash (`/`), backslash (`\\`) nor double-quote (`"`) characters.
+
+
+=== Parameter index
+
+[cols="2,1,5"]
+|===
+|Name |Type |Only `/top/`? |Description 
+
+|boot_addr
+|bootrom
+|bool
+|No
+|Presence of boot ROM
+
+|bootrom_base
+|uint64_t
+|Yes
+|Base address of boot ROM (unused if boot ROM not present)
+
+|bootrom_size
+|uint64_t
+|Yes
+|Size of boot ROM (unused if boot ROM not present)
+
+|dram_base
+|uint64_t
+|Yes
+|Base addres of the DRAM
+
+|dram_enable
+|bool
+|Yes
+|Presence of the DRAM
+
+|dram_size
+|uint64_t
+|Yes
+|Size of the DRAM
+
+|generic_core_config
+|bool
+|Yes
+|Use a common core configuration for all cores
+
+|isa
+|string
+|No
+|ISA string including any standard extensions, in canonical form
+
+|log_commits
+|bool
+|Yes
+|If `True`, generate Spike log of instruction commits and exceptions 
+
+|max_steps
+|uint64_t
+|Yes
+|Maximum number of steps (instructions and/or exceptions) before terminating Spike if `max_steps_enable` iset to `True`
+
+|max_steps_enabled
+|bool
+|Yes
+|If `True`, obey the limit set in `max_steps`
+
+|priv
+|string
+|No
+|Supported privilege levels: "M", "MU" or "MSU"
+|====
+
+
+
+/top/log_commits
+/top/max_steps
+/top/max_steps_enabled
+/top/num_procs
+/top/core/0/misa_we
+
+=== Parameter description
+
+=== DPI Programming Interface
+
+=== 
