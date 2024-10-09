@@ -4,7 +4,6 @@
 This section describes the OHG functional verification environment based on lockstep ("tandem") simulation of a RISC-V reference model and an RTL implementation of a RISC-V core.
 
 It discusses the principle, the architecture and the usage of the environment, and outlines future work.
-
 === Scope of verification
 
 The verification is applied the CVA6 core, with the exclusion of interrupt controllers, platform-related mechanisms (real-time timer), peripherals etc.
@@ -78,6 +77,7 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 * build instructions:
 +
   Spike extensions are built by default when rebuilding the vendorized Spike delivered as part of the `core-v-verif` tree.
+
 * understanding the Spike configuration file
 +
   Spike configuration files provide represent a Spike parameter tree in the form of nested Yaml dictionaries under a common root node `spike_param_tree`:
@@ -105,7 +105,7 @@ Parameters are organized into a tree (hierarchical directory) structure so that 
 ----
 
 * SPIKE_TANDEM variable
-+
+
   Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value.
 
 * obtaining the list of all available parameters
@@ -158,4 +158,4 @@ A failure is represented by a pair of TODO
 * alternative reference models
 ** advent of Sail
 
-include::reference.adoc
+include::reference.adoc[]

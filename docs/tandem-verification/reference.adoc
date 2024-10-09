@@ -12,87 +12,263 @@ Parameters are explicitly typed.  Three parameter types are supported:
 * `uint64_t`: A 64-bit unsigned integer,represented using any of the formats supported in the given context (SystemVerilog or C/C\+\+). 
 * `string`: A string, appropriately quoted depending on use context (SystemVerilog, C++ source code or Spike command line in Unix shell).
 
-Parameter names are not constained by the C/C\+\+/SystemVerilog syntax<  However, they cannot contain forward slash (`/`), backslash (`\\`) nor double-quote (`"`) characters.
+Parameter names are not constrained by the C/C\+\+/SystemVerilog syntax<  However, they cannot contain forward slash (`/`), backslash (`\\`) nor double-quote (`"`) characters.
 
+Some parameters are only meaningful in specific scopes: platform (`/top`), or core(s) (`/top/cores/` or `/top/core/<HART_ID>/`).
 
 === Parameter index
 
-[cols="2,1,5"]
-|===
-|Name |Type |Only `/top/`? |Description 
+==== Platform-level parameters
 
-|boot_addr
-|bootrom
+[cols="2,1,1,5"]
+|===
+|Name |Type |Default |Description
+
+|`bootrom`
 |bool
-|No
+|`True`
 |Presence of boot ROM
 
-|bootrom_base
+|`bootrom_base`
 |uint64_t
-|Yes
+|`0x10000`
 |Base address of boot ROM (unused if boot ROM not present)
 
-|bootrom_size
+|`bootrom_size`
 |uint64_t
-|Yes
+|`0x1000`
 |Size of boot ROM (unused if boot ROM not present)
 
-|dram_base
+|`dram_base`
 |uint64_t
-|Yes
+|`0x80000000`
 |Base addres of the DRAM
 
-|dram_enable
+|`dram_enable`
 |bool
-|Yes
+|`True`
 |Presence of the DRAM
 
-|dram_size
+|`dram_size`
 |uint64_t
-|Yes
+|`0x40000000`
 |Size of the DRAM
 
-|generic_core_config
+|`generic_core_config`
 |bool
-|Yes
-|Use a common core configuration for all cores
+|`True`
+|Use a common core configuration for all cores.
 
-|isa
+|`isa`
 |string
-|No
-|ISA string including any standard extensions, in canonical form
+|`"RV64IMAFDC_zicntr_zihpm"`
+|Default ISA string including any standard extensions, in canonical form.
 
-|log_commits
+|`log_commits`
 |bool
-|Yes
-|If `True`, generate Spike log of instruction commits and exceptions 
+|`True`
+|If `True`, generate Spike log of instruction commits and exceptions.
 
-|max_steps
+|`max_steps`
 |uint64_t
-|Yes
-|Maximum number of steps (instructions and/or exceptions) before terminating Spike if `max_steps_enable` iset to `True`
+|`2000000UL`
+|Maximum number of steps (instructions and/or exceptions) before terminating the ISS simulation if `max_steps_enable` is set to `True`.
 
-|max_steps_enabled
+|`max_steps_enabled`
 |bool
-|Yes
-|If `True`, obey the limit set in `max_steps`
+|`False`
+|If `True`, obey the limit set in `max_steps`.
 
-|priv
+|`num_procs`
+|uint64_t
+|`1`
+|Number of cores (harts) in the platform.
+|===
+
+==== Per-CSR parameters
+
+All CSRs of cores in the platform can be controlled wrt. their presence ("availability") using a per-CSR parameter.  For each CSR that is available, per-CSR parameters control the initial value, the writable bits and the overall writability of the register.
+
+Depending on the parameter prefix used (`/top/core/<hardtid>/` or `/top/cores/`), the parameters will apply to the CSR of a specific core or they will set a default behavior for the given CSR in all cores.
+
+The supported per-CSR parameters are listed in the table below.  `<CSR>` stands for any valid CSR name recognized by the ISS, in lowercase (as per RISC-V specification).
+
+[cols="2,1,1,5"]
+|===
+|Name |Type |Default |Description 
+
+|`<CSR>_accessible`
+|bool
+|`True`
+|`True` if register `<CSR>` should be accessible in machine mode. Value `False` will cause an "illegal instruction" exception to be raised on any access to the register.
+
+|`<CSR>_implemented`
+|bool
+|`True`
+|`True` if register `<CSR>` is implemented. Value `False` will cause any writes to this register to be discarded.
+
+|`<CSR>_override_mask`
+|uint64_t
+|`0x0`
+|Mask of bits that should be replaced in the default reset value of `<CSR>`.
+
+|`<CSR>_override_value`
+|uint64_t
+|`0x0`
+|Value to use as a replacement of the default reset value of `<CSR>`.
+
+|`<CSR>_write_mask`
+|bool
+|`~0x0` (all-ones)
+|Mask of writable bits in register `<CSR>`.  Bits which are set allow writing into corresponding bits of `<CSR>`.
+|===
+
+=== Core-level parameters
+
+Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the following parameters form a default for all cores or apply to a specific core with ID `<hartid>`.2
+
+[cols="2,1,1,5"]
+|===
+|Name |Type |Default |Description 
+
+|`boot_addr`
+|uint64_t
+|`0x10000`
+|Boot address for core(s).
+
+|`csr_counters_injection`
+|bool
+|`False`
+|If `True`, inject values of microarchitecture-dependent counter CSRs from RTL into the reference model.  Affected CSRs are `cycle`, `cycleh`, `mcycle`, `mcycleh` and `mip`.
+
+|`debug_exception_handler_addr`
+|uint64_t
+|`0x1A140000`
+|Address of exception handler for exceptions occurring in debug mode
+
+|`debug_handler_addr`
+|uint64_t
+|`0x1a110800`
+|Address of the debug handler
+
+|`debug_injection`
+|bool
+|`True`
+|If `True`, inject debug events from RTL.
+
+|`extensions`
 |string
-|No
+|`""`
+|Comma-separated list of Spike extensions to load.
+
+|`hide_csrs_based_on_priv`
+|bool
+|`False`
+|Allow to mark CSRs as "not available" based on the privilege modes available.  By default, Spike makes User and Supervisor mode registers accessible, even if Machine privilege level is the only level implemented.
+ 
+|`interrupts_injection`
+|bool
+|`True`
+|If `True`, inject interrupts according to value passed from the RTL simulation in `mcause` CSR into the reference mode.
+
+|`isa`
+|string
+|`"RV32GC"`
+|ISA string including any standard extensions, in canonical form.
+
+|`marchid`
+|uint64_t
+|`0x3`
+|Value to be returned when reading the read-only CSR `<marchid>`.
+
+|`mhartid`
+|uint64_t
+|`0x0`
+|Value to be returned when reading the read-only CSR `<mhartid>`.
+
+|`misaligned`
+|bool
+|`False`
+|If `True`, support misaligned memory accesses.
+
+|`mmu_mode`
+|string
+|`"sv39"`
+|MMU mode of the core(s).
+
+|`mtvec_vectored_alignment`
+|uint64_t
+|`0x4`
+|Default alignment of `mtvec` when using trap vector in vectored mode.
+
+|`mvendorid`
+|uint64_t
+|`0x00000602`
+|Value to be returned when reading the read-only CSR `<mvendorid>`.
+
+|`nmi_mcause`
+|uint64_t
+|`0x00000020`
+|Value of `mcause` which represents a non-maskable interrupt (NMI), without the interrupt bit.  Meaningful only if `interrupt_injection` == `True`.
+
+|`non_standard_interrupts`
+|bool
+|`False`
+|Support non-standard interrupt notification scheme in which arbitraty patterns can be written into the lower 16 bits of `mie` and `mip` CSRs.
+
+|`override_custom_extensions`
+|bool
+|`True`
+|Allow to override the presence of custom ISS extensions (see also `extensions` parameter above.)
+
+|`override_custom_extensions_value`
+|bool
+|`False`
+|If `False`, pretend no custom extensions were specified.  Used to disable all custom extensions at once.
+
+|`pmmpaddr0`
+|uint64_t
+|`0x0`
+|Default value of `pmpaddr0` CSR
+
+|`pmpcfg0`
+|uint64_t
+|`0x0`
+|Default value of `pmpcfg0` CSR
+
+|`pmpregions_max`
+|uint64_t
+|`0x0`
+|Total count of implemented PMP regions in the core(s).  The set of legal values is defined in RISC-V Privileged ISA specification: 0, 16 and 64.
+
+|`pmpregions_writable`
+|uint64_t
+|Cores
+|`0x0`
+|Number of PMP regions with modifiable properties in the core(s), starting from region with index 0.
+
+|`priv`
+|string
+|`"MSU"`
 |Supported privilege levels: "M", "MU" or "MSU"
+
+|trigger_count
+|uint64_t
+|`0x4`
+|Number of supported triggers
+
+|unified_traps
+|bool
+|`False`
+|Unify all traps with exceptions.
 |====
 
 
-
-/top/log_commits
-/top/max_steps
-/top/max_steps_enabled
-/top/num_procs
-/top/core/0/misa_we
-
-=== Parameter description
-
 === DPI Programming Interface
+
+=== C++ Programming Interface
+
+=== Command-line interface
+
 
 === 
