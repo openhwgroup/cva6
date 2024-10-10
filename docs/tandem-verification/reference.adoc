@@ -1,5 +1,7 @@
 == Programming reference
 
+=== Introduction to reference model parameters
+
 Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierachical structure.  Supported values of `PREFIX` are:
 
 * `/top`: parameter values apply to the complete platform (which may consist of several cores.)
@@ -9,12 +11,12 @@ Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_
 Parameters are explicitly typed.  Three parameter types are supported:
 
 * `bool`: Boolean type with two values: `True` (non-zero, by convention noted `1`) and `False` (zero).
-* `uint64_t`: A 64-bit unsigned integer, represented using any of the formats supported in the given context (SystemVerilog or C/C\+\+).
+* `uint64_t`: A 64-bit unsigned integer, represented using any of the formats supported in the given context (SystemVerilog or C/C++).
 * `string`: A string, appropriately quoted depending on use context (SystemVerilog, C++ source code or Spike command line in Unix shell).
 
-Parameter names are not constrained by the C/C\+\+/SystemVerilog syntax<  However, they cannot contain forward slash (`/`), backslash (`\\`) nor double-quote (`"`) characters.
+Parameter names are not constrained by the C/C++/SystemVerilog identifier syntax.  However, they cannot contain spaces, forward slash (`/`), backslash (`\`) nor double-quote (`"`) characters.
 
-Some parameters are only meaningful in specific scopes: platform (`/top`), or core(s) (`/top/cores/` or `/top/core/<HART_ID>/`).
+Some parameters are only meaningful in specific scopes: platform (`/top`), or core(s) (`/top/cores/` or `/top/core/<hartid>/`).
 
 === Parameter index
 
@@ -27,7 +29,7 @@ Some parameters are only meaningful in specific scopes: platform (`/top`), or co
 |`bootrom`
 |bool
 |`True`
-|Presence of boot ROM
+|`True` if platform contains a boot ROM
 
 |`bootrom_base`
 |uint64_t
@@ -91,7 +93,7 @@ All CSRs of cores in the platform can be controlled wrt. their presence ("availa
 
 Depending on the parameter prefix used (`/top/core/<hardtid>/` or `/top/cores/`), the parameters will apply to the CSR of a specific core or they will set a default behavior for the given CSR in all cores.
 
-The supported per-CSR parameters are listed in the table below.  `<CSR>` stands for any valid CSR name recognized by the ISS, in lowercase (as per RISC-V specification).
+The supported per-CSR parameters are listed in the table below.  `<CSR>` stands for any valid CSR name recognized by the reference model simulator, in lowercase (as per RISC-V specification).
 
 [cols="1,1,1,5"]
 |===

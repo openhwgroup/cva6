@@ -135,7 +135,13 @@ Spike configuration files represent a Spike parameter tree in the form of nested
 
 Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value prior to invoking any of the test scripts located in the `verif/regress` directory of the CVA6 source tree.
 
-Currently, tandem simulations are supported out-of-the-box for RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulation with Verilator using the `veri-testharness` configuration requires the availability of Verilator v5.016 or higher.
+**Example:**
+[,sh]
+----
+export SPIKE_TANDEM=1 ; bash verif/regress/dv-csr-embedded-tests.sh
+----
+
+Currently, tandem simulations are supported out-of-the-box for RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
 
 === How to analyze tandem verification results
 
