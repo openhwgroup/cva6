@@ -110,28 +110,40 @@ Spike configuration files represent a Spike parameter tree in the form of nested
 [,yaml]
 ----
   spike_param_tree:
-    bootrom: true
-    bootrom_base: 65536
-    bootrom_size: 4096
-    dram: true
-    dram_base: 2147483648
-    dram_size: 1073741824
-    generic_core_config: false
-    isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
-    priv: M
+    bootrom_enable: true
+    bootrom_base: 0x10000
+    bootrom_size: 0x1000
+    dram_enable: true
+    dram_base: 0x80000000
+    dram_size: 0x40000000
     core_configs:
       -
         isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
+        priv: M
         extensions: cv32a60x,cvxif
-        boot_addr: 2147483648
+        boot_addr: 0x80000000
         marchid_override_mask: 0xFFFFFFFF
         marchid_override_value: 0x3
         misa_write_mask: 0x0
 ----
 
+The first-level entries define platform properties (`bootrom_*` and `dram_*`) and the default settings for all cores of the system (`core_configs`).
+
+The configuration fragment above instructs the reference model that:
+
+* the platform contains a boot ROM of size 4 KiB starting at address 0x10000 (0+64 KiB);
+* the platform contains a DRAM memory of 1 GiB starting at the address 0x80000000 (0+2 GiB)
+* all cores:
+** implement an RV32IMC ISA with extensions `Zicsr`, `Zcb`, `Zba`, `Zbb`, `Zbc` and `Zbs`;
+** support only the Machine privilege level
+** implement custom extensions `cv32a60x` and `cvxif`;
+** boot from address `0x80000000` (the start address of the DRAM memory);
+** force the reset value of register `marchid` to value `0x3` (corresponding to the CVA6 architecture);
+** discard writes into `misa` CSR register by marking all its bits as non-mutable.
+
 ==== Running simulations in tandem mode
 
-Currently, tandem simulations are supported out-of-the-box only for CVA6 target `cv32a65x` when using RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations of target `cv32a65x` with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
+Currently, tandem simulations are supported out-of-the-box only for CVA6 target `cv32a65x` using RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations of target `cv32a65x` with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
 
 Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value prior to invoking any of the test scripts located in the `verif/regress` directory of the CVA6 source tree.
 
@@ -158,7 +170,7 @@ UVM_INFO @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(206) reporter [spike_tan
 UVM_ERROR @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(211) reporter [spike_tandem] 45992.000 ns | RVFI |        0 |      0 | 800036ac | 30419073 | M | x3  | 00000008 | x0  | 0000000000000000 | csrrw   zero, mie, gp <- CORE
 ----
 
-The first line indicates that upon instruction commit the content of the CSR with hexadecimal address `304`, i.e., `mie` ("Machine Interrupt Enable") differs between the reference model (value `0x0`) and the RTL core model (value `0x8`).  The followig lines provide details about the current instruction in both models:
+The first line indicates that upon instruction commit the content of the CSR with hexadecimal address `304`, i.e., `mie` ("Machine Interrupt Enable") differs between the reference model (value `0x0`) and the RTL core model (value `0x8`).  The following two lines provide details about the current instruction in both models:
 
 * the current time stamp (`45992.000 ns`),
 * the value of PC (`0x800036ac`),
@@ -166,26 +178,60 @@ The first line indicates that upon instruction commit the content of the CSR wit
 * the current privilege mode (`M`),
 * the values of general-purpose register operands of the instruction (`x3` or `gp`: `0x00000008`, `x0`: `0x00000000`).
 
-Since the values stored into the `mie` CSR differ while the instruction executed is the same including the values of its input operands, the discrepancy can only come from the write behavior of the `mie` CSR.  In this specific case, bit 3 of the `mie` register is specified as "read-only zero" in the reference model, yet the RTL implementation accepts writes into this specific bit of `mie`.
+Since the values stored into the `mie` CSR differ whereas the instruction executed is the same including the values of its input operands, the discrepancy can only come from the write behavior of the `mie` CSR.  In this specific case, bit 3 of the `mie` register is specified as "read-only zero" in the reference model, yet the RTL implementation accepts writes into this specific bit of `mie`.
 
 
-=== Recipe book
+=== Example uses of Yaml reference model parameters
 
-1. Enable (make "accessible") or disable (make "inaccessible") a CSR
-+
+==== Enable (make "accessible") or disable (make "inaccessible") a CSR
+
 A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in generic or per-core configuration, indicates whether the given register should be accessible or not.
-+
+
 **Example**:
-+
+
 [,yaml]
 ----
-   tinfo_accessible: False
+spike_param_tree:
+  ...
+  core_configs:
+    -
+      ...
+      tinfo_accessible: False
 ----
-+
-makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an illegal instruction exception upon accessing `tinfo`.
 
-1. Make modifiable or constant specific bits in a CSR
+makes the `tinfo` CSR inaccessible in the reference model for all cores, meaning that any attempt to access (read or write) the `tinfo` register when executing an instruction in the reference model will trigger an illegal instruction exception.
 
+==== Force specific bits in a CSR to a constant value
+
+The reference model parameters provide two levels of control over the content of CSRs:
+
+* override the reset value of selected bits of any CSR;
+* define which bits of a CSR cannot be modified.
+
+Assuming that bit 5 of a certain CSR `<mycsr>` should always be set irrespective of the default setting in the reference model, it is necessary to indicate that:
+
+* the reset value of that bit should be 1;
+* writes to that bit should be ignored.
+
+The parameters needed to express this property are:
+
+* `<mycsr_override_mask>` which defines which bits of `<mycsr>` should be forced to a specific value at reset,
+* `<mycsr_override_value>` which indicates the reset value of the forced bits of `<mycsr>`,
+* `<mycsr_write_mask>` which indicates which bits of `<mycsr>` are writable (mask bit is set) and which are not (mask bit is cleared).
+
+Assuming that the XLEN is 32 and only bit 5 of `<mycsr>` should be fixed, the Yaml settings to use are:
+
+[,yaml]
+----
+spike_param_tree:
+  ...
+  core_configs:
+    -
+      ...
+      <mycsr>_override_mask: 0x00000020
+      <mycsr>_override_value: 0x00000020
+      <mycsr>_write_mask: 0xffffffdf
+----
 
 === Integration with the RISC-V Open Source ecosystem
 
