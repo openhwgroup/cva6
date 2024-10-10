@@ -306,6 +306,27 @@ Return value: NONE.
 
 Deletes the instance of Spike pointed to by global variable `Simulation *sim`.
 
+=== Step Spike execution through the DPI interface with RVFI state represented as vectors of logic signals
+
+[,verilog]
+----
+import "DPI-C" function void spike_step_svLogic(inout vector_rvfi core, inout vector_rvfi reference_model);
+----
+
+[,c++]
+----
+extern "C" void spike_step_svLogic(svLogicVecVal* reference, svLogicVecVal* spike);
+----
+
+Input args:
+
+* `core`: (mutable) RVFI state of the RTL core represented as signal vector.
+* `reference_model`: (mutable) RVFI state of the reference model represented as signal vector.
+
+Return value: NONE.
+
+Before stepping, the entry state of the reference model will be adjusted according to the state of the RTL model.  After the step completes, the return state will represent the result of stepping the reference model for one commit (or exception) from the *updated* input state.
+
 ==== Set Boolean parameter `<base><name>` to `<value>`
 
 [,verilog]
