@@ -75,23 +75,38 @@ In order to provide fine-grained control over the configuration of the simulated
 ** write-enable masks with single bit granularity
 * ability to inject CSR values for architecture-dependent CSRs (`cycles`/`cyclesh`, `mcycles`/`mcyclesh`, `mip` etc.)
 
-=== Fundamental limitations
+=== Fundamental limitations of the tandem verification approach
 
-* Spike has only the notion of instruction commits, so it is not capable of representing the behaviors between commits (transient signals, micro-architectural artefacts such as stalls etc.) Such behaviors must be verified by other means.
-* interrupt presence and the results of interrupt arbitration are passed to Spike (there are no input signals in 
-* same error in both reference model and RTL implementation will not be detected since the two behaviors will match
-* purely sequential vs. concurrent events: Spike executes instructions in sequence whereas a superscalar architecture may commit multiple instructions in a single cycle; this means that some CSR updates may differ between Spike and RTL, typically MINSTRET may advance by 2+ in RTL but Spike will increment it by 1 at every instruction committed.
+* By definition, a reference model based on an instruction set simulator has only the notion of instruction commits and is not capable of representing the behaviors between commits (transient signals, micro-architectural artefacts such as stalls etc.)
++
+Such behaviors must be verified by other means.
+
+* Simultaneous occurrence of the same error in both reference model and RTL implementation will not be detected since the two behaviors will match.
++
+This stresses the importance of validation of the reference model against the specification.
+
+* Since the reference model for tandem verification does not include an interrupt controller, the presence of perding interrupts must be notified to the `mip` register by other means.
++
+In the OpenHW Group solution, the presence of the interrupt is detected by the RTL model and the information about the actual interrupt raised as the result of interrupt arbitration is passed to the reference model in the `mcause` register.
+
+* Transient discrepancies can be caused by differences between purely sequential and concurrent model execution.
++
+Spike executes instructions in sequence whereas a superscalar architecture may commit multiple instructions in a single cycle; this means that some CSR updates may differ between Spike and RTL, typically MINSTRET may advance by 2 or more in the RTL model, yet Spike will increment it by 1 at every instruction committed.
 
 === QuickStart Guide
 
-* build instructions:
-+
-  Spike extensions are built by default when rebuilding the vendorized Spike delivered as part of the `core-v-verif` tree.
+==== Build instructions
 
-* understanding the Spike configuration file
-+
-  Spike configuration files provide represent a Spike parameter tree in the form of nested Yaml dictionaries under a common root node `spike_param_tree`:
-+
+The standard build procedure of Spike supplied with the CVA6 project (https://github.com/openhwgroup/cva6/) builds a Spike binary with all necessary modifications required for DPI interfacing to the RTL testbench.
+
+Building Spike with tandem extensions requires the availability of `CMake` in version 3.16 or higher.  The `yaml-cpp` source package (https://github.com/jbeder/yaml-cpp) that is used to parse and manipulate Yaml configurations is a submodule of Spike and will be downloaded when performing a recursive clone or update of the CVA6 repository.
+
+If a rebuild is required in an existing setup, it is necessary to either select a different installation directory for Spike or to remove the current installation directory.  It is also necessary to remove Spike build directories `verif/core-v-verif/vendor/riscv/riscv-isa-sim/build` (Spike proper) and `verif/core-v-verif/vendor/riscv/riscv-isa-sim/yaml-cpp/build` (`yaml-cpp` library).
+
+==== Understanding the Spike configuration file
+
+Spike configuration files represent a Spike parameter tree in the form of nested Yaml dictionaries under a common root node `spike_param_tree`:
+
 [,yaml]
 ----
   spike_param_tree:
@@ -114,11 +129,11 @@ In order to provide fine-grained control over the configuration of the simulated
         misa_write_mask: 0x0
 ----
 
-* SPIKE_TANDEM variable
+==== Running simulations in tandem mode
 
-  Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value.
+Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value prior to invoking any of the test scripts located in the `verif/regress` directory of the CVA6 source tree.
 
-* obtaining the list of all available parameters
+Currently, tandem simulations are supported out-of-the-box for RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulation with Verilator using the `veri-testharness` configuration requires the availability of Verilator v5.016 or higher.
 
 === How to analyze tandem verification results
 
@@ -131,15 +146,16 @@ A failure is represented by a pair of TODO
 
 1. Enable (make "accessible") or disable (make "inaccessible") a CSR
 +
-   A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in generic or per-core configuration, indicates whether the given register should be accessible or not.
+A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in generic or per-core configuration, indicates whether the given register should be accessible or not.
 +
-   **Example**:
+**Example**:
 +
 [,yaml]
 ----
    tinfo_accessible: False
 ----
-   makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an illegal instruction exception upon accessing `tinfo`.
++
+makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an illegal instruction exception upon accessing `tinfo`.
 
 1. Make modifiable or constant specific bits in a CSR
 1. Add a new parameter to Spike

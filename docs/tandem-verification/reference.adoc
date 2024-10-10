@@ -243,7 +243,6 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 
 |`pmpregions_writable`
 |uint64_t
-|Cores
 |`0x0`
 |Number of PMP regions with modifiable properties in the core(s), starting from region with index 0.
 
@@ -260,7 +259,7 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 |unified_traps
 |bool
 |`False`
-|Unify all traps with exceptions.
+|Process all kinds of traps synchronously as if they were exceptions.
 |===
 
 
