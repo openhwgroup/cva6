@@ -45,8 +45,6 @@ The execution of the tandem simulation is controlled by the main RTL simulation 
 
 Volatile state information (interrupt status, values of selected CSRs which are driven by the microarchitecture) is injected into the reference model.  The reference model then executes as many instructions as were committed in the current RTL cycle.  If an exception is detected in the RTL model, the reference model is expected to detect the same exception.
 
-TODO what happens if in superscalar mode the second instruction triggers an exception (both insns are cancelled? First insn gets committed?)
-
 If a discrepancy in RFVI state is detected by the scoreboard, an appropriate human-readable error output is generated and the error count of the simulation is incremented.  The tandem simulation stops once a preset number of errors is encountered.  By controlling the erro limit is it possible to accommodate transient differences between the RTL and reference model states.  A typical example of transient difference occurs when two instructions are committed in a single cycle by a superscalar RTL implementation, causing the counter of retired instructions `minstret` to be atomically incremented by two whereas the reference model will always commit instruction one by one, thus incrementing `minstret` by one each time.
 
 TODO Add timing diagram of the basic operation cycle
@@ -133,6 +131,8 @@ Spike configuration files represent a Spike parameter tree in the form of nested
 
 ==== Running simulations in tandem mode
 
+Currently, tandem simulations are supported out-of-the-box only for CVA6 target `cv32a65x` when using RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations of target `cv32a65x` with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
+
 Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value prior to invoking any of the test scripts located in the `verif/regress` directory of the CVA6 source tree.
 
 **Example:**
@@ -141,13 +141,32 @@ Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to
 export SPIKE_TANDEM=1 ; bash verif/regress/dv-csr-embedded-tests.sh
 ----
 
-Currently, tandem simulations are supported out-of-the-box for RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
+The output of tandem simulation is sent to the log file of the RTL simulator, by default `verif/sim/out_<date>/<sim-config>_sim/<test-name>.<target>.log.iss`.
 
 === How to analyze tandem verification results
 
-To simplify failure analysis, the tandem scoreboard reports any discrepancies between commit states of the reference model and the RTL model but produces no output if the commit states are identical.
+To simplify failure analysis, the tandem scoreboard reports any discrepancies between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosioty level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
 
-A failure is represented by a pair of TODO
+A scoreboard discrepancy is represented by a line describing the nature of the error, followed by two lines that provide a summary view of the RVFI state of the reference model and the RTL core.
+
+**Example:**
++
+[,text]
+----
+CSR 304  Mismatch   [REF]: 0x0                [CORE]: 0x8
+UVM_INFO @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(206) reporter [spike_tandem] 45992.000 ns  | RVFI |        0 |      0 | 800036ac | 30419073 | M | x3  | 00000008 | x0  | 0000000000000000 | csrrw   zero, mie, gp
+UVM_ERROR @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(211) reporter [spike_tandem] 45992.000 ns | RVFI |        0 |      0 | 800036ac | 30419073 | M | x3  | 00000008 | x0  | 0000000000000000 | csrrw   zero, mie, gp <- CORE
+----
+
+The first line indicates that upon instruction commit the content of the CSR with hexadecimal address `304`, i.e., `mie` ("Machine Interrupt Enable") differs between the reference model (value `0x0`) and the RTL core model (value `0x8`).  The followig lines provide details about the current instruction in both models:
+
+* the current time stamp (`45992.000 ns`),
+* the value of PC (`0x800036ac`),
+* the encoding of the instruction (hex `30419073`),
+* the current privilege mode (`M`),
+* the values of general-purpose register operands of the instruction (`x3` or `gp`: `0x00000008`, `x0`: `0x00000000`).
+
+Since the values stored into the `mie` CSR differ while the instruction executed is the same including the values of its input operands, the discrepancy can only come from the write behavior of the `mie` CSR.  In this specific case, bit 3 of the `mie` register is specified as "read-only zero" in the reference model, yet the RTL implementation accepts writes into this specific bit of `mie`.
 
 
 === Recipe book
@@ -166,7 +185,7 @@ A Boolean parameter consisting of CSR name and suffix `_accessible`, placed in g
 makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an illegal instruction exception upon accessing `tinfo`.
 
 1. Make modifiable or constant specific bits in a CSR
-1. Add a new parameter to Spike
+
 
 === Integration with the RISC-V Open Source ecosystem
 
