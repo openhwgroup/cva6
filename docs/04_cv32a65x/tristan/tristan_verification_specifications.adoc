@@ -10,20 +10,6 @@ image:./media/image1.png[./media/image1,width=273,height=273]
 [.text-center]
 *Verification Specifications*
 
-*Document Number* D[X.X]
-
-*Primary Author(s)* [Name of primary author(s)]
-
-*Document Date* [Date of version]
-
-**Document Version / Status [**Draft / Final; v.X.X]
-
-**Distribution Level [**Public / Restricted]
-
-*Reference DoA* TBD
-
-*Project Coordinator* Patrick Pype, NXP Semiconductors, patrick.pype@nxp.com
-
 *Project Website* www.tristan-project.eu
 
 *JU Grant Agreement Number* 101095947
@@ -39,95 +25,25 @@ has received funding from the Key Digital Technologies Joint Undertaking
 
 |===
 
-*TEMPLATE INFORMATION*
-
-*CONTRIBUTORS/OWNERS*
-
-[width="100%",cols="36%,64%",options="header",]
-
-|===
-
-|*Name* |*Organization*
-
-|Tiberio Fanti |NXP-AT
-
-|Harsh Desai |NXP-AT
-
-|===
-
-*FORMAL REVIEWERS*
-
-[width="100%",cols="36%,64%",options="header",]
-
-|===
-
-|*Name* |*Organization*
-
-|TRISTAN WP2 and WP3 leads |N.A.
-
-|TRISTAN WP2 and WP3 Task leads |N.A.
-
-|===
-
-*HISTORY*
-
-[width="100%",cols="11%,17%,24%,48%",options="header",]
-
-|===
-
-|*Revision* |*Date* |*Author / Organization* |*Description*
-
-|0.1 |2023-07-20 |Tiberio Fanti / NXP-AT |Initial version. Distributed for limited review.
-
-|===
-
-== README
-
-* Use a copy of this document for writing your own VS document.
-
-* Assign a file name that reports the WI it refers to.
-
-** Exempli gratia: “TRISTAN WI0.0.0 Verification Specifications.docx”
-
-* Agree with your Task Lead and WPL where is the best place to store the resulting document.
-
-* Remove this page and the previous one relative to the template information.
-
-* Keep _Track Changes_ feature on for review and maintenance.
-
-* For common text, use always [TEXT: Font type: Calibri; Font size:11pt, Font color: black].
-
-* When a section of the Verification Plan refers to one of the deliverable requirements, which must be listed in the corresponding module Requirements Specifications (WP1) and Design Specifications (WP2 or WP3), use the same tag format next to the description.
-
-** Id est: [REQ-WI-X.Y.Z-M]
-
-* Each mandatory requirement must be covered by this document.
-
 == Table of Contents
 
-. link:#_Introduction[Introduction][Mandatory]
+. link:#_Introduction[Introduction]
 
 .. General Information
 
-.. Purpose and Scope
-
 .. Acronyms and Definitions
 
-.. Document History
+. link:#_Verification_Strategy[Verification Strategy]
 
-. link:#_Verification_Strategy[Verification Strategy] [MANDATORY]
+.. Methodology
 
-.. Methodology [MANDATORY]
+.. Database Structure
 
-.. Database Structure [MANDATORY]
-
-.. Tools [MANDATORY]
-
-... <VCS>
+.. Tools
 
 .. Planned releases
 
-. link:#_Testbench[Testbench] [MANDATORY]
+. link:#_Testbench[Testbench]
 
 .. Testbench Architecture
 
@@ -143,33 +59,19 @@ has received funding from the Key Digital Technologies Joint Undertaking
 
 ... Assertions
 
+... UVM Scoreboard
+
 ... Coverage Model
 
-. link:#_Verification_Plan[Verification Plan] [MANDATORY]
+... Write or Generate Tests
 
-.. DV Bring-Up
-
-... Clocks & Reset
-
-... Register Model [OPTIONAL]
+. link:#_Verification_Plan[Verification Plan]
 
 .. <DV Phase A>
 
 .. <DV Phase B>
 
-.. HW-SW Co-Verification [OPTIONAL]
-
-.. Formal Verification [OPTIONAL]
-
-... Connectivity [OPTIONAL]
-
-... FSM deadlock & livelock analysis [OPTIONAL]
-
-... UNR analysis
-
 . link:#_Verification_Reports[Verification Reports]
-
-.. Checklist
 
 .. Regression Results
 
@@ -177,22 +79,15 @@ has received funding from the Key Digital Technologies Joint Undertaking
 
 .. Code coverage
 
-.. Exclusion list
+.. SpyGlass integration
 
-. link:#_References[References] [OPTIONAL]
+.. RTL issues detected
 
 [#_Introduction]
-== Introduction [Mandatory]
+== Introduction
 === General Information
 
-Add here a general introduction to the module this paper refers to. It is important to specify the RTL object(s) that make up the deliverable of the TRISTAN Project Work-Item assigned to the owner of this document.
-
-In the “References” section, pointers to the input documents of the verification activity (namely, Requirements Specifications, Architectural Description and Design Specifications) must be listed.
-
-=== Purpose and Scope
-
-Add here information about the use that can be done of this document, as
-well as of the distribution that can be done of it.
+This document describes the CVA6 verification strategy and implementation.
 
 === Acronyms and Definitions
 
@@ -204,46 +99,37 @@ well as of the distribution that can be done of it.
 |UVC |Universal verification component
 |IF |SystemVerilog Interface
 |CVXIF |CORE-V eXtension Interface
+|UVM | Universal Verification Methodology
+|RVFI | RISC-V Formal Interface
+|DUT | Device Under Test
+|SV | SystemVerilog
+|VIF | Virtual InterFace
+|AXI | Advanced eXtensible Interface
 |===
 
-[width="100%",cols="24%,76%",options="header",]
-
-|===
-|Term |Definition
-| |
-|===
-
-=== Document History
-
-[width="100%",cols="12%,28%,13%,30%,17%",options="header",]
-
-|===
-|Version |Author |Date |Notes |Review Date
-| | | | |
-|===
 [#_Verification_Strategy]
-== Verification Strategy [MANDATORY]
-=== Methodology [MANDATORY]
+== Verification Strategy
+=== Methodology
 
-This project is not a single verification environment that can support any-and-all CORE-V cores. Rather, it supports the verification of multiple cores by enabling the rapid creation of core-specific verification environments. There is no attempt to define a one-size-fits-all environment as these inevitably lead to either bloated code, needless complexity, or both. Instead, the idea is to create a toolkit that allows for the rapid development of core-specific environments using a set of high-level reusable components and a standard UVM framework.
+This project is not a single verification environment that can support any-and-all CORE-V cores. Rather, it supports the verification of multiple cores by enabling the rapid creation of core-specific verification environments. There is no attempt to define a one-size-fits-all environment as these inevitably lead to either bloated code, needless complexity, or both. Instead, the idea is to create a toolkit allowing the rapid development of core-specific environments using a set of high-level reusable components and a standard UVM framework.
 
 UVM environments are often described as a hierarchy with the device-under-test (CVA6) at the bottom and testcases at the top. In between are various components with increasing degrees of abstraction as we go from the bottom levels (the register-transfer level) to the middle layers (transaction-level) to the top (tests). The lower layers of the environment see the least amount of re-use owing to the need to deal with core-specific issues. Components at this level are core-specific. At the transaction level there can be considerable amounts of re-use. For example, it is easy to imagine a single UVM RVFI Agent serving the needs of any and all CORE-V cores. The test level sees a mix of re-usable tests (e.g. RV32IMAC compliance) and core-specific tests (e.g. hardware loops in CV32A60X).
 
 The core-v-verif project exploits this idea to maximize re-use across multiple cores by striving to keep as much of the environment as possible independent of the core’s implementation. Components such as the instruction generator (RISCV-DV), reference model (Spike), CSR checkers can be made almost entirely independent of a specific core because they can be based on the ISA alone. Other components such as the functional coverage model, AXI & CVXIF Agents and the test-program environment can be implemented as a mix of re-usable components and core-specific components.
 
-Depending on the details of the top-level interfaces of individual cores, the lowest layers of the this environment may not be re-usable at all.
+Depending on the details of the top-level interfaces of individual cores, the lowest layers of this environment may not be re-usable at all.
 
-=== Database Structure [MANDATORY]
+=== Database Structure
 
-The verification environment, built from the resources provided by core-v-verif can be conceptually divided into four levels: Testbench Layer, Translation Layer, Abstraction Layer and Test Layer. Each of these will be discussed in turn.
+The verification environment, built from the resources provided by core-v-verif project can be conceptually divided into four levels: Testbench Layer, Translation Layer, Abstraction Layer and Test Layer. Each of these will be discussed in turn.
 
 *_[.underline]#Testbench Layer:#_*
 
-the testbench layer is comprised of two SystemVerilog modules and several SystemVerilog interfaces. We will discuss the SystemVerilog interfaces first, as this will make it easier to understand the structure and purpose of the modules.
+The testbench layer is comprised of two SystemVerilog modules and several SystemVerilog interfaces. We will discuss the SystemVerilog interfaces first, as this will make it easier to understand the structure and purpose of the modules.
 
 *_[.underline]#SystemVerilog Interfaces:#_*
 
-the top-level ports of the core can be categorized as follows:
+The top-level ports of the core can be categorized as follows:
 
 * Instruction and Data memory interface(s)
 * Clocks and Resets
@@ -251,7 +137,7 @@ the top-level ports of the core can be categorized as follows:
 * Trace
 * Special Status and Control
 
-The Instruction and Data memory interface is listed first for a reason. This interface is generally the most core-specific. For example, CV32E supports I&D interfaces that are AHB-like while CVA6 supports AXI-like interfaces. These are significant difference and so the Testbench Layer deliberately hides this interface from the higher-level layers. This is done in the “DUT Wrapper” module, see below.
+The Instruction and Data memory interface is listed first for a reason. This interface is generally the most core-specific. For example, CVA6 supports AXI-like Instruction and Data memory interfaces while other cores using core-v-verif project can support other interfaces. These are significant difference and so the Testbench Layer deliberately hides this interface from the higher-level layers. This is done in the “DUT Wrapper” module, see below.
 
 The remaining interface categories can be defined as generic collections of input or output signals whose operation can be defined by higher layers. A few examples should illustrate this point:
 
@@ -263,34 +149,39 @@ The two modules of the Testbench Layer are the “DUT Wrapper” and the “Test
 
 The wrapper instantiates a memory model that connects directly to the core’s instruction and data interface(s). This memory model also supports several memories mapped virtual peripherals. The core’s memory interface is not “seen” by any other part of the environment, so this interface (or these interfaces, as the case may be) can be completely different from other cores and the only part of the environment affected is the DUT wrapper, and its memory model. The address map of the modeled memory and peripherals is implemented to ensure compatibility with the test-program environment.
 
-The Testbench module is mostly boiler-plate code that does the following: - instantiates the wrapper - push handles of the SV interfaces to the UVM configuration database - invoke run_test() - Implement a final code-block to display test pass/fail
+The Testbench module is mostly boiler-plate code that does the following:
+
+* Instantiates the wrapper,
+* Push handles of the SV interfaces to the UVM configuration database,
+* Invoke run_test(),
+* Implement a final code-block to display test pass/fail.
 
 The expectation is that the DUT Wrapper module will be core-specific and will need to be coded from scratch for each core. The Testbench module is also expected to be core-specific but can be easily created by copying and modifying a Testbench module from a previous generation. The SystemVerilog interfaces for Clocks and Resets, Configuration, ISACOV, RVFI, Trace, AXI, plus Special Status and Control are generic enough to be fully re-used.
 
 *_[.underline]#Repository Structure:#_*
 
-The top-level of the repository is specifically organized to support multiple verification environments. The directory structure below shows a version of the environment that supports multiple CORE-V cores. What follows is a brief description of the purpose of each top-level directory. Refer to the README files at each of these locations for additional information. If you read nothing else, please read $CORE_V_VERIF/cva6/README.md.
+The top-level of the repository is specifically organized to support multiple verification environments. The directory structure below shows a version of the environment that supports multiple CORE-V cores. What follows is a brief description of the purpose of each top-level directory. Refer to the README files at each of these locations for additional information. If you read nothing else, please read verif/README.md.
 
-*cva6*: this directory contains the cva6 specific environment, testbench, tests and simulation directories.
+*verif*: This directory contains the CVA6 specific environment, testbench, tests and simulation directories. The common part is located in verif/core-v-verif directory.
 
-*ci*: This directory supports common and core-specific scripts and configuration filesto support user-level regressions and the Metrics continuous integration flow.
+*verif/core-v-verif/lib*: This is where the bulk of the re-usable components and tests are maintained. This is where you will find the instruction generator, reference model, common functional coverage models, UVM Agents for clocks-and-resets, interrupts, status, etc.
 
-*lib*: This is where the bulk of the re-usable components and tests are maintained. This is where you will find the instruction generator, reference model, common functional coverage models, UVM Agents for clocks-and-resets, interrupts, status, etc.
-
-=== Tools [MANDATORY]
-
-Provide details about any simulation tool, coverage tools, formal verification tools adopted. Also indicate the tool version
+=== Tools
 
 ==== <VCS>
 
-In our verification environment we use Synopsys tool (VCS) to simulate, generate coverage also, the tool version is *_VCS 2021_*
+In our verification environment we use Synopsys tool (VCS) to simulate, generate coverage also, the tool version is *_VCS 2023_*
+
+==== <Spike>
+
+As RISC-V reference model, we use Spike in tandem mode with VCS to ensure the CVA6 behaves as required.
 
 === Planned releases
 
 Provide details regarding verification milestones, starting from TB bring up till Code-Coverage complete.
 
 [#_Testbench]
-== Testbench [MANDATORY]
+== Testbench
 === Testbench Architecture
 
 This section describes the testbench of the CVA6 core. This environment
@@ -309,11 +200,11 @@ To check whether the simulation passed or failed we check the err_count and fata
 
 *_[.underline]#uvmt_cva6_dut_wrap#_*
 
-In this module we instantiate the cva6_tb_wrapper module and we instantiate some unused outputs of the cvxif.
+In this module we instantiate the cva6_tb_wrapper module and we instantiate some unused outputs of CVXIF.
 
 *_[.underline]#cva6_tb_wrapper#_*
 
-In this module we instantiate the CVA6 core, and we connect it with all the interfaces of the cva6 environment verification. Also, in this module we instantiate an SRAM, an AXI interface and an AXI adapter that we can use if we don’t have an AXI agent or if we want disactivate the agent for performance reason. The switch between the SRAM and AXI agent it’s possible thanks to the AXI switch.
+In this module we instantiate the CVA6 core, and we connect it with all the interfaces of the cva6 environment verification. Also, in this module we instantiate an SRAM, an AXI interface and an AXI adapter that we can use if we don’t have an AXI agent or if we want disactivate the agent for performance reason. The switch between the SRAM and AXI agent is possible thanks to the AXI switch.
 
 === Testbench Block-Diagram
 
@@ -479,6 +370,38 @@ uvma_cvxif_cov_model_c is derived from the uvm_component class. This class defin
 
 uvma_cvxif_agent_c class extends from uvm_agent class. This class represents an agent that is responsible for the test execution and communication between the virtual interface (VIF) and the testbench components. The main role of this class is to create and connect the different components of the testbench and manage the communication between them and the virtual interface (VIF) during the test execution.
 
+*_[.underline]#RVFI Agent#_*
+
+The rvfi agent is a passive agent responsible for monitoring the rvfi tracing interface. It compares the transactions made with the core and reference model values and outputs the committed instructions to a file.
+
+[.underline]#uvma_rvfi_if#
+
+The rvfi interface of the testbench follows the rvfi specification. It mainly outputs the GPR (General Purpose Registers), FPR (Floating Point Registers), and CSRs (Control and Status Registers).
+
+[.underline]#uvma_rvfi_instr_mon_c#
+
+This class is used to monitor the RVFI interface. It produces rvfi transactions that will be broadcasted to the uvma_rvfi_mon_trn_logger_c, uvma_rvfi_scoreboard_c, and uvma_rvfi_reference_model_monitor.
+
+[.underline]#uvma_rvfi_mon_trn_logger_c#
+
+This class uses the produced transactions from uvma_rvfi_instr_mon_c to write a trace file containing all the committed instructions of the core.
+
+[.underline]#uvma_rvfi_reference_model#
+
+This is the base class for the reference models. It defines a set of basic functions that will be called by the uvma_rvfi_reference_model_monitor. It produces the transactions that the uvma_rvfi_reference_model_monitor will use to serve the scoreboard.
+
+[.underline]#uvma_rvfi_spike#
+
+uvma_rvfi_spike is a child class of uvma_rvfi_reference_model that implements the necessary functions to execute Spike in instruction-by-instruction mode and retrieve its values.
+
+[.underline]#uvma_rvfi_reference_model_monitor#
+
+The main objective of this class is to produce reference model transactions to feed the uvma_rvfi_scoreboard_c. It uses the transactions from the monitor to notify the reference model of asynchronous events such as interruptions and execute instructions. With this information, it executes the committed instructions on the reference model and retrieves the necessary values to send to the scoreboard.
+
+[.underline]#uvma_rvfi_scoreboard_c#
+
+This class has the expected functionality following UVM standards. It receives transactions from both the core and the reference model and compares all the required fields to ensure the correct behaviour of the design, focusing mainly on GPR, FPR, and CSRs. It also checks events as interrupts or exceptions.
+
 *_[.underline]#Axi Agent#_*
 
 This agent is an AXI4 (Advanced eXtensible Interface) SV UVM1.1 SLAVE. Aligned to AXI4 AMBA spec https://developer.arm.com/documentation/ihi0022/hc
@@ -544,13 +467,42 @@ This agent provides 2 sequences:
 
 . Slave reactive sequence generates the appropriate response after he take the request decoded by the synchronizer. when the response is generated the sequence send it via the driver.
 
+==== AXI agent improvement
+
+===== General overview
+As part of the TRISTAN project, a collaboration between Thales DIS and CEA was put in place. The goal is to create a complete AXI agent that can function as either a slave or a master. This enhancement is significant as it allows for the verification of the agent with itself in a back-to-back testbench.
+A back-to-back testbench is a small UVM testbench where we can connect an IP master with its slave to perform verification. Verifying a complex component like the AXI agent adds credibility to the project and the verification process.
+This collaboration is also important for the open-source community, as it enables the agent to be utilized by many people across different projects.
+
+===== Agent developed by Thales DIS
+
+It is described in a previous section of this document.
+
+===== Agent developed by CEA
+The AXI superset agent is a highly configurable AXI agent. It is based on the AMBA AXI and ACE Protocol Specification from ARM(https://developer.arm.com/documentation/ihi0022/g/). It provides the functionality of AXI master and AXI slave. In the master mode, it provides the sequences/APIs to drive READ/WRITE/ATOP transactions. In the slave mode, the agent uses an external memory to perform response.
+
+===== Enhancement
+The idea was to merge the master part of the CEA agent with the Thales slave agent and create one agent supporting both slave and master functionality, incorporating all AXI4 features and the potential to support additional functionality from AXI5. The agent must also support external memory in slave mode.
+Since the Thales agent was already integrated with CVA6, we used it as a starting point and aligned it with the superset agent to simplify the merge.
+
+Below is the roadmap agreed upon by the two teams:
+
+image:./media/axiagentmerge.png[./media/axiagentmerge,width=602,height=285]
+
+At the time of writing this document, the merge of the two agents is not yet completed.
+It remains to publish on GitHub the agent and to integrate it with CVA6.
+
 ==== UVCs
 
 No UVC used in this project
 
 ==== Checkers
 
-In our environment we use a reference model called *Spike*, to decide if a test Passed or Failed, you can see below how this flow works:
+In our environment we use a reference model called *Spike*, to decide if a test Passed or Failed.
+
+Spike is a functional model implemented in C++ that aims to mimic the behaviour of a RISC-V hart. It implements all the ratified extensions of RISC-V. The verification environment uses this tool as the reference model for core-level verification.
+
+You can see below how this flow works:
 
 image:./media/image6.png[./media/image6,width=557,height=252]
 
@@ -620,6 +572,32 @@ Assertions to check Cvxif protocol:
 
 * Result interface protocol assertions
 
+==== UVM Scoreboard
+
+The UVM scoreboard is a verification component that contains checkers to verify the functionality of the design. It receives transaction-level objects captured from the interfaces of a DUT via TLM (Transaction-level modeling) analysis ports.
+Generally, the scoreboard calculates the expected value using a model and compares it with the actual value captured from the DUT.
+For the moment, the CVA6 scoreboard contains a sub-scoreboard for the frontend pipeline stage and checkers for registers.
+In the coming months, sub-scoreboards for the other pipeline stages will be added.
+
+===== Frontend Pipeline Stage Scoreboard
+
+The frontend pipeline stage scoreboard verifies the CVA6 frontend stage, which includes the fetched instruction, next PC, and the RET/branch prediction.
+Scoreboard architecture:
+
+image:./media/frontendsb.png[./media/frontendsb,width=426,height=93]
+
+Scoreboard component:
+
+* Frontend SB: The frontend scoreboard top file is where the model and the monitor are instantiated. It contains counters for fetched data, valid instructions, instruction types, and committed instructions captured from the ISACOV monitor using a TLM port.
+* Monitor: Captures signals from the frontend interface and sends transactions to the scoreboard.
+* Model: Models the behavior of the frontend by calculating the next program counter to compare it with the actual value. It realigns and pre-decodes the data sent by the cache to store it in the instruction queue and compares it with the instructions sent to the decode stage. It includes RAS and BHT classes to speculate on control flow instructions.
+  * Instr_realign: This task extracts instructions from the 64-bit blocks coming from the CACHE module.
+  * Instr_scan: This task pre-decodes the fetched instructions from the instr_realign module. It provides the instruction types: branch, jump, return, jalr, immediate, call, or others. These outputs are used to calculate the prediction address.
+  * BHT: Class that models the BHT submodule.
+  * RAS: Class that models the RAS submodule.
+  * Instr_queue: Class that models the instr_queue submodule.
+* Coverage: Multiple coverage models are used to ensure coverage of all possible cases.
+
 ==== Coverage Model
 
 Our verification environment has functional coverage also, define with several coverage models:
@@ -632,85 +610,129 @@ Our verification environment has functional coverage also, define with several c
 
 To know all the functional coverage related to the CVA6 only is define in the environment, like CVXIF custom instruction, and soma AXI features.
 
+==== Write or Generate Tests
+Testing is a crucial part of the verification process. Different types of tests are employed:
+
+* Generate assembly tests using CVA6-DV: Uses the RISCV-DV framework to generate assembly-level test programs for the CVA6 core. RISCV-DV is a flexible and extensible tool used for generating RISC-V architecture assembly programs to stress-test the core. The extensions to RISCV-DV are available at (https://github.com/openhwgroup/cva6/tree/master/verif/env/corev-dv).
+* Write directed assembly tests: These are manually written test cases designed to target specific behaviors or edge cases that are not covered by automated test generation.
+
+
+
 [#_Verification_Plan]
-== Verification Plan [MANDATORY]
+== Verification Plan
 
-In case the verification plan is split in more stages, we recommend splitting this chapter into more sub-chapters, each dedicated to a different phase of the campaign. For each section, we recommend to make use of tabular specifications. The table below is only an example. Each partner might have their own preferred format. Also links to external documents are accepted.
-
-=== DV Bring-Up
-
-This section is deemed mandatory. An explanation of how the DUT is brought up (resets and clocks) is required.
-
-==== Clocks & Reset
-
-…
-
-==== Register Model [OPTIONAL]
-
-…
+The DVPlans are available at (https://github.com/openhwgroup/cva6/tree/master/verif/docs/VerifPlans).
 
 === <DV Phase A>
 
-[width="100%",cols="12%,10%,10%,12%,13%,10%,9%,8%,7%,9%",options="header",]
-
-|===
-
-|Sr.No. |Test name |Test Category |Feature Number |Test Scenario |Checks Performed |Cover Point |Priority |Owner |Reviewed by |1. |As should appear in regression |Register test, functional test, reset test, error test, negative test, stress test |As per design Specification |Testcase sequence in terms of dut configurations and input |Checks that should be performed to declare testcase pass/fail. |DUT condition which confirms scenario coverage | | |
-
-|===
+* ISA DVPlan: Focuses on verifying the Instruction Set Architecture (ISA) to ensure the core executes instructions correctly.
+* CV-XIF DVPlan: This covers the verification of the Core-View External Interface (CV-XIF), likely to be an interface protocol used for communication between the core and external components. It mentions that this plan is for the first version and will require updates as the protocol evolves.
+* AXI DVPlan: Deals with the verification of the AXI (Advanced eXtensible Interface).
+* Traps DVPlan: Verifies the behavior of the core when exceptions, interrupts, or traps occur.
+* CSRs DVPlan: Focuses on verifying the control and status registers (CSRs), which are key for managing the operation of the core.
 
 === <DV Phase B>
 
-… as above …
-
-=== HW-SW Co-Verification [OPTIONAL]
-
-…
-
-=== Formal Verification [OPTIONAL]
-
-==== Connectivity [OPTIONAL]
-
-…
-
-==== FSM deadlock & livelock analysis [OPTIONAL]
-
-…
-
-==== UNR analysis
-
-…
+* Frontend DVPlan: Verifies the frontend part of the core, which involves instruction fetching, next pc generation, pre-decoding instruction and RET/Branch prediction.
 
 [#_Verification_Reports]
 == Verification Reports
 
-In the following paragraphs, each partner might need to use their own preferred format. Also links to external documents are accepted.
-
-=== Checklist
-
-…
-
 === Regression Results
 
-…
+* 2000+ tests running on the server: specifically, 2112 tests are executed as part of the regression process, which runs the entire suite of tests repeatedly to ensure that changes or updates do not introduce new bugs. All tests passed, which indicates a stable design at this stage.
+
+[cols="1,1,1,1,1"]
+|===
+|
+|ISA
+|Traps
+|CSRs
+|Data hazard
+
+|Generated tests
+|900
+|449
+|450
+|300
+
+|Directed tests
+|6
+|2
+|5
+|0
+|===
+
+* Scripts handling failed tests: A script is used to automatically remove failing tests from the coverage database. This ensures that the coverage report is based solely on tests that pass, meaning the coverage metrics are representative of correctly functioning parts of the design.
+
 
 === Functional coverage
 
-…
+* Create HVP in the CVA6 env to track functional coverage: HVP refers to "Hierarchical Verification Plan," which helps monitor and track the functional coverage of the tests. The goal is to ensure that all functional aspects of the core are exercised during the verification. Functional coverage measures how much of the design’s intended functionality has been exercised.
+The functional coverage is split in several parts:
+
+  * Programmer view level: it corresponds to CVA6 from the perspective of the programmer (architectural view): ISA, CSRs, and traps.
+  * Design level: it corresponds to the different parts of the CVA6 pipeline (micro-architectural view).
+
+image:./media/hvp.png[./media/hvp,width=624,height=190]
+
+* 98.09% functional coverage for programmer view level: Achieving 98.09% coverage is an excellent result, indicating that most of the ISA (Instruction Set Architecture), CSRs (Control and Status Registers), and traps (interrupt and exception handling) have been tested thoroughly.
+
+image:./media/funccovresults.png[./media/funccovresults,width=426,height=93]
+
+* Justificative report for coverage holes: This refers to generating a report explaining any missing coverage (the 1.91% not covered). This might happen due to untested corner cases or unsupported configurations.
+
+* Regarding the design level, the 6.65% coverage result is poor as only the frontend stage of the CVA6 pipeline is currently addressed.
+
 
 === Code coverage
 
-…
+* The coverage of line and condition was low, primarily due to unsupported features in the CV32A65X configuration.
+* The solution was to parameterize the RTL to make it configurable, remove dead code from the coverage report, and eliminate dead gates from the netlist.
+* To achieve this, we used the VCS switch “-cm_seqnoconst -diag noconst” to automatically exclude constant variables and inaccessible code from the coverage analysis.
+* An example of the implementation is provided below:
 
-=== Exclusion list
+image:./media/rtlparam.png[./media/rtlparam,width=624,height=161]
 
-…
+* The gain of parameterization for only MMU and FPU:
 
- 
-[#_References]
-== References [OPTIONAL]
+image:./media/rtlparamgates.png[./media/rtlparamgates,width=975,height=92]
 
-Add references to other documents (and their version) that complete the description of the module to be verified.…
+* We encountered the same problem with toggle coverage, and the score was very low compared to that of line and condition coverage.
+* We can’t use the same options applied for line and condition coverage because we can’t parameterize the interface signals. Additionally, the VCS simulator only tracks constant signals if they are directly assigned to a constant value.
+* For example, if the aw_user signal from the AXI interface is directly assigned to '0', the simulator will exclude the signal from toggle coverage. However, if aw_user is assigned to another signal, even if that signal is constant, the simulator will take no action.
+* To address this, the solution is to generate an exclusion file based on the results of a Python script that detects unsupported signals according to your configuration. (More details about the script)
+* Low toggle coverage initially (50%): Toggle coverage refers to how often signals switch between states during simulation. Initially, only 50% of the signals in the design were toggling, which suggests that a significant portion of the design was not being exercised.
+
+image:./media/toggleresults.png[./media/toggleresults,width=241,height=70]
+
+* Issue with unsupported signals for configuration: The problem was that some signals were unsupported in the current design configuration. A Python script was used to identify these unsupported signals, and an exclusion file was generated to exclude these signals from code coverage, ensuring accurate reporting.
+
+==== What is missing in code coverage
+
+* CV-XIF tests: An update of the Core-View External Interface (CV-X-IF) protocol (version 1.0) is available, and the verification tests hadn’t been updated to reflect these changes. This gap in testing impacts code coverage, as some parts of the design using this protocol may remain untested.
+The verification work of CV-X-IF v1.0 will be done in the ISOLDE project.
+* Dead code: There is still some "dead code" in the design, code that is never executed. This could indicate unnecessary or outdated features that need to be either removed or refactored.
+
+=== SpyGlass integration
+
+SpyGlass is a static analysis tool used to find potential issues in RTL code, such as linting errors, coding style violations, and design rule checks. The verification effort involved:
+
+* Adding SpyGlass support from scratch: This included setting up scripts, Makefiles, and other infrastructure to integrate SpyGlass into the CVA6 verification environment.
+* Integrating SpyGlass into regression tests: SpyGlass was included in the regression process so that any RTL changes would automatically be checked for issues.
+* Reporting results in a dashboard: The results of the SpyGlass runs were compared with previous runs, and reports were generated to track progress, likely in a dashboard for easy visualization of errors and trends.
+
+=== RTL issues detected
+
+RTL (Register Transfer Level) bugs have been detected in various areas of the CVA6 design thanks to verification:
+
+* ISA bugs: Bugs in the instruction set implementation.
+* Traps: Bugs in how the core handles exceptions and interrupts.
+* CSRs: Bugs related to control and status registers.
+* CV-X-IF: Bugs related to the CV-X-IF protocol.
+* AXI: Bugs related to the AXI protocol.
+
+All issues are described in CVA6 GitHub repository (https://github.com/openhwgroup/cva6/issues?q=label%3AType%3ABug).
 
 http://www.tristan-project.eu[_www.tristan-project.eu_]
 
