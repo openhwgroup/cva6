@@ -20,7 +20,7 @@ Some parameters are only meaningful in specific scopes: platform (`/top`), or co
 
 ==== Platform-level parameters
 
-[cols="2,1,1,5"]
+[cols="1,1,1,5"]
 |===
 |Name |Type |Default |Description
 
@@ -93,7 +93,7 @@ Depending on the parameter prefix used (`/top/core/<hardtid>/` or `/top/cores/`)
 
 The supported per-CSR parameters are listed in the table below.  `<CSR>` stands for any valid CSR name recognized by the ISS, in lowercase (as per RISC-V specification).
 
-[cols="2,1,1,5"]
+[cols="1,1,1,5"]
 |===
 |Name |Type |Default |Description 
 
@@ -127,7 +127,7 @@ The supported per-CSR parameters are listed in the table below.  `<CSR>` stands 
 
 Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-level parameters form a default for all cores or apply to a specific core with ID `<hartid>`.
 
-[cols="2,1,1,5"]
+[cols="1,1,1,5"]
 |===
 |Name |Type |Default |Description 
 
@@ -261,7 +261,7 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 |bool
 |`False`
 |Unify all traps with exceptions.
-|====
+|===
 
 
 === DPI Programming Interface

@@ -4,6 +4,7 @@
 This document describes the OpenHW Group functional verification environment based on lockstep ("tandem") simulation of a RISC-V reference model and an RTL implementation of a RISC-V core.
 
 It discusses the principle, the architecture and the usage of the environment, and outlines future work.  It also provides a reference of the programming interfaces to support hardware designers, software developers, and verification engineers.
+
 === Scope of verification
 
 The verification is performed on the CVA6 core, with the exclusion of interrupt controllers, platform-related mechanisms (real-time timer), peripherals etc.
@@ -22,19 +23,19 @@ The behaviors that are verified are:
 
 ==== High-level view
 
-Tandem-based functional verification of a RTL design consists in a lockstep comparison of the behavior of an RTL implementation against the behavior of a reference model (usually an Instruction Set Simulator, or ISS), both executing the same programs from the same initial state.  In opposition to post-execution trace comparison, the tandem approach enables immediate detection of differences in observable behavior of the RTL implementation and the reference model, thus greatly simplifying the investigation of the root causes of the discrepancies.
+Tandem-based functional verification of an RTL design consists in a lockstep comparison of the behavior of an RTL implementation against the behavior of a reference model (usually an Instruction Set Simulator, or ISS), both executing the same programs from the same initial state.  In opposition to post-execution trace comparison, the tandem approach enables immediate detection of differences in observable behavior of the RTL implementation and the reference model, thus greatly simplifying the investigation of the root causes of any discrepancies.
 
 The OpenHW Group tandem verification environment relies on the use of RVFI (RISC-V Formal Interface, https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md).  RVFI provides a well-defined abstraction of design state at each instruction commit or exception occurrence.
 
-RVFI events are collected from both RTL and reference model side, and a scoreboard is used to compare the states of both simulations.
-
-RTL simulation environment provides the testbench and the required abstractions of platform-level resources and behaviors.  The core-level interrupt controller (CLIC) is **not** modeled; instead, interrupt management is performed by the testbench.  The RTL core model receives interrupt notifications from the testbench through the available interrupt input ports.
+RVFI events are collected from both RTL and reference model side, and a scoreboard is used to compare the states of both simulations at every step.
 
 The reference model is a slave to the RTL model; it performs an execution step only when the RTL model has completed the current step.  This enables partial verification of behaviors involving values that depend on micro-architecture features, e.g., clock cycle counts.  The RTL provides the actual values of the registers to the reference model; these values are "trusted" by the reference model and hence, the reads of CSR registers yield the same results in the reference model as they do in the RTL simulation.
 
+The RTL simulation environment provides the testbench and the required abstractions of platform-level resources and behaviors.  The core-level interrupt controller (CLIC) is **not** modeled; instead, interrupt management is performed by the testbench.  The RTL core model receives interrupt notifications from the testbench through the available interrupt input ports.  When the RTL model of the core detects an interrupt, the information about the interrupt is passed to the reference model by setting the `mip` (Machine Interrupt Pending) CSR to the same value as in the RTL model.
+
 Since out-of-core behaviors (platform CSRs, interrupt control) are out of the scope of verification, the reference model includes only the core and an abstraction of the memories. In particular, CLIC/PLIC interrupt controllers are explicitly disabled and platform CSRs are not maintained.
 
-In order to ease the integration with RTL simulators, the tandem infrastructure uses a limited subset of UVM to provide uniform SystemVerilog interface across all RTL simulators, whether commercial or open-source.
+In order to ease the integration with RTL simulators, the tandem infrastructure uses a limited subset of UVM to provide a uniform SystemVerilog interface across all RTL simulators, whether commercial or open-source.
 
 TODO Add figure of overall structure
 
