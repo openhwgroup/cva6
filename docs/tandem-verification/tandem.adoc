@@ -54,26 +54,28 @@ TODO Add timing diagram of the basic operation cycle
 ==== Implementation
 
 The RTL testbenches use DPI functions to control Spike stepping, inject CSR values and query Spike's RVFI interface upon "RVFI valid" events.
-TODO where is the hook to call Spike 'step()' function?
 
 To limit the impact on the upstream code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
+
 * by adding a new base class below the original base class (used for CSRs)
 * by specializing a class to provide additional interfaces (Processor and Simulation)
 
-Spike was modified to run a single-instruction step function instead of the performance-optimized "instruction batch" mode that executes hundreds to thousands of instructions without yielding the control to the environment of the simulated design.
+The Spike execution model was modified to run a single-instruction step function instead of the performance-optimized "instruction batch" mode that executes hundreds to thousands of instructions without yielding the control to the environment of the simulated design.
 
 In order to provide fine-grained control over the configuration of the simulated design, Spike was extended with a parameter mechanism with the following characteristics:
 
-* three ways of controlling Spike simulator behavior:
+* four additional ways of controlling Spike simulator behavior:
 ** configuration files (Yaml)
 ** DPI API
 ** C++ API
 ** additional command-line arguments
+* ability to set platform-related values (memory map, boot addresses)
+* ability to set implementation-defined values (number of PMP regions in total, vnedor ID, architecture ID, implementation ID, ...)
 * extended CSR control:
-** availability of CSR
-** initialization mask+values
+** availability of any CSR
+** initialization masks and values
 ** write-enable masks with single bit granularity
-* ability to inject CSR values for architecture-dependent CSRs (`cycles`/`cyclesh`, `mcycles`/`mcyclesh`, `mip` etc.)
+* ability to inject CSR values from the RTL model for architecture-dependent CSRs (`cycles`/`cyclesh`, `mcycles`/`mcyclesh`, `mip` etc.)
 
 === Fundamental limitations of the tandem verification approach
 
@@ -85,9 +87,9 @@ Such behaviors must be verified by other means.
 +
 This stresses the importance of validation of the reference model against the specification.
 
-* Since the reference model for tandem verification does not include an interrupt controller, the presence of perding interrupts must be notified to the `mip` register by other means.
+* Since the reference model for tandem verification does not include an interrupt controller, the presence of pending interrupts must be notified to the `mip` register by other means.
 +
-In the OpenHW Group solution, the presence of the interrupt is detected by the RTL model and the information about the actual interrupt raised as the result of interrupt arbitration is passed to the reference model in the `mcause` register.
+In the OpenHW Group solution, the presence of the interrupt is detected by the RTL model and the information about the actual interrupt raised as the result of interrupt arbitration is passed to the reference model in the `mcause` register.  The value in `mcause` is then used to trigger the corresponding event in the reference model.
 
 * Transient discrepancies can be caused by differences between purely sequential and concurrent model execution.
 +
@@ -162,15 +164,20 @@ makes the `tinfo` CSR inaccessible for Spike, which in turn will trigger an ille
 
 === Integration with the RISC-V Open Source ecosystem
 
-* infrastructure available as Open Source (under SHL 2.0+, an Apache-type license)
-* use of Spike as reference model
-  +
-  The tandem verification approach is a general template and is not bound to a single ISS or RTL simulator.  However, it requires that the ISS provides a basic platform capable of running software matching the capabilities of the RTL testbench, including a model of memory and busses.
-  Because of this constraint the current tandem framework relies on Spike which is fully Open Source and provides all necessary components.
+* The entire tandem verification infrastructure is available as Open Source under SHL 2.0+ (an Apache-type license) in OpenHW Group repositories `cva6` (https://github.com/openhwgroup/cva6/) and `core-v-verif` (https://github.com/openhwgroup/cva6/).
+
+* The OpenHW Group tandem verification infrastructure relies on Spike (https://github.com/riscv-software-src/riscv-isa-sim/) as reference model.
++
+The tandem verification approach is a general template and is not bound to a single ISS or RTL simulator.  However, it requires that the ISS provides a basic platform capable of running software matching the capabilities of the RTL testbench, including a model of memory and buses.
+Because of this constraint the current tandem framework relies on Spike which is fully Open Source and provides all necessary components.
 
 * Verilator-based tandem
-  +
-  Starting with version 5.016, Verilator supports tandem simulations.  Earlier versions did not provide sufficient support for structrured types in DPI interface.
++
+Starting with version 5.016, Verilator supports tandem simulations.  Earlier versions did not provide sufficient support for structrured types in DPI interface.
+
+=== Integration with other EU Projects
+
+In order to support a full specification-to-implementation Open Source path for RISC-V, there is an activity in the ISOLDE project (https://www.isolde-project.eu/content/over-project) aiming at the automatic generation of Spike Yaml configuration files from pre-validated RISC-V configurations produced by the `riscv-config` tool (https://github.com/riscv-software-src/riscv-config).
 
 === Future work
 
