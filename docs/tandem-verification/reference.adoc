@@ -1,15 +1,15 @@
 == Programming reference
 
-Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME`.  Recognized values of `PREFIX` are:
+Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierachical structure.  Supported values of `PREFIX` are:
 
-* `/top`: parameter values apply to the complete platform (which may consist of several harts.)
-* `/top/cores`: parameter values apply to all harts, and can be overridden on a hart-by-hart basis using hart-specific values.
-* `/top/core/<number>`: parameter values apply only to hart (core) with ID `<number>`.
+* `/top`: parameter values apply to the complete platform (which may consist of several cores.)
+* `/top/cores`: parameter values apply to all harts, and can be overridden on a core-by-core basis using core-specific values.
+* `/top/core/<number>`: parameter values apply only to the core with ID `<number>`.
 
 Parameters are explicitly typed.  Three parameter types are supported:
 
 * `bool`: Boolean type with two values: `True` (non-zero, by convention noted `1`) and `False` (zero).
-* `uint64_t`: A 64-bit unsigned integer,represented using any of the formats supported in the given context (SystemVerilog or C/C\+\+). 
+* `uint64_t`: A 64-bit unsigned integer, represented using any of the formats supported in the given context (SystemVerilog or C/C\+\+).
 * `string`: A string, appropriately quoted depending on use context (SystemVerilog, C++ source code or Spike command line in Unix shell).
 
 Parameter names are not constrained by the C/C\+\+/SystemVerilog syntax<  However, they cannot contain forward slash (`/`), backslash (`\\`) nor double-quote (`"`) characters.
@@ -125,7 +125,7 @@ The supported per-CSR parameters are listed in the table below.  `<CSR>` stands 
 
 === Core-level parameters
 
-Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the following parameters form a default for all cores or apply to a specific core with ID `<hartid>`.2
+Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-level parameters form a default for all cores or apply to a specific core with ID `<hartid>`.
 
 [cols="2,1,1,5"]
 |===
@@ -265,6 +265,219 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the followi
 
 
 === DPI Programming Interface
+
+The DPI interface is implemented in file `vendor/riscv/riscv-isa-sim/riscv/riscv_dpi.cc` in `core-v-verif` repository (https://github.com/openhwgroup/core-v-verif/).
+
+
+==== Create a new instance of Spike extended with DPI interfaces suitable for tandem operation
+
+[,verilog]
+----
+import "DPI-C" function void spike_create(string filename);
+----
+
+[,c++]
+----
+extern "C" void spike_create(const char *filename);
+----
+
+Input args:
+
+* `filename`: name of the ELF file to load into Spike memory.
+
+Return value: NONE.
+
+The instance of Spike will be available in global variable `Simulation *sim`.
+
+=== Destroy an existing instance of Spike with DPI interfaces
+
+[,verilog]
+----
+import "DPI-C" function void spike_delete();
+----
+
+[,c++]
+----
+extern "C" void spike_delete();
+----
+
+Input args: NONE.
+
+Return value: NONE.
+
+Deletes the instance of Spike pointed to by global variable `Simulation *sim`.
+
+==== Set Boolean parameter `<base><name>` to `<value>`
+
+[,verilog]
+----
+import "DPI-C" function void spike_set_param_bool(string base, string name, bit value);
+----
+
+[,c++]
+----
+extern "C" void spike_set_param_bool(const char *base, const char *name, bool value);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+* `value`: Truth value representable on a single bit.
+
+Return value: NONE.
+
+==== Set uint64_t parameter `<base><name>` to `<value>`
+
+[,verilog]
+----
+import "DPI-C" function void spike_set_param_uint64_t(string base, string name, longint unsigned value);
+----
+
+[,c]
+----
+extern "C" void spike_set_param_uint64_t(const char *base, const char *name, uint64_t value);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+* `value`: 64-bit unsigned integer value.
+
+Return value: NONE.
+
+==== Set Boolean parameter `<base><name>` to `<value>`
+
+[,verilog]
+----
+import "DPI-C" function void spike_set_param_str(string base, string name, string value);
+----
+
+[,c++]
+----
+extern "C" void spike_set_param_str(const char *base, const char *name, string value);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+* `value`: String value.
+
+Return value: NONE.
+
+==== Return the value of Boolean parameter `<base><name>`
+
+[,verilog]
+----
+import "DPI-C" function bit spike_get_param_bool(string base, string name);
+----
+
+[,c++]
+----
+extern "C" bit spike_get_param_bool(const char *base, const char *name);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+
+Return value: Current value of Boolean parameter `<base><name>`.
+
+==== Return the value of uint64_t parameter `<base><name>`
+
+[,verilog]
+----
+import "DPI-C" function longint unsigned spike_get_param_uint64_t(string base, string name);
+----
+
+[,c++]
+----
+extern "C" uint64_t spike_get_param_uint64_t(const char *base, const char *name);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+
+Return value: Current value of uint64_t parameter `<base><name>`
+
+==== Return the value of string parameter `<base><name>`
+
+[,verilog]
+----
+import "DPI-C" function string spike_get_param_str(string base, string name);
+----
+
+[,c++]
+----
+extern "C" string spike_get_param_str(const char *base, const char *name);
+----
+
+Input args:
+
+* `base`: Base part of parameter name (up to last forward slash character, inclusive)
+* `name`: Last member of parameter name (past last forward slash character)
+
+Return value: Current value of string parameter `<base><name>`.
+
+==== Set a collection of parameters from a Yaml configuration file
+
+[,verilog]
+----
+import "DPI-C" function void spike_set_params_from_file(string paramFilePath);
+----
+
+[,c++]
+----
+extern "C" void spike_set_params_from_file(const char *paramFilePath);
+----
+
+Sets parameters of the current Spike instance according to the content of file named `<paramFilePath>`.
+
+==== Get current value of a Spike CSR of a specific core
+
+[,verilog]
+----
+import "DPI-C" function void spike_get_csr(input longint unsigned proc_id, input longint unsigned csr_addr, inout longint unsigned value);
+----
+
+[,c++]
+----
+extern "C" void spike_get_csr(uint64_t proc_id, uint64_t csr_addr, uint64_t &value);
+----
+
+Input args:
+
+* `proc_id`: ID of the core to be queried
+* `csr_addr`: Address of the CSR
+* `value`: Upon return from the function holds the value of the requested CSR.
+
+Return value: NONE (CSR value is passed in an in-out arg).
+
+==== Set value of a Spike CSR for a specific core
+
+[,verilog]
+----
+import "DPI-C" function void spike_put_csr(input longint unsigned proc_id, input longint unsigned csr_addr, input longint unsigned value);
+----
+
+[,c++]
+----
+extern "C" void spike_put_csr(uint64_t proc_id, uint64_t csr_addr, uint64_t value);
+----
+
+Input args:
+
+* `proc_id`: ID of the core to be queried
+* `csr_addr`: Address of the CSR
+* `value`: Value to be placed in the requested CSR.
+
+Return value: NONE.
+
 
 === C++ Programming Interface
 
