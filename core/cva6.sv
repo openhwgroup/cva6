@@ -23,10 +23,8 @@ module cva6
     ),
 
     // RVFI PROBES
-    parameter type rvfi_probes_instr_t =
-    `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    parameter type rvfi_probes_csr_t =
-    `RVFI_PROBES_CSR_T(CVA6Cfg),
+    parameter type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
+    parameter type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
     parameter type rvfi_probes_t = struct packed {
       logic csr;
       rvfi_probes_instr_t instr;
@@ -280,7 +278,7 @@ module cva6
       logic                            last;
       logic [CVA6Cfg.AxiUserWidth-1:0] user;
     },
-    parameter type noc_req_t = struct packed {
+    parameter type noc_req_t = struct {
       axi_aw_chan_t aw;
       logic         aw_valid;
       axi_w_chan_t  w;
@@ -290,7 +288,7 @@ module cva6
       logic         ar_valid;
       logic         r_ready;
     },
-    parameter type noc_resp_t = struct packed {
+    parameter type noc_resp_t = struct {
       logic    aw_ready;
       logic    ar_ready;
       logic    w_ready;
@@ -321,7 +319,9 @@ module cva6
     input logic time_irq_i,
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
-        // Probes to build RVFI, can be left open when not used - RVFI
+    // CPU wait feature
+    input logic cpu_wait_i,
+    // Probes to build RVFI, can be left open when not used - RVFI
     output rvfi_probes_t rvfi_probes_o,
     // CVXIF request - SUBSYSTEM
     output cvxif_req_t cvxif_req_o,
@@ -720,6 +720,7 @@ module cva6
       .flush_bp_i         (1'b0),
       .halt_i             (halt_ctrl),
       .debug_mode_i       (debug_mode),
+      .cpu_wait_i         (cpu_wait_i),
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .icache_dreq_i      (frontend_dreq_dec_if),
       .icache_dreq_o      (frontend_dreq_if_dec),
@@ -831,25 +832,25 @@ module cva6
   exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_ex_id;  // exception from execute, ex_stage to id_stage
   logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_ex_id;
 
-  assign trans_id_ex_id[FLU_WB] = flu_trans_id_ex_id;
-  assign wbdata_ex_id[FLU_WB]   = flu_result_ex_id;
-  assign ex_ex_ex_id[FLU_WB]    = flu_exception_ex_id;
-  assign wt_valid_ex_id[FLU_WB] = flu_valid_ex_id;
+  assign trans_id_ex_id[ariane_pkg::FLU_WB] = flu_trans_id_ex_id;
+  assign wbdata_ex_id[ariane_pkg::FLU_WB]   = flu_result_ex_id;
+  assign ex_ex_ex_id[ariane_pkg::FLU_WB]    = flu_exception_ex_id;
+  assign wt_valid_ex_id[ariane_pkg::FLU_WB] = flu_valid_ex_id;
 
-  assign trans_id_ex_id[STORE_WB] = store_trans_id_ex_id;
-  assign wbdata_ex_id[STORE_WB]   = store_result_ex_id;
-  assign ex_ex_ex_id[STORE_WB]    = store_exception_ex_id;
-  assign wt_valid_ex_id[STORE_WB] = store_valid_ex_id;
+  assign trans_id_ex_id[ariane_pkg::STORE_WB] = store_trans_id_ex_id;
+  assign wbdata_ex_id[ariane_pkg::STORE_WB]   = store_result_ex_id;
+  assign ex_ex_ex_id[ariane_pkg::STORE_WB]    = store_exception_ex_id;
+  assign wt_valid_ex_id[ariane_pkg::STORE_WB] = store_valid_ex_id;
 
-  assign trans_id_ex_id[LOAD_WB] = load_trans_id_ex_id;
-  assign wbdata_ex_id[LOAD_WB]   = load_result_ex_id;
-  assign ex_ex_ex_id[LOAD_WB]    = load_exception_ex_id;
-  assign wt_valid_ex_id[LOAD_WB] = load_valid_ex_id;
+  assign trans_id_ex_id[ariane_pkg::LOAD_WB] = load_trans_id_ex_id;
+  assign wbdata_ex_id[ariane_pkg::LOAD_WB]   = load_result_ex_id;
+  assign ex_ex_ex_id[ariane_pkg::LOAD_WB]    = load_exception_ex_id;
+  assign wt_valid_ex_id[ariane_pkg::LOAD_WB] = load_valid_ex_id;
 
-  assign trans_id_ex_id[FPU_WB] = fpu_trans_id_ex_id;
-  assign wbdata_ex_id[FPU_WB]   = fpu_result_ex_id;
-  assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
-  assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
+  assign trans_id_ex_id[ariane_pkg::FPU_WB] = fpu_trans_id_ex_id;
+  assign wbdata_ex_id[ariane_pkg::FPU_WB]   = fpu_result_ex_id;
+  assign ex_ex_ex_id[ariane_pkg::FPU_WB]    = fpu_exception_ex_id;
+  assign wt_valid_ex_id[ariane_pkg::FPU_WB] = fpu_valid_ex_id;
 
   if (CVA6Cfg.CvxifEn) begin
     assign trans_id_ex_id[X_WB] = x_trans_id_ex_id;
@@ -1674,7 +1675,7 @@ module cva6
     ) i_address_decoder_ahbslave (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
-        .addr_valid_i((ahb_s_req_i.htrans == ahb_pkg::AHB_TRANS_NONSEQ)),
+        .addr_valid_i((ahb_s_req_i.htrans == ahb_pkg::AhbTransNonseq)),
         .addr_i(ahb_s_req_i.haddr),
         .ahb_periph_en_i(1'b0),  // Should not be targeted by AHB slave
         .dscr_en_i(1'b1),
@@ -1685,8 +1686,8 @@ module cva6
     );
 
     always_comb begin : p_ahb_slave_arbit
-      iscr_ahb_s_req_i   = '0;
-      dscr_ahb_s_req_i   = '0;
+      iscr_ahb_s_req_i = '0;
+      dscr_ahb_s_req_i = '0;
       ahb_s_resp_o.hrdata = '0;
       ahb_s_resp_o.hready = 1'b1;
       ahb_s_resp_o.hresp = 1'b0;
@@ -1701,7 +1702,7 @@ module cva6
       end else if (ahb_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
         iscr_ahb_s_req_i = ahb_s_req_i;
         ahb_s_resp_o     = iscr_ahb_s_resp_o;
-      end else if (ahb_s_req_i.htrans == ahb_pkg::AHB_TRANS_IDLE) begin
+      end else if (ahb_s_req_i.htrans == ahb_pkg::AhbTransIdle) begin
         ahb_s_resp_o.hready = 1'b1;
         ahb_s_resp_o.hresp  = 1'b0;
       end else begin
@@ -1767,16 +1768,16 @@ module cva6
         .ahb_resp_t (ahb_resp_t),
         .ahb_req_t (ahb_req_t)
     ) i_ahb_peripheral_bus_controller (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .ahb_p_resp_i   (ahb_p_resp_i),
-        .ahb_p_req_o    (ahb_p_req_o),
-        .ld_req_port_i  (ahbperiph_req_port_ld_periph),
-        .ld_req_port_o  (ahbperiph_req_port_periph_ld),
-        .ld_ex_o        (ahbperiph_ex_periph_ld),
-        .st_req_port_i  (ahbperiph_req_port_st_periph),
-        .st_ready_o     (ahbperiph_ready_periph_st),
-        .st_ex_o        (ahbperiph_ex_periph_st)
+        .clk_i        (clk_i),
+        .rst_ni       (rst_ni),
+        .ahb_p_resp_i (ahb_p_resp_i),
+        .ahb_p_req_o  (ahb_p_req_o),
+        .ld_req_port_i(ahbperiph_req_port_ld_periph),
+        .ld_req_port_o(ahbperiph_req_port_periph_ld),
+        .ld_ex_o      (ahbperiph_ex_periph_ld),
+        .st_req_port_i(ahbperiph_req_port_st_periph),
+        .st_ready_o   (ahbperiph_ready_periph_st),
+        .st_ex_o      (ahbperiph_ex_periph_st)
     );
   end else begin : gen_no_ahb_master
     assign ahb_p_req_o                  = '0;
