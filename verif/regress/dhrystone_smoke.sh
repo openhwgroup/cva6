@@ -48,7 +48,7 @@ cflags=(
         -nostdlib
         -nostartfiles
         -lgcc
-        -O3 --no-inline
+        -Os --no-inline
         -Wno-implicit-function-declaration
         -Wno-implicit-int
         -I../tests/custom/env

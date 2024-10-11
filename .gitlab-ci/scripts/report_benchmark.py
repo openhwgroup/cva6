@@ -21,9 +21,9 @@ iterations = None
 valid_cycles = {
     "dhrystone_dual": 21530,
     "dhrystone_single": 26392,
-    "coremark_dual": 531457,
-    "coremark_single": 672500,
-    "dhrystone_cv32a65x": 24740,
+    "coremark_dual": 530099,
+    "coremark_single": 673184,
+    "dhrystone_cv32a65x": 33736,
 }
 
 for arg in sys.argv[1:]:
