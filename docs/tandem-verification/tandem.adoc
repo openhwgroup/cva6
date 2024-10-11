@@ -39,10 +39,11 @@ In order to ease the integration with RTL simulators, the tandem infrastructure 
 
 ==== Operation
 
-The execution of the tandem simulation is controlled by the main RTL simulation loop that is managed either by the "run" phase of the UVM testbench, or explicitly in a test harness.  The RTL simulation runs through successive clock cycles until the RVFI state is marked as valid, indicating an instruction commit or an exception in the current RTL clock cycle.
+The execution of the tandem simulation is controlled by the main RTL simulation loop that is managed either by the "run" phase of the UVM testbench, or explicitly in a test harness.  The RTL simulation runs through successive clock cycles until the RVFI state of the RTL model is marked as valid, indicating an instruction commit or an exception in the current RTL clock cycle.
 
-For each commit or exception reported by the RVFI interface of the RTL model, the tandem control loop performs a single step of the reference model.
-Interrupt and debug events detected by the RTL model are injected into the reference model at the beginning of each step. The values of microarchitecture-dependent CSRs such as clock cycle counters (`cycles`/`cyclesh`, `mcycles`/`mcyclesh`) are injected at the end of the reference model step since the RTL values of these registers correspond to RTL state *after* the corresponding RTL event.
+In the CVA6 RTL implementation multiple commits or exceptions can occur in a single cycle.  If multiple simultaneous events are reported by RVFI, the corresponding entries in the RFVI interface are always ordered in the sequential execution order.   For each commit or exception reported by the RVFI interface of the RTL model, the tandem control loop performs a single step of the reference model and compares the RVFI state between the current RTL-side RVFI entry and the reference model RVFI output.  Per-commit entries in the RFVI interface are ordered in the sequential execution order,
+
+Interrupt and debug events detected by the RTL model are injected into the reference model at the beginning of each step. The values of microarchitecture-dependent CSRs such as clock cycle counters (`cycle`/`cycleh`, `mcycle`/`mcycleh`) are injected at the end of the reference model step since the RTL values of these registers correspond to RTL state *after* the corresponding RTL event.
 
 .Stages of a single reference model step
 [#fig-refmodel-step]
@@ -52,21 +53,33 @@ If a discrepancy in RFVI state is detected by the scoreboard, an appropriate hum
 
 For the purpose of CVA6 core verification the core-level interrupt controller (CLIC) is **not** modeled; instead, interrupt management is performed by the testbench.  The RTL core model receives interrupt notifications from the testbench through the available interrupt input ports.  When the RTL model of the core detects an interrupt, the information about the interrupt is passed to the reference model by reconstructing the value of the `mip` (Machine Interrupt Pending) CSR from the value of the `mcause` register to ensure that the interrupt taken is the same as the one already taken by the RTL simulation.  The actual RTL value of the `mip` register may contain additional bits which are set; it will be injected into the reference model state at the end of the reference model step.
 
-
 ==== Implementation
 
-The RTL testbenches use DPI functions to control Spike stepping, inject CSR values and query Spike's RVFI interface upon "RVFI valid" events.
+The RTL testbenches use DPI functions to control Spike stepping, inject CSR values and query Spike's RVFI interface.
 
-To limit the impact on the upstream code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
+Control of single/tandem operation mode is achieved using the SystemVerilog macro `SPIKE_TANDEM`.  If defined to a non-zero ("true") value, it enables the tandem configuration in the RTL simulation by instantiating and connecting the Spike wrapper, and by activating the step-and-compare functions.
+
+The selection of file locations for the Yaml configuration and the Yaml report file locations is performed using dedicated "plusarg" command-line options added to the testbenches:
+
+* `+config_file=<NAME>` sets the name of the Yaml configuration file to `<NAME>`
+* `+report_file=<NAME>` sets the name of the Yaml tandem report file to `<NAME>`.
+
+Option `+config_file` should only be used when an appropriate configuration file exist, and should be omitted otherwise.
+
+SystemVerilog code of the tandem infrastructure is maintained in OpenHW Group repositiory `core-v-verif` (https://github.com/openhwgroup/core-v-verif) which also contains the UVM components and agents that leverage the pure SystemVerilog layer.
+
+A pure SystemVerilog tandem testbench for CVA6 is available in the OpenHW Group CVA6 repository (https://github.com/openhwgroup/cva6/)
+
+To limit the impact on the original code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
 
 * by adding a new base class below the original base class (used for CSRs)
 * by specializing a class to provide additional interfaces (Processor and Simulation)
 
-The Spike execution model was modified to run a single-instruction step function instead of the performance-optimized "instruction batch" mode that executes hundreds to thousands of instructions without yielding the control to the environment of the simulated design.
+Spike execution model was modified to run a single-instruction step function instead of the performance-optimized "instruction batch" mode that executes hundreds to thousands of instructions without yielding the control to the environment of the simulated design.
 
 In order to provide fine-grained control over the configuration of the simulated design, Spike was extended with a parameter mechanism with the following characteristics:
 
-* four additional ways of controlling Spike simulator behavior:
+* multiple ways of controlling Spike simulator behavior:
 ** configuration files (Yaml)
 ** DPI API
 ** C++ API
@@ -78,6 +91,8 @@ In order to provide fine-grained control over the configuration of the simulated
 ** initialization masks and values
 ** write-enable masks with single bit granularity
 * ability to inject CSR values from the RTL model for architecture-dependent CSRs (`cycles`/`cyclesh`, `mcycles`/`mcyclesh`, `mip` etc.)
+
+Spike modifications are maintained in a forked Spike tree integrated into the OpenHW `core-v-verif` repository (https://github.com/openhwgroup/core-v-verif/).
 
 === Fundamental limitations of the tandem verification approach
 
@@ -159,6 +174,8 @@ export SPIKE_TANDEM=1 ; bash verif/regress/dv-csr-embedded-tests.sh
 
 The output of tandem simulation is sent to the log file of the RTL simulator, by default `verif/sim/out_<date>/<sim-config>_sim/<test-name>.<target>.log.iss`.
 
+A machine-processable Yaml report file summarizing the discrepancies detected during the simulation is stored in a separate report file, by default `verif/sim/out_<date>/<sim-config>_sim/<test-name>.<target>.log.yaml`.  It contains the configuration of the simulated design, the number of mismatches that were found (if any) and a list of entries describing the successive mismatches.
+
 === How to analyze tandem verification results
 
 To simplify failure analysis, the tandem scoreboard reports any discrepancies between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosioty level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
@@ -184,6 +201,47 @@ The first line indicates that upon instruction commit the content of the CSR wit
 
 Since the values stored into the `mie` CSR differ whereas the instruction executed is the same including the values of its input operands, the discrepancy can only come from the write behavior of the `mie` CSR.  In this specific case, bit 3 of the `mie` register is specified as "read-only zero" in the reference model, yet the RTL implementation accepts writes into this specific bit of `mie`.
 
+This following is the corresponding fragment from the Yaml report, including the configuration and status summary of the simulation run:
+
+[,yaml]
+----
+csrs_match_count: 461
+exit_cause: MISMATCH
+exit_code: 0
+instr_count: 3280
+isa: rv32imc_zba_zbb_zbs_zbc_zicsr_zifencei
+mismatch_description: 'CSR 304  Mismatch   [REF]: 0x880              [CORE]: 0x888             '
+mismatches:
+- 0: null
+  core:
+    insn: 0000000030419073
+    insn_disasm: csrrw   zero, mie, gp
+    mode: 3
+    pc_rdata: 00000000800036ac
+    pc_wdata: 0
+    rd1_addr: 0
+    rd1_rdata: 0
+    rs1_addr: 3
+    rs1_rdata: 0000000000000008
+    trap: 0
+  reference_model:
+    insn: 0000000030419073
+    insn_disasm: csrrw   zero, mie, gp
+    mode: 3
+    pc_rdata: 00000000800036ac
+    pc_wdata: 0
+    rd1_addr: 0
+    rd1_rdata: 0
+    rs1_addr: 3
+    rs1_rdata: 0000000000000008
+    trap: 0
+[...]
+mismatches_count: 5
+simulator: vcs-uvm
+target: cv32a65x
+test: csr_test
+testlist: csr_embedded
+----
 
 === Example uses of Yaml reference model parameters
 
@@ -219,9 +277,9 @@ Assuming that bit 5 of a certain CSR `<mycsr>` should always be set irrespective
 
 The parameters needed to express this property are:
 
-* `<mycsr_override_mask>` which defines which bits of `<mycsr>` should be forced to a specific value at reset,
-* `<mycsr_override_value>` which indicates the reset value of the forced bits of `<mycsr>`,
-* `<mycsr_write_mask>` which indicates which bits of `<mycsr>` are writable (mask bit is set) and which are not (mask bit is cleared).
+* `<mycsr>_override_mask` which defines which bits of `<mycsr>` should be forced to a specific value at reset,
+* `<mycsr>_override_value` which indicates the reset value of the forced bits of `<mycsr>`,
+* `<mycsr>_write_mask` which indicates which bits of `<mycsr>` are writable (mask bit is set) and which are not (mask bit is cleared).
 
 Assuming that the XLEN is 32 and only bit 5 of `<mycsr>` should be fixed, the Yaml settings to use are:
 
@@ -256,10 +314,9 @@ In order to support a full specification-to-implementation Open Source path for 
 
 === Future work
 
-* multi-core simulations
-** per-core configurations
-** integration with complex platform models
-* alternative reference models
-** advent of Sail
+Given the interests expressed in the CVA6 community, one of posssible directions of evolution for the OpenHW Group tandem verification platform is to support single-clock multi-core platforms. The Spike platform abstraction supports already multiple heterogeneous cores and multiple memory regions, meaning that a reference model is already available provided the targeted design does not involve complex memory access structures (multilevel caches, memory access networks, etc.)  Also, iIndividual core configurations can already be expressed in the current parameterization scheme, but addtional work will be needed to handle more complex memory maps.  If non-trivial memory architectures need to be simulated, the bulk of the effort will be devoted to the modeling of such structures which is beyond the scope of the project.
+
+Another direction for future work is to substitute Spike with another reference model.  While `Sail` (https://github.com/riscv/sail-riscv) appears as a potential candidate, it is currently unclear how much effort will be required in order to achieve a level of functionality sufficiently rich to run complete programs and expose an RVFI-type interface for tandem verification.
+
 
 include::reference.adoc[]
