@@ -22,17 +22,13 @@ package scratchpad_pkg;
   localparam DSCR_ARBIT_NUM_IN = 3;
   localparam ISCR_ARBIT_NUM_IN = 4;
 
-  typedef enum logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] {
-    ISCR_ARBIT_LOAD,
-    ISCR_ARBIT_STORE,
-    ISCR_ARBIT_AHB,
-    ISCR_ARBIT_FRONTEND
-  } iscr_arbit_e;
+  localparam logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] ISCR_ARBIT_LOAD = 2'b00;
+  localparam logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] ISCR_ARBIT_STORE = 2'b01;
+  localparam logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] ISCR_ARBIT_AHB = 2'b10;
+  localparam logic [$clog2(ISCR_ARBIT_NUM_IN)-1:0] ISCR_ARBIT_FRONTEND = 2'b11;
 
-  typedef enum logic [$clog2(DSCR_ARBIT_NUM_IN)-1:0] {
-    DSCR_ARBIT_LOAD,
-    DSCR_ARBIT_STORE,
-    DSCR_ARBIT_AHB
-  } dscr_arbit_e;
+  localparam logic [$clog2(DSCR_ARBIT_NUM_IN)-1:0] DSCR_ARBIT_LOAD = 2'b00;
+  localparam logic [$clog2(DSCR_ARBIT_NUM_IN)-1:0] DSCR_ARBIT_STORE = 2'b01;
+  localparam logic [$clog2(DSCR_ARBIT_NUM_IN)-1:0] DSCR_ARBIT_AHB = 2'b10;
 
 endpackage
