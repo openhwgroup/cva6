@@ -70,7 +70,14 @@ class uvmt_cva6_base_test_c extends uvm_test;
    constraint env_cfg_cons {
       env_cfg.enabled         == 1;
       env_cfg.is_active       == UVM_ACTIVE;
-      env_cfg.trn_log_enabled == 1;
+      if (!env_cfg.performance_mode) {
+         env_cfg.trn_log_enabled == 1;
+      } else {
+         env_cfg.trn_log_enabled           == 0;
+         env_cfg.cov_model_enabled         == 0;
+         env_cfg.force_disable_csr_checks  == 1;
+         env_cfg.scoreboard_enabled        == 0;
+      }
    }
 
    constraint axi_agent_cfg_cons {
