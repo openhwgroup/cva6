@@ -4656,10 +4656,10 @@ read-only zero. PMP CSRs are only accessible to M-mode.</p>
 </div>
 <div class="paragraph">
 <p>[CV64A6_MMU] The PMP configuration registers are densely packed into CSRs to minimize
-context-switch time. For CV64A6_MMU with sixty four CSRs, <code>pmpcfg0</code>–<code>pmpcfg15</code>, hold
-the configurations as shown
+context-switch time. For CV64A6_MMU, sixteen CSRs, <code>pmpcfg0</code>–<code>pmpcfg15</code>, hold
+the configurations <code>pmp0cfg</code>–<code>pmp63cfg</code> for the 64 PMP entries, as shown
 in <a href="#pmpcfg-rv32">Figure 25</a>.
-The 14 upper entries are read-only zero.</p>
+The 14 upper PMP configuration CSRs, <code>pmpcfg2</code>-<code>pmpcfg15</code>, are read-only zero.</p>
 </div>
 <div id="pmpcfg-rv32" class="imageblock">
 <div class="content">
@@ -4672,7 +4672,8 @@ The 14 upper entries are read-only zero.</p>
 PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <a href="#pmpaddr-rv32">Figure 26</a>. Not all
 physical address bits may be implemented, and so the <code>pmpaddr</code> registers
-are <strong>WARL</strong>.</p>
+are <strong>WARL</strong>.
+The 56 upper PMP address CSRs, <code>pmpaddr8</code>-<code>pmpaddr63</code>, are read-only zero.</p>
 </div>
 <div id="pmpaddr-rv32" class="imageblock">
 <div class="content">

@@ -4194,10 +4194,10 @@ implemented first. All PMP CSR fields are *WARL* and 56 upper entries are
 read-only zero. PMP CSRs are only accessible to M-mode.
 
 [{ohg-config}] The PMP configuration registers are densely packed into CSRs to minimize
-context-switch time. For {ohg-config} with sixty four CSRs, `pmpcfg0`–`pmpcfg15`, hold
-the configurations as shown
+context-switch time. For {ohg-config}, sixteen CSRs, `pmpcfg0`–`pmpcfg15`, hold
+the configurations `pmp0cfg`–`pmp63cfg` for the 64 PMP entries, as shown
 in <<pmpcfg-rv32>>.
-The 14 upper entries are read-only zero.
+The 14 upper PMP configuration CSRs, `pmpcfg2`-`pmpcfg15`, are read-only zero.
 
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
@@ -4208,6 +4208,7 @@ PMP address register encodes bits 33-2 of a 34-bit physical address for
 RV32, as shown in <<pmpaddr-rv32>>. Not all
 physical address bits may be implemented, and so the `pmpaddr` registers
 are *WARL*.
+The 56 upper PMP address CSRs, `pmpaddr8`-`pmpaddr63`, are read-only zero.
 
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
