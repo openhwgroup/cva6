@@ -83,6 +83,11 @@ optimize your design workflows, and bring your RISC-V chip to life.
 (RTL design, DFT, verification, full custom layout, place and route), firmware, driver & application development, test & validation, security implementation & support to certification.
 MU-E has designed IPs and Chips down to 7nm. MU-E is participating in the European TRISTAN project and working for Thales on the verification of CVA6.
 
+[**10xEngineers**](https://10xengineers.ai/) is a design and verification services company focused on RISC-V. We contribute to compiler enablement, RTL design,
+and verification efforts within the OpenHW ecosystem. Our work on CVA6 includes architectural and microarchitectural verification of MMU
+and implementation of multiple RISC-V extensions, such as Bitmanip, Zicond, Zcb, and Zcmp. Our expert team assists companies in integrating,
+customizing, and optimizing CVA6 to meet their unique requirements.
+
  _(To be completed based on companies's requests. Max 1 URL and 60 words per company)_
 
 ### Product ICs
