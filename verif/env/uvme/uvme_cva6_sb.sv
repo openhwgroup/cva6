@@ -457,6 +457,10 @@ task uvme_cva6_sb_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
+  if (cfg.scoreboard_enabled && cfg.disable_all_csr_checks)
+      `uvm_warning(get_type_name(),"Scoreboard enabled while config disable_all_csr_checks is true. Cycle and Trap will not be scoreboarded nor checked");
+
+  if (cfg.scoreboard_enabled && !cfg.disable_all_csr_checks)
   fork
       begin
           forever begin
