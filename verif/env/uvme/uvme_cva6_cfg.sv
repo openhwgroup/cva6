@@ -62,6 +62,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // MMU support
    rand bit                      MmuPresent;
 
+   // Software interrupt supported
+   rand bit                      sw_int_supported;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -75,6 +78,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
       `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
+      `uvm_field_int (                         sw_int_supported            , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int (                         performance_mode            , UVM_DEFAULT          )
 
@@ -124,6 +128,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       HPDCache_supported      == (RTLCVA6Cfg.DCacheType == 2);
 
       MmuPresent              == RTLCVA6Cfg.MmuPresent;
+      // TODO : add RTL paramater related to this field fix issue#2500
+      sw_int_supported        == 0;
    }
 
    constraint ext_const {
@@ -225,6 +231,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    extern virtual function void read_disable_csr_check_plusargs();
 
+   /**
+    * Get irq_addr ack
+    */
+   extern virtual function bit [XLEN-1:0] get_irq_addr();
+
 endclass : uvme_cva6_cfg_c
 
 
@@ -279,6 +290,25 @@ function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
       //~ pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
+
+function bit [XLEN-1:0] uvme_cva6_cfg_c::get_irq_addr();
+
+   int unsigned IRQ_ADDR;
+   string binary;
+
+    if (!$value$plusargs("irq_addr=%h", IRQ_ADDR)) IRQ_ADDR = '0;
+    if (IRQ_ADDR == '0) begin
+        if (!$value$plusargs("elf_file=%s", binary)) binary = "";
+        if (binary != "") begin
+            read_elf(binary);
+            read_symbol("int_ack", IRQ_ADDR);
+        end
+      `uvm_info(get_type_name(), $sformatf("[IRQ] INFO: int_ack_addr: %h", IRQ_ADDR), UVM_NONE)
+    end
+
+    return IRQ_ADDR;
+
+endfunction : get_irq_addr
 
 function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
 

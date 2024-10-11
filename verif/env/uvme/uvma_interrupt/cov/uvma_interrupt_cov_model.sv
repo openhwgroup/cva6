@@ -12,14 +12,17 @@
 `define __UVMA_INTERRUPT_COV_MODEL_SV__
 
 covergroup cg_interrupt(
-    string name
+    string name,
+    int unsigned num_irq_supported
     ) with function
     sample(uvma_interrupt_seq_item_c req_item);
 
     option.per_instance = 1;
     option.name = name;
 
-   cp_interrupt_req :   coverpoint req_item.interrupt_valid;
+   cp_interrupt_req : coverpoint req_item.interrupt_vector {
+      bins INTERRUPTS[] = {[0:$]} with (item inside {[0:(2**(num_irq_supported))-1]});
+   }
 
 endgroup: cg_interrupt
 
@@ -77,15 +80,16 @@ function void uvma_interrupt_cov_model_c::build_phase(uvm_phase phase);
 
    void'(uvm_config_db#(uvma_interrupt_cfg_c)::get(this, "", "cfg", cfg));
    if (cfg == null) begin
-      `uvm_fatal("CFG", "Configuration handle is null")
+      `uvm_fatal(get_type_name(), "Configuration handle is null")
    end
 
    void'(uvm_config_db#(uvma_interrupt_cntxt_c)::get(this, "", "cntxt", cntxt));
    if (cntxt == null) begin
-      `uvm_fatal("CNTXT", "Context handle is null")
+      `uvm_fatal(get_type_name(), "Context handle is null")
    end
    
-   interrupt_cg = new("interrupt_cg");
+   interrupt_cg = new("interrupt_cg",
+                      .num_irq_supported(cfg.num_irq_supported));
    
    seq_item_fifo = new("seq_item_fifo", this);
 
