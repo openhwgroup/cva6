@@ -92,4 +92,5 @@ python3 cva6.py \
         --c_tests "$src0" \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
         --iss_timeout=2000 \
+        --issrun_opts="+tb_performance_mode" \
         $DV_OPTS

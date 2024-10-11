@@ -29,5 +29,5 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 cd verif/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS
+python3 cva6.py --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS --issrun_opts="+tb_performance_mode" $DV_OPTS
 cd -
