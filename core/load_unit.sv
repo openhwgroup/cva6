@@ -24,61 +24,74 @@ module load_unit
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
+    parameter type scratchpad_req_i_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input logic clk_i,
+    input  logic                                          clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input logic rst_ni,
+    input  logic                                          rst_ni,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic flush_i,
+    input  logic                                          flush_i,
     // Load unit input port - TO_BE_COMPLETED
-    input logic valid_i,
+    input  logic                                          valid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input lsu_ctrl_t lsu_ctrl_i,
+    input  lsu_ctrl_t                                     lsu_ctrl_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic pop_ld_o,
+    output logic                                          pop_ld_o,
     // Load unit result is valid - TO_BE_COMPLETED
-    output logic valid_o,
+    output logic                                          valid_o,
     // Load transaction ID - TO_BE_COMPLETED
-    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
+    output logic              [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - TO_BE_COMPLETED
-    output logic [CVA6Cfg.XLEN-1:0] result_o,
+    output logic              [         CVA6Cfg.XLEN-1:0] result_o,
     // Load exception - TO_BE_COMPLETED
-    output exception_t ex_o,
+    output exception_t                                    ex_o,
     // Request address translation - TO_BE_COMPLETED
-    output logic translation_req_o,
+    output logic                                          translation_req_o,
     // Virtual address - TO_BE_COMPLETED
-    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
+    output logic              [         CVA6Cfg.VLEN-1:0] vaddr_o,
     // Transformed trap instruction out - TO_BE_COMPLETED
-    output logic [31:0] tinst_o,
+    output logic              [                     31:0] tinst_o,
     // Instruction is a hyp load store instruction - TO_BE_COMPLETED
-    output logic hs_ld_st_inst_o,
+    output logic                                          hs_ld_st_inst_o,
     // Hyp load store with execute permissions - TO_BE_COMPLETED
-    output logic hlvx_inst_o,
+    output logic                                          hlvx_inst_o,
     // Physical address - TO_BE_COMPLETED
-    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
+    input  logic              [         CVA6Cfg.PLEN-1:0] paddr_i,
     // Excepted which appears before load - TO_BE_COMPLETED
-    input exception_t ex_i,
+    input  exception_t                                    ex_i,
     // Data TLB hit - lsu
-    input logic dtlb_hit_i,
+    input  logic                                          dtlb_hit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
+    input  logic              [         CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output logic [11:0] page_offset_o,
+    output logic              [                     11:0] page_offset_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic page_offset_matches_i,
+    input  logic                                          page_offset_matches_i,
     // Store buffer is empty - TO_BE_COMPLETED
-    input logic store_buffer_empty_i,
+    input  logic                                          store_buffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input  logic              [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // DScratchpad interface
+    input  logic                                          dscr_ex_i,
+    input  dcache_req_o_t                                 dscr_req_port_i,
+    output scratchpad_req_i_t                             dscr_req_port_o,
+    // IScratchpad interface
+    input  logic                                          iscr_ex_i,
+    input  dcache_req_o_t                                 iscr_req_port_i,
+    output scratchpad_req_i_t                             iscr_req_port_o,
+    // Peripheral bus interface
+    input  logic                                          ahbperiph_ex_i,
+    input  dcache_req_o_t                                 ahbperiph_req_port_i,
+    output scratchpad_req_i_t                             ahbperiph_req_port_o,
     // Data cache request out - CACHES
-    input dcache_req_o_t req_port_i,
+    input  dcache_req_o_t                                 dcache_req_port_i,
     // Data cache request in - CACHES
-    output dcache_req_i_t req_port_o,
+    output dcache_req_i_t                                 dcache_req_port_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic dcache_wbuffer_not_ni_i
+    input  logic                                          dcache_wbuffer_not_ni_i
 );
   enum logic [3:0] {
     IDLE,
@@ -92,6 +105,15 @@ module load_unit
     WAIT_WB_EMPTY
   }
       state_d, state_q;
+
+  address_decoder_pkg::addr_dec_mode_e ld_select_mem;
+  logic dscr_req_ongoing, iscr_req_ongoing, ahbperiph_req_ongoing;
+  dcache_req_i_t req_port_o;
+  dcache_req_o_t req_port_i;
+  logic dscr_ex_confirmed;
+  logic iscr_ex_confirmed;
+  logic ahbperiph_ex_confirmed;
+  exception_t address_decoder_ex;
 
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
@@ -209,9 +231,11 @@ module load_unit
                                               CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
   assign req_port_o.data_id = ldbuf_windex;
+  // Not used
+  assign req_port_o.data_wuser = '0;
   // directly forward exception fields (valid bit is set below)
-  assign ex_o.cause = ex_i.cause;
-  assign ex_o.tval = ex_i.tval;
+  assign ex_o.cause = (ld_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) ? ex_i.cause : riscv::LD_ACCESS_FAULT;
+  assign ex_o.tval  = (ld_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) ? ex_i.tval  : riscv::XLEN'(paddr_i);
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
@@ -356,7 +380,7 @@ module load_unit
         // Exception
         // ----------
         // if we got an exception we need to kill the request immediately
-        if (ex_i.valid) begin
+        if (ex_i.valid | dscr_ex_confirmed | iscr_ex_confirmed | ahbperiph_ex_confirmed) begin
           req_port_o.kill_req = 1'b1;
         end
       end
@@ -540,6 +564,132 @@ module load_unit
     endcase
   end
   // end result mux fast
+
+  // ------------------
+  // Address Decoder
+  // ------------------
+  if (CVA6Cfg.DataScrPresent || CVA6Cfg.InstrScrPresent || CVA6Cfg.AHBPeriphPresent) begin : gen_address_decoder
+    address_decoder #(
+        .CVA6Cfg    (CVA6Cfg),
+        .exception_t(exception_t),
+        .ADDR_WIDTH (CVA6Cfg.VLEN)
+    ) i_address_decoder_load (
+        .clk_i           (clk_i),
+        .rst_ni          (rst_ni),
+        .addr_valid_i    (lsu_ctrl_i.valid),
+        .addr_i          (lsu_ctrl_i.vaddr),
+        .ahb_periph_en_i (1'b1),
+        .dscr_en_i       (1'b1),
+        .iscr_en_i       (1'b1),
+        .exception_code_i(riscv::LD_ACCESS_FAULT),
+        .ex_o            (address_decoder_ex),
+        .select_mem_o    (ld_select_mem)
+    );
+
+    if (CVA6Cfg.DataScrPresent) begin : gen_dscr_ex
+      assign dscr_ex_confirmed = dscr_ex_i & (ld_select_mem == address_decoder_pkg::DECODER_MODE_DSCR);
+    end else begin : gen_no_dscr_ex
+      assign dscr_ex_confirmed = '0;
+    end
+
+    if (CVA6Cfg.InstrScrPresent) begin : gen_iscr_ex
+      assign iscr_ex_confirmed = iscr_ex_i & (ld_select_mem == address_decoder_pkg::DECODER_MODE_ISCR);
+    end else begin : gen_no_iscr_ex
+      assign iscr_ex_confirmed = '0;
+    end
+
+    if (CVA6Cfg.AHBPeriphPresent) begin : gen_ahbperif_ex
+      assign ahbperiph_ex_confirmed = ahbperiph_ex_i & (ld_select_mem == address_decoder_pkg::DECODER_MODE_AHB_PERIPH);
+    end else begin : gen_no_ahbperif_ex
+      assign ahbperiph_ex_confirmed = '0;
+    end
+
+    always_comb begin : resp_dispatch
+      if (dscr_req_port_i.data_rvalid || dscr_req_port_i.data_gnt) begin
+        req_port_i = dscr_req_port_i;
+      end else if (iscr_req_port_i.data_rvalid || iscr_req_port_i.data_gnt) begin
+        req_port_i = iscr_req_port_i;
+      end else if (ahbperiph_req_port_i.data_rvalid || ahbperiph_req_port_i.data_gnt) begin
+        req_port_i = ahbperiph_req_port_i;
+      end else begin
+        req_port_i = dcache_req_port_i;
+      end
+    end
+
+    always_comb begin : req_dispatch
+      dscr_req_port_o      = '0;
+      iscr_req_port_o      = '0;
+      ahbperiph_req_port_o = '0;
+      dcache_req_port_o    = '0;
+
+      unique if (ld_select_mem == address_decoder_pkg::DECODER_MODE_DSCR) begin
+        dscr_req_port_o.vaddr      = lsu_ctrl_i.vaddr;
+        dscr_req_port_o.data_wdata = req_port_o.data_wdata;
+        dscr_req_port_o.data_req   = req_port_o.data_req;
+        dscr_req_port_o.data_we    = req_port_o.data_we;
+        dscr_req_port_o.data_be    = req_port_o.data_be;
+        dscr_req_port_o.data_size  = req_port_o.data_size;
+        dscr_req_port_o.data_id    = req_port_o.data_id;
+        dscr_req_port_o.kill_req   = req_port_o.kill_req;
+      end else if (ld_select_mem == address_decoder_pkg::DECODER_MODE_ISCR) begin
+        iscr_req_port_o.vaddr      = lsu_ctrl_i.vaddr;
+        iscr_req_port_o.data_wdata = req_port_o.data_wdata;
+        iscr_req_port_o.data_req   = req_port_o.data_req;
+        iscr_req_port_o.data_we    = req_port_o.data_we;
+        iscr_req_port_o.data_be    = req_port_o.data_be;
+        iscr_req_port_o.data_size  = req_port_o.data_size;
+        iscr_req_port_o.data_id    = req_port_o.data_id;
+        iscr_req_port_o.kill_req   = req_port_o.kill_req;
+      end else if (ld_select_mem == address_decoder_pkg::DECODER_MODE_AHB_PERIPH) begin
+        ahbperiph_req_port_o.vaddr      = lsu_ctrl_i.vaddr;
+        ahbperiph_req_port_o.data_wdata = req_port_o.data_wdata;
+        ahbperiph_req_port_o.data_req   = req_port_o.data_req;
+        ahbperiph_req_port_o.data_we    = req_port_o.data_we;
+        ahbperiph_req_port_o.data_be    = req_port_o.data_be;
+        ahbperiph_req_port_o.data_size  = req_port_o.data_size;
+        ahbperiph_req_port_o.data_id    = req_port_o.data_id;
+        ahbperiph_req_port_o.kill_req   = req_port_o.kill_req;
+      end else if (ld_select_mem == address_decoder_pkg::DECODER_MODE_CACHE) begin
+        dcache_req_port_o = req_port_o;
+      end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        iscr_req_ongoing <= 1'b0;
+        dscr_req_ongoing <= 1'b0;
+        ahbperiph_req_ongoing <= 1'b0;
+      end else begin
+        if (dscr_req_port_i.data_gnt) begin
+          dscr_req_ongoing <= 1'b1;
+        end else if (dscr_req_port_i.data_rvalid) begin
+          dscr_req_ongoing <= 1'b0;
+        end
+        if (iscr_req_port_i.data_gnt) begin
+          iscr_req_ongoing <= 1'b1;
+        end else if (iscr_req_port_i.data_rvalid) begin
+          iscr_req_ongoing <= 1'b0;
+        end
+        if (ahbperiph_req_port_i.data_gnt) begin
+          ahbperiph_req_ongoing <= 1'b1;
+        end else if (ahbperiph_req_port_i.data_rvalid) begin
+          ahbperiph_req_ongoing <= 1'b0;
+        end
+      end
+    end
+
+  end else begin : gen_no_address_decoder
+    assign address_decoder_ex = '0;
+    assign ld_select_mem = address_decoder_pkg::DECODER_MODE_CACHE;
+
+    assign req_port_i = dcache_req_port_i;
+    assign dcache_req_port_o = req_port_o;
+
+    assign dscr_ex_confirmed = '0;
+    assign iscr_ex_confirmed = '0;
+    assign ahbperiph_ex_confirmed = '0;
+  end
+
 
   ///////////////////////////////////////////////////////
   // assertions

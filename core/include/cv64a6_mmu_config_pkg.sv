@@ -101,7 +101,17 @@ package cva6_config_pkg;
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
-      DcacheIdWidth: int'(1)
+      DcacheIdWidth: int'(1),
+      DataScrPresent: bit'(0),
+      DataScrRegionAddrBase: 64'(0),
+      DataScrRegionLength: unsigned'(0),
+      InstrScrPresent: bit'(0),
+      InstrScrRegionAddrBase: 64'(0),
+      InstrScrRegionLength: unsigned'(0),
+      AHBPeriphPresent: bit'(0),
+      NrAHBPeriphRegionRules: unsigned'(0),
+      AHBPeriphRegionAddrBase: 1024'(0),
+      AHBPeriphRegionLength: 1024'(0)
   };
 
 endpackage
