@@ -105,7 +105,10 @@ function void uvme_interrupt_covg_c::build_phase(uvm_phase phase);
       `uvm_fatal("CFG", "Configuration handle is null")
    end
 
-   interrupt_cg = new("interrupt_cg");
+   if (!cfg.disable_all_csr_checks)
+      interrupt_cg = new("interrupt_cg");
+   else
+      `uvm_warning(get_type_name(), "Interrupt coverage will not be scored since config disable_all_csr_checks is true")
 
    mon_trn_fifo   = new("mon_trn_fifo" , this);
 
@@ -117,10 +120,11 @@ task uvme_interrupt_covg_c::run_phase(uvm_phase phase);
 
    `uvm_info(get_type_name(), "The Interrupt env coverage model is running", UVM_LOW);
 
-  forever begin
-      mon_trn_fifo.get(mon_trn);
-      interrupt_cg.sample(mon_trn.instr);
-    end
+   if (!cfg.disable_all_csr_checks)
+     forever begin
+         mon_trn_fifo.get(mon_trn);
+         interrupt_cg.sample(mon_trn.instr);
+     end
 
 endtask : run_phase
 

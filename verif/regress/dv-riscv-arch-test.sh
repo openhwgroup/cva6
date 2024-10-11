@@ -36,4 +36,4 @@ else
 fi
 
 cd verif/sim
-python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
+python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS --issrun_opts="+tb_performance_mode" $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
