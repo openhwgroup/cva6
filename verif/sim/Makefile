@@ -358,12 +358,18 @@ questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
 	  $(COMMON_RUN_UVM_FLAGS) \
+	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libyaml-cpp \
+	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libriscv \
+	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libfesvr \
+	  -sv_lib $(SPIKE_INSTALL_DIR)/lib/libdisasm \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \
 	  -c -do "run -all; " \
 	  -work $(VSIM_WORK_DIR) -t 1ns \
 	  -suppress vsim-8451 \
 	  -suppress 3829 -suppress vsim-8386\
 	  +permissive \
+	  +elf_file=$(elf) \
+	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
 	  -sv_seed 0 \
 	  $(cov-run-opt) $(issrun_opts) \
 	  +define+UNSUPPORTED_WITH+ \

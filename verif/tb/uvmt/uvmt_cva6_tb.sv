@@ -71,12 +71,56 @@ module uvmt_cva6_tb;
 
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
-   uvma_rvfi_instr_if #(
-     uvme_cva6_pkg::ILEN,
-     uvme_cva6_pkg::XLEN
-   ) rvfi_instr_if [RVFI_NRET-1:0] ();
 
-    uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)        rvfi_csr_if [RVFI_NRET-1:0]();
+   for (genvar i = 0; i < RVFI_NRET; i++) begin : rvfi_instr_if
+      uvma_rvfi_instr_if #(
+        uvme_cva6_pkg::ILEN,
+        uvme_cva6_pkg::XLEN
+      ) inst (
+      .clk            (clknrst_if.clk),
+      .reset_n        (clknrst_if.reset_n),
+      .rvfi_valid     (rvfi_if.rvfi_o[i].valid),
+      .rvfi_order     (rvfi_if.rvfi_o[i].order),
+      .rvfi_insn      (rvfi_if.rvfi_o[i].insn),
+      .rvfi_trap      ((rvfi_if.rvfi_o[i].trap | (rvfi_if.rvfi_o[i].cause << 1))),
+      .rvfi_halt      (rvfi_if.rvfi_o[i].halt),
+      .rvfi_intr      (rvfi_if.rvfi_o[i].intr),
+      .rvfi_mode      (rvfi_if.rvfi_o[i].mode),
+      .rvfi_ixl       (rvfi_if.rvfi_o[i].ixl),
+      .rvfi_pc_rdata  (rvfi_if.rvfi_o[i].pc_rdata),
+      .rvfi_pc_wdata  (rvfi_if.rvfi_o[i].pc_wdata),
+      .rvfi_rs1_addr  (rvfi_if.rvfi_o[i].rs1_addr),
+      .rvfi_rs1_rdata (rvfi_if.rvfi_o[i].rs1_rdata),
+      .rvfi_rs2_addr  (rvfi_if.rvfi_o[i].rs2_addr),
+      .rvfi_rs2_rdata (rvfi_if.rvfi_o[i].rs2_rdata),
+      .rvfi_rd1_addr  (rvfi_if.rvfi_o[i].rd_addr),
+      .rvfi_rd1_wdata (rvfi_if.rvfi_o[i].rd_wdata),
+      .rvfi_mem_addr  (rvfi_if.rvfi_o[i].mem_addr),
+      .rvfi_mem_rdata (rvfi_if.rvfi_o[i].mem_rdata),
+      .rvfi_mem_rmask (rvfi_if.rvfi_o[i].mem_rmask),
+      .rvfi_mem_wdata (rvfi_if.rvfi_o[i].mem_wdata),
+      .rvfi_mem_wmask (rvfi_if.rvfi_o[i].mem_wmask),
+
+      .rvfi_rd2_wdata (                           ),
+      .rvfi_rd2_addr  (                           ),
+      .rvfi_rs3_rdata (                           ),
+      .rvfi_rs3_addr  (                           ),
+      .rvfi_nmip      (                           ),
+      .rvfi_dbg_mode  (                           ),
+      .rvfi_dbg       (                           )
+      );
+   end
+
+   for (genvar i = 0; i < RVFI_NRET; i++) begin  : rvfi_csr_if
+      uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)   rvfi_csr_if_inst (
+        .clk            (clknrst_if.clk),
+        .reset_n        (clknrst_if.reset_n),
+        .rvfi_csr_rmask (rvfi_if.rvfi_o[i].mem_rmask),
+        .rvfi_csr_wmask (rvfi_if.rvfi_o[i].mem_wmask),
+        .rvfi_csr_rdata (rvfi_if.rvfi_o[i].mem_rdata),
+        .rvfi_csr_wdata (rvfi_if.rvfi_o[i].mem_wdata)
+      );
+   end
 
     uvmt_default_inputs_intf         default_inputs_vif();
 
@@ -125,32 +169,6 @@ module uvmt_cva6_tb;
                     .rvfi_o(rvfi_if.rvfi_o),
                     .rvfi_csr_o(rvfi_if.rvfi_csr_o)
                     );
-
-   for (genvar i = 0; i < RVFI_NRET; i++) begin
-      assign  rvfi_instr_if[i].clk            = clknrst_if.clk;
-      assign  rvfi_instr_if[i].reset_n        = clknrst_if.reset_n;
-      assign  rvfi_instr_if[i].rvfi_valid     = rvfi_if.rvfi_o[i].valid;
-      assign  rvfi_instr_if[i].rvfi_order     = rvfi_if.rvfi_o[i].order;
-      assign  rvfi_instr_if[i].rvfi_insn      = rvfi_if.rvfi_o[i].insn;
-      assign  rvfi_instr_if[i].rvfi_trap      = (rvfi_if.rvfi_o[i].trap | (rvfi_if.rvfi_o[i].cause << 1));
-      assign  rvfi_instr_if[i].rvfi_halt      = rvfi_if.rvfi_o[i].halt;
-      assign  rvfi_instr_if[i].rvfi_intr      = rvfi_if.rvfi_o[i].intr;
-      assign  rvfi_instr_if[i].rvfi_mode      = rvfi_if.rvfi_o[i].mode;
-      assign  rvfi_instr_if[i].rvfi_ixl       = rvfi_if.rvfi_o[i].ixl;
-      assign  rvfi_instr_if[i].rvfi_pc_rdata  = rvfi_if.rvfi_o[i].pc_rdata;
-      assign  rvfi_instr_if[i].rvfi_pc_wdata  = rvfi_if.rvfi_o[i].pc_wdata;
-      assign  rvfi_instr_if[i].rvfi_rs1_addr  = rvfi_if.rvfi_o[i].rs1_addr;
-      assign  rvfi_instr_if[i].rvfi_rs1_rdata = rvfi_if.rvfi_o[i].rs1_rdata;
-      assign  rvfi_instr_if[i].rvfi_rs2_addr  = rvfi_if.rvfi_o[i].rs2_addr;
-      assign  rvfi_instr_if[i].rvfi_rs2_rdata = rvfi_if.rvfi_o[i].rs2_rdata;
-      assign  rvfi_instr_if[i].rvfi_rd1_addr  = rvfi_if.rvfi_o[i].rd_addr;
-      assign  rvfi_instr_if[i].rvfi_rd1_wdata = rvfi_if.rvfi_o[i].rd_wdata;
-      assign  rvfi_instr_if[i].rvfi_mem_addr  = rvfi_if.rvfi_o[i].mem_addr;
-      assign  rvfi_instr_if[i].rvfi_mem_rdata = rvfi_if.rvfi_o[i].mem_rdata;
-      assign  rvfi_instr_if[i].rvfi_mem_rmask = rvfi_if.rvfi_o[i].mem_rmask;
-      assign  rvfi_instr_if[i].rvfi_mem_wdata = rvfi_if.rvfi_o[i].mem_wdata;
-      assign  rvfi_instr_if[i].rvfi_mem_wmask = rvfi_if.rvfi_o[i].mem_wmask;
-   end
 
    `RVFI_CSR_ASSIGN(fflags)
    `RVFI_CSR_ASSIGN(frm)
@@ -232,7 +250,7 @@ module uvmt_cva6_tb;
 
    for (genvar i = 0; i < RVFI_NRET; i++) begin
       initial  begin
-         uvm_config_db#(virtual uvma_rvfi_instr_if )::set(null,"*", $sformatf("instr_vif%0d", i), rvfi_instr_if[i]);
+         uvm_config_db#(virtual uvma_rvfi_instr_if )::set(null,"*", $sformatf("instr_vif%0d", i), rvfi_instr_if[i].inst);
 
          // set CSRs interface
          `RVFI_CSR_UVM_CONFIG_DB_SET(fflags, i)
@@ -307,43 +325,43 @@ module uvmt_cva6_tb;
 
          //TO-DO - Not yet supported
          for (int j = 3; j < 32; j++) begin
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmevent%0d_vif%0d", j, i),         rvfi_csr_if[i]);
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmcounter%0d_vif%0d", j, i),       rvfi_csr_if[i]);
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmcounter%0dh_vif%0d", j, i),      rvfi_csr_if[i]);
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_hpmcounter%0d_vif%0d", j, i),        rvfi_csr_if[i]);
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_hpmcounter%0dh_vif%0d", j, i),       rvfi_csr_if[i]);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmevent%0d_vif%0d", j, i),         rvfi_csr_if[i].rvfi_csr_if_inst);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmcounter%0d_vif%0d", j, i),       rvfi_csr_if[i].rvfi_csr_if_inst);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mhpmcounter%0dh_vif%0d", j, i),      rvfi_csr_if[i].rvfi_csr_if_inst);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_hpmcounter%0d_vif%0d", j, i),        rvfi_csr_if[i].rvfi_csr_if_inst);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_hpmcounter%0dh_vif%0d", j, i),       rvfi_csr_if[i].rvfi_csr_if_inst);
          end
          for (int j = 4; j < 16; j++) begin
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_pmpcfg%0d_vif%0d", j, i),            rvfi_csr_if[i]);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_pmpcfg%0d_vif%0d", j, i),            rvfi_csr_if[i].rvfi_csr_if_inst);
          end
          for (int j = 16; j < 64; j++) begin
-            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_pmpaddr%0d_vif%0d", j, i),            rvfi_csr_if[i]);
+            uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_pmpaddr%0d_vif%0d", j, i),            rvfi_csr_if[i].rvfi_csr_if_inst);
          end
 
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mvendorid_vif%0d", i),                  rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_marchid_vif%0d", i),                    rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_ustatus_vif%0d", i),                    rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_utvec_vif%0d", i),                      rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_utval_vif%0d", i),                      rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uepc_vif%0d", i),                       rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_ucause_vif%0d", i),                     rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uip_vif%0d", i),                        rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uie_vif%0d", i),                        rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mimpid_vif%0d", i),                     rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mcontext_vif%0d", i),                   rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uscratch_vif%0d", i),                   rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_scontext_vif%0d", i),                   rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tselect_vif%0d", i),                    rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata1_vif%0d", i),                     rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata2_vif%0d", i),                     rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata3_vif%0d", i),                     rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tinfo_vif%0d", i),                      rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tcontrol_vif%0d", i),                   rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mconfigptr_vif%0d", i),                 rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_time_vif%0d", i),                       rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_timeh_vif%0d", i),                      rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_sedeleg_vif%0d", i),                    rvfi_csr_if[i]);
-         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_sideleg_vif%0d", i),                    rvfi_csr_if[i]);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mvendorid_vif%0d", i),                  rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_marchid_vif%0d", i),                    rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_ustatus_vif%0d", i),                    rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_utvec_vif%0d", i),                      rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_utval_vif%0d", i),                      rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uepc_vif%0d", i),                       rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_ucause_vif%0d", i),                     rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uip_vif%0d", i),                        rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uie_vif%0d", i),                        rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mimpid_vif%0d", i),                     rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mcontext_vif%0d", i),                   rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_uscratch_vif%0d", i),                   rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_scontext_vif%0d", i),                   rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tselect_vif%0d", i),                    rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata1_vif%0d", i),                     rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata2_vif%0d", i),                     rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tdata3_vif%0d", i),                     rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tinfo_vif%0d", i),                      rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_tcontrol_vif%0d", i),                   rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_mconfigptr_vif%0d", i),                 rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_time_vif%0d", i),                       rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_timeh_vif%0d", i),                      rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_sedeleg_vif%0d", i),                    rvfi_csr_if[i].rvfi_csr_if_inst);
+         uvm_config_db#(virtual uvma_rvfi_csr_if )::set(null,"*", $sformatf("csr_sideleg_vif%0d", i),                    rvfi_csr_if[i].rvfi_csr_if_inst);
     end
    end
    /**

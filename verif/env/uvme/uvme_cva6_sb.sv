@@ -323,7 +323,7 @@ endfunction : check_mepc
 function bit [XLEN:0] uvme_cva6_sb_c::check_mcycle_h(uvma_isacov_instr_c instr, uvma_isacov_instr_c instr_prev, int cycle_count);
 
    // Check mcycle value after a CSR read
-   if (instr_prev == null) return;
+   if (instr_prev == null) return 32'd0;
 
    write_in_mcycle  = (instr_prev.is_csr_write() && instr_prev.csr_val == 12'hb00) ? 1 : 0;
    if (cfg.xlen == 32) begin
