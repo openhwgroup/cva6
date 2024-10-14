@@ -172,18 +172,22 @@ gen_smoke:
     - bash verif/regress/smoke-gen_tests.sh
     - !reference [.simu_after_script]
 
-coremark:
+smoke-bench:
   extends:
-    - .regress_test
+    - .fe_smoke_test
   variables:
-    DASHBOARD_JOB_TITLE: "CoreMark"
+    DASHBOARD_JOB_TITLE: "smoke-bench"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+  parallel:
+    matrix:
+      - BENCH: "dhrystone"
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
-    - bash verif/regress/coremark.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --coremark verif/sim/out_*/vcs-uvm_sim/core_main.*.log
+    - bash verif/regress/"$BENCH"_smoke.sh --no-print
+    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
 hwconfig:
   extends:
@@ -309,18 +313,32 @@ fpga-build:
     - when: manual
       allow_failure: true
 
-dhrystone:
+benchmarks:
   extends:
-    - .fe_smoke_test
+    - .regress_test
   variables:
-    DASHBOARD_JOB_TITLE: "Dhrystone"
+    DASHBOARD_JOB_TITLE: "benchmarks"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+  parallel:
+    matrix:
+      - BENCH: "dhrystone"
+        ISSUE: "single"
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
+      - BENCH: "dhrystone"
+        ISSUE: "dual"
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
+      - BENCH: "coremark"
+        ISSUE: "single"
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
+      - BENCH: "coremark"
+        ISSUE: "dual"
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
-    - bash verif/regress/dhrystone.sh
-    - python3 .gitlab-ci/scripts/report_benchmark.py --dhrystone verif/sim/out_*/vcs-uvm_sim/dhrystone_main.*.log
+    - bash verif/regress/"$BENCH".sh
+    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
 riscv_arch_test:
   extends:

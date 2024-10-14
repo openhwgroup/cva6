@@ -223,7 +223,8 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
       csr_reg_predictor.map     = csr_reg_block.default_map;
       csr_reg_predictor.adapter = csr_reg_adapter;
       csr_reg_block.default_map.set_auto_predict(0);
-      isacov_agent.monitor.ap.connect(csr_reg_predictor.bus_in);
+      if (cfg.cov_model_enabled)
+         isacov_agent.monitor.ap.connect(csr_reg_predictor.bus_in);
    end
 
 endfunction: connect_phase
@@ -289,6 +290,9 @@ function void uvme_cva6_env_c::create_env_components();
 
    if (cfg.scoreboard_enabled) begin
       predictor = uvme_cva6_prd_c::type_id::create("predictor", this);
+   end
+
+   if (cfg.scoreboard_enabled || cfg.tandem_enabled) begin
       sb        = uvme_cva6_sb_c ::type_id::create("sb"       , this);
    end
 
