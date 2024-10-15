@@ -525,7 +525,7 @@ The file is expected to contain a valid parameter tree.  Parameters which are no
 
 [,sh]
 ----
---param=<NAME>:<TYPE>:<VALUE>
+--param=<NAME>:<TYPE>=<VALUE>
 ----
 
 Set parameter `<NAME>` of type `<TYPE>` to value `<VALUE>`.
