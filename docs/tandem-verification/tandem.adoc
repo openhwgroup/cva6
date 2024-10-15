@@ -29,11 +29,11 @@ RVFI events are collected from both RTL and reference model side, and the RVFI s
 
 The reference model is a slave to the RTL model; it performs an execution step only when the RTL model has completed the current step.  This enables partial verification of behaviors involving values that depend on micro-architecture features, e.g., clock cycle counts.  The RTL provides the actual values of such registers to the reference model; these values are trusted by the reference model and hence, the reads of CSR registers yield the same results in the reference model as they do in the RTL simulation.
 
-The RTL simulation environment provides the testbench and the required abstractions of platform-level resources and behaviors.  To match the features of the RTL environment, the reference model needs to include a basic platform abstraction that at the very minimum contains a memory model.  For this reason Spike is a prime choice as it contains a superset of the minimum platform needed.
+The RTL simulation environment provides the testbench and the required abstractions of platform-level resources and behaviors.  To match the features of the RTL environment, the reference model needs to include a basic platform abstraction that at the very minimum contains a memory model.  For this reason Spike is a prime choice as it contains a superset of the minimum platform needed, cf. xref:fig-spike-platform[xrefstyle=short].
 
 .High-level view of the platform supported by Spike
 [#fig-spike-platform]
-image::figures/Spike-simulation-scope.svg[High-level view of Spike platform,800,opts=inline]
+image::figures/Spike-simulation-scope.svg[High-level view of Spike platform,1024]
 
 In order to ease the integration with RTL simulators, the tandem infrastructure does not depend on the availability of a fully-featured UVM implementation.  Instead, it uses a limited subset of UVM to provide a uniform SystemVerilog interface across all supported RTL simulators, whether commercial or open-source.
 
@@ -43,7 +43,7 @@ The principle of operation of CVA6 tandem verification is shown in xref:fig-over
 
 .Overall tandem verification flow
 [#fig-overall-tandem-flow]
-image::figures/overall-tandem-architecture.svg[Tandem verification flow,800,opts=inline]
+image::figures/overall-tandem-architecture.svg[Tandem verification flow,1024]
 
 In the CVA6 RTL implementation multiple commits or exceptions can occur in a single cycle.  If multiple simultaneous events are reported by RVFI, the corresponding entries in the RFVI interface are always ordered in the sequential execution order.   For each commit or exception reported by the RVFI interface of the RTL model, the tandem control loop performs a single step of the reference model and compares the RVFI state between the current RTL-side RVFI entry and the reference model RVFI output.  Per-commit entries in the RFVI interface are ordered in the sequential execution order,
 
@@ -89,7 +89,7 @@ In order to provide fine-grained control over the configuration of the simulated
 ** configuration files (Yaml)
 ** DPI API
 ** C++ API
-** additional command-line arguments
+** additional command-line options
 * ability to set platform-related values (memory map, boot addresses)
 * ability to set implementation-defined values (number of PMP regions in total, vendor ID, architecture ID, implementation ID, ...)
 * extended CSR control:
@@ -126,7 +126,7 @@ The standard build procedure of Spike supplied with the CVA6 project (https://gi
 
 Building Spike with tandem extensions requires the availability of `CMake` in version 3.16 or higher.  The `yaml-cpp` source package (https://github.com/jbeder/yaml-cpp) that is used to parse and manipulate Yaml configurations is a submodule of Spike and will be downloaded when performing a recursive clone or update of the CVA6 repository.
 
-If a rebuild is required in an existing setup, it is necessary to either select a different installation directory for Spike or to remove the current installation directory.  It is also necessary to remove Spike build directories `verif/core-v-verif/vendor/riscv/riscv-isa-sim/build` (Spike proper) and `verif/core-v-verif/vendor/riscv/riscv-isa-sim/yaml-cpp/build` (`yaml-cpp` library).
+If a rebuild is required in an existing setup, it is necessary to either select a different installation directory for Spike or to remove the current installation directory of Spike.  It is also necessary to remove Spike build directories `verif/core-v-verif/vendor/riscv/riscv-isa-sim/build` (Spike proper) and `verif/core-v-verif/vendor/riscv/riscv-isa-sim/yaml-cpp/build` (`yaml-cpp` library).
 
 ==== Understanding the Spike configuration file
 
@@ -168,7 +168,7 @@ The configuration fragment above instructs the reference model that:
 
 ==== Running simulations in tandem mode
 
-Currently, tandem simulations are supported out-of-the-box only for CVA6 target `cv32a65x` using RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations of target `cv32a65x` with Verilator using the `veri-testharness` configuration require the availability of Verilator v5.016 or higher.
+Currently, tandem simulations are supported out-of-the-box only for CVA6 target `cv32a65x` using RTL simulator configurations `vcs-uvm` (recommended), `vcs-testharness`, `questa-uvm` and `questa-testharness`.  Tandem simulations of target `cv32a65x` with Verilator using the `veri-testharness` configuration require Verilator v5.016 or higher.
 
 Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to a non-empty value prior to invoking any of the test scripts located in the `verif/regress` directory of the CVA6 source tree.
 
@@ -178,18 +178,17 @@ Tandem verification is enabled by setting environment variable `SPIKE_TANDEM` to
 export SPIKE_TANDEM=1 ; bash verif/regress/dv-csr-embedded-tests.sh
 ----
 
-The output of tandem simulation is sent to the log file of the RTL simulator, by default `verif/sim/out_<date>/<sim-config>_sim/<test-name>.<target>.log.iss`.
+The output of tandem simulation is sent to the log file of the RTL simulator, by default `verif/sim/out_<date>/<simconfig>_sim/<testname>.<target>.log.iss`.
 
-A machine-processable Yaml report file summarizing the discrepancies detected during the simulation is stored in a separate report file, by default `verif/sim/out_<date>/<sim-config>_sim/<test-name>.<target>.log.yaml`.  It contains the configuration of the simulated design, the number of mismatches that were found (if any) and a list of entries describing the successive mismatches.
+A machine-processable Yaml report file summarizing the mismatches detected during the simulation is stored in a separate report file, by default `verif/sim/out_<date>/<simconfig>_sim/<testname>.<target>.log.yaml`.  It contains the configuration of the simulated design, the number of mismatches that were found (if any) and a list of entries describing the successive mismatches.
 
 === How to analyze tandem verification results
 
-To simplify failure analysis, the tandem scoreboard reports any discrepancies between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosioty level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
+To simplify failure analysis, the RVFI state comparator reports mismatches between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosioty level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
 
 A scoreboard discrepancy is represented by a line describing the nature of the error, followed by two lines that provide a summary view of the RVFI state of the reference model and the RTL core.
 
 **Example:**
-+
 [,text]
 ----
 CSR 304  Mismatch   [REF]: 0x0                [CORE]: 0x8
@@ -197,17 +196,17 @@ UVM_INFO @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(206) reporter [spike_tan
 UVM_ERROR @ 45992.000 ns : uvmc_rvfi_scoreboard_utils.sv(211) reporter [spike_tandem] 45992.000 ns | RVFI |        0 |      0 | 800036ac | 30419073 | M | x3  | 00000008 | x0  | 0000000000000000 | csrrw   zero, mie, gp <- CORE
 ----
 
-The first line indicates that upon instruction commit the content of the CSR with hexadecimal address `304`, i.e., `mie` ("Machine Interrupt Enable") differs between the reference model (value `0x0`) and the RTL core model (value `0x8`).  The following two lines provide details about the current instruction in both models:
+The first line indicates that for current instruction commit the content of the CSR with hexadecimal address `304`, i.e., `mie` ("Machine Interrupt Enable") differs between the reference model (value `0x0`) and the RTL core model (value `0x8`).  The next two lines provide details about the current instruction in both models:
 
-* the current time stamp (`45992.000 ns`),
-* the value of PC (`0x800036ac`),
-* the encoding of the instruction (hex `30419073`),
-* the current privilege mode (`M`),
-* the values of general-purpose register operands of the instruction (`x3` or `gp`: `0x00000008`, `x0`: `0x00000000`).
+* the current time stamp: `45992.000 ns`,
+* the value of PC: `0x800036ac`,
+* the encoding of the instruction: hex `30419073`,
+* the current privilege mode: `M` (Machine),
+* the values of general-purpose register operands of the instruction: `x3` (`gp` in RISC-V ABI) equals `0x00000008`, `x0` equals `0x00000000`.
 
 Since the values stored into the `mie` CSR differ whereas the instruction executed is the same including the values of its input operands, the discrepancy can only come from the write behavior of the `mie` CSR.  In this specific case, bit 3 of the `mie` register is specified as "read-only zero" in the reference model, yet the RTL implementation accepts writes into this specific bit of `mie`.
 
-This following is the corresponding fragment from the Yaml report, including the configuration and status summary of the simulation run:
+The following is the corresponding fragment from the Yaml report, including the configuration and status summary of the simulation run:
 
 [,yaml]
 ----

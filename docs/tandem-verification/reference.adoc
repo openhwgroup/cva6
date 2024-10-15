@@ -510,7 +510,7 @@ Command-line options added to Spike serve a dual purpose:
 * run Spike in standalone mode using the same configurations as in tandem mode;
 * (development aid) test the effect of individual parameters without editing configuration files.
 
-==== Load parameters from a configuration file
+==== Load Spike parameters from a configuration file
 
 [,sh]
 ----
@@ -521,7 +521,7 @@ Load the parameter tree from Yaml file named `<NAME>`.
 
 The file is expected to contain a valid parameter tree.  Parameters which are not recognized will be silently ignored.
 
-==== Set individual parameter
+==== Set a single Spike parameter
 
 [,sh]
 ----
