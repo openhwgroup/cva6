@@ -534,6 +534,7 @@ simu-gate:
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
     DV_TARGET: cv32a65x
     TARGET: $DV_TARGET
+    SPIKE_TANDEM: 1
   script:
     - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
