@@ -99,7 +99,7 @@ task uvma_interrupt_drv_c::run_phase(uvm_phase phase);
    cntxt.interrupt_vif.irq <= 'h0;
 
    if(!cfg.enable_interrupt) begin
-      `uvm_warning(get_type_name(), "Driving Interrupt reqeust is disabled");
+      `uvm_info(get_type_name(), "Driving Interrupt request is disabled", UVM_NONE);
       return;
    end
 

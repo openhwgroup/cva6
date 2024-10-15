@@ -33,6 +33,9 @@ class uvma_interrupt_cfg_c extends uvm_object;
    // enbale/disable clear mechanism
    rand bit                      enable_clear_irq;
 
+   // Number of cycle before Timeout if the agent failed to write into irq_add
+   rand int unsigned             irq_timeout;
+
    `uvm_object_utils_begin(uvma_interrupt_cfg_c)
       `uvm_field_int (                         enabled           , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active         , UVM_DEFAULT)   
@@ -43,6 +46,7 @@ class uvma_interrupt_cfg_c extends uvm_object;
       `uvm_field_int (                         num_irq_supported  , UVM_DEFAULT)
       `uvm_field_int (                         irq_addr           , UVM_DEFAULT)
       `uvm_field_int (                         enable_clear_irq   , UVM_DEFAULT)
+      `uvm_field_int (                         irq_timeout        , UVM_DEFAULT)
       `uvm_object_utils_end
    
 
@@ -58,6 +62,7 @@ class uvma_interrupt_cfg_c extends uvm_object;
       soft enable_interrupt  == 0;
       soft num_irq_supported == 2;
       soft enable_clear_irq  == 1;
+      soft irq_timeout       == 10_000;
    }
 
    /**

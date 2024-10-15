@@ -17,6 +17,8 @@ class uvma_interrupt_seq_c extends uvma_interrupt_base_seq_c;
    `uvm_declare_p_sequencer(uvma_interrupt_sqr_c)
 
    bit [XLEN-1:0] IRQ_ACK_VALUE = 'h0;
+   int unsigned   IRQ_TIMEOUT;
+
    /**
     * Default constructor.
     */
@@ -30,12 +32,20 @@ endclass : uvma_interrupt_seq_c
 
 task automatic uvma_interrupt_seq_c::clear_irq_channel(int channel, uvma_interrupt_seq_item_c  req_item);
 
+   IRQ_TIMEOUT = cfg.irq_timeout;
    while(1) begin
       IRQ_ACK_VALUE = cntxt.mem.read(cfg.irq_addr);
       if (IRQ_ACK_VALUE[channel]) begin
         req_item.interrupt_vector[channel] = 1'h0;
         `uvm_info(get_type_name(), $sformatf("Clear interrupt channel N-%2d -> mem = 0x%x",channel, IRQ_ACK_VALUE), UVM_NONE);
+        IRQ_TIMEOUT = cfg.irq_timeout;
         break;
+      end
+      else begin
+        if (IRQ_TIMEOUT == 0) begin
+          `uvm_fatal(get_type_name(), $sformatf("Timeout : failed to write into irq_add to clear pending interrupts"));
+        end
+        IRQ_TIMEOUT = IRQ_TIMEOUT - 1;
       end
       @(posedge cntxt.interrupt_vif.clk);
    end
@@ -89,7 +99,7 @@ task uvma_interrupt_seq_c::body();
       wait fork;
   end
   else begin
-     `uvm_warning(get_type_name(), $sformatf("Interrupts are disabled"));
+     `uvm_info(get_type_name(), $sformatf("Interrupts are disabled"), UVM_NONE);
   end
 
 endtask : body
