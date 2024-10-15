@@ -39,7 +39,11 @@ In order to ease the integration with RTL simulators, the tandem infrastructure 
 
 ==== Operation
 
-The execution of the tandem simulation is controlled by the main RTL simulation loop that is managed either by the "run" phase of the UVM testbench, or explicitly in a test harness.  The RTL simulation runs through successive clock cycles until the RVFI state of the RTL model is marked as valid, indicating an instruction commit or an exception in the current RTL clock cycle.
+The principle of operation of CVA6 tandem verification is shown in xref:fig-overall-tandem-flow.  The execution of the tandem simulation is controlled by the main RTL simulation loop that is managed either by the "run" phase of the UVM testbench, or explicitly in a test harness.  The RTL simulation runs through successive clock cycles until the RVFI state of the RTL model is marked as valid, indicating an instruction commit or an exception in the current RTL clock cycle.
+
+.Overall tandem verification flow
+[#fig-overall-tandem-flow]
+image::figures/overall-tandem-architecture.svg[Tandem verification flow,800,opts=inline]
 
 In the CVA6 RTL implementation multiple commits or exceptions can occur in a single cycle.  If multiple simultaneous events are reported by RVFI, the corresponding entries in the RFVI interface are always ordered in the sequential execution order.   For each commit or exception reported by the RVFI interface of the RTL model, the tandem control loop performs a single step of the reference model and compares the RVFI state between the current RTL-side RVFI entry and the reference model RVFI output.  Per-commit entries in the RFVI interface are ordered in the sequential execution order,
 
