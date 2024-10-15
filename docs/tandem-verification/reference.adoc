@@ -501,7 +501,7 @@ Input args:
 Return value: NONE.
 
 
-=== C++ Programming Interface
+//=== C++ Programming Interface
 
 === Command-line interface
 
