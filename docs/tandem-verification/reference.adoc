@@ -514,7 +514,7 @@ Command-line options added to Spike serve a dual purpose:
 
 [,sh]
 ----
---parm-file=<NAME>
+--parm-file <NAME>
 ----
 
 Load the parameter tree from Yaml file named `<NAME>`.
@@ -525,7 +525,7 @@ The file is expected to contain a valid parameter tree.  Parameters which are no
 
 [,sh]
 ----
---param=<NAME>:<TYPE>=<VALUE>
+--param <NAME>:<TYPE>=<VALUE>
 ----
 
 Set parameter `<NAME>` of type `<TYPE>` to value `<VALUE>`.
