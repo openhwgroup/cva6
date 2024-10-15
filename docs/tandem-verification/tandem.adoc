@@ -47,11 +47,11 @@ image::figures/overall-tandem-architecture.svg[Tandem verification flow,800,opts
 
 In the CVA6 RTL implementation multiple commits or exceptions can occur in a single cycle.  If multiple simultaneous events are reported by RVFI, the corresponding entries in the RFVI interface are always ordered in the sequential execution order.   For each commit or exception reported by the RVFI interface of the RTL model, the tandem control loop performs a single step of the reference model and compares the RVFI state between the current RTL-side RVFI entry and the reference model RVFI output.  Per-commit entries in the RFVI interface are ordered in the sequential execution order,
 
-Interrupt and debug events detected by the RTL model are injected into the reference model at the beginning of each step. The values of microarchitecture-dependent CSRs such as clock cycle counters (`cycle`/`cycleh`, `mcycle`/`mcycleh`) are injected at the end of the reference model step since the RTL values of these registers correspond to RTL state *after* the corresponding RTL event.
+Interrupt and debug events detected by the RTL model are injected into the reference model at the beginning of each step. Likewise, the most recent *previously* committed values of microarchitecture-dependent CSRs such as clock cycle counters (`cycle`/`cycleh`, `mcycle`/`mcycleh`) are injected before the reference model step since the RTL values of these registers already correspond to RTL state *after* the corresponding RTL event.
 
-.Stages of a single reference model step
-[#fig-refmodel-step]
-image::figures/refmodel-step-stages.svg[Stages of a reference model step,800,opts=inline]
+//.Stages of a single reference model step
+//[#fig-refmodel-step]
+//image::figures/refmodel-step-stages.svg[Stages of a reference model step,800,opts=inline]
 
 If a discrepancy in RFVI state is detected by the scoreboard, an appropriate human-readable error output is generated and the error count of the simulation is incremented.  The tandem simulation stops once a preset number of errors is encountered.  By controlling the error limit is it possible to accommodate transient differences between the RTL and reference model states.  A typical example of transient difference occurs when two instructions are committed in a single cycle by a superscalar RTL implementation, causing the counter of retired instructions `minstret` to be atomically incremented by two whereas the reference model will always commit instruction one by one, thus incrementing `minstret` by one each time.
 
