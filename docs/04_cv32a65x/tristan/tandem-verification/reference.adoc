@@ -1,22 +1,22 @@
-== Programming reference
+== Programming Reference Manual
 
-=== Introduction to reference model parameters
+=== Configuration parameter names and scopes
 
 Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierachical structure.  Supported values of `PREFIX` are:
 
 * `/top`: parameter values apply to the complete platform (which may consist of several cores.)
 * `/top/cores`: parameter values apply to all harts, and can be overridden on a core-by-core basis using core-specific values.
-* `/top/core/<number>`: parameter values apply only to the core with ID `<number>`.
+* `/top/core/<hartid>`: parameter values apply only to the core with ID `<number>`.
 
 Parameters are explicitly typed.  Three parameter types are supported:
 
-* `bool`: Boolean type with two values: `True` (non-zero, by convention noted `1`) and `False` (zero).
+* `bool`: Boolean type with two values: `True` (or integer `1`) and `False` (or integer `0`).
 * `uint64_t`: A 64-bit unsigned integer, represented using any of the formats supported in the given context (SystemVerilog or C/C++).
 * `string`: A string, appropriately quoted depending on use context (SystemVerilog, C++ source code or Spike command line in Unix shell).
 
 Parameter names are not constrained by the C/C++/SystemVerilog identifier syntax.  However, they cannot contain spaces, forward slash (`/`), backslash (`\`) nor double-quote (`"`) characters.
 
-Some parameters are only meaningful in specific scopes: platform (`/top`), or core(s) (`/top/cores/` or `/top/core/<hartid>/`).
+Some parameters are only meaningful in specific scopes: either platform (`/top/`), or core (`/top/cores/` or `/top/core/<hartid>/`).
 
 === Parameter index
 
@@ -270,7 +270,6 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 The DPI interface is implemented in file `vendor/riscv/riscv-isa-sim/riscv/riscv_dpi.cc` in `core-v-verif` repository (https://github.com/openhwgroup/core-v-verif/).
 
 The shared library providing the implementation of the DPI functions to RTL simulators is named `libriscv.so`.  It is built during Spike build and is installed in the `lib` subdirectory of Spike installation directory, typically `<CVA6_ROOT>/tools/spike/lib`.
-
 
 
 ==== Create a new instance of Spike extended with DPI interfaces suitable for tandem operation

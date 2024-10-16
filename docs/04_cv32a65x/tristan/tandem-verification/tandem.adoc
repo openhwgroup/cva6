@@ -1,9 +1,14 @@
-== Tandem-based verification
+= Tandem-based verification
 :toc:
 
 This document describes the OpenHW Group functional verification environment based on lockstep ("tandem") simulation of a RISC-V reference model and an RTL implementation of a RISC-V core.
 
-It discusses the principle, the architecture and the usage of the environment, and outlines future work.  It also provides a reference of the programming interfaces to support hardware designers, software developers, and verification engineers.
+It is divided into two parts:
+
+* a User Manual which discusses the principle, the architecture and the usage of the environment, and outlines future work;
+* a Reference Manual which provides a reference of configuration parameters and programming interfaces to support hardware designers, software developers, and verification engineers.
+
+== User Manual
 
 === Scope of verification
 
@@ -322,6 +327,5 @@ In order to support a full specification-to-implementation Open Source path for 
 Given the interests expressed in the CVA6 community, one of posssible directions of evolution for the OpenHW Group tandem verification platform is to support single-clock multi-core platforms. The Spike platform abstraction supports already multiple heterogeneous cores and multiple memory regions, meaning that a reference model of a multicore system is already available.  However, the Spike platform does not support complex memory access structures (multilevel caches, memory access networks, etc.); models such platform elements need to be provided as contributions.  Individual core configurations can already be expressed in the current parameterization scheme, but addtional work will be needed to handle more complex memory maps.  If non-trivial memory architectures need to be simulated, the bulk of the effort will be devoted to the modeling of such structures which is beyond the scope of the project.
 
 Another direction for future work is to substitute Spike with another reference model.  While `Sail` (https://github.com/riscv/sail-riscv) appears as a potential candidate, it is currently unclear how much effort will be required in order to achieve a level of functionality sufficiently rich to run complete programs and expose an RVFI-type interface for tandem verification.
-
 
 include::reference.adoc[]
