@@ -247,7 +247,7 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
     instr = {};
     instr = {instr,
-             // The trap is caused by an timer interrupt, read back xIP
+             // The trap is caused by a timer interrupt, read back xIP
              // Write into int_ack 0x2 value
              $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], epc, ip.name()),
              $sformatf("li x%0d, 0", cfg_cva6.gpr[0]),
