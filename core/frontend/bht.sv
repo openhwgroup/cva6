@@ -158,11 +158,9 @@ module bht #(
       bht = '0;
 
       for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-        if (row_index == i) begin
-          bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
-          bht_prediction_o[i].valid = bht_ram_rdata_0[i*BRAM_WORD_BITS+2];
-          bht_prediction_o[i].taken = bht_ram_rdata_0[i*BRAM_WORD_BITS+1];
-        end
+        bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
+        bht_prediction_o[i].valid = bht_ram_rdata_0[i*BRAM_WORD_BITS+2];
+        bht_prediction_o[i].taken = bht_ram_rdata_0[i*BRAM_WORD_BITS+1];
       end
 
       if (bht_update_i.valid && !debug_mode_i) begin
