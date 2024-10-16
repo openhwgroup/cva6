@@ -33,9 +33,15 @@ if ! [ -n "$DV_TESTLISTS" ]; then
                 ../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
 fi
 
+if ! [ -n "$UVM_VERBOSITY" ]; then
+    export UVM_VERBOSITY=UVM_NONE
+fi
+
+export DV_OPTS="$DV_OPTS --issrun_opts=+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+
 cd verif/sim
 for TESTLIST in $DV_TESTLISTS
 do
-  python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --issrun_opts="+tb_performance_mode" $DV_OPTS
+  python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml $DV_OPTS
 done
 cd -
