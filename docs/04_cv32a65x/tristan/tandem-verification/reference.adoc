@@ -269,6 +269,9 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 
 The DPI interface is implemented in file `vendor/riscv/riscv-isa-sim/riscv/riscv_dpi.cc` in `core-v-verif` repository (https://github.com/openhwgroup/core-v-verif/).
 
+The shared library providing the implementation of the DPI functions to RTL simulators is named `libriscv.so`.  It is built during Spike build and is installed in the `lib` subdirectory of Spike installation directory, typically `<CVA6_ROOT>/tools/spike/lib`.
+
+
 
 ==== Create a new instance of Spike extended with DPI interfaces suitable for tandem operation
 
