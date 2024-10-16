@@ -127,7 +127,7 @@ function void uvma_interrupt_agent_c::get_and_set_cntxt();
 
    void'(uvm_config_db#(uvma_interrupt_cntxt_c)::get(this, "", "cntxt", cntxt));
    if (cntxt == null) begin
-      `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+      `uvm_info(get_type_name(), "Context handle is null; creating.", UVM_DEBUG)
       cntxt = uvma_interrupt_cntxt_c::type_id::create("cntxt");
    end
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "*", "cntxt", cntxt);
@@ -138,10 +138,10 @@ endfunction : get_and_set_cntxt
 function void uvma_interrupt_agent_c::retrieve_vif();
 
    if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "interrupt_vif", cntxt.interrupt_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.interrupt_vif)))
+      `uvm_fatal(get_type_name(), $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.interrupt_vif)))
    end
    else begin
-      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.interrupt_vif)), UVM_DEBUG)
+      `uvm_info(get_type_name(), $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.interrupt_vif)), UVM_DEBUG)
    end
 
 endfunction : retrieve_vif

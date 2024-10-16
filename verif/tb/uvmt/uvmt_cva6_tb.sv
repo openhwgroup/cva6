@@ -65,9 +65,10 @@ module uvmt_cva6_tb;
                                          .rst_n(clknrst_if.reset_n)
                                       );
 
-   uvma_interrupt_if
-                    interrupt_vif(
-                                 );
+   uvma_interrupt_if            interrupt_vif(
+                                         .clk(clknrst_if.clk),
+                                         .reset_n(clknrst_if.reset_n)
+                                );
 
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();

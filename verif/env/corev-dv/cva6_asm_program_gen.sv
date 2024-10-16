@@ -175,7 +175,7 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
     end else begin
       // Push user mode GPR to kernel stack before executing exception handling, this is to avoid
       // exception handling routine modify user program state unexpectedly
-      push_used_gpr_to_kernel_stack(status, scratch, 4, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
+      push_used_gpr_to_kernel_stack(status, scratch, 3, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
       // Checking xStatus can be optional if ISS (like spike) has different implementation of
       // certain fields compared with the RTL processor.
       if (cfg_cva6.check_xstatus) begin
@@ -187,16 +187,19 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
                // Check if the exception is caused by an interrupt, if yes, jump to interrupt
                // handler Interrupt is indicated by xCause[XLEN-1]
                $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], cause, cause.name()),
+               $sformatf("srli x%0d, x%0d, %0d", cfg_cva6.gpr[0], cfg_cva6.gpr[0], XLEN-1),
+               $sformatf("bne x%0d, x0, %0s%0s_intr_handler",
+                         cfg_cva6.gpr[0], hart_prefix(hart), mode),
                $sformatf("csrr  x%0d, mepc", cfg_cva6.gpr[0]),
-               $sformatf("lbu  x%0d, 0(x%0d)", cfg_cva6.gpr[3],cfg_cva6.gpr[0]),
+               $sformatf("lbu  x%0d, 0(x%0d)", cfg_cva6.gpr[2],cfg_cva6.gpr[0]),
                $sformatf("li  x%0d, 0x3", cfg_cva6.gpr[1]),
-               $sformatf("and  x%0d, x%0d, x%0d", cfg_cva6.gpr[3], cfg_cva6.gpr[3], cfg_cva6.gpr[1]),
-               $sformatf("bne  x%0d, x%0d, exception_handler_incr_mepc2", cfg_cva6.gpr[3], cfg_cva6.gpr[1]),
+               $sformatf("and  x%0d, x%0d, x%0d", cfg_cva6.gpr[2], cfg_cva6.gpr[2], cfg_cva6.gpr[1]),
+               $sformatf("bne  x%0d, x%0d, exception_handler_incr_mepc2", cfg_cva6.gpr[2], cfg_cva6.gpr[1]),
                $sformatf("addi  x%0d, x%0d, 2", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
                str,
                $sformatf("addi  x%0d, x%0d, 2", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
                $sformatf("csrw  mepc, x%0d", cfg_cva6.gpr[0])};
-      pop_used_gpr_from_kernel_stack(MSTATUS, MSCRATCH, 4, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+      pop_used_gpr_from_kernel_stack(MSTATUS, MSCRATCH, 3, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
       instr.push_back("mret");
     end
     // The trap handler will occupy one 4KB page, it will be allocated one entry in the page table
@@ -213,7 +216,49 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
     if (cfg_cva6.mtvec_mode == VECTORED) begin
       push_gpr_to_kernel_stack(status, scratch, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
     end
-    gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
+    //~ push_used_gpr_to_kernel_stack(status, scratch, 3, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
+    instr = {instr,
+             // The trap is caused by an exception, read back xCAUSE, xEPC to see if these
+             // CSR values are set properly.
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], epc, epc.name()),
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], cause, cause.name()),
+             $sformatf("li x%0d, 0x8000000b", cfg_cva6.gpr[1]),
+             $sformatf("li x%0d, 0x80000007", cfg_cva6.gpr[2]),
+             $sformatf("beq x%0d, x%0d, ext_interrupt_handler", cfg_cva6.gpr[0], cfg_cva6.gpr[1]),
+             $sformatf("beq x%0d, x%0d, timer_interrupt_handler", cfg_cva6.gpr[0], cfg_cva6.gpr[2]),
+             $sformatf("j test_done")
+             };
+    gen_section(get_label($sformatf("%0s_intr_handler", mode), hart), instr);
+
+    instr = {};
+    instr = {instr,
+             // The trap is caused by an external interrupt, read back xIP
+             // Write into int_ack 0x1 value
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], epc, ip.name()),
+             $sformatf("li x%0d, 0", cfg_cva6.gpr[0]),
+             $sformatf("addi x%0d, x%0d, 1", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
+             // Clean external pending interrupt
+             $sformatf("sw x%0d, int_ack, x%0d # %0s;",
+                       cfg_cva6.gpr[0], cfg_cva6.gpr[1], ip.name())
+             };
+    pop_used_gpr_from_kernel_stack(MSTATUS, MSCRATCH, 3, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label($sformatf("ext_interrupt_handler"), hart), instr);
+
+    instr = {};
+    instr = {instr,
+             // The trap is caused by a timer interrupt, read back xIP
+             // Write into int_ack 0x2 value
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg_cva6.gpr[0], epc, ip.name()),
+             $sformatf("li x%0d, 0", cfg_cva6.gpr[0]),
+             $sformatf("addi x%0d, x%0d, 2", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
+             // Clean timer pending interrupt
+             $sformatf("sw x%0d, int_ack, x%0d",
+                       cfg_cva6.gpr[0], cfg_cva6.gpr[1])
+             };
+    pop_used_gpr_from_kernel_stack(MSTATUS, MSCRATCH, 3, cfg_cva6.mstatus_mprv, cfg_cva6.sp, cfg_cva6.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label($sformatf("timer_interrupt_handler"), hart), instr);
   endfunction
 
   // Push used general purpose register to stack, this is needed before trap handling
@@ -314,31 +359,31 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
                                         test_result_t test_result = TEST_FAIL,
                                         privileged_reg_t csr = MSCRATCH,
                                         string addr_label = "");
-    if (cfg.require_signature_addr) begin
+    if (cfg_cva6.require_signature_addr) begin
       string str[$];
-      str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[1], cfg.signature_addr)};
+      str = {$sformatf("li x%0d, 0x%0h", cfg_cva6.gpr[1], cfg_cva6.signature_addr)};
       instr = {instr, str};
       case (signature_type)
         // A single data word is written to the signature address.
         // Bits [7:0] contain the signature_type of CORE_STATUS, and the upper
         // XLEN-8 bits contain the core_status_t data.
         CORE_STATUS: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], core_status),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
-                           cfg.gpr[0], signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
+          str = {$sformatf("li x%0d, 0x%0h", cfg_cva6.gpr[0], core_status),
+                 $sformatf("slli x%0d, x%0d, 8", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg_cva6.gpr[0],
+                           cfg_cva6.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg_cva6.gpr[0], cfg_cva6.gpr[1])};
           instr = {instr, str};
         end
         // A single data word is written to the signature address.
         // Bits [7:0] contain the signature_type of TEST_RESULT, and the upper
         // XLEN-8 bits contain the test_result_t data.
         TEST_RESULT: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], test_result),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
-                           cfg.gpr[0], signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
+          str = {$sformatf("li x%0d, 0x%0h", cfg_cva6.gpr[0], test_result),
+                 $sformatf("slli x%0d, x%0d, 8", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg_cva6.gpr[0],
+                           cfg_cva6.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg_cva6.gpr[0], cfg_cva6.gpr[1])};
           instr = {instr, str};
         end
         // The first write to the signature address contains just the
@@ -347,11 +392,11 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
         // each writing the data contained in one GPR, starting from x0 as the
         // first write, and ending with x31 as the 32nd write.
         WRITE_GPR: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
+          str = {$sformatf("li x%0d, 0x%0h", cfg_cva6.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg_cva6.gpr[0], cfg_cva6.gpr[1])};
           instr = {instr, str};
           for(int i = 0; i < 32; i++) begin
-            str = {$sformatf("sw x%0x, 0(x%0d)", i, cfg.gpr[1])};
+            str = {$sformatf("sw x%0x, 0(x%0d)", i, cfg_cva6.gpr[1])};
             instr = {instr, str};
           end
         end
@@ -364,13 +409,13 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
           if (!(csr inside {implemented_csr})) begin
             return;
           end
-          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], csr),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
-                           cfg.gpr[0], signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1]),
-                 $sformatf("csrr x%0d, 0x%0h", cfg.gpr[0], csr),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
+          str = {$sformatf("li x%0d, 0x%0h", cfg_cva6.gpr[0], csr),
+                 $sformatf("slli x%0d, x%0d, 8", cfg_cva6.gpr[0], cfg_cva6.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg_cva6.gpr[0],
+                           cfg_cva6.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg_cva6.gpr[0], cfg_cva6.gpr[1]),
+                 $sformatf("csrr x%0d, 0x%0h", cfg_cva6.gpr[0], csr),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg_cva6.gpr[0], cfg_cva6.gpr[1])};
           instr = {instr, str};
         end
         default: begin
@@ -385,8 +430,18 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
       instr_stream.push_back(str);
       instr_stream.push_back({indent, "li gp, 1"});
       instr_stream.push_back({indent, "sw gp, tohost, t5"});
-      instr_stream.push_back({indent, "wfi"});
+      instr_stream.push_back({indent, "end_of_test: j end_of_test"});
    endfunction
+
+
+  virtual function void gen_data_page_begin(int hart);
+    instr_stream.push_back(".section .data");
+    if (hart == 0) begin
+      instr_stream.push_back(".align 6; .global tohost; tohost: .dword 0;");
+      instr_stream.push_back(".align 6; .global fromhost; fromhost: .dword 0;");
+      instr_stream.push_back(".align 6; .global int_ack; int_ack: .dword 0;");
+    end
+  endfunction
 
 endclass : cva6_asm_program_gen_c
 

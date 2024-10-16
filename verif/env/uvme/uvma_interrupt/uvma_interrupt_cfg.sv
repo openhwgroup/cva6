@@ -24,11 +24,17 @@ class uvma_interrupt_cfg_c extends uvm_object;
    rand bit                      enable_interrupt;
    bit                           interrupt_plusarg_valid;
 
-   // Interrupt request latency modes
-   rand uvma_interrupt_drv_req_enum  drv_req_mode;
-   rand int unsigned                 drv_req_fixed_latency;
-   rand int unsigned                 drv_req_random_latency_min;
-   rand int unsigned                 drv_req_random_latency_max;
+   // Number of Interrupt vector supported
+   rand int unsigned             num_irq_supported;
+
+   // Interrupt memory ack
+   rand bit [XLEN-1:0]           irq_addr;
+
+   // enbale/disable clear mechanism
+   rand bit                      enable_clear_irq;
+
+   // Number of cycle before Timeout if the agent failed to write into irq_add
+   rand int unsigned             irq_timeout;
 
    `uvm_object_utils_begin(uvma_interrupt_cfg_c)
       `uvm_field_int (                         enabled           , UVM_DEFAULT)
@@ -37,10 +43,10 @@ class uvma_interrupt_cfg_c extends uvm_object;
       `uvm_field_int (                         trn_log_enabled   , UVM_DEFAULT)
       `uvm_field_int (                         enable_interrupt  , UVM_DEFAULT)
       `uvm_field_int (                         interrupt_plusarg_valid  , UVM_DEFAULT)
-      `uvm_field_enum(uvma_interrupt_drv_req_enum, drv_req_mode  , UVM_DEFAULT)   
-      `uvm_field_int (                         drv_req_fixed_latency , UVM_DEFAULT)
-      `uvm_field_int (                         drv_req_random_latency_min , UVM_DEFAULT)
-      `uvm_field_int (                         drv_req_random_latency_max , UVM_DEFAULT)
+      `uvm_field_int (                         num_irq_supported  , UVM_DEFAULT)
+      `uvm_field_int (                         irq_addr           , UVM_DEFAULT)
+      `uvm_field_int (                         enable_clear_irq   , UVM_DEFAULT)
+      `uvm_field_int (                         irq_timeout        , UVM_DEFAULT)
       `uvm_object_utils_end
    
 
@@ -53,35 +59,16 @@ class uvma_interrupt_cfg_c extends uvm_object;
    }
 
   constraint default_enable_irq_cons {
-      soft enable_interrupt == 0;
-   }
-
-  constraint default_drive_req_mode_cons {
-      soft drv_req_mode == UVMA_INTERRUPT_DRV_REQ_MODE_FIXED_LATENCY;
-   }
-
-  constraint default_fixed_req_latency_cons {
-      soft drv_req_fixed_latency inside {[250:300]};
-   }
-
-   constraint valid_random_req_latency_cons {
-      drv_req_random_latency_min < drv_req_random_latency_max;
-   }
-
-   constraint default_random_latency_cons {
-      soft drv_req_random_latency_min inside {[50:100]};
-      soft drv_req_random_latency_max inside {[150:200]};
+      soft enable_interrupt  == 0;
+      soft num_irq_supported == 2;
+      soft enable_clear_irq  == 1;
+      soft irq_timeout       == 10_000;
    }
 
    /**
     * Default constructor.
     */
    extern function new(string name="uvma_interrupt_cfg");
-
-   /**
-    * Calculate a new random gnt latency
-    */
-   extern function int unsigned calc_random_req_latency();
 
 endclass : uvma_interrupt_cfg_c
 
@@ -95,21 +82,5 @@ function uvma_interrupt_cfg_c::new(string name="uvma_interrupt_cfg");
    end
 
 endfunction : new
-
-function int unsigned uvma_interrupt_cfg_c::calc_random_req_latency();
-
-   int unsigned req_latency;
-
-   case (drv_req_mode)
-      UVMA_INTERRUPT_DRV_REQ_MODE_CONSTANT      : req_latency = 0;
-      UVMA_INTERRUPT_DRV_REQ_MODE_FIXED_LATENCY : req_latency = drv_req_fixed_latency;
-      UVMA_INTERRUPT_DRV_REQ_MODE_RANDOM_LATENCY: begin
-         req_latency = $urandom_range(drv_req_random_latency_min, drv_req_random_latency_max);
-      end
-   endcase
-
-   return req_latency;
-
-endfunction : calc_random_req_latency
 
 `endif // __UVMA_INTERRUPT_CFG_SV__
