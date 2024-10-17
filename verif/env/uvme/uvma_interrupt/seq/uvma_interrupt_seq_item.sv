@@ -17,36 +17,23 @@
  */
 class uvma_interrupt_seq_item_c extends uvml_trn_seq_item_c;
    
-   rand uvma_interrupt_cntrl_enum             irq_cntrl;
-   rand int unsigned                          irq_delay; // Delay before applying individual interrupt
-   rand int unsigned                          irq_time; // How many cycles take an interrupt
+   rand int unsigned                          irq_set_delay; // Delay after set individual interrupt
+   rand int unsigned                          irq_clear_delay; // Delay after clear individual interrupt
 
-   rand bit[NUM_IRQ-1:0]                      interrupt_valid; //the valid interrupts for the core under test
+   rand bit [15:0]                            interrupt_vector; //the vector interrupts for the core under test
+   rand bit [15:0]                            interrupt_channel_mask; //the vector interrupts for the core under test
 
    `uvm_object_utils_begin(uvma_interrupt_seq_item_c)
-      `uvm_field_enum(uvma_interrupt_cntrl_enum, irq_cntrl, UVM_DEFAULT)
-      `uvm_field_int(irq_delay, UVM_DEFAULT)
-      `uvm_field_int(irq_time, UVM_DEFAULT)
-      `uvm_field_int(interrupt_valid, UVM_DEFAULT)
+      `uvm_field_int(irq_set_delay, UVM_DEFAULT)
+      `uvm_field_int(irq_clear_delay, UVM_DEFAULT)
+      `uvm_field_int(interrupt_vector, UVM_DEFAULT)
+      `uvm_field_int(interrupt_channel_mask, UVM_DEFAULT)
    `uvm_object_utils_end
 
 
    constraint default_irq_delay_c {
-        irq_delay inside {[150:250]};
-   }
-
-   constraint default_irq_time_c {
-        irq_time inside {[5:10]};
-   }
-
-   constraint irq_mode_c {
-
-      if (irq_cntrl == UVMA_INTERRUPT_ONE_BY_ONE) {
-        $countones(interrupt_valid) == 1;
-      }
-      if (irq_cntrl == UVMA_INTERRUPT_MORE_THAN_ONE) {
-        $countones(interrupt_valid) > 1;
-      }
+        irq_set_delay inside {[300: 500]};
+        irq_clear_delay inside {0, 25, 50};
    }
 
    /**

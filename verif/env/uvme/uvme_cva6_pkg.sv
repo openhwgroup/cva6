@@ -58,6 +58,7 @@ package uvme_cva6_pkg;
    import "DPI-C" function void read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+   import "DPI-C" function byte read_symbol (input string symbol_name, inout longint unsigned address);
 
   // Default legal opcode and funct7 for RV32I instructions
   bit [6:0]  legal_i_opcode[$] = '{7'b0000011,

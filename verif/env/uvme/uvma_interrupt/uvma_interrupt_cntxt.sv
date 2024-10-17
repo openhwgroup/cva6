@@ -20,7 +20,13 @@ class uvma_interrupt_cntxt_c extends uvm_object;
    
    // Handle to agent interface
    virtual  uvma_interrupt_if     interrupt_vif;
-      
+
+   // Handle to memory storage to check clear condition
+   uvml_mem_c#(MAX_ADDR_WIDTH) mem;
+
+   // Integrals
+   uvma_interrupt_reset_state_enum  reset_state        = UVMA_INTERRUPT_RESET_STATE_PRE_RESET;
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
@@ -28,6 +34,8 @@ class uvma_interrupt_cntxt_c extends uvm_object;
    `uvm_object_utils_begin(uvma_interrupt_cntxt_c)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
+      `uvm_field_enum(uvma_interrupt_reset_state_enum, reset_state, UVM_DEFAULT)
+      `uvm_field_object(mem, UVM_DEFAULT)
    `uvm_object_utils_end
       
    /**
@@ -35,34 +43,17 @@ class uvma_interrupt_cntxt_c extends uvm_object;
     */
    extern function new(string name="uvma_interrupt_cntxt");
    
-   /**
-    * TODO Describe uvma_interrupt_cntxt_c::reset()
-    */
-   extern function void reset();
-   
 endclass : uvma_interrupt_cntxt_c
-
-
-`pragma protect begin
-
 
 function uvma_interrupt_cntxt_c::new(string name="uvma_interrupt_cntxt");
    
    super.new(name);
-   
+   mem = uvml_mem_c#(MAX_ADDR_WIDTH)::type_id::create("mem");
+
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");
    
 endfunction : new
-
-function void uvma_interrupt_cntxt_c::reset();
-   
-   // TODO Implement uvma_interrupt_cntxt_c::reset()
-   
-endfunction : reset
-
-
-`pragma protect end
 
 
 `endif // __UVMA_INTERRUPT_CNTXT_SV__
