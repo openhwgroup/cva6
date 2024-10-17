@@ -369,7 +369,7 @@ module instr_queue
             end
             fetch_entry_o[NID].instruction = instr_data_out[i].instr;
             fetch_entry_o[NID].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
-            fetch_entry_o[NID].ex.tval = {{64 - riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
+            fetch_entry_o[NID].ex.tval = {{64 - CVA6Cfg.VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
             fetch_entry_o[NID].branch_predict.cf = instr_data_out[i].cf;
             // Cannot output two CF the same cycle.
             pop_instr[i] = fetch_entry_fire[NID];
