@@ -135,7 +135,7 @@ build_tools:
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
-smoke:
+smoke-tests:
   extends:
     - .fe_smoke_test
   variables:
@@ -157,7 +157,7 @@ smoke:
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
-gen_smoke:
+smoke-gen:
   extends:
     - .fe_smoke_test
   variables:
@@ -189,7 +189,7 @@ smoke-bench:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
-hwconfig:
+smoke-hwconfig:
   extends:
     - .fe_smoke_test
   variables:
@@ -197,8 +197,10 @@ hwconfig:
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
     DASHBOARD_SORT_INDEX: 1
     DASHBOARD_JOB_CATEGORY: "Basic"
-    DV_SIMULATORS: "veri-testharness,spike"
-    DV_HWCONFIG_OPTS: "cv32a6_imac_sv32"
+    DV_SIMULATORS: "vcs-uvm"
+    SPIKE_TANDEM: 1
+    DV_TARGET: "hwconfig"
+    DV_HWCONFIG_OPTS: "cv32a65x"
   script:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
