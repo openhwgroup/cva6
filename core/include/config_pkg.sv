@@ -48,6 +48,8 @@ package config_pkg;
   typedef struct packed {
     // General Purpose Register Size (in bits)
     int unsigned                 XLEN;
+    // Virtual address Size (in bits)
+    int unsigned                 VLEN;
     // Atomic RISC-V extension
     bit                          RVA;
     // Bit manipulation RISC-V extension
