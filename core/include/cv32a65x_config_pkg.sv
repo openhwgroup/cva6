@@ -20,6 +20,7 @@ package cva6_config_pkg;
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
+      VLEN: unsigned'(32),
       FpgaEn: bit'(0),
       TechnoCut: bit'(1),
       SuperscalarEn: bit'(1),
