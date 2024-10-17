@@ -30,7 +30,7 @@ fi
 cd verif/sim/
 
 BDIR=../tests/riscv-tests/benchmarks/
-CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../tests/custom/common/test.ld"
+CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../../config/gen_from_riscv_config/linker/link.ld"
 
 GCC_COMMON_SRC=(
         ../tests/custom/common/syscalls.c
