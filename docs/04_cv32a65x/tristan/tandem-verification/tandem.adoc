@@ -166,7 +166,7 @@ The configuration fragment above instructs the reference model that:
 * all cores:
 ** implement an RV32IMC ISA with extensions `Zicsr`, `Zcb`, `Zba`, `Zbb`, `Zbc` and `Zbs`;
 ** support only the Machine privilege level;
-** implement additional features modeled in Spike custom extensions `cv32a60x` (additional CSRs specific to `cv32a60x` family of cores) and `cvxif` (the CV-X-IF interface);
+** implement additional features modeled in Spike custom extensions `cv32a60x` (additional CSRs specific to `CV32A6*X` family of cores) and `cvxif` (the CV-X-IF interface);
 ** boot from address `0x80000000` (the start address of the DRAM memory);
 ** force the reset value of register `marchid` to value `0x3` (corresponding to the CVA6 architecture);
 ** discard writes into `misa` CSR register by marking all its bits as non-mutable.
