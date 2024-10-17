@@ -318,8 +318,7 @@ module commit_stage
                                 && !single_step_i) begin
         // only if the first instruction didn't throw an exception and this instruction won't throw an exception
         // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
-        if (!exception_o.valid && !commit_instr_i[1].ex.valid
-                                       && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+        if (!commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
           if (CVA6Cfg.RVZCMP && commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
             commit_macro_ack[1] = 1'b1;
