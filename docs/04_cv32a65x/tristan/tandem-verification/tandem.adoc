@@ -58,7 +58,7 @@ Interrupt and debug events detected by the RTL model are injected into the refer
 //[#fig-refmodel-step]
 //image::figures/refmodel-step-stages.svg[Stages of a reference model step,800,opts=inline]
 
-If a discrepancy in RFVI state is detected, an appropriate human-readable error output is printed the log file and the error count of the simulation is incremented.  The tandem simulation stops once a preset number of errors is encountered.  By controlling the error count limit is it possible to accommodate transient differences between the RTL and reference model states.  A typical example of transient difference occurs when two instructions are committed in a single cycle by a superscalar RTL implementation, causing the counter of retired instructions `minstret` to be atomically incremented by two whereas the reference model will always commit instruction one by one, thus incrementing `minstret` by one each time.
+If a discrepancy in RFVI state is detected, an appropriate human-readable error output is written into the log file and the error count of the simulation is incremented.  The tandem simulation stops once a preset number of errors is encountered.  By controlling the error count limit is it possible to accommodate transient differences between the RTL and reference model states.  A typical example of transient difference occurs when two instructions are committed in a single cycle by a superscalar RTL implementation, causing the counter of retired instructions `minstret` to be atomically incremented by two whereas the reference model will always commit instruction one by one, thus incrementing `minstret` by one each time.
 
 At the end of a tandem simulation a Yaml report file is produced.  It contains information about the test setup (architecture, ISA, test name, etc.) and the list of mismatches found if any.
 
@@ -81,7 +81,7 @@ SystemVerilog code of the tandem infrastructure is maintained in OpenHW Group re
 
 A pure SystemVerilog tandem testbench for CVA6 is available in the OpenHW Group CVA6 repository (https://github.com/openhwgroup/cva6/).
 
-To limit the impact on the original code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
+To limit the impact on the Spike original code base, Spike modifications rely on "shim" (adapter) classes that add extra functionality in two ways:
 
 * by adding a new base class below the original base class (used for CSRs)
 * by specializing a class to provide additional interfaces (Processor and Simulation)
@@ -165,8 +165,8 @@ The configuration fragment above instructs the reference model that:
 * the platform contains a DRAM memory of 1 GiB starting at the address 0x80000000 (0+2 GiB)
 * all cores:
 ** implement an RV32IMC ISA with extensions `Zicsr`, `Zcb`, `Zba`, `Zbb`, `Zbc` and `Zbs`;
-** support only the Machine privilege level
-** implement custom extensions `cv32a60x` and `cvxif`;
+** support only the Machine privilege level;
+** implement additional features modeled in Spike custom extensions `cv32a60x` (additional CSRs specific to `cv32a60x` family of cores) and `cvxif` (the CV-X-IF interface);
 ** boot from address `0x80000000` (the start address of the DRAM memory);
 ** force the reset value of register `marchid` to value `0x3` (corresponding to the CVA6 architecture);
 ** discard writes into `misa` CSR register by marking all its bits as non-mutable.
@@ -314,18 +314,8 @@ spike_param_tree:
 The tandem verification approach is a general template and is not bound to a single ISS or RTL simulator.  However, it requires that the ISS provides a basic platform capable of running software matching the capabilities of the RTL testbench, including a model of memory and buses.
 Because of this constraint the current tandem framework relies on Spike which is fully Open Source and provides all necessary components.
 
-* Verilator-based tandem
+* Verilator-based tandem verification
 +
-Starting with version 5.016, Verilator supports tandem simulations.  Earlier versions did not provide sufficient support for structrured types in DPI interface.
-
-=== Integration with other EU Projects
-
-In order to support a full specification-to-implementation Open Source path for RISC-V, there is an activity in the ISOLDE project (https://www.isolde-project.eu/content/over-project) aiming at the automatic generation of Spike Yaml configuration files from pre-validated RISC-V configurations produced by the `riscv-config` tool (https://github.com/riscv-software-src/riscv-config).
-
-=== Future work
-
-Given the interests expressed in the CVA6 community, one of posssible directions of evolution for the OpenHW Group tandem verification platform is to support single-clock multi-core platforms. The Spike platform abstraction supports already multiple heterogeneous cores and multiple memory regions, meaning that a reference model of a multicore system is already available.  However, the Spike platform does not support complex memory access structures (multilevel caches, memory access networks, etc.); models such platform elements need to be provided as contributions.  Individual core configurations can already be expressed in the current parameterization scheme, but addtional work will be needed to handle more complex memory maps.  If non-trivial memory architectures need to be simulated, the bulk of the effort will be devoted to the modeling of such structures which is beyond the scope of the project.
-
-Another direction for future work is to substitute Spike with another reference model.  While `Sail` (https://github.com/riscv/sail-riscv) appears as a potential candidate, it is currently unclear how much effort will be required in order to achieve a level of functionality sufficiently rich to run complete programs and expose an RVFI-type interface for tandem verification.
+Starting with version 5.016, Verilator supports tandem simulations.  Earlier versions did not provide sufficient support for structured types in the DPI interface.
 
 include::reference.adoc[]

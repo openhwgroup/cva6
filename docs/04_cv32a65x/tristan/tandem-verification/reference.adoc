@@ -44,7 +44,7 @@ Some parameters are only meaningful in specific scopes: either platform (`/top/`
 |`dram_base`
 |uint64_t
 |`0x80000000`
-|Base addres of the DRAM
+|Base address of the DRAM
 
 |`dram_enable`
 |bool
@@ -74,7 +74,7 @@ Some parameters are only meaningful in specific scopes: either platform (`/top/`
 |`max_steps`
 |uint64_t
 |`2000000UL`
-|Maximum number of steps (instructions and/or exceptions) before terminating the ISS simulation if `max_steps_enable` is set to `True`.
+|Maximum number of steps (instruction commits and trap entries) before terminating the ISS simulation if `max_steps_enable` is set to `True`.
 
 |`max_steps_enabled`
 |bool
@@ -120,7 +120,7 @@ The supported per-CSR parameters are listed in the table below.  `<CSR>` stands 
 |Value to use as a replacement of the default reset value of `<CSR>`.
 
 |`<CSR>_write_mask`
-|bool
+|uint64_t
 |`~0x0` (all-ones)
 |Mask of writable bits in register `<CSR>`.  Bits which are set allow writing into corresponding bits of `<CSR>`.
 |===
@@ -145,7 +145,7 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 
 |`debug_exception_handler_addr`
 |uint64_t
-|`0x1A140000`
+|`0x1a140000`
 |Address of exception handler for exceptions occurring in debug mode
 
 |`debug_handler_addr`
@@ -161,7 +161,10 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 |`extensions`
 |string
 |`""`
-|Comma-separated list of Spike extensions to load.
+|Comma-separated list of Spike extensions to load. +
+Extensions currently supported: +
+* `cvxif`: implements the CV-X-IF interface;
+* `cv32a60x`: implements CSRs specific to `CV32A6`*n*`X` cores.
 
 |`hide_csrs_based_on_priv`
 |bool
@@ -371,7 +374,7 @@ Input args:
 
 Return value: NONE.
 
-==== Set Boolean parameter `<base><name>` to `<value>`
+==== Set string parameter `<base><name>` to `<value>`
 
 [,verilog]
 ----
@@ -516,7 +519,7 @@ Command-line options added to Spike serve a dual purpose:
 
 [,sh]
 ----
---parm-file <NAME>
+--param-file <NAME>
 ----
 
 Load the parameter tree from Yaml file named `<NAME>`.
