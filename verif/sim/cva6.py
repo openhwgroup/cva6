@@ -1040,7 +1040,9 @@ def load_config(args, cwd):
       output_file = "../../core/include/hwconfig_config_pkg.sv"
       user_config.derive_config(input_file, output_file, changes)
       args.hwconfig_opts = user_config.get_config(output_file)
+      os.system("mkdir -p ../../config/gen_from_riscv_config/hwconfig/spike")
       os.system("mkdir -p ../../config/gen_from_riscv_config/hwconfig/linker")
+      os.system("cp ../../config/gen_from_riscv_config/%s/spike/spike.yaml ../../config/gen_from_riscv_config/hwconfig/spike/" % (base))
       os.system("cp ../../config/gen_from_riscv_config/%s/linker/*.ld ../../config/gen_from_riscv_config/hwconfig/linker/" % (base))
     else:
       base = args.target
