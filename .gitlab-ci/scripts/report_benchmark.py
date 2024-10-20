@@ -21,8 +21,8 @@ iterations = None
 valid_cycles = {
     "dhrystone_dual": 21331,
     "dhrystone_single": 25684,
-    "coremark_dual": 517171,
-    "coremark_single": 659598,
+    "coremark_dual": 1025897,
+    "coremark_single": 1310721,
     "dhrystone_cv32a65x": 33736,
 }
 
@@ -32,7 +32,7 @@ for arg in sys.argv[1:]:
             iterations = 50
         else:
             if "--coremark" in arg:
-                iterations = 2
+                iterations = 4
         mode = arg.replace("-", "")
     else:
         path = arg
