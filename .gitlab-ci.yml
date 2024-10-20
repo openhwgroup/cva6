@@ -217,10 +217,7 @@ smoke-bench:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
-  parallel:
-    matrix:
-      - BENCH: "dhrystone"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
+    BENCH: "dhrystone"
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
