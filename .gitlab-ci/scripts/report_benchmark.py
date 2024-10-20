@@ -19,10 +19,10 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    "dhrystone_dual": 21530,
-    "dhrystone_single": 26392,
-    "coremark_dual": 530099,
-    "coremark_single": 673184,
+    "dhrystone_dual": 21331,
+    "dhrystone_single": 25684,
+    "coremark_dual": 517171,
+    "coremark_single": 659598,
     "dhrystone_cv32a65x": 33736,
 }
 
