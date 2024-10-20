@@ -25,10 +25,6 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
 fi
 
-if ! [ -n "$DV_HWCONFIG_OPTS" ]; then
-  DV_HWCONFIG_OPTS="cv32a65x"
-fi
-
 make clean
 make -C verif/sim clean_all
 
@@ -58,8 +54,7 @@ cflags=(
 )
 
 python3 cva6.py \
-        --target hwconfig \
-        --hwconfig_opts="$DV_HWCONFIG_OPTS" \
+        --target cv32a65x \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
