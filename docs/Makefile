@@ -1,20 +1,12 @@
-# Minimal makefile for Sphinx documentation
-#
+all: prepare sphinx
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = .
-BUILDDIR      = _build
+prepare:
+	make -C 04_cv32a65x/riscv priv-html unpriv-html
+	make -C 04_cv32a65x/design design-html
 
-# Put it first so that "make" without argument is like "make help".
-help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	make -C 06_cv64a6_mmu/riscv priv-html unpriv-html
 
-.PHONY: help Makefile
+sphinx:
+	sphinx-build . _build
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+.PHONY: all prepare sphinx

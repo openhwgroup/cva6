@@ -10,6 +10,8 @@ ifeq ($(CONFIG),)
 $(error CONFIG must be defined)
 endif
 
+current_dir = $(shell pwd)
+
 # Path of current file, intended to be included by a configuration subfolder
 design_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
@@ -17,14 +19,18 @@ all: design-pdf design-html
 
 setup:
 	mkdir -p build
-	pwd 
-	echo $(design_dir)
+
 	cp -r $(design_dir)/design-manual/* build
-	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
 	cp -r $(design_dir)/../riscv-isa/riscv-isa-manual/docs-resources build
-	cp ../config/config.adoc build/source
 	cp $(design_dir)/../common/*.adoc build/source
-	cp -rf source build
+
+	cp -rf source/* build/source
+
+	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/$(CONFIG)/isa_updater.yaml -t $(CONFIG) -f adoc
+	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -c ../riscv-config/$(CONFIG)/generated/custom_gen.yaml -m updaters/$(CONFIG)/csr_updater.yaml -t $(CONFIG) -f adoc
+	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
+
+	cd ../.. && python3 scripts/spec_builder.py --target $(CONFIG) --gen-config $(current_dir)/build/source/config.adoc --gen-parameters $(current_dir)/build/source/parameters.adoc --gen-ports $(current_dir)/build/source
 
 design-pdf: setup
 	cd build; make SKIP_DOCKER=true build/design.pdf

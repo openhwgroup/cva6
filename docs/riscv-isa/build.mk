@@ -10,6 +10,8 @@ ifeq ($(CONFIG),)
 $(error CONFIG must be defined)
 endif
 
+current_dir = $(shell pwd)
+
 # Path of current file, intended to be included by a configuration subfolder
 riscv-isa_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
@@ -17,10 +19,12 @@ all: priv-pdf priv-html unpriv-pdf unpriv-html
 
 setup:
 	mkdir -p build/riscv-isa-manual
+
 	cp -r $(riscv-isa_dir)/riscv-isa-manual/* build/riscv-isa-manual
 	cp -r $(riscv-isa_dir)/src build/riscv-isa-manual
-	cp -r $(riscv-isa_dir)/../common/*.adoc build/riscv-isa-manual/src
-	cp ../config/config.adoc build/riscv-isa-manual/src
+	cp $(riscv-isa_dir)/../common/*.adoc build/riscv-isa-manual/src
+
+	cd ../.. && python3 scripts/spec_builder.py --target $(CONFIG) --gen-config $(current_dir)/build/riscv-isa-manual/src/config.adoc
 
 priv-pdf: setup
 	cd build/riscv-isa-manual; make SKIP_DOCKER=true build/riscv-privileged.pdf
