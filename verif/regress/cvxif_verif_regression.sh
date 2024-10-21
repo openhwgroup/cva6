@@ -14,13 +14,9 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-
 # install the required tools
 source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
-
-# install the required test suites
-source ./verif/regress/install-riscv-tests.sh
 
 # setup sim env
 source ./verif/sim/setup-env.sh
