@@ -1331,261 +1331,98 @@ module cva6
     dcache_req_ports_cache_acc[1].data_gnt &= !dcache_req_ports_ex_cache[2].data_req;
   end
 
-  if (CVA6Cfg.DCacheType == config_pkg::WT) begin : gen_cache_wt
-    // this is a cache subsystem that is compatible with OpenPiton
-    wt_cache_subsystem #(
-        .CVA6Cfg   (CVA6Cfg),
-        .fetch_dreq_t(fetch_dreq_t),
-        .fetch_drsp_t(fetch_drsp_t),
-        .icache_req_t(icache_req_t),
-        .obi_fetch_req_t(obi_fetch_req_t),
-        .obi_fetch_rsp_t(obi_fetch_rsp_t),
-        .icache_rtrn_t(icache_rtrn_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .NumPorts  (NumPorts),
-        .noc_req_t (noc_req_t),
-        .noc_resp_t(noc_resp_t)
-    ) i_cache_subsystem (
-        // to D$
-        .clk_i             (clk_i),
-        .rst_ni            (rst_ni),
-        // I$
-        .icache_en_i       (icache_en_csr),
-        .icache_flush_i    (icache_flush_ctrl_cache),
-        .icache_miss_o     (icache_miss_cache_perf),
-        .fetch_dreq_i      (fetch_dreq_if_cache),
-        .fetch_dreq_o      (fetch_dreq_cache_if),
-        .fetch_obi_req_i   (obi_fetch_req_if_cache),        //OBI
-        .fetch_obi_rsp_o   (obi_fetch_rsp_cache_if),        //OBI
-        // D$
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
-        .dcache_flush_i    (dcache_flush_ctrl_cache),
-        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
-        // to commit stage
-        .dcache_amo_req_i  (amo_req),
-        .dcache_amo_resp_o (amo_resp),
-        // from PTW, Load Unit  and Store Unit
-        .dcache_miss_o     (dcache_miss_cache_perf),
-        .miss_vld_bits_o   (miss_vld_bits),
-        .dcache_req_ports_i(dcache_req_to_cache),
-        .dcache_req_ports_o(dcache_req_from_cache),
-        // write buffer status
-        .wbuffer_empty_o   (dcache_commit_wbuffer_empty),
-        .wbuffer_not_ni_o  (dcache_commit_wbuffer_not_ni),
-        // memory side
-        .noc_req_o         (noc_req_o),
-        .noc_resp_i        (noc_resp_i),
-        .inval_addr_i      (inval_addr),
-        .inval_valid_i     (inval_valid),
-        .inval_ready_o     (inval_ready)
-    );
-  end else if (CVA6Cfg.DCacheType inside {
-      config_pkg::HPDCACHE_WT,
-      config_pkg::HPDCACHE_WB,
-      config_pkg::HPDCACHE_WT_WB})
-  begin : gen_cache_hpd
-    cva6_hpdcache_subsystem #(
-        .CVA6Cfg   (CVA6Cfg),
-        .fetch_req_t(fetch_req_t),
-        .fetch_rsp_t(fetch_rsp_t),
-        .icache_req_t(icache_req_t),
-        .icache_rtrn_t(icache_rtrn_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .obi_fetch_req_t(obi_fetch_req_t),
-        .obi_fetch_rsp_t(obi_fetch_rsp_t),
-        .NumPorts  (NumPorts),
-        .axi_ar_chan_t(axi_ar_chan_t),
-        .axi_aw_chan_t(axi_aw_chan_t),
-        .axi_w_chan_t (axi_w_chan_t),
-        .axi_b_chan_t (b_chan_t),
-        .axi_r_chan_t (r_chan_t),
-        .noc_req_t (noc_req_t),
-        .noc_resp_t(noc_resp_t),
-        .cmo_req_t (logic  /*FIXME*/),
-        .cmo_rsp_t (logic  /*FIXME*/)
-    ) i_cache_subsystem (
-        .clk_i (clk_i),
-        .rst_ni(rst_ni),
+  cva6_hpdcache_subsystem #(
+      .CVA6Cfg   (CVA6Cfg),
+      .fetch_req_t(fetch_req_t),
+      .fetch_rsp_t(fetch_rsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .obi_fetch_req_t(obi_fetch_req_t),
+      .obi_fetch_rsp_t(obi_fetch_rsp_t),
+      .NumPorts  (NumPorts),
+      .axi_ar_chan_t(axi_ar_chan_t),
+      .axi_aw_chan_t(axi_aw_chan_t),
+      .axi_w_chan_t (axi_w_chan_t),
+      .axi_b_chan_t (b_chan_t),
+      .axi_r_chan_t (r_chan_t),
+      .noc_req_t (noc_req_t),
+      .noc_resp_t(noc_resp_t),
+      .cmo_req_t (logic  /*FIXME*/),
+      .cmo_rsp_t (logic  /*FIXME*/)
+  ) i_cache_subsystem (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-        .icache_en_i   (icache_en_csr),
-        .icache_flush_i(icache_flush_ctrl_cache),
-        .icache_miss_o (icache_miss_cache_perf),
-        .fetch_req_i (fetch_req_if_cache),
-        .fetch_rsp_o (fetch_rsp_cache_if),
-        .obi_fetch_req_i   (obi_fetch_req_if_cache),  //OBI
-        .obi_fetch_rsp_o   (obi_fetch_rsp_cache_if),  //OBI
+      .icache_en_i   (icache_en_csr),
+      .icache_flush_i(icache_flush_ctrl_cache),
+      .icache_miss_o (icache_miss_cache_perf),
+      .fetch_req_i (fetch_req_if_cache),
+      .fetch_rsp_o (fetch_rsp_cache_if),
+      .obi_fetch_req_i   (obi_fetch_req_if_cache),  //OBI
+      .obi_fetch_rsp_o   (obi_fetch_rsp_cache_if),  //OBI
 
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
-        .dcache_flush_i    (dcache_flush_ctrl_cache),
-        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
-        .dcache_miss_o     (dcache_miss_cache_perf),
+      .dcache_enable_i   (dcache_en_csr_nbdcache),
+      .dcache_flush_i    (dcache_flush_ctrl_cache),
+      .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
+      .dcache_miss_o     (dcache_miss_cache_perf),
 
-        .dcache_amo_req_i (amo_req),
-        .dcache_amo_resp_o(amo_resp),
+      .dcache_amo_req_i (amo_req),
+      .dcache_amo_resp_o(amo_resp),
 
-        .dcache_cmo_req_i ('0  /*FIXME*/),
-        .dcache_cmo_resp_o(  /*FIXME*/),
+      .dcache_cmo_req_i ('0  /*FIXME*/),
+      .dcache_cmo_resp_o(  /*FIXME*/),
 
-        .dcache_req_ports_i(dcache_req_to_cache),
-        .dcache_req_ports_o(dcache_req_from_cache),
+      .dcache_req_ports_i(dcache_req_to_cache),
+      .dcache_req_ports_o(dcache_req_from_cache),
 
-        .wbuffer_empty_o (dcache_commit_wbuffer_empty),
-        .wbuffer_not_ni_o(dcache_commit_wbuffer_not_ni),
+      .wbuffer_empty_o (dcache_commit_wbuffer_empty),
+      .wbuffer_not_ni_o(dcache_commit_wbuffer_not_ni),
 
-        .hwpf_base_set_i    ('0  /*FIXME*/),
-        .hwpf_base_i        ('0  /*FIXME*/),
-        .hwpf_base_o        (  /*FIXME*/),
-        .hwpf_param_set_i   ('0  /*FIXME*/),
-        .hwpf_param_i       ('0  /*FIXME*/),
-        .hwpf_param_o       (  /*FIXME*/),
-        .hwpf_throttle_set_i('0  /*FIXME*/),
-        .hwpf_throttle_i    ('0  /*FIXME*/),
-        .hwpf_throttle_o    (  /*FIXME*/),
-        .hwpf_status_o      (  /*FIXME*/),
+      .hwpf_base_set_i    ('0  /*FIXME*/),
+      .hwpf_base_i        ('0  /*FIXME*/),
+      .hwpf_base_o        (  /*FIXME*/),
+      .hwpf_param_set_i   ('0  /*FIXME*/),
+      .hwpf_param_i       ('0  /*FIXME*/),
+      .hwpf_param_o       (  /*FIXME*/),
+      .hwpf_throttle_set_i('0  /*FIXME*/),
+      .hwpf_throttle_i    ('0  /*FIXME*/),
+      .hwpf_throttle_o    (  /*FIXME*/),
+      .hwpf_status_o      (  /*FIXME*/),
 
-        .noc_req_o (noc_req_o),
-        .noc_resp_i(noc_resp_i)
-    );
-    assign inval_ready = 1'b1;
-  end else begin : gen_cache_wb
-    std_cache_subsystem #(
-        // note: this only works with one cacheable region
-        // not as important since this cache subsystem is about to be
-        // deprecated
-        .CVA6Cfg        (CVA6Cfg),
-        .fetch_dreq_t   (fetch_dreq_t),
-        .fetch_drsp_t   (fetch_drsp_t),
-        .icache_req_t   (icache_req_t),
-        .icache_rtrn_t  (icache_rtrn_t),
-        .obi_fetch_req_t(obi_fetch_req_t),
-        .obi_fetch_rsp_t(obi_fetch_rsp_t),
-        .dcache_req_i_t (dcache_req_i_t),
-        .dcache_req_o_t (dcache_req_o_t),
-        .NumPorts       (NumPorts),
-        .axi_ar_chan_t  (axi_ar_chan_t),
-        .axi_aw_chan_t  (axi_aw_chan_t),
-        .axi_w_chan_t   (axi_w_chan_t),
-        .axi_req_t      (noc_req_t),
-        .axi_rsp_t      (noc_resp_t)
-    ) i_cache_subsystem (
-        // to D$
-        .clk_i             (clk_i),
-        .rst_ni            (rst_ni),
-        .priv_lvl_i        (priv_lvl),
-        // I$
-        .icache_en_i       (icache_en_csr),
-        .icache_flush_i    (icache_flush_ctrl_cache),
-        .icache_miss_o     (icache_miss_cache_perf),
-        .fetch_dreq_i      (fetch_dreq_if_cache),
-        .fetch_dreq_o      (fetch_dreq_cache_if),
-        .fetch_obi_req_i   (obi_fetch_req_if_cache),       //OBI
-        .fetch_obi_rsp_o   (obi_fetch_rsp_cache_if),       //OBI
-        // D$
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
-        .dcache_flush_i    (dcache_flush_ctrl_cache),
-        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
-        // to commit stage
-        .amo_req_i         (amo_req),
-        .amo_resp_o        (amo_resp),
-        .dcache_miss_o     (dcache_miss_cache_perf),
-        // this is statically set to 1 as the std_cache does not have a wbuffer
-        .wbuffer_empty_o   (dcache_commit_wbuffer_empty),
-        // from PTW, Load Unit  and Store Unit
-        .dcache_req_ports_i(dcache_req_to_cache),
-        .dcache_req_ports_o(dcache_req_from_cache),
-        // memory side
-        .axi_req_o         (noc_req_o),
-        .axi_resp_i        (noc_resp_i)
-    );
-    assign dcache_commit_wbuffer_not_ni = 1'b1;
-    assign inval_ready                  = 1'b1;
-  end
+      .noc_req_o (noc_req_o),
+      .noc_resp_i(noc_resp_i)
+  );
+  assign inval_ready                = 1'b1;
 
   // ----------------
   // Accelerator
   // ----------------
 
-  if (CVA6Cfg.EnableAccelerator) begin : gen_accelerator
-    acc_dispatcher #(
-        .CVA6Cfg           (CVA6Cfg),
-        .fu_data_t         (fu_data_t),
-        .dcache_req_i_t    (dcache_req_i_t),
-        .dcache_req_o_t    (dcache_req_o_t),
-        .exception_t       (exception_t),
-        .scoreboard_entry_t(scoreboard_entry_t),
-        .acc_cfg_t         (acc_cfg_t),
-        .AccCfg            (AccCfg),
-        .acc_req_t         (cvxif_req_t),
-        .acc_resp_t        (cvxif_resp_t)
-    ) i_acc_dispatcher (
-        .clk_i                 (clk_i),
-        .rst_ni                (rst_ni),
-        .flush_unissued_instr_i(flush_unissued_instr_ctrl_id),
-        .flush_ex_i            (flush_ctrl_ex),
-        .flush_pipeline_o      (flush_acc),
-        .single_step_o         (single_step_acc_commit),
-        .acc_cons_en_i         (acc_cons_en_csr),
-        .acc_fflags_valid_o    (acc_resp_fflags_valid),
-        .acc_fflags_o          (acc_resp_fflags),
-        .ld_st_priv_lvl_i      (ld_st_priv_lvl_csr_ex),
-        .sum_i                 (sum_csr_ex),
-        .pmpcfg_i              (pmpcfg),
-        .pmpaddr_i             (pmpaddr),
-        .fcsr_frm_i            (frm_csr_id_issue_ex),
-        .dirty_v_state_o       (dirty_v_state),
-        .issue_instr_i         (issue_instr_id_acc),
-        .issue_instr_hs_i      (issue_instr_hs_id_acc),
-        .issue_stall_o         (stall_acc_id),
-        .fu_data_i             (fu_data_id_ex[0]),
-        .commit_instr_i        (commit_instr_id_commit),
-        .commit_st_barrier_i   (fence_i_commit_controller | fence_commit_controller),
-        .acc_trans_id_o        (acc_trans_id_ex_id),
-        .acc_result_o          (acc_result_ex_id),
-        .acc_valid_o           (acc_valid_ex_id),
-        .acc_exception_o       (acc_exception_ex_id),
-        .acc_valid_ex_o        (acc_valid_acc_ex),
-        .commit_ack_i          (commit_ack),
-        .acc_stall_st_pending_o(stall_st_pending_ex),
-        .acc_no_st_pending_i   (no_st_pending_commit),
-        .dcache_req_ports_i    (dcache_req_ports_ex_cache),
-        .ctrl_halt_o           (halt_acc_ctrl),
-        .csr_addr_i            (csr_addr_ex_csr),
-        .acc_dcache_req_ports_o(dcache_req_ports_acc_cache),
-        .acc_dcache_req_ports_i(dcache_req_ports_cache_acc),
-        .inval_ready_i         (inval_ready),
-        .inval_valid_o         (inval_valid),
-        .inval_addr_o          (inval_addr),
-        .acc_req_o             (cvxif_req_o),
-        .acc_resp_i            (cvxif_resp_i)
-    );
-  end : gen_accelerator
-  else begin : gen_no_accelerator
-    assign acc_trans_id_ex_id         = '0;
-    assign acc_result_ex_id           = '0;
-    assign acc_valid_ex_id            = '0;
-    assign acc_exception_ex_id        = '0;
-    assign acc_resp_fflags            = '0;
-    assign acc_resp_fflags_valid      = '0;
-    assign stall_acc_id               = '0;
-    assign dirty_v_state              = '0;
-    assign acc_valid_acc_ex           = '0;
-    assign halt_acc_ctrl              = '0;
-    assign stall_st_pending_ex        = '0;
-    assign flush_acc                  = '0;
-    assign single_step_acc_commit     = '0;
+  assign acc_trans_id_ex_id         = '0;
+  assign acc_result_ex_id           = '0;
+  assign acc_valid_ex_id            = '0;
+  assign acc_exception_ex_id        = '0;
+  assign acc_resp_fflags            = '0;
+  assign acc_resp_fflags_valid      = '0;
+  assign stall_acc_id               = '0;
+  assign dirty_v_state              = '0;
+  assign acc_valid_acc_ex           = '0;
+  assign halt_acc_ctrl              = '0;
+  assign stall_st_pending_ex        = '0;
+  assign flush_acc                  = '0;
+  assign single_step_acc_commit     = '0;
 
-    // D$ connection is unused
-    assign dcache_req_ports_acc_cache = '0;
+  // D$ connection is unused
+  assign dcache_req_ports_acc_cache = '0;
 
-    // No invalidation interface
-    assign inval_valid                = '0;
-    assign inval_addr                 = '0;
+  // No invalidation interface
+  assign inval_valid                = '0;
+  assign inval_addr                 = '0;
 
-    // Feed through cvxif
-    assign cvxif_req_o                = cvxif_req;
-  end : gen_no_accelerator
+  // Feed through cvxif
+  assign cvxif_req_o                = cvxif_req;
 
   // -------------------
   // Parameter Check
