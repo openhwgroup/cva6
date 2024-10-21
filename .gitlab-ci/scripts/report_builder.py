@@ -172,12 +172,19 @@ class Report:
 
     def dump(self, path=None):
         """
-        Create report file
+        Print results and create report file
 
         By default the output path is build from $CI_JOB_NAME
         """
+        for metric in self.metrics:
+            print(metric.values)
+
         if path is None:
-            filename = re.sub(r'[^\w\.\\\/]', '_', os.environ["CI_JOB_NAME"])
-            path = 'artifacts/reports/'+filename+'.yml'
-        with open(path, 'w') as f:
-            yaml.dump(self.to_doc(), f)
+            ci_job_name = os.environ.get("CI_JOB_NAME")
+            if ci_job_name is not None:
+                filename = re.sub(r'[^\w\.\\\/]', '_', ci_job_name)
+                path = 'artifacts/reports/'+filename+'.yml'
+
+        if path is not None:
+            with open(path, 'w') as f:
+                yaml.dump(self.to_doc(), f)
