@@ -13,8 +13,14 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=vcs-uvm,spike
+fi
+
 # install the required tools
-source ./verif/regress/install-verilator.sh
+if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
+  source ./verif/regress/install-verilator.sh
+fi
 source ./verif/regress/install-spike.sh
 
 source ./verif/sim/setup-env.sh
@@ -24,10 +30,6 @@ export cov=1 #enable the Code Coverage
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a65x
-fi
-
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-uvm,spike
 fi
 
 cd verif/sim/

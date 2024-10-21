@@ -18,17 +18,12 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
 
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv32a65x
-fi
-
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-uvm,spike
 fi
 
 if ! [ -n "$list_num" ]; then
