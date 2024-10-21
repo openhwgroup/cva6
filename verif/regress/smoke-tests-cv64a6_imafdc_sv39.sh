@@ -13,9 +13,14 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=vcs-testharness,spike
+fi
 
 # install the required tools
-source ./verif/regress/install-verilator.sh
+if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
+  source ./verif/regress/install-verilator.sh
+fi
 source ./verif/regress/install-spike.sh
 
 # install the required test suites
@@ -27,10 +32,6 @@ source ./verif/regress/install-riscv-arch-test.sh
 source ./verif/sim/setup-env.sh
 
 echo "$SPIKE_INSTALL_DIR$"
-
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
-fi
 
 if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
