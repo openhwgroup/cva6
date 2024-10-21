@@ -21,8 +21,6 @@ fi
 # install the required tools
 source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
-source verif/regress/install-riscv-compliance.sh
-source verif/regress/install-riscv-tests.sh
 
 source ./verif/sim/setup-env.sh
 
