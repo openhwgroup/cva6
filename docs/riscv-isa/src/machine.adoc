@@ -300,7 +300,7 @@ endif::[]
 //image::png/mvendorid.png[align="center"]
 
 .Vendor ID register (`mvendorid`)
-include::images/bytefield/mvendorid.adoc[]
+include::images/bytefield/mvendorid.edn[]
 
 ifdef::archi-default[]
 JEDEC manufacturer IDs are ordinarily encoded as a sequence of one-byte
@@ -348,7 +348,7 @@ of the hart supplied to CVA6, 0x3.
 endif::[]
 
 .Machine Architecture ID (`marchid`) register
-include::images/bytefield/marchid.adoc[]
+include::images/bytefield/marchid.edn[]
 
 ifdef::archi-default[]
 Open-source project architecture IDs are allocated globally by RISC-V
@@ -410,7 +410,7 @@ processor itself and not any surrounding system.
 endif::[]
 
 .Machine Implementation ID (`mimpid`) register
-include::images/bytefield/mimpid.adoc[]
+include::images/bytefield/mimpid.edn[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -443,7 +443,7 @@ Hart ID is zero.
 endif::[]
 
 .Hart ID (`mhartid`) register
-include::images/bytefield/mhartid.adoc[]
+include::images/bytefield/mhartid.edn[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -487,13 +487,13 @@ endif::[]
 ifdef::archi-default,XLEN-32[]
 [[mstatusreg-rv32]]
 .Machine-mode status (`mstatus`) register for RV32
-include::images/wavedrom/mstatusreg-rv321.adoc[]
+include::images/wavedrom/mstatusreg-rv321.edn[]
 endif::[]
 
 ifdef::archi-default,XLEN-64[]
 [[mstatusreg]]
 .Machine-mode status (`mstatus`) register for RV64
-include::images/wavedrom/mstatusreg.adoc[]
+include::images/wavedrom/mstatusreg.edn[]
 endif::[]
 
 ifdef::archi-default[]
@@ -509,7 +509,7 @@ endif::[]
 ifdef::archi-default,XLEN-32[]
 [[mstatushreg]]
 .Additional machine-mode status (`mstatush`) register  for RV32.
-include::images/wavedrom/mstatushreg.adoc[]
+include::images/wavedrom/mstatushreg.edn[]
 endif::[]
 
 [[privstack]]
@@ -1606,7 +1606,7 @@ and a vector mode (MODE).
 
 
 .Encoding of mtvec MODE field.
-include::images/bytefield/mtvec.adoc[]
+include::images/bytefield/mtvec.edn[]
 
 ifdef::archi-default[]
 The `mtvec` register must always be implemented, but can contain a
@@ -1774,7 +1774,7 @@ endif::[]
 
 ifdef::archi-default,RVS-true[]
 .Machine Exception Delegation (`medeleg`) register.
-include::images/bytefield/medeleg.adoc[]
+include::images/bytefield/medeleg.edn[]
 
 `medeleg` has a bit position allocated for every synchronous exception
 shown in <<mcauses>>, with the index of the
@@ -1794,7 +1794,7 @@ endif::[]
 
 ifdef::archi-default,RVS-true[]
 .Machine Interrupt Delegation (`mideleg`) Register.
-include::images/bytefield/mideleg.adoc[]
+include::images/bytefield/mideleg.edn[]
 
 `mideleg` holds trap delegation bits for individual interrupts, with the
 layout of bits matching those in the `mip` register (i.e., STIP
@@ -1833,10 +1833,10 @@ at the platform's discretion.
 endif::[]
 
 .Machine Interrupt-Pending (`mip`) register.
-include::images/bytefield/mideleg.adoc[]
+include::images/bytefield/mideleg.edn[]
 
 .Machine Interrupt-Enable (`mie`) register
-include::images/bytefield/mideleg.adoc[]
+include::images/bytefield/mideleg.edn[]
 
 ifdef::archi-default[]
 An interrupt _i_ will trap to M-mode (causing the privilege mode to
@@ -1883,11 +1883,11 @@ formatted as shown in <<mipreg-standard>> and <<miereg-standard>> respectively.
 
 [[mipreg-standard]]
 .Standard portion (bits 15:0) of `mip`.
-include::images/bytefield/mipreg-standard.adoc[]
+include::images/bytefield/mipreg-standard.edn[]
 
 [[miereg-standard]]
 .Standard portion (bits 15:0) of `mie`.
-include::images/bytefield/miereg-standard.adoc[]
+include::images/bytefield/miereg-standard.edn[]
 endif::[]
 
 ifeval::[{note} == true]
@@ -2055,11 +2055,12 @@ formatted as shown in <<mipreg-standard>> and <<miereg-standard>> respectively.
 
 [[mipreg-standard]]
 .Standard portion (bits 15:0) of `mip`.
-include::images/bytefield/mipreg-standard.adoc[]
+include::images/bytefield/mipreg-standard.edn[]
 
 [[miereg-standard]]
 .Standard portion (bits 15:0) of `mie`.
-include::images/bytefield/miereg-standard.adoc[]
+include::images/bytefield/miereg-standard.edn[]
+endif::[]
 
 [{ohg-config}]
 Bits `mip`.MEIP and `mie`.MEIE are the interrupt-pending and
@@ -2156,7 +2157,7 @@ endif::[]
 
 ifdef::archi-default,RVZsmcntrpmf-true[]
 .Hardware performance monitor counters.
-include::images/bytefield/hpmevents.adoc[]
+include::images/bytefield/hpmevents.edn[]
 
 The `mhpmcounters` are *WARL* registers that support up to 64 bits of
 precision on RV32 and RV64.
@@ -2190,7 +2191,7 @@ these events is defined by the platform, but event 0 is defined to mean
 selector are read-only 0.
 
 .Hardware performance monitor counters.
-include::images/bytefield/hpmevents.adoc[]
+include::images/bytefield/hpmevents.edn[]
 endif::[]
 
 The `mhpmcounters` are *WARL* registers that support up to 64 bits of
@@ -2224,7 +2225,7 @@ counters to the next-lower privileged mode.
 
 ifdef::archi-default,RVU-true[]
 .Counter-enable (`mcounteren`) register.
-include::images/bytefield/counteren.adoc[]
+include::images/bytefield/counteren.edn[]
 
 The settings in this register only control accessibility. The act of
 reading or writing this register does not affect the underlying
@@ -2285,7 +2286,7 @@ endif::[]
 ==== Machine Counter-Inhibit (`mcountinhibit`) Register
 
 .Counter-inhibit `mcountinhibit` register
-include::images/bytefield/counterinh.adoc[]
+include::images/bytefield/counterinh.edn[]
 
 ifdef::archi-default,RVZsmcntrpmf-true[]
 The counter-inhibit register `mcountinhibit` is a 32-bit *WARL* register that
@@ -2333,7 +2334,7 @@ machine-mode hart-local context space and swapped with a user register
 upon entry to an M-mode trap handler.
 
 .Machine-mode scratch register.
-include::images/bytefield/mscratch.adoc[]
+include::images/bytefield/mscratch.edn[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -2394,7 +2395,7 @@ though it may be explicitly written by software.
 
 [[mepcreg]]
 .Machine exception program counter register.
-include::images/bytefield/mepcreg.adoc[]
+include::images/bytefield/mepcreg.edn[]
 
 [[mcause]]
 ==== Machine Cause (`mcause`) Register
@@ -2413,7 +2414,7 @@ the possible machine-level exception codes. The Exception Code is a
 
 [[mcausereg]]
 .Machine Cause (`mcause`) register.
-include::images/bytefield/mcausereg.adoc[]
+include::images/bytefield/mcausereg.edn[]
 
 ifdef::archi-default,RVU-true[]
 Note that load and load-reserved instructions generate load exceptions,
@@ -2519,6 +2520,9 @@ Counter-overflow interrupt +
 _Reserved_ +
 _Designated for platform use_
 |0 +
+0 +
+0 +
+0 +
 0 +
 0 +
 0 +
@@ -2722,7 +2726,7 @@ particularly those with hardware page-table walkers.
 
 [[mtvalreg]]
 .Machine Trap Value (`mtval`) register.
-include::images/bytefield/mtvalreg.adoc[]
+include::images/bytefield/mtvalreg.edn[]
 
 
 If `mtval` is written with a nonzero value when a misaligned load or
@@ -2815,7 +2819,7 @@ and their configuration.
 
 [[mconfigptrreg]]
 .Machine Configuration Pointer (`mconfigptr`) register.
-include::images/bytefield/mconfigptrreg.adoc[]
+include::images/bytefield/mconfigptrreg.edn[]
 
 
 The pointer alignment in bits must be no smaller than MXLEN:
@@ -2863,7 +2867,7 @@ privileged than M.
 
 [[menvcfgreg]]
 .Machine environment configuration (`menvcfg`) register.
-include::images/wavedrom/menvcfgreg.adoc[]
+include::images/wavedrom/menvcfgreg.edn[]
 
 
 If bit FIOM (Fence of I/O implies Memory) is set to one in `menvcfg`,
@@ -3001,9 +3005,7 @@ ifdef::archi-CVA6+RVU-true[]
 endif::[]
 
 ifdef::archi-default,RVU-true[]
-The definition of the PMM field will be furnished by the forthcoming
-Smnpm extension. Its allocation within `menvcfg` may change prior to the
-ratification of that extension.
+The definition of the PMM field is furnished by the Smnpm extension.
 endif::[]
 
 ifdef::archi-CVA6+RVU-true[]
@@ -3076,19 +3078,15 @@ shown in <<mseccfg>>, that controls security features.
 
 [[mseccfg]]
 .Machine security configuration (`mseccfg`) register.
-include::images/wavedrom/mseccfg.adoc[]
+include::images/wavedrom/mseccfg.edn[]
 
-The definitions of the SSEED and USEED fields will be furnished by the
-forthcoming entropy-source extension, Zkr. Their allocations within
-`mseccfg` may change prior to the ratification of that extension.
+The definitions of the SSEED and USEED fields are furnished by the
+entropy-source extension, Zkr.
 
-The definitions of the RLB, MMWP, and MML fields will be furnished by
-the forthcoming PMP-enhancement extension, Smepmp. Their allocations
-within `mseccfg` may change prior to the ratification of that extension.
+The definitions of the RLB, MMWP, and MML fields are furnished by the
+PMP-enhancement extension, Smepmp.
 
-The definition of the PMM field will be furnished by the forthcoming
-Smmpm extension. Its allocation within `mseccfg` may change prior to the
-ratification of that extension.
+The definition of the PMM field is furnished by the Smmpm extension.
 
 The Zicfilp extension adds the `MLPE` field in `mseccfg`. When `MLPE` field is
 1, Zicfilp extension is enabled in M-mode. When the `MLPE` field is 0, the
@@ -3141,10 +3139,10 @@ writing `mtimecmp`). The interrupt will only be taken if interrupts are
 enabled and the MTIE bit is set in the `mie` register.
 
 .Machine time register (memory-mapped control register).
-include::images/bytefield/mtime.adoc[]
+include::images/bytefield/mtime.edn[]
 
 .Machine time compare register (memory-mapped control register).
-include::images/bytefield/mtimecmp.adoc[]
+include::images/bytefield/mtimecmp.edn[]
 
 ifeval::[{note} == true]
 [NOTE]
@@ -3228,7 +3226,7 @@ endif::[]
 
 ==== Environment Call and Breakpoint
 
-include::images/wavedrom/mm-env-call.adoc[]
+include::images/wavedrom/mm-env-call.edn[]
 
 ifdef::archi-default,RVU-true[]
 The ECALL instruction is used to make a request to the supporting
@@ -3281,7 +3279,7 @@ not increment the `minstret` CSR.
 Instructions to return from trap are encoded under the PRIV minor
 opcode.
 
-include::images/wavedrom/trap-return.adoc[]
+include::images/wavedrom/trap-return.edn[]
 
 ifdef::archi-default,RVU-true[]
 To return after handling a trap, there are separate trap return
@@ -3349,7 +3347,7 @@ cannot raise an illegal-instruction exception because TW=0 in `mstatus`, as
 described in <<virt-control>>.
 endif::[]
 
-include::images/wavedrom/wfi.adoc[]
+include::images/wavedrom/wfi.edn[]
 
 If an enabled interrupt is present or later becomes present while the
 hart is stalled, the interrupt trap will be taken on the following
@@ -3444,7 +3442,7 @@ minimum required privilege mode, as do other SYSTEM instructions.
 
 [[customsys]]
 .SYSTEM instruction encodings designated for custom use.
-include::images/bytefield/cust-sys-instr.adoc[]
+include::images/bytefield/cust-sys-instr.edn[]
 
 [[reset]]
 === Reset
@@ -3463,7 +3461,9 @@ the platform mandates a different reset value for some PMP registers’ A
 and L fields. If the hypervisor extension is implemented, the
 `hgatp`.MODE and `vsatp`.MODE fields are reset to 0. If the Smrnmi
 extension is implemented, the `mnstatus`.NMIE field is reset to 0. No
- *WARL* field contains an illegal value. All other hart state is UNSPECIFIED.
+ *WARL* field contains an illegal value. If the Zicfilp extension is
+implemented, the `mseccfg`.MLPE field is reset to 0. All other hart
+state is UNSPECIFIED.
 
 The `mcause` values after reset have implementation-specific
 interpretation, but the value 0 should be returned on implementations
@@ -3817,7 +3817,7 @@ Specific supported values for this PMA are represented by MAG__NN__, e.g.,
 MAG16 indicates the misaligned atomicity granule is at least 16 bytes.
 
 The misaligned atomicity granule PMA applies only to AMOs, loads and stores
-defined in the base ISAs, and loads and stores of no more than MXLEN bits
+defined in the base ISAs, and loads and stores of no more than XLEN bits
 defined in the F, D, and Q extensions.
 For an instruction in that set, if all accessed bytes lie within the same
 misaligned atomicity granule, the instruction will not raise an exception for
@@ -4145,11 +4145,11 @@ endif::[]
 ifdef::archi-default[]
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
-include::images/bytefield/pmp-rv32.adoc[]
+include::images/bytefield/pmp-rv32.edn[]
 
 [[pmpcfg-rv64]]
 .RV64 PMP configuration CSR layout.
-include::images/bytefield/pmp-rv64.adoc[]
+include::images/bytefield/pmp-rv64.edn[]
 
 
 The PMP address registers are CSRs named `pmpaddr0`-`pmpaddr63`. Each
@@ -4177,11 +4177,11 @@ endif::[]
 ifdef::archi-default[]
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
-include::images/bytefield/pmpaddr-rv32.adoc[]
+include::images/bytefield/pmpaddr-rv32.edn[]
 
 [[pmpaddr-rv64]]
 .PMP address register format, RV64.
-include::images/bytefield/pmpaddr-rv64.adoc[]
+include::images/bytefield/pmpaddr-rv64.edn[]
 endif::[]
 
 ifdef::archi-CVA6[]
@@ -4201,7 +4201,7 @@ The 14 upper PMP configuration CSRs, `pmpcfg2`-`pmpcfg15`, are read-only zero.
 
 [[pmpcfg-rv32]]
 .RV32 PMP configuration CSR layout.
-include::images/bytefield/pmp-rv32.adoc[]
+include::images/bytefield/pmp-rv32.edn[]
 
 [{ohg-config}] The PMP address registers are CSRs named `pmpaddr0`-`pmpaddr63`. Each
 PMP address register encodes bits 33-2 of a 34-bit physical address for
@@ -4212,7 +4212,7 @@ The 56 upper PMP address CSRs, `pmpaddr8`-`pmpaddr63`, are read-only zero.
 
 [[pmpaddr-rv32]]
 .PMP address register format, RV32.
-include::images/bytefield/pmpaddr-rv32.adoc[]
+include::images/bytefield/pmpaddr-rv32.edn[]
 endif::[]
 
 <<pmpcfg>> shows the layout of a PMP configuration
@@ -4223,7 +4223,7 @@ W, and X fields form a collective *WARL* field for which the combinations with R
 
 [[pmpcfg]]
 .PMP configuration register format.
-include::images/bytefield/pmpcfg.adoc[]
+include::images/bytefield/pmpcfg.edn[]
 
 
 Attempting to fetch an instruction from a PMP region that does not have
@@ -4240,7 +4240,6 @@ access-fault exception.
 The A field in a PMP entry's configuration register encodes the
 address-matching mode of the associated PMP address register. The
 encoding of this field is shown in <<pmpcfg-a>>.
-
 When A=0, this PMP entry is disabled and matches no addresses. Two other
 address-matching modes are supported: naturally aligned power-of-2
 regions (NAPOT), including the special case of naturally aligned

@@ -440,7 +440,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>The RISC-V Instruction Set Manual for CV32A65X: Volume II: Privileged Architecture</h1>
 <div class="details">
-<span id="revnumber">version 20240801</span>
+<span id="revnumber">version 20241017</span>
+<br><span id="revremark">This document is in Ratified state.</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -564,10 +565,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#hypervisor">14. "H" Extension for Hypervisor Support, Version 1.0</a></li>
 <li><a href="#priv-cfi">15. Control-flow Integrity (CFI)</a></li>
 <li><a href="#ssdbltrp">16. "Ssdbltrp" Double Trap Extension, Version 1.0</a></li>
-<li><a href="#_risc_v_privileged_instruction_set_listings">17. RISC-V Privileged Instruction Set Listings</a></li>
-<li><a href="#_history">18. History</a>
+<li><a href="#Zpm">17. Pointer Masking Extensions, Version 1.0.0</a></li>
+<li><a href="#_risc_v_privileged_instruction_set_listings">18. RISC-V Privileged Instruction Set Listings</a></li>
+<li><a href="#_history">19. History</a>
 <ul class="sectlevel2">
-<li><a href="#_research_funding_at_uc_berkeley">18.1. Research Funding at UC Berkeley</a></li>
+<li><a href="#_research_funding_at_uc_berkeley">19.1. Research Funding at UC Berkeley</a></li>
 </ul>
 </li>
 <li><a href="#_bibliography">Bibliography</a></li>
@@ -590,11 +592,11 @@ Avižienis, Jacob Bachmeyer, Allen J. Baum, Jonathan Behrens, Paolo Bonzini, Rus
 Christopher Celio, Chuanhua Chang, David Chisnall, Anthony Coulter, Palmer Dabbelt, Monte
 Dalrymple, Paul Donahue, Greg Favor, Dennis Ferguson,  Marc Gauthier, Andy Glew,
 Gary Guo, Mike Frysinger, John Hauser, David Horner, Olof
-Johansson, David Kruckemyer, Yunsup Lee, Daniel Lustig, Andrew Lutomirski, Prashanth Mundkur,
+Johansson, David Kruckemyer, Yunsup Lee, Daniel Lustig, Andrew Lutomirski, Martin Maas, Prashanth Mundkur,
 Jonathan Neuschäfer, Rishiyur
 Nikhil, Stefan O&#8217;Rear, Albert Ou, John Ousterhout, David Patterson, Dmitri
 Pavlov, Kade Phillips, Josh Scheid, Colin Schmidt, Michael Taylor, Wesley Terpstra, Matt Thomas, Tommy Thorn, Ray
-VanDeWalker, Megan Wachs, Steve Wallach, Andrew Waterman, Claire Wolf,
+VanDeWalker, Megan Wachs, Steve Wallach, Andrew Waterman, Claire Wolf, Adam Zabrocki,
 and Reinoud Zandijk..</em></p>
 </div>
 <div class="paragraph">
@@ -623,11 +625,11 @@ Jean-Roch Coulon, André Sintzoff.</em></p>
 OpenHW Group CV32A65X.</p>
 </div>
 <div class="paragraph">
-<p><strong class="big"><em>Preface to Version 20240801</em></strong></p>
+<p><strong class="big"><em>Preface to Version 20241017</em></strong></p>
 </div>
 <div class="paragraph">
 <p>This document describes the RISC-V privileged architecture. This
-release, version 20240801, contains the following versions of the RISC-V ISA
+release, version 20241017, contains the following versions of the RISC-V ISA
 modules:</p>
 </div>
 <table class="tableblock frame-all grid-all fit-content center">
@@ -645,15 +647,15 @@ modules:</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><em>Machine ISA</em><br>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Machine ISA</strong><br>
 <strong>Smstateen Extension</strong><br>
 <strong>Smcsrind/Sscsrind Extension</strong><br>
 <strong>Smepmp</strong><br>
 <strong>Smcntrpmf</strong><br>
 <strong>Smrnmi Extension</strong><br>
 <strong>Smcdeleg</strong><br>
-<em>Smdbltrp</em><br>
-<em>Supervisor ISA</em><br>
+<strong>Smdbltrp</strong><br>
+<strong>Supervisor ISA</strong><br>
 <strong>Svade Extension</strong><br>
 <strong>Svnapot Extension</strong><br>
 <strong>Svpbmt Extension</strong><br>
@@ -661,19 +663,11 @@ modules:</p>
 <strong>Svadu Extension</strong><br>
 <strong>Sstc</strong><br>
 <strong>Sscofpmf</strong><br>
-<em>Ssdbltrp</em><br>
+<strong>Ssdbltrp</strong><br>
 <strong>Hypervisor ISA</strong><br>
-<em>Shlcofideleg</em><br>
+<strong>Shlcofideleg</strong><br>
 <strong>Svvptc</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>1.13</em><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<strong>1.0</strong><br>
-<em>1.0</em><br>
-<em>1.13</em><br>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>1.13</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
@@ -681,19 +675,19 @@ modules:</p>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
 <strong>1.0</strong><br>
-<em>1.0</em><br>
+<strong>1.13</strong><br>
 <strong>1.0</strong><br>
-<em>0.1</em><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
+<strong>1.0</strong><br>
 <strong>1.0</strong></p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock"><em>Draft</em><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<strong>Ratified</strong><br>
-<em>Draft</em><br>
-<em>Draft</em><br>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
@@ -701,9 +695,17 @@ modules:</p>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
 <strong>Ratified</strong><br>
-<em>Draft</em><br>
 <strong>Ratified</strong><br>
-<em>Draft</em><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
+<strong>Ratified</strong><br>
 <strong>Ratified</strong></p></td>
 </tr>
 </tbody>
@@ -2184,10 +2186,10 @@ SRO</p></td>
 <code>stval</code><br>
 <code>sip</code><br>
 <code>scountovf</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Scratch register for supervisor trap handlers.<br>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supervisor scratch register.<br>
 Supervisor exception program counter.<br>
 Supervisor trap cause.<br>
-Supervisor bad address or instruction.<br>
+Supervisor trap value.<br>
 Supervisor interrupt pending.<br>
 Supervisor count overflow.</p></td>
 </tr>
@@ -2302,7 +2304,7 @@ HRO</p></td>
 <code>hvip</code><br>
 <code>htinst</code><br>
 <code>hgeip</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Hypervisor bad guest physical address.<br>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hypervisor trap value.<br>
 Hypervisor interrupt pending.<br>
 Hypervisor virtual interrupt pending.<br>
 Hypervisor trap instruction (transformed).<br>
@@ -2426,7 +2428,7 @@ Virtual supervisor trap handler base address.<br>
 Virtual supervisor scratch register.<br>
 Virtual supervisor exception program counter.<br>
 Virtual supervisor trap cause.<br>
-Virtual supervisor bad address or instruction.<br>
+Virtual supervisor trap value.<br>
 Virtual supervisor interrupt pending.<br>
 Virtual supervisor address translation and protection.</p></td>
 </tr>
@@ -2541,13 +2543,13 @@ MRW</p></td>
 <code>mip</code><br>
 <code>mtinst</code><br>
 <code>mtval2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Scratch register for machine trap handlers.<br>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Machine scratch register.<br>
 Machine exception program counter.<br>
 Machine trap cause.<br>
-Machine bad address or instruction.<br>
+Machine trap value.<br>
 Machine interrupt pending.<br>
 Machine trap instruction (transformed).<br>
-Machine bad guest physical address.</p></td>
+Machine second trap value.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top" colspan="4"><p class="tableblock">Machine Configuration</p></td>
@@ -3858,6 +3860,9 @@ Counter-overflow interrupt<br>
 0<br>
 0<br>
 0<br>
+0<br>
+0<br>
+0<br>
 0</p></td>
 <td class="tableblock halign-right valign-top"><p class="tableblock">0<br>
 1<br>
@@ -4448,10 +4453,8 @@ access-fault exception.</p>
 <div class="paragraph">
 <p>The A field in a PMP entry&#8217;s configuration register encodes the
 address-matching mode of the associated PMP address register. The
-encoding of this field is shown in <a href="#pmpcfg-a">Table 14</a>.</p>
-</div>
-<div class="paragraph">
-<p>When A=0, this PMP entry is disabled and matches no addresses. Two other
+encoding of this field is shown in <a href="#pmpcfg-a">Table 14</a>.
+When A=0, this PMP entry is disabled and matches no addresses. Two other
 address-matching modes are supported: naturally aligned power-of-2
 regions (NAPOT), including the special case of naturally aligned
 four-byte regions (NA4); and the top boundary of an arbitrary range
@@ -4679,7 +4682,15 @@ check the PMP settings synchronously.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_risc_v_privileged_instruction_set_listings">17. RISC-V Privileged Instruction Set Listings</h2>
+<h2 id="Zpm">17. Pointer Masking Extensions, Version 1.0.0</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CV32A65X: These extensions are not supported.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_risc_v_privileged_instruction_set_listings">18. RISC-V Privileged Instruction Set Listings</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This chapter presents instruction-set listings for all instructions
@@ -4699,10 +4710,10 @@ manual.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_history">18. History</h2>
+<h2 id="_history">19. History</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_research_funding_at_uc_berkeley">18.1. Research Funding at UC Berkeley</h3>
+<h3 id="_research_funding_at_uc_berkeley">19.1. Research Funding at UC Berkeley</h3>
 <div class="paragraph">
 <p>Development of the RISC-V architecture and implementations has been
 partially funded by the following sponsors.</p>
@@ -4747,7 +4758,7 @@ inferred.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 20240801<br>
+Version 20241017<br>
 </div>
 </div>
 </body>
