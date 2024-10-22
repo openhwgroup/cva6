@@ -1,0 +1,6 @@
+[[Zpm]]
+== Pointer Masking Extensions, Version 1.0.0
+
+ifeval::[{RVZpm} == false]
+{ohg-config}: These extensions are not supported.
+endif::[]
