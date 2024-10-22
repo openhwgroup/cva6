@@ -8,6 +8,7 @@
 :SV: SV0
 :RVZicfilp: false
 :RVZicfiss: false
+:RVZpm: false
 :RVZsmstateen: false
 :RVZsmcsrind-RVZsscsrind: false
 :RVZsmepmp: false

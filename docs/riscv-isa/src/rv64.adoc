@@ -46,7 +46,7 @@ endif::[]
 
 ==== Integer Register-Immediate Instructions
 
-include::images/wavedrom/rv64i-base-int.adoc[]
+include::images/wavedrom/rv64i-base-int.edn[]
 [[rv64i-base-int]]
 //.RV64I register-immediate instructions
 
@@ -57,7 +57,7 @@ immediate to register _rs1_ and produces the proper sign extension of a
 writes the sign extension of the lower 32 bits of register _rs1_ into
 register _rd_ (assembler pseudoinstruction SEXT.W).
 
-include::images/wavedrom/rv64i-slli.adoc[]
+include::images/wavedrom/rv64i-slli.edn[]
 [[rv64i-slli]]
 //.RV64I register-immediate (descr ADDIW) instructions
 
@@ -74,7 +74,7 @@ copied into the vacated upper bits).
 (((RV64I, SRLIW)))
 (((RV64I, RV64I-only)))
 
-include::images/wavedrom/rv64i-slliw.adoc[]
+include::images/wavedrom/rv64i-slliw.edn[]
 [[rv64i-slliw]]
 
 SLLIW, SRLIW, and SRAIW are RV64I-only instructions that are analogously
@@ -91,7 +91,7 @@ are marked as reserved. This is a backwards-compatible change.
 ====
 endif::[]
 
-include::images/wavedrom/rv64_lui-auipc.adoc[]
+include::images/wavedrom/rv64-lui-auipc.edn[]
 [[rv64_lui-auipc]]
 //.RV64I register-immediate (descr) instructions
 
@@ -119,7 +119,7 @@ endif::[]
 ==== Integer Register-Register Operations
 
 //this diagramdoesn't match the tex specification
-include::images/wavedrom/rv64i_int-reg-reg.adoc[]
+include::images/wavedrom/rv64i-int-reg-reg.edn[]
 [[int_reg-reg]]
 //.RV64I integer register-register instructions
 
@@ -147,7 +147,7 @@ results to 64 bits. The shift amount is given by _rs2[4:0]_.
 RV64I extends the address space to 64 bits. The execution environment
 will define what portions of the address space are legal to access.
 
-include::images/wavedrom/load_store.adoc[]
+include::images/wavedrom/load-store.edn[]
 [[load_store]]
 //.Load and store instructions
 

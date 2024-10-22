@@ -4,7 +4,7 @@ include::config.adoc[]
 = The RISC-V Instruction Set Manual for {ohg-config}: Volume I - Unprivileged Architecture
 include::../docs-resources/global-config.adoc[]
 :description: Unprivileged Architecture
-:revnumber: 20240801
+:revnumber: 20241017
 //:revremark: Pre-release version
 :colophon:
 :preface-title: Preamble
@@ -30,6 +30,7 @@ include::../docs-resources/global-config.adoc[]
 :example-caption: Example
 :listing-caption: Listing
 :sectnums:
+:sectnumlevels: 5
 :toc: left
 :toclevels: 5
 :source-highlighter: pygments
@@ -197,7 +198,6 @@ include::zfinx.adoc[]
 include::c-st-ext.adoc[]
 include::zc.adoc[]
 include::b-st-ext.adoc[]
-include::j-st-ext.adoc[]
 include::p-st-ext.adoc[]
 include::v-st-ext.adoc[]
 include::scalar-crypto.adoc[]
