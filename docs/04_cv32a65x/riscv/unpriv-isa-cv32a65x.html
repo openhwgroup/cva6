@@ -440,7 +440,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>The RISC-V Instruction Set Manual for CV32A65X: Volume I - Unprivileged Architecture</h1>
 <div class="details">
-<span id="revnumber">version 20240801</span>
+<span id="revnumber">version 20241017</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -532,9 +532,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_preserved_program_order">18.1.3. Preserved Program Order</a></li>
 <li><a href="#_memory_model_axioms">18.1.4. Memory Model Axioms</a>
 <ul class="sectlevel4">
-<li><a href="#ax-load">Load Value Axiom</a></li>
-<li><a href="#ax-atom">Atomicity Axiom</a></li>
-<li><a href="#ax-prog">Progress Axiom</a></li>
+<li><a href="#ax-load">18.1.4.1. Load Value Axiom</a></li>
+<li><a href="#ax-atom">18.1.4.2. Atomicity Axiom</a></li>
+<li><a href="#ax-prog">18.1.4.3. Progress Axiom</a></li>
 </ul>
 </li>
 </ul>
@@ -612,25 +612,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_pushpop_functional_overview">29.13.1. PUSH/POP functional overview</a></li>
 <li><a href="#_example_usage">29.13.2. Example usage</a>
 <ul class="sectlevel4">
-<li><a href="#pushpop-areg-list">Stack pointer adjustment handling</a></li>
-<li><a href="#_register_list_handling">Register list handling</a></li>
+<li><a href="#pushpop-areg-list">29.13.2.1. Stack pointer adjustment handling</a></li>
+<li><a href="#_register_list_handling">29.13.2.2. Register list handling</a></li>
 </ul>
 </li>
 <li><a href="#pushpop-idempotent-memory">29.13.3. PUSH/POP Fault handling</a></li>
 <li><a href="#pushpop-software-view">29.13.4. Software view of execution</a>
 <ul class="sectlevel4">
-<li><a href="#_software_view_of_the_push_sequence">Software view of the PUSH sequence</a></li>
-<li><a href="#_software_view_of_the_poppopret_sequence">Software view of the POP/POPRET sequence</a></li>
+<li><a href="#_software_view_of_the_push_sequence">29.13.4.1. Software view of the PUSH sequence</a></li>
+<li><a href="#_software_view_of_the_poppopret_sequence">29.13.4.2. Software view of the POP/POPRET sequence</a></li>
 </ul>
 </li>
 <li><a href="#pushpop_non-idem-mem">29.13.5. Non-idempotent memory handling</a></li>
 <li><a href="#_example_rv32i_pushpop_sequences">29.13.6. Example RV32I PUSH/POP sequences</a>
 <ul class="sectlevel4">
-<li><a href="#_cm_push_ra_s0_s2_64">cm.push  {ra, s0-s2}, -64</a></li>
-<li><a href="#_cm_push_ra_s0_s11_112">cm.push {ra, s0-s11}, -112</a></li>
-<li><a href="#_cm_pop_ra_16">cm.pop   {ra}, 16</a></li>
-<li><a href="#_cm_pop_ra_s0_s3_48">cm.pop {ra, s0-s3}, 48</a></li>
-<li><a href="#_cm_pop_ra_s0_s4_64">cm.pop {ra, s0-s4}, 64</a></li>
+<li><a href="#_cm_push_ra_s0_s2_64">29.13.6.1. cm.push  {ra, s0-s2}, -64</a></li>
+<li><a href="#_cm_push_ra_s0_s11_112">29.13.6.2. cm.push {ra, s0-s11}, -112</a></li>
+<li><a href="#_cm_pop_ra_16">29.13.6.3. cm.pop   {ra}, 16</a></li>
+<li><a href="#_cm_pop_ra_s0_s3_48">29.13.6.4. cm.pop {ra, s0-s3}, 48</a></li>
+<li><a href="#_cm_pop_ra_s0_s4_64">29.13.6.5. cm.pop {ra, s0-s4}, 64</a></li>
 </ul>
 </li>
 <li><a href="#insns-cm_push">29.13.7. cm.push</a></li>
@@ -662,14 +662,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#zba">30.4.1. Zba: Address generation</a></li>
 <li><a href="#zbb">30.4.2. Zbb: Basic bit-manipulation</a>
 <ul class="sectlevel4">
-<li><a href="#_logical_with_negate">Logical with negate</a></li>
-<li><a href="#_count_leadingtrailing_zero_bits">Count leading/trailing zero bits</a></li>
-<li><a href="#_count_population">Count population</a></li>
-<li><a href="#_integer_minimummaximum">Integer minimum/maximum</a></li>
-<li><a href="#_sign_extension_and_zero_extension">Sign extension and zero extension</a></li>
-<li><a href="#_bitwise_rotation">Bitwise rotation</a></li>
-<li><a href="#_or_combine">OR Combine</a></li>
-<li><a href="#_byte_reverse">Byte-reverse</a></li>
+<li><a href="#_logical_with_negate">30.4.2.1. Logical with negate</a></li>
+<li><a href="#_count_leadingtrailing_zero_bits">30.4.2.2. Count leading/trailing zero bits</a></li>
+<li><a href="#_count_population">30.4.2.3. Count population</a></li>
+<li><a href="#_integer_minimummaximum">30.4.2.4. Integer minimum/maximum</a></li>
+<li><a href="#_sign_extension_and_zero_extension">30.4.2.5. Sign extension and zero extension</a></li>
+<li><a href="#_bitwise_rotation">30.4.2.6. Bitwise rotation</a></li>
+<li><a href="#_or_combine">30.4.2.7. OR Combine</a></li>
+<li><a href="#_byte_reverse">30.4.2.8. Byte-reverse</a></li>
 </ul>
 </li>
 <li><a href="#zbc">30.4.3. Zbc: Carry-less multiplication</a></li>
@@ -742,71 +742,70 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
-<li><a href="#j-extendj">31. "J"  Extension for Dynamically Translated Languages, Version 0.0</a></li>
-<li><a href="#packedsimd">32. "P" Extension for Packed-SIMD Instructions, Version 0.2</a></li>
-<li><a href="#vector">33. "V" Standard Extension for Vector Operations, Version 1.0</a></li>
-<li><a href="#scalar-crypto">34. Cryptography Extensions: Scalar &amp; Entropy Source Instructions, Version 1.0.1</a></li>
-<li><a href="#vector-crypto">35. Cryptography Extensions: Vector Instructions, Version 1.0</a></li>
-<li><a href="#unpriv-cfi">36. Control-flow Integrity (CFI)</a></li>
-<li><a href="#rv32-64g">37. RV32/64G Instruction Set Listings</a></li>
-<li><a href="#extending">38. Extending RISC-V</a>
+<li><a href="#packedsimd">31. "P" Extension for Packed-SIMD Instructions, Version 0.2</a></li>
+<li><a href="#vector">32. "V" Standard Extension for Vector Operations, Version 1.0</a></li>
+<li><a href="#scalar-crypto">33. Cryptography Extensions: Scalar &amp; Entropy Source Instructions, Version 1.0.1</a></li>
+<li><a href="#vector-crypto">34. Cryptography Extensions: Vector Instructions, Version 1.0</a></li>
+<li><a href="#unpriv-cfi">35. Control-flow Integrity (CFI)</a></li>
+<li><a href="#rv32-64g">36. RV32/64G Instruction Set Listings</a></li>
+<li><a href="#extending">37. Extending RISC-V</a>
 <ul class="sectlevel2">
-<li><a href="#_extension_terminology">38.1. Extension Terminology</a>
+<li><a href="#_extension_terminology">37.1. Extension Terminology</a>
 <ul class="sectlevel3">
-<li><a href="#_standard_versus_non_standard_extension">38.1.1. Standard versus Non-Standard Extension</a></li>
-<li><a href="#_instruction_encoding_spaces_and_prefixes">38.1.2. Instruction Encoding Spaces and Prefixes</a></li>
-<li><a href="#_greenfield_versus_brownfield_extensions">38.1.3. Greenfield versus Brownfield Extensions</a></li>
-<li><a href="#_standard_compatible_global_encodings">38.1.4. Standard-Compatible Global Encodings</a></li>
-<li><a href="#_guaranteed_non_standard_encoding_space">38.1.5. Guaranteed Non-Standard Encoding Space</a></li>
+<li><a href="#_standard_versus_non_standard_extension">37.1.1. Standard versus Non-Standard Extension</a></li>
+<li><a href="#_instruction_encoding_spaces_and_prefixes">37.1.2. Instruction Encoding Spaces and Prefixes</a></li>
+<li><a href="#_greenfield_versus_brownfield_extensions">37.1.3. Greenfield versus Brownfield Extensions</a></li>
+<li><a href="#_standard_compatible_global_encodings">37.1.4. Standard-Compatible Global Encodings</a></li>
+<li><a href="#_guaranteed_non_standard_encoding_space">37.1.5. Guaranteed Non-Standard Encoding Space</a></li>
 </ul>
 </li>
-<li><a href="#_risc_v_extension_design_philosophy">38.2. RISC-V Extension Design Philosophy</a></li>
-<li><a href="#fix32b">38.3. Extensions within fixed-width 32-bit instruction format</a>
+<li><a href="#_risc_v_extension_design_philosophy">37.2. RISC-V Extension Design Philosophy</a></li>
+<li><a href="#fix32b">37.3. Extensions within fixed-width 32-bit instruction format</a>
 <ul class="sectlevel3">
-<li><a href="#_available_30_bit_instruction_encoding_spaces">38.3.1. Available 30-bit instruction encoding spaces</a></li>
-<li><a href="#_available_25_bit_instruction_encoding_spaces">38.3.2. Available 25-bit instruction encoding spaces</a></li>
-<li><a href="#_available_22_bit_instruction_encoding_spaces">38.3.3. Available 22-bit instruction encoding spaces</a></li>
-<li><a href="#_other_spaces">38.3.4. Other spaces</a></li>
+<li><a href="#_available_30_bit_instruction_encoding_spaces">37.3.1. Available 30-bit instruction encoding spaces</a></li>
+<li><a href="#_available_25_bit_instruction_encoding_spaces">37.3.2. Available 25-bit instruction encoding spaces</a></li>
+<li><a href="#_available_22_bit_instruction_encoding_spaces">37.3.3. Available 22-bit instruction encoding spaces</a></li>
+<li><a href="#_other_spaces">37.3.4. Other spaces</a></li>
 </ul>
 </li>
-<li><a href="#_adding_aligned_64_bit_instruction_extensions">38.4. Adding aligned 64-bit instruction extensions</a></li>
-<li><a href="#_supporting_vliw_encodings">38.5. Supporting VLIW encodings</a>
+<li><a href="#_adding_aligned_64_bit_instruction_extensions">37.4. Adding aligned 64-bit instruction extensions</a></li>
+<li><a href="#_supporting_vliw_encodings">37.5. Supporting VLIW encodings</a>
 <ul class="sectlevel3">
-<li><a href="#_fixed_size_instruction_group">38.5.1. Fixed-size instruction group</a></li>
-<li><a href="#_encoded_length_groups">38.5.2. Encoded-Length Groups</a></li>
-<li><a href="#_fixed_size_instruction_bundles">38.5.3. Fixed-Size Instruction Bundles</a></li>
-<li><a href="#_end_of_group_bits_in_prefix">38.5.4. End-of-Group bits in Prefix</a></li>
+<li><a href="#_fixed_size_instruction_group">37.5.1. Fixed-size instruction group</a></li>
+<li><a href="#_encoded_length_groups">37.5.2. Encoded-Length Groups</a></li>
+<li><a href="#_fixed_size_instruction_bundles">37.5.3. Fixed-Size Instruction Bundles</a></li>
+<li><a href="#_end_of_group_bits_in_prefix">37.5.4. End-of-Group bits in Prefix</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#naming">39. ISA Extension Naming Conventions</a>
+<li><a href="#naming">38. ISA Extension Naming Conventions</a>
 <ul class="sectlevel2">
-<li><a href="#_case_sensitivity">39.1. Case Sensitivity</a></li>
-<li><a href="#_base_integer_isa">39.2. Base Integer ISA</a></li>
-<li><a href="#_instruction_set_extension_names">39.3. Instruction-Set Extension Names</a></li>
-<li><a href="#_version_numbers">39.4. Version Numbers</a></li>
-<li><a href="#_underscores">39.5. Underscores</a></li>
-<li><a href="#_additional_standard_unprivileged_extension_names">39.6. Additional Standard Unprivileged Extension Names</a></li>
-<li><a href="#_supervisor_level_instruction_set_extensions">39.7. Supervisor-level Instruction-Set Extensions</a></li>
-<li><a href="#_hypervisor_level_instruction_set_extensions">39.8. Hypervisor-level Instruction-Set Extensions</a></li>
-<li><a href="#_machine_level_instruction_set_extensions">39.9. Machine-level Instruction-Set Extensions</a></li>
-<li><a href="#_non_standard_extension_names">39.10. Non-Standard Extension Names</a></li>
-<li><a href="#_subset_naming_convention">39.11. Subset Naming Convention</a></li>
+<li><a href="#_case_sensitivity">38.1. Case Sensitivity</a></li>
+<li><a href="#_base_integer_isa">38.2. Base Integer ISA</a></li>
+<li><a href="#_instruction_set_extension_names">38.3. Instruction-Set Extension Names</a></li>
+<li><a href="#_underscores">38.4. Underscores</a></li>
+<li><a href="#_additional_standard_unprivileged_extension_names">38.5. Additional Standard Unprivileged Extension Names</a></li>
+<li><a href="#_supervisor_level_instruction_set_extension_names">38.6. Supervisor-level Instruction-Set Extension Names</a></li>
+<li><a href="#_hypervisor_level_instruction_set_extension_names">38.7. Hypervisor-level Instruction-Set Extension Names</a></li>
+<li><a href="#_machine_level_instruction_set_extension_names">38.8. Machine-level Instruction-Set Extension Names</a></li>
+<li><a href="#_non_standard_extension_names">38.9. Non-Standard Extension Names</a></li>
+<li><a href="#_version_numbers">38.10. Version Numbers</a></li>
+<li><a href="#_subset_naming_convention">38.11. Subset Naming Convention</a></li>
 </ul>
 </li>
-<li><a href="#history">40. History and Acknowledgments</a>
+<li><a href="#history">39. History and Acknowledgments</a>
 <ul class="sectlevel2">
-<li><a href="#_why_develop_a_new_isa_rationale_from_berkeley_group">40.1. "Why Develop a new ISA?" Rationale from Berkeley Group</a></li>
-<li><a href="#_history_from_revision_1_0_of_isa_manual">40.2. History from Revision 1.0 of ISA manual</a></li>
-<li><a href="#_history_from_revision_2_0_of_isa_manual">40.3. History from Revision 2.0 of ISA manual</a></li>
-<li><a href="#_acknowledgments">40.4. Acknowledgments</a></li>
-<li><a href="#_history_from_revision_2_1">40.5. History from Revision 2.1</a></li>
-<li><a href="#_acknowledgments_2">40.6. Acknowledgments</a></li>
-<li><a href="#_history_from_revision_2_2">40.7. History from Revision 2.2</a></li>
-<li><a href="#_acknowledgments_3">40.8. Acknowledgments</a></li>
-<li><a href="#_history_for_revision_2_3">40.9. History for Revision 2.3</a></li>
-<li><a href="#_funding">40.10. Funding</a></li>
+<li><a href="#_why_develop_a_new_isa_rationale_from_berkeley_group">39.1. "Why Develop a new ISA?" Rationale from Berkeley Group</a></li>
+<li><a href="#_history_from_revision_1_0_of_isa_manual">39.2. History from Revision 1.0 of ISA manual</a></li>
+<li><a href="#_history_from_revision_2_0_of_isa_manual">39.3. History from Revision 2.0 of ISA manual</a></li>
+<li><a href="#_acknowledgments">39.4. Acknowledgments</a></li>
+<li><a href="#_history_from_revision_2_1">39.5. History from Revision 2.1</a></li>
+<li><a href="#_acknowledgments_2">39.6. Acknowledgments</a></li>
+<li><a href="#_history_from_revision_2_2">39.7. History from Revision 2.2</a></li>
+<li><a href="#_acknowledgments_3">39.8. Acknowledgments</a></li>
+<li><a href="#_history_for_revision_2_3">39.9. History for Revision 2.3</a></li>
+<li><a href="#_funding">39.10. Funding</a></li>
 </ul>
 </li>
 <li><a href="#_rvwmo_explanatory_material_version_0_1">Appendix A: RVWMO Explanatory Material, Version 0.1</a>
@@ -857,26 +856,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_shared_memory_state">B.3.4. Shared Memory State</a></li>
 <li><a href="#transitions">B.3.5. Transitions</a>
 <ul class="sectlevel4">
-<li><a href="#fetch">Fetch instruction</a></li>
-<li><a href="#initiate_load">Initiate memory load operations</a></li>
-<li><a href="#sat_by_forwarding">Satisfy memory load operation by forwarding from unpropagated stores</a></li>
-<li><a href="#sat_from_mem">Satisfy memory load operation from memory</a></li>
-<li><a href="#complete_loads">Complete load operations</a></li>
-<li><a href="#early_sc_fail">Early <code>sc</code> fail</a></li>
-<li><a href="#paired_sc">Paired <code>sc</code></a></li>
-<li><a href="#initiate_store_footprint">Initiate memory store operation footprints</a></li>
-<li><a href="#instantiate_store_value">Instantiate memory store operation values</a></li>
-<li><a href="#commit_stores">Commit store instruction</a></li>
-<li><a href="#prop_store">Propagate store operation</a></li>
-<li><a href="#commit_sc">Commit and propagate store operation of an <code>sc</code></a></li>
-<li><a href="#late_sc_fail">Late <code>sc</code> fail</a></li>
-<li><a href="#complete_stores">Complete store operations</a></li>
-<li><a href="#do_amo">Satisfy, commit and propagate operations of an AMO</a></li>
-<li><a href="#commit_fence">Commit fence</a></li>
-<li><a href="#reg_read">Register read</a></li>
-<li><a href="#reg_write">Register write</a></li>
-<li><a href="#sail_interp">Pseudocode internal step</a></li>
-<li><a href="#finish">Finish instruction</a></li>
+<li><a href="#fetch">B.3.5.1. Fetch instruction</a></li>
+<li><a href="#initiate_load">B.3.5.2. Initiate memory load operations</a></li>
+<li><a href="#sat_by_forwarding">B.3.5.3. Satisfy memory load operation by forwarding from unpropagated stores</a></li>
+<li><a href="#sat_from_mem">B.3.5.4. Satisfy memory load operation from memory</a></li>
+<li><a href="#complete_loads">B.3.5.5. Complete load operations</a></li>
+<li><a href="#early_sc_fail">B.3.5.6. Early <code>sc</code> fail</a></li>
+<li><a href="#paired_sc">B.3.5.7. Paired <code>sc</code></a></li>
+<li><a href="#initiate_store_footprint">B.3.5.8. Initiate memory store operation footprints</a></li>
+<li><a href="#instantiate_store_value">B.3.5.9. Instantiate memory store operation values</a></li>
+<li><a href="#commit_stores">B.3.5.10. Commit store instruction</a></li>
+<li><a href="#prop_store">B.3.5.11. Propagate store operation</a></li>
+<li><a href="#commit_sc">B.3.5.12. Commit and propagate store operation of an <code>sc</code></a></li>
+<li><a href="#late_sc_fail">B.3.5.13. Late <code>sc</code> fail</a></li>
+<li><a href="#complete_stores">B.3.5.14. Complete store operations</a></li>
+<li><a href="#do_amo">B.3.5.15. Satisfy, commit and propagate operations of an AMO</a></li>
+<li><a href="#commit_fence">B.3.5.16. Commit fence</a></li>
+<li><a href="#reg_read">B.3.5.17. Register read</a></li>
+<li><a href="#reg_write">B.3.5.18. Register write</a></li>
+<li><a href="#sail_interp">B.3.5.19. Pseudocode internal step</a></li>
+<li><a href="#finish">B.3.5.20. Finish instruction</a></li>
 </ul>
 </li>
 <li><a href="#limitations">B.3.6. Limitations</a></li>
@@ -1019,7 +1018,7 @@ Jean-Roch Coulon, André Sintzoff.</em></p>
 OpenHW Group CV32A65X.</p>
 </div>
 <div class="paragraph">
-<p><strong class="big"><em>Preface to Document Version 20240801</em></strong></p>
+<p><strong class="big"><em>Preface to Document Version 20241017</em></strong></p>
 </div>
 <div class="paragraph">
 <p>This document describes the RISC-V unprivileged architecture.</p>
@@ -2441,10 +2440,10 @@ integer variants, RV32I and RV64I, described in
 <a href="#rv32">Chapter 2</a> and <a href="#rv64">Chapter 4</a>, which provide 32-bit
 or 64-bit address spaces respectively. We use the term XLEN to refer to
 the width of an integer register in bits (either 32 or 64).
-<a href="#rv32e">Chapter 6</a> describes the RV32E and RV64E subset variants of the
+<a href="#rv32e">Chapter 3</a> describes the RV32E and RV64E subset variants of the
 RV32I or RV64I base instruction sets respectively, which have been added to support small
 microcontrollers, and which have half the number of integer registers.
-<a href="#rv128">Chapter 8</a> sketches a future RV128I variant of the
+<a href="#rv128">Chapter 5</a> sketches a future RV128I variant of the
 base integer instruction set supporting a flat 128-bit address space
 (XLEN=128). The base integer instruction sets use a two&#8217;s-complement
 representation for signed integer values.</p>
@@ -2560,10 +2559,10 @@ extensions. Non-standard extensions are either custom extensions, that
 use only custom encodings, or <em>non-conforming</em> extensions, that use any
 standard or reserved encoding. Instruction-set extensions are generally
 shared but may provide slightly different functionality depending on the
-base ISA. <a href="#extending">Chapter 38</a> describes various ways
+base ISA. <a href="#extending">Chapter 37</a> describes various ways
 of extending the RISC-V ISA. We have also developed a naming convention
 for RISC-V base instructions and instruction-set extensions, described
-in detail in <a href="#naming">Chapter 39</a>.</p>
+in detail in <a href="#naming">Chapter 38</a>.</p>
 </div>
 <div class="paragraph">
 <p>To support more general software development, a set of standard
@@ -2856,7 +2855,7 @@ storing in the cache to preserve illegal-instruction exception behavior.</p>
 the 32-bit instruction word, we leave more space available for
 non-standard and custom extensions. In particular, the base RV32I ISA
 uses less than 1/8 of the encoding space in the 32-bit instruction word.
-As described in <a href="#extending">Chapter 38</a>, an implementation that does not require support
+As described in <a href="#extending">Chapter 37</a>, an implementation that does not require support
 for the standard compressed instruction extension can map 3 additional non-conforming
 30-bit instruction spaces into the 32-bit fixed-width format, while preserving
 support for standard &#8805;32-bit instruction-set
@@ -3602,7 +3601,6 @@ instruction bit (inst[<em>y</em>]) produces each bit of the immediate value.</p>
 <div class="content">
 <img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNDgnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNDgnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTInIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDE4KSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3MTUnLz48bGluZSB5Mj0nMjYnLz48bGluZSB4Mj0nNzE1JyB5MT0nMjYnIHkyPScyNicvPjxsaW5lIHgxPSc3MTUnIHgyPSc3MTUnIHkyPScyNicvPjxsaW5lIHgxPSc2OTMnIHgyPSc2OTMnIHkyPScyNicvPjxsaW5lIHgxPSc2NzAnIHgyPSc2NzAnIHkyPSczJy8+PGxpbmUgeDE9JzY3MCcgeDI9JzY3MCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNjQ4JyB4Mj0nNjQ4JyB5Mj0nMycvPjxsaW5lIHgxPSc2NDgnIHgyPSc2NDgnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzYyNicgeDI9JzYyNicgeTI9JzMnLz48bGluZSB4MT0nNjI2JyB4Mj0nNjI2JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc2MDMnIHgyPSc2MDMnIHkyPScyNicvPjxsaW5lIHgxPSc1ODEnIHgyPSc1ODEnIHkyPSczJy8+PGxpbmUgeDE9JzU4MScgeDI9JzU4MScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNTU5JyB4Mj0nNTU5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NTknIHgyPSc1NTknIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzUzNicgeDI9JzUzNicgeTI9JzMnLz48bGluZSB4MT0nNTM2JyB4Mj0nNTM2JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc1MTQnIHgyPSc1MTQnIHkyPSczJy8+PGxpbmUgeDE9JzUxNCcgeDI9JzUxNCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNDkyJyB4Mj0nNDkyJyB5Mj0nMycvPjxsaW5lIHgxPSc0OTInIHgyPSc0OTInIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzQ2OScgeDI9JzQ2OScgeTI9JzI2Jy8+PGxpbmUgeDE9JzQ0NycgeDI9JzQ0NycgeTI9JzMnLz48bGluZSB4MT0nNDQ3JyB4Mj0nNDQ3JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc0MjUnIHgyPSc0MjUnIHkyPSczJy8+PGxpbmUgeDE9JzQyNScgeDI9JzQyNScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNDAyJyB4Mj0nNDAyJyB5Mj0nMycvPjxsaW5lIHgxPSc0MDInIHgyPSc0MDInIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzM4MCcgeDI9JzM4MCcgeTI9JzMnLz48bGluZSB4MT0nMzgwJyB4Mj0nMzgwJyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSczNTgnIHgyPSczNTgnIHkyPSczJy8+PGxpbmUgeDE9JzM1OCcgeDI9JzM1OCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMzM1JyB4Mj0nMzM1JyB5Mj0nMycvPjxsaW5lIHgxPSczMzUnIHgyPSczMzUnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzMxMycgeDI9JzMxMycgeTI9JzMnLz48bGluZSB4MT0nMzEzJyB4Mj0nMzEzJyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScyOTAnIHgyPScyOTAnIHkyPSczJy8+PGxpbmUgeDE9JzI5MCcgeDI9JzI5MCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMjY4JyB4Mj0nMjY4JyB5Mj0nMycvPjxsaW5lIHgxPScyNjgnIHgyPScyNjgnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzI0NicgeDI9JzI0NicgeTI9JzMnLz48bGluZSB4MT0nMjQ2JyB4Mj0nMjQ2JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScyMjMnIHgyPScyMjMnIHkyPSczJy8+PGxpbmUgeDE9JzIyMycgeDI9JzIyMycgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMjAxJyB4Mj0nMjAxJyB5Mj0nMycvPjxsaW5lIHgxPScyMDEnIHgyPScyMDEnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzE3OScgeDI9JzE3OScgeTI9JzMnLz48bGluZSB4MT0nMTc5JyB4Mj0nMTc5JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScxNTYnIHgyPScxNTYnIHkyPSczJy8+PGxpbmUgeDE9JzE1NicgeDI9JzE1NicgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMTM0JyB4Mj0nMTM0JyB5Mj0nMycvPjxsaW5lIHgxPScxMzQnIHgyPScxMzQnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzExMicgeDI9JzExMicgeTI9JzMnLz48bGluZSB4MT0nMTEyJyB4Mj0nMTEyJyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc4OScgeDI9Jzg5JyB5Mj0nMycvPjxsaW5lIHgxPSc4OScgeDI9Jzg5JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc2NycgeDI9JzY3JyB5Mj0nMycvPjxsaW5lIHgxPSc2NycgeDI9JzY3JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc0NScgeDI9JzQ1JyB5Mj0nMycvPjxsaW5lIHgxPSc0NScgeDI9JzQ1JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScyMicgeDI9JzIyJyB5Mj0nMycvPjxsaW5lIHgxPScyMicgeDI9JzIyJyB5MT0nMjYnIHkyPScyMycvPjwvZz48Zz48Zy8+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTEsLTEwKSc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjkzKSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjcwKSc+PHRleHQgeT0nNic+MTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjAzKSc+PHRleHQgeT0nNic+NDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTgxKSc+PHRleHQgeT0nNic+NTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDY5KSc+PHRleHQgeT0nNic+MTA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NyknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgwKSc+PHRleHQgeT0nNic+MzE8L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMSwxMiknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDY5MyknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5bMjBdPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYzNyknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5pbnN0WzI0OjIxXTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg1MjUpJz48dGV4dCB5PSc2Jz48dHNwYW4+aW5zdFszMDoyNV08L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjIzKSc+PHRleHQgeT0nNic+PHRzcGFuPuKAlCBpbnN0WzMxXSDigJQ8L3RzcGFuPjwvdGV4dD48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDExLDMyKScvPjwvZz48ZyB0ZXh0LWFuY2hvcj0nc3RhcnQnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDcxOSwxMyknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5JLWltbWVkaWF0ZTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L3N2Zz4=" alt="Diagram" width="800" height="48">
 </div>
-<div class="title">Figure 1. Types of immediate produced by RISC-V instructions.</div>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -3623,6 +3621,7 @@ instruction bit (inst[<em>y</em>]) produces each bit of the immediate value.</p>
 <div class="content">
 <img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNDgnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNDgnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTInIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDE4KSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3MTUnLz48bGluZSB5Mj0nMjYnLz48bGluZSB4Mj0nNzE1JyB5MT0nMjYnIHkyPScyNicvPjxsaW5lIHgxPSc3MTUnIHgyPSc3MTUnIHkyPScyNicvPjxsaW5lIHgxPSc2OTMnIHgyPSc2OTMnIHkyPScyNicvPjxsaW5lIHgxPSc2NzAnIHgyPSc2NzAnIHkyPSczJy8+PGxpbmUgeDE9JzY3MCcgeDI9JzY3MCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNjQ4JyB4Mj0nNjQ4JyB5Mj0nMycvPjxsaW5lIHgxPSc2NDgnIHgyPSc2NDgnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzYyNicgeDI9JzYyNicgeTI9JzMnLz48bGluZSB4MT0nNjI2JyB4Mj0nNjI2JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc2MDMnIHgyPSc2MDMnIHkyPScyNicvPjxsaW5lIHgxPSc1ODEnIHgyPSc1ODEnIHkyPSczJy8+PGxpbmUgeDE9JzU4MScgeDI9JzU4MScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNTU5JyB4Mj0nNTU5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NTknIHgyPSc1NTknIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzUzNicgeDI9JzUzNicgeTI9JzMnLz48bGluZSB4MT0nNTM2JyB4Mj0nNTM2JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc1MTQnIHgyPSc1MTQnIHkyPSczJy8+PGxpbmUgeDE9JzUxNCcgeDI9JzUxNCcgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNDkyJyB4Mj0nNDkyJyB5Mj0nMycvPjxsaW5lIHgxPSc0OTInIHgyPSc0OTInIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzQ2OScgeDI9JzQ2OScgeTI9JzI2Jy8+PGxpbmUgeDE9JzQ0NycgeDI9JzQ0NycgeTI9JzI2Jy8+PGxpbmUgeDE9JzQyNScgeDI9JzQyNScgeTI9JzMnLz48bGluZSB4MT0nNDI1JyB4Mj0nNDI1JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSc0MDInIHgyPSc0MDInIHkyPSczJy8+PGxpbmUgeDE9JzQwMicgeDI9JzQwMicgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMzgwJyB4Mj0nMzgwJyB5Mj0nMycvPjxsaW5lIHgxPSczODAnIHgyPSczODAnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzM1OCcgeDI9JzM1OCcgeTI9JzMnLz48bGluZSB4MT0nMzU4JyB4Mj0nMzU4JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPSczMzUnIHgyPSczMzUnIHkyPSczJy8+PGxpbmUgeDE9JzMzNScgeDI9JzMzNScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMzEzJyB4Mj0nMzEzJyB5Mj0nMycvPjxsaW5lIHgxPSczMTMnIHgyPSczMTMnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzI5MCcgeDI9JzI5MCcgeTI9JzMnLz48bGluZSB4MT0nMjkwJyB4Mj0nMjkwJyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScyNjgnIHgyPScyNjgnIHkyPScyNicvPjxsaW5lIHgxPScyNDYnIHgyPScyNDYnIHkyPSczJy8+PGxpbmUgeDE9JzI0NicgeDI9JzI0NicgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMjIzJyB4Mj0nMjIzJyB5Mj0nMycvPjxsaW5lIHgxPScyMjMnIHgyPScyMjMnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzIwMScgeDI9JzIwMScgeTI9JzMnLz48bGluZSB4MT0nMjAxJyB4Mj0nMjAxJyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScxNzknIHgyPScxNzknIHkyPSczJy8+PGxpbmUgeDE9JzE3OScgeDI9JzE3OScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMTU2JyB4Mj0nMTU2JyB5Mj0nMycvPjxsaW5lIHgxPScxNTYnIHgyPScxNTYnIHkxPScyNicgeTI9JzIzJy8+PGxpbmUgeDE9JzEzNCcgeDI9JzEzNCcgeTI9JzMnLz48bGluZSB4MT0nMTM0JyB4Mj0nMTM0JyB5MT0nMjYnIHkyPScyMycvPjxsaW5lIHgxPScxMTInIHgyPScxMTInIHkyPSczJy8+PGxpbmUgeDE9JzExMicgeDI9JzExMicgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nODknIHgyPSc4OScgeTI9JzMnLz48bGluZSB4MT0nODknIHgyPSc4OScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNjcnIHgyPSc2NycgeTI9JzMnLz48bGluZSB4MT0nNjcnIHgyPSc2NycgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nNDUnIHgyPSc0NScgeTI9JzMnLz48bGluZSB4MT0nNDUnIHgyPSc0NScgeTE9JzI2JyB5Mj0nMjMnLz48bGluZSB4MT0nMjInIHgyPScyMicgeTI9JzMnLz48bGluZSB4MT0nMjInIHgyPScyMicgeTE9JzI2JyB5Mj0nMjMnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDExLC0xMCknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDY5MyknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDY3MCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYwMyknPjx0ZXh0IHk9JzYnPjQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU4MSknPjx0ZXh0IHk9JzYnPjU8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ2OSknPjx0ZXh0IHk9JzYnPjEwPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NDcpJz48dGV4dCB5PSc2Jz4xMTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDI1KSc+PHRleHQgeT0nNic+MTI8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI2OCknPjx0ZXh0IHk9JzYnPjE5PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyNDYpJz48dGV4dCB5PSc2Jz4yMDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTEsMTIpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTMpJz48dGV4dCB5PSc2Jz48dHNwYW4+MDwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MzcpJz48dGV4dCB5PSc2Jz48dHNwYW4+aW5zdFsyNDoyMV08L3RzcGFuPjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTI1KSc+PHRleHQgeT0nNic+PHRzcGFuPmluc3RbMzA6MjVdPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NyknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5bMjBdPC90c3Bhbj48L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM0NiknPjx0ZXh0IHk9JzYnPjx0c3Bhbj5pbnN0WzE5OjEyXTwvdHNwYW4+PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjMpJz48dGV4dCB5PSc2Jz48dHNwYW4+4oCUIGluc3RbMzFdIOKAlDwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTEsMzIpJy8+PC9nPjxnIHRleHQtYW5jaG9yPSdzdGFydCc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNzE5LDEzKSc+PHRleHQgeT0nNic+PHRzcGFuPkotaW1tZWRpYXRlPC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="800" height="48">
 </div>
+<div class="title">Figure 1. Types of immediate produced by RISC-V instructions.</div>
 </div>
 <div class="paragraph">
 <p>The fields are labeled with the instruction bits used to construct their value.  Sign extensions always uses inst[31].</p>
@@ -6437,7 +6436,7 @@ program order and satisfying the <em>load value axiom</em>, the <em>atomicity
 axiom</em>, and the <em>progress axiom</em>.</p>
 </div>
 <div class="sect4">
-<h5 id="ax-load">Load Value Axiom</h5>
+<h5 id="ax-load">18.1.4.1. Load Value Axiom</h5>
 <div class="paragraph">
 <p>Each byte of each load <em>i</em> returns the value written to that
 byte by the store that is the latest in global memory order among the
@@ -6457,7 +6456,7 @@ program order</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="ax-atom">Atomicity Axiom</h5>
+<h5 id="ax-atom">18.1.4.2. Atomicity Axiom</h5>
 <div class="paragraph">
 <p>If <em>r</em> and <em>w</em> are paired load and store
 operations generated by aligned LR and SC instructions in a hart
@@ -6487,7 +6486,7 @@ such patterns to be rare, and their use is discouraged.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="ax-prog">Progress Axiom</h5>
+<h5 id="ax-prog">18.1.4.3. Progress Axiom</h5>
 <div class="paragraph">
 <p>No memory operation may be preceded in the global memory order by an
 infinite sequence of other memory operations.</p>
@@ -8967,10 +8966,11 @@ only valid when <code><em>rd</em>≠x0</code>; the code points with
 <code><em>rd</em>=x0</code> are reserved.</p>
 </div>
 <div class="paragraph">
-<p>C.ADDI16SP shares the opcode with C.LUI, but has a destination field of
+<p>C.ADDI16SP (add immediate to stack pointer)
+shares the opcode with C.LUI, but has a destination field of
 <code>x2</code>. C.ADDI16SP adds the non-zero sign-extended 6-bit immediate to the
 value in the stack pointer (<code>sp=x2</code>), where the immediate is scaled to
-represent multiples of 16 in the range (-512,496). C.ADDI16SP is used to
+represent multiples of 16 in the range [-512, 496]. C.ADDI16SP is used to
 adjust the stack pointer in procedure prologues and epilogues. It
 expands into <code>addi x2, x2, nzimm[9:4]</code>. C.ADDI16SP is only valid when
 <em>nzimm</em>≠0; the code point with <em>nzimm</em>=0 is reserved.</p>
@@ -8997,7 +8997,8 @@ always 16-byte aligned.</p>
 </div>
 <div class="paragraph">
 <p>
-C.ADDI4SPN is a CIW-format instruction that adds a <em>zero</em>-extended
+C.ADDI4SPN (add immediate to stack pointer, non-destructive)
+is a CIW-format instruction that adds a <em>zero</em>-extended
 non-zero immediate, scaled by 4, to the stack pointer, <code>x2</code>, and writes
 the result to <code>rd′</code>. This instruction is used to generate
 pointers to stack-allocated variables, and expands to
@@ -11560,7 +11561,7 @@ calling the millicode <em>save/restore</em> routines and so may also perform bet
 </table>
 </div>
 <div class="sect4">
-<h5 id="pushpop-areg-list">Stack pointer adjustment handling</h5>
+<h5 id="pushpop-areg-list">29.13.2.1. Stack pointer adjustment handling</h5>
 <div class="paragraph">
 <p>The instructions all automatically adjust the stack pointer by enough to cover the memory required for the registers being saved or restored.
 Additionally the <em>spimm</em> field in the encoding allows the stack pointer to be adjusted in additional increments of 16-bytes. There is only a small restricted
@@ -11568,7 +11569,7 @@ range available in the encoding; if the range is insufficient then a separate <e
 </div>
 </div>
 <div class="sect4">
-<h5 id="_register_list_handling">Register list handling</h5>
+<h5 id="_register_list_handling">29.13.2.2. Register list handling</h5>
 <div class="paragraph">
 <p>There is no support for the <em>{ra, s0-s10}</em> register list without also adding <em>s11</em>. Therefore the <em>{ra, s0-s11}</em> register list must be used in this case.</p>
 </div>
@@ -11600,7 +11601,7 @@ It is implementation defined whether interrupts can also be taken during the seq
 <div class="sect3">
 <h4 id="pushpop-software-view">29.13.4. Software view of execution</h4>
 <div class="sect4">
-<h5 id="_software_view_of_the_push_sequence">Software view of the PUSH sequence</h5>
+<h5 id="_software_view_of_the_push_sequence">29.13.4.1. Software view of the PUSH sequence</h5>
 <div class="paragraph">
 <p>From a software perspective the PUSH sequence appears as:</p>
 </div>
@@ -11682,7 +11683,7 @@ addi sp, sp, -64</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_software_view_of_the_poppopret_sequence">Software view of the POP/POPRET sequence</h5>
+<h5 id="_software_view_of_the_poppopret_sequence">29.13.4.2. Software view of the POP/POPRET sequence</h5>
 <div class="paragraph">
 <p>From a software perspective the POP/POPRET sequence appears as:</p>
 </div>
@@ -11780,7 +11781,7 @@ being issued repeatedly in the case that they cause exceptions.</p>
 Examples of <em>cm.popret</em> and <em>cm.popretz</em> are not included, as the difference in the expanded sequence from <em>cm.pop</em> is trivial in all cases.</p>
 </div>
 <div class="sect4">
-<h5 id="_cm_push_ra_s0_s2_64">cm.push  {ra, s0-s2}, -64</h5>
+<h5 id="_cm_push_ra_s0_s2_64">29.13.6.1. cm.push  {ra, s0-s2}, -64</h5>
 <div class="paragraph">
 <p>Encoding: <em>rlist</em>=7, <em>spimm</em>=3</p>
 </div>
@@ -11798,7 +11799,7 @@ addi sp, sp, -64;</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_cm_push_ra_s0_s11_112">cm.push {ra, s0-s11}, -112</h5>
+<h5 id="_cm_push_ra_s0_s11_112">29.13.6.2. cm.push {ra, s0-s11}, -112</h5>
 <div class="paragraph">
 <p>Encoding: <em>rlist</em>=15, <em>spimm</em>=3</p>
 </div>
@@ -11826,7 +11827,7 @@ addi sp, sp, -112;</code></pre>
 <div style="page-break-after: always;"></div>
 </div>
 <div class="sect4">
-<h5 id="_cm_pop_ra_16">cm.pop   {ra}, 16</h5>
+<h5 id="_cm_pop_ra_16">29.13.6.3. cm.pop   {ra}, 16</h5>
 <div class="paragraph">
 <p>Encoding: <em>rlist</em>=4, <em>spimm</em>=0</p>
 </div>
@@ -11841,7 +11842,7 @@ addi sp, sp, 16;</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_cm_pop_ra_s0_s3_48">cm.pop {ra, s0-s3}, 48</h5>
+<h5 id="_cm_pop_ra_s0_s3_48">29.13.6.4. cm.pop {ra, s0-s3}, 48</h5>
 <div class="paragraph">
 <p>Encoding: <em>rlist</em>=8, <em>spimm</em>=1</p>
 </div>
@@ -11860,7 +11861,7 @@ addi sp, sp, 48;</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_cm_pop_ra_s0_s4_64">cm.pop {ra, s0-s4}, 64</h5>
+<h5 id="_cm_pop_ra_s0_s4_64">29.13.6.5. cm.pop {ra, s0-s4}, 64</h5>
 <div class="paragraph">
 <p>Encoding: <em>rlist</em>=9, <em>spimm</em>=2</p>
 </div>
@@ -13611,7 +13612,7 @@ along with their specific mapping:</p>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10003;</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10003;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">orc.b <em>rd</em>, <em>rs1</em>, <em>rs2</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">orc.b <em>rd</em>, <em>rs</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#insns-orc_b">Bitwise OR-Combine, byte granule</a></p></td>
 <td class="tableblock halign-center valign-top"></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">&#10003;</p></td>
@@ -13902,7 +13903,7 @@ along with their specific mapping:</p>
 <p>While the shift and add instructions are limited to a maximum left shift of 3, the slli instruction (from the base ISA) can be used to perform similar shifts for indexing into arrays of wider elements. The slli.uw&#8201;&#8212;&#8201;added in this extension&#8201;&#8212;&#8201;can be used when the index is to be interpreted as an unsigned word.</p>
 </div>
 <div class="paragraph">
-<p>The following instructions (and pseudoinstructions) comprise the Zba extension:</p>
+<p>The following instructions comprise the Zba extension:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -13968,19 +13969,13 @@ along with their specific mapping:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">slli.uw <em>rd</em>, <em>rs1</em>, <em>imm</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#insns-slli_uw">Shift-left unsigned word (Immediate)</a></p></td>
 </tr>
-<tr>
-<td class="tableblock halign-center valign-top"></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">&#10003;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">zext.w <em>rd</em>, <em>rs</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#insns-add_uw">Add unsigned word</a></p></td>
-</tr>
 </tbody>
 </table>
 </div>
 <div class="sect3">
 <h4 id="zbb">30.4.2. Zbb: Basic bit-manipulation</h4>
 <div class="sect4">
-<h5 id="_logical_with_negate">Logical with negate</h5>
+<h5 id="_logical_with_negate">30.4.2.1. Logical with negate</h5>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 7.1428%;">
@@ -14035,7 +14030,7 @@ In some implementations, the inverter on rs2 used for subtraction can be reused 
 </div>
 </div>
 <div class="sect4">
-<h5 id="_count_leadingtrailing_zero_bits">Count leading/trailing zero bits</h5>
+<h5 id="_count_leadingtrailing_zero_bits">30.4.2.2. Count leading/trailing zero bits</h5>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 7.1428%;">
@@ -14080,7 +14075,7 @@ In some implementations, the inverter on rs2 used for subtraction can be reused 
 </table>
 </div>
 <div class="sect4">
-<h5 id="_count_population">Count population</h5>
+<h5 id="_count_population">30.4.2.3. Count population</h5>
 <div class="paragraph">
 <p>These instructions count the number of set bits (1-bits). This is also
 commonly referred to as population count.</p>
@@ -14117,7 +14112,7 @@ commonly referred to as population count.</p>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_integer_minimummaximum">Integer minimum/maximum</h5>
+<h5 id="_integer_minimummaximum">30.4.2.4. Integer minimum/maximum</h5>
 <div class="paragraph">
 <p>The integer minimum/maximum instructions are arithmetic R-type
 instructions that return the smaller/larger of two operands.</p>
@@ -14166,7 +14161,7 @@ instructions that return the smaller/larger of two operands.</p>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_sign_extension_and_zero_extension">Sign extension and zero extension</h5>
+<h5 id="_sign_extension_and_zero_extension">30.4.2.5. Sign extension and zero extension</h5>
 <div class="paragraph">
 <p>These instructions perform the sign extension or zero extension of the least significant 8 bits or 16 bits of the source register.</p>
 </div>
@@ -14211,7 +14206,7 @@ instructions that return the smaller/larger of two operands.</p>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_bitwise_rotation">Bitwise rotation</h5>
+<h5 id="_bitwise_rotation">30.4.2.6. Bitwise rotation</h5>
 <div class="paragraph">
 <p>Bitwise rotation instructions are similar to the shift-logical operations from the base spec. However, where the shift-logical
 instructions shift in zeros, the rotate instructions shift in the bits that were shifted out of the other side of the value.
@@ -14289,7 +14284,7 @@ four-instruction sequence to achieve the same effect (neg; sll/srl; srl/sll; or)
 </div>
 </div>
 <div class="sect4">
-<h5 id="_or_combine">OR Combine</h5>
+<h5 id="_or_combine">30.4.2.7. OR Combine</h5>
 <div class="paragraph">
 <p><strong>orc.b</strong> sets the bits of each byte in the result <em>rd</em> to all zeros if no bit within the respective byte of <em>rs</em> is set, or to all ones if any bit within the respective byte of <em>rs</em> is set.</p>
 </div>
@@ -14322,7 +14317,7 @@ four-instruction sequence to achieve the same effect (neg; sll/srl; srl/sll; or)
 </table>
 </div>
 <div class="sect4">
-<h5 id="_byte_reverse">Byte-reverse</h5>
+<h5 id="_byte_reverse">30.4.2.8. Byte-reverse</h5>
 <div class="paragraph">
 <p><strong>rev8</strong> reverses the byte-ordering of <em>rs</em>.</p>
 </div>
@@ -16560,6 +16555,23 @@ X(rd) = EXTZ(hi_half @ lo_half);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For RV32, the <code>pack</code> instruction with <em>rs2</em>=<code>x0</code> is the <code>zext.h</code>
+instruction.
+Hence, for RV32, any extension that contains the <code>pack</code> instruction also
+contains the <code>zext.h</code> instruction (but not necessarily the <code>c.zext.h</code>
+instruction, which is only guaranteed to exist if both the Zcb and Zbb
+extensions are implemented).
+</td>
+</tr>
+</table>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 <div class="sect3">
@@ -16693,6 +16705,23 @@ X(rd) = EXTS(hi_half @ lo_half);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For RV64, the <code>packw</code> instruction with <em>rs2</em>=<code>x0</code> is the <code>zext.h</code>
+instruction.
+Hence, for RV64, any extension that contains the <code>packw</code> instruction also
+contains the <code>zext.h</code> instruction (but not necessarily the <code>c.zext.h</code>
+instruction, which is only guaranteed to exist if both the Zcb and Zbb
+extensions are implemented).
+</td>
+</tr>
+</table>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 <div class="sect3">
@@ -17913,7 +17942,8 @@ X(rd) = base + (index &lt;&lt; 3);</code></pre>
 <dl>
 <dt class="hdlist1">Synopsis</dt>
 <dd>
-<p>Implements the inverse of the zip instruction.</p>
+<p>Place odd and even bits of the source register into upper and lower halves of
+the destination register, respectively.</p>
 </dd>
 <dt class="hdlist1">Mnemonic</dt>
 <dd>
@@ -17924,16 +17954,16 @@ X(rd) = base + (index &lt;&lt; 3);</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNzAnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNzAnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTQnIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDIxKSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3OTEnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nNzkxJyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPSc3OTEnIHgyPSc3OTEnIHkyPSczMScvPjxsaW5lIHgxPSc3NjYnIHgyPSc3NjYnIHkyPSczJy8+PGxpbmUgeDE9Jzc2NicgeDI9Jzc2NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQyJyB4Mj0nNzQyJyB5Mj0nMycvPjxsaW5lIHgxPSc3NDInIHgyPSc3NDInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzcxNycgeDI9JzcxNycgeTI9JzMnLz48bGluZSB4MT0nNzE3JyB4Mj0nNzE3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTInIHgyPSc2OTInIHkyPSczJy8+PGxpbmUgeDE9JzY5MicgeDI9JzY5MicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY3JyB4Mj0nNjY3JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjcnIHgyPSc2NjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzY0MycgeDI9JzY0MycgeTI9JzMnLz48bGluZSB4MT0nNjQzJyB4Mj0nNjQzJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MTgnIHgyPSc2MTgnIHkyPSczMScvPjxsaW5lIHgxPSc1OTMnIHgyPSc1OTMnIHkyPSczJy8+PGxpbmUgeDE9JzU5MycgeDI9JzU5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTY5JyB4Mj0nNTY5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NjknIHgyPSc1NjknIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzU0NCcgeDI9JzU0NCcgeTI9JzMnLz48bGluZSB4MT0nNTQ0JyB4Mj0nNTQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MTknIHgyPSc1MTknIHkyPSczJy8+PGxpbmUgeDE9JzUxOScgeDI9JzUxOScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDk0JyB4Mj0nNDk0JyB5Mj0nMzEnLz48bGluZSB4MT0nNDcwJyB4Mj0nNDcwJyB5Mj0nMycvPjxsaW5lIHgxPSc0NzAnIHgyPSc0NzAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NScgeDI9JzQ0NScgeTI9JzMnLz48bGluZSB4MT0nNDQ1JyB4Mj0nNDQ1JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MjAnIHgyPSc0MjAnIHkyPSczMScvPjxsaW5lIHgxPSczOTYnIHgyPSczOTYnIHkyPSczJy8+PGxpbmUgeDE9JzM5NicgeDI9JzM5NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzcxJyB4Mj0nMzcxJyB5Mj0nMycvPjxsaW5lIHgxPSczNzEnIHgyPSczNzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0NicgeDI9JzM0NicgeTI9JzMnLz48bGluZSB4MT0nMzQ2JyB4Mj0nMzQ2JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMjEnIHgyPSczMjEnIHkyPSczJy8+PGxpbmUgeDE9JzMyMScgeDI9JzMyMScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjk3JyB4Mj0nMjk3JyB5Mj0nMzEnLz48bGluZSB4MT0nMjcyJyB4Mj0nMjcyJyB5Mj0nMycvPjxsaW5lIHgxPScyNzInIHgyPScyNzInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI0NycgeDI9JzI0NycgeTI9JzMnLz48bGluZSB4MT0nMjQ3JyB4Mj0nMjQ3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTk4JyB4Mj0nMTk4JyB5Mj0nMycvPjxsaW5lIHgxPScxOTgnIHgyPScxOTgnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE3MycgeDI9JzE3MycgeTI9JzMxJy8+PGxpbmUgeDE9JzE0OCcgeDI9JzE0OCcgeTI9JzMnLz48bGluZSB4MT0nMTQ4JyB4Mj0nMTQ4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjQnIHgyPScxMjQnIHkyPSczJy8+PGxpbmUgeDE9JzEyNCcgeDI9JzEyNCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTI9JzMnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTI9JzMnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTI9JzMnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTI9JzMnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc2NiknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYxOCknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU5MyknPjx0ZXh0IHk9JzYnPjc8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ5NCknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NzApJz48dGV4dCB5PSc2Jz4xMjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDIwKSc+PHRleHQgeT0nNic+MTQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjE1PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyOTcpJz48dGV4dCB5PSc2Jz4xOTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjcyKSc+PHRleHQgeT0nNic+MjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjI0PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4yNTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTIsMTUpJz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjYpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NDIpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3MTcpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTIpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NjcpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NDMpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MTgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTQ0KSc+PHRleHQgeT0nNic+PHRzcGFuPnJkPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ3MCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQyMCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzNDYpJz48dGV4dCB5PSc2Jz48dHNwYW4+cnMxPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI3MiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI0NyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDIyMiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE5OCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjwvZz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjQpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5OSknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc0KSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDkpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyNSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLDM5KSc+PGc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjkyKSc+PHRleHQgeT0nNic+PHRzcGFuPk9QLUlNTTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="800" height="70">
+<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNzAnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNzAnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTQnIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDIxKSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3OTEnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nNzkxJyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPSc3OTEnIHgyPSc3OTEnIHkyPSczMScvPjxsaW5lIHgxPSc3NjYnIHgyPSc3NjYnIHkyPSczJy8+PGxpbmUgeDE9Jzc2NicgeDI9Jzc2NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQyJyB4Mj0nNzQyJyB5Mj0nMycvPjxsaW5lIHgxPSc3NDInIHgyPSc3NDInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzcxNycgeDI9JzcxNycgeTI9JzMnLz48bGluZSB4MT0nNzE3JyB4Mj0nNzE3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTInIHgyPSc2OTInIHkyPSczJy8+PGxpbmUgeDE9JzY5MicgeDI9JzY5MicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY3JyB4Mj0nNjY3JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjcnIHgyPSc2NjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzY0MycgeDI9JzY0MycgeTI9JzMnLz48bGluZSB4MT0nNjQzJyB4Mj0nNjQzJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MTgnIHgyPSc2MTgnIHkyPSczMScvPjxsaW5lIHgxPSc1OTMnIHgyPSc1OTMnIHkyPSczJy8+PGxpbmUgeDE9JzU5MycgeDI9JzU5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTY5JyB4Mj0nNTY5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NjknIHgyPSc1NjknIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzU0NCcgeDI9JzU0NCcgeTI9JzMnLz48bGluZSB4MT0nNTQ0JyB4Mj0nNTQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MTknIHgyPSc1MTknIHkyPSczJy8+PGxpbmUgeDE9JzUxOScgeDI9JzUxOScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDk0JyB4Mj0nNDk0JyB5Mj0nMzEnLz48bGluZSB4MT0nNDcwJyB4Mj0nNDcwJyB5Mj0nMycvPjxsaW5lIHgxPSc0NzAnIHgyPSc0NzAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NScgeDI9JzQ0NScgeTI9JzMnLz48bGluZSB4MT0nNDQ1JyB4Mj0nNDQ1JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MjAnIHgyPSc0MjAnIHkyPSczMScvPjxsaW5lIHgxPSczOTYnIHgyPSczOTYnIHkyPSczJy8+PGxpbmUgeDE9JzM5NicgeDI9JzM5NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzcxJyB4Mj0nMzcxJyB5Mj0nMycvPjxsaW5lIHgxPSczNzEnIHgyPSczNzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0NicgeDI9JzM0NicgeTI9JzMnLz48bGluZSB4MT0nMzQ2JyB4Mj0nMzQ2JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMjEnIHgyPSczMjEnIHkyPSczJy8+PGxpbmUgeDE9JzMyMScgeDI9JzMyMScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjk3JyB4Mj0nMjk3JyB5Mj0nMzEnLz48bGluZSB4MT0nMjcyJyB4Mj0nMjcyJyB5Mj0nMycvPjxsaW5lIHgxPScyNzInIHgyPScyNzInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI0NycgeDI9JzI0NycgeTI9JzMnLz48bGluZSB4MT0nMjQ3JyB4Mj0nMjQ3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTk4JyB4Mj0nMTk4JyB5Mj0nMycvPjxsaW5lIHgxPScxOTgnIHgyPScxOTgnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE3MycgeDI9JzE3MycgeTI9JzMxJy8+PGxpbmUgeDE9JzE0OCcgeDI9JzE0OCcgeTI9JzMnLz48bGluZSB4MT0nMTQ4JyB4Mj0nMTQ4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjQnIHgyPScxMjQnIHkyPSczJy8+PGxpbmUgeDE9JzEyNCcgeDI9JzEyNCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTI9JzMnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTI9JzMnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTI9JzMnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTI9JzMnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc2NiknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYxOCknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU5MyknPjx0ZXh0IHk9JzYnPjc8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ5NCknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NzApJz48dGV4dCB5PSc2Jz4xMjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDIwKSc+PHRleHQgeT0nNic+MTQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjE1PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyOTcpJz48dGV4dCB5PSc2Jz4xOTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjcyKSc+PHRleHQgeT0nNic+MjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjI0PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4yNTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTIsMTUpJz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjYpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NDIpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3MTcpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTIpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NjcpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NDMpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MTgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTQ0KSc+PHRleHQgeT0nNic+PHRzcGFuPnJkPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ3MCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQyMCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzNDYpJz48dGV4dCB5PSc2Jz48dHNwYW4+cnMxPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI3MiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI0NyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDIyMiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE5OCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjwvZz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjQpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5OSknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc0KSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDkpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyNSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLDM5KSc+PGc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjkyKSc+PHRleHQgeT0nNic+PHRzcGFuPk9QLUlNTTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="800" height="70">
 </div>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Description</dt>
 <dd>
-<p>This instruction gathers bits from the high and low halves of the source
-word into odd/even bit positions in the destination word.
-It is the inverse of the <a href="#insns-zip">zip</a> instruction.
+<p>This instruction scatters all of the odd and even bits of a source word into
+the high and low halves of a destination word.
+It is the inverse of the <a href="#insns-zip-sc">zip</a> instruction.
 This instruction is available only on RV32.</p>
 </dd>
 <dt class="hdlist1">Operation</dt>
@@ -18309,8 +18339,8 @@ function clause execute ( XPERM4 (rs2,rs1,rd)) = {
 <dl>
 <dt class="hdlist1">Synopsis</dt>
 <dd>
-<p>Gather odd and even bits of the source word into upper/lower halves of the
-destination.</p>
+<p>Interleave upper and lower halves of the source register into odd and even
+bits of the destination register, respectivley.</p>
 </dd>
 <dt class="hdlist1">Mnemonic</dt>
 <dd>
@@ -18321,16 +18351,16 @@ destination.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNzAnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNzAnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTQnIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDIxKSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3OTEnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nNzkxJyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPSc3OTEnIHgyPSc3OTEnIHkyPSczMScvPjxsaW5lIHgxPSc3NjYnIHgyPSc3NjYnIHkyPSczJy8+PGxpbmUgeDE9Jzc2NicgeDI9Jzc2NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQyJyB4Mj0nNzQyJyB5Mj0nMycvPjxsaW5lIHgxPSc3NDInIHgyPSc3NDInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzcxNycgeDI9JzcxNycgeTI9JzMnLz48bGluZSB4MT0nNzE3JyB4Mj0nNzE3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTInIHgyPSc2OTInIHkyPSczJy8+PGxpbmUgeDE9JzY5MicgeDI9JzY5MicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY3JyB4Mj0nNjY3JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjcnIHgyPSc2NjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzY0MycgeDI9JzY0MycgeTI9JzMnLz48bGluZSB4MT0nNjQzJyB4Mj0nNjQzJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MTgnIHgyPSc2MTgnIHkyPSczMScvPjxsaW5lIHgxPSc1OTMnIHgyPSc1OTMnIHkyPSczJy8+PGxpbmUgeDE9JzU5MycgeDI9JzU5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTY5JyB4Mj0nNTY5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NjknIHgyPSc1NjknIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzU0NCcgeDI9JzU0NCcgeTI9JzMnLz48bGluZSB4MT0nNTQ0JyB4Mj0nNTQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MTknIHgyPSc1MTknIHkyPSczJy8+PGxpbmUgeDE9JzUxOScgeDI9JzUxOScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDk0JyB4Mj0nNDk0JyB5Mj0nMzEnLz48bGluZSB4MT0nNDcwJyB4Mj0nNDcwJyB5Mj0nMycvPjxsaW5lIHgxPSc0NzAnIHgyPSc0NzAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NScgeDI9JzQ0NScgeTI9JzMnLz48bGluZSB4MT0nNDQ1JyB4Mj0nNDQ1JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MjAnIHgyPSc0MjAnIHkyPSczMScvPjxsaW5lIHgxPSczOTYnIHgyPSczOTYnIHkyPSczJy8+PGxpbmUgeDE9JzM5NicgeDI9JzM5NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzcxJyB4Mj0nMzcxJyB5Mj0nMycvPjxsaW5lIHgxPSczNzEnIHgyPSczNzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0NicgeDI9JzM0NicgeTI9JzMnLz48bGluZSB4MT0nMzQ2JyB4Mj0nMzQ2JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMjEnIHgyPSczMjEnIHkyPSczJy8+PGxpbmUgeDE9JzMyMScgeDI9JzMyMScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjk3JyB4Mj0nMjk3JyB5Mj0nMzEnLz48bGluZSB4MT0nMjcyJyB4Mj0nMjcyJyB5Mj0nMycvPjxsaW5lIHgxPScyNzInIHgyPScyNzInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI0NycgeDI9JzI0NycgeTI9JzMnLz48bGluZSB4MT0nMjQ3JyB4Mj0nMjQ3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTk4JyB4Mj0nMTk4JyB5Mj0nMycvPjxsaW5lIHgxPScxOTgnIHgyPScxOTgnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE3MycgeDI9JzE3MycgeTI9JzMxJy8+PGxpbmUgeDE9JzE0OCcgeDI9JzE0OCcgeTI9JzMnLz48bGluZSB4MT0nMTQ4JyB4Mj0nMTQ4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjQnIHgyPScxMjQnIHkyPSczJy8+PGxpbmUgeDE9JzEyNCcgeDI9JzEyNCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTI9JzMnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTI9JzMnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTI9JzMnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTI9JzMnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc2NiknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYxOCknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU5MyknPjx0ZXh0IHk9JzYnPjc8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ5NCknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NzApJz48dGV4dCB5PSc2Jz4xMjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDIwKSc+PHRleHQgeT0nNic+MTQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjE1PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyOTcpJz48dGV4dCB5PSc2Jz4xOTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjcyKSc+PHRleHQgeT0nNic+MjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjI0PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4yNTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTIsMTUpJz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjYpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NDIpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3MTcpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTIpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NjcpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NDMpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MTgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTQ0KSc+PHRleHQgeT0nNic+PHRzcGFuPnJkPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ3MCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQyMCknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzNDYpJz48dGV4dCB5PSc2Jz48dHNwYW4+cnMxPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI3MiknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI0NyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDIyMiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE5OCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjwvZz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjQpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5OSknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc0KSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDkpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyNSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLDM5KSc+PGc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjkyKSc+PHRleHQgeT0nNic+PHRzcGFuPk9QLUlNTTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="800" height="70">
+<img src="data:image/svg+xml;base64,PHN2ZyBjbGFzcz0nV2F2ZURyb20nIGhlaWdodD0nNzAnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkIG1lZXQnIHZpZXdCb3g9JzAgMCA4MDAgNzAnIHdpZHRoPSc4MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMTQnIGZvbnQtd2VpZ2h0PSdub3JtYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDAuNSwwLjUpJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0LDIxKSc+PGcgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2Utd2lkdGg9JzEnPjxsaW5lIHgyPSc3OTEnLz48bGluZSB5Mj0nMzEnLz48bGluZSB4Mj0nNzkxJyB5MT0nMzEnIHkyPSczMScvPjxsaW5lIHgxPSc3OTEnIHgyPSc3OTEnIHkyPSczMScvPjxsaW5lIHgxPSc3NjYnIHgyPSc3NjYnIHkyPSczJy8+PGxpbmUgeDE9Jzc2NicgeDI9Jzc2NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQyJyB4Mj0nNzQyJyB5Mj0nMycvPjxsaW5lIHgxPSc3NDInIHgyPSc3NDInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzcxNycgeDI9JzcxNycgeTI9JzMnLz48bGluZSB4MT0nNzE3JyB4Mj0nNzE3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2OTInIHgyPSc2OTInIHkyPSczJy8+PGxpbmUgeDE9JzY5MicgeDI9JzY5MicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNjY3JyB4Mj0nNjY3JyB5Mj0nMycvPjxsaW5lIHgxPSc2NjcnIHgyPSc2NjcnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzY0MycgeDI9JzY0MycgeTI9JzMnLz48bGluZSB4MT0nNjQzJyB4Mj0nNjQzJyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc2MTgnIHgyPSc2MTgnIHkyPSczMScvPjxsaW5lIHgxPSc1OTMnIHgyPSc1OTMnIHkyPSczJy8+PGxpbmUgeDE9JzU5MycgeDI9JzU5MycgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNTY5JyB4Mj0nNTY5JyB5Mj0nMycvPjxsaW5lIHgxPSc1NjknIHgyPSc1NjknIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzU0NCcgeDI9JzU0NCcgeTI9JzMnLz48bGluZSB4MT0nNTQ0JyB4Mj0nNTQ0JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc1MTknIHgyPSc1MTknIHkyPSczJy8+PGxpbmUgeDE9JzUxOScgeDI9JzUxOScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDk0JyB4Mj0nNDk0JyB5Mj0nMzEnLz48bGluZSB4MT0nNDcwJyB4Mj0nNDcwJyB5Mj0nMycvPjxsaW5lIHgxPSc0NzAnIHgyPSc0NzAnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzQ0NScgeDI9JzQ0NScgeTI9JzMnLz48bGluZSB4MT0nNDQ1JyB4Mj0nNDQ1JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSc0MjAnIHgyPSc0MjAnIHkyPSczMScvPjxsaW5lIHgxPSczOTYnIHgyPSczOTYnIHkyPSczJy8+PGxpbmUgeDE9JzM5NicgeDI9JzM5NicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMzcxJyB4Mj0nMzcxJyB5Mj0nMycvPjxsaW5lIHgxPSczNzEnIHgyPSczNzEnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzM0NicgeDI9JzM0NicgeTI9JzMnLz48bGluZSB4MT0nMzQ2JyB4Mj0nMzQ2JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPSczMjEnIHgyPSczMjEnIHkyPSczJy8+PGxpbmUgeDE9JzMyMScgeDI9JzMyMScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjk3JyB4Mj0nMjk3JyB5Mj0nMzEnLz48bGluZSB4MT0nMjcyJyB4Mj0nMjcyJyB5Mj0nMycvPjxsaW5lIHgxPScyNzInIHgyPScyNzInIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzI0NycgeDI9JzI0NycgeTI9JzMnLz48bGluZSB4MT0nMjQ3JyB4Mj0nMjQ3JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScyMjInIHgyPScyMjInIHkyPSczJy8+PGxpbmUgeDE9JzIyMicgeDI9JzIyMicgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMTk4JyB4Mj0nMTk4JyB5Mj0nMycvPjxsaW5lIHgxPScxOTgnIHgyPScxOTgnIHkxPSczMScgeTI9JzI4Jy8+PGxpbmUgeDE9JzE3MycgeDI9JzE3MycgeTI9JzMxJy8+PGxpbmUgeDE9JzE0OCcgeDI9JzE0OCcgeTI9JzMnLz48bGluZSB4MT0nMTQ4JyB4Mj0nMTQ4JyB5MT0nMzEnIHkyPScyOCcvPjxsaW5lIHgxPScxMjQnIHgyPScxMjQnIHkyPSczJy8+PGxpbmUgeDE9JzEyNCcgeDI9JzEyNCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTI9JzMnLz48bGluZSB4MT0nOTknIHgyPSc5OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTI9JzMnLz48bGluZSB4MT0nNzQnIHgyPSc3NCcgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTI9JzMnLz48bGluZSB4MT0nNDknIHgyPSc0OScgeTE9JzMxJyB5Mj0nMjgnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTI9JzMnLz48bGluZSB4MT0nMjUnIHgyPScyNScgeTE9JzMxJyB5Mj0nMjgnLz48L2c+PGc+PGcvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLC0xMSknPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc2NiknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYxOCknPjx0ZXh0IHk9JzYnPjY8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDU5MyknPjx0ZXh0IHk9JzYnPjc8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ5NCknPjx0ZXh0IHk9JzYnPjExPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0NzApJz48dGV4dCB5PSc2Jz4xMjwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDIwKSc+PHRleHQgeT0nNic+MTQ8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDM5NiknPjx0ZXh0IHk9JzYnPjE1PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyOTcpJz48dGV4dCB5PSc2Jz4xOTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMjcyKSc+PHRleHQgeT0nNic+MjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjI0PC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4yNTwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMCknPjx0ZXh0IHk9JzYnPjMxPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMTIsMTUpJz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NjYpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3NDIpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg3MTcpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2OTIpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NjcpJz48dGV4dCB5PSc2Jz4xPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2NDMpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg2MTgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNTQ0KSc+PHRleHQgeT0nNic+PHRzcGFuPnJkPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ3MCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQ0NSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDQyMCknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgzNDYpJz48dGV4dCB5PSc2Jz48dHNwYW4+cnMxPC90c3Bhbj48L3RleHQ+PC9nPjxnPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI3MiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDI0NyknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDIyMiknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE5OCknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDE3MyknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjwvZz48Zz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxNDgpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxMjQpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg5OSknPjx0ZXh0IHk9JzYnPjE8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDc0KSc+PHRleHQgeT0nNic+MDwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNDkpJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgyNSknPjx0ZXh0IHk9JzYnPjA8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDApJz48dGV4dCB5PSc2Jz4wPC90ZXh0PjwvZz48L2c+PC9nPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDEyLDM5KSc+PGc+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNjkyKSc+PHRleHQgeT0nNic+PHRzcGFuPk9QLUlNTTwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg==" alt="Diagram" width="800" height="70">
 </div>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Description</dt>
 <dd>
-<p>This instruction scatters all of the odd and even bits of a source word into
-the high and low halves of a destination word.
-It is the inverse of the <a href="#insns-unzip">unzip</a> instruction.
+<p>This instruction gathers bits from the high and low halves of the source
+word into odd/even bit positions in the destination word.
+It is the inverse of the <a href="#insns-unzip-sc">unzip</a> instruction.
 This instruction is available only on RV32.</p>
 </dd>
 <dt class="hdlist1">Operation</dt>
@@ -18548,32 +18578,7 @@ strcmp:
 </div>
 </div>
 <div class="sect1">
-<h2 id="j-extendj">31. "J"  Extension for Dynamically Translated Languages, Version 0.0</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>This chapter is a placeholder for a future standard extension to support
-dynamically translated languages.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Many popular languages are usually implemented via dynamic translation,
-including Java and Javascript. These languages can benefit from
-additional ISA support for dynamic checks and garbage collection.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="packedsimd">32. "P" Extension for Packed-SIMD Instructions, Version 0.2</h2>
+<h2 id="packedsimd">31. "P" Extension for Packed-SIMD Instructions, Version 0.2</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -18597,7 +18602,7 @@ implementations. A task group is working to define the new P extension.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="vector">33. "V" Standard Extension for Vector Operations, Version 1.0</h2>
+<h2 id="vector">32. "V" Standard Extension for Vector Operations, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: This extension is not supported.</p>
@@ -18605,7 +18610,7 @@ implementations. A task group is working to define the new P extension.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="scalar-crypto">34. Cryptography Extensions: Scalar &amp; Entropy Source Instructions, Version 1.0.1</h2>
+<h2 id="scalar-crypto">33. Cryptography Extensions: Scalar &amp; Entropy Source Instructions, Version 1.0.1</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: These extensions are not supported.</p>
@@ -18613,7 +18618,7 @@ implementations. A task group is working to define the new P extension.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="vector-crypto">35. Cryptography Extensions: Vector Instructions, Version 1.0</h2>
+<h2 id="vector-crypto">34. Cryptography Extensions: Vector Instructions, Version 1.0</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: These extensions are not supported.</p>
@@ -18621,7 +18626,7 @@ implementations. A task group is working to define the new P extension.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="unpriv-cfi">36. Control-flow Integrity (CFI)</h2>
+<h2 id="unpriv-cfi">35. Control-flow Integrity (CFI)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>CV32A65X: The Zicfiss extension is not supported.</p>
@@ -18632,7 +18637,7 @@ implementations. A task group is working to define the new P extension.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="rv32-64g">37. RV32/64G Instruction Set Listings</h2>
+<h2 id="rv32-64g">36. RV32/64G Instruction Set Listings</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>One goal of the RISC-V project is that it be used as a stable software
@@ -18745,7 +18750,7 @@ added instructions tend to be more domain-specific and only provide
 benefits to a restricted class of applications, e.g., for multimedia or
 security. Unlike most commercial ISAs, the RISC-V ISA design clearly
 separates the base ISA and broadly applicable standard extensions from
-these more specialized additions. <a href="#extending">Chapter 38</a>
+these more specialized additions. <a href="#extending">Chapter 37</a>
 has a more extensive discussion of ways to add extensions to the RISC-V
 ISA.</p>
 </div>
@@ -19541,7 +19546,7 @@ are the only CSRs defined in this specification.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="extending">38. Extending RISC-V</h2>
+<h2 id="extending">37. Extending RISC-V</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>In addition to supporting standard general-purpose software development,
@@ -19562,13 +19567,13 @@ the unprivileged ISA, although the same approach and terminology is used
 for supervisor-level extensions described in the second volume.</p>
 </div>
 <div class="sect2">
-<h3 id="_extension_terminology">38.1. Extension Terminology</h3>
+<h3 id="_extension_terminology">37.1. Extension Terminology</h3>
 <div class="paragraph">
 <p>This section defines some standard terminology for describing RISC-V
 extensions.</p>
 </div>
 <div class="sect3">
-<h4 id="_standard_versus_non_standard_extension">38.1.1. Standard versus Non-Standard Extension</h4>
+<h4 id="_standard_versus_non_standard_extension">37.1.1. Standard versus Non-Standard Extension</h4>
 <div class="paragraph">
 <p>Any RISC-V processor implementation must support a base integer ISA
 (RV32I, RV32E, RV64I, RV64E, or RV128I). In addition, an implementation may
@@ -19593,7 +19598,7 @@ some eventually being promoted to standard extensions.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_instruction_encoding_spaces_and_prefixes">38.1.2. Instruction Encoding Spaces and Prefixes</h4>
+<h4 id="_instruction_encoding_spaces_and_prefixes">37.1.2. Instruction Encoding Spaces and Prefixes</h4>
 <div class="paragraph">
 <p>An instruction encoding space is some number of instruction bits within
 which a base ISA or ISA extension is encoded. RISC-V supports varying
@@ -19745,7 +19750,7 @@ extensions into a single global encoding.
 </table>
 </div>
 <div class="sect3">
-<h4 id="_greenfield_versus_brownfield_extensions">38.1.3. Greenfield versus Brownfield Extensions</h4>
+<h4 id="_greenfield_versus_brownfield_extensions">37.1.3. Greenfield versus Brownfield Extensions</h4>
 <div class="paragraph">
 <p>We use the term <em>greenfield extension</em> to describe an extension that
 begins populating a new instruction encoding space, and hence can only
@@ -19813,7 +19818,7 @@ complete base encoding.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_standard_compatible_global_encodings">38.1.4. Standard-Compatible Global Encodings</h4>
+<h4 id="_standard_compatible_global_encodings">37.1.4. Standard-Compatible Global Encodings</h4>
 <div class="paragraph">
 <p>A complete or <em>global</em> encoding of an ISA for an actual RISC-V
 implementation must allocate a unique non-conflicting prefix for every
@@ -19836,7 +19841,7 @@ any RISC-V standard-compatible global encoding.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_guaranteed_non_standard_encoding_space">38.1.5. Guaranteed Non-Standard Encoding Space</h4>
+<h4 id="_guaranteed_non_standard_encoding_space">37.1.5. Guaranteed Non-Standard Encoding Space</h4>
 <div class="paragraph">
 <p>To support development of proprietary custom extensions, portions of the
 encoding space are guaranteed to never be used by standard extensions.</p>
@@ -19844,7 +19849,7 @@ encoding space are guaranteed to never be used by standard extensions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_risc_v_extension_design_philosophy">38.2. RISC-V Extension Design Philosophy</h3>
+<h3 id="_risc_v_extension_design_philosophy">37.2. RISC-V Extension Design Philosophy</h3>
 <div class="paragraph">
 <p>We intend to support a large number of independently developed
 extensions by encouraging extension developers to operate within
@@ -19895,7 +19900,7 @@ development.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="fix32b">38.3. Extensions within fixed-width 32-bit instruction format</h3>
+<h3 id="fix32b">37.3. Extensions within fixed-width 32-bit instruction format</h3>
 <div class="paragraph">
 <p>In this section, we discuss adding extensions to implementations that
 only support the base fixed-width 32-bit instruction format.</p>
@@ -19916,7 +19921,7 @@ for many restricted accelerators and research prototypes.</p>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_available_30_bit_instruction_encoding_spaces">38.3.1. Available 30-bit instruction encoding spaces</h4>
+<h4 id="_available_30_bit_instruction_encoding_spaces">37.3.1. Available 30-bit instruction encoding spaces</h4>
 <div class="paragraph">
 <p>In the standard encoding, three of the available 30-bit instruction
 encoding spaces (those with 2-bit prefixes <code>00</code>, <code>01</code>, and <code>10</code>) are used to
@@ -19927,7 +19932,7 @@ available encoding space within the 32-bit format.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_available_25_bit_instruction_encoding_spaces">38.3.2. Available 25-bit instruction encoding spaces</h4>
+<h4 id="_available_25_bit_instruction_encoding_spaces">37.3.2. Available 25-bit instruction encoding spaces</h4>
 <div class="paragraph">
 <p>A 25-bit instruction encoding space corresponds to a major opcode in the
 base and standard extension encodings.</p>
@@ -19963,7 +19968,7 @@ to 16 available for extensions.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_available_22_bit_instruction_encoding_spaces">38.3.3. Available 22-bit instruction encoding spaces</h4>
+<h4 id="_available_22_bit_instruction_encoding_spaces">37.3.3. Available 22-bit instruction encoding spaces</h4>
 <div class="paragraph">
 <p>A 22-bit encoding space corresponds to a funct3 minor opcode space in
 the base and standard extension encodings. Several major opcodes have a
@@ -19978,7 +19983,7 @@ decoding.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_other_spaces">38.3.4. Other spaces</h4>
+<h4 id="_other_spaces">37.3.4. Other spaces</h4>
 <div class="paragraph">
 <p>Smaller spaces are available under certain major opcodes, and not all
 minor opcodes are entirely filled.</p>
@@ -19986,7 +19991,7 @@ minor opcodes are entirely filled.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_adding_aligned_64_bit_instruction_extensions">38.4. Adding aligned 64-bit instruction extensions</h3>
+<h3 id="_adding_aligned_64_bit_instruction_extensions">37.4. Adding aligned 64-bit instruction extensions</h3>
 <div class="paragraph">
 <p>The simplest approach to provide space for extensions that are too large
 for the base 32-bit fixed-width instruction format is to add naturally
@@ -20023,7 +20028,7 @@ variable-length instruction encodings.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supporting_vliw_encodings">38.5. Supporting VLIW encodings</h3>
+<h3 id="_supporting_vliw_encodings">37.5. Supporting VLIW encodings</h3>
 <div class="paragraph">
 <p>Although RISC-V was not designed as a base for a pure VLIW machine, VLIW
 encodings can be added as extensions using several alternative
@@ -20031,7 +20036,7 @@ approaches. In all cases, the base 32-bit encoding has to be supported
 to allow use of any standard software tools.</p>
 </div>
 <div class="sect3">
-<h4 id="_fixed_size_instruction_group">38.5.1. Fixed-size instruction group</h4>
+<h4 id="_fixed_size_instruction_group">37.5.1. Fixed-size instruction group</h4>
 <div class="paragraph">
 <p>The simplest approach is to define a single large naturally aligned
 instruction format (e.g., 128 bits) within which VLIW operations are
@@ -20042,7 +20047,7 @@ VLIW code size expansion to VLIW-accelerated functions.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_encoded_length_groups">38.5.2. Encoded-Length Groups</h4>
+<h4 id="_encoded_length_groups">37.5.2. Encoded-Length Groups</h4>
 <div class="paragraph">
 <p>Another approach is to use the standard length encoding from
 <a href="#instlengthcode">Table 1</a> to encode parallel
@@ -20064,7 +20069,7 @@ virtual memory pages).</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fixed_size_instruction_bundles">38.5.3. Fixed-Size Instruction Bundles</h4>
+<h4 id="_fixed_size_instruction_bundles">37.5.3. Fixed-Size Instruction Bundles</h4>
 <div class="paragraph">
 <p>Another approach, similar to Itanium, is to use a larger naturally
 aligned fixed instruction bundle size (e.g., 128 bits) across which
@@ -20075,7 +20080,7 @@ to be supported.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_end_of_group_bits_in_prefix">38.5.4. End-of-Group bits in Prefix</h4>
+<h4 id="_end_of_group_bits_in_prefix">37.5.4. End-of-Group bits in Prefix</h4>
 <div class="paragraph">
 <p>None of the above approaches retains the RISC-V encoding for the
 individual operations within a VLIW instruction. Yet another approach is
@@ -20098,7 +20103,7 @@ registers in the standard 30-bit encoding space.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="naming">39. ISA Extension Naming Conventions</h2>
+<h2 id="naming">38. ISA Extension Naming Conventions</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This chapter describes the RISC-V ISA extension naming scheme that is
@@ -20123,13 +20128,13 @@ an organized naming scheme simplifies software tools and documentation.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_case_sensitivity">39.1. Case Sensitivity</h3>
+<h3 id="_case_sensitivity">38.1. Case Sensitivity</h3>
 <div class="paragraph">
 <p>The ISA naming strings are case insensitive.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_base_integer_isa">39.2. Base Integer ISA</h3>
+<h3 id="_base_integer_isa">38.2. Base Integer ISA</h3>
 <div class="paragraph">
 <p>RISC-V ISA strings begin with either RV32I, RV32E, RV64I, RV64E, or RV128I
 indicating the supported address space size in bits for the base integer
@@ -20137,7 +20142,7 @@ ISA.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_instruction_set_extension_names">39.3. Instruction-Set Extension Names</h3>
+<h3 id="_instruction_set_extension_names">38.3. Instruction-Set Extension Names</h3>
 <div class="paragraph">
 <p>Standard ISA extensions are given a name consisting of a single letter.
 For example, the first four standard extensions to the integer bases
@@ -20166,48 +20171,20 @@ RV32IFZicsr, and RV32ID is equivalent to RV32IFD and RV32IFDZicsr.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_version_numbers">39.4. Version Numbers</h3>
-<div class="paragraph">
-<p>Recognizing that instruction sets may expand or alter over time, we
-encode extension version numbers following the extension name. Version
-numbers are divided into major and minor version numbers, separated by a
-"p". If the minor version is "0", then "p0" can be omitted from
-the version string. Changes in major version numbers imply a loss of
-backwards compatibility, whereas changes in only the minor version
-number must be backwards-compatible. For example, the original 64-bit
-standard ISA defined in release 1.0 of this manual can be written in
-full as "RV64I1p0M1p0A1p0F1p0D1p0", more concisely as
-"RV64I1M1A1F1D1".</p>
-</div>
-<div class="paragraph">
-<p>We introduced the version numbering scheme with the second release.
-Hence, we define the default version of a standard extension to be the
-version present at that time, e.g., "RV32I" is equivalent to
-"RV32I2".</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_underscores">39.5. Underscores</h3>
+<h3 id="_underscores">38.4. Underscores</h3>
 <div class="paragraph">
 <p>Underscores "_" may be used to separate ISA extensions to improve
 readability and to provide disambiguation, e.g., "RV32I2_M2_A2".</p>
 </div>
-<div class="paragraph">
-<p>Because the "P" extension for Packed SIMD can be confused for the
-decimal point in a version number, it must be preceded by an underscore
-if it follows a number. For example, "rv32i2p2" means version 2.2 of
-RV32I, whereas "rv32i2_p2" means version 2.0 of RV32I with version 2.0
-of the P extension.</p>
-</div>
 </div>
 <div class="sect2">
-<h3 id="_additional_standard_unprivileged_extension_names">39.6. Additional Standard Unprivileged Extension Names</h3>
+<h3 id="_additional_standard_unprivileged_extension_names">38.5. Additional Standard Unprivileged Extension Names</h3>
 <div class="paragraph">
-<p>Standard unprivileged extensions can also be named using a single "Z" followed by
-an alphabetical name and an optional version number. For example,
-"Zifencei" names the instruction-fetch fence extension described in
-<a href="#zifencei">Chapter 6</a>; "Zifencei2" and
-"Zifencei2p0" name version 2.0 of same.</p>
+<p>Standard unprivileged extensions can also be named by using a single "Z" followed by an
+alphanumeric name. The name must end with an alphabetical character.
+The second letter from the end cannot be numeric if the
+last letter is "p". For example, "Zifencei" names the instruction-fetch fence extension
+described in <a href="#zifencei">Chapter 6</a>.</p>
 </div>
 <div class="paragraph">
 <p>The first letter following the "Z" conventionally indicates the most
@@ -20225,24 +20202,29 @@ separated from other multi-letter extensions by an underscore, e.g.,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supervisor_level_instruction_set_extensions">39.7. Supervisor-level Instruction-Set Extensions</h3>
+<h3 id="_supervisor_level_instruction_set_extension_names">38.6. Supervisor-level Instruction-Set Extension Names</h3>
 <div class="paragraph">
 <p>Standard extensions that extend the supervisor-level virtual-memory
-architecture are prefixed with the letters "Sv", followed by an alphabetical
-name and an optional version number, or by a numeric name with no version number.
-Other standard extensions that extend
-the supervisor-level architecture are prefixed with the letters "Ss",
-followed by an alphabetical name and an optional version number.  Such
-extensions are defined in Volume II.</p>
+architecture are prefixed with the letters "Sv", followed by an alphanumeric
+name. Other standard extensions that extend the supervisor-level architecture are
+prefixed with thel letters "Ss", followed by an alphanumeric name. The name
+must end with an alphabetical character. The second letter from the end cannot
+be numeric if the last letter is "p". These extensions are further defined in
+Volume II.</p>
+</div>
+<div class="paragraph">
+<p>The extensions "sv32", "sv39", "sv48", and "sv59" were defined before the rule
+against extension names ending in numbers was established.</p>
 </div>
 <div class="paragraph">
 <p>Standard supervisor-level extensions should be listed after standard
-unprivileged extensions. If multiple supervisor-level extensions are
-listed, they should be ordered alphabetically.</p>
+unprivileged extensions, and like other multi-letter extensions, must be
+separated from other multi-letter extensions by an underscore. If multiple
+supervisor-level extensions are listed, they should be ordered alphabetically.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hypervisor_level_instruction_set_extensions">39.8. Hypervisor-level Instruction-Set Extensions</h3>
+<h3 id="_hypervisor_level_instruction_set_extension_names">38.7. Hypervisor-level Instruction-Set Extension Names</h3>
 <div class="paragraph">
 <p>Standard extensions that extend the hypervisor-level architecture are prefixed
 with the letters "Sh".
@@ -20267,24 +20249,26 @@ supervisor-visible effects.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_machine_level_instruction_set_extensions">39.9. Machine-level Instruction-Set Extensions</h3>
+<h3 id="_machine_level_instruction_set_extension_names">38.8. Machine-level Instruction-Set Extension Names</h3>
 <div class="paragraph">
 <p>Standard machine-level instruction-set extensions are prefixed with the
 letters "Sm".</p>
 </div>
 <div class="paragraph">
 <p>Standard machine-level extensions should be listed after standard
-lesser-privileged extensions. If multiple machine-level extensions are
-listed, they should be ordered alphabetically.</p>
+lesser-privileged extensions, and like other multi-letter extensions, must be
+separated from other multi-letter extensions by an underscore. If multiple
+machine-level extensions are listed, they should be ordered alphabetically.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_non_standard_extension_names">39.10. Non-Standard Extension Names</h3>
+<h3 id="_non_standard_extension_names">38.9. Non-Standard Extension Names</h3>
 <div class="paragraph">
-<p>Non-standard extensions are named using a single "X" followed by an
-alphabetical name and an optional version number. For example,
-"Xhwacha" names the Hwacha vector-fetch ISA extension; "Xhwacha2"
-and "Xhwacha2p0" name version 2.0 of same.</p>
+<p>Non-standard extensions are named by using a single "X" followed by the alphanumeric
+name. The name must end with an alphabetic character. The
+second letter from the end cannot be numeric if the last letter is
+"p". For example, "Xhwacha" names the Hwacha vector-fetch ISA
+extension.</p>
 </div>
 <div class="paragraph">
 <p>Non-standard extensions must be listed after all standard extensions, and,
@@ -20295,11 +20279,44 @@ Bargle may be named "RV64IZifencei_Xargle_Xbargle".</p>
 </div>
 <div class="paragraph">
 <p>If multiple non-standard extensions are listed, they should be ordered
-alphabetically.</p>
+alphabetically. Like other multi-letter extensions, they should be
+separated from other multi-leter extensions by an underscore.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subset_naming_convention">39.11. Subset Naming Convention</h3>
+<h3 id="_version_numbers">38.10. Version Numbers</h3>
+<div class="paragraph">
+<p>Recognizing that instruction sets may expand or alter over time, we
+encode extension version numbers following the extension name. Version
+numbers are divided into major and minor version numbers, separated by a
+"p". If the minor version is "0", then "p0" can be omitted from
+the version string. To avoid ambiguity, no extension name may end with a number
+or a "p" preceded by a number.</p>
+</div>
+<div class="paragraph">
+<p>Because the "P" extension for Packed SIMD can be confused for the
+decimal point in a version number, it must be preceded by an underscore
+if it follows another extension with a version number. For example, "rv32i2p2"
+means version 2.2 of RV32I, whereas "rv32i2_p2" means version 2.0 of RV32I with
+version 2.0 of the P extension.</p>
+</div>
+<div class="paragraph">
+<p>Changes in major version numbers imply a loss of
+backwards compatibility, whereas changes in only the minor version
+number must be backwards-compatible. For example, the original 64-bit
+standard ISA defined in release 1.0 of this manual can be written in
+full as "RV64I1p0M1p0A1p0F1p0D1p0", more concisely as
+"RV64I1M1A1F1D1".</p>
+</div>
+<div class="paragraph">
+<p>We introduced the version numbering scheme with the second release.
+Hence, we define the default version of a standard extension to be the
+version present at that time, e.g., "RV32I" is equivalent to
+"RV32I2".</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subset_naming_convention">38.11. Subset Naming Convention</h3>
 <div class="paragraph">
 <p><a href="#isanametable">Table 30</a> summarizes the standardized extension
 names. The table also defines the canonical
@@ -20412,6 +20429,14 @@ e.g., RV32IMACV is legal, whereas RV32IMAVC is not.</p>
 <td class="tableblock halign-center valign-top"></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><strong>Standard Hypervisor-Level Extensions</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hypervisor-level extension "ghi"</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Shghi</p></td>
+<td class="tableblock halign-center valign-top"></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><strong>Standard Machine-Level Extensions</strong></p></td>
 </tr>
 <tr>
@@ -20433,10 +20458,10 @@ e.g., RV32IMACV is legal, whereas RV32IMAVC is not.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="history">40. History and Acknowledgments</h2>
+<h2 id="history">39. History and Acknowledgments</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_why_develop_a_new_isa_rationale_from_berkeley_group">40.1. "Why Develop a new ISA?" Rationale from Berkeley Group</h3>
+<h3 id="_why_develop_a_new_isa_rationale_from_berkeley_group">39.1. "Why Develop a new ISA?" Rationale from Berkeley Group</h3>
 <div class="paragraph">
 <p>We developed RISC-V to support our own needs in research and education,
 where our group is particularly interested in actual hardware
@@ -20590,7 +20615,7 @@ membership and various open-source projects using RISC-V.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_history_from_revision_1_0_of_isa_manual">40.2. History from Revision 1.0 of ISA manual</h3>
+<h3 id="_history_from_revision_1_0_of_isa_manual">39.2. History from Revision 1.0 of ISA manual</h3>
 <div class="paragraph">
 <p>The RISC-V ISA and instruction-set manual builds upon several earlier
 projects. Several aspects of the supervisor-level machine and the
@@ -20658,7 +20683,7 @@ internal recoding of floating-point values.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_history_from_revision_2_0_of_isa_manual">40.3. History from Revision 2.0 of ISA manual</h3>
+<h3 id="_history_from_revision_2_0_of_isa_manual">39.3. History from Revision 2.0 of ISA manual</h3>
 <div class="paragraph">
 <p>Multiple implementations of RISC-V processors have been completed,
 including several silicon fabrications, as shown in
@@ -20840,7 +20865,7 @@ in Verilog by Tommy Thorn, and one in Bluespec by Rishiyur Nikhil.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_acknowledgments">40.4. Acknowledgments</h3>
+<h3 id="_acknowledgments">39.4. Acknowledgments</h3>
 <div class="paragraph">
 <p>Thanks to Christopher F. Batten, Preston Briggs, Christopher Celio,
 David Chisnall, Stefan Freudenberger, John Hauser, Ben Keller, Rishiyur
@@ -20849,7 +20874,7 @@ the draft ISA version 2.0 specification.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_history_from_revision_2_1">40.5. History from Revision 2.1</h3>
+<h3 id="_history_from_revision_2_1">39.5. History from Revision 2.1</h3>
 <div class="paragraph">
 <p>Uptake of the RISC-V ISA has been very rapid since the introduction of
 the frozen version 2.0 in May 2014, with too much activity to record in
@@ -20861,7 +20886,7 @@ place to obtain news and updates on the RISC-V standard.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_acknowledgments_2">40.6. Acknowledgments</h3>
+<h3 id="_acknowledgments_2">39.6. Acknowledgments</h3>
 <div class="paragraph">
 <p>Thanks to Scott Beamer, Allen J. Baum, Christopher Celio, David
 Chisnall, Paul Clayton, Palmer Dabbelt, Jan Gray, Michael Hamburg, and
@@ -20869,18 +20894,18 @@ John Hauser for comments on the version 2.0 specification.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_history_from_revision_2_2">40.7. History from Revision 2.2</h3>
+<h3 id="_history_from_revision_2_2">39.7. History from Revision 2.2</h3>
 
 </div>
 <div class="sect2">
-<h3 id="_acknowledgments_3">40.8. Acknowledgments</h3>
+<h3 id="_acknowledgments_3">39.8. Acknowledgments</h3>
 <div class="paragraph">
 <p>Thanks to Jacob Bachmeyer, Alex Bradbury, David Horner, Stefan O’Rear,
 and Joseph Myers for comments on the version 2.1 specification.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_history_for_revision_2_3">40.9. History for Revision 2.3</h3>
+<h3 id="_history_for_revision_2_3">39.9. History for Revision 2.3</h3>
 <div class="paragraph">
 <p>Uptake of RISC-V continues at a breakneck pace.</p>
 </div>
@@ -20898,7 +20923,7 @@ contributed the memory consistency model.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_funding">40.10. Funding</h3>
+<h3 id="_funding">39.10. Funding</h3>
 <div class="paragraph">
 <p>Development of the RISC-V architecture and implementations has been
 partially funded by the following sponsors.</p>
@@ -21333,7 +21358,7 @@ performing before the store.</p>
 </div>
 <div class="paragraph">
 <p>Consider the <a href="#litms_sb_forward">Table 33</a>. When running this program on an implementation with
-store buffers, it is possible to arrive at the final outcome a0=1, <code>a1=0, a2=1, a3=0</code> as follows:</p>
+store buffers, it is possible to arrive at the final outcome <code>a0=1, a1=0, a2=1, a3=0</code> as follows:</p>
 </div>
 <table id="litms_sb_forward" class="tableblock frame-none grid-none stretch center">
 <caption class="title">Table 33. A store buffer forwarding litmus test (outcome permitted)</caption>
@@ -21467,7 +21492,7 @@ a perfectly legal execution; it&#8217;s just not the one in question)</p>
 <p>(e) precedes (f): by rule X</p>
 </li>
 <li>
-<p>(f) precedes (h): by rule <a href="#overlapping-ordering">4]</a></p>
+<p>(f) precedes (h): by rule <a href="#overlapping-ordering">4</a></p>
 </li>
 <li>
 <p>(h) precedes (a): by the load value axiom, as above.</p>
@@ -25339,7 +25364,7 @@ is applied to that state when the transition is taken, in order to
 generate the new system state.</p>
 </div>
 <div class="sect4">
-<h5 id="fetch">Fetch instruction</h5>
+<h5 id="fetch">B.3.5.1. Fetch instruction</h5>
 <div class="paragraph">
 <p>A possible program-order-successor of instruction instance
 <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> can be fetched from address <em>loc</em> if:</p>
@@ -25406,7 +25431,7 @@ addresses are detected.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="initiate_load">Initiate memory load operations</h5>
+<h5 id="initiate_load">B.3.5.2. Initiate memory load operations</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state Plain(Load_mem(<em>kind</em>,
 <em>address</em>, <em>size</em>, <em>load_continuation</em>)) can always initiate the
@@ -25451,7 +25476,7 @@ others.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="sat_by_forwarding">Satisfy memory load operation by forwarding from unpropagated stores</h5>
+<h5 id="sat_by_forwarding">B.3.5.3. Satisfy memory load operation by forwarding from unpropagated stores</h5>
 <div class="paragraph">
 <p>For a non-AMO load instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_loads(<em>load_continuation</em>), and a memory load operation
@@ -25605,7 +25630,7 @@ load is acquire-RCsc.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="sat_from_mem">Satisfy memory load operation from memory</h5>
+<h5 id="sat_from_mem">B.3.5.4. Satisfy memory load operation from memory</h5>
 <div class="paragraph">
 <p>For an instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> of a non-AMO load
 instruction or an AMO instruction in the context of the <a href="#do_amo">Satisfy, commit and propagate operations of an AMO</a> transition,
@@ -25635,7 +25660,7 @@ unsatisfied slices of the memory load operation.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="complete_loads">Complete load operations</h5>
+<h5 id="complete_loads">B.3.5.5. Complete load operations</h5>
 <div class="paragraph">
 <p>A load instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_loads(<em>load_continuation</em>) can be completed (not to be
@@ -25648,7 +25673,7 @@ from all the memory store operation slices that satisfied
 </div>
 </div>
 <div class="sect4">
-<h5 id="early_sc_fail">Early <code>sc</code> fail</h5>
+<h5 id="early_sc_fail">B.3.5.6. Early <code>sc</code> fail</h5>
 <div class="paragraph">
 <p>An <code>sc</code> instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Early_sc_fail(<em>res_continuation</em>)) can always be made to fail.
@@ -25657,7 +25682,7 @@ Plain(<em>res_continuation(false)</em>).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="paired_sc">Paired <code>sc</code></h5>
+<h5 id="paired_sc">B.3.5.7. Paired <code>sc</code></h5>
 <div class="paragraph">
 <p>An <code>sc</code> instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Early_sc_fail(<em>res_continuation</em>)) can continue its (potentially
@@ -25666,7 +25691,7 @@ update the state of <span class="image"><img src="data:image/svg+xml;base64,PHN2
 </div>
 </div>
 <div class="sect4">
-<h5 id="initiate_store_footprint">Initiate memory store operation footprints</h5>
+<h5 id="initiate_store_footprint">B.3.5.8. Initiate memory store operation footprints</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state Plain(Store_ea(<em>kind</em>,
 <em>address</em>, <em>size</em>, <em>next_state</em>)) can always announce its pending memory
@@ -25714,7 +25739,7 @@ becomes available).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="instantiate_store_value">Instantiate memory store operation values</h5>
+<h5 id="instantiate_store_value">B.3.5.9. Instantiate memory store operation values</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Store_memv(<em>mem_value</em>, <em>store_continuation</em>)) can always
@@ -25735,7 +25760,7 @@ Pending_mem_stores(<em>store_continuation</em>).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="commit_stores">Commit store instruction</h5>
+<h5 id="commit_stores">B.3.5.10. Commit store instruction</h5>
 <div class="paragraph">
 <p>An uncommitted instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> of a non-<code>sc</code> store
 instruction or an <code>sc</code> instruction in the context of the <a href="#commit_sc">Commit and propagate store operation of an <code>sc</code></a>
@@ -25812,7 +25837,7 @@ making that condition simpler.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="prop_store">Propagate store operation</h5>
+<h5 id="prop_store">B.3.5.11. Propagate store operation</h5>
 <div class="paragraph">
 <p>For a committed instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_stores(<em>store_continuation</em>), and an unpropagated memory
@@ -25888,7 +25913,7 @@ slice <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaH
 </div>
 </div>
 <div class="sect4">
-<h5 id="commit_sc">Commit and propagate store operation of an <code>sc</code></h5>
+<h5 id="commit_sc">B.3.5.12. Commit and propagate store operation of an <code>sc</code></h5>
 <div class="paragraph">
 <p>An uncommitted <code>sc</code> instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span>, from hart
 <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNy4zODAyMDdwdCIgaGVpZ2h0PSI5LjExNzE4OHB0IiB2aWV3Qm94PSIwIDAgNy4zODAyMDcgOS4xMTcxODgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMC41NzgxMjUgMCBMIDIuMjM0Mzc1IC04LjUgTCAxLjIwMzEyNSAtOC41IEwgMS4zMTI1IC05LjEyNSBMIDMuNDIxODc1IC05LjEyNSBMIDIuNjU2MjUgLTUuMTI1IEMgMi45Mzc1IC01LjUzOTA2MiAzLjI1MzkwNiAtNS44NTkzNzUgMy42MDkzNzUgLTYuMDc4MTI1IEMgMy45NzI2NTYgLTYuMjk2ODc1IDQuMzYzMjgxIC02LjQwNjI1IDQuNzgxMjUgLTYuNDA2MjUgQyA1LjQ2ODc1IC02LjQwNjI1IDUuOTM3NSAtNi4yMDcwMzEgNi4xODc1IC01LjgxMjUgQyA2LjM0Mzc1IC01LjU3MDMxMiA2LjQyMTg3NSAtNS4yNTM5MDYgNi40MjE4NzUgLTQuODU5Mzc1IEMgNi40MjE4NzUgLTQuNTg1OTM4IDYuMzgyODEyIC00LjI4OTA2MiA2LjMxMjUgLTMuOTY4NzUgTCA1LjY3MTg3NSAtMC42MjUgTCA2LjYyNSAtMC42MjUgTCA2LjUxNTYyNSAwIEwgNC40Njg3NSAwIEwgNS4xNzE4NzUgLTMuNjI1IEMgNS4yNDIxODggLTQuMDE5NTMxIDUuMjgxMjUgLTQuMzUxNTYyIDUuMjgxMjUgLTQuNjI1IEMgNS4yODEyNSAtNC44NjMyODEgNS4yNSAtNS4wNTA3ODEgNS4xODc1IC01LjE4NzUgQyA1LjA2MjUgLTUuNDY4NzUgNC43NTc4MTIgLTUuNjA5Mzc1IDQuMjgxMjUgLTUuNjA5Mzc1IEMgMy43ODEyNSAtNS42MDkzNzUgMy4zNjMyODEgLTUuNDI1NzgxIDMuMDMxMjUgLTUuMDYyNSBDIDIuNjk1MzEyIC00LjY5NTMxMiAyLjQ2MDkzOCAtNC4xNjQwNjIgMi4zMjgxMjUgLTMuNDY4NzUgTCAxLjY1NjI1IDAgWiBNIDAuNTc4MTI1IDAgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMTIxIj4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA4NTkzNzUiIHk9IjkuMTE1MjM0Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem af98b3d273f2fa50eec5140dd48d1eae" width="7" height="9"></span>, in state Pending_mem_stores(<em>store_continuation</em>), with
@@ -25935,7 +25960,7 @@ since <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaH
 </div>
 </div>
 <div class="sect4">
-<h5 id="late_sc_fail">Late <code>sc</code> fail</h5>
+<h5 id="late_sc_fail">B.3.5.13. Late <code>sc</code> fail</h5>
 <div class="paragraph">
 <p>An <code>sc</code> instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_stores(<em>store_continuation</em>), that has not propagated its
@@ -25964,7 +25989,7 @@ should fail one should use the <a href="#early_sc_fail">Early sc fail</a> transi
 </div>
 </div>
 <div class="sect4">
-<h5 id="complete_stores">Complete store operations</h5>
+<h5 id="complete_stores">B.3.5.14. Complete store operations</h5>
 <div class="paragraph">
 <p>A store instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_stores(<em>store_continuation</em>), for which all the memory store
@@ -25975,7 +26000,7 @@ Plain(<em>store_continuation(true)</em>).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="do_amo">Satisfy, commit and propagate operations of an AMO</h5>
+<h5 id="do_amo">B.3.5.15. Satisfy, commit and propagate operations of an AMO</h5>
 <div class="paragraph">
 <p>An AMO instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Pending_mem_loads(<em>load_continuation</em>) can perform its memory access if
@@ -26043,7 +26068,7 @@ propagated and therefore cannot be forwarded.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="commit_fence">Commit fence</h5>
+<h5 id="commit_fence">B.3.5.16. Commit fence</h5>
 <div class="paragraph">
 <p>A fence instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Fence(<em>kind</em>, <em>next_state</em>)) can be committed if:</p>
@@ -26079,7 +26104,7 @@ and store instructions are finished.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="reg_read">Register read</h5>
+<h5 id="reg_read">B.3.5.17. Register read</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Read_reg(<em>reg_name</em>, <em>read_cont</em>)) can do a register read of
@@ -26106,7 +26131,7 @@ source is the initial register value from <em>initial_register_state</em>. Let
 </div>
 </div>
 <div class="sect4">
-<h5 id="reg_write">Register write</h5>
+<h5 id="reg_write">B.3.5.18. Register write</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Write_reg(<em>reg_name</em>, <em>reg_value</em>, <em>next_state</em>)) can always do a
@@ -26131,7 +26156,7 @@ entirely satisfied.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="sail_interp">Pseudocode internal step</h5>
+<h5 id="sail_interp">B.3.5.19. Pseudocode internal step</h5>
 <div class="paragraph">
 <p>An instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state
 Plain(Internal(<em>next_state</em>)) can always do that pseudocode-internal
@@ -26140,7 +26165,7 @@ Plain(<em>next_state</em>).</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="finish">Finish instruction</h5>
+<h5 id="finish">B.3.5.20. Finish instruction</h5>
 <div class="paragraph">
 <p>A non-finished instruction instance <span class="image"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMy45NjQxOTFwdCIgaGVpZ2h0PSI4LjgzMDA3OHB0IiB2aWV3Qm94PSIwIDAgMy45NjQxOTEgOC44MzAwNzgiIHZlcnNpb249IjEuMSI+CjxkZWZzPgo8Zz4KPHN5bWJvbCBvdmVyZmxvdz0idmlzaWJsZSIgaWQ9ImdseXBoMC0wIj4KPHBhdGggc3R5bGU9InN0cm9rZTpub25lOyIgZD0iTSAwLjU5Mzc1IDIuMTI1IEwgMC41OTM3NSAtOC40Njg3NSBMIDYuNTkzNzUgLTguNDY4NzUgTCA2LjU5Mzc1IDIuMTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSBMIDUuOTM3NSAxLjQ1MzEyNSBMIDUuOTM3NSAtNy43ODEyNSBMIDEuMjY1NjI1IC03Ljc4MTI1IFogTSAxLjI2NTYyNSAxLjQ1MzEyNSAiLz4KPC9zeW1ib2w+CjxzeW1ib2wgb3ZlcmZsb3c9InZpc2libGUiIGlkPSJnbHlwaDAtMSI+CjxwYXRoIHN0eWxlPSJzdHJva2U6bm9uZTsiIGQ9Ik0gMS44OTA2MjUgLTguMTU2MjUgQyAxLjkyOTY4OCAtOC4zNDM3NSAyLjAzMTI1IC04LjUgMi4xODc1IC04LjYyNSBDIDIuMzQzNzUgLTguNzU3ODEyIDIuNTA3ODEyIC04LjgyODEyNSAyLjY4NzUgLTguODI4MTI1IEMgMi44NjMyODEgLTguODI4MTI1IDMuMDA3ODEyIC04Ljc1NzgxMiAzLjEyNSAtOC42MjUgQyAzLjE5NTMxMiAtOC41MzEyNSAzLjIzNDM3NSAtOC40MjE4NzUgMy4yMzQzNzUgLTguMjk2ODc1IEMgMy4yMzQzNzUgLTguMjUzOTA2IDMuMjI2NTYyIC04LjIwNzAzMSAzLjIxODc1IC04LjE1NjI1IEMgMy4xODc1IC03Ljk3NjU2MiAzLjA5Mzc1IC03LjgyMDMxMiAyLjkzNzUgLTcuNjg3NSBDIDIuNzgxMjUgLTcuNTYyNSAyLjYwOTM3NSAtNy41IDIuNDIxODc1IC03LjUgQyAyLjI0MjE4OCAtNy41IDIuMTAxNTYyIC03LjU2MjUgMiAtNy42ODc1IEMgMS45MTQwNjIgLTcuNzg5MDYyIDEuODc1IC03LjkwNjI1IDEuODc1IC04LjAzMTI1IEMgMS44NzUgLTguMDcwMzEyIDEuODc4OTA2IC04LjExMzI4MSAxLjg5MDYyNSAtOC4xNTYyNSBaIE0gMS44MTI1IC0wLjYyNSBMIDIuODI4MTI1IC0wLjYyNSBMIDIuNzAzMTI1IDAgTCAwLjYwOTM3NSAwIEwgMS42ODc1IC01LjYwOTM3NSBMIDAuNjU2MjUgLTUuNjA5Mzc1IEwgMC43ODEyNSAtNi4yMzQzNzUgTCAyLjg5MDYyNSAtNi4yMzQzNzUgWiBNIDEuODEyNSAtMC42MjUgIi8+Cjwvc3ltYm9sPgo8L2c+CjwvZGVmcz4KPGcgaWQ9InN1cmZhY2UxMzk2Ij4KPGcgc3R5bGU9ImZpbGw6cmdiKDAlLDAlLDAlKTtmaWxsLW9wYWNpdHk6MTsiPgogIDx1c2UgeGxpbms6aHJlZj0iI2dseXBoMC0xIiB4PSIwLjA1ODU5MzgiIHk9IjguODMwMDc4Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K" alt="stem 6ac91b4e7dd35551c6ea477deba5f82d" width="3" height="8"></span> in state Plain(Done)
 can be finished if:</p>
@@ -26365,7 +26390,7 @@ not supported.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 20240801<br>
+Version 20241017<br>
 </div>
 </div>
 </body>

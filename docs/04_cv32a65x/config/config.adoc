@@ -28,6 +28,7 @@
 :RVZihpm: false
 :RVZimop: false
 :RVZk: false
+:RVZpm: false
 :RVZsmcdeleg: false
 :RVZsmcntrpmf: false
 :RVZsmcsrind-RVZsscsrind: false
