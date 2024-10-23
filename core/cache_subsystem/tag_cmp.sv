@@ -81,6 +81,8 @@ module tag_cmp #(
       if (req_i[i]) break;
     end
 
+  end
+
 `ifndef SYNTHESIS
 `ifndef VERILATOR
     // assert that cache only hits on one way
@@ -92,7 +94,6 @@ module tag_cmp #(
     end
 `endif
 `endif
-  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin

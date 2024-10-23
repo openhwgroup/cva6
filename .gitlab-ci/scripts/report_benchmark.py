@@ -72,13 +72,5 @@ report = rb.Report(f"{cycles//1000} kCycles")
 report.add_metric(score_metric)
 report.dump()
 
-filename = re.sub(r"[^\w\.\\\/]", "_", os.environ["CI_JOB_NAME"])
-path = "artifacts/reports/" + filename + ".yml"
-with open(path, "r") as f:
-    log = [l.strip() for l in f.readlines()]
-for index, line in enumerate(log):
-    if "MHz" in line or "cycles" in line:
-        print(log[index + 1], log[index])
-
 if report.failed:
     sys.exit(1)

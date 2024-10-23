@@ -29,6 +29,12 @@ if ! [ -n "$DV_HWCONFIG_OPTS" ]; then
   DV_HWCONFIG_OPTS="cv32a65x"
 fi
 
+if ! [ -n "$UVM_VERBOSITY" ]; then
+    export UVM_VERBOSITY=UVM_NONE
+fi
+
+export DV_OPTS="$DV_OPTS --issrun_opts=+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+
 make clean
 make -C verif/sim clean_all
 
@@ -63,5 +69,4 @@ python3 cva6.py \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
-        --issrun_opts="+tb_performance_mode" \
         --gcc_opts "${srcA[*]} ${cflags[*]}"
