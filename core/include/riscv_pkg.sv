@@ -23,6 +23,7 @@ package riscv;
   // FIXME stop using them from CoreV-Verif and HPDCache
   // Then remove them from this package
   localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
+  localparam VLEN = (XLEN == 32) ? 32 : 64;
   localparam PLEN = (XLEN == 32) ? 34 : 56;
 
   // --------------------
