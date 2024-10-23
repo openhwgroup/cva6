@@ -854,8 +854,8 @@ module csr_regfile
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (pmpcfg_q[index].addr_mode[1] == 1'b1 || pmpcfg_q[index].addr_mode == 'h0)
-            csr_rdata = pmpaddr_q[index][CVA6Cfg.PLEN-3:0];
+          if (pmpcfg_q[index].addr_mode[1] == 1'b1)
+            csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b1};
           else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
         default: read_access_exception = 1'b1;
