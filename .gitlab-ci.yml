@@ -151,6 +151,7 @@ smoke:
         - "vcs-testharness"
         - "questa-testharness"
         - "vcs-uvm"
+        - "questa-uvm"
   script:
     - source $QUESTA_BASHRC
     - bash verif/regress/smoke-tests.sh
