@@ -38,6 +38,8 @@ if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
 
+export DV_OPTS="$DV_OPTS --issrun_opts=+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+
 make clean
 make -C verif/sim clean_all
 
@@ -92,5 +94,4 @@ python3 cva6.py \
         --c_tests "$src0" \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
         --iss_timeout=2000 \
-        --issrun_opts="+tb_performance_mode" \
         $DV_OPTS
