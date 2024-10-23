@@ -285,7 +285,7 @@ module acc_dispatcher
       };
       // Wait until the instruction is no longer speculative.
       acc_req_valid      = insn_ready_q[acc_insn_queue_o.trans_id] ||
-                           (acc_commit && insn_pending_q[acc_commit_trans_id]);
+                           (acc_commit && insn_pending_q[acc_commit_trans_id] && !flush_unissued_instr_i);
       acc_insn_queue_pop = acc_req_valid && acc_req_ready;
     end
   end
