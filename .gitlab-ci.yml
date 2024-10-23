@@ -184,10 +184,10 @@ smoke-bench:
   parallel:
     matrix:
       - BENCH: "dhrystone"
-        DV_HWCONFIG_OPTS: ["cv32a65x"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
-    - bash verif/regress/"$BENCH".sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$DV_HWCONFIG_OPTS" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
+    - bash verif/regress/"$BENCH"_smoke.sh --no-print
+    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
 hwconfig:
   extends:
@@ -272,7 +272,7 @@ asic-synthesis:
     - echo $PERIOD
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
-    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
@@ -326,16 +326,16 @@ benchmarks:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "coremark"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=4 DcacheByteSize=32768 DcacheSetAssoc=8"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
@@ -526,6 +526,7 @@ simu-gate:
     matrix:
       - SIMU_PERIOD: ["20"]  # 50 Mhz
         PERIOD:      ["15"]  # 66 Mhz
+        PROG_NAME:   "dhrystone"
   variables:
     DASHBOARD_JOB_TITLE: "Gate Level Simulation $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Tests to check netlist from ASIC synthesis and power consumption over different patterns"
@@ -533,12 +534,13 @@ simu-gate:
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
     DV_TARGET: cv32a65x
     TARGET: $DV_TARGET
+    SPIKE_TANDEM: 1
   script:
     - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
-    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH}
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh
@@ -548,6 +550,7 @@ simu-gate:
     - mkdir -p pd/synth/cva6_${DV_TARGET}/outputs/
     - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="simu-gate" --name=$PROG_NAME
     - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_gate/
+    - rm artifacts/artifacts_gate/*/build/*.fsdb
   after_script: *simu_after_script
 
 fpga-boot:

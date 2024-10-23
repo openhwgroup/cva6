@@ -65,9 +65,10 @@ module uvmt_cva6_tb;
                                          .rst_n(clknrst_if.reset_n)
                                       );
 
-   uvma_interrupt_if
-                    interrupt_vif(
-                                 );
+   uvma_interrupt_if            interrupt_vif(
+                                         .clk(clknrst_if.clk),
+                                         .reset_n(clknrst_if.reset_n)
+                                );
 
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
@@ -350,17 +351,28 @@ module uvmt_cva6_tb;
     * Test bench entry point.
     */
    initial begin : test_bench_entry_point
+     bit axi_assert_on;
 
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
 
-     axi_if.aw_assertion_enabled      = 1;
-     axi_if.w_assertion_enabled       = 1;
-     axi_if.b_assertion_enabled       = 1;
-     axi_if.ar_assertion_enabled      = 1;
-     axi_if.r_assertion_enabled       = 1;
-     axi_if.axi_assertion_enabled     = 1;
-     axi_if.axi_amo_assertion_enabled = 1;
+     if($value$plusargs("uvmt_set_axi_assert_cfg=%0d", axi_assert_on)) begin
+        axi_if.aw_assertion_enabled      = axi_assert_on;
+        axi_if.w_assertion_enabled       = axi_assert_on;
+        axi_if.b_assertion_enabled       = axi_assert_on;
+        axi_if.ar_assertion_enabled      = axi_assert_on;
+        axi_if.r_assertion_enabled       = axi_assert_on;
+        axi_if.axi_assertion_enabled     = axi_assert_on;
+        axi_if.axi_amo_assertion_enabled = axi_assert_on;
+     end else begin
+        axi_if.aw_assertion_enabled      = 1;
+        axi_if.w_assertion_enabled       = 1;
+        axi_if.b_assertion_enabled       = 1;
+        axi_if.ar_assertion_enabled      = 1;
+        axi_if.r_assertion_enabled       = 1;
+        axi_if.axi_assertion_enabled     = 1;
+        axi_if.axi_amo_assertion_enabled = 1;
+     end
 
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));

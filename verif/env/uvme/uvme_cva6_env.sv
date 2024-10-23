@@ -163,7 +163,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    else begin
-      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
+      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_NONE)
    end
 
    cfg.rvfi_cfg.nret = RTLCVA6Cfg.NrCommitPorts;
@@ -175,7 +175,10 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      cntxt.axi_cntxt.mem = cntxt.mem;
+      cntxt.axi_cntxt.mem        = cntxt.mem;
+      cntxt.interrupt_cntxt.mem  = cntxt.mem;
+      // get irq_addr ack from CVA6 UVM env
+      cfg.interrupt_cfg.irq_addr = cfg.get_irq_addr();
 
       if ($test$plusargs("tandem_enabled"))
           $value$plusargs("tandem_enabled=%b",cfg.tandem_enabled);
@@ -223,7 +226,8 @@ function void uvme_cva6_env_c::connect_phase(uvm_phase phase);
       csr_reg_predictor.map     = csr_reg_block.default_map;
       csr_reg_predictor.adapter = csr_reg_adapter;
       csr_reg_block.default_map.set_auto_predict(0);
-      isacov_agent.monitor.ap.connect(csr_reg_predictor.bus_in);
+      if (cfg.cov_model_enabled)
+         isacov_agent.monitor.ap.connect(csr_reg_predictor.bus_in);
    end
 
 endfunction: connect_phase
@@ -289,6 +293,9 @@ function void uvme_cva6_env_c::create_env_components();
 
    if (cfg.scoreboard_enabled) begin
       predictor = uvme_cva6_prd_c::type_id::create("predictor", this);
+   end
+
+   if (cfg.scoreboard_enabled || cfg.tandem_enabled) begin
       sb        = uvme_cva6_sb_c ::type_id::create("sb"       , this);
    end
 
@@ -395,10 +402,10 @@ function void uvme_cva6_env_c::connect_coverage_model();
       isacov_agent.monitor.ap.connect(cov_model.isa_covg.mon_trn_fifo.analysis_export);
       isacov_agent.monitor.ap.connect(cov_model.illegal_covg.mon_trn_fifo.analysis_export);
       isacov_agent.monitor.ap.connect(cov_model.exception_covg.mon_trn_fifo.analysis_export);
+      rvfi_agent.rvfi_core_ap.connect(isacov_agent.monitor.rvfi_instr_imp);
    end
 
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
-   rvfi_agent.rvfi_core_ap.connect(isacov_agent.monitor.rvfi_instr_imp);
 
    if(cfg.axi_cfg.cov_model_enabled) begin
       axi_agent.monitor.m_axi_superset_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);

@@ -35,7 +35,10 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand bit                      tandem_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
+   rand bit                      force_disable_csr_checks; // force disable all csr checks in RVFI. Note that all csrs info in instruction from RVFI will be removed
    rand int unsigned             sys_clk_period;
+
+   bit                           performance_mode; // Will force disable coverage, csr checks, scoreboard and loggers
 
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
@@ -59,6 +62,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // MMU support
    rand bit                      MmuPresent;
 
+   // Software interrupt supported
+   rand bit                      sw_int_supported;
+
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
@@ -66,12 +72,15 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         tandem_enabled              , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
+      `uvm_field_int (                         force_disable_csr_checks    , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
       `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
       `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
+      `uvm_field_int (                         sw_int_supported            , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (                         performance_mode            , UVM_DEFAULT          )
 
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
 
@@ -92,6 +101,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft scoreboard_enabled      == 1;
       soft cov_model_enabled       == 1;
       soft trn_log_enabled         == 1;
+      soft force_disable_csr_checks == 0;
       soft sys_clk_period          == uvme_cva6_sys_default_clk_period; // see uvme_cva6_constants.sv
    }
 
@@ -118,6 +128,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       HPDCache_supported      == (RTLCVA6Cfg.DCacheType == 2);
 
       MmuPresent              == RTLCVA6Cfg.MmuPresent;
+      // TODO : add RTL paramater related to this field fix issue#2500
+      sw_int_supported        == 0;
    }
 
    constraint ext_const {
@@ -183,12 +195,21 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          axi_cfg.trn_log_enabled       == 1;
          rvfi_cfg.trn_log_enabled      == 1;
          isacov_cfg.trn_log_enabled    == 1;
+      } else {
+         clknrst_cfg.trn_log_enabled   == 0;
+         axi_cfg.trn_log_enabled       == 0;
+         rvfi_cfg.trn_log_enabled      == 0;
+         isacov_cfg.trn_log_enabled    == 0;
       }
 
       if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled    == 1;
          axi_cfg.cov_model_enabled       == 1;
          interrupt_cfg.cov_model_enabled == 1;
+      } else {
+         isacov_cfg.cov_model_enabled    == 0;
+         axi_cfg.cov_model_enabled       == 0;
+         interrupt_cfg.cov_model_enabled == 0;
       }
 
    }
@@ -208,6 +229,13 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
     */
    extern virtual function void set_unsupported_csr_mask();
 
+   extern virtual function void read_disable_csr_check_plusargs();
+
+   /**
+    * Get irq_addr ack
+    */
+   extern virtual function bit [XLEN-1:0] get_irq_addr();
+
 endclass : uvme_cva6_cfg_c
 
 
@@ -225,6 +253,11 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    rvfi_cfg.core_cfg = this;
 
    $value$plusargs("core_name=%s", this.core_name);
+
+   if ($test$plusargs("tb_performance_mode")) begin
+      performance_mode = 1;
+      `uvm_info(get_type_name(), "Testbench set in performance mode, coverage & csr checks & scoreboard & loggers will be deactivated", UVM_NONE);
+   end
 
 endfunction : new
 
@@ -257,6 +290,25 @@ function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
       //~ pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
+
+function bit [XLEN-1:0] uvme_cva6_cfg_c::get_irq_addr();
+
+   int unsigned IRQ_ADDR;
+   string binary;
+
+    if (!$value$plusargs("irq_addr=%h", IRQ_ADDR)) IRQ_ADDR = '0;
+    if (IRQ_ADDR == '0) begin
+        if (!$value$plusargs("elf_file=%s", binary)) binary = "";
+        if (binary != "") begin
+            read_elf(binary);
+            read_symbol("int_ack", IRQ_ADDR);
+        end
+      `uvm_info(get_type_name(), $sformatf("[IRQ] INFO: int_ack_addr: %h", IRQ_ADDR), UVM_NONE)
+    end
+
+    return IRQ_ADDR;
+
+endfunction : get_irq_addr
 
 function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
 
@@ -321,5 +373,13 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
    end
 
 endfunction : set_unsupported_csr_mask
+
+function void uvme_cva6_cfg_c::read_disable_csr_check_plusargs();
+
+   super.read_disable_csr_check_plusargs();
+   if (force_disable_csr_checks)
+      disable_all_csr_checks = 1;
+
+endfunction : read_disable_csr_check_plusargs
 
 `endif // __UVME_CVA6_CFG_SV__

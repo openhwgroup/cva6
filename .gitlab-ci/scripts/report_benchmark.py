@@ -21,9 +21,9 @@ iterations = None
 valid_cycles = {
     "dhrystone_dual": 21530,
     "dhrystone_single": 26392,
-    "coremark_dual": 531457,
-    "coremark_single": 672500,
-    "dhrystone_cv32a65x": 24740,
+    "coremark_dual": 530099,
+    "coremark_single": 673184,
+    "dhrystone_cv32a65x": 33736,
 }
 
 for arg in sys.argv[1:]:
@@ -71,14 +71,6 @@ if diff != 0:
 report = rb.Report(f"{cycles//1000} kCycles")
 report.add_metric(score_metric)
 report.dump()
-
-filename = re.sub(r"[^\w\.\\\/]", "_", os.environ["CI_JOB_NAME"])
-path = "artifacts/reports/" + filename + ".yml"
-with open(path, "r") as f:
-    log = [l.strip() for l in f.readlines()]
-for index, line in enumerate(log):
-    if "MHz" in line or "cycles" in line:
-        print(log[index + 1], log[index])
 
 if report.failed:
     sys.exit(1)

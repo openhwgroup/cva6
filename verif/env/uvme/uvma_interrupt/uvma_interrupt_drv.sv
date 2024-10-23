@@ -19,7 +19,7 @@ class uvma_interrupt_drv_c extends uvm_driver#(uvma_interrupt_seq_item_c);
    uvma_interrupt_cfg_c                           cfg;
    uvma_interrupt_cntxt_c                         cntxt;
 
-   uvma_interrupt_seq_item_c req_item;
+   uvma_interrupt_seq_item_c                      req_item;
 
    `uvm_component_utils_begin(uvma_interrupt_drv_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -43,24 +43,24 @@ class uvma_interrupt_drv_c extends uvm_driver#(uvma_interrupt_seq_item_c);
    extern virtual task run_phase(uvm_phase phase);
 
    /**
-    * Drives the virtual interface's (cntxt.interrupt_vif) signals using req's contents.
+    * Called by run_phase() while agent is in pre-reset state.
     */
-   extern task drv_irq(uvma_interrupt_seq_item_c req);
+   extern task drv_irq_pre_reset();
 
    /**
-    * Assert only one interrupt each time
+    * Called by run_phase() while agent is in reset state.
     */
-   extern task assert_irq_one_by_one(uvma_interrupt_seq_item_c req);
+   extern task drv_irq_in_reset();
 
    /**
-    * Assert one or more interrupt each time
+    * Called by run_phase() while agent is in post-reset state.
     */
-   extern task assert_irq_more(uvma_interrupt_seq_item_c req);
+   extern task drv_irq_post_reset(uvma_interrupt_seq_item_c req);
 
    /**
-    * Randomize interrupt signal
+    * Assert interrupt request
     */
-   extern task assert_irq_randomize(uvma_interrupt_seq_item_c req);
+   extern task assert_irq(uvma_interrupt_seq_item_c req);
 
 endclass : uvma_interrupt_drv_c
 
@@ -77,13 +77,13 @@ function void uvma_interrupt_drv_c::build_phase(uvm_phase phase);
 
    void'(uvm_config_db#(uvma_interrupt_cfg_c)::get(this, "", "cfg", cfg));
    if (cfg == null) begin
-      `uvm_fatal("CFG", "Configuration handle is null")
+      `uvm_fatal(get_type_name(), "Configuration handle is null")
    end
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*", "cfg", cfg);
 
    void'(uvm_config_db#(uvma_interrupt_cntxt_c)::get(this, "", "cntxt", cntxt));
    if (cntxt == null) begin
-      `uvm_fatal("CNTXT", "Context handle is null")
+      `uvm_fatal(get_type_name(), "Context handle is null")
    end
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "*", "cntxt", cntxt);
    
@@ -99,67 +99,61 @@ task uvma_interrupt_drv_c::run_phase(uvm_phase phase);
    cntxt.interrupt_vif.irq <= 'h0;
 
    if(!cfg.enable_interrupt) begin
-      `uvm_warning(get_type_name(), "Driving Interrupt reqeust is disabled");
+      `uvm_info(get_type_name(), "Driving Interrupt request is disabled", UVM_NONE);
       return;
    end
 
    forever begin
+      case (cntxt.reset_state)
+         UVMA_INTERRUPT_RESET_STATE_PRE_RESET : drv_irq_pre_reset ();
+         UVMA_INTERRUPT_RESET_STATE_IN_RESET  : drv_irq_in_reset  ();
+         UVMA_INTERRUPT_RESET_STATE_POST_RESET: begin
+              if (cfg.enable_interrupt) begin
+                 seq_item_port.get_next_item(req_item);
+                 drv_irq_post_reset(req_item);
+                 seq_item_port.item_done();
+              end
+         end
 
-      seq_item_port.get_next_item(req_item);  
-      drv_irq(req_item);
-      seq_item_port.item_done(); 
-  
+         default: `uvm_fatal(get_type_name(), $sformatf("Invalid reset_state: %0d", cntxt.reset_state))
+      endcase
    end
 
 endtask : run_phase
 
-task uvma_interrupt_drv_c::drv_irq(uvma_interrupt_seq_item_c req);
+
+task uvma_interrupt_drv_c::drv_irq_pre_reset();
+
+   cntxt.interrupt_vif.irq <= 1'b0;
+   @(posedge cntxt.interrupt_vif.clk);
+
+endtask : drv_irq_pre_reset
+
+
+task uvma_interrupt_drv_c::drv_irq_in_reset();
+
+   cntxt.interrupt_vif.irq <= 1'b0;
+   @(posedge cntxt.interrupt_vif.clk);
+
+endtask : drv_irq_in_reset
+
+task uvma_interrupt_drv_c::drv_irq_post_reset(uvma_interrupt_seq_item_c req);
    `uvm_info(get_type_name(), $sformatf("Driving:\n%s", req.sprint()), UVM_HIGH);
 
-   case (req.irq_cntrl)
-      UVMA_INTERRUPT_ONE_BY_ONE: begin
-         assert_irq_one_by_one(req);
-      end
-      UVMA_INTERRUPT_MORE_THAN_ONE: begin
-         assert_irq_more(req);
-      end
-      UVMA_INTERRUPT_RANDOMIZE: begin
-         assert_irq_randomize(req);
-      end
-   endcase
+   assert_irq(req);
 
-endtask : drv_irq
+endtask : drv_irq_post_reset
 
-task uvma_interrupt_drv_c::assert_irq_one_by_one(uvma_interrupt_seq_item_c req);
+task uvma_interrupt_drv_c::assert_irq(uvma_interrupt_seq_item_c req);
 
-   #req.irq_delay;
-   cntxt.interrupt_vif.irq <= req.interrupt_valid;
-   `uvm_info(get_type_name(), $sformatf("Assert interrupt channel(s) %0b", req.interrupt_valid), UVM_HIGH)
-   #req.irq_time;
-   cntxt.interrupt_vif.irq <= 'h0;
-
-endtask : assert_irq_one_by_one
-
-task uvma_interrupt_drv_c::assert_irq_more(uvma_interrupt_seq_item_c req);
-
-   #req.irq_delay;
-   cntxt.interrupt_vif.irq <= req.interrupt_valid;
-   #req.irq_time;
-   cntxt.interrupt_vif.irq <= 'h0;
-
-endtask : assert_irq_more
-
-task uvma_interrupt_drv_c::assert_irq_randomize(uvma_interrupt_seq_item_c req);
-
-   repeat(5) begin
-      #req.irq_delay;
-      cntxt.interrupt_vif.irq <= req.interrupt_valid;
-      #req.irq_time;
+   for (int i = 0; i < cfg.num_irq_supported; i++) begin
+     if (req.interrupt_channel_mask[i] == 1) begin
+        cntxt.interrupt_vif.irq[i] <= req.interrupt_vector[i];
+     end
    end
 
-   cntxt.interrupt_vif.irq <= 'h0;
-   cfg.calc_random_req_latency();
+   `uvm_info(get_type_name(), $sformatf("Assert interrupt channel(s) %0b", req.interrupt_vector), UVM_HIGH)
 
-endtask : assert_irq_randomize
+endtask : assert_irq
 
 `endif // __UVMA_INTERRUPT_DRV_SV__

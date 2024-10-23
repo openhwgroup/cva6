@@ -303,17 +303,17 @@ function void uvme_cva6_sb_c::check_mepc(uvma_isacov_instr_c instr);
             `uvm_info(get_type_name(), $sformatf("Trap is compressed ? : %h ", trap_is_compressed), UVM_DEBUG)
             if (trap_is_compressed) begin
                if (mepc_value != trap_pc + 'h2) begin
-                  `uvm_warning(get_type_name(), $sformatf("BE CAREFUL -> MEPC hasn't the next instruction's PC 2"))
+                  `uvm_info(get_type_name(), $sformatf("BE CAREFUL -> MEPC hasn't the next instruction's PC 2"), UVM_DEBUG)
                end
             end
             else begin
                if (mepc_value != trap_pc + 'h4) begin
-                  `uvm_warning(get_type_name(), $sformatf("BE CAREFUL -> MEPC hasn't the next instruction's PC 4"))
+                  `uvm_info(get_type_name(), $sformatf("BE CAREFUL -> MEPC hasn't the next instruction's PC 4"), UVM_DEBUG)
                end
             end
          end
          else begin
-            `uvm_warning(get_type_name(), $sformatf("BE CAREFUL -> MEPC still has the trap pc, this could create an infinite loop "))
+            `uvm_info(get_type_name(), $sformatf("BE CAREFUL -> MEPC still has the trap pc, this could create an infinite loop if the trap has been raised by an exception"), UVM_DEBUG)
          end
      end
   end
@@ -457,6 +457,10 @@ task uvme_cva6_sb_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
+  if (cfg.scoreboard_enabled && cfg.disable_all_csr_checks)
+      `uvm_warning(get_type_name(),"Scoreboard enabled while config disable_all_csr_checks is true. Cycle and Trap will not be scoreboarded nor checked");
+
+  if (cfg.scoreboard_enabled && !cfg.disable_all_csr_checks)
   fork
       begin
           forever begin

@@ -18,9 +18,11 @@
  */
 interface uvma_interrupt_if
    (
+    input                      clk,
+    input                      reset_n
    );
 
-   logic [uvma_interrupt_pkg::NUM_IRQ-1:0]       irq;
+   logic [15:0]       irq;
 
 endinterface : uvma_interrupt_if
 

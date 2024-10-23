@@ -19,7 +19,8 @@
 // Original Author: Ayoub JALALI (ayoub.jalali@external.thalesgroup.com)
 
 covergroup cg_interrupt(
-    string name
+    string name,
+    bit sw_int_supported
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -29,6 +30,7 @@ covergroup cg_interrupt(
   cp_interrupt: coverpoint instr.rvfi.name_csrs["mcause"].wdata {
     bins NO_INTERRUPT = {0} iff (!instr.trap);
 
+    ignore_bins IGN_SOFTWARE_INTERRUPT   = {32'h80000003} iff (!sw_int_supported);
     bins MACHINE_MODE_EXTERNAL_INTERRUPT = {32'h8000000b} iff (instr.trap);
     bins MACHINE_MODE_SOFTWARE_INTERRUPT = {32'h80000003} iff (instr.trap);
     bins MACHINE_MODE_TIMER_INTERRUPT    = {32'h80000007} iff (instr.trap);
@@ -40,6 +42,7 @@ covergroup cg_interrupt(
    }
 
   cp_msie: coverpoint instr.rvfi.name_csrs["mie"].wdata[3] {
+    ignore_bins IGN_MSIE = {1'h1} iff (!sw_int_supported);
     bins MSIE = {1'h1};
    }
 
@@ -52,6 +55,7 @@ covergroup cg_interrupt(
    }
 
   cp_msip: coverpoint instr.rvfi.name_csrs["mip"].wdata[3] {
+    ignore_bins IGN_MSIP = {1'h1} iff (!sw_int_supported);
     bins MSIP = {1'h1};
    }
 
@@ -105,7 +109,10 @@ function void uvme_interrupt_covg_c::build_phase(uvm_phase phase);
       `uvm_fatal("CFG", "Configuration handle is null")
    end
 
-   interrupt_cg = new("interrupt_cg");
+   if (!cfg.disable_all_csr_checks)
+      interrupt_cg = new("interrupt_cg",
+                         .sw_int_supported(cfg.sw_int_supported));   else
+      `uvm_warning(get_type_name(), "Interrupt coverage will not be scored since config disable_all_csr_checks is true")
 
    mon_trn_fifo   = new("mon_trn_fifo" , this);
 
@@ -117,10 +124,10 @@ task uvme_interrupt_covg_c::run_phase(uvm_phase phase);
 
    `uvm_info(get_type_name(), "The Interrupt env coverage model is running", UVM_LOW);
 
-  forever begin
-      mon_trn_fifo.get(mon_trn);
-      interrupt_cg.sample(mon_trn.instr);
-    end
+   if (!cfg.disable_all_csr_checks)
+     forever begin
+         mon_trn_fifo.get(mon_trn);
+         interrupt_cg.sample(mon_trn.instr);
+     end
 
 endtask : run_phase
-
