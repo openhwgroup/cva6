@@ -13,15 +13,17 @@ if [ -z "$RISCV" ]; then
   return
 fi
 
-# install the required tools
-source ./verif/regress/install-verilator.sh
-source ./verif/regress/install-spike.sh
-
-source ./verif/sim/setup-env.sh
-
 if [ -z "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
+
+# install the required tools
+if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
+  source ./verif/regress/install-verilator.sh
+fi
+source ./verif/regress/install-spike.sh
+
+source ./verif/sim/setup-env.sh
 
 if [ -z "$DV_TARGET" ]; then
   DV_TARGET=cv64a6_imafdc_sv39
@@ -30,7 +32,7 @@ fi
 cd verif/sim/
 
 BDIR=../tests/riscv-tests/benchmarks/
-CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../tests/custom/common/test.ld"
+CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../../config/gen_from_riscv_config/linker/link.ld"
 
 GCC_COMMON_SRC=(
         ../tests/custom/common/syscalls.c

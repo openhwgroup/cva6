@@ -33,7 +33,7 @@ from dv.scripts.ovpsim_log_to_trace_csv import *
 from dv.scripts.whisper_log_trace_csv import *
 from dv.scripts.sail_log_to_trace_csv import *
 from dv.scripts.instr_trace_compare import *
-
+from pathlib import Path
 from types import SimpleNamespace
 
 LOGGER = logging.getLogger()
@@ -1016,7 +1016,11 @@ def load_config(args, cwd):
     args.simulator_yaml = cwd + "/cva6-simulator.yaml"
 
   if not args.linker:
-    args.linker = cwd + "/link.ld"
+    my_link = Path(cwd + f"/../../config/gen_from_riscv_config/{args.target}/linker/link.ld")
+    if my_link.is_file():
+      args.linker = cwd + f"/../../config/gen_from_riscv_config/{args.target}/linker/link.ld"
+    else:
+      args.linker = cwd + f"/../../config/gen_from_riscv_config/linker/link.ld"
 
   # Keep the core_setting_dir option to be backward compatible, suggest to use
   # --custom_target
@@ -1026,6 +1030,7 @@ def load_config(args, cwd):
   else:
     args.core_setting_dir = args.custom_target
 
+  base = ""
   if not args.custom_target:
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
@@ -1035,6 +1040,10 @@ def load_config(args, cwd):
       output_file = "../../core/include/hwconfig_config_pkg.sv"
       user_config.derive_config(input_file, output_file, changes)
       args.hwconfig_opts = user_config.get_config(output_file)
+      os.system("mkdir -p ../../config/gen_from_riscv_config/hwconfig/spike")
+      os.system("mkdir -p ../../config/gen_from_riscv_config/hwconfig/linker")
+      os.system("cp ../../config/gen_from_riscv_config/%s/spike/spike.yaml ../../config/gen_from_riscv_config/hwconfig/spike/" % (base))
+      os.system("cp ../../config/gen_from_riscv_config/%s/linker/*.ld ../../config/gen_from_riscv_config/hwconfig/linker/" % (base))
     else:
       base = args.target
     if base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):

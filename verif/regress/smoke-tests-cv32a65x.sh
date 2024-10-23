@@ -1,12 +1,11 @@
-# Copyright 2024 Thales DIS France SAS
+# Copyright 2021 Thales DIS design services SAS
 #
-# Licensed under the Solderpad Hardware Licence, Version 2.0 (the License);
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Guillaume Chauvon
-
+# Original Author: Jean-Roch COULON - Thales
 
 # where are the tools
 if ! [ -n "$RISCV" ]; then
@@ -33,17 +32,16 @@ if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
 
-export cvxif=1 # For CVXIF in Spike
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+
+CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
 
 
 cd verif/sim/
+
 make -C ../.. clean
 make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/linker/link.ld
-make -C ../.. clean
-make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld
+python3 cva6.py --c_tests ../tests/custom/hello_world/hello_world.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS
 make -C ../.. clean
 make clean_all
 

@@ -13,20 +13,51 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=vcs-uvm
+fi
+
 # install the required tools
-source ./verif/regress/install-verilator.sh
+if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
+  source ./verif/regress/install-verilator.sh
+fi
 source ./verif/regress/install-spike.sh
-source verif/regress/install-riscv-tests.sh
 
 source ./verif/sim/setup-env.sh
 
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness,spike
+if ! [ -n "$DV_TARGET" ]; then
+  DV_TARGET=cv32a65x
 fi
 
-cd verif/sim/
-python3 cva6.py --testlist=../tests/testlist_hwconfig.yaml --iss_yaml cva6.yaml --target hwconfig --isa=rv32imac --hwconfig_opts="$DV_HWCONFIG_OPTS" --iss=$DV_SIMULATORS
-make -C ../.. clean
-make clean_all
+make clean
+make -C verif/sim clean_all
+
+cd verif/sim
+
+srcA=(
+        ../tests/custom/common/syscalls.c
+        ../tests/custom/common/crt.S
+)
+cflags=(
+        -static
+        -mcmodel=medany
+        -fvisibility=hidden
+        -nostartfiles
+        -Oz -fno-inline
+        -Wno-implicit-function-declaration
+        -Wno-implicit-int
+        -I../tests/custom/env
+        -I../tests/custom/common
+        -I../tests/custom/dhrystone/
+        -DNOPRINT
+)
+
+python3 cva6.py \
+        --target "$DV_TARGET" \
+        --hwconfig_opts="$DV_HWCONFIG_OPTS" \
+        --iss="$DV_SIMULATORS" \
+        --iss_yaml=cva6.yaml \
+        --c_tests "../tests/custom/return0/return0.c" \
+        --gcc_opts "${srcA[*]} ${cflags[*]}"
 
 cd -
