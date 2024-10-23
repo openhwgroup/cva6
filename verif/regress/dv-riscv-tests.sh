@@ -13,14 +13,8 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness,spike
-fi
-
 # install the required tools
-if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
-  source ./verif/regress/install-verilator.sh
-fi
+source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
 source verif/regress/install-riscv-tests.sh
 
@@ -28,6 +22,10 @@ source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
   DV_TARGET=cv64a6_imafdc_sv39
+fi
+
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=veri-testharness,spike
 fi
 
 if ! [ -n "$DV_TESTLISTS" ]; then

@@ -19,11 +19,11 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    "dhrystone_dual": 20199,
-    "dhrystone_single": 25019,
-    "coremark_dual": 1017451,
-    "coremark_single": 1308656,
-    "dhrystone_cv32a65x": 32566,
+    "dhrystone_dual": 21530,
+    "dhrystone_single": 26392,
+    "coremark_dual": 530099,
+    "coremark_single": 673184,
+    "dhrystone_cv32a65x": 33736,
 }
 
 for arg in sys.argv[1:]:
@@ -32,7 +32,7 @@ for arg in sys.argv[1:]:
             iterations = 50
         else:
             if "--coremark" in arg:
-                iterations = 4
+                iterations = 2
         mode = arg.replace("-", "")
     else:
         path = arg

@@ -18,17 +18,17 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
+# install the required tools
+source ./verif/regress/install-verilator.sh
+source ./verif/regress/install-spike.sh
+source verif/regress/install-riscv-compliance.sh
+source verif/regress/install-riscv-tests.sh
+
+source ./verif/sim/setup-env.sh
+
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
 fi
-
-# install the required tools
-if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
-  source ./verif/regress/install-verilator.sh
-fi
-source ./verif/regress/install-spike.sh
-
-source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_HWCONFIG_OPTS" ]; then
   DV_HWCONFIG_OPTS="cv32a65x"
@@ -76,7 +76,7 @@ cflags_opt=(
 cflags=(
         "${cflags_opt[@]}"
         "-DCOMPILER_FLAGS='\"${cflags_opt[*]}\"'"
-        -DITERATIONS=4
+        -DITERATIONS=2
         -DPERFORMANCE_RUN
         -DSKIP_TIME_CHECK
         -I../tests/custom/env

@@ -135,23 +135,7 @@ build_tools:
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
-smoke-tests-cv32a65x:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
-    COLLECT_SIMU_LOGS: 1
-    DV_SIMULATORS: "vcs-uvm"
-  script:
-    - bash verif/regress/smoke-tests-cv32a65x.sh
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
-    - !reference [.simu_after_script]
-
-smoke-tests-cv32a6_imac_sv32:
+smoke:
   extends:
     - .fe_smoke_test
   variables:
@@ -166,34 +150,14 @@ smoke-tests-cv32a6_imac_sv32:
       - DV_SIMULATORS:
         - "vcs-testharness"
         - "questa-testharness"
+        - "vcs-uvm"
   script:
     - source $QUESTA_BASHRC
-    - bash verif/regress/smoke-tests-cv32a6_imac_sv32.sh
+    - bash verif/regress/smoke-tests.sh
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
-smoke-tests-cv64a6_imafdc_sv39:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
-    COLLECT_SIMU_LOGS: 1
-  parallel:
-    matrix:
-      - DV_SIMULATORS:
-        - "vcs-testharness"
-        - "questa-testharness"
-  script:
-    - source $QUESTA_BASHRC
-    - bash verif/regress/smoke-tests-cv64a6_imafdc_sv39.sh
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
-    - !reference [.simu_after_script]
-
-smoke-gen:
+gen_smoke:
   extends:
     - .fe_smoke_test
   variables:
@@ -217,12 +181,15 @@ smoke-bench:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
-    BENCH: "dhrystone"
+  parallel:
+    matrix:
+      - BENCH: "dhrystone"
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
-smoke-hwconfig:
+hwconfig:
   extends:
     - .fe_smoke_test
   variables:
@@ -230,10 +197,8 @@ smoke-hwconfig:
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
     DASHBOARD_SORT_INDEX: 1
     DASHBOARD_JOB_CATEGORY: "Basic"
-    DV_SIMULATORS: "vcs-uvm"
-    SPIKE_TANDEM: 1
-    DV_TARGET: "hwconfig"
-    DV_HWCONFIG_OPTS: "cv32a65x"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DV_HWCONFIG_OPTS: "cv32a6_imac_sv32"
   script:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
@@ -361,16 +326,16 @@ benchmarks:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
       - BENCH: "coremark"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=32768 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8"]
   script:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log

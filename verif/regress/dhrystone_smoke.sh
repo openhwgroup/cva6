@@ -13,17 +13,21 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
+# install the required tools
+source ./verif/regress/install-verilator.sh
+source ./verif/regress/install-spike.sh
+source verif/regress/install-riscv-compliance.sh
+source verif/regress/install-riscv-tests.sh
+
+source ./verif/sim/setup-env.sh
+
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
 fi
 
-# install the required tools
-if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
-  source ./verif/regress/install-verilator.sh
+if ! [ -n "$DV_HWCONFIG_OPTS" ]; then
+  DV_HWCONFIG_OPTS="cv32a65x"
 fi
-source ./verif/regress/install-spike.sh
-
-source ./verif/sim/setup-env.sh
 
 make clean
 make -C verif/sim clean_all
@@ -54,7 +58,8 @@ cflags=(
 )
 
 python3 cva6.py \
-        --target cv32a65x \
+        --target hwconfig \
+        --hwconfig_opts="$DV_HWCONFIG_OPTS" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \

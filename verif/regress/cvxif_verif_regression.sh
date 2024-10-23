@@ -14,20 +14,22 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
-fi
 
 # install the required tools
-if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
-  source ./verif/regress/install-verilator.sh
-fi
+source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
+
+# install the required test suites
+source ./verif/regress/install-riscv-tests.sh
 
 # setup sim env
 source ./verif/sim/setup-env.sh
 
 echo "$SPIKE_INSTALL_DIR$"
+
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=vcs-testharness,spike
+fi
 
 if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
@@ -40,10 +42,10 @@ export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBO
 cd verif/sim/
 make -C ../.. clean
 make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/linker/link.ld
+python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS
 make -C ../.. clean
 make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld
+python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS $DV_OPTS
 make -C ../.. clean
 make clean_all
 

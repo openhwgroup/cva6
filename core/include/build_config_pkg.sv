@@ -32,7 +32,7 @@ package build_config_pkg;
     config_pkg::cva6_cfg_t cfg;
 
     cfg.XLEN = CVA6Cfg.XLEN;
-    cfg.VLEN = CVA6Cfg.VLEN;
+    cfg.VLEN = (CVA6Cfg.XLEN == 32) ? 32 : 64;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
     cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
     cfg.IS_XLEN32 = IS_XLEN32;
