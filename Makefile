@@ -38,12 +38,15 @@ test-location  ?= output/test
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
-# board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
+# board name for bitstream generation. Currently supported: zcu104, kc705, genesys2, nexys_video
 BOARD          ?= genesys2
 ALTERA_BOARD		 ?= DK-DEV-AGF014E3ES
 ALTERA_FAMILY	 ?= "AGILEX"
 ALTERA_PART		 ?= AGFB014R24B2E2V
 PLATFORM			 = "PLAT_XILINX"
+
+add_fpga_src   ?= corev_apu/fpga/scripts/add_sources.tcl
+
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
@@ -86,6 +89,10 @@ else ifeq ($(BOARD), nexys_video)
 	XILINX_PART              := xc7a200tsbg484-1
 	XILINX_BOARD             := digilentinc.com:nexys_video:part0:1.1
 	CLK_PERIOD_NS            := 40
+else ifeq ($(BOARD), zcu104)
+	XILINX_PART              := xczu7ev-ffvc1156-2-e
+	XILINX_BOARD             := xilinx.com:zcu104:part0:1.1
+	CLK_PERIOD_NS            := 20
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif
@@ -275,12 +282,12 @@ altera_filter := corev_apu/tb/ariane_testharness.sv \
 								corev_apu/riscv-dbg/src/dmi_jtag_tap.sv \
 								corev_apu/riscv-dbg/src/dmi_jtag.sv \
 								corev_apu/fpga/src/apb_uart/src/reg_uart_wrap.sv
-								
+
 altera_filter := $(addprefix $(root-dir), $(altera_filter))
 xil_debug_filter = $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dm_obi_top.sv)
 xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dm_pkg.sv)
 xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag_tap.sv)
-xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag.sv)						
+xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag.sv)
 src := $(filter-out $(xil_debug_filter), $(src))
 
 fpga_src += corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv
@@ -788,15 +795,17 @@ fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/co
 $(addprefix $(root-dir), corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv):
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) PLATFORM=$(PLATFORM) bootrom_$(XLEN).sv
 
-fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
+$(add_fpga_src): $(uart_src) $(ariane_pkg) $(filter-out $(fpga_filter), $(src_flist)) $(filter-out $(fpga_filter), $(src)) $(fpga_src)
 	@echo "[FPGA] Generate sources"
-	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(ariane_pkg)} >> corev_apu/fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> corev_apu/fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(uart_src)}    > $(add_fpga_src)
+	@echo read_verilog -sv {$(ariane_pkg)} >> $(add_fpga_src)
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> $(add_fpga_src)
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> $(add_fpga_src)
+	@echo read_verilog -sv {$(fpga_src)}   >> $(add_fpga_src)
+
+fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist) $(add_fpga_src)
 	@echo "[FPGA] Generate Bitstream"
-	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
+	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) ADD_SRC=$(add_fpga_src)
 
 altera: PLATFORM := "PLAT_AGILEX"
 

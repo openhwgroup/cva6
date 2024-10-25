@@ -5,14 +5,14 @@ work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
 mcs := $(work-dir)/ariane_xilinx.mcs
 ip-dir := xilinx
-ips := xlnx_axi_clock_converter.xci  \
-       xlnx_axi_dwidth_converter.xci \
+ips := xlnx_axi_quad_spi.xci                   \
+       xlnx_axi_gpio.xci                       \
+       xlnx_axi_dwidth_converter.xci           \
+       xlnx_clk_gen.xci                        \
+       xlnx_mig_7_ddr3.xci                     \
+       xlnx_axi_clock_converter.xci            \
        xlnx_axi_dwidth_converter_dm_master.xci \
-       xlnx_axi_dwidth_converter_dm_slave.xci \
-       xlnx_axi_quad_spi.xci         \
-       xlnx_axi_gpio.xci             \
-       xlnx_clk_gen.xci              \
-       xlnx_mig_7_ddr3.xci
+       xlnx_axi_dwidth_converter_dm_slave.xci
 
 ips := $(addprefix $(work-dir)/, $(ips))
 ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)))), $(ips))
@@ -23,6 +23,14 @@ all: $(mcs)
 $(mcs): $(bit)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
+ifeq ($(BOARD), zcu104)
+.SECONDARY: $(bit)
+$(bit): ../../$(ADD_SRC)
+	mkdir -p $(work-dir)
+	$(VIVADO) $(VIVADOFLAGS) -source scripts/create_bd_project.tcl
+	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
+
+else
 $(bit): $(ips)
 	mkdir -p $(work-dir)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
@@ -33,6 +41,8 @@ $(ips): %.xci :
 	@echo Generating $(@F)
 	@cd $(ip-dir)/$(basename $(@F)) && make clean && make
 	@cp $(ip-dir)/$(basename $(@F))/$(basename $(@F)).srcs/sources_1/ip/$(basename $(@F))/$(@F) $@
+
+endif
 
 mcs: $(mcs)
 
