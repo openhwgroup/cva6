@@ -24,10 +24,10 @@ Connections between modules are illustrated in the following block diagram. FRON
 
 image:{ohg-config}_subsystems.png[{ohg-config} pipeline and modules]
 
-include::cv32a6_frontend.adoc[]
+include::cva6_frontend.adoc[]
 include::cva6_id_stage.adoc[]
 include::cva6_issue_stage.adoc[]
-include::cv32a6_execute.adoc[]
+include::cva6_execute.adoc[]
 include::cva6_commit_stage.adoc[]
 include::cva6_controller.adoc[]
 include::cva6_csr_regfile.adoc[]

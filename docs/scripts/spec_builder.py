@@ -11,6 +11,7 @@
 
 import re
 import sys
+import os
 
 from classes import Parameter
 from classes import PortIO
@@ -43,6 +44,31 @@ HEADER_ADOC = """\
 ////
 
 """
+
+DEFAULT_PARAMS = {
+    'RVE': False,
+    'RVQ': False,
+    'RVZabha': False,
+    'RVZacas': False,
+    'RVZawrs': False,
+    'RVZfa': False,
+    'RVZfbf-RZvfbf': False,
+    'RVZfh': False,
+    'RVZfinx': False,
+    'RVZicbo': False,
+    'RVZicfilp': False,
+    'RVZpm': False,
+    'RVZsmepmp': False,
+    'RVZsmmpm': False,
+    'RVZsmrnmi': False,
+    'RVZsmstateen': False,
+    'RVZsscofpmf': False,
+    'RVZssdbltrp': False,
+    'RVZsstc': False,
+    'RVZtso': False,
+    'RVZvk': False,
+    'SV': 'SV0'
+}
 
 def print_to_rst(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.rst"
@@ -107,131 +133,144 @@ def print_to_adoc(pathout, target, module, ports, comments):
                 fout.write(f"{comment[0]},::\n*   {comment[1]}\n")
         fout.write("\n")
 
-def main():
-    PATH = "04_cv32a65x"
-    generate_file_type = "adoc"
-    [spec_number, target] = PATH.split("_")
-
-    print(spec_number, target)
-
-    # Parameters
-    parameters = parameters_extractor(spec_number, target)
-
-    pathout = f"./{spec_number}_{target}/design/source"
-    if generate_file_type in ['rst']:
-        fileout = f"{pathout}/parameters_{target}.rst"
-        writeout_parameter_table(fileout, parameters, target)
-    elif generate_file_type in ['adoc']:
-        pathout = f"./{spec_number}_{target}/design/source"
-        fileout = f"{pathout}/parameters.adoc"
-        writeout_parameter_table_adoc(fileout, parameters, target)
+def _format_parameter_adoc(name, value):
+    if type(value) is bool:
+        ret = str(value).lower()
     else:
-        raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
+        ret = str(value)
+    return f":{name}: {ret}\n"
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--target", required=True)
+    parser.add_argument("--gen-config", help="Generate target variables documentation file")
+    parser.add_argument("--gen-parameters", help="Generate target parameters files")
+    parser.add_argument("--gen-ports-folder", help="Generate target ports files")
+    args = parser.parse_args()
+
+    target = args.target
+
+    parameters = parameters_extractor(target)
 
     # User_cfg
     export_user_cfg_doc("01_cva6_user/user_cfg_doc.rst", parameters)
 
+    # Parameters
+    if args.gen_parameters is not None:
+        os.makedirs(os.path.dirname(args.gen_parameters), exist_ok=True)
+        writeout_parameter_table_adoc(args.gen_parameters, parameters, target)
+        print(f"File {args.gen_parameters} written")
+
+    # Config
+    if args.gen_config is not None:
+        os.makedirs(os.path.dirname(args.gen_config), exist_ok=True)
+        with open(args.gen_config, "w") as fout:
+            fout.write(f":ohg-config: {target.upper()}\n")
+            for name, value in DEFAULT_PARAMS.items():
+                fout.write(_format_parameter_adoc(name, value))
+            for name, parameter in parameters.items():
+                fout.write(_format_parameter_adoc(name, parameter.value))
+        print(f"File {args.gen_config} written")
+
     # Ports
-    file = []
-    file.append("../core/cva6.sv")
-    file.append("../core/frontend/frontend.sv")
-    file.append("../core/frontend/bht.sv")
-    file.append("../core/frontend/btb.sv")
-    file.append("../core/frontend/ras.sv")
-    file.append("../core/frontend/instr_queue.sv")
-    file.append("../core/frontend/instr_scan.sv")
-    file.append("../core/instr_realign.sv")
-    file.append("../core/id_stage.sv")
-    file.append("../core/issue_stage.sv")
-    file.append("../core/ex_stage.sv")
-    file.append("../core/commit_stage.sv")
-    file.append("../core/controller.sv")
-    file.append("../core/csr_regfile.sv")
-    file.append("../core/decoder.sv")
-    file.append("../core/compressed_decoder.sv")
-    file.append("../core/scoreboard.sv")
-    file.append("../core/issue_read_operands.sv")
-    file.append("../core/alu.sv")
-    file.append("../core/branch_unit.sv")
-    file.append("../core/csr_buffer.sv")
-    file.append("../core/mult.sv")
-    file.append("../core/multiplier.sv")
-    file.append("../core/serdiv.sv")
-    file.append("../core/load_store_unit.sv")
-    file.append("../core/load_unit.sv")
-    file.append("../core/store_unit.sv")
-    file.append("../core/lsu_bypass.sv")
-    file.append("../core/cvxif_fu.sv")
-    file.append("../core/cache_subsystem/cva6_hpdcache_subsystem.sv")
+    if args.gen_ports_folder is not None:
+        file = []
+        file.append("../core/cva6.sv")
+        file.append("../core/frontend/frontend.sv")
+        file.append("../core/frontend/bht.sv")
+        file.append("../core/frontend/btb.sv")
+        file.append("../core/frontend/ras.sv")
+        file.append("../core/frontend/instr_queue.sv")
+        file.append("../core/frontend/instr_scan.sv")
+        file.append("../core/instr_realign.sv")
+        file.append("../core/id_stage.sv")
+        file.append("../core/issue_stage.sv")
+        file.append("../core/ex_stage.sv")
+        file.append("../core/commit_stage.sv")
+        file.append("../core/controller.sv")
+        file.append("../core/csr_regfile.sv")
+        file.append("../core/decoder.sv")
+        file.append("../core/compressed_decoder.sv")
+        file.append("../core/scoreboard.sv")
+        file.append("../core/issue_read_operands.sv")
+        file.append("../core/alu.sv")
+        file.append("../core/branch_unit.sv")
+        file.append("../core/csr_buffer.sv")
+        file.append("../core/mult.sv")
+        file.append("../core/multiplier.sv")
+        file.append("../core/serdiv.sv")
+        file.append("../core/load_store_unit.sv")
+        file.append("../core/load_unit.sv")
+        file.append("../core/store_unit.sv")
+        file.append("../core/lsu_bypass.sv")
+        file.append("../core/cvxif_fu.sv")
+        file.append("../core/cache_subsystem/cva6_hpdcache_subsystem.sv")
 
-    black_list = define_blacklist(parameters)
+        black_list = define_blacklist(parameters)
 
-    for filein in file:
-        comments = []
-        a = re.match(r".*\/(.*).sv", filein)
-        module = a.group(1)
-        print("Input file " + filein)
-        ports = []
-        with open(filein, "r", encoding="utf-8") as fin:
-            description = "none"
-            connexion = "none"
-            for line in fin:
-                e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
-                d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
-                if d:
-                    description = d.group(1)
-                    connexion = d.group(2)
-                if e:
-                    name = e.group(3)
-                    name = name.replace(",", "")
-                    data_type = e.group(2)
-                    data_type = data_type.replace(" ", "")
-                    if connexion in black_list:
-                        for i, comment in enumerate(comments):
-                            if black_list[connexion][0] == comment[0]:
-                                comment[1] = (
-                                    comment[1]
-                                    + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"
-                                )
-                                break
-                        else:
-                            comments.append(
-                                [
-                                    black_list[connexion][0],
-                                    f"``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}",
-                                ]
-                            )
-                    else:
-                        if name in black_list:
+        for filein in file:
+            comments = []
+            a = re.match(r".*\/(.*).sv", filein)
+            module = a.group(1)
+            print("Input file " + filein)
+            ports = []
+            with open(filein, "r", encoding="utf-8") as fin:
+                description = "none"
+                connexion = "none"
+                for line in fin:
+                    e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
+                    d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
+                    if d:
+                        description = d.group(1)
+                        connexion = d.group(2)
+                    if e:
+                        name = e.group(3)
+                        name = name.replace(",", "")
+                        data_type = e.group(2)
+                        data_type = data_type.replace(" ", "")
+                        if connexion in black_list:
                             for i, comment in enumerate(comments):
-                                if black_list[name][0] == comment[0]:
+                                if black_list[connexion][0] == comment[0]:
                                     comment[1] = (
                                         comment[1]
-                                        + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                        + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}"
                                     )
                                     break
                             else:
                                 comments.append(
                                     [
-                                        black_list[name][0],
-                                        f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}",
+                                        black_list[connexion][0],
+                                        f"``{name}`` {e.group(1)}put is tied to {black_list[connexion][1]}",
                                     ]
                                 )
                         else:
-                            ports.append(
-                                PortIO(
-                                    name, e.group(1), data_type, description, connexion
+                            if name in black_list:
+                                for i, comment in enumerate(comments):
+                                    if black_list[name][0] == comment[0]:
+                                        comment[1] = (
+                                            comment[1]
+                                            + f"\n|   ``{name}`` {e.group(1)}put is tied to {black_list[name][1]}"
+                                        )
+                                        break
+                                else:
+                                    comments.append(
+                                        [
+                                            black_list[name][0],
+                                            f"``{name}`` {e.group(1)}put is tied to {black_list[name][1]}",
+                                        ]
+                                    )
+                            else:
+                                ports.append(
+                                    PortIO(
+                                        name, e.group(1), data_type, description, connexion
+                                    )
                                 )
-                            )
-                    description = "none"
-                    connexion = "none"
+                        description = "none"
+                        connexion = "none"
 
-        if generate_file_type in ['rst']:
-            print_to_rst(pathout, target, module, ports, comments)
-        elif generate_file_type in ['adoc']:
-            print_to_adoc(pathout, target, module, ports, comments)
-        else:
-            raise Exception("Format de sortie %s non pris en charge"%generate_file_type)
+            print_to_adoc(args.gen_ports_folder, target, module, ports, comments)
 
 def export_user_cfg_doc(out_path, params):
     with open(out_path, "w", encoding="utf-8") as f:
