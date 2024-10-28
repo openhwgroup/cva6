@@ -135,7 +135,7 @@ module issue_stage
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // CVXIF write enable - EX_STAGE
     input logic x_we_i,
-    // CVXIF destination register - ISSUE_STAGE
+    // CVXIF destination register - EX_STAGE
     input logic [4:0] x_rd_i,
     // Destination register in register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
