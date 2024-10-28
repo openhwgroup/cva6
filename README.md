@@ -1,7 +1,7 @@
-![Build Status](https://riscv-ci.pages.thales-invia.fr/dashboard/)
+![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)
 
 
-[CVA6 dashboard](util/toolchain-builder/README.md#Prerequisites)
+[CVA6 dashboard](https://riscv-ci.pages.thales-invia.fr/dashboard/)
 
 # CVA6 RISC-V CPU
 
