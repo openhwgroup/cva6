@@ -35,9 +35,9 @@ module issue_stage
     input logic rst_ni,
     // Is scoreboard full - PERF_COUNTERS
     output logic sb_full_o,
-    // TO_BE_COMPLETED - CONTROLLER
+    // Prevent from issuing - CONTROLLER
     input logic flush_unissued_instr_i,
-    // TO_BE_COMPLETED - CONTROLLER
+    // Flush whole scoreboard - CONTROLLER
     input logic flush_i,
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
@@ -65,7 +65,7 @@ module issue_stage
     output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_o,
     // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
-    // ALU FU is valid - EX_STAGE
+    // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
@@ -125,25 +125,25 @@ module issue_stage
     output logic issue_instr_hs_o,
     // Transaction ID - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
-    // The branch engine uses the write back from the ALU - EX_STAGE
+    // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Results to write back - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
     // exception from execute stage or CVXIF - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Indicates valid results - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
     // CVXIF write enable - EX_STAGE
     input logic x_we_i,
     // CVXIF destination register - ISSUE_STAGE
     input logic [4:0] x_rd_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Destination register in register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Value to write to register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
-    // GPR write enable - EX_STAGE
+    // GPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
-    // FPR write enable - EX_STAGE
+    // FPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
     // Instructions to commit - COMMIT_STAGE
     output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
