@@ -135,27 +135,11 @@ build_tools:
   - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
   - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
-smoke-tests-cv32a65x:
+smoke-tests:
   extends:
     - .fe_smoke_test
   variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
-    COLLECT_SIMU_LOGS: 1
-    DV_SIMULATORS: "vcs-uvm"
-  script:
-    - bash verif/regress/smoke-tests-cv32a65x.sh
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
-    - !reference [.simu_after_script]
-
-smoke-tests-cv32a6_imac_sv32:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
+    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
@@ -163,34 +147,13 @@ smoke-tests-cv32a6_imac_sv32:
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
-      - DV_SIMULATORS:
-        - "vcs-testharness"
-        - "questa-testharness"
+      - DV_SIMULATORS: ["vcs-testharness", "questa-testharness"]
+        DV_TARGET: ["cv32a6_imac_sv32", "cv64a6_imafdc_sv39"]
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a65x"
   script:
-    - source $QUESTA_BASHRC
-    - bash verif/regress/smoke-tests-cv32a6_imac_sv32.sh
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
-    - !reference [.simu_after_script]
-
-smoke-tests-cv64a6_imafdc_sv39:
-  extends:
-    - .fe_smoke_test
-  variables:
-    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
-    DASHBOARD_SORT_INDEX: 0
-    DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
-    COLLECT_SIMU_LOGS: 1
-  parallel:
-    matrix:
-      - DV_SIMULATORS:
-        - "vcs-testharness"
-        - "questa-testharness"
-  script:
-    - source $QUESTA_BASHRC
-    - bash verif/regress/smoke-tests-cv64a6_imafdc_sv39.sh
-    - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
+    - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
+    - bash verif/regress/smoke-tests-$DV_TARGET.sh
     - !reference [.simu_after_script]
 
 smoke-gen:
@@ -333,10 +296,10 @@ fpga-build:
     - source $VIVADO_SETUP
     - source ./verif/sim/setup-env.sh
     - mkdir -p artifacts/logs
-    - make fpga target=$TARGET |& tail -20 > artifacts/logs/logfile.log.tail
+    - make fpga target=$TARGET &> artifacts/logs/logfile.log
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
-    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.log.tail
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
 
 .regress_test:
   stage: heavy tests
@@ -352,7 +315,7 @@ benchmarks:
   extends:
     - .regress_test
   variables:
-    DASHBOARD_JOB_TITLE: "benchmarks"
+    DASHBOARD_JOB_TITLE: "benchmark $BENCH $ISSUE"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
