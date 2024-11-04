@@ -24,7 +24,7 @@ PC gen stage is responsible for generating the next program counter.
 It hosts a Branch Target Buffer (BTB), a Branch History Table (BHT) and a Return Address Stack (RAS) to speculate on control flow instructions.
 
 Fetch stage requests data to the CACHE module, realigns the data to store them in instruction queue and transmits the instructions to the DECODE module.
-FRONTEND can fetch up to 2 instructions per cycles when C extension instructions is enabled, but DECODE module decodes up to one instruction per cycles.
+FRONTEND can fetch up to {instr-per-fetch} instructions per cycle, but DECODE module decodes up to {issue-width} instruction(s) per cycle.
 
 The module is connected to:
 
@@ -67,8 +67,9 @@ ________________________________________________________________________________
 +
 Then the PC gen informs the Fetch stage that it performed a prediction on the PC.
 
-* *Default:* The next 32-bit block is fetched.
-PC Gen fetches word boundary 32-bits block from CACHES module. And the fetch stage identifies the instructions from the 32-bits blocks.
+* *Default:* The next {ifetch-len}-bit block is fetched.
+PC Gen fetches word boundary {ifetch-len}-bits block from CACHES module.
+And the fetch stage identifies the instructions from the {ifetch-len}-bits blocks.
 
 * *Mispredict:* Misprediction are feedbacked by EX_STAGE module.
 In any case we need to correct our action and start fetching from the correct address.
@@ -102,10 +103,12 @@ Fetch Stage
 ^^^^^^^^^^^
 
 Fetch stage controls the CACHE module by a handshaking protocol.
-Fetched data is a 32-bit block with a word-aligned address.
+Fetched data is a {ifetch-len}-bit block with a word-aligned address.
 A granted fetch is processed by the instr_realign submodule to produce instructions.
 Then instructions are pushed into an internal instruction FIFO called instruction queue (instr_queue submodule).
 This submodule stores the instructions and sends them to the DECODE module.
+
+Instructions following a predicted taken control flow instruction are dropped.
 
 // TO_BE_COMPLETED MMU also feedback an exception, but not present in 65X
 
@@ -126,12 +129,12 @@ image:ZoominFrontend.png[FRONTEND submodule interconnections]
 Instr_realign submodule
 +++++++++++++++++++++++
 
-The 32-bit aligned block coming from the CACHE module enters the instr_realign submodule.
-This submodule extracts the instructions from the 32-bit blocks.
-It is possible to fetch up to two instructions per cycle when C extension is used.
-An not-compressed instruction can be misaligned on the block size, interleaved with two cache blocks.
+The {ifetch-len}-bit aligned block coming from the CACHE module enters the instr_realign submodule.
+This submodule extracts the instructions from the {ifetch-len}-bit blocks.
+It is possible to fetch up to {instr-per-fetch} instructions per cycle when C extension is used.
+A not-compressed instruction can be misaligned on the block size, interleaved with two cache blocks.
 In that case, two cache accesses are needed to get the whole instruction.
-The instr_realign submodule provides at maximum two instructions per cycle when compressed extension is enabled, else one instruction per cycle.
+The instr_realign submodule provides up to {instr-per-fetch} instructions per cycle when compressed extension is enabled, else one instruction per cycle.
 Incomplete instruction is stored in instr_realign submodule until its second half is fetched.
 
 include::port_instr_realign.adoc[]
@@ -144,7 +147,7 @@ The instr_queue receives mutliple instructions from instr_realign submodule to c
 FRONTEND pushes in FIFO to store the instructions and related information needed in case of mispredict or exception: instructions, instruction control flow type, exception, exception address and predicted address.
 DECODE pops them when decode stage is ready and indicates to the FRONTEND the instruction has been consummed.
 
-The instruction queue contains max 4 instructions.
+The instruction queue contains at most 16 instructions including at most 2 predicted taken control flow instructions.
 If the instruction queue is full, a replay request is sent to inform the fetch mechanism to replay the fetch.
 
 The instruction queue can be flushed by CONTROLLER.
@@ -152,10 +155,10 @@ The instruction queue can be flushed by CONTROLLER.
 include::port_instr_queue.adoc[]
 
 [[instr_scan-submodule]]
-instr_scan submodule
+Instr_scan submodule
 ++++++++++++++++++++
 
-As compressed extension is enabled, two instr_scan are instantiated to handle up to two instructions per cycle.
+As compressed extension is enabled, {instr-per-fetch} instr_scan are instantiated to handle up to {instr-per-fetch} instructions per cycle.
 
 Each instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, instructions could be compressed or not.
 The instr_scan submodule is a flox controler which provides the intruction type: branch, jump, return, jalr, imm, call or others.
@@ -168,32 +171,33 @@ ifeval::[{BHTEntries} > 0]
 BHT (Branch History Table) submodule
 ++++++++++++++++++++++++++++++++++++
 
-BHT is implemented as a memory which is composed of {BHTEntries} entries. The lower address bits of the virtual address point to the memory entry.
+BHT is implemented as a memory which is composed of {BHTEntries} entries.
+It is indexed by bits 5:1 of the virtual address.
+(Two distinct branches with different addresses can share the same BHT entry if they have the same 6 lowest bits.)
 
-When a branch instruction is resolved by the EX_STAGE module, the branch PC and the taken (or not taken) status information is stored in the Branch History Table.
+Each BHT entry contains a two-bit saturating counter and a valid bit.
+On reset, the counters are set to 2 (weakly taken) and the valid bits are cleared.
+When a branch instruction is resolved by the EX_STAGE module, the valid bit is set and the counter is updated as shown in the following figure.
 
 // TO_BE_COMPLETED: Specify the behaviour when BHT is saturated
-
-The Branch History Table is a table of two-bit saturating counters that takes the virtual address of the current fetched instruction by the CACHE.
-It states whether the current branch request should be taken or not.
-The two bit counter is updated by the successive execution of the instructions as shown in the following figure.
 
 image:bht.png[BHT saturation]
 
 // TODO: if debug enable, The BHT is not updated if processor is in debug mode.
 
-When a branch instruction is pre-decoded by instr_scan submodule, the BHT valids whether the PC address is in the BHT and provides the taken or not prediction.
+When a branch instruction is pre-decoded by instr_scan submodule, the valid bit indicates whether a prediction is available or not.
+The prediction is the most significant bit from the counter, where 1 means "taken".
 
 The BHT is never flushed.
 
 include::port_bht.adoc[]
 endif::[]
 
-ifeval::[{BTBEntries} > 0]
 [[btb-branch-target-buffer-submodule]]
 BTB (Branch Target Buffer) submodule
 ++++++++++++++++++++++++++++++++++++
 
+ifeval::[{BTBEntries} > 0]
 BTB is implemented as an array which is composed of {BTBEntries} entries.
 The lower address bits of the virtual address point to the memory entry.
 
@@ -210,6 +214,10 @@ The BTB is never flushed.
 
 include::port_btb.adoc[]
 endif::[]
+ifeval::[{BTBEntries} == 0]
+There is no BTB in {ohg-config}.
+As a consequence, no valid address is returned from BTB.
+endif::[]
 
 ifeval::[{RASDepth} > 0]
 [[ras-return-address-stack-submodule]]
@@ -218,10 +226,10 @@ RAS (Return Address Stack) submodule
 
 RAS is implemented as a LIFO which is composed of {RASDepth} entries.
 
-When a JAL instruction is pre-decoded by the instr_scan, the PC of the instruction following JAL instruction is pushed into the RAS when the JAL instruction is added to the instruction queue.
+When a "call" JAL instruction (rd = x1 or x5) is added to the instruction queue, the PC of the instruction following the JAL instruction is pushed into the stack.
 
-When a JALR instruction which corresponds to a return (rs1 = x1 or rs1 = x5) is pre-decoded by the instr_scan, the predicted return address is popped from the RAS when the JALR instruction is added to the instruction queue.
-If the predicted return address is wrong due for instance to speculation or RAS depth limitation, a mis-repdiction will be generated.
+When a "ret" JALR instruction (rs1 = x1 or x5, and rd != rs1) is added to the instruction queue, the predicted return address is popped from the stack.
+If the predicted return address is wrong due for instance to speculation or RAS depth limitation, a mispredict will be generated.
 
 The RAS is never flushed.
 
