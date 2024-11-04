@@ -4343,13 +4343,11 @@ back to NAPOT.
 endif::[]
 
 ifdef::archi-CVA6[]
-[{ohg-config}] Although the PMP mechanism supports regions as small as four bytes,
-platforms may specify coarser PMP regions. In general, the PMP grain is
-latexmath:[$2^{G+2}$] bytes and must be the same across all PMP regions.
-When latexmath:[$G \geq 1$] and
-latexmath:[${\tt pmpcfg}_i$].A[1] is clear, i.e. the mode is OFF or TOR,
-then bits latexmath:[${\tt pmpaddr}_i$][G-1:0] read as all zeros. Bits
-latexmath:[${\tt pmpaddr}_i$][G-1:0] do not affect the TOR address-matching
+[{ohg-config}] The PMP grain is 8 bytes (latexmath:[$2^{G+2}$] with G = 1)
+and must be the same across all PMP regions.
+As latexmath:[${\tt pmpcfg}_i$].A[1] is always clear, i.e. the mode is OFF or TOR,
+then bit latexmath:[${\tt pmpaddr}_i$][0] read as zero. Bit
+latexmath:[${\tt pmpaddr}_i$][0] does not affect the TOR address-matching
 logic.
 endif::[]
 

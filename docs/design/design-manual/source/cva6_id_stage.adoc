@@ -28,9 +28,9 @@ stage.
 
 The module is connected to:
 
-* CONTROLLER module can flush ID_STAGE decode stage
-* FRONTEND module sends instrution to ID_STAGE module
-* ISSUE module receives the decoded instruction from ID_STAGE module
+* CONTROLLER module can request to flush the buffer at the end of ID_STAGE
+* FRONTEND module sends instructions to ID_STAGE module
+* ISSUE module receives the decoded instructions from ID_STAGE module
 * CSR_REGFILE module sends status information about privilege mode,
 traps, extension support.
 
@@ -40,7 +40,11 @@ include::port_id_stage.adoc[]
 Functionality
 ^^^^^^^^^^^^^
 
-TO BE COMPLETED
+ID_STAGE transforms each instruction into a scoreboard entry whose fields indicate what the instruction does.
+It receives external interrupts and, according to the interrupts configuration from CSR_REGFILE, it inserts exceptions in the pipeline.
+ifeval::[{SuperscalarEn} == true]
+It outputs scoreboard entries via a FIFO of depth 2, which can push and pull up to 2 instructions each cycle.
+endif::[]
 
 [[id_stage-submodules]]
 Submodules
@@ -56,6 +60,8 @@ The compressed_decoder module decompresses all the compressed
 instructions taking a 16-bit compressed instruction and expanding it to
 its 32-bit equivalent. All compressed instructions have a 32-bit
 equivalent.
+
+Non-compressed instructions on the input are transmitted as-is.
 
 include::port_compressed_decoder.adoc[]
 
@@ -75,5 +81,8 @@ A potential illegal instruction exception can be detected during
 decoding. If no exception has happened previously in fetch stage, the
 decoder will valid the exception and add the cause and tval value to the
 scoreboard entry.
+
+A potential interrupt can be sent to the decoder.
+If no exception has happened previously in fetch stage, the exception is inserted to into the scoreboard entry.
 
 include::port_decoder.adoc[]

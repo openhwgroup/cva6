@@ -11,6 +11,17 @@
 include::config.adoc[]
 include::config_define.adoc[]
 
+ifeval::[{SuperscalarEn} == true]
+:ifetch-len: 64
+:instr-per-fetch: 4
+:issue-width: 2
+endif::[]
+ifeval::[{SuperscalarEn} == false]
+:ifetch-len: 32
+:instr-per-fetch: 2
+:issue-width: 1
+endif::[]
+
 [[DesignDocument]]
 = Design Documentation for {ohg-config} architecture
 :description: Design documentation for {ohg-config}
