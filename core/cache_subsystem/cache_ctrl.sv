@@ -117,7 +117,8 @@ module cache_ctrl
     // cache-line offset -> multiple of XLEN
     cl_offset = mem_req_q.index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:$clog2(CVA6Cfg.XLEN/8)] <<
         $clog2(CVA6Cfg.XLEN);  // shift by log2(XLEN) to the left
-    axi_offset = '0;
+    // XLEN offset within AXI request
+    axi_offset = (mem_req_q.index >> $clog2(CVA6Cfg.XLEN / 8)) << $clog2(CVA6Cfg.XLEN);
     // default assignments
     state_d = state_q;
     mem_req_d = mem_req_q;
@@ -137,11 +138,6 @@ module cache_ctrl
     we_o = '0;
 
     mem_req_d.killed |= req_port_i.kill_req;
-
-    if (CVA6Cfg.XLEN == 32) begin
-      axi_offset = mem_req_q.index[$clog2(CVA6Cfg.AxiDataWidth/8)-1:$clog2(CVA6Cfg.XLEN/8)] <<
-          $clog2(CVA6Cfg.XLEN);
-    end
 
     case (state_q)
 
