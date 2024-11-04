@@ -61,6 +61,12 @@ See the [Git Cheats](https://github.com/openhwgroup/core-v-verif/blob/master/Git
 6. Push feature branch: `git push origin <my_branch>`
 7. From GitHub: submit a pull request
 
+Please note that we do not accept outdated pull requests.
+This makes sure the CI flow has run in the to-be version of the master.
+
+To allow us to update the pull request before merging it, please consider checking the "Allow edits from maintainers" checkbox.
+Note that this can only be done with pull requests from your personal repository (it is impossible from organization repositories).
+
 ## Coding Style
 
 For RTL coding, the OpenHW Group has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
