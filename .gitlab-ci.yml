@@ -297,10 +297,9 @@ fpga-build:
     - source ./verif/sim/setup-env.sh
     - mkdir -p artifacts/logs
     - make fpga target=$TARGET &> artifacts/logs/logfile.log
-    - tail -20 artifacts/logs/logfile.log > artifacts/logs/logfile.log.tail
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
-    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt artifacts/logs/logfile.log.tail
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
 
 .regress_test:
   stage: heavy tests
