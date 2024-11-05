@@ -66,23 +66,33 @@ spike-tandem ?= $(SPIKE_TANDEM)
 
 SPIKE_INSTALL_DIR     ?= $(root-dir)/tools/spike
 
+
 # setting additional xilinx board parameters for the selected board
 ifeq ($(BOARD), genesys2)
 	XILINX_PART              := xc7k325tffg900-2
 	XILINX_BOARD             := digilentinc.com:genesys2:part0:1.1
 	CLK_PERIOD_NS            := 20
+	XILINX_JTAG_PROBE_FILES  := corev_apu/riscv-dbg/src/dmi_jtag_tap.sv corev_apu/riscv-dbg/src/dmi_jtag.sv corev_apu/riscv-dbg/src/dmi_cdc.sv
 else ifeq ($(BOARD), kc705)
 	XILINX_PART              := xc7k325tffg900-2
 	XILINX_BOARD             := xilinx.com:kc705:part0:1.5
 	CLK_PERIOD_NS            := 20
+	XILINX_JTAG_PROBE_FILES  := corev_apu/riscv-dbg/src/dmi_jtag_tap.sv corev_apu/riscv-dbg/src/dmi_jtag.sv corev_apu/riscv-dbg/src/dmi_cdc.sv
 else ifeq ($(BOARD), vc707)
 	XILINX_PART              := xc7vx485tffg1761-2
 	XILINX_BOARD             := xilinx.com:vc707:part0:1.3
 	CLK_PERIOD_NS            := 20
+	XILINX_JTAG_PROBE_FILES  := corev_apu/riscv-dbg/src/dmi_jtag_tap.sv corev_apu/riscv-dbg/src/dmi_jtag.sv corev_apu/riscv-dbg/src/dmi_cdc.sv
 else ifeq ($(BOARD), nexys_video)
 	XILINX_PART              := xc7a200tsbg484-1
 	XILINX_BOARD             := digilentinc.com:nexys_video:part0:1.1
 	CLK_PERIOD_NS            := 40
+	XILINX_JTAG_PROBE_FILES  := corev_apu/riscv-dbg/src/dmi_jtag_tap.sv corev_apu/riscv-dbg/src/dmi_jtag.sv corev_apu/riscv-dbg/src/dmi_cdc.sv
+else ifeq ($(BOARD), arty_a7_100)
+	XILINX_PART			 	 := xc7a100tcsg324-1
+	XILINX_BOARD			 := digilentinc.com:arty-a7-100:part0:1.1
+	CLK_PERIOD_NS			 := 40
+	XILINX_JTAG_PROBE_FILES  := corev_apu/fpga/src/riscv_dbg_bscane_backport/dmi_bscane_tap.sv corev_apu/fpga/src/riscv_dbg_bscane_backport/dmi_jtag.sv corev_apu/fpga/src/riscv_dbg_bscane_backport/dmi_cdc.sv
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif
@@ -170,9 +180,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
         corev_apu/rv_plic/rtl/plic_top.sv                                            \
-        corev_apu/riscv-dbg/src/dmi_cdc.sv                                           \
-        corev_apu/riscv-dbg/src/dmi_jtag.sv                                          \
-        corev_apu/riscv-dbg/src/dmi_jtag_tap.sv                                      \
+        $(XILINX_JTAG_PROBE_FILES)                            				 	     \
         corev_apu/riscv-dbg/src/dm_csrs.sv                                           \
         corev_apu/riscv-dbg/src/dm_mem.sv                                            \
         corev_apu/riscv-dbg/src/dm_sba.sv                                            \
@@ -184,6 +192,11 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/common_cells/src/rstgen.sv                              \
         vendor/pulp-platform/common_cells/src/addr_decode.sv                         \
         vendor/pulp-platform/common_cells/src/stream_register.sv                     \
+		vendor/pulp-platform/common_cells/src/cdc_2phase_clearable.sv                \
+		vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr.sv                	 \
+		vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr_pkg.sv               	 \
+		vendor/pulp-platform/common_cells/src/cdc_4phase.sv               	 		 \
+		vendor/pulp-platform/common_cells/src/sync.sv                				 \
         vendor/pulp-platform/axi/src/axi_cut.sv                                      \
         vendor/pulp-platform/axi/src/axi_join.sv                                     \
         vendor/pulp-platform/axi/src/axi_delayer.sv                                  \

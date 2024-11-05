@@ -170,13 +170,49 @@ module ariane_xilinx (
   input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
   input  logic         trst_n      ,
+`elsif ARTY_A7_100
+  input  logic         board_clk_i ,
+  input  logic         cpu_resetn  ,
+
+  inout  wire [15:0]   ddr3_dq     ,
+  inout  wire [ 1:0]   ddr3_dqs_n  ,
+  inout  wire [ 1:0]   ddr3_dqs_p  ,
+  output wire [13:0]   ddr3_addr   ,
+  output wire [ 2:0]   ddr3_ba     ,
+  output wire          ddr3_ras_n  ,
+  output wire          ddr3_cas_n  ,
+  output wire          ddr3_we_n   ,
+  output wire          ddr3_reset_n,
+  output wire [ 0:0]   ddr3_ck_p   ,
+  output wire [ 0:0]   ddr3_ck_n   ,
+  output wire [ 0:0]   ddr3_cke    ,
+  output wire [ 1:0]   ddr3_dm     ,
+  output wire [ 0:0]   ddr3_odt    ,
+  output wire          ddr3_cs_n   ,
+
+  output wire          eth_rst_n   ,
+  input  wire          eth_rxck    ,
+  input  wire          eth_rxctl   ,
+  input  wire [3:0]    eth_rxd     ,
+  output wire          eth_txck    ,
+  output wire          eth_txctl   ,
+  output wire [3:0]    eth_txd     ,
+  inout  wire          eth_mdio    ,
+  output logic         eth_mdc     ,
+  output logic [ 3:0]  led         ,
+  input  logic [ 3:0]  sw          ,
+
+  // 25 MHz reference clock for the PHY interface
+  output wire          eth_phy_ref_clk,
 `endif
   // SPI
   output logic        spi_mosi    ,
   input  logic        spi_miso    ,
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
-  // common part
+  // JTAG
+`ifndef ARTY_A7_100
+  // ARTY uses dmi_bscane
   // input logic      trst_n      ,
   input  logic        tck         ,
   input  logic        tms         ,
@@ -281,6 +317,9 @@ assign trst_n = ~trst;
 `elsif NEXYS_VIDEO
 logic cpu_reset;
 assign cpu_reset  = ~cpu_resetn;
+`elsif ARTY_A7_100
+logic cpu_reset;
+assign cpu_reset  = ~cpu_resetn;
 `endif
 
 logic pll_locked;
@@ -306,6 +345,30 @@ assign test_en    = 1'b0;
 
 logic [NBSlave-1:0] pc_asserted;
 
+`ifdef ARTY_A7_100
+
+rstgen i_rstgen_main (
+    .clk_i        ( clk                              ),
+    .rst_ni       ( pll_locked & (~ndmreset) & rst_n ), // need to delay resetting the rest of the system until both DRAM and debug module ready
+    .test_mode_i  ( test_en                          ),
+    .rst_no       ( ndmreset_n                       ),
+    .init_no      (                                  ) // keep open
+);
+
+// DDR reset is not in phase, and might be too fast
+// so we synchronize the board-level reset in as well
+rstgen i_rstgen_dm (
+    .clk_i        ( clk                                         ),
+    .rst_ni       ( pll_locked & cpu_resetn & ~(ddr_sync_reset) ),
+    .test_mode_i  ( test_en                                     ),
+    .rst_no       ( rst_n                                       ),
+    .init_no      (                                             ) // keep open
+);
+
+assign rst = ~rst_n;
+
+`else
+
 rstgen i_rstgen_main (
     .clk_i        ( clk                      ),
     .rst_ni       ( pll_locked & (~ndmreset) ),
@@ -317,6 +380,7 @@ rstgen i_rstgen_main (
 assign rst_n = ~ddr_sync_reset;
 assign rst = ddr_sync_reset;
 
+`endif
 // ---------------
 // AXI Xbar
 // ---------------
@@ -366,6 +430,25 @@ axi_xbar_intf #(
   .default_mst_port_i    ( '0         )
 );
 
+`ifdef ARTY_A7_100
+// when selecting the input files, we use "dmi_bscane_tap" instead of "dmi_jtag_tag".
+// dmi_bscane_tap uses Xilinx' BSCANE primitive to access the USB JTAG chain
+// hence, no JTAG signals needed
+logic tck;
+logic tms;
+logic trst_n;
+logic tdi;
+logic tdo;
+
+assign tck = 1'b0;
+assign tms = 1'b0;
+assign tdi = 1'b0;
+
+// reset of the JTAG tap
+// tied to external reset; should not be the same as CPU to avoid loop
+assign trst_n = cpu_resetn;
+
+`endif
 // ---------------
 // Debug Module
 // ---------------
@@ -853,6 +936,14 @@ end
 // Peripherals
 // ---------------
 `ifdef KC705
+`define ONLY_FOUR_LEDS_SWITCHES
+`endif
+
+`ifdef ARTY_A7_100
+`define ONLY_FOUR_LEDS_SWITCHES
+`endif
+
+`ifdef ONLY_FOUR_LEDS_SWITCHES
   logic [7:0] unused_led;
   logic [3:0] unused_switches = 4'b0000;
 `endif
@@ -881,6 +972,9 @@ ariane_peripherals #(
     `elsif NEXYS_VIDEO
     .InclSPI      ( 1'b1         ),
     .InclEthernet ( 1'b0         )
+    `elsif ARTY_A7_100
+    .InclSPI      ( 1'b1         ),
+    .InclEthernet ( 1'b0         ) // Ethernet does not meet timing
     `endif
 ) i_ariane_peripherals (
     .clk_i        ( clk                          ),
@@ -911,7 +1005,7 @@ ariane_peripherals #(
     .spi_mosi       ( spi_mosi                    ),
     .spi_miso       ( spi_miso                    ),
     .spi_ss         ( spi_ss                      ),
-    `ifdef KC705
+    `ifdef ONLY_FOUR_LEDS_SWITCHES
       .leds_o         ( {led[3:0], unused_led[7:4]}),
       .dip_switches_i ( {sw, unused_switches}     )
     `else
@@ -1144,6 +1238,28 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .clk_in1  ( ddr_clock_out   )  // 100MHz input clock
 );
 
+`elsif ARTY_A7_100
+logic sys_clk_i;
+
+// clock input buffer
+// allows us to share the clock between MIG and clkgen
+// MIG output clock is not 100 MHz on Arty
+BUFG(
+  .I(board_clk_i),
+  .O(sys_clk_i)
+);
+
+xlnx_clk_gen i_xlnx_clk_gen (
+  .clk_out1 ( clk             ), // 25 MHz
+  .clk_out2 ( phy_tx_clk      ), // 125 MHz (for RGMII PHY)
+  .clk_out3 ( eth_clk         ), // 125 MHz quadrature (90 deg phase shift)
+  .clk_out4 ( sd_clk_sys      ), // 50 MHz clock
+  .clk_out5 ( clk_200MHz_ref  ), // 200 MHz clock
+  .clk_out6 ( eth_phy_ref_clk ), // 25 MHz reference for PHY
+  .reset    ( cpu_reset       ),
+  .locked   ( pll_locked      ),
+  .clk_in1  ( sys_clk_i       )  // 100MHz input clock
+);
 `else
 
 xlnx_clk_gen i_xlnx_clk_gen (
@@ -1903,6 +2019,77 @@ axi_clock_converter_0 pcie_axi_clock_converter (
   .s_axi_rlast    ( pcie_dwidth_axi_rlast    ),
   .s_axi_rvalid   ( pcie_dwidth_axi_rvalid   ),
   .s_axi_rready   ( pcie_dwidth_axi_rready   )
+);
+`elsif ARTY_A7_100
+
+
+xlnx_mig_7_ddr3 i_ddr (
+    .sys_clk_i       ( sys_clk_i        ),
+    .clk_ref_i       ( clk_200MHz_ref   ),
+    .ddr3_dq,
+    .ddr3_dqs_n,
+    .ddr3_dqs_p,
+    .ddr3_addr,
+    .ddr3_ba,
+    .ddr3_ras_n,
+    .ddr3_cas_n,
+    .ddr3_we_n,
+    .ddr3_reset_n,
+    .ddr3_ck_p,
+    .ddr3_ck_n,
+    .ddr3_cke,
+    .ddr3_cs_n,
+    .ddr3_dm,
+    .ddr3_odt,
+    .mmcm_locked     (                    ), // keep open
+    .app_sr_req      ( '0                 ),
+    .app_ref_req     ( '0                 ),
+    .app_zq_req      ( '0                 ),
+    .app_sr_active   (                    ), // keep open
+    .app_ref_ack     (                    ), // keep open
+    .app_zq_ack      (                    ), // keep open
+    .ui_clk          ( ddr_clock_out      ),
+    .ui_clk_sync_rst ( ddr_sync_reset     ),
+    .aresetn         ( ndmreset_n         ),
+    .s_axi_awid,
+    .s_axi_awaddr    ( s_axi_awaddr[28:0] ),
+    .s_axi_awlen,
+    .s_axi_awsize,
+    .s_axi_awburst,
+    .s_axi_awlock,
+    .s_axi_awcache,
+    .s_axi_awprot,
+    .s_axi_awqos,
+    .s_axi_awvalid,
+    .s_axi_awready,
+    .s_axi_wdata,
+    .s_axi_wstrb,
+    .s_axi_wlast,
+    .s_axi_wvalid,
+    .s_axi_wready,
+    .s_axi_bready,
+    .s_axi_bid,
+    .s_axi_bresp,
+    .s_axi_bvalid,
+    .s_axi_arid,
+    .s_axi_araddr     ( s_axi_araddr[28:0] ),
+    .s_axi_arlen,
+    .s_axi_arsize,
+    .s_axi_arburst,
+    .s_axi_arlock,
+    .s_axi_arcache,
+    .s_axi_arprot,
+    .s_axi_arqos,
+    .s_axi_arvalid,
+    .s_axi_arready,
+    .s_axi_rready,
+    .s_axi_rid,
+    .s_axi_rdata,
+    .s_axi_rresp,
+    .s_axi_rlast,
+    .s_axi_rvalid,
+    .init_calib_complete (            ), // keep open
+    .sys_rst             ( cpu_resetn )
 );
 `endif
 
