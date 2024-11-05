@@ -40,15 +40,15 @@ module mock_uart (
     localparam THRE = 5; // transmit holding register empty
     localparam TEMT = 6; // transmit holding register empty
 
-    byte lcr = 0;
-    byte dlm = 0;
-    byte dll = 0;
-    byte mcr = 0;
-    byte lsr = 0;
-    byte ier = 0;
-    byte msr = 0;
-    byte scr = 0;
-    logic fifo_enabled = 1'b0;
+    byte lcr;
+    byte dlm;
+    byte dll;
+    byte mcr;
+    byte lsr;
+    byte ier;
+    byte msr;
+    byte scr;
+    logic fifo_enabled;
 
     assign pready_o = 1'b1;
     assign pslverr_o = 1'b0;
@@ -62,7 +62,17 @@ module mock_uart (
 /* verilator lint_off WIDTHCONCAT */
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (rst_ni) begin
+        if (!rst_ni) begin
+            lcr <= 0;
+            dlm <= 0;
+            dll <= 0;
+            mcr <= 0;
+            lsr <= 0;
+            ier <= 0;
+            msr <= 0;
+            scr <= 0;
+            fifo_enabled <= 1'b0;
+        end else begin
             if (psel_i & penable_i & pwrite_i) begin
                 case ((paddr_i >> 'h2) & 'h7)
                     THR: begin
