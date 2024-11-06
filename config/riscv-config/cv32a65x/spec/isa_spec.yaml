@@ -20,7 +20,7 @@ hart0: &hart0
   User_Spec_Version: '2.3'
   supported_xlen: [32]
   physical_addr_sz: 32
-  pmp_granularity: 4
+  pmp_granularity: 8
   misa:
    reset-val: 0x40001106 # B: bit 1, C: bit 2, I = bit 8, M = bit 12, Z = bit 25
    rv32:
