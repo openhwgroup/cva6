@@ -42,7 +42,7 @@ module acc_dispatcher
       logic                             resp_valid;
       logic [CVA6Cfg.XLEN-1:0]          result;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
-      logic                             error;
+      exception_t                       exception;
       // Metadata
       logic                             store_pending;
       logic                             store_complete;
@@ -297,20 +297,13 @@ module acc_dispatcher
   logic acc_ld_disp;
   logic acc_st_disp;
 
+  assign acc_trans_id_o     = acc_resp_i.trans_id;
+  assign acc_result_o       = acc_resp_i.result;
+  assign acc_valid_o        = acc_resp_i.resp_valid;
+  assign acc_exception_o    = acc_resp_i.exception;
   // Unpack the accelerator response
-  assign acc_trans_id_o = acc_resp_i.trans_id;
-  assign acc_result_o = acc_resp_i.result;
-  assign acc_valid_o = acc_resp_i.resp_valid;
-  assign acc_exception_o = '{
-          cause: riscv::ILLEGAL_INSTR,
-          tval : '0,
-          tval2 : '0,
-          tinst : '0,
-          gva : '0,
-          valid: acc_resp_i.error
-      };
   assign acc_fflags_valid_o = acc_resp_i.fflags_valid;
-  assign acc_fflags_o = acc_resp_i.fflags;
+  assign acc_fflags_o       = acc_resp_i.fflags;
   // Always ready to receive responses
   assign acc_req_o.resp_ready = 1'b1;
 
