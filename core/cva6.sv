@@ -775,16 +775,17 @@ module cva6
   assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
   assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
 
-  always_comb begin : gen_cvxif_input_assignement
-    x_compressed_ready = cvxif_resp_i.compressed_ready;
-    x_compressed_resp  = cvxif_resp_i.compressed_resp;
-    x_issue_ready      = cvxif_resp_i.issue_ready;
-    x_issue_resp       = cvxif_resp_i.issue_resp;
-    x_register_ready   = cvxif_resp_i.register_ready;
-    x_result_valid     = cvxif_resp_i.result_valid;
-    x_result           = cvxif_resp_i.result;
-  end
   if (CVA6Cfg.CvxifEn) begin
+    always_comb begin : gen_cvxif_input_assignement
+      x_compressed_ready = cvxif_resp_i.compressed_ready;
+      x_compressed_resp  = cvxif_resp_i.compressed_resp;
+      x_issue_ready      = cvxif_resp_i.issue_ready;
+      x_issue_resp       = cvxif_resp_i.issue_resp;
+      x_register_ready   = cvxif_resp_i.register_ready;
+      x_result_valid     = cvxif_resp_i.result_valid;
+      x_result           = cvxif_resp_i.result;
+    end
+
     always_comb begin : gen_cvxif_output_assignement
       cvxif_req.compressed_valid = x_compressed_valid;
       cvxif_req.compressed_req   = x_compressed_req;
