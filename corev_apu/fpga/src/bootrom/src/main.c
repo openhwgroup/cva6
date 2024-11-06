@@ -81,6 +81,9 @@ int main()
             "la a1, _dtb;"
             "jr s0");
     }
+    else{
+        print_uart("\r\nFailed to boot! Halting...\r\n");
+    }
 
     while (1)
     {

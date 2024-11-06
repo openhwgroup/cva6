@@ -218,6 +218,8 @@ module ariane_xilinx (
   input  logic        tms         ,
   input  logic        tdi         ,
   output wire         tdo         ,
+`endif
+  // USB UART
   input  logic        rx          ,
   output logic        tx
 );
