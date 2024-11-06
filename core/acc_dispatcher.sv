@@ -297,10 +297,10 @@ module acc_dispatcher
   logic acc_ld_disp;
   logic acc_st_disp;
 
-  assign acc_trans_id_o     = acc_resp_i.trans_id;
-  assign acc_result_o       = acc_resp_i.result;
-  assign acc_valid_o        = acc_resp_i.resp_valid;
-  assign acc_exception_o    = acc_resp_i.exception;
+  assign acc_trans_id_o       = acc_resp_i.trans_id;
+  assign acc_result_o         = acc_resp_i.result;
+  assign acc_valid_o          = acc_resp_i.resp_valid;
+  assign acc_exception_o      = acc_resp_i.exception;
   // Unpack the accelerator response
   assign acc_fflags_valid_o = acc_resp_i.fflags_valid;
   assign acc_fflags_o       = acc_resp_i.fflags;
