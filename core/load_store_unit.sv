@@ -413,6 +413,9 @@ module load_store_unit
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
+      .clk_i,
+      .rst_ni,
+      .flush_i,
       .valid_i   (ld_valid_i),
       .lsu_ctrl_i(lsu_ctrl),
       .pop_ld_o  (pop_ld),
@@ -435,12 +438,11 @@ module load_store_unit
       .page_offset_o        (page_offset),
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
+      .commit_tran_id_i,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[1]),
       .req_port_o           (dcache_req_ports_o[1]),
-      .dcache_wbuffer_not_ni_i,
-      .commit_tran_id_i,
-      .*
+      .dcache_wbuffer_not_ni_i
   );
 
   // ----------------------------
