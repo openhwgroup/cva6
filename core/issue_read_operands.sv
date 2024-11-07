@@ -28,7 +28,6 @@ module issue_read_operands
     parameter type x_issue_resp_t = logic,
     parameter type x_register_t = logic,
     parameter type x_commit_t = logic
-
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
