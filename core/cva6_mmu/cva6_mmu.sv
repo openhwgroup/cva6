@@ -193,12 +193,15 @@ module cva6_mmu
       .lu_asid_i     (itlb_lu_asid),
       .lu_vmid_i     (vmid_i),
       .lu_vaddr_i    (icache_areq_i.fetch_vaddr),
+      .lu_gpaddr_o   (itlb_gpaddr),
       .lu_content_o  (itlb_content),
       .lu_g_content_o(itlb_g_content),
-      .lu_gpaddr_o   (itlb_gpaddr),
+      .asid_to_be_flushed_i,
+      .vmid_to_be_flushed_i,
+      .vaddr_to_be_flushed_i,
+      .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
-      .lu_hit_o      (itlb_lu_hit),
-      .*
+      .lu_hit_o      (itlb_lu_hit)
   );
 
   cva6_tlb #(
@@ -221,12 +224,15 @@ module cva6_mmu
       .lu_asid_i     (itlb_lu_asid),
       .lu_vmid_i     (vmid_i),
       .lu_vaddr_i    (lsu_vaddr_i),
+      .lu_gpaddr_o   (dtlb_gpaddr),
       .lu_content_o  (dtlb_content),
       .lu_g_content_o(dtlb_g_content),
-      .lu_gpaddr_o   (dtlb_gpaddr),
+      .asid_to_be_flushed_i,
+      .vmid_to_be_flushed_i,
+      .vaddr_to_be_flushed_i,
+      .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (dtlb_is_page),
-      .lu_hit_o      (dtlb_lu_hit),
-      .*
+      .lu_hit_o      (dtlb_lu_hit)
   );
 
 
