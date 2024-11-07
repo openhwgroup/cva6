@@ -67,16 +67,16 @@ module issue_stage
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // Branch unit is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
+    // Information of branch prediction - EX_STAGE
+    output branchpredict_sbe_t branch_predict_o,
     // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
     // Load store unit FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_o,
-    // Branch unit is valid - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
-    // Information of branch prediction - EX_STAGE
-    output branchpredict_sbe_t branch_predict_o,
     // Mult FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
@@ -99,17 +99,23 @@ module issue_stage
     output logic [31:0] x_off_instr_o,
     // CVA6 Hart ID - SUBSYSTEM
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
-    // CVXIF Issue interface
+    // CVXIF Issue interface - EX_STAGE
     input logic x_issue_ready_i,
+    // TO_BE_COMPLETED - EX_STAGE
     input x_issue_resp_t x_issue_resp_i,
+    // TO_BE_COMPLETED - EX_STAGE
     output logic x_issue_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_issue_req_t x_issue_req_o,
-    // CVXIF Register interface
+    // CVXIF Register interface - EX_STAGE
     input logic x_register_ready_i,
+    // TO_BE_COMPLETED - EX_STAGE
     output logic x_register_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_register_t x_register_o,
-    // CVXIF Commit interface
+    // CVXIF Commit interface - EX_STAGE
     output logic x_commit_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_commit_t x_commit_o,
     // CVXIF Transaction rejected -> instruction is illegal - EX_STAGE
     output logic x_transaction_rejected_o,

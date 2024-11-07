@@ -858,8 +858,8 @@ module cva6
       .issue_instr_o           (issue_instr_id_acc),
       .issue_instr_hs_o        (issue_instr_hs_id_acc),
       // Commit
-      .resolved_branch_i       (resolved_branch),
       .trans_id_i              (trans_id_ex_id),
+      .resolved_branch_i       (resolved_branch),
       .wbdata_i                (wbdata_ex_id),
       .ex_ex_i                 (ex_ex_ex_id),
       .wt_valid_i              (wt_valid_ex_id),
@@ -877,8 +877,7 @@ module cva6
       .stall_issue_o        (stall_issue),
       //RVFI
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer),
-      .*
+      .rvfi_commit_pointer_o(rvfi_commit_pointer)
   );
 
   // ---------
