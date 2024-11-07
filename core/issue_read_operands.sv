@@ -926,16 +926,7 @@ module issue_read_operands
         if (!stall_raw[i] && !stall_waw[i]) begin
           issue_ack[i] = 1'b1;
         end
-        // we can also issue the instruction under the following two circumstances:
-        // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
-        // the decoder needs to make sure that the instruction is marked as valid when it does not
-        // need any functional unit or if an exception occurred previous to the execute stage.
-        // 1. we already got an exception
         if (issue_instr_i[i].ex.valid) begin
-          issue_ack[i] = 1'b1;
-        end
-        // 2. it is an instruction which does not need any functional unit
-        if (issue_instr_i[i].fu == NONE) begin
           issue_ack[i] = 1'b1;
         end
       end
