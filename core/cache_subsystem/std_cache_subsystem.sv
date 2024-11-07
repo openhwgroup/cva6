@@ -193,7 +193,7 @@ module std_cache_subsystem
       .flush_i   (1'b0),
       .testmode_i(1'b0),
       .full_o    (w_fifo_full),
-      .empty_o   (),                                                          // leave open
+      .empty_o   (),               // leave open
       .usage_o   (w_fifo_usage),
       .data_i    (w_select),
       // a new transaction was requested and granted
@@ -204,14 +204,14 @@ module std_cache_subsystem
       .pop_i     (w_fifo_pop)
   );
 
-  always_ff @( posedge clk_i or negedge rst_ni ) begin : aw_lock_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : aw_lock_reg
     if (~rst_ni) aw_lock_q <= 1'b0;
-    else         aw_lock_q <= aw_lock_d;
+    else aw_lock_q <= aw_lock_d;
   end
 
   assign w_fifo_push = ~aw_lock_q & axi_req_o.aw_valid;
-  assign w_fifo_pop  = axi_req_o.w_valid & axi_resp_i.w_ready & axi_req_o.w.last;
-  assign aw_lock_d   = ~axi_resp_i.aw_ready & (axi_req_o.aw_valid | aw_lock_q);
+  assign w_fifo_pop = axi_req_o.w_valid & axi_resp_i.w_ready & axi_req_o.w.last;
+  assign aw_lock_d = ~axi_resp_i.aw_ready & (axi_req_o.aw_valid | aw_lock_q);
 
   // In fall-through mode, the empty_o will be low when push_i is high (on zero usage).
   // We do not want this here. Also, usage_o is missing the MSB, so on full fifo, usage_o is zero.

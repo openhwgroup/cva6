@@ -67,16 +67,16 @@ module issue_stage
     input logic flu_ready_i,
     // ALU FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // Branch unit is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
+    // Information of branch prediction - EX_STAGE
+    output branchpredict_sbe_t branch_predict_o,
     // Signaling that we resolved the branch - EX_STAGE
     input logic resolve_branch_i,
     // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
     // Load store unit FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_o,
-    // Branch unit is valid - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
-    // Information of branch prediction - EX_STAGE
-    output branchpredict_sbe_t branch_predict_o,
     // Mult FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
@@ -99,17 +99,23 @@ module issue_stage
     output logic [31:0] x_off_instr_o,
     // CVA6 Hart ID - SUBSYSTEM
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
-    // CVXIF Issue interface
+    // CVXIF Issue interface - EX_STAGE
     input logic x_issue_ready_i,
+    // TO_BE_COMPLETED - EX_STAGE
     input x_issue_resp_t x_issue_resp_i,
+    // TO_BE_COMPLETED - EX_STAGE
     output logic x_issue_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_issue_req_t x_issue_req_o,
-    // CVXIF Register interface
+    // CVXIF Register interface - EX_STAGE
     input logic x_register_ready_i,
+    // TO_BE_COMPLETED - EX_STAGE
     output logic x_register_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_register_t x_register_o,
-    // CVXIF Commit interface
+    // CVXIF Commit interface - EX_STAGE
     output logic x_commit_valid_o,
+    // TO_BE_COMPLETED - EX_STAGE
     output x_commit_t x_commit_o,
     // CVXIF Transaction rejected -> instruction is illegal - EX_STAGE
     output logic x_transaction_rejected_o,
@@ -195,24 +201,35 @@ module issue_stage
       .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
+      .clk_i,
+      .rst_ni,
       .sb_full_o               (sb_full_o),
+      .flush_unissued_instr_i,
+      .flush_i,
       .x_transaction_accepted_i(x_transaction_accepted_iro_sb),
       .x_issue_writeback_i     (x_issue_writeback_iro_sb),
       .x_id_i                  (x_id_iro_sb),
-      .fwd_o                   (fwd),
+      .commit_instr_o,
+      .commit_drop_o,
+      .commit_ack_i,
       .decoded_instr_i         (decoded_instr_i),
+      .orig_instr_i,
       .decoded_instr_valid_i   (decoded_instr_valid_i),
       .decoded_instr_ack_o     (decoded_instr_ack_o),
       .issue_instr_o           (issue_instr_sb_iro),
       .orig_instr_o            (orig_instr_sb_iro),
       .issue_instr_valid_o     (issue_instr_valid_sb_iro),
       .issue_ack_i             (issue_ack_iro_sb),
-
-      .resolved_branch_i(resolved_branch_i),
-      .trans_id_i       (trans_id_i),
-      .wbdata_i         (wbdata_i),
-      .ex_i             (ex_ex_i),
-      .*
+      .fwd_o                   (fwd),
+      .resolved_branch_i       (resolved_branch_i),
+      .trans_id_i              (trans_id_i),
+      .wbdata_i                (wbdata_i),
+      .ex_i                    (ex_ex_i),
+      .wt_valid_i,
+      .x_we_i,
+      .x_rd_i,
+      .rvfi_issue_pointer_o,
+      .rvfi_commit_pointer_o
   );
 
   // ---------------------------------------------------------
@@ -231,20 +248,37 @@ module issue_stage
       .x_register_t(x_register_t),
       .x_commit_t(x_commit_t)
   ) i_issue_read_operands (
+      .clk_i,
+      .rst_ni,
       .flush_i                 (flush_unissued_instr_i),
+      .stall_i,
       .issue_instr_i           (issue_instr_sb_iro),
       .orig_instr_i            (orig_instr_sb_iro),
       .issue_instr_valid_i     (issue_instr_valid_sb_iro),
       .issue_ack_o             (issue_ack_iro_sb),
-      .fu_data_o               (fu_data_o),
-      .flu_ready_i             (flu_ready_i),
       .fwd_i                   (fwd),
+      .fu_data_o               (fu_data_o),
+      .rs1_forwarding_o        (rs1_forwarding_xlen),
+      .rs2_forwarding_o        (rs2_forwarding_xlen),
+      .pc_o,
+      .is_compressed_instr_o,
+      .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
-      .alu2_valid_o            (alu2_valid_o),
       .branch_valid_o          (branch_valid_o),
-      .csr_valid_o             (csr_valid_o),
+      .tinst_o                 (tinst_o),
+      .branch_predict_o,
+      .lsu_ready_i,
+      .lsu_valid_o,
+      .mult_valid_o,
+      .fpu_ready_i,
+      .fpu_valid_o,
+      .fpu_fmt_o,
+      .fpu_rm_o,
+      .alu2_valid_o,
+      .csr_valid_o,
       .cvxif_valid_o           (xfu_valid_o),
       .cvxif_ready_i           (xfu_ready_i),
+      .cvxif_off_instr_o       (x_off_instr_o),
       .hart_id_i               (hart_id_i),
       .x_issue_ready_i         (x_issue_ready_i),
       .x_issue_resp_i          (x_issue_resp_i),
@@ -259,13 +293,11 @@ module issue_stage
       .x_transaction_rejected_o(x_transaction_rejected_o),
       .x_issue_writeback_o     (x_issue_writeback_iro_sb),
       .x_id_o                  (x_id_iro_sb),
-      .cvxif_off_instr_o       (x_off_instr_o),
-      .mult_valid_o            (mult_valid_o),
-      .rs1_forwarding_o        (rs1_forwarding_xlen),
-      .rs2_forwarding_o        (rs2_forwarding_xlen),
-      .stall_issue_o           (stall_issue_o),
-      .tinst_o                 (tinst_o),
-      .*
+      .waddr_i,
+      .wdata_i,
+      .we_gpr_i,
+      .we_fpr_i,
+      .stall_issue_o
   );
 
 endmodule

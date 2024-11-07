@@ -42,7 +42,6 @@ module csr_regfile
     input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
     // Hart id in a multicore environment (reflected in a CSR) - SUBSYSTEM
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
-    // we are taking an exception
     // We've got an exception from the commit stage, take it - COMMIT_STAGE
     input exception_t ex_i,
     // Operation to perform on the CSR file - COMMIT_STAGE
@@ -153,7 +152,6 @@ module csr_regfile
     output logic dcache_en_o,
     // Accelerator memory consistent mode - ACC_DISPATCHER
     output logic acc_cons_en_o,
-    // Performance Counter
     // read/write address to performance counter module - PERF_COUNTERS
     output logic [11:0] perf_addr_o,
     // write data to performance counter module - PERF_COUNTERS

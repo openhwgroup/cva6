@@ -256,6 +256,10 @@ module load_store_unit
         .clk_i(clk_i),
         .rst_ni(rst_ni),
         .flush_i(flush_i),
+        .enable_translation_i,
+        .enable_g_translation_i,
+        .en_ld_st_translation_i,
+        .en_ld_st_g_translation_i,
         .icache_areq_i(icache_areq_i),
         .icache_areq_o(icache_areq_o),
         // misaligned bypass
@@ -273,10 +277,29 @@ module load_store_unit
         .lsu_exception_o(mmu_exception),
 
         .priv_lvl_i      (priv_lvl_i),
+        .v_i,
         .ld_st_priv_lvl_i(ld_st_priv_lvl_i),
+        .ld_st_v_i,
+        .sum_i,
+        .vs_sum_i,
+        .mxr_i,
+        .vmxr_i,
 
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
+        .satp_ppn_i,
+        .vsatp_ppn_i,
+        .hgatp_ppn_i,
+        .asid_i,
+        .vs_asid_i,
+        .asid_to_be_flushed_i,
+        .vmid_i,
+        .vmid_to_be_flushed_i,
+        .vaddr_to_be_flushed_i,
+        .gpaddr_to_be_flushed_i,
+        .flush_tlb_i,
+        .flush_tlb_vvma_i,
+        .flush_tlb_gvma_i,
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
@@ -284,8 +307,7 @@ module load_store_unit
         .req_port_i(dcache_req_ports_i[0]),
         .req_port_o(dcache_req_ports_o[0]),
         .pmpcfg_i,
-        .pmpaddr_i,
-        .*
+        .pmpaddr_i
     );
 
   end else begin : gen_no_mmu
@@ -391,6 +413,9 @@ module load_store_unit
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
+      .clk_i,
+      .rst_ni,
+      .flush_i,
       .valid_i   (ld_valid_i),
       .lsu_ctrl_i(lsu_ctrl),
       .pop_ld_o  (pop_ld),
@@ -413,12 +438,11 @@ module load_store_unit
       .page_offset_o        (page_offset),
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
+      .commit_tran_id_i,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[1]),
       .req_port_o           (dcache_req_ports_o[1]),
-      .dcache_wbuffer_not_ni_i,
-      .commit_tran_id_i,
-      .*
+      .dcache_wbuffer_not_ni_i
   );
 
   // ----------------------------
@@ -692,14 +716,16 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_bypass_i (
+      .clk_i,
+      .rst_ni,
+      .flush_i,
       .lsu_req_i      (lsu_req_i),
       .lsu_req_valid_i(lsu_valid_i),
       .pop_ld_i       (pop_ld),
       .pop_st_i       (pop_st),
 
       .lsu_ctrl_o(lsu_ctrl),
-      .ready_o   (lsu_ready_o),
-      .*
+      .ready_o   (lsu_ready_o)
   );
 
   assign rvfi_lsu_ctrl_o = lsu_ctrl;

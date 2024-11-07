@@ -302,18 +302,18 @@ module acc_dispatcher
   assign acc_valid_o          = acc_resp_i.resp_valid;
   assign acc_exception_o      = acc_resp_i.exception;
   // Unpack the accelerator response
-  assign acc_fflags_valid_o = acc_resp_i.fflags_valid;
-  assign acc_fflags_o       = acc_resp_i.fflags;
+  assign acc_fflags_valid_o   = acc_resp_i.fflags_valid;
+  assign acc_fflags_o         = acc_resp_i.fflags;
   // Always ready to receive responses
   assign acc_req_o.resp_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
-  assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
-  assign acc_st_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
+  assign acc_ld_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
+  assign acc_st_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
 
   // Cache invalidation
-  assign inval_valid_o = acc_resp_i.inval_valid;
-  assign inval_addr_o = acc_resp_i.inval_addr;
+  assign inval_valid_o        = acc_resp_i.inval_valid;
+  assign inval_addr_o         = acc_resp_i.inval_addr;
 
   /**************************
    *  Accelerator commit    *
