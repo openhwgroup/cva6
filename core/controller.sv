@@ -45,7 +45,9 @@ module controller
     input logic flush_dcache_ack_i,
     // Flush TLBs - EX_STAGE
     output logic flush_tlb_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic flush_tlb_vvma_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic flush_tlb_gvma_o,
     // Halt request from CSR (WFI instruction) - CSR_REGFILE
     input logic halt_csr_i,
@@ -69,7 +71,9 @@ module controller
     input logic fence_i,
     // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
     input logic sfence_vma_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic hfence_vvma_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic hfence_gvma_i,
     // Flush request from commit stage - COMMIT_STAGE
     input logic flush_commit_i,

@@ -1211,40 +1211,39 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t)
   ) controller_i (
+      .clk_i,
+      .rst_ni,
       // virtualization mode
       .v_i                   (v),
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),
-      .flush_unissued_instr_o(flush_unissued_instr_ctrl_id),
       .flush_if_o            (flush_ctrl_if),
+      .flush_unissued_instr_o(flush_unissued_instr_ctrl_id),
       .flush_id_o            (flush_ctrl_id),
       .flush_ex_o            (flush_ctrl_ex),
       .flush_bp_o            (flush_ctrl_bp),
+      .flush_icache_o        (icache_flush_ctrl_cache),
+      .flush_dcache_o        (dcache_flush_ctrl_cache),
+      .flush_dcache_ack_i    (dcache_flush_ack_cache_ctrl),
       .flush_tlb_o           (flush_tlb_ctrl_ex),
       .flush_tlb_vvma_o      (flush_tlb_vvma_ctrl_ex),
       .flush_tlb_gvma_o      (flush_tlb_gvma_ctrl_ex),
-      .flush_dcache_o        (dcache_flush_ctrl_cache),
-      .flush_dcache_ack_i    (dcache_flush_ack_cache_ctrl),
-
-      .halt_csr_i       (halt_csr_ctrl),
-      .halt_acc_i       (halt_acc_ctrl),
-      .halt_o           (halt_ctrl),
+      .halt_csr_i            (halt_csr_ctrl),
+      .halt_acc_i            (halt_acc_ctrl),
+      .halt_o                (halt_ctrl),
       // control ports
-      .eret_i           (eret),
-      .ex_valid_i       (ex_commit.valid),
-      .set_debug_pc_i   (set_debug_pc),
-      .flush_csr_i      (flush_csr_ctrl),
-      .resolved_branch_i(resolved_branch),
-      .fence_i_i        (fence_i_commit_controller),
-      .fence_i          (fence_commit_controller),
-      .sfence_vma_i     (sfence_vma_commit_controller),
-      .hfence_vvma_i    (hfence_vvma_commit_controller),
-      .hfence_gvma_i    (hfence_gvma_commit_controller),
-      .flush_commit_i   (flush_commit),
-      .flush_acc_i      (flush_acc),
-
-      .flush_icache_o(icache_flush_ctrl_cache),
-      .*
+      .eret_i                (eret),
+      .ex_valid_i            (ex_commit.valid),
+      .set_debug_pc_i        (set_debug_pc),
+      .resolved_branch_i     (resolved_branch),
+      .flush_csr_i           (flush_csr_ctrl),
+      .fence_i_i             (fence_i_commit_controller),
+      .fence_i               (fence_commit_controller),
+      .sfence_vma_i          (sfence_vma_commit_controller),
+      .hfence_vvma_i         (hfence_vvma_commit_controller),
+      .hfence_gvma_i         (hfence_gvma_commit_controller),
+      .flush_commit_i        (flush_commit),
+      .flush_acc_i           (flush_acc)
   );
 
   // -------------------
