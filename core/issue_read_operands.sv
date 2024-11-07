@@ -984,13 +984,14 @@ module issue_read_operands
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile_fpga (
+        .clk_i,
+        .rst_ni,
         .test_en_i(1'b0),
         .raddr_i  (raddr_pack),
         .rdata_o  (rdata),
         .waddr_i  (waddr_pack),
         .wdata_i  (wdata_pack),
-        .we_i     (we_pack),
-        .*
+        .we_i     (we_pack)
     );
   end else begin : gen_asic_regfile
     ariane_regfile #(
@@ -1045,13 +1046,14 @@ module issue_read_operands
             .NR_READ_PORTS(3),
             .ZERO_REG_ZERO(0)
         ) i_ariane_fp_regfile_fpga (
+            .clk_i,
+            .rst_ni,
             .test_en_i(1'b0),
             .raddr_i  (fp_raddr_pack),
             .rdata_o  (fprdata),
             .waddr_i  (waddr_pack),
             .wdata_i  (fp_wdata_pack),
-            .we_i     (we_fpr_i),
-            .*
+            .we_i     (we_fpr_i)
         );
       end else begin : gen_asic_fp_regfile
         ariane_regfile #(
