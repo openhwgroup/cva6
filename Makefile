@@ -193,11 +193,11 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/common_cells/src/rstgen.sv                                      \
         vendor/pulp-platform/common_cells/src/addr_decode.sv                                 \
         vendor/pulp-platform/common_cells/src/stream_register.sv                             \
-	$(if(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_2phase_clearable.sv)     \
-	$(if(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr.sv)          \
-	$(if(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr_pkg.sv)      \
-	$(if(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_4phase.sv)               \
-	$(if(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/sync.sv)                     \
+	$(if($(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_2phase_clearable.sv)   \
+	$(if($(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr.sv)        \
+	$(if($(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr_pkg.sv)    \
+	$(if($(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/cdc_4phase.sv)             \
+	$(if($(DBG_BSCANE2),vendor/pulp-platform/common_cells/src/sync.sv)                   \
         vendor/pulp-platform/axi/src/axi_cut.sv                                              \
         vendor/pulp-platform/axi/src/axi_join.sv                                             \
         vendor/pulp-platform/axi/src/axi_delayer.sv                                          \
