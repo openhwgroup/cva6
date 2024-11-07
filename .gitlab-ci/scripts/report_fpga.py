@@ -15,9 +15,6 @@ import report_builder as rb
 with open(str(sys.argv[1]), "r") as f:
     log = f.read()
 
-with open(str(sys.argv[2]), "r") as f:
-    outputlog = f.read()
-
 pattern = re.compile(
     "\|(?P<ind> +)(?P<Instance>[\w()\[\].]+) +\| +(?P<Module>[\w()\[\].]+) \| +(?P<TotalLUTs>\d+) \| +(?P<LogicLUTs>\d+) \| +(?P<LUTRAMs>\d+) \| +(?P<SRLs>\d+) \| +(?P<FFs>\d+) \| +(?P<RAMB36>\d+) \| +(?P<RAMB18>\d+) \| +(?P<DSP48Blocks>\d+) \|"
 )
@@ -50,8 +47,5 @@ for i in data:
             i["DSP48Blocks"] + " DSP48Blocks",
         )
 
-log_metric = rb.LogMetric("Last lines of logfile")
-log_metric.values = outputlog.splitlines()
-
-report.add_metric(metric, log_metric)
+report.add_metric(metric)
 report.dump()
