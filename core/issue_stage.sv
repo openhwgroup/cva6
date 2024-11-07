@@ -201,24 +201,35 @@ module issue_stage
       .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t)
   ) i_scoreboard (
+      .clk_i,
+      .rst_ni,
       .sb_full_o               (sb_full_o),
+      .flush_unissued_instr_i,
+      .flush_i,
       .x_transaction_accepted_i(x_transaction_accepted_iro_sb),
       .x_issue_writeback_i     (x_issue_writeback_iro_sb),
       .x_id_i                  (x_id_iro_sb),
-      .fwd_o                   (fwd),
+      .commit_instr_o,
+      .commit_drop_o,
+      .commit_ack_i,
       .decoded_instr_i         (decoded_instr_i),
+      .orig_instr_i,
       .decoded_instr_valid_i   (decoded_instr_valid_i),
       .decoded_instr_ack_o     (decoded_instr_ack_o),
       .issue_instr_o           (issue_instr_sb_iro),
       .orig_instr_o            (orig_instr_sb_iro),
       .issue_instr_valid_o     (issue_instr_valid_sb_iro),
       .issue_ack_i             (issue_ack_iro_sb),
-
-      .resolved_branch_i(resolved_branch_i),
-      .trans_id_i       (trans_id_i),
-      .wbdata_i         (wbdata_i),
-      .ex_i             (ex_ex_i),
-      .*
+      .fwd_o                   (fwd),
+      .resolved_branch_i       (resolved_branch_i),
+      .trans_id_i              (trans_id_i),
+      .wbdata_i                (wbdata_i),
+      .ex_i                    (ex_ex_i),
+      .wt_valid_i,
+      .x_we_i,
+      .x_rd_i,
+      .rvfi_issue_pointer_o,
+      .rvfi_commit_pointer_o
   );
 
   // ---------------------------------------------------------
