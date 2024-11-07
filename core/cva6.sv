@@ -643,25 +643,26 @@ module cva6
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t)
   ) i_frontend (
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
-      .flush_bp_i         (1'b0),
-      .halt_i             (halt_ctrl),
-      .debug_mode_i       (debug_mode),
+      .clk_i,
+      .rst_ni,
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .icache_dreq_i      (icache_dreq_cache_if),
-      .icache_dreq_o      (icache_dreq_if_cache),
-      .resolved_branch_i  (resolved_branch),
-      .pc_commit_i        (pc_commit),
+      .flush_bp_i         (1'b0),
+      .flush_i            (flush_ctrl_if),                  // not entirely correct
+      .halt_i             (halt_ctrl),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
-      .set_debug_pc_i     (set_debug_pc),
-      .epc_i              (epc_commit_pcgen),
-      .eret_i             (eret),
-      .trap_vector_base_i (trap_vector_base_commit_pcgen),
+      .pc_commit_i        (pc_commit),
       .ex_valid_i         (ex_commit.valid),
+      .resolved_branch_i  (resolved_branch),
+      .eret_i             (eret),
+      .epc_i              (epc_commit_pcgen),
+      .trap_vector_base_i (trap_vector_base_commit_pcgen),
+      .set_debug_pc_i     (set_debug_pc),
+      .debug_mode_i       (debug_mode),
+      .icache_dreq_o      (icache_dreq_if_cache),
+      .icache_dreq_i      (icache_dreq_cache_if),
       .fetch_entry_o      (fetch_entry_if_id),
       .fetch_entry_valid_o(fetch_valid_if_id),
-      .fetch_entry_ready_i(fetch_ready_id_if),
-      .*
+      .fetch_entry_ready_i(fetch_ready_id_if)
   );
 
   // ---------
