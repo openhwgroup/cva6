@@ -716,14 +716,16 @@ module load_store_unit
       .CVA6Cfg(CVA6Cfg),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) lsu_bypass_i (
+      .clk_i,
+      .rst_ni,
+      .flush_i,
       .lsu_req_i      (lsu_req_i),
       .lsu_req_valid_i(lsu_valid_i),
       .pop_ld_i       (pop_ld),
       .pop_st_i       (pop_st),
 
       .lsu_ctrl_o(lsu_ctrl),
-      .ready_o   (lsu_ready_o),
-      .*
+      .ready_o   (lsu_ready_o)
   );
 
   assign rvfi_lsu_ctrl_o = lsu_ctrl;
