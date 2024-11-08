@@ -643,25 +643,26 @@ module cva6
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t)
   ) i_frontend (
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
-      .flush_bp_i         (1'b0),
-      .halt_i             (halt_ctrl),
-      .debug_mode_i       (debug_mode),
+      .clk_i,
+      .rst_ni,
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .icache_dreq_i      (icache_dreq_cache_if),
-      .icache_dreq_o      (icache_dreq_if_cache),
-      .resolved_branch_i  (resolved_branch),
-      .pc_commit_i        (pc_commit),
+      .flush_bp_i         (1'b0),
+      .flush_i            (flush_ctrl_if),                  // not entirely correct
+      .halt_i             (halt_ctrl),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
-      .set_debug_pc_i     (set_debug_pc),
-      .epc_i              (epc_commit_pcgen),
-      .eret_i             (eret),
-      .trap_vector_base_i (trap_vector_base_commit_pcgen),
+      .pc_commit_i        (pc_commit),
       .ex_valid_i         (ex_commit.valid),
+      .resolved_branch_i  (resolved_branch),
+      .eret_i             (eret),
+      .epc_i              (epc_commit_pcgen),
+      .trap_vector_base_i (trap_vector_base_commit_pcgen),
+      .set_debug_pc_i     (set_debug_pc),
+      .debug_mode_i       (debug_mode),
+      .icache_dreq_o      (icache_dreq_if_cache),
+      .icache_dreq_i      (icache_dreq_cache_if),
       .fetch_entry_o      (fetch_entry_if_id),
       .fetch_entry_valid_o(fetch_valid_if_id),
-      .fetch_entry_ready_i(fetch_ready_id_if),
-      .*
+      .fetch_entry_ready_i(fetch_ready_id_if)
   );
 
   // ---------
@@ -857,8 +858,8 @@ module cva6
       .issue_instr_o           (issue_instr_id_acc),
       .issue_instr_hs_o        (issue_instr_hs_id_acc),
       // Commit
-      .resolved_branch_i       (resolved_branch),
       .trans_id_i              (trans_id_ex_id),
+      .resolved_branch_i       (resolved_branch),
       .wbdata_i                (wbdata_ex_id),
       .ex_ex_i                 (ex_ex_ex_id),
       .wt_valid_i              (wt_valid_ex_id),
@@ -876,8 +877,7 @@ module cva6
       .stall_issue_o        (stall_issue),
       //RVFI
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer),
-      .*
+      .rvfi_commit_pointer_o(rvfi_commit_pointer)
   );
 
   // ---------
@@ -1043,30 +1043,29 @@ module cva6
       .commit_drop_i     (commit_drop_id_commit),
       .commit_ack_o      (commit_ack_commit_id),
       .commit_macro_ack_o(commit_macro_ack),
-      .no_st_pending_i   (no_st_pending_commit),
       .waddr_o           (waddr_commit_id),
       .wdata_o           (wdata_commit_id),
       .we_gpr_o          (we_gpr_commit_id),
       .we_fpr_o          (we_fpr_commit_id),
-      .commit_lsu_o      (lsu_commit_commit_ex),
-      .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
-      .commit_tran_id_o  (lsu_commit_trans_id),
-      .amo_valid_commit_o(amo_valid_commit),
       .amo_resp_i        (amo_resp),
-      .commit_csr_o      (csr_commit_commit_ex),
       .pc_o              (pc_commit),
       .csr_op_o          (csr_op_commit_csr),
       .csr_wdata_o       (csr_wdata_commit_csr),
       .csr_rdata_i       (csr_rdata_csr_commit),
       .csr_write_fflags_o(csr_write_fflags_commit_cs),
       .csr_exception_i   (csr_exception_csr_commit),
+      .commit_lsu_o      (lsu_commit_commit_ex),
+      .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
+      .commit_tran_id_o  (lsu_commit_trans_id),
+      .amo_valid_commit_o(amo_valid_commit),
+      .no_st_pending_i   (no_st_pending_commit),
+      .commit_csr_o      (csr_commit_commit_ex),
       .fence_i_o         (fence_i_commit_controller),
       .fence_o           (fence_commit_controller),
+      .flush_commit_o    (flush_commit),
       .sfence_vma_o      (sfence_vma_commit_controller),
       .hfence_vvma_o     (hfence_vvma_commit_controller),
-      .hfence_gvma_o     (hfence_gvma_commit_controller),
-      .flush_commit_o    (flush_commit),
-      .*
+      .hfence_gvma_o     (hfence_gvma_commit_controller)
   );
 
   assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
@@ -1082,6 +1081,9 @@ module cva6
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
       .MHPMCounterNum    (MHPMCounterNum)
   ) csr_regfile_i (
+      .clk_i,
+      .rst_ni,
+      .time_irq_i,
       .flush_o                 (flush_csr_ctrl),
       .halt_csr_o              (halt_csr_ctrl),
       .commit_instr_i          (commit_instr_id_commit),
@@ -1090,17 +1092,16 @@ module cva6
       .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
       .ex_i                    (ex_commit),
       .csr_op_i                (csr_op_commit_csr),
-      .csr_write_fflags_i      (csr_write_fflags_commit_cs),
-      .dirty_fp_state_i        (dirty_fp_state),
-      .dirty_v_state_i         (dirty_v_state),
       .csr_addr_i              (csr_addr_ex_csr),
       .csr_wdata_i             (csr_wdata_commit_csr),
       .csr_rdata_o             (csr_rdata_csr_commit),
+      .dirty_fp_state_i        (dirty_fp_state),
+      .csr_write_fflags_i      (csr_write_fflags_commit_cs),
+      .dirty_v_state_i         (dirty_v_state),
       .pc_i                    (pc_commit),
       .csr_exception_o         (csr_exception_csr_commit),
       .epc_o                   (epc_commit_pcgen),
       .eret_o                  (eret),
-      .set_debug_pc_o          (set_debug_pc),
       .trap_vector_base_o      (trap_vector_base_commit_pcgen),
       .priv_lvl_o              (priv_lvl),
       .v_o                     (v),
@@ -1113,13 +1114,13 @@ module cva6
       .fprec_o                 (fprec_csr_ex),
       .vs_o                    (vs),
       .irq_ctrl_o              (irq_ctrl_csr_id),
-      .ld_st_priv_lvl_o        (ld_st_priv_lvl_csr_ex),
-      .ld_st_v_o               (ld_st_v_csr_ex),
-      .csr_hs_ld_st_inst_i     (csr_hs_ld_st_inst_ex),
       .en_translation_o        (enable_translation_csr_ex),
       .en_g_translation_o      (enable_g_translation_csr_ex),
       .en_ld_st_translation_o  (en_ld_st_translation_csr_ex),
       .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
+      .ld_st_priv_lvl_o        (ld_st_priv_lvl_csr_ex),
+      .ld_st_v_o               (ld_st_v_csr_ex),
+      .csr_hs_ld_st_inst_i     (csr_hs_ld_st_inst_ex),
       .sum_o                   (sum_csr_ex),
       .vs_sum_o                (vs_sum_csr_ex),
       .mxr_o                   (mxr_csr_ex),
@@ -1130,6 +1131,10 @@ module cva6
       .vs_asid_o               (vs_asid_csr_ex),
       .hgatp_ppn_o             (hgatp_ppn_csr_ex),
       .vmid_o                  (vmid_csr_ex),
+      .irq_i,
+      .ipi_i,
+      .debug_req_i,
+      .set_debug_pc_o          (set_debug_pc),
       .tvm_o                   (tvm_csr_id),
       .tw_o                    (tw_csr_id),
       .vtw_o                   (vtw_csr_id),
@@ -1137,8 +1142,8 @@ module cva6
       .hu_o                    (hu),
       .debug_mode_o            (debug_mode),
       .single_step_o           (single_step_csr_commit),
-      .dcache_en_o             (dcache_en_csr_nbdcache),
       .icache_en_o             (icache_en_csr),
+      .dcache_en_o             (dcache_en_csr_nbdcache),
       .acc_cons_en_o           (acc_cons_en_csr),
       .perf_addr_o             (addr_csr_perf),
       .perf_data_o             (data_csr_perf),
@@ -1148,12 +1153,7 @@ module cva6
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
       //RVFI
-      .rvfi_csr_o              (rvfi_csr),
-      .debug_req_i,
-      .ipi_i,
-      .irq_i,
-      .time_irq_i,
-      .*
+      .rvfi_csr_o              (rvfi_csr)
   );
 
   // ------------------------
@@ -1211,40 +1211,39 @@ module cva6
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t)
   ) controller_i (
+      .clk_i,
+      .rst_ni,
       // virtualization mode
       .v_i                   (v),
       // flush ports
       .set_pc_commit_o       (set_pc_ctrl_pcgen),
-      .flush_unissued_instr_o(flush_unissued_instr_ctrl_id),
       .flush_if_o            (flush_ctrl_if),
+      .flush_unissued_instr_o(flush_unissued_instr_ctrl_id),
       .flush_id_o            (flush_ctrl_id),
       .flush_ex_o            (flush_ctrl_ex),
       .flush_bp_o            (flush_ctrl_bp),
+      .flush_icache_o        (icache_flush_ctrl_cache),
+      .flush_dcache_o        (dcache_flush_ctrl_cache),
+      .flush_dcache_ack_i    (dcache_flush_ack_cache_ctrl),
       .flush_tlb_o           (flush_tlb_ctrl_ex),
       .flush_tlb_vvma_o      (flush_tlb_vvma_ctrl_ex),
       .flush_tlb_gvma_o      (flush_tlb_gvma_ctrl_ex),
-      .flush_dcache_o        (dcache_flush_ctrl_cache),
-      .flush_dcache_ack_i    (dcache_flush_ack_cache_ctrl),
-
-      .halt_csr_i       (halt_csr_ctrl),
-      .halt_acc_i       (halt_acc_ctrl),
-      .halt_o           (halt_ctrl),
+      .halt_csr_i            (halt_csr_ctrl),
+      .halt_acc_i            (halt_acc_ctrl),
+      .halt_o                (halt_ctrl),
       // control ports
-      .eret_i           (eret),
-      .ex_valid_i       (ex_commit.valid),
-      .set_debug_pc_i   (set_debug_pc),
-      .flush_csr_i      (flush_csr_ctrl),
-      .resolved_branch_i(resolved_branch),
-      .fence_i_i        (fence_i_commit_controller),
-      .fence_i          (fence_commit_controller),
-      .sfence_vma_i     (sfence_vma_commit_controller),
-      .hfence_vvma_i    (hfence_vvma_commit_controller),
-      .hfence_gvma_i    (hfence_gvma_commit_controller),
-      .flush_commit_i   (flush_commit),
-      .flush_acc_i      (flush_acc),
-
-      .flush_icache_o(icache_flush_ctrl_cache),
-      .*
+      .eret_i                (eret),
+      .ex_valid_i            (ex_commit.valid),
+      .set_debug_pc_i        (set_debug_pc),
+      .resolved_branch_i     (resolved_branch),
+      .flush_csr_i           (flush_csr_ctrl),
+      .fence_i_i             (fence_i_commit_controller),
+      .fence_i               (fence_commit_controller),
+      .sfence_vma_i          (sfence_vma_commit_controller),
+      .hfence_vvma_i         (hfence_vvma_commit_controller),
+      .hfence_gvma_i         (hfence_gvma_commit_controller),
+      .flush_commit_i        (flush_commit),
+      .flush_acc_i           (flush_acc)
   );
 
   // -------------------

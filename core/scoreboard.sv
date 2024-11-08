@@ -32,8 +32,11 @@ module scoreboard #(
     // Flush whole scoreboard - TO_BE_COMPLETED
     input  logic                                          flush_i,
     // Writeback Handling of CVXIF
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic                                          x_transaction_accepted_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic                                          x_issue_writeback_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic              [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
     // TO_BE_COMPLETED - TO_BE_COMPLETED
