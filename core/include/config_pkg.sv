@@ -215,9 +215,9 @@ package config_pkg;
     int unsigned ASID_WIDTH;
     int unsigned VMID_WIDTH;
 
-    bit          FpgaEn;
-    bit          FpgaAltera;
-    bit          TechnoCut;
+    bit FpgaEn;
+    bit FpgaAltera;
+    bit TechnoCut;
     /// Number of commit ports, i.e., maximum number of instructions that the
     /// core can retire per cycle. It can be beneficial to have more commit
     /// ports than issue ports, for the scoreboard to empty out in case one
