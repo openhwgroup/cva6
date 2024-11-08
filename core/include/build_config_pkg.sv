@@ -76,7 +76,8 @@ package build_config_pkg;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
-    cfg.TRANS_ID_BITS = CVA6Cfg.NrScoreboardEntries > 1 ? $clog2(CVA6Cfg.NrScoreboardEntries) : CVA6Cfg.NrScoreboardEntries;
+    cfg.TRANS_ID_BITS = CVA6Cfg.NrScoreboardEntries > 1 ? $clog2(CVA6Cfg.NrScoreboardEntries) :
+        CVA6Cfg.NrScoreboardEntries;
 
     cfg.FpPresent = bit'(FpPresent);
     cfg.NSX = bit'(NSX);
@@ -123,7 +124,8 @@ package build_config_pkg;
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
     cfg.ICACHE_SET_ASSOC = CVA6Cfg.IcacheSetAssoc;
-    cfg.ICACHE_SET_ASSOC_WIDTH = CVA6Cfg.IcacheSetAssoc > 1 ? $clog2(CVA6Cfg.IcacheSetAssoc) : CVA6Cfg.IcacheSetAssoc;
+    cfg.ICACHE_SET_ASSOC_WIDTH = CVA6Cfg.IcacheSetAssoc > 1 ? $clog2(CVA6Cfg.IcacheSetAssoc) :
+        CVA6Cfg.IcacheSetAssoc;
     cfg.ICACHE_INDEX_WIDTH = ICACHE_INDEX_WIDTH;
     cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
@@ -131,7 +133,8 @@ package build_config_pkg;
     cfg.DCacheType = CVA6Cfg.DCacheType;
     cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
-    cfg.DCACHE_SET_ASSOC_WIDTH = CVA6Cfg.DcacheSetAssoc > 1 ? $clog2(CVA6Cfg.DcacheSetAssoc) : CVA6Cfg.DcacheSetAssoc;
+    cfg.DCACHE_SET_ASSOC_WIDTH = CVA6Cfg.DcacheSetAssoc > 1 ? $clog2(CVA6Cfg.DcacheSetAssoc) :
+        CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
     cfg.DCACHE_TAG_WIDTH = cfg.PLEN - DCACHE_INDEX_WIDTH;
     cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
