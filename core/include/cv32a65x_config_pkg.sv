@@ -22,7 +22,7 @@ package cva6_config_pkg;
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(32),
       FpgaEn: bit'(0),
-      FpgaAltera: bit'(0),
+      FpgaAlteraEn: bit'(0),
       TechnoCut: bit'(1),
       SuperscalarEn: bit'(1),
       NrCommitPorts: unsigned'(1),

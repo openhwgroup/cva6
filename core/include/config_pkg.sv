@@ -171,7 +171,7 @@ package config_pkg;
     // Is FPGA optimization of CV32A6
     bit                          FpgaEn;
     // Is FPGA optimization for Altera FPGA
-    bit                          FpgaAltera;
+    bit                          FpgaAlteraEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
@@ -218,7 +218,7 @@ package config_pkg;
     bit FpgaEn;
     bit FpgaAltera;
     bit TechnoCut;
-    
+
     bit          SuperscalarEn;
     int unsigned NrCommitPorts;
     int unsigned NrIssuePorts;
