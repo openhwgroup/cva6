@@ -74,7 +74,7 @@ package cva6_config_pkg;
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
       FpgaEn: bit'(0),  // for Xilinx and Altera
-      FpgaAlteraEn: bit'(0), // for Altera (only)
+      FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
       NrCommitPorts: unsigned'(2),
