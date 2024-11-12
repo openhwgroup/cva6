@@ -216,7 +216,7 @@ package config_pkg;
     int unsigned VMID_WIDTH;
 
     bit FpgaEn;
-    bit FpgaAltera;
+    bit FpgaAlteraEn;
     bit TechnoCut;
 
     bit          SuperscalarEn;
