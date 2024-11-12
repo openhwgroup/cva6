@@ -42,7 +42,7 @@ package build_config_pkg;
     cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
-    cfg.FpgaAltera = CVA6Cfg.FpgaAltera;
+    cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
 
     cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn;
@@ -76,8 +76,7 @@ package build_config_pkg;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
-    cfg.TRANS_ID_BITS = CVA6Cfg.NrScoreboardEntries > 1 ? $clog2(CVA6Cfg.NrScoreboardEntries) :
-        CVA6Cfg.NrScoreboardEntries;
+    cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);
 
     cfg.FpPresent = bit'(FpPresent);
     cfg.NSX = bit'(NSX);

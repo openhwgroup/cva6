@@ -50,9 +50,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigNrScoreboardEntries = 4;
 
-  localparam CVA6ConfigFpgaEn = 1;
-  localparam CVA6ConfigFpgaAltera = 0; //usually disabled, default is xilinx. Needs FpgaEn =1 to be effective
-
   localparam CVA6ConfigNrLoadPipeRegs = 1;
   localparam CVA6ConfigNrStorePipeRegs = 0;
   localparam CVA6ConfigNrLoadBufEntries = 2;
@@ -76,8 +73,8 @@ package cva6_config_pkg;
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(32),
-      FpgaEn: bit'(CVA6ConfigFpgaEn),
-      FpgaAltera: bit'(CVA6ConfigFpgaAltera),
+      FpgaEn: bit'(1),  // for Xilinx and Altera
+      FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
       NrCommitPorts: unsigned'(1),
