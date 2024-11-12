@@ -168,7 +168,7 @@ package config_pkg;
     int unsigned                 FetchUserEn;
     // Width of fetch user field
     int unsigned                 FetchUserWidth;
-    // Is FPGA optimization of CV32A6
+    // Is FPGA optimization of CV32A6 for Xilinx and Altera
     bit                          FpgaEn;
     // Is FPGA optimization for Altera FPGA
     bit                          FpgaAlteraEn;
