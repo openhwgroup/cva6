@@ -29,10 +29,10 @@ def main():
 def check_provided_args():
     if len(sys.argv) != 2 or not os.path.exists(sys.argv[1]):
         print("Usage : python report_tandem.py path/to/log/dir", file=sys.stderr)
-        sys.exit("No valid log directory provided !")
+        sys.exit("No valid log directory provided!")
 
     if len(list(glob.iglob(sys.argv[1] + "/*.yaml"))) == 0:
-        sys.exit("No reports in log directory !")
+        sys.exit("No reports in log directory!")
 
 
 def add_table_legend(metrics_table, with_logs):
@@ -89,8 +89,7 @@ def add_test_row(report_file, metrics_table, with_logs):
         metrics_table.add_fail(*row)
         return 0
     except (TypeError, KeyError):
-        print("Invalid yaml file in log directory ! Is the log directory correct ?")
-        sys.exit(1)
+        sys.exit("Invalid yaml file in log directory! Is the log directory correct?")
 
 def report(metrics_table, passed_test_count, total_test_count):
     report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
