@@ -396,6 +396,7 @@ package config_pkg;
     obi_pkg::obi_cfg_t ObiAmobusCfg;
     obi_pkg::obi_cfg_t ObiLoadbusCfg;
     obi_pkg::obi_cfg_t ObiMmuPtwbusCfg;
+    obi_pkg::obi_cfg_t ObiZcmtbusCfg;
 
     bit PipelineOnly;
   } cva6_cfg_t;

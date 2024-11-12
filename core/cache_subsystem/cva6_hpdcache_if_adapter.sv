@@ -104,24 +104,24 @@ module cva6_hpdcache_if_adapter
     //  LOAD request
     //  {{{
     if (IsLoadPort == 1'b1) begin : load_port_gen
-      assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
-          CVA6Cfg,
-          {
-            {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}
-            , load_req_i.address_tag
-            , {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
-          }
-      );
+
+      logic [1:0] load_data_size;
+
+      if (CVA6Cfg.XLEN == 64) begin
+        assign load_data_size = ariane_pkg::size_gen(load_req_i.be);
+      end else begin
+        assign load_data_size = ariane_pkg::size_gen_32(load_req_i.be);
+      end
 
       //    Request forwarding
       assign hpdcache_req_valid_o = load_req_i.data_req;
       assign hpdcache_req.addr_offset = load_req_i.address_index;
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
-      assign hpdcache_req.be = load_req_i.data_be;
-      assign hpdcache_req.size = load_req_i.data_size;
+      assign hpdcache_req.be = load_req_i.be;
+      assign hpdcache_req.size = load_data_size;
       assign hpdcache_req.sid = hpdcache_req_sid_i;
-      assign hpdcache_req.tid = load_req_i.data_id;
+      assign hpdcache_req.tid = load_req_i.aid;
       assign hpdcache_req.need_rsp = 1'b1;
       assign hpdcache_req.phys_indexed = 1'b0;
       assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
@@ -130,16 +130,26 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
       assign hpdcache_req_abort_o = load_req_i.kill_req;
-      assign hpdcache_req_tag_o = load_req_i.address_tag;
-      assign hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable;
+      assign hpdcache_req_tag_o = obi_load_req_i.a.addr[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+      assign hpdcache_req_pma_o.uncacheable = !obi_load_req_i.a.a_optional.memtype[1];
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
+      assign load_rsp_o.gnt = hpdcache_req_ready_i;
+
       //    Response forwarding
-      assign load_rsp_o.data_rvalid = hpdcache_rsp_valid_i;
-      assign load_rsp_o.data_rdata = hpdcache_rsp_i.rdata;
-      assign load_rsp_o.data_rid = hpdcache_rsp_i.tid;
-      assign load_rsp_o.data_gnt = hpdcache_req_ready_i;
+      assign obi_load_rsp_o.gnt = 1'b1;  //if hpdcache is always ready to accept tag
+      assign obi_load_rsp_o.gntpar = 1'b0;
+      assign obi_load_rsp_o.rvalid = hpdcache_rsp_valid_i;
+      assign obi_load_rsp_o.rvalidpar = !hpdcache_rsp_valid_i;
+      assign obi_load_rsp_o.r.rid = hpdcache_rsp_i.tid;
+      assign obi_load_rsp_o.r.r_optional.exokay = '0;
+      assign obi_load_rsp_o.r.r_optional.rchk = '0;
+      assign obi_load_rsp_o.r.err = '0;
+      assign obi_load_rsp_o.r.rdata = hpdcache_rsp_i.rdata;
+      assign obi_load_rsp_o.r.r_optional.ruser = '0;
 
       //  Assertions
       //  {{{
@@ -150,7 +160,9 @@ module cva6_hpdcache_if_adapter
       //    pragma translate_on
       //  }}}
     end  //  }}}
+
          //  {{{
+
     else if (IsMmuPtwPort == 1'b1) begin : mmu_ptw_port_gen
       //  MMU request
       //  {{{

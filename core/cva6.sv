@@ -213,6 +213,17 @@ module cva6
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
 
+    // D$ load requests
+    localparam type load_req_t = struct packed {
+      logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
+      logic                                  req;
+      logic [(CVA6Cfg.XLEN/8)-1:0]           be;
+      logic [CVA6Cfg.IdWidth-1:0]            aid;
+      logic                                  kill_req;
+    },
+
+    localparam type load_rsp_t = struct packed {logic gnt;},
+
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
       logic [CVA6Cfg.AxiIdWidth-1:0]   id;
@@ -340,8 +351,7 @@ module cva6
   //`OBI_TYPEDEF_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg)
 
   //temp
-  localparam type load_req_t = dbus_req_t;
-  localparam type load_rsp_t = dbus_rsp_t;
+
   localparam type obi_mmu_ptw_req_t = dbus_req_t;
   localparam type obi_mmu_ptw_rsp_t = dbus_rsp_t;
   localparam type obi_zcmt_req_t = dbus_req_t;
@@ -1535,9 +1545,9 @@ module cva6
       .commit_ack(commit_ack),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
-      .ld_valid(ex_stage_i.lsu_i.i_load_unit.load_req_o.tag_valid),
+      .ld_valid(ex_stage_i.lsu_i.i_load_unit.obi_load_req_o.req),
       .ld_kill(ex_stage_i.lsu_i.i_load_unit.load_req_o.kill_req),
-      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.paddr_i),
+      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.obi_load_req_o.a.addr),
       .resolve_branch(resolved_branch),
       .commit_exception(commit_stage_i.exception_o),
       .priv_lvl(priv_lvl),
