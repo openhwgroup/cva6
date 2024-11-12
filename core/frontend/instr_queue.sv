@@ -461,7 +461,7 @@ module instr_queue
     // Make sure we don't save any instructions if we couldn't save the address
     assign push_instr_fifo[i] = push_instr[i] & ~address_overflow;
     cva6_fifo_v3 #(
-        .FPGA_ALTERA(CVA6Cfg.FpgaAltera),
+        .FPGA_ALTERA(CVA6Cfg.FpgaAlteraEn),
         .DEPTH(ariane_pkg::FETCH_FIFO_DEPTH),
         .dtype(instr_data_t),
         .FPGA_EN(CVA6Cfg.FpgaEn)
@@ -490,7 +490,7 @@ module instr_queue
   end
 
   cva6_fifo_v3 #(
-      .FPGA_ALTERA(CVA6Cfg.FpgaAltera),
+      .FPGA_ALTERA(CVA6Cfg.FpgaAlteraEn),
       .DEPTH      (ariane_pkg::FETCH_ADDR_FIFO_DEPTH),
       .DATA_WIDTH (CVA6Cfg.VLEN),
       .FPGA_EN    (CVA6Cfg.FpgaEn)
