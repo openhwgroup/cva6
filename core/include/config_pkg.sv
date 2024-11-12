@@ -168,8 +168,10 @@ package config_pkg;
     int unsigned                 FetchUserEn;
     // Width of fetch user field
     int unsigned                 FetchUserWidth;
-    // Is FPGA optimization of CV32A6
+    // Is FPGA optimization of CV32A6 for Xilinx and Altera
     bit                          FpgaEn;
+    // Is FPGA optimization for Altera FPGA
+    bit                          FpgaAlteraEn;
     // Is Techno Cut instanciated
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
@@ -214,6 +216,7 @@ package config_pkg;
     int unsigned VMID_WIDTH;
 
     bit FpgaEn;
+    bit FpgaAlteraEn;
     bit TechnoCut;
 
     bit          SuperscalarEn;
