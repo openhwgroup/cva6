@@ -218,11 +218,7 @@ package config_pkg;
     bit FpgaEn;
     bit FpgaAltera;
     bit TechnoCut;
-    /// Number of commit ports, i.e., maximum number of instructions that the
-    /// core can retire per cycle. It can be beneficial to have more commit
-    /// ports than issue ports, for the scoreboard to empty out in case one
-    /// instruction stalls a little longer.
-
+    
     bit          SuperscalarEn;
     int unsigned NrCommitPorts;
     int unsigned NrIssuePorts;
