@@ -137,7 +137,7 @@ module perf_counters
         5'b01111: events[i] = if_empty_i;  //Instruction fetch Empty
         5'b10000: events[i] = fetch_obi_req_i.req;  //L1 I-Cache accesses
         5'b10001:
-        events[i] = obi_mmu_ptw_req_i.data_req || load_req_i.data_req || obi_store_req_i.req || obi_amo_req_i.req;//L1 D-Cache accesses
+        events[i] = obi_mmu_ptw_req_i.data_req || obi_load_req_i.req || obi_store_req_i.req || obi_amo_req_i.req;//L1 D-Cache accesses
         5'b10010: begin
           events[i] = 0;
           if (l1_dcache_miss_i) begin

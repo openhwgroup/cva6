@@ -57,7 +57,7 @@ package build_config_pkg;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
     cfg.MEM_TID_WIDTH = CVA6Cfg.AxiIdWidth;  //CVA6Cfg.MemTidWidth; FIXME HPDCACHE related
-    cfg.NrLoadBufEntries = CVA6Cfg.NrLoadBufEntries; //cfg.ObiVersion == 0 ? CVA6Cfg.NrLoadBufEntries : 1;
+    cfg.NrLoadBufEntries = cfg.ObiVersion == 0 ? CVA6Cfg.NrLoadBufEntries : 1;
     cfg.RVF = CVA6Cfg.RVF;
     cfg.RVD = CVA6Cfg.RVD;
     cfg.XF16 = CVA6Cfg.XF16;

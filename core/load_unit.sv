@@ -13,10 +13,12 @@
 // Date: 15.08.2018
 // Description: Load Unit, takes care of all load requests
 //
-// Contributor: Cesar Fuguet <cesar.fuguettortolero@cea.fr>, CEA List
-// Date: August 29, 2023
-// Modification: add support for multiple outstanding load operations
-//               to the data cache
+// Additional contributions by:
+// August, 2023 - Cesar Fuguet <cesar.fuguettortolero@cea.fr>, CEA List
+//          Add support for multiple outstanding load operations
+//          to the data cache
+// November, 2024 - Yannick Casamatta, Thales
+//          OBI Protocol
 
 module load_unit
   import ariane_pkg::*;
@@ -87,18 +89,6 @@ module load_unit
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i
 );
-  enum logic [3:0] {
-    IDLE,
-    WAIT_GNT,
-    SEND_TAG,
-    WAIT_PAGE_OFFSET,
-    ABORT_TRANSACTION,
-    ABORT_TRANSACTION_NI,
-    WAIT_TRANSLATION,
-    WAIT_FLUSH,
-    WAIT_WB_EMPTY
-  }
-      state_d, state_q;
 
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
@@ -125,14 +115,17 @@ module load_unit
   ldbuf_t [CVA6Cfg.NrLoadBufEntries-1:0] ldbuf_q;
   logic ldbuf_empty, ldbuf_full;
   ldbuf_id_t ldbuf_free_index;
-  logic      ldbuf_w;
-  ldbuf_t    ldbuf_wdata;
-  ldbuf_id_t ldbuf_windex;
+  logic ldbuf_w, ldbuf_w_q;
+  ldbuf_t ldbuf_wdata;
+  ldbuf_id_t ldbuf_windex, ldbuf_windex_q;
   logic      ldbuf_r;
   ldbuf_t    ldbuf_rdata;
   ldbuf_id_t ldbuf_rindex;
   ldbuf_id_t ldbuf_last_id_q;
 
+  logic kill_req_d, kill_req_q;
+  logic [CVA6Cfg.PLEN-1:0] paddr_q;
+  logic [(CVA6Cfg.XLEN/8)-1:0] be_q;
   assign ldbuf_full = &ldbuf_valid_q;
 
   //
@@ -169,6 +162,10 @@ module load_unit
     if (ldbuf_r && (!LDBUF_FALLTHROUGH || !ldbuf_w)) begin
       ldbuf_valid_d[ldbuf_rindex] = 1'b0;
     end
+    // Free on exception
+    if ((ldbuf_w_q && ex_i.valid)) begin
+      ldbuf_valid_d[ldbuf_windex_q] = 1'b0;
+    end
     //  Track a new outstanding operation in the load buffer
     if (ldbuf_w) begin
       ldbuf_flushed_d[ldbuf_windex] = 1'b0;
@@ -186,8 +183,10 @@ module load_unit
       ldbuf_flushed_q <= ldbuf_flushed_d;
       ldbuf_valid_q   <= ldbuf_valid_d;
       if (ldbuf_w) begin
-        ldbuf_last_id_q       <= ldbuf_windex;
-        ldbuf_q[ldbuf_windex] <= ldbuf_wdata;
+        ldbuf_last_id_q                      <= ldbuf_windex;
+        ldbuf_q[ldbuf_windex].trans_id       <= lsu_ctrl_i.trans_id;
+        ldbuf_q[ldbuf_windex].address_offset <= lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0];
+        ldbuf_q[ldbuf_windex].operation      <= lsu_ctrl_i.operation;
       end
     end
   end
@@ -200,22 +199,14 @@ module load_unit
   assign hlvx_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
   // feed-through the transformed instruction for mmu
   assign tinst_o = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;
-  // this is a read-only interface so set the write enable to 0
-  assign load_req_o.data_we = 1'b0;
-  assign load_req_o.data_wdata = '0;
-  // compose the load buffer write data, control is handled in the FSM
-  assign ldbuf_wdata = {
-    lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
-  };
+
   // output address
   // we can now output the lower 12 bit as the index to the cache
   assign load_req_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-  // translation from last cycle, again: control is handled in the FSM
-  assign load_req_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                              CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                              CVA6Cfg.DCACHE_INDEX_WIDTH];
+  assign load_req_o.be = lsu_ctrl_i.be;
+
   // request id = index of the load buffer's entry
-  assign load_req_o.data_id = ldbuf_windex;
+  assign load_req_o.aid = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
@@ -223,252 +214,176 @@ module load_unit
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
 
+  // CHECK PMA regions
+
+  logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
+  assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+  );
+
+  logic paddr_nonidempotent;
+  assign paddr_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+  );
+
   // Check that NI operations follow the necessary conditions
-  logic paddr_ni;
   logic not_commit_time;
   logic inflight_stores;
   logic stall_ni;
-  assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
-  );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
+
+  typedef enum logic [1:0] {
+    TRANSPARENT,
+    REGISTRED
+  } obi_a_state_e;
+  obi_a_state_e obi_a_state_d, obi_a_state_q;
 
   // ---------------
   // Load Control
   // ---------------
-  always_comb begin : load_control
-    automatic logic accept_req;
 
-    // default assignments
-    state_d              = state_q;
-    translation_req_o    = 1'b0;
-    load_req_o.data_req  = 1'b0;
-    // tag control
-    load_req_o.kill_req  = 1'b0;
-    load_req_o.tag_valid = 1'b0;
-    load_req_o.data_be   = lsu_ctrl_i.be;
-    load_req_o.data_size = extract_transfer_size(lsu_ctrl_i.operation);
-    pop_ld_o             = 1'b0;
+  assign load_req_o.kill_req = kill_req_q || (ldbuf_w_q && ex_i.valid) || flush_i;
 
-    // In IDLE and SEND_TAG states, this unit can accept a new load request
-    // when the load buffer is not full or if there is a response and the
-    // load buffer is in fall-through mode
-    accept_req           = (valid_i && (!ldbuf_full || (LDBUF_FALLTHROUGH && ldbuf_r)));
+  // custom protocol FSM (combi)
 
-    case (state_q)
-      IDLE: begin
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does then stall and wait
-          if (!page_offset_matches_i) begin
-            // make a load request to memory
-            load_req_o.data_req = 1'b1;
-            // we got no data grant so wait for the grant before sending the tag
-            if (!load_rsp_i.data_gnt) begin
-              state_d = WAIT_GNT;
-            end else begin
-              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                state_d = ABORT_TRANSACTION;
-              end else begin
-                if (!stall_ni) begin
-                  // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                  state_d  = SEND_TAG;
-                  pop_ld_o = 1'b1;
-                  // translation valid but this is to NC and the WB is not yet empty.
-                end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                  state_d = ABORT_TRANSACTION_NI;
-                end
-              end
-            end
-          end else begin
-            // wait for the store buffer to train and the page offset to not match anymore
-            state_d = WAIT_PAGE_OFFSET;
-          end
-        end
-      end
-
-      // wait here for the page offset to not match anymore
-      WAIT_PAGE_OFFSET: begin
-        // we make a new request as soon as the page offset does not match anymore
-        if (!page_offset_matches_i) begin
-          state_d = WAIT_GNT;
-        end
-      end
-
-      WAIT_GNT: begin
-        // keep the translation request up
-        translation_req_o   = 1'b1;
-        // keep the request up
-        load_req_o.data_req = 1'b1;
-        // we finally got a data grant
-        if (load_rsp_i.data_gnt) begin
-          // so we send the tag in the next cycle
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d = ABORT_TRANSACTION;
-          end else begin
-            if (!stall_ni) begin
-              // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-              state_d  = SEND_TAG;
-              pop_ld_o = 1'b1;
-              // translation valid but this is to NC and the WB is not yet empty.
-            end else if (CVA6Cfg.NonIdemPotenceEn) begin
-              state_d = ABORT_TRANSACTION_NI;
-            end
-          end
-
-        end
-        // otherwise we keep waiting on our grant
-      end
-      // we know for sure that the tag we want to send is valid
-      SEND_TAG: begin
-        load_req_o.tag_valid = 1'b1;
-        state_d = IDLE;
-
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does stall and wait
-          if (!page_offset_matches_i) begin
-            // make a load request to memory
-            load_req_o.data_req = 1'b1;
-            // we got no data grant so wait for the grant before sending the tag
-            if (!load_rsp_i.data_gnt) begin
-              state_d = WAIT_GNT;
-            end else begin
-              // we got a grant so we can send the tag in the next cycle
-              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                state_d = ABORT_TRANSACTION;
-              end else begin
-                if (!stall_ni) begin
-                  // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                  state_d  = SEND_TAG;
-                  pop_ld_o = 1'b1;
-                  // translation valid but this is to NC and the WB is not yet empty.
-                end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                  state_d = ABORT_TRANSACTION_NI;
-                end
-              end
-            end
-          end else begin
-            // wait for the store buffer to train and the page offset to not match anymore
-            state_d = WAIT_PAGE_OFFSET;
-          end
-        end
-        // ----------
-        // Exception
-        // ----------
-        // if we got an exception we need to kill the request immediately
-        if (ex_i.valid) begin
-          load_req_o.kill_req = 1'b1;
-        end
-      end
-
-      WAIT_FLUSH: begin
-        // the D$ arbiter will take care of presenting this to the memory only in case we
-        // have an outstanding request
-        load_req_o.kill_req = 1'b1;
-        load_req_o.tag_valid = 1'b1;
-        // we've killed the current request so we can go back to idle
-        state_d = IDLE;
-      end
-
-      default: begin
-        // abort the previous request - free the D$ arbiter
-        // we are here because of a TLB miss, we need to abort the current request and give way for the
-        // PTW walker to satisfy the TLB miss
-        if (state_q == ABORT_TRANSACTION && CVA6Cfg.MmuPresent) begin
-          load_req_o.kill_req = 1'b1;
-          load_req_o.tag_valid = 1'b1;
-          // wait until the WB is empty
-          state_d = WAIT_TRANSLATION;
-        end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
-          load_req_o.kill_req = 1'b1;
-          load_req_o.tag_valid = 1'b1;
-          // re-do the request
-          state_d = WAIT_WB_EMPTY;
-        end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
-          // Wait until the write-back buffer is empty in the data cache.
-          // the write buffer is empty, so lets go and re-do the translation.
-          state_d = WAIT_TRANSLATION;
-        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
-          translation_req_o = 1'b1;
-          // we've got a hit and we can continue with the request process
-          if (dtlb_hit_i) state_d = WAIT_GNT;
-
-          // we got an exception
-          if (ex_i.valid) begin
-            // the next state will be the idle state
-            state_d  = IDLE;
-            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            pop_ld_o = ~load_rsp_i.data_rvalid;
-          end
-        end else begin
-          state_d = IDLE;
-        end
-      end
-    endcase
-
-    // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
-    if (flush_i) begin
-      state_d = WAIT_FLUSH;
-    end
-  end
-
-  // track the load data for later usage
-  assign ldbuf_w = load_req_o.data_req & load_rsp_i.data_gnt;
-
-  // ---------------
-  // Retire Load
-  // ---------------
-  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(load_rsp_i.data_rid) : 1'b0,
-      ldbuf_rdata = ldbuf_q[ldbuf_rindex];
-
-  // decoupled rvalid process
-  always_comb begin : rvalid_output
-    //  read the pending load buffer
-    ldbuf_r    = load_rsp_i.data_rvalid;
-    trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
+  always_comb begin : p_fsm_common
+    // default assignment
+    load_req_o.req = '0;
+    kill_req_d = 1'b0;
+    ldbuf_w = 1'b0;
+    pop_ld_o = 1'b0;
+    translation_req_o = 1'b0;
+    //response
+    trans_id_o = 1'b0;
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
 
-    // we got an rvalid and it's corresponding request was not flushed
-    if (load_rsp_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
-      // if the response corresponds to the last request, check that we are not killing it
-      if ((ldbuf_last_id_q != ldbuf_rindex) || !load_req_o.kill_req) valid_o = 1'b1;
-      // the output is also valid if we got an exception. An exception arrives one cycle after
-      // dtlb_hit_i is asserted, i.e. when we are in SEND_TAG. Otherwise, the exception
-      // corresponds to the next request that is already being translated (see below).
-      if (ex_i.valid && (state_q == SEND_TAG)) begin
-        valid_o    = 1'b1;
-        ex_o.valid = 1'b1;
+    if (!flush_i) begin
+      //EXCEPTION PENDING
+      if (ldbuf_w_q && ex_i.valid) begin
+        // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
+        // we got an rvalid and it's corresponding request was not flushed
+        if ((obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex]) && (ldbuf_rindex != ldbuf_windex_q)) begin
+          trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
+          valid_o    = 1'b1;
+          ex_o.valid = 1'b0;
+          // retire load that cause exception
+        end else begin
+          trans_id_o = ldbuf_q[ldbuf_windex_q].trans_id;
+          valid_o    = 1'b1;
+          ex_o.valid = 1'b1;
+          //pop_ld_o = 1'b1;  // release lsu_bypass fifo
+        end
+        //NO EXCEPTION PENDING
+      end else begin
+        // REQUEST
+        if (valid_i && (!ldbuf_full)) begin
+          translation_req_o = 1'b1;
+          if (!page_offset_matches_i) begin
+            load_req_o.req = 1'b1;
+            if (load_rsp_i.gnt) begin
+              if ((CVA6Cfg.MmuPresent && !dtlb_hit_i) || stall_ni || (obi_a_state_q == REGISTRED)) begin
+                kill_req_d = 1'b1;  // next cycle kill s1
+              end else begin
+                ldbuf_w  = 1'b1;  // record request into outstanding load fifo
+                pop_ld_o = 1'b1;  // release lsu_bypass fifo
+              end
+            end
+          end
+        end
+        // RETIRE LOAD
+        // we got an rvalid and it's corresponding request was not flushed
+        if (obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
+          trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
+          valid_o    = 1'b1;
+          ex_o.valid = 1'b0;
+        end
       end
-    end
-
-    // an exception occurred during translation
-    // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
-    // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
-    // round in the load FSM
-    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !load_rsp_i.data_rvalid && ex_i.valid && valid_i) begin
-      trans_id_o = lsu_ctrl_i.trans_id;
-      valid_o = 1'b1;
-      ex_o.valid = 1'b1;
     end
   end
 
+  //default obi state registred
+
+  assign obi_load_req_o.reqpar = !obi_load_req_o.req;
+  assign obi_load_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr_i : paddr_q;
+  assign obi_load_req_o.a.we = '0;
+  assign obi_load_req_o.a.be = be_q;
+  assign obi_load_req_o.a.wdata = '0;
+  assign obi_load_req_o.a.aid = ldbuf_windex_q;
+  assign obi_load_req_o.a.a_optional.auser = '0;
+  assign obi_load_req_o.a.a_optional.wuser = '0;
+  assign obi_load_req_o.a.a_optional.atop = '0;
+  assign obi_load_req_o.a.a_optional.memtype[0] = '0;
+  assign obi_load_req_o.a.a_optional.memtype[1] = paddr_is_cacheable_q;
+  assign obi_load_req_o.a.a_optional.mid = '0;
+  assign obi_load_req_o.a.a_optional.prot = '0;
+  assign obi_load_req_o.a.a_optional.dbg = '0;
+  assign obi_load_req_o.a.a_optional.achk = '0;
+
+  assign obi_load_req_o.rready = '1;  //always ready
+  assign obi_load_req_o.rreadypar = '0;
+
+  always_comb begin : p_fsm_obi_a
+    // default assignment
+    obi_a_state_d = obi_a_state_q;
+    obi_load_req_o.req    = 1'b0;
+
+    unique case (obi_a_state_q)
+      TRANSPARENT: begin
+        if (ldbuf_w_q && !(ldbuf_w_q && ex_i.valid)) begin
+          obi_load_req_o.req = 1'b1;
+          if (!obi_load_rsp_i.gnt) begin
+            obi_a_state_d = REGISTRED;
+          end
+        end
+      end
+
+      REGISTRED: begin
+        obi_load_req_o.req = 1'b1;
+        if (obi_load_rsp_i.gnt) begin
+          obi_a_state_d = TRANSPARENT;
+        end
+      end
+
+      default: begin
+        // we should never get here
+        obi_a_state_d = TRANSPARENT;
+      end
+    endcase
+  end
 
   // latch physical address for the tag cycle (one cycle after applying the index)
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      state_q <= IDLE;
+      obi_a_state_q <= TRANSPARENT;
+      paddr_q <= '0;
+      be_q <= '0;
+      paddr_is_cacheable_q <= '0;
+      kill_req_q <= '0;
+      ldbuf_windex_q <= '0;
+      ldbuf_w_q <= '0;
     end else begin
-      state_q <= state_d;
+      obi_a_state_q <= obi_a_state_d;
+      paddr_q <= paddr_i;
+      be_q <= lsu_ctrl_i.be;
+      paddr_is_cacheable_q <= paddr_is_cacheable;
+      kill_req_q <= kill_req_d;
+      ldbuf_windex_q <= ldbuf_windex;
+      ldbuf_w_q <= ldbuf_w;
     end
   end
+
+
+  // ---------------
+  // Retire Load
+  // ---------------
+  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(obi_load_rsp_i.r.rid) : 1'b0;
+  assign ldbuf_rdata = ldbuf_q[ldbuf_rindex];
+
+  //  read the pending load buffer
+  assign ldbuf_r    = obi_load_rsp_i.rvalid;
 
   // ---------------
   // Sign Extend
@@ -476,7 +391,7 @@ module load_unit
   logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
-  assign shifted_data = load_rsp_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
+  assign shifted_data = obi_load_rsp_i.r.rdata >> {ldbuf_rdata.address_offset, 3'b000};
 
   /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
@@ -506,7 +421,7 @@ module load_unit
                                                                                                                          ldbuf_rdata.address_offset;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
-    assign rdata_sign_bits[i] = load_rsp_i.data_rdata[(i+1)*8-1];
+    assign rdata_sign_bits[i] = obi_load_rsp_i.r.rdata[(i+1)*8-1];
   end
 
 
@@ -559,15 +474,15 @@ module load_unit
   // check invalid offsets, but only issue a warning as these conditions actually trigger a load address misaligned exception
   addr_offset0 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_wdata.address_offset < 5)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 5)
   else $fatal(1, "invalid address offset used with {LW, LWU}");
   addr_offset1 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_wdata.address_offset < 7)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 7)
   else $fatal(1, "invalid address offset used with {LH, LHU}");
   addr_offset2 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_wdata.address_offset < 8)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 8)
   else $fatal(1, "invalid address offset used with {LB, LBU}");
   //pragma translate_on
 
