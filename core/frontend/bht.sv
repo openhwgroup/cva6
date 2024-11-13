@@ -179,8 +179,10 @@ module bht #(
       for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
 
         //When synchronous RAM is used, addresses are needed as soon as available
-        if (CVA6Cfg.FpgaAlteraEn) bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
-        if (CVA6Cfg.FpgaAlteraEn) bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
+        if (CVA6Cfg.FpgaAlteraEn)
+          bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
+        if (CVA6Cfg.FpgaAlteraEn)
+          bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
 
         if (check_update_row_index == i) begin
           //When asynchronous RAM is used, the address can be updated on the cycle when data is read
@@ -216,7 +218,8 @@ module bht #(
           bht_prediction_o[i] = '0;
         end else begin
           //When asynchronous RAM is used, addresses can be calculated on the same cycle as data is read
-          if (!CVA6Cfg.FpgaAlteraEn) bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
+          if (!CVA6Cfg.FpgaAlteraEn)
+            bht_ram_read_address_0[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = index;
           //When synchronous RAM is used and data is read right after writing, we need some buffering
           // This is one cycle of buffering
           if (CVA6Cfg.FpgaAlteraEn && bht_updated_valid[i][0] && vpc_q == bht_updated_pc[i][0]) begin
