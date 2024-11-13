@@ -193,4 +193,10 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
 
+
+
+//For TIP
+${CVA6_REPO_DIR}/core/cva6_tip.sv
+${CVA6_REPO_DIR}/core/encoder_16_4.sv
+
 // end of manifest

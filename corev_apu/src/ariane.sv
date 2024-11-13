@@ -22,6 +22,7 @@ module ariane import ariane_pkg::*; #(
     logic csr;
     logic instr;
   },
+<<<<<<< HEAD
   // CVXIF Types
   localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
   localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
@@ -37,6 +38,9 @@ module ariane import ariane_pkg::*; #(
   localparam type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
   localparam type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
   // AXI Types
+=======
+  parameter type tip_instr_t = logic,
+>>>>>>> 783ea21d (feat: Trace Ingress Port)
   parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
@@ -61,6 +65,10 @@ module ariane import ariane_pkg::*; #(
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output rvfi_probes_t rvfi_probes_o,
+
+  //Tracing port: TIP
+  output tip_instr_t [CVA6Cfg.NrCommitPorts-1:0] tip_o,
+
   // memory side
   output noc_req_t                     noc_req_o,
   input  noc_resp_t                    noc_resp_i
@@ -105,7 +113,8 @@ module ariane import ariane_pkg::*; #(
     .cvxif_req_o          ( cvxif_req                 ),
     .cvxif_resp_i         ( cvxif_resp                ),
     .noc_req_o            ( noc_req_o                 ),
-    .noc_resp_i           ( noc_resp_i                )
+    .noc_resp_i           ( noc_resp_i                ),
+    .tip_o                (tip_o                      )
   );
 
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor

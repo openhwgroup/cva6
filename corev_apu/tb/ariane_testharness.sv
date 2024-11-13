@@ -55,6 +55,17 @@ module ariane_testharness #(
     rvfi_probes_instr_t instr;
   };
 
+  //TIP parameter
+  parameter type tip_instr_t = struct packed {
+    logic [config_pkg::NRET-1:0]                  iretire;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]        iaddr; //PC address
+    logic [config_pkg::NRET*riscv::XLEN-1:0]       time_t;
+    logic [config_pkg::NRET*3-1:0]                   priv;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]        cause;
+    logic [config_pkg::NRET*riscv::XLEN-1:0]	       tval;
+    logic [config_pkg::NRET*(riscv::XLEN/2)-1:0]    itype;
+  };
+
   // disable test-enable
   logic        test_en;
   logic        ndmreset;
@@ -625,6 +636,7 @@ module ariane_testharness #(
   rvfi_probes_t rvfi_probes;
   rvfi_csr_t rvfi_csr;
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+  tip_instr_t  [CVA6Cfg.NrCommitPorts-1:0]     tip_out;
 
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
@@ -632,7 +644,8 @@ module ariane_testharness #(
     .rvfi_probes_csr_t    ( rvfi_probes_csr_t   ),
     .rvfi_probes_t        ( rvfi_probes_t       ),
     .noc_req_t            ( ariane_axi::req_t   ),
-    .noc_resp_t           ( ariane_axi::resp_t  )
+    .noc_resp_t           ( ariane_axi::resp_t  ),
+    .tip_instr_t          ( tip_instr_t         )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
@@ -649,7 +662,8 @@ module ariane_testharness #(
     .debug_req_i          ( debug_req_core      ),
 `endif
     .noc_req_o            ( axi_ariane_req      ),
-    .noc_resp_i           ( axi_ariane_resp     )
+    .noc_resp_i           ( axi_ariane_resp     ),
+    .tip_o                ( tip_out             )
   );
 
   `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
@@ -823,4 +837,7 @@ module ariane_testharness #(
     .CSYSACK('0)
   );
 `endif
+
+
+
 endmodule

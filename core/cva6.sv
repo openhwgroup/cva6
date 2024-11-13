@@ -31,6 +31,20 @@ module cva6
       rvfi_probes_instr_t instr;
     },
 
+
+    //TIP
+    parameter bit IsTIP = bit'(1),
+
+    parameter type tip_instr_t = struct packed {
+      logic [config_pkg::NRET-1:0]                  iretire;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]        iaddr; //PC address
+      logic [config_pkg::NRET*riscv::XLEN-1:0]       time_t;
+      logic [config_pkg::NRET*3-1:0]                   priv;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]        cause;
+      logic [config_pkg::NRET*riscv::XLEN-1:0]	       tval;
+      logic [config_pkg::NRET*(riscv::XLEN/2)-1:0]    itype;
+    },
+
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
@@ -314,6 +328,8 @@ module cva6
     input logic debug_req_i,
     // Probes to build RVFI, can be left open when not used - RVFI
     output rvfi_probes_t rvfi_probes_o,
+    //TIP interface
+    output tip_instr_t [CVA6Cfg.NrCommitPorts-1:0] tip_o,
     // CVXIF request - SUBSYSTEM
     output cvxif_req_t cvxif_req_o,
     // CVXIF response - SUBSYSTEM
@@ -1738,5 +1754,36 @@ module cva6
     else $fatal(1, "Accelerator is not supported by superscalar pipeline");
   end
   //pragma translate_on
+
+
+if (IsTIP) begin
+
+//CVA6 Trace Ingress Port
+  cva6_tip #(
+      .CVA6Cfg            (CVA6Cfg),
+      .exception_t        (exception_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .rvfi_probes_csr_t  (rvfi_probes_csr_t),
+      .bp_resolve_t(bp_resolve_t),
+      .tip_instr_t(tip_instr_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_t      (rvfi_probes_t)
+  ) i_cva6_tip (
+      .clk_i         (clk_i),
+      .commit_instr_i(commit_instr_id_commit),
+      .ex_commit_i   (ex_commit),
+      .priv_lvl_i    (priv_lvl),
+      .commit_ack_i(commit_macro_ack),
+      .debug_mode_i(debug_mode),
+      .csr_i(rvfi_csr),
+      .eret_i           (eret),
+      .ipi_i(ipi_i),
+      .debug_req_i(debug_req_i),
+      .resolved_branch_i  (resolved_branch),
+      .rvfi_probes_i(rvfi_probes_o),
+      .tip_o(tip_o)
+  );
+
+end
 
 endmodule  // ariane
