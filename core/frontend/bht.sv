@@ -134,7 +134,8 @@ module bht #(
     logic [CVA6Cfg.INSTR_PER_FETCH-1:0] bht_ram_we, bht_ram_we_q;
     logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_0;
     logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_read_address_1;
-    logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0] bht_ram_write_address, bht_ram_write_address_q;
+    logic [CVA6Cfg.INSTR_PER_FETCH*$clog2(NR_ROWS)-1:0]
+        bht_ram_write_address, bht_ram_write_address_q;
     logic [CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_wdata, bht_ram_wdata_q;
     logic [CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_0;
     logic [CVA6Cfg.INSTR_PER_FETCH*BRAM_WORD_BITS-1:0] bht_ram_rdata_1;
