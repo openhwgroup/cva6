@@ -57,8 +57,6 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigNrScoreboardEntries = 8;
 
-  localparam CVA6ConfigFpgaEn = 0;
-
   localparam CVA6ConfigNrLoadPipeRegs = 1;
   localparam CVA6ConfigNrStorePipeRegs = 0;
   localparam CVA6ConfigNrLoadBufEntries = 8;
@@ -82,7 +80,8 @@ package cva6_config_pkg;
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
-      FpgaEn: bit'(CVA6ConfigFpgaEn),
+      FpgaEn: bit'(0),  // for Xilinx and Altera
+      FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
       NrCommitPorts: unsigned'(2),

@@ -25,68 +25,68 @@ module scoreboard #(
     input  logic                                          clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input  logic                                          rst_ni,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Is scoreboard full - PERF_COUNTERS
     output logic                                          sb_full_o,
-    // Flush only un-issued instructions - TO_BE_COMPLETED
+    // Prevent from issuing - CONTROLLER
     input  logic                                          flush_unissued_instr_i,
-    // Flush whole scoreboard - TO_BE_COMPLETED
+    // Flush whole scoreboard - CONTROLLER
     input  logic                                          flush_i,
     // Writeback Handling of CVXIF
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // TO_BE_COMPLETED - ISSUE_READ_OPERANDS
     input  logic                                          x_transaction_accepted_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // TO_BE_COMPLETED - ISSUE_READ_OPERANDS
     input  logic                                          x_issue_writeback_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // TO_BE_COMPLETED - ISSUE_READ_OPERANDS
     input  logic              [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_i,
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Instructions to commit - COMMIT_STAGE
     output scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Instruction is cancelled - COMMIT_STAGE
     output logic              [CVA6Cfg.NrCommitPorts-1:0] commit_drop_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Commit acknowledge - COMMIT_STAGE
     input  logic              [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Handshake's data with decode stage - ID_STAGE
     input  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]       decoded_instr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // instruction value - ID_STAGE
     input  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Handshake's valid with decode stage - ID_STAGE
     input  logic              [CVA6Cfg.NrIssuePorts-1:0]       decoded_instr_valid_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Handshake's acknowlege with decode stage - ID_STAGE
     output logic              [CVA6Cfg.NrIssuePorts-1:0]       decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    // Issue scoreboard entry - ACC_DISPATCHER
+    // Entry about the instruction to issue - ISSUE_READ_OPERANDS
     output scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Instruction to issue - ISSUE_READ_OPERANDS
     output logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Is there an instruction to issue - ISSUE_READ_OPERANDS
     output logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_valid_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Issue stage acknowledge - ISSUE_READ_OPERANDS
     input  logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_ack_i,
-    // Forwarding - issue_read_operands
+    // Forwarding - ISSUE_READ_OPERANDS
     output forwarding_t                                        fwd_o,
 
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
-    // Transaction ID at which to write the result back - TO_BE_COMPLETED
+    // Transaction ID at which to write the result back - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_i,
-    // Results to write back - TO_BE_COMPLETED
+    // Results to write back - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
-    // Exception from a functional unit (e.g.: ld/st exception) - TO_BE_COMPLETED
+    // Exception from a functional unit (e.g.: ld/st exception) - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_i,
-    // Indicates valid results - TO_BE_COMPLETED
+    // Indicates valid results - EX_STAGE
     input logic [CVA6Cfg.NrWbPorts-1:0] wt_valid_i,
-    // Cvxif we for writeback - TO_BE_COMPLETED
+    // Cvxif we for writeback - EX_STAGE
     input logic x_we_i,
     // CVXIF destination register - ISSUE_STAGE
     input logic [4:0] x_rd_i,
 
-    // TO_BE_COMPLETED - RVFI
+    // Issue pointer - RVFI
     output logic [ CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
-    // TO_BE_COMPLETED - RVFI
+    // Commit pointer - RVFI
     output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
 

@@ -15,11 +15,31 @@ ifeval::[{SuperscalarEn} == true]
 :ifetch-len: 64
 :instr-per-fetch: 4
 :issue-width: 2
+:commit-width: 2
 endif::[]
 ifeval::[{SuperscalarEn} == false]
 :ifetch-len: 32
 :instr-per-fetch: 2
 :issue-width: 1
+:commit-width: {NrCommmitPorts}
+endif::[]
+:SpeculativeSb: {SuperscalarEn}
+
+:FpPresent: false
+ifeval::[{RVF} == true]
+:FpPresent: true
+endif::[]
+ifeval::[{RVD} == true]
+:FpPresent: true
+endif::[]
+ifeval::[{XF16} == true]
+:FpPresent: true
+endif::[]
+ifeval::[{XF16ALT} == true]
+:FpPresent: true
+endif::[]
+ifeval::[{XF8} == true]
+:FpPresent: true
 endif::[]
 
 [[DesignDocument]]
