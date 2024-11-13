@@ -555,7 +555,13 @@ simu-gate:
     - grep "Simulation terminated" verif/sim/out_*/*/*.log.iss
     - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_gate/
     - rm artifacts/artifacts_gate/*/build/*.fsdb
-  after_script: *simu_after_script
+    - mkdir -p verif/sim/out_reports
+    - mkdir -p artifacts/sim_artifacts
+    - cp verif/sim/out*/*gate*/*.yaml verif/sim/out_reports/uvm-gate.yaml
+    - cp verif/sim/out*/vcs-uvm_sim/*.yaml verif/sim/out_reports/uvm.yaml
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out_reports
+    - mv verif/sim/out*/ artifacts/sim_artifacts
+
 
 fpga-boot:
   extends:
