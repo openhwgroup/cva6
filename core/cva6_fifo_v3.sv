@@ -157,14 +157,14 @@ module cva6_fifo_v3 #(
         read_pointer_q  <= '0;
         write_pointer_q <= '0;
         status_cnt_q    <= '0;
-        first_word_q <= '0;
-        data_ft_q <= '0;
+        if (FPGA_ALTERA) first_word_q <= '0;
+        if (FPGA_ALTERA) data_ft_q <= '0;
       end else begin
         read_pointer_q  <= read_pointer_n;
         write_pointer_q <= write_pointer_n;
         status_cnt_q    <= status_cnt_n;
-        data_ft_q <= data_ft_n;
-        first_word_q <=first_word_n;
+        if (FPGA_ALTERA) data_ft_q <= data_ft_n;
+        if (FPGA_ALTERA) first_word_q <= first_word_n;
       end
     end
   end
