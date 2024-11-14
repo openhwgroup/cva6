@@ -15,7 +15,7 @@
 
 module cva6_fifo_v3 #(
     parameter bit FALL_THROUGH = 1'b0,  // fifo is in fall-through mode
-    parameter bit FPGA_ALTERA = 1'b0,  // fifo is in fall-through mode
+    parameter bit FPGA_ALTERA = 1'b0,  // FPGA Altera optimizations enabled
     parameter int unsigned DATA_WIDTH = 32,  // default data width if the fifo is of type logic
     parameter int unsigned DEPTH = 8,  // depth can be arbitrary from 0 to 2**32
     parameter type dtype = logic [DATA_WIDTH-1:0],
