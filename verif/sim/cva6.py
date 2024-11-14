@@ -451,21 +451,26 @@ def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, initial_cr
 
 
 def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd, linker, priv, spike_params, test_name = None, iss_timeout=500, testlist="custom"):
-  """Run a directed c test with ISS
+             setting_dir, debug_cmd, linker, priv, spike_params, test_name=None, iss_timeout=500, testlist="custom"):
+  """Run a directed test with ISS
 
   Args:
-    c_test      : C test file
+    test        : C test file
     iss_yaml    : ISS configuration file in YAML format
     isa         : ISA variant passed to the ISS
+    target      : Target simulator name
     mabi        : MABI variant passed to GCC
     gcc_opts    : User-defined options for GCC compilation
-    iss_opts    : Instruction set simulators
+    iss_opts    : Options for the instruction set simulators
     output_dir  : Output directory of compiled test files
     setting_dir : Generator setting directory
-    debug_cmd   : Produce the debug cmd log without running
+    debug_cmd   : Produce the debug command log without running
     linker      : Path to the linker
-    iss_timeout : Timeout for ISS simulation
+    priv        : Privilege mode of the test
+    spike_params: Parameters for the Spike ISS
+    test_name   : (Optional) Name of the test
+    iss_timeout : Timeout for ISS simulation (default: 500)
+    testlist    : Test list identifier (default: "custom")
   """
   if testlist != None:
     testlist = testlist.split('/')[-1].strip("testlist_").split('.')[0]
@@ -484,14 +489,14 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   report = ("%s/iss_regr.log" % output_dir).rstrip()
   test = re.sub(r"^.*\/", "", test_path)
   test = re.sub(rf"\.{test_type}$", "", test)
-  prefix = (f"{output_dir}/directed_c_tests/{test}")
+  prefix = (f"{output_dir}/directed_tests/{test}")
   if test_type == "o":
     elf = test_path
   else:
     elf = prefix + ".o"
 
   iss_list = iss_opts.split(",")
-  run_cmd("mkdir -p %s/directed_c_tests" % output_dir)
+  run_cmd("mkdir -p %s/directed_tests" % output_dir)
 
   if test_type != "o":
     # gcc compilation
