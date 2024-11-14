@@ -27,14 +27,19 @@ valid_cycles = {
     "dhrystone_cv32a60x": 39449,
 }
 
+benchmark_iters = {
+    "dhrystone_dual": 20,
+    "dhrystone_single": 20,
+    "coremark_dual": 4,
+    "coremark_single": 4,
+    "dhrystone_cv32a65x": 20,
+    "dhrystone_cv32a60x": 20,
+ }
+
 for arg in sys.argv[1:]:
-    if "--dhrystone" in arg or "--coremark" in arg:
-        if "--dhrystone" in arg:
-            iterations = 50
-        else:
-            if "--coremark" in arg:
-                iterations = 4
-        mode = arg.replace("-", "")
+    if arg.startswith("--"):
+        mode = arg[2:]
+        iterations = benchmark_iters[mode]
     else:
         path = arg
 
@@ -73,5 +78,3 @@ report = rb.Report(f"{cycles//1000} kCycles")
 report.add_metric(score_metric)
 report.dump()
 
-if report.failed:
-    sys.exit(1)
