@@ -141,6 +141,7 @@ module cva6_fifo_v3 #(
     end
 
     if (FPGA_EN) fifo_ram_read_address = (FPGA_ALTERA == 1) ? read_pointer_n : read_pointer_q;
+    else fifo_ram_read_address = '0;
 
   end
 
