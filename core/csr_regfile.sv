@@ -1832,7 +1832,7 @@ module csr_regfile
         if (CVA6Cfg.RVH && trap_to_v) begin
           // update sstatus
           vsstatus_d.sie = 1'b0;
-          vsstatus_d.spie = vsstatus_q.sie;
+          vsstatus_d.spie = (CVA6Cfg.RVH) ? vsstatus_q.sie : '0;
           // this can either be user or supervisor mode
           vsstatus_d.spp = priv_lvl_q[0];
           // set cause
