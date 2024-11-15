@@ -114,7 +114,7 @@ module cva6_hpdcache_if_adapter
       end
 
       //    Request forwarding
-      assign hpdcache_req_valid_o = load_req_i.data_req;
+      assign hpdcache_req_valid_o = load_req_i.req;
       assign hpdcache_req.addr_offset = load_req_i.address_index;
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
@@ -139,7 +139,11 @@ module cva6_hpdcache_if_adapter
 
       assign load_rsp_o.gnt = hpdcache_req_ready_i;
 
-      //    Response forwarding
+      obi_load_rsp_t obi_load_rsp_q, obi_load_rsp_d;
+      logic resp_while_request;
+      logic buffered_valid;
+      logic killed_in_s1;
+
       assign obi_load_rsp_o.gnt = 1'b1;  //if hpdcache is always ready to accept tag
       assign obi_load_rsp_o.gntpar = 1'b0;
       assign obi_load_rsp_o.rvalid = hpdcache_rsp_valid_i;
@@ -150,6 +154,45 @@ module cva6_hpdcache_if_adapter
       assign obi_load_rsp_o.r.err = '0;
       assign obi_load_rsp_o.r.rdata = hpdcache_rsp_i.rdata;
       assign obi_load_rsp_o.r.r_optional.ruser = '0;
+
+      assign obi_load_rsp_d.gnt = '0;  //unused
+      assign obi_load_rsp_d.gntpar = '0;  //unused
+      assign obi_load_rsp_d.rvalid = hpdcache_rsp_valid_i;
+      assign obi_load_rsp_d.rvalidpar = !hpdcache_rsp_valid_i;
+      assign obi_load_rsp_d.r.rid = hpdcache_rsp_i.tid;
+      assign obi_load_rsp_d.r.r_optional.exokay = '0;
+      assign obi_load_rsp_d.r.r_optional.rchk = '0;
+      assign obi_load_rsp_d.r.err = '0;
+      assign obi_load_rsp_d.r.rdata = hpdcache_rsp_i.rdata;
+      assign obi_load_rsp_d.r.r_optional.ruser = '0;
+
+      assign resp_while_request = (CVA6Cfg.ObiVersion != 0 && (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) && (obi_load_req_i.req && obi_load_rsp_o.gnt)) ? hpdcache_rsp_valid_i : 1'b0;
+      assign killed_in_s1 = (CVA6Cfg.ObiVersion != 0 && (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) && (load_req_i.kill_req)) ? 1'b1 : 1'b0;
+
+      always @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          buffered_valid <= 1'b0;
+          obi_load_rsp_q <= 1'b0;
+        end else begin
+          if (resp_while_request) begin
+            obi_load_rsp_q <= obi_load_rsp_d;
+            buffered_valid <= 1'b1;
+          end
+          if (buffered_valid) begin
+            buffered_valid <= 1'b0;
+          end
+        end
+      end
+
+      //    Response forwarding
+      assign obi_load_rsp_o.rvalid               = resp_while_request ? '0 : (buffered_valid ? 1'b1 : (killed_in_s1 ? 1'b0 : hpdcache_rsp_valid_i));
+      assign obi_load_rsp_o.rvalidpar = !obi_load_rsp_o.rvalid;
+      assign obi_load_rsp_o.r.rid                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rid               : obi_load_rsp_d.r.rid);
+      assign obi_load_rsp_o.r.r_optional.exokay  = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.exokay : obi_load_rsp_d.r.r_optional.exokay);
+      assign obi_load_rsp_o.r.r_optional.rchk    = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.rchk   : obi_load_rsp_d.r.r_optional.rchk);
+      assign obi_load_rsp_o.r.err                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.err               : obi_load_rsp_d.r.err);
+      assign obi_load_rsp_o.r.rdata              = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rdata             : obi_load_rsp_d.r.rdata);
+      assign obi_load_rsp_o.r.r_optional.ruser   = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.ruser  : obi_load_rsp_d.r.r_optional.ruser);
 
       //  Assertions
       //  {{{

@@ -261,7 +261,7 @@ module load_unit
     ex_o.valid = 1'b0;
 
     if (!flush_i) begin
-      //EXCEPTION PENDING
+      //EXCEPTION PENDING in s1
       if (ldbuf_w_q && ex_i.valid) begin
         // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
         // we got an rvalid and it's corresponding request was not flushed
@@ -269,14 +269,18 @@ module load_unit
           trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
           valid_o    = 1'b1;
           ex_o.valid = 1'b0;
-          // retire load that cause exception
+          // retire load that cause exception (misalign)
         end else begin
           trans_id_o = ldbuf_q[ldbuf_windex_q].trans_id;
           valid_o    = 1'b1;
           ex_o.valid = 1'b1;
-          //pop_ld_o = 1'b1;  // release lsu_bypass fifo
         end
-        //NO EXCEPTION PENDING
+        //NO EXCEPTION PENDING in s0 (page fault)
+      end else if (valid_i && ex_i.valid) begin
+        trans_id_o = lsu_ctrl_i.trans_id;
+        valid_o    = 1'b1;
+        ex_o.valid = 1'b1;
+        pop_ld_o = 1'b1;  // release lsu_bypass fifo
       end else begin
         // REQUEST
         if (valid_i && (!ldbuf_full)) begin
