@@ -36,7 +36,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    uvma_obi_memory_cntxt_c        obi_memory_instr_cntxt;
    uvma_obi_memory_cntxt_c        obi_memory_store_cntxt;
    uvma_obi_memory_cntxt_c        obi_memory_amo_cntxt;
-   //uvma_obi_memory_cntxt_c        obi_memory_load_cntxt;
+   uvma_obi_memory_cntxt_c        obi_memory_load_cntxt;
    //uvma_obi_memory_cntxt_c        obi_memory_mmu_ptw_cntxt;
 
    uvma_cva6_core_cntrl_cntxt_c  core_cntrl_cntxt;
@@ -63,7 +63,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
       `uvm_field_object(obi_memory_instr_cntxt,     UVM_DEFAULT)
       `uvm_field_object(obi_memory_store_cntxt,     UVM_DEFAULT)
       `uvm_field_object(obi_memory_amo_cntxt,     UVM_DEFAULT)
-      //`uvm_field_object(obi_memory_load_cntxt,     UVM_DEFAULT)
+      `uvm_field_object(obi_memory_load_cntxt,     UVM_DEFAULT)
       //`uvm_field_object(obi_memory_mmu_ptw_cntxt,     UVM_DEFAULT)
 
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
@@ -100,7 +100,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
    obi_memory_instr_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
    obi_memory_store_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_store_cntxt");
    obi_memory_amo_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_amo_cntxt");
-   //obi_memory_load_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_load_cntxt");
+   obi_memory_load_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_load_cntxt");
    //obi_memory_mmu_ptw_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_mmu_ptw_cntxt");
 
    mem = uvml_mem_cva6::type_id::create("mem");
