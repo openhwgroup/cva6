@@ -30,7 +30,7 @@ package build_config_pkg;
     int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;
-
+    cfg.ObiVersion = 1;  //FIXME CVA6Cfg.ObiVersion;    //0 not compliant
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
@@ -57,7 +57,7 @@ package build_config_pkg;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
     cfg.MEM_TID_WIDTH = CVA6Cfg.MemTidWidth;
-    cfg.NrLoadBufEntries = CVA6Cfg.NrLoadBufEntries;
+    cfg.NrLoadBufEntries = CVA6Cfg.NrLoadBufEntries; //cfg.ObiVersion == 0 ? CVA6Cfg.NrLoadBufEntries : 1;
     cfg.RVF = CVA6Cfg.RVF;
     cfg.RVD = CVA6Cfg.RVD;
     cfg.XF16 = CVA6Cfg.XF16;
@@ -187,6 +187,46 @@ package build_config_pkg;
     cfg.X_DUALREAD = 0;
     cfg.X_DUALWRITE = 0;
     cfg.X_ISSUE_REGISTER_SPLIT = 0;
+
+    cfg.IdWidth = cfg.AxiIdWidth;  //to be changed
+
+    cfg.ObiFetchbusCfg.UseRReady = 1'b1;
+    cfg.ObiFetchbusCfg.CombGnt = 1'b0;
+    cfg.ObiFetchbusCfg.AddrWidth = cfg.PLEN;
+    cfg.ObiFetchbusCfg.DataWidth = cfg.FETCH_WIDTH;
+    cfg.ObiFetchbusCfg.IdWidth = cfg.IdWidth;
+    cfg.ObiFetchbusCfg.Integrity = 1'b0;
+    cfg.ObiFetchbusCfg.BeFull = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseAtop = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseMemtype = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseProt = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.UseDbg = 1'b1;
+    cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth = cfg.FETCH_USER_WIDTH;
+    cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth = cfg.FETCH_USER_WIDTH;
+    cfg.ObiFetchbusCfg.OptionalCfg.MidWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth = 1;
+    cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth = 1;
+
+    cfg.ObiDatabusCfg.UseRReady = 1'b1;
+    cfg.ObiDatabusCfg.CombGnt = 1'b0;
+    cfg.ObiDatabusCfg.AddrWidth = cfg.PLEN;
+    cfg.ObiDatabusCfg.DataWidth = cfg.XLEN;
+    cfg.ObiDatabusCfg.IdWidth = cfg.IdWidth;
+    cfg.ObiDatabusCfg.Integrity = 1'b0;
+    cfg.ObiDatabusCfg.BeFull = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseAtop = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseMemtype = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseProt = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.UseDbg = 1'b1;
+    cfg.ObiDatabusCfg.OptionalCfg.AUserWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.WUserWidth = cfg.DCACHE_USER_WIDTH;
+    cfg.ObiDatabusCfg.OptionalCfg.RUserWidth = cfg.DCACHE_USER_WIDTH;
+    cfg.ObiDatabusCfg.OptionalCfg.MidWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.AChkWidth = 1;
+    cfg.ObiDatabusCfg.OptionalCfg.RChkWidth = 1;
+
+    cfg.PipelineOnly = CVA6Cfg.PipelineOnly;
 
     return cfg;
   endfunction

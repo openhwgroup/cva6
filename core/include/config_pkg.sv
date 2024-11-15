@@ -224,6 +224,10 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    // OBI version compliance, 0 mean non compliant --> best performance
+    int unsigned                 ObiVersion;
+    // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
+    bit                          PipelineOnly;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -383,6 +387,13 @@ package config_pkg;
     int unsigned X_DUALWRITE;
     int unsigned X_ISSUE_REGISTER_SPLIT;
 
+    int unsigned IdWidth;
+    int unsigned ObiVersion;
+
+    obi_pkg::obi_cfg_t ObiFetchbusCfg;
+    obi_pkg::obi_cfg_t ObiDatabusCfg;
+
+    bit PipelineOnly;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever
