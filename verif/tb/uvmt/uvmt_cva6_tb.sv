@@ -88,10 +88,10 @@ module uvmt_cva6_tb;
                                         .clk(clknrst_if.clk),
                                         .reset_n(clknrst_if.reset_n)
                                 );
-   //uvma_obi_memory_if         obi_load_if  (
-   //                                     .clk(clknrst_if.clk),
-   //                                     .reset_n(clknrst_if.reset_n)
-   //                             );
+   uvma_obi_memory_if         obi_load_if  (
+                                        .clk(clknrst_if.clk),
+                                        .reset_n(clknrst_if.reset_n)
+                                );
    //uvma_obi_memory_if         obi_mmu_ptw_if  (
    //                                     .clk(clknrst_if.clk),
    //                                     .reset_n(clknrst_if.reset_n)
@@ -128,16 +128,16 @@ module uvmt_cva6_tb;
                        .ACHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AChkWidth),
                        .RCHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RChkWidth),
                        .IS_1P2(1)) obi_amo_assert(.obi(obi_amo_if));
-   //bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-   //                    .AUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AUserWidth),
-   //                    .WUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.WUserWidth),
-   //                    .RUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RUserWidth),
-   //                    .ADDR_WIDTH(CVA6Cfg.ObiLoadbusCfg.AddrWidth),
-   //                    .DATA_WIDTH(CVA6Cfg.ObiLoadbusCfg.DataWidth),
-   //                    .ID_WIDTH(CVA6Cfg.ObiLoadbusCfg.IdWidth),
-   //                    .ACHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth),
-   //                    .RCHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth),
-   //                    .IS_1P2(1)) obi_load_assert(.obi(obi_load_if));
+   bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                       .AUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AUserWidth),
+                       .WUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.WUserWidth),
+                       .RUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RUserWidth),
+                       .ADDR_WIDTH(CVA6Cfg.ObiLoadbusCfg.AddrWidth),
+                       .DATA_WIDTH(CVA6Cfg.ObiLoadbusCfg.DataWidth),
+                       .ID_WIDTH(CVA6Cfg.ObiLoadbusCfg.IdWidth),
+                       .ACHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth),
+                       .RCHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth),
+                       .IS_1P2(1)) obi_load_assert(.obi(obi_load_if));
    //bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
    //                    .AUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth),
    //                    .WUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth),
@@ -204,7 +204,7 @@ module uvmt_cva6_tb;
                     .obi_fetch_if    (obi_fetch_if),
                     .obi_store_if    (obi_store_if),
                     .obi_amo_if      (obi_amo_if),
-                    //.obi_load_if     (obi_load_if),
+                    .obi_load_if     (obi_load_if),
                     //.obi_mmu_ptw_if    (obi_mmu_ptw_if),
                     .axi_switch_vif    (axi_switch_vif),
                     .default_inputs_vif    (default_inputs_vif),
@@ -478,7 +478,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_instr_agent"),   .field_name("vif"),    .value(obi_fetch_if));
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_store_agent"),   .field_name("vif"),    .value(obi_store_if));
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_amo_agent"),     .field_name("vif"),    .value(obi_amo_if));
-
+     uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_load_agent"),     .field_name("vif"),    .value(obi_load_if));
 
  //  uvm_config_db#(virtual uvma_obi_memory_if#(.AUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth),
  //                     .WUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth),
