@@ -550,17 +550,18 @@ simu-gate:
     - mkdir -p pd/synth/${TOP}_${DV_TARGET}/outputs/
     - export DV_SIMULATORS="spike"
     - bash verif/regress/${PROG_NAME}.sh
-    - cp verif/sim/out_*/directed_c_tests/*.o verif/sim/testelf.o
+    - cp verif/sim/out_*/directed_tests/*.o verif/sim/testelf.o
     - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="simu-gate" --name=testelf
     - grep "Simulation terminated" verif/sim/out_*/*/*.log.iss
     - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_gate/
     - rm artifacts/artifacts_gate/*/build/*.fsdb
     - mkdir -p verif/sim/out_reports
     - mkdir -p artifacts/sim_artifacts
-    - cp verif/sim/out*/*gate*/*.yaml verif/sim/out_reports/uvm-gate.yaml
-    - cp verif/sim/out*/vcs-uvm_sim/*.yaml verif/sim/out_reports/uvm.yaml
-    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out_reports
-    - mv verif/sim/out*/ artifacts/sim_artifacts
+    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".yaml verif/sim/out*/vcs-uvm/uvm-gate.yaml
+    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".iss verif/sim/out*/vcs-uvm/uvm-gate.iss
+    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".csv verif/sim/out*/vcs-uvm/uvm-gate.csv
+    - rm -rf verif/sim/out*/vcs-uvm-gate
+    - !reference [.simu_after_script]
 
 
 fpga-boot:
