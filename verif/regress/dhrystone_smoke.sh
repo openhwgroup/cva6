@@ -17,6 +17,10 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
 fi
 
+if ! [ -n "$DV_TARGET" ]; then
+  DV_TARGET=cv32a65x
+fi
+
 # install the required tools
 if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
   source ./verif/regress/install-verilator.sh
@@ -54,7 +58,7 @@ cflags=(
 )
 
 python3 cva6.py \
-        --target cv32a65x \
+        --target $DV_TARGET \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
