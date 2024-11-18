@@ -380,7 +380,6 @@ riscv-tests-v:
     DV_SIMULATORS: "vcs-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
