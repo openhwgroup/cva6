@@ -285,7 +285,6 @@ module bht #(
           bht_ram_write_address_q <= '0;
           update_row_index_q <= '0;
         end else begin
-          
           for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
             bht_updated_valid[i][1] <= bht_updated_valid[i][0];
             bht_updated_valid[i][0] <= bht_updated[i].valid;
