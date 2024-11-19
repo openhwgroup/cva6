@@ -267,7 +267,7 @@ module id_stage #(
   // ------------------
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign issue_entry_o[i] = issue_q[i].sbe;
-    assign issue_entry_o_prev[i] = issue_n[i].sbe;
+    assign issue_entry_o_prev[i] = CVA6Cfg.FpgaAlteraEn ? issue_n[i].sbe : '0;
     assign issue_entry_valid_o[i] = issue_q[i].valid;
     assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
     assign orig_instr_o[i] = issue_q[i].orig_instr;
