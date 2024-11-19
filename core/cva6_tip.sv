@@ -35,8 +35,8 @@ module cva6_tip
   rvfi_probes_instr_t instr = rvfi_probes_i.instr;
   logic debug_mode;
 
-  logic [15:0] itype_signals[0:1];
-  reg [3:0] itype_o[0:1];
+  logic [15:0] itype_signals[0:CVA6Cfg.NrCommitPorts-1];
+  logic [3:0] itype_o[0:CVA6Cfg.NrCommitPorts-1];
 
   riscv::priv_lvl_t priv_lvl;
   //debug_mode
@@ -44,7 +44,7 @@ module cva6_tip
   assign priv_lvl   = instr.priv_lvl;
 
 
-  logic [63:0] taken_branch_pc_reg, not_taken_branch_pc_reg, uninforable_jump_pc_reg;
+  logic [CVA6Cfg.VLEN-1:0] taken_branch_pc_reg, not_taken_branch_pc_reg, uninforable_jump_pc_reg;
 
   // branch
   always @(posedge clk_i) begin
@@ -61,12 +61,12 @@ module cva6_tip
   //  itype signals encoding
   generate
     for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-      assign itype_signals[i][1] = commit_instr_i[i].valid && ex_commit_i.valid;
-      assign itype_signals [i][2] = ( ipi_i || debug_req_i ); //time_irq_i (commit_ack_i[0] && !ex_commit_i.valid) &&
-      assign itype_signals[i][3] = eret_i;
-      assign itype_signals [i][4] = ((not_taken_branch_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0));
-      assign itype_signals [i][5] = ( (taken_branch_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0));
-      assign itype_signals [i][6] = ( (uninforable_jump_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0));
+      assign itype_signals[i][1] = commit_instr_i[i].valid && ex_commit_i.valid; //Exception. An exception that traps occurred following the final retired instruction in the block
+      assign itype_signals [i][2] = ( ipi_i || debug_req_i ); //time_irq_i (commit_ack_i[0] && !ex_commit_i.valid) && //Interrupt. An interrupt that traps occurred following the final retired instruction in the block
+      assign itype_signals[i][3] = eret_i;  //Exception or interrupt return
+      assign itype_signals [i][4] = ((not_taken_branch_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0));//Nontaken branch
+      assign itype_signals [i][5] = ( (taken_branch_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0)); //Taken branch
+      assign itype_signals [i][6] = ( (uninforable_jump_pc_reg == commit_instr_i[i].pc) && ~(commit_instr_i[i].pc == 0)); //Uninferable jump
     end
   endgenerate
 
