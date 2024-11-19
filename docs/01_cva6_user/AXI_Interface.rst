@@ -95,7 +95,7 @@ Table 2.1 shows the global AXI memory interface signals.
      - Clock source
      - | Global clock signal. Synchronous signals are sampled on the
        | rising edge of the global clock.
-   * - **WDATA**
+   * - **ARESETn**
      - Reset source
      - | Global reset signal. This signal is active-LOW.
 
