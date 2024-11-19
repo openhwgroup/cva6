@@ -41,6 +41,7 @@ module id_stage #(
     output logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_ready_o,
     // Handshake's data between decode and issue - ISSUE
     output scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_o,
+    output scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_o_prev,
     // Instruction value - ISSUE
     output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_o,
     // Handshake's valid between decode and issue - ISSUE
@@ -266,6 +267,7 @@ module id_stage #(
   // ------------------
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign issue_entry_o[i] = issue_q[i].sbe;
+    assign issue_entry_o_prev[i] = issue_n[i].sbe;
     assign issue_entry_valid_o[i] = issue_q[i].valid;
     assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
     assign orig_instr_o[i] = issue_q[i].orig_instr;
