@@ -770,7 +770,8 @@ ariane #(
     .rvfi_probes_o( /* open */          ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
-    .noc_resp_i   ( axi_ariane_resp     )
+    .noc_resp_i   ( axi_ariane_resp     ),
+    .tip_o        (/* open */)
 );
 
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)

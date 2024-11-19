@@ -60,7 +60,7 @@ module cva6_tip
 
   //  itype signals encoding
   generate
-    for (genvar i = 0; i < cva6_config_pkg::CVA6ConfigNrCommitPorts; i++) begin
+    for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       assign itype_signals[i][1] = commit_instr_i[i].valid && ex_commit_i.valid;
       assign itype_signals [i][2] = ( ipi_i || debug_req_i ); //time_irq_i (commit_ack_i[0] && !ex_commit_i.valid) &&
       assign itype_signals[i][3] = eret_i;
@@ -71,7 +71,7 @@ module cva6_tip
   endgenerate
 
   generate
-    for (genvar i = 0; i < cva6_config_pkg::CVA6ConfigNrCommitPorts; i++) begin
+    for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
 
       encoder_16_4 ec_0 (
           .in(itype_signals[i]),
@@ -87,7 +87,7 @@ module cva6_tip
 
   //TIP signals
   always_comb begin
-    for (int i = 0; i < cva6_config_pkg::CVA6ConfigNrCommitPorts; i++) begin
+    for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       logic exception, mem_exception;
       exception = commit_instr_i[i].valid && ex_commit_i.valid;
       mem_exception = exception &&
