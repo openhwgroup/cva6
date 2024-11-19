@@ -50,8 +50,6 @@ module bht #(
   localparam ROW_INDEX_BITS = CVA6Cfg.RVC == 1'b1 ? $clog2(CVA6Cfg.INSTR_PER_FETCH) : 1;
   // number of bits we should use for prediction
   localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
-  // we are not interested in all bits of the address
-  // unread i_unread (.d_i(|vpc_i)); this was unused and Quartus complains about it. Ok to remove?
 
   struct packed {
     logic       valid;
@@ -277,16 +275,17 @@ module bht #(
     // Extra buffering signals needed when synchronous RAM is used
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        bht_updated_valid <= '0;
-        bht_update_taken <= '0;
-        bht_ram_wdata_q <= '0;
-        row_index_q <= '0;
-        bht_ram_we_q <= '0;
-        bht_ram_write_address_q <= '0;
-        update_row_index_q <= '0;
-      end else begin
-        if (CVA6Cfg.FpgaAlteraEn) begin
+      if (CVA6Cfg.FpgaAlteraEn) begin
+        if (!rst_ni) begin
+          bht_updated_valid <= '0;
+          bht_update_taken <= '0;
+          bht_ram_wdata_q <= '0;
+          row_index_q <= '0;
+          bht_ram_we_q <= '0;
+          bht_ram_write_address_q <= '0;
+          update_row_index_q <= '0;
+        end else begin
+          
           for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
             bht_updated_valid[i][1] <= bht_updated_valid[i][0];
             bht_updated_valid[i][0] <= bht_updated[i].valid;
