@@ -42,6 +42,9 @@ These building blocks fit very nicely with CVA6:
 - [Culsans/CV-TCCC](https://github.com/pulp-platform/culsans) is a multi-core infrastructure for a few CVA6 cores.
 - [ARA/CV-VEC](https://github.com/pulp-platform/ara) is a vector unit for CVA6.
 - [HPDcache](https://github.com/openhwgroup/cv-hpdcache) is a flexible (highly configurable) and high-throughput L1 cache.
+- [IOMMU](https://github.com/zero-day-labs/riscv-iommu) supports the RISC-V Input/Output Memory Management Unit (IOMMU) Specification, including the hypervisor privilege.
+- [IOPMP](https://github.com/zero-day-labs/riscv-iopmp) supports the RISC-V Input/Output Physical Memory Protection (IOPMP) Specification.
+- [AIA](https://github.com/zero-day-labs/riscv-aia) supports the RISC-V Advanced Interrupt Architecture (AIA) specification.
 
 ### Design examples (FPGA)
 
