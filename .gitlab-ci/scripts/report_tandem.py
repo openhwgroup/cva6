@@ -27,8 +27,10 @@ def main():
 
 
 def check_provided_args():
-    if len(sys.argv) != 2 or not os.path.exists(sys.argv[1]):
-        print("Usage : python report_tandem.py path/to/log/dir", file=sys.stderr)
+    if len(sys.argv) != 2: 
+        sys.exit("Usage : python report_tandem.py path/to/log/dir")
+
+    if not os.path.exists(sys.argv[1]):
         sys.exit("No valid log directory provided!")
 
     if len(list(glob.iglob(sys.argv[1] + "/*.yaml"))) == 0:
