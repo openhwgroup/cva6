@@ -514,8 +514,12 @@ csr_embedded_tests:
     - python3 .gitlab-ci/scripts/report_fail.py
 
 simu-gate:
-  stage: heavy tests
   timeout : 4 hours
+  extends:
+    - .backend_test
+  needs:
+    - build_tools
+    - asic-synthesis
   parallel:
     matrix:
       - PROG_NAME:   ["dhrystone_smoke"]
