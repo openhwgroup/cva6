@@ -555,7 +555,7 @@ simu-gate:
     - mkdir -p verif/sim/out_reports
     - mkdir -p artifacts/sim_artifacts
     - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i $(dirname $(dirname $i))/vcs-uvm_sim/gate.$(basename $i); done
-    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/vcs-uvm_sim
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/vcs-uvm_sim
 
 
 fpga-boot:
