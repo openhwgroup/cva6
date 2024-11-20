@@ -557,11 +557,8 @@ simu-gate:
     - rm artifacts/artifacts_gate/*/build/*.fsdb
     - mkdir -p verif/sim/out_reports
     - mkdir -p artifacts/sim_artifacts
-    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".yaml verif/sim/out*/vcs-uvm/uvm-gate.yaml
-    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".iss verif/sim/out*/vcs-uvm/uvm-gate.iss
-    - cp verif/sim/out*/vcs-uvm-gate*/testelf."$DV_TARGET".csv verif/sim/out*/vcs-uvm/uvm-gate.csv
-    - rm -rf verif/sim/out*/vcs-uvm-gate
-    - !reference [.simu_after_script]
+    - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i verif/sim/vcs-uvm*/gate.$(basename $i); done
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/vcs-uvm*
 
 
 fpga-boot:
