@@ -273,7 +273,7 @@ vcs_uvm_comp:
 	cd $(VCS_WORK_DIR) && vcs $(COMMON_COMP_UVM_FLAGS) $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
-	  $(cov-comp-opt) +define+UNSUPPORTED_WITH+ $(isscomp_opts)\
+	  $(cov-comp-opt) $(isscomp_opts)\
 	  -ignore initializer_driver_checks \
 	  -top uvmt_cva6_tb \
 	  $(if $(gate), -sdf Max:uvmt_cva6_tb.cva6_dut_wrap.cva6_tb_wrapper_i.i_cva6:$(CVA6_REPO_DIR)/pd/synth/cva6_$(TARGET_CFG)_synth.sdf +neg_tchk, +notimingcheck)

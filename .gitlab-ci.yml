@@ -181,9 +181,13 @@ smoke-bench:
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
     BENCH: "dhrystone"
+  parallel:
+    matrix:
+      - DV_TARGET: "cv32a60x"
+      - DV_TARGET: "cv32a65x"
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_cv32a65x verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
+    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$DV_TARGET" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
 smoke-hwconfig:
   extends:
@@ -324,13 +328,13 @@ benchmarks:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
         DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a65x SuperscalarEn=0 IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
       - BENCH: "coremark"
         ISSUE: "dual"
         DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
@@ -376,7 +380,6 @@ riscv-tests-v:
     DV_SIMULATORS: "vcs-testharness,spike"
     DV_TARGET: cv64a6_imafdc_sv39
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-    SPIKE_TANDEM: 1
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
@@ -522,9 +525,7 @@ simu-gate:
     - asic-synthesis
   parallel:
     matrix:
-      - SIMU_PERIOD: ["20"]  # 50 Mhz
-        PERIOD:      ["15"]  # 66 Mhz
-        PROG_NAME:   "dhrystone"
+      - PROG_NAME:   ["dhrystone_smoke"]
   variables:
     DASHBOARD_JOB_TITLE: "Gate Level Simulation $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Tests to check netlist from ASIC synthesis and power consumption over different patterns"
@@ -532,24 +533,36 @@ simu-gate:
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
     DV_TARGET: cv32a65x
     TARGET: $DV_TARGET
+    TOP: "cva6"
     SPIKE_TANDEM: 1
+    SIMU_PERIOD: "20"  # 50 Mhz
+    PERIOD: "15"  # 66 Mhz
   script:
+    - mkdir -p artifacts/{reports,logs}
     - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
-    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b testelf
+    - git -C ${SYNTH_SCRIPT_PATH} checkout cb92f846
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh
-    - mv artifacts/cva6_${DV_TARGET} pd/synth/
-    - mv artifacts/cva6_${DV_TARGET}_synth.v pd/synth/
-    - mv artifacts/cva6_${DV_TARGET}_synth.sdf pd/synth/
-    - mkdir -p pd/synth/cva6_${DV_TARGET}/outputs/
-    - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="simu-gate" --name=$PROG_NAME
+    - mv artifacts/${TOP}_${DV_TARGET} pd/synth/
+    - mv artifacts/${TOP}_${DV_TARGET}_synth.v pd/synth/
+    - mv artifacts/${TOP}_${DV_TARGET}_synth.sdf pd/synth/
+    - mkdir -p pd/synth/${TOP}_${DV_TARGET}/outputs/
+    - export DV_SIMULATORS="spike"
+    - bash verif/regress/${PROG_NAME}.sh
+    - cp verif/sim/out_*/directed_tests/*.o verif/sim/testelf.o
+    - python3 ${SYNTH_SCRIPT_PATH}/scharm -p configs/modules/CVA6.yml --runner=True --compaign="simu-gate" --name=testelf
+    - grep "Simulation terminated" verif/sim/out_*/*/*.log.iss
     - mv ${SYNTH_SCRIPT_PATH}/artifacts/ artifacts/artifacts_gate/
     - rm artifacts/artifacts_gate/*/build/*.fsdb
-  after_script: *simu_after_script
+    - mkdir -p verif/sim/out_reports
+    - mkdir -p artifacts/sim_artifacts
+    - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i $(dirname $(dirname $i))/vcs-uvm_sim/gate.$(basename $i); done
+    - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/vcs-uvm_sim
 
 fpga-boot:
   extends:

@@ -16,21 +16,31 @@ ISSUE_STAGE Module
 Description
 ^^^^^^^^^^^
 
-The execution can be roughly divided into four parts: issue(1), read
-operands(2), execute(3) and write-back(4). The ISSUE_STAGE module
-handles step one, two and four. The ISSUE_STAGE module receives the
-decoded instructions and issues them to the various functional units.
+ISSUE_STAGE issues instructions (1), reorders their results (2) and sends completed instructions in-order to COMMIT_STAGE (3).
 
-A data structure called scoreboard is used to keep track of data related
-to the issue instruction: which functional unit and which destination
-register they are. The scoreboard handle the write-back data received
-from the COMMIT_STAGE module.
+(1) ISSUE_STAGE issues instructions in-order.
+It makes sure that instructions from ID_STAGE have everything they need to run.
+It waits until all requirements are met.
+Once an instruction is ready to run, ISSUE_STAGE sends it to EX_STAGE with its operands.
 
-Furthermore it contains the CPU’s register file.
+(2) ISSUE_STAGE reorders instructions results.
+It gets results of instruction executions out-of-order from EX_STAGE.
+ISSUE_STAGE stores these results reordered.
+
+(3) ISSUE_STAGE sends completed instructions in-order to COMMIT_STAGE.
+This is where architectural state is modified.
+
+Scoreboard module keeps track of instructions and their results.
+Issue_read_operands module contains all the issue logic and the register file.
 
 The module is connected to:
 
-* TO BE COMPLETED
+* CONTROLLER module can request to flush the pipeline buffer at the end of ISSUE_STAGE.
+  CONTROLLER module can also request to flush the whole Scoreboard.
+* ID_STAGE module delivers decoded instructions to ISSUE_STAGE.
+* EX_STAGE module gets instructions issued by ISSUE_STAGE to execute them.
+  EX_STAGE module also returns results to ISSUE_STAGE.
+* COMMIT_STAGE module delivers ISSUE_STAGE clearance to remove the oldest instruction from Scoreboard.
 
 include::port_issue_stage.adoc[]
 
@@ -38,7 +48,23 @@ include::port_issue_stage.adoc[]
 Functionality
 ^^^^^^^^^^^^^
 
-TO BE COMPLETED
+ISSUE_STAGE has three functionalities.
+
+(1) ISSUE_STAGE issues instructions.
+Instructions from ID_STAGE are sent to Scoreboard module, which forwards them to Issue_read_operands module.
+Issue_read_operands queries Scoreboard module for data dependences (Scoreboard is also able to return forwarded values) and gets the list of busy functional units from EX_STAGE.
+Issue_read_operands sends to EX_STAGE the instructions to execute and acknowledges to Scoreboard so that it stores them: the instruction is issued.
+Issued instructions are acknowledged to ID_STAGE.
+Each of these steps can block its successors.
+The flush signal from CONTROLLER module is also sent to Scoreboard module to prevent from issuing.
+Instructions are issued in-order: an instruction cannot be issued unless all its predecessors are issued.
+
+(2) ISSUE_STAGE reorders instructions results.
+Results from EX_STAGE are sent to Scoreboard module so that they are stored.
+
+(3) ISSUE_STAGE sends completed instructions in-order to COMMIT_STAGE.
+The oldest instructions from Scoreboard are exposed to COMMIT_STAGE.
+When COMMIT_STAGE acknowledges a commit, the committed instruction is removed from Scoreboard and the register file in Issue_read_operands is updated with the instruction result.
 
 [[issue_stage-submodules]]
 Submodules
@@ -50,9 +76,53 @@ image:issue_stage_modules.png[ISSUE_STAGE submodules]
 Scoreboard
 ++++++++++
 
-The scoreboard contains a FIFO to store the decoded instructions. Issued
-instruction is pushed to the FIFO if it is not full. It indicates which
-registers are going to be clobbered by a previously issued instruction.
+Scoreboard contains a FIFO which contains an entry for each issued instruction.
+Each entry is removed once the instruction is committed.
+Instruction results are inserted into Scoreboard when they are ready.
+The FIFO is flushed when requested by CONTROLLER.
+
+Scoreboard is used in all three functionalities of ISSUE_STAGE.
+
+(1) ISSUE_STAGE issues instructions.
+Up to {issue-width} instruction(s) can be received from ID_STAGE each cycle.
+They are transmitted to Issue_read_operands with incremental transaction IDs which wrap at {NrScoreboardEntries}.
+The result buses and Scoreboard entries are also transmitted to Issue_read_operands for it to detect data dependences and perform operand forwarding.
+When Issue_read_operands acknowledges an instruction, it is inserted into the FIFO.
+
+Scoreboard has a capacity of {NrScoreboardEntries} entries.
+Instructions which would make Scoreboard overflow are not transmitted to Issue_read_operands (ISSUE_STAGE stalls).
+
+The flush signal from CONTROLLER module removes all entries from the Scoreboard and prevents from issuing.
+The transaction ID of the next issued instruction is 0.
+
+(2) ISSUE_STAGE reorders instructions results.
+Results are returned from functional units in the EX_STAGE to Scoreboard via result buses, with their transaction IDs.
+Scoreboard stores this result into the entry associated with this transaction ID.
+If an exception is returned, it is stored too.
+ifeval::[{SpeculativeSb} == true]
+If the result is a branch miss, the speculative instructions following it are cancelled.
+endif::[]
+
+ifeval::[{RVZCMP} == true]
+FIXME Document behavior related to macro instructions
+endif::[]
+
+ifeval::[{DebugEn} == true]
+FIXME Document behavior related to debug
+endif::[]
+
+ifeval::[{CvxifEn} == true]
+FIXME Document behavior related to CV-X-IF
+endif::[]
+
+ifeval::[{FpPresent} == true]
+FIXME Document behavior related to FPU
+endif::[]
+
+(3) ISSUE_STAGE sends completed instructions in-order to COMMIT_STAGE.
+Each of the {commit-width} oldest entry(ies) in Scoreboard are exposed to COMMIT_STAGE, one per commit port.
+This makes commit happen in-order.
+When COMMIT_STAGE acknowledges on a commit port, the entry is removed from Scoreboard.
 
 include::port_scoreboard.adoc[]
 
@@ -60,6 +130,118 @@ include::port_scoreboard.adoc[]
 Issue_read_operands
 +++++++++++++++++++
 
-TO BE COMPLETED
+Issue_read_operands tracks hazards and gets the input operands for the instructions to execute.
+The following hazards can prevent instructions from being issued.
+
+* Data hazards: ISSUE_STAGE checks that the instruction operands are available.
+
+** [[raw_hazard]] Read-After-Write (RAW): if one of the source registers of the instruction to issue is the destination register of one of the instructions in the Scoreboard, issue is blocked.
+However, CVA6 implements operand forwarding: instead of blocking the instruction, the operand is taken from either +
+a) a functional unit which returns a result which is not an exception, with a transaction ID which points to a Scoreboard entry whose destination register is the requested source register; +
+b) a Scoreboard entry whose destination register is the requested source register has a result which is not an exception. +
+Forwarding is not possible from CSR instructions.
+ifeval::[{RVS} == true]
+FIXME Document behavior related to SFENCE_VMA
+endif::[]
++
+ifeval::[{SuperscalarEn} == true]
+The instruction in the second issue port is not issued when one of its source registers is the destination register of the instruction in the first issue port.
+No operand forwarding is possible between the two issue ports.
+endif::[]
+
+** Write-After-Write (WAW): if the instruction to issue has the same destination register as one of the instructions in the Scoreboard, issue is blocked.
+Instructions being committed are ignored because the will not be in the scoreboard anymore since the next cycle.
++
+ifeval::[{SuperscalarEn} == true]
+The instruction in the second issue port is not issued when it has the same destination register as the instruction in the first issue port.
+endif::[]
+
+** Special case: there are no data hazards on `x0`.
+
+ifeval::[{SpeculativeSb} == true]
+** Cancelled instructions are ignored by the hazard detection mechanism.
+endif::[]
+
+ifeval::[{CvxifEn} == true]
+** FIXME hazards related to CV-X-IF
+endif::[]
+
+* Structural hazards: ISSUE_STAGE checks that a functional unit (FU) and its result bus (RB) are ready to execute the instruction.
+
+** Integer division instructions and some^[FIXME{sp}which?]^ CSR instructions have an unknown latency.
+When EX_STAGE reports that such an instruction is running, instructions using ALU, BRANCH, CSR or MULT are blocked.
+This is to avoid conflicts on the RB shared by these four FUs.
+ifeval::[{SuperscalarEn} == true]
+Note that ALU2 might still be available.
+endif::[]
+
+** Multiplications have a fixed latency of 2 cycles.
+Instructions using ALU, BRANCH or CSR are blocked if an instruction using MULT was issued one cycle earlier.
+This is to avoid conflicts on the RB shared by these four FUs.
+ifeval::[{SuperscalarEn} == true]
+Note that ALU2 might still be available.
+endif::[]
+Instructions using MULT are not blocked because the multiplier is pipelined and can accept one instruction each cycle.
+
+ifeval::[{FpPresent} == true]
+** FIXME hazards related to FPU
+endif::[]
+
+** Instructions using LSU are blocked if LSU is not ready.
+
+ifeval::[{SuperscalarEn} == true]
+** The second issue port cannot issue instructions using CSR.
+
+ifeval::[{CvxifEn} == true]
+** The second issue port cannot issue instructions using CV-X-IF.
+endif::[]
+
+** The second issue port cannot issue an instruction using a FU when the first port issues an instruction using the same FU.
+This is because a FU can only accept one instruction each cycle.
+
+** When both ALU and ALU2 are available, ALU instructions use ALU2.
+
+** The second issue port cannot issue an instruction using ALU, BRANCH or CSR when the first issue port is issuing an instruction using ALU, BRANCH or CSR.
+This is to avoid conflicts on the RB shared by these four FUs.
+Note that ALU2 might still be available.
+
+* Control hazards: ISSUE_STAGE checks that no instruction is executed speculatively while it must not.
+
+** The second issue port is completely blocked when the first port issues an instruction using CSR.
+
+** The second issue port
+ifeval::[{SpeculativeSb} == true]
+cannot issue an instruction using LSU
+endif::[]
+ifeval::[{SpeculativeSb} == false]
+is completely blocked
+endif::[]
+when the first issue port issues an instruction using BRANCH, unless it is a JAL.
+
+// {SuperscalarEn} == true
+endif::[]
+
+Data hazards are ignored when an exception occurred earlier in the pipeline.
+As no FU is involved, there are no structural hazards either.
+
+Instructions are issued in-order, which means that when an instruction makes ISSUE_STAGE stall, next instructions are blocked.
+ifeval::[{SuperscalarEn} == true]
+As a consequence, it is not possible to issue the instruction in the second issue port when the instruction in the first issue port is blocked.
+endif::[]
+
+ifeval::[{SuperscalarEn} == true]
+However, it is possible that the instruction in the first issue port is issued while the instruction in the second issue port is not.
+In such case, ID_STAGE moves the instruction in the second issue port to the first issue port so that it is issued next.
+endif::[]
+
+The input operands provided to EX_STAGE come from the register file by default.
+However, when one of the source registers has a RAW dependence, the corresponding input operand is replaced by the forwarded value (see <<raw_hazard,Data hazards/RAW hazards>> above).
+The register file is an instance of `ariane_regfile` where ach register stores {XLEN} bits and the register at index 0 is wired to zero.
+
+ifeval::[{CvxifEn} == true]
+FIXME Document behavior related to CV-X-IF
+endif::[]
+
+Instructions are sent to EX_STAGE via a register so they are visible in EX_STAGE one cycle after being issued.
 
 include::port_issue_read_operands.adoc[]

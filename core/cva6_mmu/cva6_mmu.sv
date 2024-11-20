@@ -193,12 +193,15 @@ module cva6_mmu
       .lu_asid_i     (itlb_lu_asid),
       .lu_vmid_i     (vmid_i),
       .lu_vaddr_i    (icache_areq_i.fetch_vaddr),
+      .lu_gpaddr_o   (itlb_gpaddr),
       .lu_content_o  (itlb_content),
       .lu_g_content_o(itlb_g_content),
-      .lu_gpaddr_o   (itlb_gpaddr),
+      .asid_to_be_flushed_i,
+      .vmid_to_be_flushed_i,
+      .vaddr_to_be_flushed_i,
+      .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
-      .lu_hit_o      (itlb_lu_hit),
-      .*
+      .lu_hit_o      (itlb_lu_hit)
   );
 
   cva6_tlb #(
@@ -221,12 +224,15 @@ module cva6_mmu
       .lu_asid_i     (itlb_lu_asid),
       .lu_vmid_i     (vmid_i),
       .lu_vaddr_i    (lsu_vaddr_i),
+      .lu_gpaddr_o   (dtlb_gpaddr),
       .lu_content_o  (dtlb_content),
       .lu_g_content_o(dtlb_g_content),
-      .lu_gpaddr_o   (dtlb_gpaddr),
+      .asid_to_be_flushed_i,
+      .vmid_to_be_flushed_i,
+      .vaddr_to_be_flushed_i,
+      .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (dtlb_is_page),
-      .lu_hit_o      (dtlb_lu_hit),
-      .*
+      .lu_hit_o      (dtlb_lu_hit)
   );
 
 
@@ -290,6 +296,7 @@ module cva6_mmu
   ) i_ptw (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
+      .flush_i,
 
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
@@ -297,17 +304,27 @@ module cva6_mmu
       .ptw_error_at_g_st_o   (ptw_error_at_g_st),
       .ptw_err_at_g_int_st_o (ptw_err_at_g_int_st),
       .ptw_access_exception_o(ptw_access_exception),
+      .enable_translation_i,
+      .enable_g_translation_i,
+      .en_ld_st_translation_i,
+      .en_ld_st_g_translation_i,
+      .v_i,
+      .ld_st_v_i,
+      .hlvx_inst_i           (hlvx_inst_i),
 
       .lsu_is_store_i(lsu_is_store_i),
       // PTW memory interface
       .req_port_i    (req_port_i),
       .req_port_o    (req_port_o),
 
-      .update_vaddr_o(update_vaddr),
-
       // to Shared TLB, update logic
       .shared_tlb_update_o(update_shared_tlb),
 
+      .update_vaddr_o(update_vaddr),
+
+      .asid_i,
+      .vs_asid_i,
+      .vmid_i,
 
       // from shared TLB
       // did we miss?
@@ -317,7 +334,11 @@ module cva6_mmu
 
       .itlb_req_i(itlb_req),
 
-      .hlvx_inst_i(hlvx_inst_i),
+      .satp_ppn_i,
+      .vsatp_ppn_i,
+      .hgatp_ppn_i,
+      .mxr_i,
+      .vmxr_i,
 
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
@@ -326,9 +347,7 @@ module cva6_mmu
       .pmpcfg_i   (pmpcfg_i),
       .pmpaddr_i  (pmpaddr_i),
       .bad_paddr_o(ptw_bad_paddr),
-      .bad_gpaddr_o(ptw_bad_gpaddr),
-      .*
-
+      .bad_gpaddr_o(ptw_bad_gpaddr)
   );
 
   //-----------------------

@@ -42,7 +42,6 @@ module csr_regfile
     input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
     // Hart id in a multicore environment (reflected in a CSR) - SUBSYSTEM
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
-    // we are taking an exception
     // We've got an exception from the commit stage, take it - COMMIT_STAGE
     input exception_t ex_i,
     // Operation to perform on the CSR file - COMMIT_STAGE
@@ -153,7 +152,6 @@ module csr_regfile
     output logic dcache_en_o,
     // Accelerator memory consistent mode - ACC_DISPATCHER
     output logic acc_cons_en_o,
-    // Performance Counter
     // read/write address to performance counter module - PERF_COUNTERS
     output logic [11:0] perf_addr_o,
     // write data to performance counter module - PERF_COUNTERS
@@ -163,9 +161,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic perf_we_o,
     // PMP configuration containing pmpcfg for max 64 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_o,
+    output riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
+    output logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -293,8 +291,8 @@ module csr_regfile
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
   | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
-  assign pmpcfg_o  = pmpcfg_q[CVA6Cfg.NrPMPEntries-1:0];
-  assign pmpaddr_o = pmpaddr_q[CVA6Cfg.NrPMPEntries-1:0];
+  assign pmpcfg_o  = pmpcfg_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
+  assign pmpaddr_o = pmpaddr_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
   // ----------------
@@ -1831,25 +1829,23 @@ module csr_regfile
 
       // trap to supervisor mode
       if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-        if (CVA6Cfg.RVH) begin
-          if (trap_to_v) begin
-            // update sstatus
-            vsstatus_d.sie = 1'b0;
-            vsstatus_d.spie = vsstatus_q.sie;
-            // this can either be user or supervisor mode
-            vsstatus_d.spp = priv_lvl_q[0];
-            // set cause
-            vscause_d = ex_i.cause[CVA6Cfg.XLEN-1] ? {ex_i.cause[CVA6Cfg.XLEN-1:2], 2'b01} : ex_i.cause;
-            // set epc
-            vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
-            // set vstval
-            vstval_d        = (ariane_pkg::ZERO_TVAL
-                                        && (ex_i.cause inside {
-                                          riscv::ILLEGAL_INSTR,
-                                          riscv::BREAKPOINT,
-                                          riscv::ENV_CALL_UMODE
-                                        } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
-          end
+        if (CVA6Cfg.RVH && trap_to_v) begin
+          // update sstatus
+          vsstatus_d.sie = 1'b0;
+          vsstatus_d.spie = (CVA6Cfg.RVH) ? vsstatus_q.sie : '0;
+          // this can either be user or supervisor mode
+          vsstatus_d.spp = priv_lvl_q[0];
+          // set cause
+          vscause_d = ex_i.cause[CVA6Cfg.XLEN-1] ? {ex_i.cause[CVA6Cfg.XLEN-1:2], 2'b01} : ex_i.cause;
+          // set epc
+          vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+          // set vstval
+          vstval_d        = (ariane_pkg::ZERO_TVAL
+                             && (ex_i.cause inside {
+                             riscv::ILLEGAL_INSTR,
+                             riscv::BREAKPOINT,
+                             riscv::ENV_CALL_UMODE
+                             } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
         end else begin
           // update sstatus
           mstatus_d.sie = 1'b0;

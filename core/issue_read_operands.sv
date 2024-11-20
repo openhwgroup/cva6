@@ -28,69 +28,68 @@ module issue_read_operands
     parameter type x_issue_resp_t = logic,
     parameter type x_register_t = logic,
     parameter type x_commit_t = logic
-
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Flush - CONTROLLER
+    // Prevent from issuing - CONTROLLER
     input logic flush_i,
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Entry about the instruction to issue - SCOREBOARD
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Instruction to issue - SCOREBOARD
     input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Is there an instruction to issue - SCOREBOARD
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_valid_i,
-    // Issue stage acknowledge - TO_BE_COMPLETED
+    // Issue stage acknowledge - SCOREBOARD
     output logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack_o,
     // Forwarding - SCOREBOARD
     input forwarding_t fwd_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // FU data useful to execute instruction - EX_STAGE
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
-    // Unregistered version of fu_data_o.operanda - TO_BE_COMPLETED
+    // Unregistered version of fu_data_o.operanda - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
-    // Unregistered version of fu_data_o.operandb - TO_BE_COMPLETED
+    // Unregistered version of fu_data_o.operandb - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
-    // Instruction pc - TO_BE_COMPLETED
+    // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
-    // Is compressed instruction - TO_BE_COMPLETED
+    // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
-    // Fixed Latency Unit ready to accept new request - TO_BE_COMPLETED
+    // Fixed Latency Unit is ready - EX_STAGE
     input logic flu_ready_i,
-    // ALU output is valid - TO_BE_COMPLETED
+    // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
-    // Branch instruction is valid - TO_BE_COMPLETED
+    // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
-    // Transformed instruction - TO_BE_COMPLETED
+    // Transformed trap instruction - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Information of branch prediction - EX_STAGE
     output branchpredict_sbe_t branch_predict_o,
-    // Load Store Unit is ready - TO_BE_COMPLETED
+    // Load store unit FU is ready - EX_STAGE
     input logic lsu_ready_i,
-    // Load Store Unit result is valid - TO_BE_COMPLETED
+    // Load store unit FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_o,
-    // Mult result is valid - TO_BE_COMPLETED
+    // Mult FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
-    // FPU is ready - TO_BE_COMPLETED
+    // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
-    // FPU result is valid - TO_BE_COMPLETED
+    // FPU FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_o,
-    // FPU fmt field from instruction - TO_BE_COMPLETED
+    // FPU fmt field - EX_STAGE
     output logic [1:0] fpu_fmt_o,
-    // FPU rm field from isntruction - TO_BE_COMPLETED
+    // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
-    // ALU output is valid - TO_BE_COMPLETED
+    // ALU2 FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_o,
-    // CSR result is valid - TO_BE_COMPLETED
+    // CSR is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
-    // CVXIF result is valid - TO_BE_COMPLETED
+    // CVXIF FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_o,
-    // CVXIF is ready - TO_BE_COMPLETED
+    // CVXIF is FU ready - EX_STAGE
     input logic cvxif_ready_i,
-    // CVXIF offloaded instruction - TO_BE_COMPLETED
+    // CVXIF offloader instruction value - EX_STAGE
     output logic [31:0] cvxif_off_instr_o,
     // CVA6 Hart ID - SUBSYSTEM
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
@@ -111,16 +110,16 @@ module issue_read_operands
     output logic x_transaction_rejected_o,
     output logic x_issue_writeback_o,
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Destination register in the register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Value to write to register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // GPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // FPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
 
-    // Stall signal, we do not want to fetch any more entries - TO_BE_COMPLETED
+    // Issue stall - PERF_COUNTERS
     output logic stall_issue_o
 );
 
@@ -926,16 +925,7 @@ module issue_read_operands
         if (!stall_raw[i] && !stall_waw[i]) begin
           issue_ack[i] = 1'b1;
         end
-        // we can also issue the instruction under the following two circumstances:
-        // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
-        // the decoder needs to make sure that the instruction is marked as valid when it does not
-        // need any functional unit or if an exception occurred previous to the execute stage.
-        // 1. we already got an exception
         if (issue_instr_i[i].ex.valid) begin
-          issue_ack[i] = 1'b1;
-        end
-        // 2. it is an instruction which does not need any functional unit
-        if (issue_instr_i[i].fu == NONE) begin
           issue_ack[i] = 1'b1;
         end
       end
@@ -984,13 +974,14 @@ module issue_read_operands
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile_fpga (
+        .clk_i,
+        .rst_ni,
         .test_en_i(1'b0),
         .raddr_i  (raddr_pack),
         .rdata_o  (rdata),
         .waddr_i  (waddr_pack),
         .wdata_i  (wdata_pack),
-        .we_i     (we_pack),
-        .*
+        .we_i     (we_pack)
     );
   end else begin : gen_asic_regfile
     ariane_regfile #(
@@ -999,13 +990,14 @@ module issue_read_operands
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile (
+        .clk_i,
+        .rst_ni,
         .test_en_i(1'b0),
         .raddr_i  (raddr_pack),
         .rdata_o  (rdata),
         .waddr_i  (waddr_pack),
         .wdata_i  (wdata_pack),
-        .we_i     (we_pack),
-        .*
+        .we_i     (we_pack)
     );
   end
 
@@ -1044,13 +1036,14 @@ module issue_read_operands
             .NR_READ_PORTS(3),
             .ZERO_REG_ZERO(0)
         ) i_ariane_fp_regfile_fpga (
+            .clk_i,
+            .rst_ni,
             .test_en_i(1'b0),
             .raddr_i  (fp_raddr_pack),
             .rdata_o  (fprdata),
             .waddr_i  (waddr_pack),
             .wdata_i  (fp_wdata_pack),
-            .we_i     (we_fpr_i),
-            .*
+            .we_i     (we_fpr_i)
         );
       end else begin : gen_asic_fp_regfile
         ariane_regfile #(
@@ -1059,13 +1052,14 @@ module issue_read_operands
             .NR_READ_PORTS(3),
             .ZERO_REG_ZERO(0)
         ) i_ariane_fp_regfile (
+            .clk_i,
+            .rst_ni,
             .test_en_i(1'b0),
             .raddr_i  (fp_raddr_pack),
             .rdata_o  (fprdata),
             .waddr_i  (waddr_pack),
             .wdata_i  (fp_wdata_pack),
-            .we_i     (we_fpr_i),
-            .*
+            .we_i     (we_fpr_i)
         );
       end
     end else begin : no_fpr_gen

@@ -60,10 +60,10 @@ module commit_stage
     output logic [CVA6Cfg.XLEN-1:0] csr_wdata_o,
     // Data to read from CSR - CSR_REGFILE
     input logic [CVA6Cfg.XLEN-1:0] csr_rdata_i,
-    // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
-    input exception_t csr_exception_i,
     // Write the fflags CSR - CSR_REGFILE
     output logic csr_write_fflags_o,
+    // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
+    input exception_t csr_exception_i,
     // Commit the pending store - EX_STAGE
     output logic commit_lsu_o,
     // Commit buffer of LSU is ready - EX_STAGE
@@ -84,7 +84,9 @@ module commit_stage
     output logic flush_commit_o,
     // Flush TLBs and pipeline - CONTROLLER
     output logic sfence_vma_o,
+    // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_vvma_o,
+    // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_gvma_o
 );
 

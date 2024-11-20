@@ -27,9 +27,14 @@ def main():
 
 
 def check_provided_args():
-    if sys.argv[1] is None or not isinstance(sys.argv[1], str):
-        print("Usage : python report_tandem.py path/to/log/dir", file=sys.stderr)
-        sys.exit("No log directory provided !")
+    if len(sys.argv) != 2: 
+        sys.exit("Usage : python report_tandem.py path/to/log/dir")
+
+    if not os.path.exists(sys.argv[1]):
+        sys.exit("No valid log directory provided!")
+
+    if len(list(glob.iglob(sys.argv[1] + "/*.yaml"))) == 0:
+        sys.exit("No reports in log directory!")
 
 
 def add_table_legend(metrics_table, with_logs):
@@ -60,31 +65,33 @@ def fill_table(reports_dir, metrics_table, with_logs):
 
 
 def add_test_row(report_file, metrics_table, with_logs):
-    with open(report_file) as f:
-        report = yaml.safe_load(f)
-    mismatches_count = str(report["mismatches_count"]) if "mismatches_count" in report else "Not found"
+    try:
+        with open(report_file) as f:
+            report = yaml.safe_load(f)
+        mismatches_count = str(report["mismatches_count"]) if "mismatches_count" in report else "Not found"
 
-    row = [report["target"], report["isa"], report["test"], report["testlist"], report["simulator"], mismatches_count]
+        row = [report["target"], report["isa"], report["test"], report["testlist"], report["simulator"], mismatches_count]
 
-    if with_logs:
-        logs_path = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
-        output_log = logs_path + "logfile.log.head"
-        log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
-            if "iteration" in report else logs_path + report['test'] + "." + report["target"]
-        tb_log = log_prefix + '.log.iss.head'
-        disassembly = log_prefix + '.log.csv.head'
+        if with_logs:
+            logs_path = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
+            output_log = logs_path + "logfile.log.head"
+            log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
+                if "iteration" in report else logs_path + report['test'] + "." + report["target"]
+            tb_log = log_prefix + '.log.iss.head'
+            disassembly = log_prefix + '.log.csv.head'
 
-        row.append(output_log)
-        row.append(tb_log)
-        row.append(disassembly)
+            row.append(output_log)
+            row.append(tb_log)
+            row.append(disassembly)
 
-    if report["exit_cause"] == "SUCCESS" and report["exit_code"] == 0:
-        metrics_table.add_pass(*row)
-        return 1
+        if report["exit_cause"] == "SUCCESS" and report["exit_code"] == 0:
+            metrics_table.add_pass(*row)
+            return 1
 
-    metrics_table.add_fail(*row)
-    return 0
-
+        metrics_table.add_fail(*row)
+        return 0
+    except (TypeError, KeyError):
+        sys.exit("Invalid yaml file in log directory! Is the log directory correct?")
 
 def report(metrics_table, passed_test_count, total_test_count):
     report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
