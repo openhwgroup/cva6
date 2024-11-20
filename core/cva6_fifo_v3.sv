@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2024 - PlanV Technologies for additionnal contribution.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License. You may obtain a copy of the License at
@@ -9,9 +10,12 @@
 // specific language governing permissions and limitations under the License.
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+// Additional contributions by:
+//                 Angela Gonzalez - PlanV Technologies
 
 module cva6_fifo_v3 #(
     parameter bit FALL_THROUGH = 1'b0,  // fifo is in fall-through mode
+    parameter bit FPGA_ALTERA = 1'b0,  // FPGA Altera optimizations enabled
     parameter int unsigned DATA_WIDTH = 32,  // default data width if the fifo is of type logic
     parameter int unsigned DEPTH = 8,  // depth can be arbitrary from 0 to 2**32
     parameter type dtype = logic [DATA_WIDTH-1:0],
@@ -46,6 +50,8 @@ module cva6_fifo_v3 #(
   logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q;
   // actual memory
   dtype [FifoDepth - 1:0] mem_n, mem_q;
+  dtype data_ft_n, data_ft_q;
+  logic first_word_n, first_word_q;
 
   // fifo ram signals for fpga target
   logic fifo_ram_we;
@@ -71,12 +77,13 @@ module cva6_fifo_v3 #(
     read_pointer_n  = read_pointer_q;
     write_pointer_n = write_pointer_q;
     status_cnt_n    = status_cnt_q;
+    data_ft_n = data_ft_q;
+    first_word_n = first_word_q;
     if (FPGA_EN) begin
       fifo_ram_we            = '0;
-      fifo_ram_read_address  = read_pointer_q;
       fifo_ram_write_address = '0;
       fifo_ram_wdata         = '0;
-      data_o                 = (DEPTH == 0) ? data_i : fifo_ram_rdata;
+      data_o                 = (DEPTH == 0) ? data_i : (first_word_q ? data_ft_q : fifo_ram_rdata);
     end else begin
       data_o     = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
       mem_n      = mem_q;
@@ -89,6 +96,7 @@ module cva6_fifo_v3 #(
         fifo_ram_we = 1'b1;
         fifo_ram_write_address = write_pointer_q;
         fifo_ram_wdata = data_i;
+        first_word_n = FPGA_ALTERA && first_word_q && pop_i;
       end else begin
         // push the data onto the queue
         mem_n[write_pointer_q] = data_i;
@@ -104,6 +112,8 @@ module cva6_fifo_v3 #(
     end
 
     if (pop_i && ~empty_o) begin
+      data_ft_n = data_i;
+      first_word_n = FPGA_EN && FPGA_ALTERA && first_word_q && push_i;
       // read from the queue is a default assignment
       // but increment the read pointer...
       if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1) read_pointer_n = '0;
@@ -116,14 +126,23 @@ module cva6_fifo_v3 #(
     if (push_i && pop_i && ~full_o && ~empty_o) status_cnt_n = status_cnt_q;
 
     // FIFO is in pass through mode -> do not change the pointers
-    if (FALL_THROUGH && (status_cnt_q == 0) && push_i) begin
-      data_o = data_i;
+    if ((FALL_THROUGH || (FPGA_EN && FPGA_ALTERA)) && (status_cnt_q == 0) && push_i) begin
+      if (FALL_THROUGH) data_o = data_i;
+      if (FPGA_EN && FPGA_ALTERA) begin
+        data_ft_n = data_i;
+        first_word_n = '1;
+      end
       if (pop_i) begin
+        first_word_n = '0;
         status_cnt_n = status_cnt_q;
         read_pointer_n = read_pointer_q;
         write_pointer_n = write_pointer_q;
       end
     end
+
+    if (FPGA_EN) fifo_ram_read_address = (FPGA_ALTERA == 1) ? read_pointer_n : read_pointer_q;
+    else fifo_ram_read_address = '0;
+
   end
 
   // sequential process
@@ -132,32 +151,53 @@ module cva6_fifo_v3 #(
       read_pointer_q  <= '0;
       write_pointer_q <= '0;
       status_cnt_q    <= '0;
+      first_word_q <= '0;
+      data_ft_q <= '0;
     end else begin
       if (flush_i) begin
         read_pointer_q  <= '0;
         write_pointer_q <= '0;
         status_cnt_q    <= '0;
+        if (FPGA_ALTERA) first_word_q <= '0;
+        if (FPGA_ALTERA) data_ft_q <= '0;
       end else begin
         read_pointer_q  <= read_pointer_n;
         write_pointer_q <= write_pointer_n;
         status_cnt_q    <= status_cnt_n;
+        if (FPGA_ALTERA) data_ft_q <= data_ft_n;
+        if (FPGA_ALTERA) first_word_q <= first_word_n;
       end
     end
   end
 
   if (FPGA_EN) begin : gen_fpga_queue
-    AsyncDpRam #(
-        .ADDR_WIDTH(ADDR_DEPTH),
-        .DATA_DEPTH(DEPTH),
-        .DATA_WIDTH($bits(dtype))
-    ) fifo_ram (
-        .Clk_CI   (clk_i),
-        .WrEn_SI  (fifo_ram_we),
-        .RdAddr_DI(fifo_ram_read_address),
-        .WrAddr_DI(fifo_ram_write_address),
-        .WrData_DI(fifo_ram_wdata),
-        .RdData_DO(fifo_ram_rdata)
-    );
+    if (FPGA_ALTERA) begin
+      SyncDpRam_ind_r_w #(
+          .ADDR_WIDTH(ADDR_DEPTH),
+          .DATA_DEPTH(DEPTH),
+          .DATA_WIDTH($bits(dtype))
+      ) fifo_ram (
+          .Clk_CI   (clk_i),
+          .WrEn_SI  (fifo_ram_we),
+          .RdAddr_DI(fifo_ram_read_address),
+          .WrAddr_DI(fifo_ram_write_address),
+          .WrData_DI(fifo_ram_wdata),
+          .RdData_DO(fifo_ram_rdata)
+      );
+    end else begin
+      AsyncDpRam #(
+          .ADDR_WIDTH(ADDR_DEPTH),
+          .DATA_DEPTH(DEPTH),
+          .DATA_WIDTH($bits(dtype))
+      ) fifo_ram (
+          .Clk_CI   (clk_i),
+          .WrEn_SI  (fifo_ram_we),
+          .RdAddr_DI(fifo_ram_read_address),
+          .WrAddr_DI(fifo_ram_write_address),
+          .WrData_DI(fifo_ram_wdata),
+          .RdData_DO(fifo_ram_rdata)
+      );
+    end
   end else begin : gen_asic_queue
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
