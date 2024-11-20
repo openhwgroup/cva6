@@ -1,0 +1,90 @@
+ 
+****************************************
+Report : qor
+Design : cva6
+Scenario(s): mode_norm_ws0_wc_125
+Version: S-2021.06-SP4
+Date   : Thu Nov 14 12:00:07 2024
+****************************************
+
+
+  Scenario 'mode_norm_ws0_wc_125'
+  Timing Path Group 'fast_vfo_clk'
+  -----------------------------------
+  Levels of Logic:             38.000
+  Critical Path Length:        13.345
+  Critical Path Slack:          0.000
+  Critical Path Clk Period:    14.250
+  Total Negative Slack:         0.000
+  No. of Violating Paths:       0.000
+  Worst Hold Violation:        -0.476
+  Total Hold Violation:      -307.203
+  No. of Hold Violations:    1769.000
+  -----------------------------------
+
+
+  Cell Count
+  -----------------------------------
+  Hierarchical Cell Count:        492
+  Hierarchical Port Count:      78135
+  Leaf Cell Count:              62087
+  Buf/Inv Cell Count:           13626
+  Buf Cell Count:                4435
+  Inv Cell Count:                9191
+  CT Buf/Inv Cell Count:            0
+  Combinational Cell Count:     54383
+  Sequential Cell Count:         7704
+  Macro Count:                      0
+  -----------------------------------
+
+
+  Area
+  -----------------------------------
+  Combinational Area:       94183.600
+  Noncombinational Area:    48549.760
+  Buf/Inv Area:             13796.440
+  Total Buffer Area:         5688.760
+  Total Inverter Area:       8107.680
+  Macro/Black Box Area:     57086.470
+  Net Area:                     0.000
+  Net XLength        :    1035842.812
+  Net YLength        :    1052521.250
+  -----------------------------------
+  Cell Area:               199819.830
+  Design Area:             199819.830
+  Net Length        :     2088364.000
+
+
+  Design Rules
+  -----------------------------------
+  Total Number of Nets:         70870
+  Nets With Violations:           841
+  Max Trans Violations:            66
+  Max Cap Violations:             784
+  -----------------------------------
+
+
+  Hostname: runnerr8-tss.gemalto.com
+
+  Compile CPU Statistics
+  -----------------------------------------
+  Resource Sharing:                   0.000
+  Logic Optimization:                 0.000
+  Mapping Optimization:             409.279
+  -----------------------------------------
+  Overall Compile Time:             442.682
+  Overall Compile Wall Clock Time:   98.537
+
+  --------------------------------------------------------------------
+
+  Scenario: mode_norm_ws0_wc_125   WNS: 0.000  TNS: 0.000  Number of Violating Paths: 0
+  Design  WNS: 0.000  TNS: 0.000  Number of Violating Paths: 0
+
+
+  Scenario: mode_norm_ws0_wc_125  (Hold)  WNS: 0.476  TNS: 307.203  Number of Violating Paths: 1769
+  Design (Hold)  WNS: 0.476  TNS: 307.203  Number of Violating Paths: 1769
+
+  --------------------------------------------------------------------
+
+
+1

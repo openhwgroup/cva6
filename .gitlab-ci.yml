@@ -515,11 +515,6 @@ csr_embedded_tests:
 
 simu-gate:
   timeout : 4 hours
-  extends:
-    - .backend_test
-  needs:
-    - build_tools
-    - asic-synthesis
   parallel:
     matrix:
       - PROG_NAME:   ["dhrystone_smoke"]
@@ -535,6 +530,7 @@ simu-gate:
     SIMU_PERIOD: "20"  # 50 Mhz
     PERIOD: "15"  # 66 Mhz
   script:
+    - mkdir -p artifacts/{reports,logs}
     - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
@@ -557,7 +553,7 @@ simu-gate:
     - rm artifacts/artifacts_gate/*/build/*.fsdb
     - mkdir -p verif/sim/out_reports
     - mkdir -p artifacts/sim_artifacts
-    - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i verif/sim/vcs-uvm*/gate.$(basename $i); done
+    - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i verif/sim/vcs-uvm_sim/gate.$(basename $i); done
     - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/vcs-uvm*
 
 

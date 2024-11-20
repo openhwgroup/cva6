@@ -1,0 +1,1351 @@
+category: Synthesis
+description: Synthesis indicator with specific Techno
+job_end_at: 1731582036
+job_id: '202773'
+job_stage_name: heavy tests
+job_started_at: 1731581178
+job_url: https://gitlab-tss.gemalto.com/riscv/cva6/-/jobs/202773
+label: 178 kGates
+metrics:
+- display_name: Global results
+  sort_index: 1
+  status: pass
+  type: table
+  value:
+  - col:
+    - Total area
+    - 178410 Gates
+  - col:
+    - Combinational area
+    - 47 %
+  - col:
+    - Buf/Inv area
+    - 6 %
+  - col:
+    - Noncombinational area
+    - 24 %
+  - col:
+    - Macro/Black Box area
+    - 28 %
+- display_name: Hierarchies details
+  sort_index: 2
+  status: pass
+  type: table
+  value:
+  - col:
+    - cva6
+    - 178 kGates
+    - 100 %
+  - col:
+    - commit_stage_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - controller_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i
+    - 7 kGates
+    - 4 %
+  - col:
+    - csr_regfile_i/clk_gate_dcache_q_reg
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_instret_q_reg_2
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_instret_q_reg_3
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_mcause_q_reg_0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_mepc_q_reg_1
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_mscratch_q_reg_0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_mtvec_q_reg_1
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_0__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_1__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_2__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_3__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_4__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_5__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_6__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpaddr_q_reg_7__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpcfg_q_reg_2__access_type__r_
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpcfg_q_reg_3__access_type__r_
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpcfg_q_reg_5__addr_mode__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpcfg_q_reg_6__access_type__r_
+    - 0 kGates
+    - 0 %
+  - col:
+    - csr_regfile_i/clk_gate_pmpcfg_q_reg_7__access_type__r_
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i
+    - 29 kGates
+    - 16 %
+  - col:
+    - ex_stage_i/alu2_gen_alu2_i
+    - 3 kGates
+    - 2 %
+  - col:
+    - ex_stage_i/alu2_gen_alu2_i/gen_bitmanip_i_clz_64b
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/alu2_gen_alu2_i/gen_bitmanip_i_cpop_count
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/alu_i
+    - 4 kGates
+    - 2 %
+  - col:
+    - ex_stage_i/alu_i/gen_bitmanip_i_clz_64b
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/alu_i/gen_bitmanip_i_cpop_count
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/branch_unit_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/csr_buffer_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/csr_buffer_i/clk_gate_csr_reg_q_reg_csr_address_
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/gen_cvxif_cvxif_fu_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/i_mult
+    - 10 kGates
+    - 6 %
+  - col:
+    - ex_stage_i/i_mult/i_div
+    - 2 kGates
+    - 1 %
+  - col:
+    - ex_stage_i/i_mult/i_multiplier
+    - 7 kGates
+    - 4 %
+  - col:
+    - ex_stage_i/lsu_i
+    - 7 kGates
+    - 4 %
+  - col:
+    - ex_stage_i/lsu_i/i_load_unit
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/lsu_i/i_pipe_reg_load
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/lsu_i/i_pipe_reg_store
+    - 0 kGates
+    - 0 %
+  - col:
+    - ex_stage_i/lsu_i/i_store_unit
+    - 5 kGates
+    - 2 %
+  - col:
+    - ex_stage_i/lsu_i/lsu_bypass_i
+    - 1 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem
+    - 81 kGates
+    - 45 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter
+    - 1 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/genblk1_i_icache_hpdcache_data_upsize
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/genblk1_i_icache_refill_meta_fifo
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/i_hpdcache_mem_to_axi_read
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/i_hpdcache_mem_to_axi_write
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/i_icache_miss_req_fifo
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/i_mem_req_read_arbiter
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_axi_arbiter/i_mem_resp_read_demux
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache
+    - 52 kGates
+    - 29 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/clk_gate_cl_tag_q_reg_0
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/clk_gate_flush_cnt_q_reg_3
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/clk_gate_vaddr_q_reg_0
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/gen_sram_0__data_sram
+    - 22 kGates
+    - 12 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/gen_sram_0__tag_sram
+    - 2 kGates
+    - 1 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/gen_sram_1__data_sram
+    - 22 kGates
+    - 12 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/gen_sram_1__tag_sram
+    - 2 kGates
+    - 1 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/i_lfsr
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/i_lzc
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_cva6_icache/i_lzc_hit
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_dcache
+    - 27 kGates
+    - 15 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_dcache/gen_cva6_hpdcache_load_if_adapter_1__i_cva6_hpdcache_load_if_adapter
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_dcache/i_cva6_hpdcache_store_if_adapter
+    - 0 kGates
+    - 0 %
+  - col:
+    - gen_cache_hpd_i_cache_subsystem/i_dcache/i_hpdcache
+    - 27 kGates
+    - 15 %
+  - col:
+    - i_cva6_rvfi_probes
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend
+    - 13 kGates
+    - 7 %
+  - col:
+    - i_frontend/bht_gen_i_bht
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend/bht_gen_i_bht/clk_gate_bht_q_reg_7__3__saturation_counter__clk_gate_bht_q_reg_2__3__saturation_counter_
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/bht_gen_i_bht/clk_gate_bht_q_reg_7__3__saturation_counter__clk_gate_bht_q_reg_7__2__saturation_counter_
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/bht_gen_i_bht/clk_gate_bht_q_reg_7__3__saturation_counter__clk_gate_bht_q_reg_7__3__saturation_counter__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/bht_gen_i_bht/clk_gate_bht_q_reg_7__3__valid__clk_gate_bht_q_reg_3__3__valid_
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/bht_gen_i_bht/clk_gate_bht_q_reg_7__3__valid__clk_gate_bht_q_reg_7__3__valid__0
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/clk_gate_bht_q_reg_valid_
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/clk_gate_npc_q_reg
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/gen_instr_scan_0__i_instr_scan
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/gen_instr_scan_1__i_instr_scan
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/gen_instr_scan_2__i_instr_scan
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/gen_instr_scan_3__i_instr_scan
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue
+    - 6 kGates
+    - 3 %
+  - col:
+    - i_frontend/i_instr_queue/clk_gate_pc_q_reg_0
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_instr_fifo_0__i_fifo_instr_data
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_instr_fifo_1__i_fifo_instr_data
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_instr_fifo_2__i_fifo_instr_data
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_instr_fifo_3__i_fifo_instr_data
+    - 1 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_multiple_instr_per_fetch_with_c_i_lzc_branch_index
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/gen_multiple_instr_per_fetch_with_c_i_popcount
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_queue/i_fifo_address
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_realign
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/i_instr_realign/clk_gate_unaligned_instr_q_reg
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/ras_gen_i_ras
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/ras_gen_i_ras/clk_gate_stack_q_reg_0__valid_
+    - 0 kGates
+    - 0 %
+  - col:
+    - i_frontend/ras_gen_i_ras/clk_gate_stack_q_reg_1__valid_
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i
+    - 5 kGates
+    - 2 %
+  - col:
+    - id_stage_i/clk_gate_issue_q_reg_0__sbe__pc_
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/clk_gate_issue_q_reg_1__sbe__pc_
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/genblk1_genblk1_0__compressed_decoder_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/genblk1_genblk1_1__compressed_decoder_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/genblk1_genblk2_i_cvxif_compressed_if_driver_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/genblk2_0__decoder_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - id_stage_i/genblk2_1__decoder_i
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i
+    - 36 kGates
+    - 20 %
+  - col:
+    - issue_stage_i/i_issue_read_operands
+    - 22 kGates
+    - 12 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/clk_gate_pc_o_reg
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_asic_regfile_i_ariane_regfile
+    - 13 kGates
+    - 7 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_10__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_11__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_12__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_13__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_14__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_15__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_16__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_17__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_18__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_19__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_1__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_20__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_21__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_22__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_23__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_24__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_25__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_26__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_27__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_28__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_29__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_2__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_30__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_31__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_3__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_4__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_5__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_6__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_7__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_8__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/gen_sel_clobbers_9__i_sel_gpr_clobbers
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/genblk5_0__i_sel_rs1
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/genblk5_0__i_sel_rs2
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/genblk5_1__i_sel_rs1
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/genblk5_1__i_sel_rs2
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_issue_read_operands/i_cvxif_issue_register_commit_if_driver
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard
+    - 13 kGates
+    - 7 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_0__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_0__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_0__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_1__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_1__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_1__sbe__rd_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_1__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_2__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_2__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_2__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_3__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_3__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_3__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_4__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_4__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_4__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_5__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_5__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_5__sbe__rd_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_5__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_6__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_6__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_6__sbe__result_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_7__is_rd_fpr_flag_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_7__issued_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_7__sbe__ex__cause_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_7__sbe__ex__valid_
+    - 0 kGates
+    - 0 %
+  - col:
+    - issue_stage_i/i_scoreboard/clk_gate_mem_q_reg_7__sbe__result_
+    - 0 kGates
+    - 0 %
+- display_name: Synthesis full log
+  sort_index: 3
+  status: pass
+  type: log
+  value:
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Error: Value for list ''object_list'' must have 1 elements. (CMD-036)'
+  - 'Warning: Layer ''ME3'' has a pitch 0.2 that does not match the doubled pitch
+    0.4 or tripled pitch 0.6. (TFCHK-050)'
+  - 'Warning: Layer ''ME4'' has a pitch 0.2 that does not match the doubled pitch
+    0.4 or tripled pitch 0.6. (TFCHK-050)'
+  - 'Warning: Layer ''AL_RDL'' has a pitch 4.6 that does not match the doubled pitch
+    0.4 or tripled pitch 0.6. (TFCHK-050)'
+  - 'Warning: CapModel sections are missing. Capacitance models should be loaded with
+    a TLU+ file later. (TFCHK-084)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvfpu/src/fpnew_pkg.sv:359:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvfpu/src/fpnew_pkg.sv:360:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvfpu/src/fpnew_pkg.sv:490:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/config_pkg.sv:21:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/vendor/pulp-platform/axi/src/axi_pkg.sv:92:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:36:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:37:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:40:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:41:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:42:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:79:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:126:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:134:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:141:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:152:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:153:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:154:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:156:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:157:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:158:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:159:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:160:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:162:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:163:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvxif_example/include/cvxif_instr_pkg.sv:52:
+    Parameter keyword used in local parameter declaration. (VER-329)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:489:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:490:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:491:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:492:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:493:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:496:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:501:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:502:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:505:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:506:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv:39:
+    The construct ''declaration initial assignment'' is not supported in synthesis;
+    it is ignored. (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv:42:
+    The construct ''declaration initial assignment'' is not supported in synthesis;
+    it is ignored. (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvxif_example/instr_decoder.sv:86:
+    The construct ''assert property'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cvxif_example/compressed_instr_decoder.sv:46:
+    The construct ''assert property'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/ariane_regfile_fpga.sv:117:
+    The statements in initial blocks are ignored. (VER-281)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/acc_dispatcher.sv:402:
+    The construct ''assert property'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/acc_dispatcher.sv:447:
+    The construct ''assert property'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/axi_adapter.sv:203:
+    The construct ''immediate assertion'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/axi_adapter.sv:234:
+    The construct ''immediate assertion'' is not supported in synthesis; it is ignored.
+    (VER-708)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/miss_handler.sv:72:
+    Parameter keyword used in local parameter declaration. (VER-329)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv:91:
+    The statements in initial blocks are ignored. (VER-281)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hwpf_stride/hwpf_stride.sv:91:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1105:
+    Port req of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1109:
+    Port req of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1113:
+    Port req of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1123:
+    Port resp of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1127:
+    Port resp of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1131:
+    Port resp of type input is being assigned.  (VER-1005)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:106:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_miss_handler.sv:154:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_rtab.sv:150:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_uncached.sv:164:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_flush.sv:119:
+    Using default enum base size of 32. (VER-533)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:162:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:163:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:36:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:37:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:40:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:41:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:42:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:79:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:141:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:152:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:154:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:156:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:157:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:158:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:159:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/include/build_config_pkg.sv:160:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cva6.sv:351:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cva6.sv:351:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cva6.sv:1689:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:190:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:218:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:547:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:226:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:288:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:233:
+    unsigned to signed assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:303:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:451:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/frontend.sv:453:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/id_stage.sv:132:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/id_stage.sv:262:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/id_stage.sv:272:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_stage.sv:184:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/commit_stage.sv:109:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/commit_stage.sv:121:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:292:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:292:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:894:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:1238:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:1381:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:1640:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:1641:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:1751:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:2594:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:2681:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/csr_regfile.sv:2518:
+    Netlist for always_ff block contains a latch. (ELAB-978)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/controller.sv:213:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:489:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:490:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:491:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:492:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:493:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:496:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:501:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:502:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:505:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_pkg.sv:506:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cva6_rvfi_probes.sv:105:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/instr_realign.sv:54:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:132:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:133:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:134:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:135:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:136:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:137:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:78:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:109:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:118:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/bht.sv:119:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:155:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:211:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:230:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:315:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:424:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:436:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:480:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/frontend/instr_queue.sv:488:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/compressed_decoder.sv:51:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/compressed_decoder.sv:743:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:193:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:538:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:592:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:621:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:639:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:668:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:684:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:1120:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:1266:
+    DEFAULT branch of CASE statement cannot be reached. (ELAB-311)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:295:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:920:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:1562:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:1571:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/decoder.sv:1573:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:119:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:123:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:147:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:285:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:294:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:301:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/scoreboard.sv:249:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:252:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:397:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:619:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:776:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:963:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:969:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:1090:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:413:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:311:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/issue_read_operands.sv:311:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:58:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:171:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:298:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:326:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:330:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:58:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:171:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:298:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:326:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/alu.sv:330:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_icache.sv:430:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_icache.sv:504:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_icache.sv:369:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv:147:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv:148:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv:299:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/ariane_regfile_ff.sv:81:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/multiplier.sv:60:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/multiplier.sv:77:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/multiplier.sv:71:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/multiplier.sv:118:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/serdiv.sv:151:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/serdiv.sv:158:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/store_unit.sv:103:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/store_unit.sv:167:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/store_unit.sv:193:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/store_unit.sv:222:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/store_unit.sv:258:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:503:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:303:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:377:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:377:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:377:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:377:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:449:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:521:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:268:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:276:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:312:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:338:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:346:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/load_unit.sv:497:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hwpf_stride/hwpf_stride_wrapper.sv:182:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hwpf_stride/hwpf_stride_wrapper.sv:258:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hwpf_stride/hwpf_stride_wrapper.sv:207:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1104:
+    If statement marked unique does not cover all possible conditions. (VER-506)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache.sv:1122:
+    If statement marked unique does not cover all possible conditions. (VER-506)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/common/hpdcache_data_upsize.sv:102:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/common/hpdcache_data_upsize.sv:105:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/common/hpdcache_data_upsize.sv:103:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/common/hpdcache_data_upsize.sv:116:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/common/local/util/tc_sram_wrapper_cache_techno_UMC55.sv:28:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/common/local/util/tc_sram_wrapper_cache_techno_UMC55.sv:28:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hwpf_stride/hwpf_stride.sv:228:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_wbuf.sv:243:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_wbuf.sv:403:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_wbuf.sv:577:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_miss_handler.sv:422:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_uncached.sv:332:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_uncached.sv:429:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_uncached.sv:504:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:195:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:198:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:276:
+    Case statement marked unique does not cover all possible conditions. (VER-504)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:305:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_cmo.sv:369:
+    Statement unreachable (Branch condition impossible to meet).  (VER-61)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:631:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:925:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:924:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:931:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:933:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_memctrl.sv:934:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_amo.sv:43:
+    unsigned to signed assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_amo.sv:44:
+    unsigned to signed assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/hpdcache_amo.sv:56:
+    signed to unsigned assignment occurs. (VER-318)'
+  - 'Warning:  /gitlab-runner/runner_riscv-thales/builds/WYMWFBAh5/0/riscv/cva6/core/cache_subsystem/hpdcache//rtl/src/common/hpdcache_regbank_wbyteenable_1rw.sv:58:
+    signed to unsigned conversion occurs. (VER-318)'
+  - 'Warning: Discarding all scenario specific information previously defined in this
+    session. (UID-1008)'
+  - 'Warning: Design ''cva6'' contains 39 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6'' contains 39 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: File ''./inputs/cva6.def'' was not found in search path. (CMD-030)'
+  - 'Warning: File ''cva6.fp.objects'' was not found in search path. (CMD-030)'
+  - 'Warning: File ''cva6.fp'' was not found in search path. (CMD-030)'
+  - 'Warning: File ''cva6.physical_constraints.tcl'' was not found in search path.
+    (CMD-030)'
+  - 'Warning: Can''t find objects matching ''gen_cache_wt.i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams[*].i_tag_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''gen_cache_wt.i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks[*].i_data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''gen_cache_wt.i_cache_subsystem/i_cva6_icache/gen_sram[*].data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''gen_cache_wt.i_cache_subsystem/i_cva6_icache/gen_sram[*].tag_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''gen_cache_hpd.i_cache_subsystem/i_dcache/i_hpdcache/hpdcache_ctrl_i/hpdcache_memctrl_i/gen_data_sram_row[*].gen_data_sram_col[*].gen_data_sram_wmask.data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_wt.i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams[*].i_tag_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_wt.i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks[*].i_data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_wt.i_cache_subsystem/i_cva6_icache/gen_sram[*].data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_wt.i_cache_subsystem/i_cva6_icache/gen_sram[*].tag_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_hpd.i_cache_subsystem/i_dcache/i_hpdcache/hpdcache_ctrl_i/hpdcache_memctrl_i/gen_dir_sram[*].dir_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_hpd.i_cache_subsystem/i_dcache/i_hpdcache/hpdcache_ctrl_i/hpdcache_memctrl_i/gen_data_sram_row[*].gen_data_sram_col[*].gen_data_sram_wbyteenable.data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: Can''t find objects matching ''i_cva6/gen_cache_hpd.i_cache_subsystem/i_dcache/i_hpdcache/hpdcache_ctrl_i/hpdcache_memctrl_i/gen_data_sram_row[*].gen_data_sram_col[*].gen_data_sram_wmask.data_sram''
+    in design ''cva6''. (UID-95)'
+  - 'Warning: The value of variable ''compile_preserve_subdesign_interfaces'' has
+    been changed to true because ''-no_boundary_optimization'' is used. (OPT-133)'
+  - 'Warning: Congestion optimization is enabled as part of the physical guidance
+    flow. (OPT-1445)'
+  - 'Warning: Total of 10 instantiated cells without corresponding physical library
+    cells are found. Run ''-check_only'' with ''compile_ultra'' to see more details.
+    (OPT-1432)'
+  - 'Warning: ''5125'' ports are missing location, compile_ultra will automatically
+    assign a location for these ports. For more details run compile_ultra -check_only
+    -spg. (SPG-013)'
+  - 'Warning: Tool will use native floorplan capabilities to place the ports. (DCT-398)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design ''cva6'' contains 2 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6'' contains 2 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: The value of variable ''compile_preserve_subdesign_interfaces'' has
+    been changed to true because ''-no_boundary_optimization'' is used. (OPT-133)'
+  - 'Warning: Congestion optimization is enabled as part of the physical guidance
+    flow. (OPT-1445)'
+  - 'Warning: Total of 10 instantiated cells without corresponding physical library
+    cells are found. Run ''-check_only'' with ''compile_ultra'' to see more details.
+    (OPT-1432)'
+  - 'Warning: ''5125'' ports are missing location, compile_ultra will automatically
+    assign a location for these ports. For more details run compile_ultra -check_only
+    -spg. (SPG-013)'
+  - 'Warning: Tool will use native floorplan capabilities to place the ports. (DCT-398)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Found 4 percent of cells (3190) without DC Topographical data. Generating
+    data for those cells... (OPT-1404)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Design has unannotated black box outputs. (PWR-428)'
+  - 'Warning: Total of 10 instantiated cells without corresponding physical library
+    cells are found. Run ''-check_only'' with ''compile_ultra'' to see more details.
+    (OPT-1432)'
+  - 'Warning: ''5125'' ports are missing location, compile_ultra will automatically
+    assign a location for these ports. For more details run compile_ultra -check_only
+    -spg. (SPG-013)'
+  - 'Warning: Tool will use native floorplan capabilities to place the ports. (DCT-398)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6_hpdcache_wrapper_4_4__logic_Z_1yB___logic_Z_1yB__731242''
+    inherited license information from design ''hwpf_stride_wrapper_4_3_282242''.
+    (DDB-74)'
+  - 'Warning: The specified replacement character (_) is conflicting with the specified
+    allowed or restricted character.   (UCN-4)'
+  - 'Warning: Verilog ''assign'' or ''tran'' statements are written out. (VO-4)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+  - 'Warning: Design ''cva6'' contains 1 high-fanout nets. A fanout number of 1000
+    will be used for delay calculations involving these nets. (TIM-134)'
+sort_index: '5'
+status: pass
+title: ASIC Synthesis cv32a65x
+token: YC1731582036565421

@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Log of Check Physical Design</title>
+<script type="text/javascript">
+var line_num;
+var xmlhttp;
+
+function set_anchor() 
+{
+  var anchor = "<h3>Please specify a valid line number!</h3>";
+  if (window.location.hash.length > 0)
+    anchor =  "<a name=\"" + window.location.hash.replace(/#/,"") + "\"></a>\n";
+  return anchor;
+}
+function createXMLHttp()
+{
+  var browser=navigator.appName;
+  var b_version=navigator.appVersion;
+  var version=parseFloat(b_version);
+  var protocol = location.protocol;
+  var detectIE = false;
+  if (browser == "Microsoft Internet Explorer" && protocol == "file:") {
+    detectIE = true;
+  }
+  if (!detectIE && window.XMLHttpRequest) {
+    return new XMLHttpRequest();
+  }
+  else if (window.ActiveXObject) {
+    var aVersions = [ "MSXML2.XMLHttp.5.0",
+                      "MSXML2.XMLHttp.4.0","MSXML2.XMLHttp.3.0",
+                      "MSXML2.XMLHttp","Microsoft.XMLHttp"];
+
+    for (var i = 0; i < aVersions.length; i++) {
+      try {
+        var oXmlHttp = new ActiveXObject(aVersions[i]);
+        return oXmlHttp;
+      }
+      catch (oError) {
+        //Do nothing
+      }
+    }
+  }
+  return null;
+}
+function get_logfile_name()
+{
+  var log_file;
+  // match link?log_file_name
+  var info = self.location.search;
+  if (info && info != "") {
+    var browser=navigator.appName;
+    var initIndex = 0;
+    if (browser == "Netscape") {
+      initIndex = 1;
+    }
+    var pattern = /\?/;
+    var result = info.split(pattern);
+    if (result.length > initIndex) {
+      log_file = result[initIndex];
+    }
+  }
+  return log_file;
+}
+function loadXMLDoc()
+{
+  var url = get_logfile_name();
+  line_num = 0;
+  if (window.location.hash.length > 0) 
+    line_num = window.location.hash.replace(/#/,"");
+  else 
+    return;
+  
+  xmlhttp=createXMLHttp();
+  if (xmlhttp!=null)
+  {
+    xmlhttp.onreadystatechange=state_Change;
+    xmlhttp.open("GET",url,true);
+    xmlhttp.send(null);
+  }
+  else
+  {
+    alert("We did not support your browser. Please try IE or firefox.");
+  }
+}
+
+function display_file()
+{
+  var line_num_bk = line_num;
+  var content1 = "<pre>";
+  var content2 = "<pre>";
+  var part = xmlhttp.responseText.split("\n");
+  if (line_num - 1 < 0) line_num = 1;
+  if (line_num - part.length > 0) line_num = part.length;
+  var  anchor = line_num-15;
+  var start = 1;
+  var end = part.length;
+  if (anchor < 1) anchor = 1;
+  if (start < 1) start = 1;
+  if (end > part.length) end = part.length;
+  for (var i = start; i <= end; i++) {
+    var st = i+": "+part[i-1];
+    if (i==line_num)
+      st = "<b style=\"background-color:yellow\">" + st + "</b>";
+    if (i<anchor)
+      content1 += st + "\n";
+    else
+      content2 += st + "\n";
+  }
+
+  content1 += "</pre>"; 
+  content2 += "</pre>";
+
+  document.getElementById('pre_anchor').innerHTML=content1;
+  document.getElementById('post_anchor').innerHTML=content2;
+  location.hash=line_num_bk;
+}
+
+function state_Change()
+{
+  if (xmlhttp.readyState==4){
+    if (xmlhttp.status==200 || xmlhttp.status==0){
+      display_file();
+    }  else  {
+      alert("Problem to load the data");
+    }
+  }
+}
+
+</script>
+</head>
+<body onload="loadXMLDoc()">
+<a id = "pre_anchor"></a>
+<script type="text/javascript">
+document.write(set_anchor());
+</script>
+<a id = "post_anchor"></a>
+</body>
+</html>
