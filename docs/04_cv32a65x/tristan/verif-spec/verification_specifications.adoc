@@ -492,6 +492,75 @@ image:./media/axiagentmerge.png[./media/axiagentmerge,width=602,height=285]
 At the time of writing this document, the merge of the two agents is not yet completed.
 It remains to publish on GitHub the agent and to integrate it with CVA6.
 
+*_[.underline]#Interrupt Agent#_*
+
+This document describes the interrupt agent that plays as a interrupt controler for the CV32A65X, the agent is based on the following protocol:
+https://github.com/openhwgroup/cva6/blob/master/verif/docs/Protocols/interrupt-verification.adoc
+
+[.underline]#Agent Architecture:#
+
+image:./media/interrupt_uvm_agent.png[./media/image5,width=618,height=366]
+
+[.underline]#Agent components:#
+
+The Interrupt agent provides following components:
+
+* uvma_interrupt_agent_c: UVM Agent.
+
+* uvma_interrupt_mon_c: Agent monitor, collects and broadcast transactions to the coverage model each time the interrupt interface changes.
+
+* uvma_interrupt_base_seq_c: Base sequence, instantiate agent configuration & context, and connect it with the sequencer configuration & context.
+
+* uvma_interrupt_seq_c: Generates interrupt requests & clear them based on the clear protocol decribe in link above.
+
+* uvma_interrupt_seq_item_c: Have main items of an interrupt transaction, `+interrupt_vector,+`interrupt_channel_mask and interrupt delays.
+
+* uvma_interrupt_sqr_c: Sequencer, receives requests from the sequence and send it to the driver.
+
+* uvma_interrupt_drv_c: drive the vif with the requests received from sequencer.
+
+* uvma_interrupt_cntxt_c: Agent context, instantiate VIF uma_interrupt_intf and memory uvml_mem. VIF and Memory are accessible in all components through context.
+
+* uvma_interrupt_cfg_c: Agent configuration, all available configuration fields are described in Configuration Fields.
+
+[.underline]#Supported features:#
+
+features are:
+
+* Asynchronous request: the agent support Asynchronously interrupts requests.
+
+* No channel Dependency: there’s no dependency between the interrupt channels, every one is managed independently.
+
+* Channel delay: provide delay after setting the interrupt request, also after clear it.
+
+* Randomize channel: full randomization of setting interrupt request.
+
+* Timeout: the agent is triggering a `+UVM_FATAL+` after a number of clock cycle if it failed to clear the interrupt request.
+
+[.underline]#Agent configuration Fields:#
+
+* is_active: Switch the agent mode to active. The agent support only UVM_ACTIVE mode (can’t be in passive mode).
+
+* trn_log_enabled: Enabling interrupt transaction logger when 1.
+
+* enable_interrupt: Enabling sending interrupt request when 1.
+
+* interrupt_plusarg_valid: Enabling interrupts from commande line request when 1.
+
+* num_irq_supported: Represent the number of interrupt channels supported.
+
+* irq_addr: Represent the memory address used by the interrupt clear mechanism.
+
+* enable_clear_irq: Enabling the interrupt clear mechanism when 1.
+
+* irq_timeout: Represent the number of clock cyle before the agent trigger a `+UVM_FATAL+` timeout.
+
+[.underline]#Sequences:#
+
+This agent provides only one sequence:
+
+* Set/Clear sequence: this sequence set interrupt request also clear it based on a protocol.
+
 ==== UVCs
 
 No UVC used in this project
