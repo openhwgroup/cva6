@@ -407,13 +407,13 @@ module cva6_hpdcache_subsystem_axi_arbiter
   //  pragma translate_off
   initial
     assert (CVA6Cfg.MEM_TID_WIDTH <= AxiIdWidth)
-    else $fatal("MEM_TID_WIDTH shall be less or equal to AxiIdWidth");
+    else $fatal(1, "MEM_TID_WIDTH shall be less or equal to AxiIdWidth");
   initial
     assert (CVA6Cfg.AxiDataWidth <= CVA6Cfg.ICACHE_LINE_WIDTH)
-    else $fatal("AxiDataWidth shall be less or equal to the width of a Icache line");
+    else $fatal(1, "AxiDataWidth shall be less or equal to the width of a Icache line");
   initial
     assert (CVA6Cfg.AxiDataWidth <= CVA6Cfg.DCACHE_LINE_WIDTH)
-    else $fatal("AxiDataWidth shall be less or equal to the width of a Dcache line");
+    else $fatal(1, "AxiDataWidth shall be less or equal to the width of a Dcache line");
   //  pragma translate_on
   //  }}}
 
