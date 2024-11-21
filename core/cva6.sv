@@ -33,7 +33,7 @@ module cva6
 
 
     //TIP
-    parameter bit IsTIP = bit'(1),
+    parameter bit IsTIP = bit'(0),
 
     parameter type tip_instr_t = struct packed {
       logic [config_pkg::NRET-1:0]                 iretire;
