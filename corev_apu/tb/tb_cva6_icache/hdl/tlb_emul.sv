@@ -36,7 +36,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlb_rand
   automatic int rnd = 0;
 
   assert(TlbRandHitRate<=100 && TlbRandHitRate>=0) else
-    $fatal("TlbRandHitRate must be a percentage");
+    $fatal(1, "TlbRandHitRate must be a percentage");
 
   if(~rst_ni) begin
     tlb_ready_q <= '0;
