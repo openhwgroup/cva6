@@ -31,7 +31,9 @@ module compressed_decoder #(
     // Output instruction is macro - decoder
     output logic        is_macro_instr_o,
     // Output instruction is compressed - decoder
-    output logic        is_compressed_o
+    output logic        is_compressed_o,
+    // Output instruction is macro - decoder
+    output logic        is_zcmt_instr_o
 );
 
   // -------------------
@@ -42,6 +44,7 @@ module compressed_decoder #(
     is_compressed_o  = 1'b1;
     instr_o          = instr_i;
     is_macro_instr_o = 0;
+    is_zcmt_instr_o  = 0;
 
     // I: |    imm[11:0]    | rs1 | funct3 |    rd    | opcode |
     // S: | imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode |
@@ -867,9 +870,12 @@ module compressed_decoder #(
                 3'b000,
                 riscv::OpcodeStoreFp
               };
-            end else if (CVA6Cfg.RVZCMP) begin
+            end else if (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT) begin
               if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
                 is_macro_instr_o = 1;
+                instr_o = instr_i;
+              end else if (instr_i[12:10] == 3'b000) begin  //jt/jalt instruction
+                is_zcmt_instr_o = 1;
                 instr_o = instr_i;
               end else begin
                 illegal_instr_o = 1'b1;

@@ -167,7 +167,10 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
-    output rvfi_probes_csr_t rvfi_csr_o
+    output rvfi_probes_csr_t rvfi_csr_o,
+    //jvt output
+    output logic [CVA6Cfg.XLEN-1:6] jvt_base_o,
+    output logic [5:0] jvt_mode_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -295,6 +298,7 @@ module csr_regfile
   assign pmpaddr_o = pmpaddr_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
+  riscv::jvt_t jvt_q, jvt_d;
   // ----------------
   // Assignments
   // ----------------
@@ -349,6 +353,9 @@ module csr_regfile
           end else begin
             read_access_exception = 1'b1;
           end
+        end
+        riscv::CSR_JVT: begin
+          csr_rdata = {jvt_q.base, jvt_q.mode};
         end
         // non-standard extension
         riscv::CSR_FTRAN: begin
@@ -908,7 +915,7 @@ module csr_regfile
 
     perf_we_o                       = 1'b0;
     perf_data_o                     = 'b0;
-
+    jvt_d                           = jvt_q;
     fcsr_d                          = fcsr_q;
 
     priv_lvl_d                      = priv_lvl_q;
@@ -1060,6 +1067,10 @@ module csr_regfile
         riscv::CSR_DSCRATCH1:
         if (CVA6Cfg.DebugEn) dscratch1_d = csr_wdata;
         else update_access_exception = 1'b1;
+        riscv::CSR_JVT: begin
+          jvt_d.base = csr_wdata[CVA6Cfg.XLEN-1:6];
+          jvt_d.mode = 6'b000000;
+        end
         // trigger module CSRs
         riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
@@ -2444,6 +2455,9 @@ module csr_regfile
   assign fflags_o = fcsr_q.fflags;
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
+  //JVT outputs
+  assign jvt_base_o = jvt_q.base;
+  assign jvt_mode_o = jvt_q.mode;
   // MMU outputs
   assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
@@ -2509,7 +2523,8 @@ module csr_regfile
     if (~rst_ni) begin
       priv_lvl_q <= riscv::PRIV_LVL_M;
       // floating-point registers
-      fcsr_q     <= '0;
+      fcsr_q       <= '0;
+      jvt_q        <= '0;
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= 1'b0;
@@ -2591,6 +2606,7 @@ module csr_regfile
       priv_lvl_q <= priv_lvl_d;
       // floating-point registers
       fcsr_q     <= fcsr_d;
+      jvt_q      <= jvt_d;
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= debug_mode_d;
@@ -2712,6 +2728,7 @@ module csr_regfile
   // RVFI
   //-------------
   assign rvfi_csr_o.fcsr_q = CVA6Cfg.FpPresent ? fcsr_q : '0;
+  assign rvfi_csr_o.jvt_q = jvt_q;
   assign rvfi_csr_o.dcsr_q = CVA6Cfg.DebugEn ? dcsr_q : '0;
   assign rvfi_csr_o.dpc_q = CVA6Cfg.DebugEn ? dpc_q : '0;
   assign rvfi_csr_o.dscratch0_q = CVA6Cfg.DebugEn ? dscratch0_q : '0;

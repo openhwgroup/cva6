@@ -563,6 +563,10 @@ module cva6
   riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg;
   logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
+  //jvt
+  logic [CVA6Cfg.XLEN-1:6] jvt_base;
+  logic [5:0] jvt_mode;
+  logic is_zcmt_id_is, is_zcmt_is_ex;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -617,6 +621,8 @@ module cva6
   // ----------------
   dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
+  dcache_req_i_t dcache_req_ports_id_cache;
+  dcache_req_o_t dcache_req_ports_cache_id;
   dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
   dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
   logic dcache_commit_wbuffer_empty;
@@ -671,6 +677,8 @@ module cva6
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
       .irq_ctrl_t(irq_ctrl_t),
@@ -716,7 +724,13 @@ module cva6
       .compressed_ready_i(x_compressed_ready),
       .compressed_resp_i (x_compressed_resp),
       .compressed_valid_o(x_compressed_valid),
-      .compressed_req_o  (x_compressed_req)
+      .compressed_req_o  (x_compressed_req),
+      .jvt_base_i        (jvt_base),
+      .jvt_mode_i        (jvt_mode),
+      .is_zcmt_o         (is_zcmt_id_is),
+      // DCACHE interfaces
+      .dcache_req_ports_i(dcache_req_ports_cache_id),
+      .dcache_req_ports_o(dcache_req_ports_id_cache)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -812,6 +826,8 @@ module cva6
       .decoded_instr_valid_i   (issue_entry_valid_id_issue),
       .is_ctrl_flow_i          (is_ctrl_fow_id_issue),
       .decoded_instr_ack_o     (issue_instr_issue_id),
+      .is_zcmt_i               (is_zcmt_id_is),
+      .is_zcmt_o               (is_zcmt_is_ex),
       // Functional Units
       .rs1_forwarding_o        (rs1_forwarding_id_ex),
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
@@ -1018,7 +1034,8 @@ module cva6
       .pmpaddr_i               (pmpaddr),
       //RVFI
       .rvfi_lsu_ctrl_o         (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o        (rvfi_mem_paddr)
+      .rvfi_mem_paddr_o        (rvfi_mem_paddr),
+      .is_zcmt_i               (is_zcmt_is_ex)
   );
 
   // ---------
@@ -1154,6 +1171,8 @@ module cva6
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
+      .jvt_base_o              (jvt_base),
+      .jvt_mode_o              (jvt_mode),
       //RVFI
       .rvfi_csr_o              (rvfi_csr)
   );
@@ -1258,15 +1277,24 @@ module cva6
   dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
 
   // D$ request
-  assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
+  // D$ request
+  if (CVA6Cfg.RVZCMT) begin
+    assign dcache_req_to_cache[0] = dcache_req_ports_id_cache;
+  end else begin
+    assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
+  end
   assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];
   assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0];
   assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
                                                                           dcache_req_ports_acc_cache[1];
 
   // D$ response
-  assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
-  assign dcache_req_ports_cache_ex[1] = dcache_req_from_cache[1];
+  if (CVA6Cfg.RVZCMT) begin
+    assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
+  end else begin
+    assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
+  end
+  assign dcache_req_ports_cache_ex[1]  = dcache_req_from_cache[1];
   assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];
   always_comb begin : gen_dcache_req_store_data_gnt
     dcache_req_ports_cache_ex[2]  = dcache_req_from_cache[3];

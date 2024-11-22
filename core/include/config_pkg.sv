@@ -68,6 +68,8 @@ package config_pkg;
     bit                          RVZCB;
     // Zcmp RISC-V extension
     bit                          RVZCMP;
+    // Zcmt RISC-V extension
+    bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
     // Zicntr RISC-V extension
@@ -258,6 +260,7 @@ package config_pkg;
     bit          RVH;
     bit          RVZCB;
     bit          RVZCMP;
+    bit          RVZCMT;
     bit          XFVec;
     bit          CvxifEn;
     bit          RVZiCond;

@@ -228,7 +228,9 @@ module ex_stage
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    //zcmt instruction
+    input logic is_zcmt_i
 );
 
   // -------------------------
@@ -327,7 +329,8 @@ module ex_stage
       .branch_predict_i,
       .resolved_branch_o,
       .resolve_branch_o,
-      .branch_exception_o(flu_exception_o)
+      .branch_exception_o(flu_exception_o),
+      .is_zcmt_i         (is_zcmt_i)
   );
 
   // 3. CSR (sequential)

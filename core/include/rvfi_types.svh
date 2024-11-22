@@ -39,6 +39,7 @@
   rvfi_csr_elmt_t fflags; \
   rvfi_csr_elmt_t frm; \
   rvfi_csr_elmt_t fcsr; \
+  rvfi_csr_elmt_t jvt; \
   rvfi_csr_elmt_t ftran; \
   rvfi_csr_elmt_t dcsr; \
   rvfi_csr_elmt_t dpc; \
@@ -130,6 +131,7 @@
 `define RVFI_PROBES_CSR_T(Cfg) struct packed { \
   riscv::fcsr_t fcsr_q; \
   riscv::dcsr_t dcsr_q; \
+  riscv::jvt_t jvt_q; \
   logic [Cfg.XLEN-1:0] dpc_q; \
   logic [Cfg.XLEN-1:0] dscratch0_q; \
   logic [Cfg.XLEN-1:0] dscratch1_q; \
