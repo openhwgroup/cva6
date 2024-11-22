@@ -408,15 +408,15 @@ function void uvme_cva6_env_c::connect_coverage_model();
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
    if(cfg.axi_cfg.cov_model_enabled) begin
-      axi_agent.monitor.m_axi_superset_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_req_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_req_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_req_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
 
-      axi_agent.monitor.m_axi_superset_write_rsp_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_rsp_packets_collected . connect(cov_model.axi_ext_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_req_packets_collected .connect(cov_model.axi_ext_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected . connect(cov_model.axi_ext_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_req_packets_collected .connect(cov_model.axi_ext_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
    end
 
    if(cfg.interrupt_cfg.cov_model_enabled) begin
