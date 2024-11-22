@@ -106,8 +106,10 @@ Fetch stage controls the CACHE module by a handshaking protocol.
 Fetched data is a {ifetch-len}-bit block with a word-aligned address.
 A granted fetch is processed by the instr_realign submodule to produce instructions.
 Then instructions are pushed into an internal instruction FIFO called instruction queue (instr_queue submodule).
-This submodule stores the instructions and sends them to the DECODE module.
+This submodule stores the instructions with its associated address and sends them to the DECODE module.
 
+Before sending the instructions to the DECODE stage, the frontend calculates a prediction address in case of a JUMP or Branch. This predicted address is sent to the DECODE stage along with the instruction and its fetch address.
+The prediction address is not valid if there is no prediction.
 Instructions following a predicted taken control flow instruction are dropped.
 
 // TO_BE_COMPLETED MMU also feedback an exception, but not present in 65X
@@ -131,11 +133,116 @@ Instr_realign submodule
 
 The {ifetch-len}-bit aligned block coming from the CACHE module enters the instr_realign submodule.
 This submodule extracts the instructions from the {ifetch-len}-bit blocks.
+Based on the fetch address and the fetched data, the instr_realign module extracts the valid instructions to be sent to the queue.
 It is possible to fetch up to {instr-per-fetch} instructions per cycle when C extension is used.
 A not-compressed instruction can be misaligned on the block size, interleaved with two cache blocks.
 In that case, two cache accesses are needed to get the whole instruction.
 The instr_realign submodule provides up to {instr-per-fetch} instructions per cycle when compressed extension is enabled, else one instruction per cycle.
 Incomplete instruction is stored in instr_realign submodule until its second half is fetched.
+
+Below is a table that explains how the instr_realign works:
+
+* _C : compressed instruction_
+* _I : not compressed instruction_
+* _UI: Incomplete instruction stored in the instr_realign_
+
+ifeval::[{Superscalar} == true]
+
+|==========================================================
+|*Address[2:1]*	|*Incomplete Access* |*64-48* |*48-32* |*32-16*	|*16-0*
+.13+^.^|0
+
+.5+^.^|1
+|UI
+2.+^.^|I
+|UI
+|C
+2.+^.^|I
+|UI
+2.+^.^|I
+|C |UI
+|C |C |C |UI
+|UI |C |C |UI
+
+.8+^.^|0
+|UI
+2.+^.^|I
+|C
+|C
+2.+^.^|I
+|C
+2.+^.^|I
+|C
+|C
+|UI |C |C |C
+|C |C |C |C
+|UI |C
+2.+^.^|I
+|C |C
+2.+^.^|I
+2.+^.^|I
+2.+^.^|I
+
+.5+^.^|1
+.5+^.^|__
+|* |UI
+2.+^.^|I
+|* |C
+2.+^.^|I
+|*
+2.+^.^|I
+|C
+|* |UI |C |C
+|* |C |C |C
+
+.3+^.^|2
+.3+^.^|__
+2.+^.^|*
+|UI |C
+2.+^.^|*
+|C |C
+2.+^.^|*
+2.+^.^|I
+
+.2+^.^|3
+.2+^.^|__
+3.+^.^|*
+|UI
+3.+^.^|*
+|C
+
+|==========================================================
+
+endif::[]
+ifeval::[{Superscalar} == false]
+
+|==========================================================
+|*Address[2:1]*	|*Incomplete Access* |*32-16*	|*16-0*
+.5+^.^|0
+
+.3+^.^|0
+2.+^.^|I
+|C
+|C
+|UI
+|C
+
+.2+^.^|1
+|UI
+|UI
+|C
+|UI
+
+.2+^.^|1
+.2+^.^|__
+|* |C
+|* |UI
+
+|==========================================================
+
+endif::[]
+
+The Instr_realign can be flushed when the frontend requests the cache to kill the incoming instruction, in this case the incomplete instruction is deleted.
 
 include::port_instr_realign.adoc[]
 
@@ -143,14 +250,18 @@ include::port_instr_realign.adoc[]
 Instr_queue submodule
 +++++++++++++++++++++
 
-The instr_queue receives mutliple instructions from instr_realign submodule to create a valid stream of instructions to be decoded (by DECODE), to be issued (by ISSUE) and executed (by EXECUTE).
-FRONTEND pushes in FIFO to store the instructions and related information needed in case of mispredict or exception: instructions, instruction control flow type, exception, exception address and predicted address.
+The instr_queue receives mutliple instructions from instr_realign submodule to create a valid stream to be executed.
+Frontend pushes instructions and all related information into the FIFO for storage, including details needed in case of a misprediction or exception: the instructions themselves, instruction control flow type, exception, exception address, and predicted address.
 DECODE pops them when decode stage is ready and indicates to the FRONTEND the instruction has been consummed.
 
-The instruction queue contains at most 16 instructions including at most 2 predicted taken control flow instructions.
-If the instruction queue is full, a replay request is sent to inform the fetch mechanism to replay the fetch.
 
-The instruction queue can be flushed by CONTROLLER.
+The instruction queue contains two FIFOs: one for instructions and one for addresses, which stores addresses in case of a prediction.
+The instruction FIFO can hold up to 4×{INSTR_PER_FETCH} instructions, while the address FIFO can hold up to 2 addresses.
+If the instruction FIFO is full, a replay request is sent to inform the fetch mechanism to replay the fetch.
+If the address FIFO is full and there is a prediction, a replay request is sent to inform the fetch mechanism to replay the fetch, even if the instruction FIFO is not full.
+
+The instruction queue can be flushed by the flush signal coming from the CONTROLLER.
+
 
 include::port_instr_queue.adoc[]
 
@@ -160,7 +271,7 @@ Instr_scan submodule
 
 As compressed extension is enabled, {instr-per-fetch} instr_scan are instantiated to handle up to {instr-per-fetch} instructions per cycle.
 
-Each instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, instructions could be compressed or not.
+Each instr_scan submodule pre-decodes the fetched instructions coming from the instr_realign module, also calculate the immediate, instructions could be compressed or not.
 The instr_scan submodule is a flox controler which provides the intruction type: branch, jump, return, jalr, imm, call or others.
 These outputs are used by the branch prediction feature.
 
@@ -171,22 +282,47 @@ ifeval::[{BHTEntries} > 0]
 BHT (Branch History Table) submodule
 ++++++++++++++++++++++++++++++++++++
 
-BHT is implemented as a memory which is composed of {BHTEntries} entries.
-It is indexed by bits 5:1 of the virtual address.
-(Two distinct branches with different addresses can share the same BHT entry if they have the same 6 lowest bits.)
+The BHT is implemented as a memory which is composed of {BHTEntries} entries.
+The BHT is a two-dimensional table:
+
+*	The first dimension represents the access address, with a length equal to `{BHTEntries} / {INSTR_PER_FETCH}`.
+*	The second dimension represents the row index, with a length equal to `INSTR_PER_FETCH`.
+
+In the case of branch prediction, the BHT uses only part of the virtual address to get the value of the saturation counter.
+In the case of a valid misprediction, the BHT uses only part of the misprediction address to access the BHT table and update the saturation counter.
+
+'UPPER_ADDRESS_INDEX = $clog2(BHTDepth) + ((RVC == 1) ? 1 : 2)'
+
+'LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 + $clog2(INSTR_PER_FETCH)'
+
+`ACCESS_ADDRESS = PC/MISPREDICT_ADDRESS [ UPPER_ADDRESS_INDEX : LOWER_ADDRESS_INDEX ]`
+
+The lower address bits of the virtual address point to the memory entry.
+
+'UPPER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +  $clog2(INSTR_PER_FETCH)'
+
+'LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +    $clog2(INSTR_PER_FETCH)'
+
+`ACCESS_INDEX = PC/MISPREDICT_ADDRESS [ UPPER_ADDRESS_INDEX : LOWER_ADDRESS_INDEX]`
+
+_Two distinct branches with different addresses can share the same BHT entry if they have the same ACCESS_ADDRESS._
 
 Each BHT entry contains a two-bit saturating counter and a valid bit.
-On reset, the counters are set to 2 (weakly taken) and the valid bits are cleared.
-When a branch instruction is resolved by the EX_STAGE module, the valid bit is set and the counter is updated as shown in the following figure.
-
-// TO_BE_COMPLETED: Specify the behaviour when BHT is saturated
+On reset, the counters are set to 0 (strongly not taken) and the valid bits are cleared.
+When a branch instruction is resolved by the EX_STAGE module, the valid bit is set and the counter is updated.
+The two bit counter is updated by the successive execution of the instructions as shown in the following figure.
 
 image:bht.png[BHT saturation]
 
-// TODO: if debug enable, The BHT is not updated if processor is in debug mode.
-
-When a branch instruction is pre-decoded by instr_scan submodule, the valid bit indicates whether a prediction is available or not.
+When a branch instruction is pre-decoded by instr_scan submodule, the BHT valids whether the PC address is inside the BHT and provides the taken or not prediction.
 The prediction is the most significant bit from the counter, where 1 means "taken".
+
+When the Execute stage processes a branch instruction, it sends the branch status (whether it's taken or not) to the Frontend to update the BHT table
+
+ifeval::[{DebugEn} == true]
+FIXME The BHT is not updated if processor is in debug mode.
+endif::[]
+
 
 The BHT is never flushed.
 

@@ -21,7 +21,7 @@ hart0:
     supported_xlen:
       - 32
     physical_addr_sz: 32
-    pmp_granularity: 4
+    pmp_granularity: 8
     misa:
         reset-val: 0x40001106
         rv32:

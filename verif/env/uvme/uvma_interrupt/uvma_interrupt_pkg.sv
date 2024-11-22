@@ -29,8 +29,6 @@ package uvma_interrupt_pkg;
    import uvml_hrtbt_pkg::*;
    import uvml_trn_pkg  ::*;
    import uvml_logs_pkg ::*;
-   import uvma_isacov_pkg ::*;
-   import uvma_rvfi_pkg ::*;
 
    parameter XLEN = 32;
    parameter int MAX_ADDR_WIDTH    = `UVMA_AXI_ADDR_MAX_WIDTH    ; // subjective maximum
