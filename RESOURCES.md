@@ -81,7 +81,7 @@ is a mixed-criticality platform targeting automotive applications with several s
 and predictability features built around Cheshire and CVA6.
 
 **AlSaqr** ([repository](https://github.com/AlSaqr-platform/he-soc/tree/master))
-is as ecure system for Nano-UAV navigation based on CVA6 and Culsans.
+is as secure system for Nano-UAV navigation based on CVA6 and Culsans.
 
 ### Designs (ASIC) and chiplets
 
