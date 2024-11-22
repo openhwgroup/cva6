@@ -385,6 +385,8 @@ package riscv;
     CSR_FFLAGS           = 12'h001,
     CSR_FRM              = 12'h002,
     CSR_FCSR             = 12'h003,
+    //jvt
+    CSR_JVT              = 12'h017,
     CSR_FTRAN            = 12'h800,
     // Vector CSRs
     CSR_VSTART           = 12'h008,
@@ -724,6 +726,10 @@ package riscv;
   localparam logic [63:0] SSTATUS_MXR = 'h00080000;
   localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
   localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
+  // CSR Bit Implementation Masks
+  // A mask bit of '1' means a flipflop is implemented.
+  parameter CSR_JVT_MASK = 32'hFFFFFFC0;
+
   function automatic logic [63:0] sstatus_sd(logic IS_XLEN64);
     return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
   endfunction
@@ -859,6 +865,13 @@ package riscv;
     priv_lvl_t    prv;
   } dcsr_t;
 
+  //jvt struct
+  typedef struct packed {
+    logic [XLEN-1:6] base;
+    logic [5:0] mode;
+  } jvt_t;
+  parameter JVT_ADDR_WIDTH = XLEN - 6;
+  parameter JVT_RESET_VAL = 32'd0;  //32 bit
   // Instruction Generation *incomplete*
   function automatic logic [31:0] jal(logic [4:0] rd, logic [20:0] imm);
     // OpCode Jal

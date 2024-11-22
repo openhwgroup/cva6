@@ -344,6 +344,7 @@ module cva6_rvfi
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, fflags, csr.fcsr_q.fflags)
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, frm, csr.fcsr_q.frm)
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, fcsr, { csr.fcsr_q.frm `COMMA csr.fcsr_q.fflags})
+  `CONNECT_RVFI_FULL(1, jvt, { csr.jvt_q.base `COMMA csr.jvt_q.mode})
 
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, ftran, csr.fcsr_q.fprec)
   `CONNECT_RVFI_SAME(CVA6Cfg.FpPresent, dcsr)
