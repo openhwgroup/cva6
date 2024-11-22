@@ -68,52 +68,85 @@ module cva6_hpdcache_wrapper
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
-    // AMO request/response - EX_STAGE
+    // AMO request - EX_STAGE
     input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
+    // AMO response - EX_STAGE
     output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
-    // CMO interface request/response
+    // CMO interface request - TO_BE_COMPLETED
     input  cmo_req_t                             dcache_cmo_req_i,
+    // CMO interface response - TO_BE_COMPLETED
     output cmo_rsp_t                             dcache_cmo_resp_o,
-    // Data cache input request/response ports - EX_STAGE
+    // Data cache input request ports - EX_STAGE
     input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
+    // Data cache output request ports - EX_STAGE
     output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
-    // Write buffer status - EX_STAGE
+    // Write buffer status to know if empty - EX_STAGE
     output logic                                 wbuffer_empty_o,
+    // Write buffer status to know if not non idempotent - EX_STAGE
     output logic                                 wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_base_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_base_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_base_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_param_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_param_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_param_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0]       hwpf_throttle_set_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [NrHwPrefetchers-1:0][63:0] hwpf_throttle_o,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic [               63:0]       hwpf_status_o,
 
-    input  logic              dcache_mem_req_read_ready_i,
-    output logic              dcache_mem_req_read_valid_o,
-    output hpdcache_mem_req_t dcache_mem_req_read_o,
+    input  logic              dcache_mem_req_miss_read_ready_i,
+    output logic              dcache_mem_req_miss_read_valid_o,
+    output hpdcache_mem_req_t dcache_mem_req_miss_read_o,
 
-    output logic                 dcache_mem_resp_read_ready_o,
-    input  logic                 dcache_mem_resp_read_valid_i,
-    input  hpdcache_mem_resp_r_t dcache_mem_resp_read_i,
+    output logic                 dcache_mem_resp_miss_read_ready_o,
+    input  logic                 dcache_mem_resp_miss_read_valid_i,
+    input  hpdcache_mem_resp_r_t dcache_mem_resp_miss_read_i,
 
-    input  logic              dcache_mem_req_write_ready_i,
-    output logic              dcache_mem_req_write_valid_o,
-    output hpdcache_mem_req_t dcache_mem_req_write_o,
+    input  logic              dcache_mem_req_wbuf_write_ready_i,
+    output logic              dcache_mem_req_wbuf_write_valid_o,
+    output hpdcache_mem_req_t dcache_mem_req_wbuf_write_o,
 
-    input  logic                dcache_mem_req_write_data_ready_i,
-    output logic                dcache_mem_req_write_data_valid_o,
-    output hpdcache_mem_req_w_t dcache_mem_req_write_data_o,
+    input  logic                dcache_mem_req_wbuf_write_data_ready_i,
+    output logic                dcache_mem_req_wbuf_write_data_valid_o,
+    output hpdcache_mem_req_w_t dcache_mem_req_wbuf_write_data_o,
 
-    output logic                 dcache_mem_resp_write_ready_o,
-    input  logic                 dcache_mem_resp_write_valid_i,
-    input  hpdcache_mem_resp_w_t dcache_mem_resp_write_i
+    output logic                 dcache_mem_resp_wbuf_write_ready_o,
+    input  logic                 dcache_mem_resp_wbuf_write_valid_i,
+    input  hpdcache_mem_resp_w_t dcache_mem_resp_wbuf_write_i,
+
+    input  logic              dcache_mem_req_uc_read_ready_i,
+    output logic              dcache_mem_req_uc_read_valid_o,
+    output hpdcache_mem_req_t dcache_mem_req_uc_read_o,
+
+    output logic                 dcache_mem_resp_uc_read_ready_o,
+    input  logic                 dcache_mem_resp_uc_read_valid_i,
+    input  hpdcache_mem_resp_r_t dcache_mem_resp_uc_read_i,
+
+    input  logic              dcache_mem_req_uc_write_ready_i,
+    output logic              dcache_mem_req_uc_write_valid_o,
+    output hpdcache_mem_req_t dcache_mem_req_uc_write_o,
+
+    input  logic                dcache_mem_req_uc_write_data_ready_i,
+    output logic                dcache_mem_req_uc_write_data_valid_o,
+    output hpdcache_mem_req_w_t dcache_mem_req_uc_write_data_o,
+
+    output logic                 dcache_mem_resp_uc_write_ready_o,
+    input  logic                 dcache_mem_resp_uc_write_valid_i,
+    input  hpdcache_mem_resp_w_t dcache_mem_resp_uc_write_i
 );
-
   localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
 
   typedef logic [63:0] hwpf_stride_param_t;
@@ -367,25 +400,45 @@ module cva6_hpdcache_wrapper
       .core_rsp_valid_o(dcache_rsp_valid),
       .core_rsp_o      (dcache_rsp),
 
-      .mem_req_read_ready_i(dcache_mem_req_read_ready_i),
-      .mem_req_read_valid_o(dcache_mem_req_read_valid_o),
-      .mem_req_read_o      (dcache_mem_req_read_o),
+      .mem_req_miss_read_ready_i(dcache_mem_req_miss_read_ready_i),
+      .mem_req_miss_read_valid_o(dcache_mem_req_miss_read_valid_o),
+      .mem_req_miss_read_o      (dcache_mem_req_miss_read_o),
 
-      .mem_resp_read_ready_o(dcache_mem_resp_read_ready_o),
-      .mem_resp_read_valid_i(dcache_mem_resp_read_valid_i),
-      .mem_resp_read_i      (dcache_mem_resp_read_i),
+      .mem_resp_miss_read_ready_o(dcache_mem_resp_miss_read_ready_o),
+      .mem_resp_miss_read_valid_i(dcache_mem_resp_miss_read_valid_i),
+      .mem_resp_miss_read_i      (dcache_mem_resp_miss_read_i),
 
-      .mem_req_write_ready_i(dcache_mem_req_write_ready_i),
-      .mem_req_write_valid_o(dcache_mem_req_write_valid_o),
-      .mem_req_write_o      (dcache_mem_req_write_o),
+      .mem_req_wbuf_write_ready_i(dcache_mem_req_wbuf_write_ready_i),
+      .mem_req_wbuf_write_valid_o(dcache_mem_req_wbuf_write_valid_o),
+      .mem_req_wbuf_write_o      (dcache_mem_req_wbuf_write_o),
 
-      .mem_req_write_data_ready_i(dcache_mem_req_write_data_ready_i),
-      .mem_req_write_data_valid_o(dcache_mem_req_write_data_valid_o),
-      .mem_req_write_data_o      (dcache_mem_req_write_data_o),
+      .mem_req_wbuf_write_data_ready_i(dcache_mem_req_wbuf_write_data_ready_i),
+      .mem_req_wbuf_write_data_valid_o(dcache_mem_req_wbuf_write_data_valid_o),
+      .mem_req_wbuf_write_data_o      (dcache_mem_req_wbuf_write_data_o),
 
-      .mem_resp_write_ready_o(dcache_mem_resp_write_ready_o),
-      .mem_resp_write_valid_i(dcache_mem_resp_write_valid_i),
-      .mem_resp_write_i      (dcache_mem_resp_write_i),
+      .mem_resp_wbuf_write_ready_o(dcache_mem_resp_wbuf_write_ready_o),
+      .mem_resp_wbuf_write_valid_i(dcache_mem_resp_wbuf_write_valid_i),
+      .mem_resp_wbuf_write_i      (dcache_mem_resp_wbuf_write_i),
+
+      .mem_req_uc_read_ready_i(dcache_mem_req_uc_read_ready_i),
+      .mem_req_uc_read_valid_o(dcache_mem_req_uc_read_valid_o),
+      .mem_req_uc_read_o      (dcache_mem_req_uc_read_o),
+
+      .mem_resp_uc_read_ready_o(dcache_mem_resp_uc_read_ready_o),
+      .mem_resp_uc_read_valid_i(dcache_mem_resp_uc_read_valid_i),
+      .mem_resp_uc_read_i      (dcache_mem_resp_uc_read_i),
+
+      .mem_req_uc_write_ready_i(dcache_mem_req_uc_write_ready_i),
+      .mem_req_uc_write_valid_o(dcache_mem_req_uc_write_valid_o),
+      .mem_req_uc_write_o      (dcache_mem_req_uc_write_o),
+
+      .mem_req_uc_write_data_ready_i(dcache_mem_req_uc_write_data_ready_i),
+      .mem_req_uc_write_data_valid_o(dcache_mem_req_uc_write_data_valid_o),
+      .mem_req_uc_write_data_o      (dcache_mem_req_uc_write_data_o),
+
+      .mem_resp_uc_write_ready_o(dcache_mem_resp_uc_write_ready_o),
+      .mem_resp_uc_write_valid_i(dcache_mem_resp_uc_write_valid_i),
+      .mem_resp_uc_write_i      (dcache_mem_resp_uc_write_i),
 
       .evt_cache_write_miss_o(dcache_write_miss),
       .evt_cache_read_miss_o (dcache_read_miss),
@@ -408,8 +461,7 @@ module cva6_hpdcache_wrapper
       .cfg_wbuf_inhibit_write_coalescing_i(1'b0),
       .cfg_prefetch_updt_plru_i           (1'b1),
       .cfg_error_on_cacheable_amo_i       (1'b0),
-      .cfg_rtab_single_entry_i            (1'b0),
-      .cfg_default_wb_i                   (1'b0)
+      .cfg_rtab_single_entry_i            (1'b0)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
