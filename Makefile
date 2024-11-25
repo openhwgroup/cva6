@@ -235,7 +235,7 @@ uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
               corev_apu/fpga/src/apb_uart/src/apb_uart_wrap.sv
 uart_src_sv := $(addprefix $(root-dir), $(uart_src_sv))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv common/local/util/hpdcache_sram_1rw.sv common/local/util/hpdcache_sram_wbyteenable_1rw.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx32.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRam.sv
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv
 fpga_src := $(addprefix $(root-dir), $(fpga_src)) src/bootrom/bootrom_$(XLEN).sv
 
 # look for testbenches
@@ -733,9 +733,6 @@ fpga_filter += $(addprefix $(root-dir), vendor/pulp-platform/tech_cells_generic/
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_peripherals.sv)
 fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_testharness.sv)
-fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv)
-fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv)
-fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv)
 
 src/bootrom/bootrom_$(XLEN).sv:
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) bootrom_$(XLEN).sv
