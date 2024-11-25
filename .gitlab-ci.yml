@@ -356,6 +356,7 @@ riscv_arch_test:
   after_script: *simu_after_script
 
 compliance:
+  timeout : 2 hours
   extends:
     - .regress_test
   variables:
