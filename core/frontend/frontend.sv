@@ -140,6 +140,7 @@ module frontend
   btb_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0]                   btb_prediction_shifted;
   ras_t                                                            ras_predict;
   logic            [           CVA6Cfg.VLEN-1:0]                   vpc_btb;
+  logic            [           CVA6Cfg.VLEN-1:0]                   vpc_bht;
 
   // branch-predict update
   logic                                                            is_mispredict;
@@ -484,7 +485,9 @@ module frontend
   //For FPGA, BTB is implemented in read synchronous BRAM
   //while for ASIC, BTB is implemented in D flip-flop
   //and can be read at the same cycle.
+  //Same for BHT
   assign vpc_btb = (CVA6Cfg.FpgaEn) ? icache_dreq_i.vaddr : icache_vaddr_q;
+  assign vpc_bht = (CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn && icache_dreq_i.valid) ? icache_dreq_i.vaddr : icache_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;
@@ -517,7 +520,7 @@ module frontend
         .rst_ni,
         .flush_bp_i      (flush_bp_i),
         .debug_mode_i,
-        .vpc_i           (icache_vaddr_q),
+        .vpc_i           (vpc_bht),
         .bht_update_i    (bht_update),
         .bht_prediction_o(bht_prediction)
     );
