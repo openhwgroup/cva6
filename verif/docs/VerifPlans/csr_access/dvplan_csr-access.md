@@ -89,7 +89,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#item-000 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -153,7 +153,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id2 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -188,7 +188,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id3 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -223,7 +223,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id5 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -254,7 +254,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id6 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -287,7 +287,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id7 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -322,7 +322,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id9 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -384,7 +384,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id13 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -417,7 +417,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id15 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -451,7 +451,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id17 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -483,7 +483,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id18 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -524,7 +524,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id20 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -588,7 +588,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id23 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -620,7 +620,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id25 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     
@@ -662,7 +662,7 @@ Module: CSR ACCESS VERIFICATION[](#module-csr-access-verification "Permalink 
 
 ##### Item: 000[](#id27 "Permalink to this headline")
 
-*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CV32A6\_Control\_Status\_Registers.html
+*   **Requirement location:** https://docs.openhwgroup.org/projects/cva6-user-manual/01\_cva6\_user/CSR\_CV32A60X.html
     
 *   **Feature Description**
     

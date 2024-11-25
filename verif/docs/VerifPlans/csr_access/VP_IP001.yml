@@ -16,7 +16,7 @@ subfeatures: !!omap
         description: Upon reset,RISC-V CVA6 Machine RO(read only) CSR must initialize
           to their respective POR value.
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
@@ -42,7 +42,7 @@ subfeatures: !!omap
           random values like 0xa5a5a5a5, 0x5a5a5a5a, 0xffa1ae40.. and confirm whether
           write into RO CSRs is possible or not.
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
@@ -68,7 +68,7 @@ subfeatures: !!omap
         description: Accessing RISC-V Machine read only CSRs in different privilege
           modes (User, Supervisor and Machine modes).
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
