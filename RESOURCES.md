@@ -30,7 +30,9 @@ CVA6 was designed by the **[PULP Platform team](https://www.pulp-platform.org/)*
 
 **Zephyr** support for CV64A6 will soon be available.
 
-**seL4** (secure, formally verified microkernel) supports CVA6 (still by its old ARIANE name) [here](https://docs.sel4.systems/Hardware/ariane.html).
+**Bao** ([repository](https://github.com/bao-project/bao-hypervisor), [documentation](https://github.com/bao-project/bao-docs)) is an embedded hypervisor targetting strong isolation and real-time guarantees, leveraging CV64A6 optional hypervisor support.
+
+**seL4**, secure, formally verified microkernel supports CVA6 (still by its old ARIANE name) [here](https://docs.sel4.systems/Hardware/ariane.html).
 
 This [tutorial](https://github.com/ThalesGroup/cva6-eclipse-demo) offers resources to debug CVA6 under **Eclipse IDE**.
 
