@@ -41,8 +41,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    bit                           performance_mode; // Will force disable coverage, csr checks, scoreboard and loggers
 
    // Agent cfg handles
-   rand uvma_clknrst_cfg_c    clknrst_cfg;
-   rand uvma_axi_cfg_c        axi_cfg;
+   rand uvma_clknrst_cfg_c                clknrst_cfg;
+   rand uvma_axi_cfg_c                    axi_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
    rand uvma_interrupt_cfg_c              interrupt_cfg;
@@ -148,13 +148,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint default_cva6_boot_cons {
-      (!mhartid_plusarg_valid)           -> (mhartid           == 'h0000_0000);
-      (!mimpid_plusarg_valid)            -> (mimpid            == 'h0000_0000);
       (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h8000_0000);
-      (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
-      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0000_0000);
-      (!dm_halt_addr_plusarg_valid)      -> (dm_halt_addr      == 'h0000_0000);
-      (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h0000_0000);
    }
 
    constraint default_interrupt_cons {
@@ -181,7 +175,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_hazards_enabled        == 1;
       rvfi_cfg.nret                         == RTLCVA6Cfg.NrCommitPorts;
       unified_traps                         == 0;
-      axi_cfg.rand_channel_delay_enabled    == 0;
+      axi_cfg.zero_delay_mode               == 1;
+      axi_cfg.disable_trs_randomization     == 1;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active        == UVM_ACTIVE;
@@ -268,26 +263,6 @@ function void uvme_cva6_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
    if (!$cast(cva6_cntxt, cntxt)) begin
       `uvm_fatal("SAMPLECNTXT", "Could not cast cntxt to uvma_cva6_core_cntrl_cntxt_c");
    end
-
-
-   num_mhpmcounters = cva6_cntxt.core_cntrl_vif.num_mhpmcounters;
-   // TODO : Check PMA
-   //~ pma_regions      = new[cva6_cntxt.core_cntrl_vif.pma_cfg.size()];
-
-   //~ foreach (pma_regions[i]) begin
-      //~ pma_regions[i] = uvma_core_cntrl_pma_region_c::type_id::create($sformatf("pma_region%0d", i));
-      //~ pma_regions[i].word_addr_low  = cva6_cntxt.core_cntrl_vif.pma_cfg[i].word_addr_low;
-      //~ pma_regions[i].word_addr_high = cva6_cntxt.core_cntrl_vif.pma_cfg[i].word_addr_high;
-      //~ pma_regions[i].main           = cva6_cntxt.core_cntrl_vif.pma_cfg[i].main;
-      //~ pma_regions[i].bufferable     = core_cntrl_vif.pma_cfg[i].bufferable;
-      //~ pma_regions[i].cacheable      = core_cntrl_vif.pma_cfg[i].cacheable;
-      //~ pma_regions[i].atomic         = core_cntrl_vif.pma_cfg[i].atomic;
-   //~ end
-
-   //~ // Copy to the pma_configuration
-   //~ pma_cfg.regions = new[pma_regions.size()];
-   //~ foreach (pma_cfg.regions[i])
-      //~ pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
 

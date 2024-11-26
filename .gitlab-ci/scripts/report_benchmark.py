@@ -19,12 +19,12 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    "dhrystone_dual": 20199,
-    "dhrystone_single": 25019,
-    "coremark_dual": 1017451,
-    "coremark_single": 1308656,
-    "dhrystone_cv32a65x": 32566,
-    "dhrystone_cv32a60x": 39994,
+    "dhrystone_dual": 18935,
+    "dhrystone_single": 24127,
+    "coremark_dual": 1001191,
+    "coremark_single": 1300030,
+    "dhrystone_cv32a65x": 31976,
+    "dhrystone_cv32a60x": 39449,
 }
 
 for arg in sys.argv[1:]:
