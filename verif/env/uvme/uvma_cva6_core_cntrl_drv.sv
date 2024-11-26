@@ -47,15 +47,7 @@ task uvma_cva6_core_cntrl_drv_c::drive_bootstrap();
 
    $cast(cva6_cntxt, cntxt);
 
-   cva6_cntxt.core_cntrl_vif.boot_addr         = cfg.boot_addr;
-   cva6_cntxt.core_cntrl_vif.nmi_addr          = cfg.nmi_addr;
-   cva6_cntxt.core_cntrl_vif.mtvec_addr        = cfg.mtvec_addr;
-   cva6_cntxt.core_cntrl_vif.dm_halt_addr      = cfg.dm_halt_addr;
-   cva6_cntxt.core_cntrl_vif.dm_exception_addr = cfg.dm_exception_addr;
-   cva6_cntxt.core_cntrl_vif.mhartid           = cfg.mhartid;
-   cva6_cntxt.core_cntrl_vif.mimpid            = cfg.mimpid;
-   cva6_cntxt.core_cntrl_vif.fetch_en          = 1'b0;
-   cva6_cntxt.core_cntrl_vif.scan_cg_en        = 1'b0;
+   cva6_cntxt.core_cntrl_vif.boot_addr  = cfg.boot_addr;
 
 endtask : drive_bootstrap
 
