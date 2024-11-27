@@ -500,7 +500,7 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
   if test_type != "o":
     # gcc compilation
-    logging.info("Compiling test: %s" % test)
+    logging.info("Compiling test: %s" % test_path)
     cmd = ("%s %s \
           -I%s/dv/user_extension \
             -T%s %s -o %s " % \
