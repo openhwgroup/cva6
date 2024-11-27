@@ -62,7 +62,7 @@ ${CVA6_REPO_DIR}/pd/synth/cva6_${TARGET_CFG}_synth.v
 # Dedicated to black box in caches, cv32a65x only
 ${CVA6_REPO_DIR}/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv
 ${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080.sv 
-${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_1rw_00000006_0000001a_00000040.sv
+${CVA6_REPO_DIR}/pd/synth/hpdcache_sram_1rw_00000006_0000001c_00000040.sv
 
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper_cache_techno.sv
