@@ -16,7 +16,7 @@ subfeatures: !!omap
         description: Upon reset, RISC-V CVA6 Machine mode counter CSRs must initialize
           to their respective POR value.
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
@@ -52,7 +52,7 @@ subfeatures: !!omap
           tested by performing two continuous reads and checking whether the value
           in the second read is greater than the value in the first read."
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
@@ -81,7 +81,7 @@ subfeatures: !!omap
         description: Accessing RISC-V CVA6 user Machine mode counter CSRs in different
           privilege modes (User, Supervisor and Machine modes).
         reqt_doc: 
-          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CV32A6_Control_Status_Registers.html
+          https://docs.openhwgroup.org/projects/cva6-user-manual/01_cva6_user/CSR_CV32A60X.html
         ref_mode: page
         ref_page: ''
         ref_section: ''
