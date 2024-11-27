@@ -23,10 +23,10 @@
  *  Description   : SRAM behavioral model
  *  History       :
  */
-module hpdcache_sram_1rw_00000006_0000001a_00000040
+module hpdcache_sram_1rw_00000006_0000001c_00000040
 #(
     parameter int unsigned ADDR_SIZE = 6,
-    parameter int unsigned DATA_SIZE = 26,
+    parameter int unsigned DATA_SIZE = 28,
     parameter int unsigned DEPTH = 2**ADDR_SIZE
 )
 (
@@ -57,4 +57,4 @@ module hpdcache_sram_1rw_00000006_0000001a_00000040
             rdata <= mem[addr];
         end
     end : mem_update_ff
-endmodule : hpdcache_sram_1rw_00000006_0000001a_00000040
+endmodule : hpdcache_sram_1rw_00000006_0000001c_00000040
