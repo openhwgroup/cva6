@@ -1,0 +1,2038 @@
+<?xml version="1.0" ?>
+<!--Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.-->
+<ipxact:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact2014/extensions" xmlns:ipxact="http://www.accellera.org/XMLSchema/IPXACT/1685-2014">
+  <ipxact:vendor>Intel Corporation</ipxact:vendor>
+  <ipxact:library>io_pll</ipxact:library>
+  <ipxact:name>iopll_0</ipxact:name>
+  <ipxact:version>19.3.1</ipxact:version>
+  <ipxact:busInterfaces>
+    <ipxact:busInterface>
+      <ipxact:name>refclk</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>refclk</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:slave></ipxact:slave>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>100000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>input</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>locked</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>export</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>locked</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:slave></ipxact:slave>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedClock" type="string">
+          <ipxact:name>associatedClock</ipxact:name>
+          <ipxact:displayName>associatedClock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="associatedReset" type="string">
+          <ipxact:name>associatedReset</ipxact:name>
+          <ipxact:displayName>associatedReset</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="prSafe" type="bit">
+          <ipxact:name>prSafe</ipxact:name>
+          <ipxact:displayName>Partial Reconfiguration Safe</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>reset</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="reset" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="reset" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>reset</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>rst</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:slave></ipxact:slave>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedClock" type="string">
+          <ipxact:name>associatedClock</ipxact:name>
+          <ipxact:displayName>Associated clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="synchronousEdges" type="string">
+          <ipxact:name>synchronousEdges</ipxact:name>
+          <ipxact:displayName>Synchronous edges</ipxact:displayName>
+          <ipxact:value>NONE</ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>input</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>outclk0</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>outclk_0</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:master></ipxact:master>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedDirectClock" type="string">
+          <ipxact:name>associatedDirectClock</ipxact:name>
+          <ipxact:displayName>Associated direct clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>200000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRateKnown" type="bit">
+          <ipxact:name>clockRateKnown</ipxact:name>
+          <ipxact:displayName>Clock rate known</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>outclk1</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>outclk_1</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:master></ipxact:master>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedDirectClock" type="string">
+          <ipxact:name>associatedDirectClock</ipxact:name>
+          <ipxact:displayName>Associated direct clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>125000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRateKnown" type="bit">
+          <ipxact:name>clockRateKnown</ipxact:name>
+          <ipxact:displayName>Clock rate known</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>outclk2</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>outclk_2</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:master></ipxact:master>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedDirectClock" type="string">
+          <ipxact:name>associatedDirectClock</ipxact:name>
+          <ipxact:displayName>Associated direct clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>200000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRateKnown" type="bit">
+          <ipxact:name>clockRateKnown</ipxact:name>
+          <ipxact:displayName>Clock rate known</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>outclk3</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>outclk_3</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:master></ipxact:master>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedDirectClock" type="string">
+          <ipxact:name>associatedDirectClock</ipxact:name>
+          <ipxact:displayName>Associated direct clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>125000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRateKnown" type="bit">
+          <ipxact:name>clockRateKnown</ipxact:name>
+          <ipxact:displayName>Clock rate known</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+    <ipxact:busInterface>
+      <ipxact:name>outclk4</ipxact:name>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"></ipxact:busType>
+      <ipxact:abstractionTypes>
+        <ipxact:abstractionType>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"></ipxact:abstractionRef>
+          <ipxact:portMaps>
+            <ipxact:portMap>
+              <ipxact:logicalPort>
+                <ipxact:name>clk</ipxact:name>
+              </ipxact:logicalPort>
+              <ipxact:physicalPort>
+                <ipxact:name>outclk_4</ipxact:name>
+              </ipxact:physicalPort>
+            </ipxact:portMap>
+          </ipxact:portMaps>
+        </ipxact:abstractionType>
+      </ipxact:abstractionTypes>
+      <ipxact:master></ipxact:master>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="associatedDirectClock" type="string">
+          <ipxact:name>associatedDirectClock</ipxact:name>
+          <ipxact:displayName>Associated direct clock</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRate" type="longint">
+          <ipxact:name>clockRate</ipxact:name>
+          <ipxact:displayName>Clock rate</ipxact:displayName>
+          <ipxact:value>100000000</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="clockRateKnown" type="bit">
+          <ipxact:name>clockRateKnown</ipxact:name>
+          <ipxact:displayName>Clock rate known</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="externallyDriven" type="bit">
+          <ipxact:name>externallyDriven</ipxact:name>
+          <ipxact:displayName>Externally driven</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="ptfSchematicName" type="string">
+          <ipxact:name>ptfSchematicName</ipxact:name>
+          <ipxact:displayName>PTF schematic name</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+      <ipxact:vendorExtensions>
+        <altera:altera_assignments>
+          <ipxact:parameters>
+            <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+              <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+              <ipxact:value>output</ipxact:value>
+            </ipxact:parameter>
+          </ipxact:parameters>
+        </altera:altera_assignments>
+      </ipxact:vendorExtensions>
+    </ipxact:busInterface>
+  </ipxact:busInterfaces>
+  <ipxact:model>
+    <ipxact:views>
+      <ipxact:view>
+        <ipxact:name>QUARTUS_SYNTH</ipxact:name>
+        <ipxact:envIdentifier>:quartus.altera.com:</ipxact:envIdentifier>
+        <ipxact:componentInstantiationRef>QUARTUS_SYNTH</ipxact:componentInstantiationRef>
+      </ipxact:view>
+    </ipxact:views>
+    <ipxact:instantiations>
+      <ipxact:componentInstantiation>
+        <ipxact:name>QUARTUS_SYNTH</ipxact:name>
+        <ipxact:moduleName>altera_iopll</ipxact:moduleName>
+        <ipxact:fileSetRef>
+          <ipxact:localName>QUARTUS_SYNTH</ipxact:localName>
+        </ipxact:fileSetRef>
+      </ipxact:componentInstantiation>
+    </ipxact:instantiations>
+    <ipxact:ports>
+      <ipxact:port>
+        <ipxact:name>refclk</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>in</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>locked</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>rst</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>in</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>outclk_0</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>outclk_1</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>outclk_2</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>outclk_3</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+      <ipxact:port>
+        <ipxact:name>outclk_4</ipxact:name>
+        <ipxact:wire>
+          <ipxact:direction>out</ipxact:direction>
+          <ipxact:wireTypeDefs>
+            <ipxact:wireTypeDef>
+              <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+              <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+            </ipxact:wireTypeDef>
+          </ipxact:wireTypeDefs>
+        </ipxact:wire>
+      </ipxact:port>
+    </ipxact:ports>
+  </ipxact:model>
+  <ipxact:vendorExtensions>
+    <altera:entity_info>
+      <ipxact:vendor>Intel Corporation</ipxact:vendor>
+      <ipxact:library>io_pll</ipxact:library>
+      <ipxact:name>altera_iopll</ipxact:name>
+      <ipxact:version>19.3.1</ipxact:version>
+    </altera:entity_info>
+    <altera:altera_module_parameters>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="gui_debug_mode" type="bit">
+          <ipxact:name>gui_debug_mode</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_skip_sdc_generation" type="bit">
+          <ipxact:name>gui_skip_sdc_generation</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_include_iossm" type="bit">
+          <ipxact:name>gui_include_iossm</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cal_code_hex_file" type="string">
+          <ipxact:name>gui_cal_code_hex_file</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>iossm.hex</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_parameter_table_hex_file" type="string">
+          <ipxact:name>gui_parameter_table_hex_file</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>seq_params_sim.hex</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_tclk_mux_en" type="bit">
+          <ipxact:name>gui_pll_tclk_mux_en</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_tclk_sel" type="string">
+          <ipxact:name>gui_pll_tclk_sel</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>pll_tclk_m_src</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_vco_freq_band_0" type="string">
+          <ipxact:name>gui_pll_vco_freq_band_0</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>pll_freq_clk0_band18</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_vco_freq_band_1" type="string">
+          <ipxact:name>gui_pll_vco_freq_band_1</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>pll_freq_clk1_band18</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_freqcal_en" type="bit">
+          <ipxact:name>gui_pll_freqcal_en</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_freqcal_req_flag" type="bit">
+          <ipxact:name>gui_pll_freqcal_req_flag</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cal_converge" type="bit">
+          <ipxact:name>gui_cal_converge</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cal_error" type="string">
+          <ipxact:name>gui_cal_error</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>cal_clean</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_cal_done" type="bit">
+          <ipxact:name>gui_pll_cal_done</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_type" type="string">
+          <ipxact:name>gui_pll_type</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>S10_Simple</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_m_cnt_in_src" type="string">
+          <ipxact:name>gui_pll_m_cnt_in_src</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src0" type="string">
+          <ipxact:name>gui_c_cnt_in_src0</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src1" type="string">
+          <ipxact:name>gui_c_cnt_in_src1</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src2" type="string">
+          <ipxact:name>gui_c_cnt_in_src2</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src3" type="string">
+          <ipxact:name>gui_c_cnt_in_src3</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src4" type="string">
+          <ipxact:name>gui_c_cnt_in_src4</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src5" type="string">
+          <ipxact:name>gui_c_cnt_in_src5</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src6" type="string">
+          <ipxact:name>gui_c_cnt_in_src6</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src7" type="string">
+          <ipxact:name>gui_c_cnt_in_src7</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_c_cnt_in_src8" type="string">
+          <ipxact:name>gui_c_cnt_in_src8</ipxact:name>
+          <ipxact:displayName></ipxact:displayName>
+          <ipxact:value>c_m_cnt_in_src_ph_mux_clk</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_info_device_family" type="string">
+          <ipxact:name>system_info_device_family</ipxact:name>
+          <ipxact:displayName>Device Family</ipxact:displayName>
+          <ipxact:value>Agilex 7</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_info_device_component" type="string">
+          <ipxact:name>system_info_device_component</ipxact:name>
+          <ipxact:displayName>Component</ipxact:displayName>
+          <ipxact:value>AGFB014R24B2E2V</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_info_device_speed_grade" type="string">
+          <ipxact:name>system_info_device_speed_grade</ipxact:name>
+          <ipxact:displayName>Speed Grade</ipxact:displayName>
+          <ipxact:value>2</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_info_device_iobank_rev" type="string">
+          <ipxact:name>system_info_device_iobank_rev</ipxact:name>
+          <ipxact:displayName>IO Bank Revision</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_part_trait_speed_grade" type="string">
+          <ipxact:name>system_part_trait_speed_grade</ipxact:name>
+          <ipxact:displayName>Speed Grade Trait</ipxact:displayName>
+          <ipxact:value>2</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="system_part_trait_iobank_rev" type="string">
+          <ipxact:name>system_part_trait_iobank_rev</ipxact:name>
+          <ipxact:displayName>IO Bank Revision Trait</ipxact:displayName>
+          <ipxact:value>IO96A_REVB2</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_usr_device_speed_grade" type="string">
+          <ipxact:name>gui_usr_device_speed_grade</ipxact:name>
+          <ipxact:displayName>Speed Grade</ipxact:displayName>
+          <ipxact:value>1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_reconf" type="bit">
+          <ipxact:name>gui_en_reconf</ipxact:name>
+          <ipxact:displayName>Enable dynamic reconfiguration of PLL</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_iossm_reconf" type="bit">
+          <ipxact:name>gui_en_iossm_reconf</ipxact:name>
+          <ipxact:displayName>Enable dynamic reconfiguration of PLL using Calibration IP</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_user_base_address" type="int">
+          <ipxact:name>gui_user_base_address</ipxact:name>
+          <ipxact:displayName>User base address of PLL for dynamic reconfiguration (0..255)</ipxact:displayName>
+          <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_dps_ports" type="bit">
+          <ipxact:name>gui_en_dps_ports</ipxact:name>
+          <ipxact:displayName>Enable access to dynamic phase shift ports</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_mode" type="string">
+          <ipxact:name>gui_pll_mode</ipxact:name>
+          <ipxact:displayName>PLL Mode</ipxact:displayName>
+          <ipxact:value>Integer-N PLL</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_location_type" type="string">
+          <ipxact:name>gui_location_type</ipxact:name>
+          <ipxact:displayName>IOPLL Type</ipxact:displayName>
+          <ipxact:value>I/O Bank</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_use_logical" type="bit">
+          <ipxact:name>gui_use_logical</ipxact:name>
+          <ipxact:displayName>Use logical PLL</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_reference_clock_frequency" type="real">
+          <ipxact:name>gui_reference_clock_frequency</ipxact:name>
+          <ipxact:displayName>Reference Clock Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_reference_clock_frequency_ps" type="real">
+          <ipxact:name>gui_reference_clock_frequency_ps</ipxact:name>
+          <ipxact:displayName>Reference Clock Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_use_coreclk" type="bit">
+          <ipxact:name>gui_use_coreclk</ipxact:name>
+          <ipxact:displayName>Refclk source is global clock</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_refclk_might_change" type="bit">
+          <ipxact:name>gui_refclk_might_change</ipxact:name>
+          <ipxact:displayName>My reference clock frequency might change</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_fractional_cout" type="int">
+          <ipxact:name>gui_fractional_cout</ipxact:name>
+          <ipxact:displayName>Fractional carry out</ipxact:displayName>
+          <ipxact:value>32</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_prot_mode" type="string">
+          <ipxact:name>gui_prot_mode</ipxact:name>
+          <ipxact:displayName>prot_mode</ipxact:displayName>
+          <ipxact:value>UNUSED</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_dsm_out_sel" type="string">
+          <ipxact:name>gui_dsm_out_sel</ipxact:name>
+          <ipxact:displayName>DSM Order</ipxact:displayName>
+          <ipxact:value>1st_order</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_use_locked" type="bit">
+          <ipxact:name>gui_use_locked</ipxact:name>
+          <ipxact:displayName>Enable locked output port</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_adv_params" type="bit">
+          <ipxact:name>gui_en_adv_params</ipxact:name>
+          <ipxact:displayName>Enable physical output clock parameters</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_bandwidth_preset" type="string">
+          <ipxact:name>gui_pll_bandwidth_preset</ipxact:name>
+          <ipxact:displayName>PLL Bandwidth Preset</ipxact:displayName>
+          <ipxact:value>Medium</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_lock_setting" type="string">
+          <ipxact:name>gui_lock_setting</ipxact:name>
+          <ipxact:displayName>Lock Threshold Setting</ipxact:displayName>
+          <ipxact:value>Low Lock Time</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_auto_reset" type="bit">
+          <ipxact:name>gui_pll_auto_reset</ipxact:name>
+          <ipxact:displayName>PLL Auto Reset</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_lvds_ports" type="string">
+          <ipxact:name>gui_en_lvds_ports</ipxact:name>
+          <ipxact:displayName>Access to PLL LVDS_CLK/LOADEN output port</ipxact:displayName>
+          <ipxact:value>Disabled</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_periphery_ports" type="bit">
+          <ipxact:name>gui_en_periphery_ports</ipxact:name>
+          <ipxact:displayName>Enable access to I/O Bank clock ports</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_operation_mode" type="string">
+          <ipxact:name>gui_operation_mode</ipxact:name>
+          <ipxact:displayName>Compensation Mode</ipxact:displayName>
+          <ipxact:value>direct</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_feedback_clock" type="string">
+          <ipxact:name>gui_feedback_clock</ipxact:name>
+          <ipxact:displayName>Feedback Clock</ipxact:displayName>
+          <ipxact:value>Global Clock</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_to_compensate" type="int">
+          <ipxact:name>gui_clock_to_compensate</ipxact:name>
+          <ipxact:displayName>Compensated Outclk</ipxact:displayName>
+          <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_use_NDFB_modes" type="bit">
+          <ipxact:name>gui_use_NDFB_modes</ipxact:name>
+          <ipxact:displayName>Use Nondedicated Feedback Path</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_refclk_switch" type="bit">
+          <ipxact:name>gui_refclk_switch</ipxact:name>
+          <ipxact:displayName>Create a second input clock signal 'refclk1'</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_refclk1_frequency" type="real">
+          <ipxact:name>gui_refclk1_frequency</ipxact:name>
+          <ipxact:displayName>Second Reference Clock Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_phout_ports" type="bit">
+          <ipxact:name>gui_en_phout_ports</ipxact:name>
+          <ipxact:displayName>Enable access to PLL DPA output port</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phout_division" type="int">
+          <ipxact:name>gui_phout_division</ipxact:name>
+          <ipxact:displayName>PLL DPA output division</ipxact:displayName>
+          <ipxact:value>1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_en_extclkout_ports" type="bit">
+          <ipxact:name>gui_en_extclkout_ports</ipxact:name>
+          <ipxact:displayName>Enable access to PLL external clock output port</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_number_of_clocks" type="int">
+          <ipxact:name>gui_number_of_clocks</ipxact:name>
+          <ipxact:displayName>Number Of Clocks</ipxact:displayName>
+          <ipxact:value>5</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_multiply_factor" type="int">
+          <ipxact:name>gui_multiply_factor</ipxact:name>
+          <ipxact:displayName>Multiply Factor (M-Counter)</ipxact:displayName>
+          <ipxact:value>25</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_n" type="int">
+          <ipxact:name>gui_divide_factor_n</ipxact:name>
+          <ipxact:displayName>Divide Factor (N-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_frac_multiply_factor" type="longint">
+          <ipxact:name>gui_frac_multiply_factor</ipxact:name>
+          <ipxact:displayName>Fractional Multiply Factor (K)</ipxact:displayName>
+          <ipxact:value>1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_fix_vco_frequency" type="bit">
+          <ipxact:name>gui_fix_vco_frequency</ipxact:name>
+          <ipxact:displayName>Specify VCO frequency</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_fixed_vco_frequency" type="real">
+          <ipxact:name>gui_fixed_vco_frequency</ipxact:name>
+          <ipxact:displayName>Desired VCO Frequency</ipxact:displayName>
+          <ipxact:value>600.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_fixed_vco_frequency_ps" type="real">
+          <ipxact:name>gui_fixed_vco_frequency_ps</ipxact:name>
+          <ipxact:displayName>Desired VCO Frequency</ipxact:displayName>
+          <ipxact:value>1667.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_vco_frequency" type="string">
+          <ipxact:name>gui_vco_frequency</ipxact:name>
+          <ipxact:displayName>Actual VCO Frequency</ipxact:displayName>
+          <ipxact:value>1250.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_output_counter_cascading" type="bit">
+          <ipxact:name>gui_enable_output_counter_cascading</ipxact:name>
+          <ipxact:displayName>Enable output counter cascading</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_mif_gen_options" type="string">
+          <ipxact:name>gui_mif_gen_options</ipxact:name>
+          <ipxact:displayName>MIF Generation Options</ipxact:displayName>
+          <ipxact:value>Generate New MIF File</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_new_mif_file_path" type="string">
+          <ipxact:name>gui_new_mif_file_path</ipxact:name>
+          <ipxact:displayName>Path to New MIF file</ipxact:displayName>
+          <ipxact:value>~/pll.mif</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_existing_mif_file_path" type="string">
+          <ipxact:name>gui_existing_mif_file_path</ipxact:name>
+          <ipxact:displayName>Path to Existing MIF file</ipxact:displayName>
+          <ipxact:value>~/pll.mif</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_mif_config_name" type="string">
+          <ipxact:name>gui_mif_config_name</ipxact:name>
+          <ipxact:displayName>Name of Current Configuration</ipxact:displayName>
+          <ipxact:value>unnamed</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_active_clk" type="bit">
+          <ipxact:name>gui_active_clk</ipxact:name>
+          <ipxact:displayName>Create an 'active_clk' signal to indicate the input clock in use</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clk_bad" type="bit">
+          <ipxact:name>gui_clk_bad</ipxact:name>
+          <ipxact:displayName>Create a 'clkbad' signal for each of the input clocks</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_switchover_mode" type="string">
+          <ipxact:name>gui_switchover_mode</ipxact:name>
+          <ipxact:displayName>Switchover Mode</ipxact:displayName>
+          <ipxact:value>Automatic Switchover</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_switchover_delay" type="int">
+          <ipxact:name>gui_switchover_delay</ipxact:name>
+          <ipxact:displayName>Switchover Delay</ipxact:displayName>
+          <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_cascade_out" type="bit">
+          <ipxact:name>gui_enable_cascade_out</ipxact:name>
+          <ipxact:displayName>Create a 'cascade_out' signal to connect to a downstream PLL</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_outclk_index" type="string">
+          <ipxact:name>gui_cascade_outclk_index</ipxact:name>
+          <ipxact:displayName>cascade_out source</ipxact:displayName>
+          <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_cascade_in" type="bit">
+          <ipxact:name>gui_enable_cascade_in</ipxact:name>
+          <ipxact:displayName>Create an 'adjpllin' (cascade in) signal to connect to an upstream PLL through IO Column Cascading</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_permit_cal" type="bit">
+          <ipxact:name>gui_enable_permit_cal</ipxact:name>
+          <ipxact:displayName>Connect to an upstream PLL through Core Clock Network Cascading (create a permit_cal input signal)</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_upstream_out_clk" type="bit">
+          <ipxact:name>gui_enable_upstream_out_clk</ipxact:name>
+          <ipxact:displayName>Connect outclk to a downstream PLL through Core Clock Network Cascading</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_pll_cascading_mode" type="string">
+          <ipxact:name>gui_pll_cascading_mode</ipxact:name>
+          <ipxact:displayName>Connection Signal Type to Upstream PLL</ipxact:displayName>
+          <ipxact:value>adjpllin</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_enable_mif_dps" type="bit">
+          <ipxact:name>gui_enable_mif_dps</ipxact:name>
+          <ipxact:displayName>Enable Dynamic Phase Shift for MIF streaming</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_dps_cntr" type="string">
+          <ipxact:name>gui_dps_cntr</ipxact:name>
+          <ipxact:displayName>DPS Counter Selection</ipxact:displayName>
+          <ipxact:value>C0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_dps_num" type="int">
+          <ipxact:name>gui_dps_num</ipxact:name>
+          <ipxact:displayName>Number of Dynamic Phase Shifts</ipxact:displayName>
+          <ipxact:value>1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_dps_dir" type="string">
+          <ipxact:name>gui_dps_dir</ipxact:name>
+          <ipxact:displayName>Dynamic Phase Shift Direction</ipxact:displayName>
+          <ipxact:value>Positive</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_extclkout_0_source" type="string">
+          <ipxact:name>gui_extclkout_0_source</ipxact:name>
+          <ipxact:displayName>extclk_out[0] source</ipxact:displayName>
+          <ipxact:value>C0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_extclkout_1_source" type="string">
+          <ipxact:name>gui_extclkout_1_source</ipxact:name>
+          <ipxact:displayName>extclk_out[1] source</ipxact:displayName>
+          <ipxact:value>C0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_extclkout_source" type="string">
+          <ipxact:name>gui_extclkout_source</ipxact:name>
+          <ipxact:displayName>extclk_out source</ipxact:displayName>
+          <ipxact:value>C0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_global" type="bit">
+          <ipxact:name>gui_clock_name_global</ipxact:name>
+          <ipxact:displayName>Give clocks global names</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string0" type="string">
+          <ipxact:name>gui_clock_name_string0</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string1" type="string">
+          <ipxact:name>gui_clock_name_string1</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string2" type="string">
+          <ipxact:name>gui_clock_name_string2</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk2</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string3" type="string">
+          <ipxact:name>gui_clock_name_string3</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk3</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string4" type="string">
+          <ipxact:name>gui_clock_name_string4</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk4</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string5" type="string">
+          <ipxact:name>gui_clock_name_string5</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk5</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string6" type="string">
+          <ipxact:name>gui_clock_name_string6</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string7" type="string">
+          <ipxact:name>gui_clock_name_string7</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk7</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string8" type="string">
+          <ipxact:name>gui_clock_name_string8</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk8</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string9" type="string">
+          <ipxact:name>gui_clock_name_string9</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk9</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string10" type="string">
+          <ipxact:name>gui_clock_name_string10</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk10</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string11" type="string">
+          <ipxact:name>gui_clock_name_string11</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk11</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string12" type="string">
+          <ipxact:name>gui_clock_name_string12</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk12</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string13" type="string">
+          <ipxact:name>gui_clock_name_string13</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk13</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string14" type="string">
+          <ipxact:name>gui_clock_name_string14</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk14</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string15" type="string">
+          <ipxact:name>gui_clock_name_string15</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk15</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string16" type="string">
+          <ipxact:name>gui_clock_name_string16</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk16</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_clock_name_string17" type="string">
+          <ipxact:name>gui_clock_name_string17</ipxact:name>
+          <ipxact:displayName>Clock Name</ipxact:displayName>
+          <ipxact:value>outclk17</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c0" type="int">
+          <ipxact:name>gui_divide_factor_c0</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>1</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c1" type="int">
+          <ipxact:name>gui_divide_factor_c1</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>25</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c2" type="int">
+          <ipxact:name>gui_divide_factor_c2</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>25</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c3" type="int">
+          <ipxact:name>gui_divide_factor_c3</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c4" type="int">
+          <ipxact:name>gui_divide_factor_c4</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c5" type="int">
+          <ipxact:name>gui_divide_factor_c5</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c6" type="int">
+          <ipxact:name>gui_divide_factor_c6</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c7" type="int">
+          <ipxact:name>gui_divide_factor_c7</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c8" type="int">
+          <ipxact:name>gui_divide_factor_c8</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c9" type="int">
+          <ipxact:name>gui_divide_factor_c9</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c10" type="int">
+          <ipxact:name>gui_divide_factor_c10</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c11" type="int">
+          <ipxact:name>gui_divide_factor_c11</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c12" type="int">
+          <ipxact:name>gui_divide_factor_c12</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c13" type="int">
+          <ipxact:name>gui_divide_factor_c13</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c14" type="int">
+          <ipxact:name>gui_divide_factor_c14</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c15" type="int">
+          <ipxact:name>gui_divide_factor_c15</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c16" type="int">
+          <ipxact:name>gui_divide_factor_c16</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_divide_factor_c17" type="int">
+          <ipxact:name>gui_divide_factor_c17</ipxact:name>
+          <ipxact:displayName>Divide Factor (C-Counter)</ipxact:displayName>
+          <ipxact:value>6</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter0" type="bit">
+          <ipxact:name>gui_cascade_counter0</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter1" type="bit">
+          <ipxact:name>gui_cascade_counter1</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter2" type="bit">
+          <ipxact:name>gui_cascade_counter2</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter3" type="bit">
+          <ipxact:name>gui_cascade_counter3</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter4" type="bit">
+          <ipxact:name>gui_cascade_counter4</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter5" type="bit">
+          <ipxact:name>gui_cascade_counter5</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter6" type="bit">
+          <ipxact:name>gui_cascade_counter6</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter7" type="bit">
+          <ipxact:name>gui_cascade_counter7</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter8" type="bit">
+          <ipxact:name>gui_cascade_counter8</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter9" type="bit">
+          <ipxact:name>gui_cascade_counter9</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter10" type="bit">
+          <ipxact:name>gui_cascade_counter10</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter11" type="bit">
+          <ipxact:name>gui_cascade_counter11</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter12" type="bit">
+          <ipxact:name>gui_cascade_counter12</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter13" type="bit">
+          <ipxact:name>gui_cascade_counter13</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter14" type="bit">
+          <ipxact:name>gui_cascade_counter14</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter15" type="bit">
+          <ipxact:name>gui_cascade_counter15</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter16" type="bit">
+          <ipxact:name>gui_cascade_counter16</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_cascade_counter17" type="bit">
+          <ipxact:name>gui_cascade_counter17</ipxact:name>
+          <ipxact:displayName>Make this a cascade counter</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency0" type="real">
+          <ipxact:name>gui_output_clock_frequency0</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>200.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency1" type="real">
+          <ipxact:name>gui_output_clock_frequency1</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>125.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency2" type="real">
+          <ipxact:name>gui_output_clock_frequency2</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>200.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency3" type="real">
+          <ipxact:name>gui_output_clock_frequency3</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>125.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency4" type="real">
+          <ipxact:name>gui_output_clock_frequency4</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency5" type="real">
+          <ipxact:name>gui_output_clock_frequency5</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency6" type="real">
+          <ipxact:name>gui_output_clock_frequency6</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency7" type="real">
+          <ipxact:name>gui_output_clock_frequency7</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency8" type="real">
+          <ipxact:name>gui_output_clock_frequency8</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency9" type="real">
+          <ipxact:name>gui_output_clock_frequency9</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency10" type="real">
+          <ipxact:name>gui_output_clock_frequency10</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency11" type="real">
+          <ipxact:name>gui_output_clock_frequency11</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency12" type="real">
+          <ipxact:name>gui_output_clock_frequency12</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency13" type="real">
+          <ipxact:name>gui_output_clock_frequency13</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency14" type="real">
+          <ipxact:name>gui_output_clock_frequency14</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency15" type="real">
+          <ipxact:name>gui_output_clock_frequency15</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency16" type="real">
+          <ipxact:name>gui_output_clock_frequency16</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency17" type="real">
+          <ipxact:name>gui_output_clock_frequency17</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>100.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps0" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps0</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>5000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps1" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps1</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>8000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps2" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps2</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>5000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps3" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps3</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>8000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps4" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps4</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps5" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps5</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps6" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps6</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps7" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps7</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps8" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps8</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps9" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps9</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps10" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps10</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps11" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps11</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps12" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps12</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps13" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps13</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps14" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps14</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps15" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps15</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps16" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps16</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_output_clock_frequency_ps17" type="real">
+          <ipxact:name>gui_output_clock_frequency_ps17</ipxact:name>
+          <ipxact:displayName>Desired Frequency</ipxact:displayName>
+          <ipxact:value>10000.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units0" type="string">
+          <ipxact:name>gui_ps_units0</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units1" type="string">
+          <ipxact:name>gui_ps_units1</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units2" type="string">
+          <ipxact:name>gui_ps_units2</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units3" type="string">
+          <ipxact:name>gui_ps_units3</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>degrees</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units4" type="string">
+          <ipxact:name>gui_ps_units4</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units5" type="string">
+          <ipxact:name>gui_ps_units5</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units6" type="string">
+          <ipxact:name>gui_ps_units6</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units7" type="string">
+          <ipxact:name>gui_ps_units7</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units8" type="string">
+          <ipxact:name>gui_ps_units8</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units9" type="string">
+          <ipxact:name>gui_ps_units9</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units10" type="string">
+          <ipxact:name>gui_ps_units10</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units11" type="string">
+          <ipxact:name>gui_ps_units11</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units12" type="string">
+          <ipxact:name>gui_ps_units12</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units13" type="string">
+          <ipxact:name>gui_ps_units13</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units14" type="string">
+          <ipxact:name>gui_ps_units14</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units15" type="string">
+          <ipxact:name>gui_ps_units15</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units16" type="string">
+          <ipxact:name>gui_ps_units16</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_ps_units17" type="string">
+          <ipxact:name>gui_ps_units17</ipxact:name>
+          <ipxact:displayName>Phase Shift Units</ipxact:displayName>
+          <ipxact:value>ps</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift0" type="real">
+          <ipxact:name>gui_phase_shift0</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift1" type="real">
+          <ipxact:name>gui_phase_shift1</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift2" type="real">
+          <ipxact:name>gui_phase_shift2</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift3" type="real">
+          <ipxact:name>gui_phase_shift3</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift4" type="real">
+          <ipxact:name>gui_phase_shift4</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift5" type="real">
+          <ipxact:name>gui_phase_shift5</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift6" type="real">
+          <ipxact:name>gui_phase_shift6</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift7" type="real">
+          <ipxact:name>gui_phase_shift7</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift8" type="real">
+          <ipxact:name>gui_phase_shift8</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift9" type="real">
+          <ipxact:name>gui_phase_shift9</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift10" type="real">
+          <ipxact:name>gui_phase_shift10</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift11" type="real">
+          <ipxact:name>gui_phase_shift11</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift12" type="real">
+          <ipxact:name>gui_phase_shift12</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift13" type="real">
+          <ipxact:name>gui_phase_shift13</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift14" type="real">
+          <ipxact:name>gui_phase_shift14</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift15" type="real">
+          <ipxact:name>gui_phase_shift15</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift16" type="real">
+          <ipxact:name>gui_phase_shift16</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift17" type="real">
+          <ipxact:name>gui_phase_shift17</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg0" type="real">
+          <ipxact:name>gui_phase_shift_deg0</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg1" type="real">
+          <ipxact:name>gui_phase_shift_deg1</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg2" type="real">
+          <ipxact:name>gui_phase_shift_deg2</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg3" type="real">
+          <ipxact:name>gui_phase_shift_deg3</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>90.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg4" type="real">
+          <ipxact:name>gui_phase_shift_deg4</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg5" type="real">
+          <ipxact:name>gui_phase_shift_deg5</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg6" type="real">
+          <ipxact:name>gui_phase_shift_deg6</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg7" type="real">
+          <ipxact:name>gui_phase_shift_deg7</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg8" type="real">
+          <ipxact:name>gui_phase_shift_deg8</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg9" type="real">
+          <ipxact:name>gui_phase_shift_deg9</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg10" type="real">
+          <ipxact:name>gui_phase_shift_deg10</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg11" type="real">
+          <ipxact:name>gui_phase_shift_deg11</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg12" type="real">
+          <ipxact:name>gui_phase_shift_deg12</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg13" type="real">
+          <ipxact:name>gui_phase_shift_deg13</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg14" type="real">
+          <ipxact:name>gui_phase_shift_deg14</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg15" type="real">
+          <ipxact:name>gui_phase_shift_deg15</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg16" type="real">
+          <ipxact:name>gui_phase_shift_deg16</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_phase_shift_deg17" type="real">
+          <ipxact:name>gui_phase_shift_deg17</ipxact:name>
+          <ipxact:displayName>Desired Phase Shift</ipxact:displayName>
+          <ipxact:value>0.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle0" type="real">
+          <ipxact:name>gui_duty_cycle0</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle1" type="real">
+          <ipxact:name>gui_duty_cycle1</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle2" type="real">
+          <ipxact:name>gui_duty_cycle2</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle3" type="real">
+          <ipxact:name>gui_duty_cycle3</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle4" type="real">
+          <ipxact:name>gui_duty_cycle4</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle5" type="real">
+          <ipxact:name>gui_duty_cycle5</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle6" type="real">
+          <ipxact:name>gui_duty_cycle6</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle7" type="real">
+          <ipxact:name>gui_duty_cycle7</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle8" type="real">
+          <ipxact:name>gui_duty_cycle8</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle9" type="real">
+          <ipxact:name>gui_duty_cycle9</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle10" type="real">
+          <ipxact:name>gui_duty_cycle10</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle11" type="real">
+          <ipxact:name>gui_duty_cycle11</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle12" type="real">
+          <ipxact:name>gui_duty_cycle12</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle13" type="real">
+          <ipxact:name>gui_duty_cycle13</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle14" type="real">
+          <ipxact:name>gui_duty_cycle14</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle15" type="real">
+          <ipxact:name>gui_duty_cycle15</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle16" type="real">
+          <ipxact:name>gui_duty_cycle16</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_duty_cycle17" type="real">
+          <ipxact:name>gui_duty_cycle17</ipxact:name>
+          <ipxact:displayName>Desired Duty Cycle</ipxact:displayName>
+          <ipxact:value>50.0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="gui_simulation_type" type="bit">
+          <ipxact:name>gui_simulation_type</ipxact:name>
+          <ipxact:displayName>Force full PLL simulation model</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="hp_qsys_scripting_mode" type="bit">
+          <ipxact:name>hp_qsys_scripting_mode</ipxact:name>
+          <ipxact:displayName>hp_qsys_scripting_mode</ipxact:displayName>
+          <ipxact:value>false</ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+    </altera:altera_module_parameters>
+    <altera:altera_assignments>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="embeddedsw.dts.compatible" type="string">
+          <ipxact:name>embeddedsw.dts.compatible</ipxact:name>
+          <ipxact:value>altr,pll</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="embeddedsw.dts.group" type="string">
+          <ipxact:name>embeddedsw.dts.group</ipxact:name>
+          <ipxact:value>clock</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="embeddedsw.dts.vendor" type="string">
+          <ipxact:name>embeddedsw.dts.vendor</ipxact:name>
+          <ipxact:value>altr</ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+    </altera:altera_assignments>
+    <altera:altera_system_parameters>
+      <ipxact:parameters>
+        <ipxact:parameter parameterId="board" type="string">
+          <ipxact:name>board</ipxact:name>
+          <ipxact:displayName>Board</ipxact:displayName>
+          <ipxact:value>default</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="device" type="string">
+          <ipxact:name>device</ipxact:name>
+          <ipxact:displayName>Device</ipxact:displayName>
+          <ipxact:value>AGFB014R24B2E2V</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="deviceFamily" type="string">
+          <ipxact:name>deviceFamily</ipxact:name>
+          <ipxact:displayName>Device family</ipxact:displayName>
+          <ipxact:value>Agilex 7</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="deviceSpeedGrade" type="string">
+          <ipxact:name>deviceSpeedGrade</ipxact:name>
+          <ipxact:displayName>Device Speed Grade</ipxact:displayName>
+          <ipxact:value>2</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="generationId" type="int">
+          <ipxact:name>generationId</ipxact:name>
+          <ipxact:displayName>Generation Id</ipxact:displayName>
+          <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="bonusData" type="string">
+          <ipxact:name>bonusData</ipxact:name>
+          <ipxact:displayName>bonusData</ipxact:displayName>
+          <ipxact:value>bonusData 
+{
+   element iopll_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="hideFromIPCatalog" type="bit">
+          <ipxact:name>hideFromIPCatalog</ipxact:name>
+          <ipxact:displayName>Hide from IP Catalog</ipxact:displayName>
+          <ipxact:value>true</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="lockedInterfaceDefinition" type="string">
+          <ipxact:name>lockedInterfaceDefinition</ipxact:name>
+          <ipxact:displayName>lockedInterfaceDefinition</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="systemInfos" type="string">
+          <ipxact:name>systemInfos</ipxact:name>
+          <ipxact:displayName>systemInfos</ipxact:displayName>
+          <ipxact:value>&lt;systemInfosDefinition&gt;
+    &lt;connPtSystemInfos&gt;
+        &lt;entry&gt;
+            &lt;key&gt;outclk0&lt;/key&gt;
+            &lt;value&gt;
+                &lt;connectionPointName&gt;outclk0&lt;/connectionPointName&gt;
+                &lt;suppliedSystemInfos/&gt;
+                &lt;consumedSystemInfos&gt;
+                    &lt;entry&gt;
+                        &lt;key&gt;CLOCK_RATE&lt;/key&gt;
+                        &lt;value&gt;200000000&lt;/value&gt;
+                    &lt;/entry&gt;
+                &lt;/consumedSystemInfos&gt;
+            &lt;/value&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+            &lt;key&gt;outclk1&lt;/key&gt;
+            &lt;value&gt;
+                &lt;connectionPointName&gt;outclk1&lt;/connectionPointName&gt;
+                &lt;suppliedSystemInfos/&gt;
+                &lt;consumedSystemInfos&gt;
+                    &lt;entry&gt;
+                        &lt;key&gt;CLOCK_RATE&lt;/key&gt;
+                        &lt;value&gt;125000000&lt;/value&gt;
+                    &lt;/entry&gt;
+                &lt;/consumedSystemInfos&gt;
+            &lt;/value&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+            &lt;key&gt;outclk2&lt;/key&gt;
+            &lt;value&gt;
+                &lt;connectionPointName&gt;outclk2&lt;/connectionPointName&gt;
+                &lt;suppliedSystemInfos/&gt;
+                &lt;consumedSystemInfos&gt;
+                    &lt;entry&gt;
+                        &lt;key&gt;CLOCK_RATE&lt;/key&gt;
+                        &lt;value&gt;200000000&lt;/value&gt;
+                    &lt;/entry&gt;
+                &lt;/consumedSystemInfos&gt;
+            &lt;/value&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+            &lt;key&gt;outclk3&lt;/key&gt;
+            &lt;value&gt;
+                &lt;connectionPointName&gt;outclk3&lt;/connectionPointName&gt;
+                &lt;suppliedSystemInfos/&gt;
+                &lt;consumedSystemInfos&gt;
+                    &lt;entry&gt;
+                        &lt;key&gt;CLOCK_RATE&lt;/key&gt;
+                        &lt;value&gt;125000000&lt;/value&gt;
+                    &lt;/entry&gt;
+                &lt;/consumedSystemInfos&gt;
+            &lt;/value&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+            &lt;key&gt;outclk4&lt;/key&gt;
+            &lt;value&gt;
+                &lt;connectionPointName&gt;outclk4&lt;/connectionPointName&gt;
+                &lt;suppliedSystemInfos/&gt;
+                &lt;consumedSystemInfos&gt;
+                    &lt;entry&gt;
+                        &lt;key&gt;CLOCK_RATE&lt;/key&gt;
+                        &lt;value&gt;100000000&lt;/value&gt;
+                    &lt;/entry&gt;
+                &lt;/consumedSystemInfos&gt;
+            &lt;/value&gt;
+        &lt;/entry&gt;
+    &lt;/connPtSystemInfos&gt;
+&lt;/systemInfosDefinition&gt;</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="dflBitArray" type="string">
+          <ipxact:name>dflBitArray</ipxact:name>
+          <ipxact:displayName>dflBitArray</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="cpuInfo" type="string">
+          <ipxact:name>cpuInfo</ipxact:name>
+          <ipxact:displayName>cpuInfo</ipxact:displayName>
+          <ipxact:value></ipxact:value>
+        </ipxact:parameter>
+      </ipxact:parameters>
+    </altera:altera_system_parameters>
+    <altera:altera_interface_boundary>
+      <altera:interface_mapping altera:name="locked" altera:internal="iopll_0.locked" altera:type="conduit" altera:dir="end">
+        <altera:port_mapping altera:name="locked" altera:internal="locked"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="outclk0" altera:internal="iopll_0.outclk0" altera:type="clock" altera:dir="start">
+        <altera:port_mapping altera:name="outclk_0" altera:internal="outclk_0"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="outclk1" altera:internal="iopll_0.outclk1" altera:type="clock" altera:dir="start">
+        <altera:port_mapping altera:name="outclk_1" altera:internal="outclk_1"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="outclk2" altera:internal="iopll_0.outclk2" altera:type="clock" altera:dir="start">
+        <altera:port_mapping altera:name="outclk_2" altera:internal="outclk_2"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="outclk3" altera:internal="iopll_0.outclk3" altera:type="clock" altera:dir="start">
+        <altera:port_mapping altera:name="outclk_3" altera:internal="outclk_3"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="outclk4" altera:internal="iopll_0.outclk4" altera:type="clock" altera:dir="start">
+        <altera:port_mapping altera:name="outclk_4" altera:internal="outclk_4"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="refclk" altera:internal="iopll_0.refclk" altera:type="clock" altera:dir="end">
+        <altera:port_mapping altera:name="refclk" altera:internal="refclk"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="reset" altera:internal="iopll_0.reset" altera:type="reset" altera:dir="end">
+        <altera:port_mapping altera:name="rst" altera:internal="rst"></altera:port_mapping>
+      </altera:interface_mapping>
+    </altera:altera_interface_boundary>
+    <altera:altera_has_warnings>false</altera:altera_has_warnings>
+    <altera:altera_has_errors>false</altera:altera_has_errors>
+  </ipxact:vendorExtensions>
+</ipxact:component>

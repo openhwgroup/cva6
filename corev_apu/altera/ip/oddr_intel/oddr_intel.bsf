@@ -1,0 +1,71 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 2024  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the Intel FPGA Software License Subscription Agreements 
+on the Quartus Prime software download page.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 200 168)
+	(text "oddr_intel" (rect 70 0 107 12)(font "SansSerif" (font_size 11)))
+	(text "inst" (rect 8 152 20 164)(font "Arial" ))
+	(port
+		(pt 0 76)
+		(input)
+		(text "ck" (rect 0 0 9 12)(font "SansSerif" (font_size 8)))
+		(text "ck" (rect 4 65 16 76)(font "SansSerif" (font_size 8)))
+		(line (pt 0 76)(pt 51 76)(line_width 1))
+	)
+	(port
+		(pt 0 126)
+		(input)
+		(text "din[1..0]" (rect 0 0 29 12)(font "SansSerif" (font_size 8)))
+		(text "din[1..0]" (rect 4 115 58 126)(font "SansSerif" (font_size 8)))
+		(line (pt 0 126)(pt 51 126)(line_width 3))
+	)
+	(port
+		(pt 200 76)
+		(output)
+		(text "pad_out" (rect 0 0 31 12)(font "SansSerif" (font_size 8)))
+		(text "pad_out" (rect 162 65 204 76)(font "SansSerif" (font_size 8)))
+		(line (pt 200 76)(pt 136 76)(line_width 1))
+	)
+	(drawing
+		(text "ck" (rect 39 46 90 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 56 71 148 152)(font "SansSerif" (color 0 0 0)))
+		(text "din" (rect 35 96 88 205)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 56 121 148 252)(font "SansSerif" (color 0 0 0)))
+		(text "pad_out" (rect 137 46 316 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 106 71 248 152)(font "SansSerif" (color 0 0 0)))
+		(text " oddr_intel " (rect 159 151 390 312)(font "SansSerif" ))
+		(line (pt 51 34)(pt 136 34)(line_width 1))
+		(line (pt 136 34)(pt 136 151)(line_width 1))
+		(line (pt 51 151)(pt 136 151)(line_width 1))
+		(line (pt 51 34)(pt 51 151)(line_width 1))
+		(line (pt 52 55)(pt 52 80)(line_width 1))
+		(line (pt 53 55)(pt 53 80)(line_width 1))
+		(line (pt 52 105)(pt 52 130)(line_width 1))
+		(line (pt 53 105)(pt 53 130)(line_width 1))
+		(line (pt 135 55)(pt 135 80)(line_width 1))
+		(line (pt 134 55)(pt 134 80)(line_width 1))
+		(line (pt 0 0)(pt 200 0)(line_width 1))
+		(line (pt 200 0)(pt 200 168)(line_width 1))
+		(line (pt 0 168)(pt 200 168)(line_width 1))
+		(line (pt 0 0)(pt 0 168)(line_width 1))
+	)
+)

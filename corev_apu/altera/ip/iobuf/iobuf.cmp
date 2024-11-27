@@ -1,0 +1,9 @@
+	component iobuf is
+		port (
+			dout   : out   std_logic_vector(0 downto 0);                    -- export
+			din    : in    std_logic_vector(0 downto 0) := (others => 'X'); -- export
+			oe     : in    std_logic_vector(0 downto 0) := (others => 'X'); -- export
+			pad_io : inout std_logic_vector(0 downto 0) := (others => 'X')  -- export
+		);
+	end component iobuf;
+

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2024.10.03.15:29:36"
+ outputDirectory="/home/mustafa/projects/ip/test/test_mm_ccb_0/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Agilex 7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="AGFB014R24B2E2V"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="2"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_BOARD"
+     type="String"
+     defaultValue="Intel Agilex 7 FPGA F-Series Development Kit P-Tile and E-Tile DK-DEV-AGF014EA"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_M0_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_M0_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_M0_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_S0_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_S0_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_S0_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_M0_ADDRESS_MAP"
+     type="AddressMap"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_M0_ADDRESS_WIDTH"
+     type="AddressWidthType"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="m0_clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="m0_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="m0_reset" kind="reset" start="0">
+   <property name="associatedClock" value="m0_clk" />
+   <property name="synchronousEdges" value="BOTH" />
+   <port name="m0_reset" direction="input" role="reset" width="1" />
+  </interface>
+  <interface name="s0_clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="s0_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="s0_reset" kind="reset" start="0">
+   <property name="associatedClock" value="s0_clk" />
+   <property name="synchronousEdges" value="BOTH" />
+   <port name="s0_reset" direction="input" role="reset" width="1" />
+  </interface>
+  <interface name="s0" kind="avalon" start="0">
+   <property name="addressAlignment" value="DYNAMIC" />
+   <property name="addressGroup" value="0" />
+   <property name="addressSpan" value="134217728" />
+   <property name="addressUnits" value="SYMBOLS" />
+   <property name="alwaysBurstMaxBurst" value="false" />
+   <property name="associatedClock" value="s0_clk" />
+   <property name="associatedReset" value="s0_reset" />
+   <property name="bitsPerSymbol" value="8" />
+   <property name="bridgedAddressOffset" value="0" />
+   <property name="bridgesToMaster" value="test_mm_ccb_0.m0" />
+   <property name="burstOnBurstBoundariesOnly" value="false" />
+   <property name="burstcountUnits" value="WORDS" />
+   <property name="constantBurstBehavior" value="false" />
+   <property name="explicitAddressSpan" value="0" />
+   <property name="holdTime" value="0" />
+   <property name="interleaveBursts" value="false" />
+   <property name="isBigEndian" value="false" />
+   <property name="isFlash" value="false" />
+   <property name="isMemoryDevice" value="false" />
+   <property name="isNonVolatileStorage" value="false" />
+   <property name="linewrapBursts" value="false" />
+   <property name="maximumPendingReadTransactions" value="128" />
+   <property name="maximumPendingWriteTransactions" value="0" />
+   <property name="minimumReadLatency" value="1" />
+   <property name="minimumResponseLatency" value="1" />
+   <property name="minimumUninterruptedRunLength" value="1" />
+   <property name="prSafe" value="false" />
+   <property name="printableDevice" value="false" />
+   <property name="readLatency" value="0" />
+   <property name="readWaitStates" value="0" />
+   <property name="readWaitTime" value="0" />
+   <property name="registerIncomingSignals" value="false" />
+   <property name="registerOutgoingSignals" value="false" />
+   <property name="setupTime" value="0" />
+   <property name="timingUnits" value="Cycles" />
+   <property name="transparentBridge" value="false" />
+   <property name="waitrequestAllowance" value="0" />
+   <property name="wellBehavedWaitrequest" value="false" />
+   <property name="writeLatency" value="0" />
+   <property name="writeWaitStates" value="0" />
+   <property name="writeWaitTime" value="0" />
+   <property name="dfhFeatureGuid" value="0" />
+   <property name="dfhGroupId" value="0" />
+   <property name="dfhParameterId" value="" />
+   <property name="dfhParameterName" value="" />
+   <property name="dfhParameterVersion" value="" />
+   <property name="dfhParameterData" value="" />
+   <property name="dfhParameterDataLength" value="" />
+   <property name="dfhFeatureMajorVersion" value="0" />
+   <property name="dfhFeatureMinorVersion" value="0" />
+   <property name="dfhFeatureId" value="35" />
+   <property name="dfhFeatureType" value="3" />
+   <port name="s0_waitrequest" direction="output" role="waitrequest" width="1" />
+   <port name="s0_readdata" direction="output" role="readdata" width="512" />
+   <port
+       name="s0_readdatavalid"
+       direction="output"
+       role="readdatavalid"
+       width="1" />
+   <port name="s0_burstcount" direction="input" role="burstcount" width="8" />
+   <port name="s0_writedata" direction="input" role="writedata" width="512" />
+   <port name="s0_address" direction="input" role="address" width="27" />
+   <port name="s0_write" direction="input" role="write" width="1" />
+   <port name="s0_read" direction="input" role="read" width="1" />
+   <port name="s0_byteenable" direction="input" role="byteenable" width="64" />
+   <port name="s0_debugaccess" direction="input" role="debugaccess" width="1" />
+  </interface>
+  <interface name="m0" kind="avalon" start="1">
+   <property name="adaptsTo" value="" />
+   <property name="addressGroup" value="0" />
+   <property name="addressUnits" value="SYMBOLS" />
+   <property name="alwaysBurstMaxBurst" value="false" />
+   <property name="associatedClock" value="m0_clk" />
+   <property name="associatedReset" value="m0_reset" />
+   <property name="bitsPerSymbol" value="8" />
+   <property name="burstOnBurstBoundariesOnly" value="false" />
+   <property name="burstcountUnits" value="WORDS" />
+   <property name="constantBurstBehavior" value="false" />
+   <property name="dBSBigEndian" value="false" />
+   <property name="doStreamReads" value="false" />
+   <property name="doStreamWrites" value="false" />
+   <property name="holdTime" value="0" />
+   <property name="interleaveBursts" value="false" />
+   <property name="isAsynchronous" value="false" />
+   <property name="isBigEndian" value="false" />
+   <property name="isReadable" value="false" />
+   <property name="isWriteable" value="false" />
+   <property name="linewrapBursts" value="false" />
+   <property name="maxAddressWidth" value="32" />
+   <property name="maximumPendingReadTransactions" value="0" />
+   <property name="maximumPendingWriteTransactions" value="0" />
+   <property name="minimumReadLatency" value="1" />
+   <property name="minimumResponseLatency" value="1" />
+   <property name="prSafe" value="false" />
+   <property name="readLatency" value="0" />
+   <property name="readWaitTime" value="1" />
+   <property name="registerIncomingSignals" value="false" />
+   <property name="registerOutgoingSignals" value="false" />
+   <property name="setupTime" value="0" />
+   <property name="timingUnits" value="Cycles" />
+   <property name="waitrequestAllowance" value="0" />
+   <property name="writeWaitTime" value="0" />
+   <port name="m0_waitrequest" direction="input" role="waitrequest" width="1" />
+   <port name="m0_readdata" direction="input" role="readdata" width="512" />
+   <port
+       name="m0_readdatavalid"
+       direction="input"
+       role="readdatavalid"
+       width="1" />
+   <port name="m0_burstcount" direction="output" role="burstcount" width="8" />
+   <port name="m0_writedata" direction="output" role="writedata" width="512" />
+   <port name="m0_address" direction="output" role="address" width="27" />
+   <port name="m0_write" direction="output" role="write" width="1" />
+   <port name="m0_read" direction="output" role="read" width="1" />
+   <port name="m0_byteenable" direction="output" role="byteenable" width="64" />
+   <port name="m0_debugaccess" direction="output" role="debugaccess" width="1" />
+  </interface>
+ </perimeter>
+ <entity kind="test_mm_ccb_0" version="1.0" name="test_mm_ccb_0">
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Agilex 7" />
+  <parameter
+     name="AUTO_BOARD"
+     value="Intel Agilex 7 FPGA F-Series Development Kit P-Tile and E-Tile DK-DEV-AGF014EA" />
+  <parameter name="AUTO_M0_ADDRESS_MAP" value="" />
+  <parameter name="AUTO_S0_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_M0_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_M0_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
+  <parameter name="AUTO_S0_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE" value="AGFB014R24B2E2V" />
+  <parameter name="AUTO_S0_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_M0_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_M0_ADDRESS_WIDTH" value="-1" />
+  <generatedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/synth/test_mm_ccb_0.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/synth/test_mm_ccb_0.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file path="/home/mustafa/projects/ip/test/test_mm_ccb_0.ip" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/merlin/altera_avalon_mm_clock_crossing_bridge/altera_avalon_mm_clock_crossing_bridge_hw.tcl" />
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+  </childSourceFiles>
+  <messages>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_1921_5zxyagi"</message>
+   <message level="Info" culprit="my_altera_avalon_dc_fifo_cmd_fifo">"Generating: my_altera_avalon_dc_fifo_cmd_fifo"</message>
+   <message level="Info" culprit="my_altera_avalon_dc_fifo_rsp_fifo">"Generating: my_altera_avalon_dc_fifo_rsp_fifo"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+  </messages>
+ </entity>
+ <entity
+   kind="mm_ccb"
+   version="19.2.1"
+   name="test_mm_ccb_0_mm_ccb_1921_5zxyagi">
+  <parameter name="MAX_BURST_SIZE" value="128" />
+  <generatedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_1921_5zxyagi.v"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_1921_5zxyagi.v"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/merlin/altera_avalon_mm_clock_crossing_bridge/altera_avalon_mm_clock_crossing_bridge_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+  </childSourceFiles>
+  <instantiator instantiator="test_mm_ccb_0" as="mm_ccb_0" />
+  <messages>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_1921_5zxyagi"</message>
+   <message level="Info" culprit="my_altera_avalon_dc_fifo_cmd_fifo">"Generating: my_altera_avalon_dc_fifo_cmd_fifo"</message>
+   <message level="Info" culprit="my_altera_avalon_dc_fifo_rsp_fifo">"Generating: my_altera_avalon_dc_fifo_rsp_fifo"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+  </messages>
+ </entity>
+ <entity
+   kind="mm_ccb_st_dc_fifo"
+   version="19.2.1"
+   name="test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey">
+  <parameter name="FIFO_DEPTH" value="256" />
+  <parameter name="USE_PACKETS" value="0" />
+  <parameter name="USE_OUT_FILL_LEVEL" value="0" />
+  <parameter name="EXPLICIT_MAXCHANNEL" value="0" />
+  <parameter name="USE_SPACE_AVAIL_IF" value="0" />
+  <parameter name="CHANNEL_WIDTH" value="0" />
+  <parameter name="ENABLE_EXPLICIT_MAXCHANNEL" value="false" />
+  <parameter name="ADDR_WIDTH" value="8" />
+  <parameter name="PIPELINE_POINTERS" value="0" />
+  <parameter name="SYMBOLS_PER_BEAT" value="1" />
+  <parameter name="BITS_PER_SYMBOL" value="614" />
+  <parameter name="ERROR_WIDTH" value="0" />
+  <parameter name="RD_SYNC_DEPTH" value="2" />
+  <parameter name="USE_IN_FILL_LEVEL" value="0" />
+  <parameter name="WR_SYNC_DEPTH" value="2" />
+  <parameter name="SYNC_RESET" value="1" />
+  <parameter name="retiming_reg_en" value="0" />
+  <generatedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </childGeneratedFiles>
+  <sourceFiles/>
+  <childSourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+  </childSourceFiles>
+  <instantiator
+     instantiator="test_mm_ccb_0_mm_ccb_1921_5zxyagi"
+     as="my_altera_avalon_dc_fifo_cmd_fifo" />
+  <messages>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+  </messages>
+ </entity>
+ <entity
+   kind="mm_ccb_st_dc_fifo"
+   version="19.2.1"
+   name="test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta">
+  <parameter name="FIFO_DEPTH" value="256" />
+  <parameter name="USE_PACKETS" value="0" />
+  <parameter name="USE_OUT_FILL_LEVEL" value="0" />
+  <parameter name="EXPLICIT_MAXCHANNEL" value="0" />
+  <parameter name="USE_SPACE_AVAIL_IF" value="1" />
+  <parameter name="CHANNEL_WIDTH" value="0" />
+  <parameter name="ENABLE_EXPLICIT_MAXCHANNEL" value="false" />
+  <parameter name="ADDR_WIDTH" value="8" />
+  <parameter name="PIPELINE_POINTERS" value="0" />
+  <parameter name="SYMBOLS_PER_BEAT" value="1" />
+  <parameter name="BITS_PER_SYMBOL" value="512" />
+  <parameter name="ERROR_WIDTH" value="0" />
+  <parameter name="RD_SYNC_DEPTH" value="3" />
+  <parameter name="USE_IN_FILL_LEVEL" value="0" />
+  <parameter name="WR_SYNC_DEPTH" value="3" />
+  <parameter name="SYNC_RESET" value="1" />
+  <parameter name="retiming_reg_en" value="0" />
+  <generatedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/mm_ccb_1921/synth/test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </childGeneratedFiles>
+  <sourceFiles/>
+  <childSourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+  </childSourceFiles>
+  <instantiator
+     instantiator="test_mm_ccb_0_mm_ccb_1921_5zxyagi"
+     as="my_altera_avalon_dc_fifo_rsp_fifo" />
+  <messages>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta"</message>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+  </messages>
+ </entity>
+ <entity
+   kind="st_dc_fifo"
+   version="19.5.1"
+   name="test_mm_ccb_0_st_dc_fifo_1951_tfgfkki">
+  <parameter name="EXPLICIT_MAXCHANNEL" value="0" />
+  <parameter name="SYNC_RESET" value="1" />
+  <parameter name="ENABLE_EXPLICIT_MAXCHANNEL" value="false" />
+  <parameter name="retiming_reg_en" value="0" />
+  <generatedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/test_mm_ccb_0_st_dc_fifo_1951_tfgfkki.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_reset_synchronizer.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_dcfifo_synchronizer_bundle.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_std_synchronizer_nocut.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/test_mm_ccb_0_st_dc_fifo_1951_tfgfkki.sdc"
+       attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/test_mm_ccb_0_st_dc_fifo_1951_tfgfkki.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_reset_synchronizer.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_dcfifo_synchronizer_bundle.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/altera_std_synchronizer_nocut.v"
+       attributes="" />
+   <file
+       path="/home/mustafa/projects/ip/test/test_mm_ccb_0/st_dc_fifo_1951/synth/test_mm_ccb_0_st_dc_fifo_1951_tfgfkki.sdc"
+       attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="/opt/Quartus/ip/altera/sopc_builder_ip/altera_avalon_dc_fifo/altera_avalon_dc_fifo_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator
+     instantiator="test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_pg4qgey"
+     as="my_altera_avalon_dc_fifo_cmd_fifo" />
+  <instantiator
+     instantiator="test_mm_ccb_0_mm_ccb_st_dc_fifo_1921_6qjweta"
+     as="my_altera_avalon_dc_fifo_rsp_fifo" />
+  <messages>
+   <message level="Info" culprit="test_mm_ccb_0">"Generating: test_mm_ccb_0_st_dc_fifo_1951_tfgfkki"</message>
+  </messages>
+ </entity>
+</deploy>

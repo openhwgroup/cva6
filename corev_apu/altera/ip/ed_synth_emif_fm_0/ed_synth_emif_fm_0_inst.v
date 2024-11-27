@@ -1,0 +1,45 @@
+	ed_synth_emif_fm_0 u0 (
+		.local_reset_req           (_connected_to_local_reset_req_),           //   input,     width = 1,           local_reset_req.local_reset_req
+		.local_reset_done          (_connected_to_local_reset_done_),          //  output,     width = 1,        local_reset_status.local_reset_done
+		.pll_ref_clk               (_connected_to_pll_ref_clk_),               //   input,     width = 1,               pll_ref_clk.clk
+		.pll_locked                (_connected_to_pll_locked_),                //  output,     width = 1,                pll_locked.pll_locked
+		.oct_rzqin                 (_connected_to_oct_rzqin_),                 //   input,     width = 1,                       oct.oct_rzqin
+		.mem_ck                    (_connected_to_mem_ck_),                    //  output,     width = 1,                       mem.mem_ck
+		.mem_ck_n                  (_connected_to_mem_ck_n_),                  //  output,     width = 1,                          .mem_ck_n
+		.mem_a                     (_connected_to_mem_a_),                     //  output,    width = 17,                          .mem_a
+		.mem_act_n                 (_connected_to_mem_act_n_),                 //  output,     width = 1,                          .mem_act_n
+		.mem_ba                    (_connected_to_mem_ba_),                    //  output,     width = 2,                          .mem_ba
+		.mem_bg                    (_connected_to_mem_bg_),                    //  output,     width = 2,                          .mem_bg
+		.mem_cke                   (_connected_to_mem_cke_),                   //  output,     width = 1,                          .mem_cke
+		.mem_cs_n                  (_connected_to_mem_cs_n_),                  //  output,     width = 1,                          .mem_cs_n
+		.mem_odt                   (_connected_to_mem_odt_),                   //  output,     width = 1,                          .mem_odt
+		.mem_reset_n               (_connected_to_mem_reset_n_),               //  output,     width = 1,                          .mem_reset_n
+		.mem_par                   (_connected_to_mem_par_),                   //  output,     width = 1,                          .mem_par
+		.mem_alert_n               (_connected_to_mem_alert_n_),               //   input,     width = 1,                          .mem_alert_n
+		.mem_dqs                   (_connected_to_mem_dqs_),                   //   inout,     width = 9,                          .mem_dqs
+		.mem_dqs_n                 (_connected_to_mem_dqs_n_),                 //   inout,     width = 9,                          .mem_dqs_n
+		.mem_dq                    (_connected_to_mem_dq_),                    //   inout,    width = 72,                          .mem_dq
+		.mem_dbi_n                 (_connected_to_mem_dbi_n_),                 //   inout,     width = 9,                          .mem_dbi_n
+		.local_cal_success         (_connected_to_local_cal_success_),         //  output,     width = 1,                    status.local_cal_success
+		.local_cal_fail            (_connected_to_local_cal_fail_),            //  output,     width = 1,                          .local_cal_fail
+		.calbus_read               (_connected_to_calbus_read_),               //   input,     width = 1,               emif_calbus.calbus_read
+		.calbus_write              (_connected_to_calbus_write_),              //   input,     width = 1,                          .calbus_write
+		.calbus_address            (_connected_to_calbus_address_),            //   input,    width = 20,                          .calbus_address
+		.calbus_wdata              (_connected_to_calbus_wdata_),              //   input,    width = 32,                          .calbus_wdata
+		.calbus_rdata              (_connected_to_calbus_rdata_),              //  output,    width = 32,                          .calbus_rdata
+		.calbus_seq_param_tbl      (_connected_to_calbus_seq_param_tbl_),      //  output,  width = 4096,                          .calbus_seq_param_tbl
+		.calbus_clk                (_connected_to_calbus_clk_),                //   input,     width = 1,           emif_calbus_clk.clk
+		.emif_usr_reset_n          (_connected_to_emif_usr_reset_n_),          //  output,     width = 1,          emif_usr_reset_n.reset_n
+		.emif_usr_clk              (_connected_to_emif_usr_clk_),              //  output,     width = 1,              emif_usr_clk.clk
+		.ctrl_ecc_user_interrupt_0 (_connected_to_ctrl_ecc_user_interrupt_0_), //  output,     width = 1, ctrl_ecc_user_interrupt_0.ctrl_ecc_user_interrupt
+		.amm_ready_0               (_connected_to_amm_ready_0_),               //  output,     width = 1,                ctrl_amm_0.waitrequest_n
+		.amm_read_0                (_connected_to_amm_read_0_),                //   input,     width = 1,                          .read
+		.amm_write_0               (_connected_to_amm_write_0_),               //   input,     width = 1,                          .write
+		.amm_address_0             (_connected_to_amm_address_0_),             //   input,    width = 27,                          .address
+		.amm_readdata_0            (_connected_to_amm_readdata_0_),            //  output,   width = 512,                          .readdata
+		.amm_writedata_0           (_connected_to_amm_writedata_0_),           //   input,   width = 512,                          .writedata
+		.amm_burstcount_0          (_connected_to_amm_burstcount_0_),          //   input,     width = 7,                          .burstcount
+		.amm_byteenable_0          (_connected_to_amm_byteenable_0_),          //   input,    width = 64,                          .byteenable
+		.amm_readdatavalid_0       (_connected_to_amm_readdatavalid_0_)        //  output,     width = 1,                          .readdatavalid
+	);
+

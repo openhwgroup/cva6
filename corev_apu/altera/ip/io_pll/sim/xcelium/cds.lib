@@ -1,0 +1,22 @@
+
+DEFINE std               $CDS_ROOT/tools/inca/files/STD/           
+DEFINE synopsys          $CDS_ROOT/tools/inca/files/SYNOPSYS/      
+DEFINE ieee              $CDS_ROOT/tools/inca/files/IEEE/          
+DEFINE ambit             $CDS_ROOT/tools/inca/files/AMBIT/         
+DEFINE vital_memory      $CDS_ROOT/tools/inca/files/VITAL_MEMORY/  
+DEFINE ncutils           $CDS_ROOT/tools/inca/files/NCUTILS/       
+DEFINE ncinternal        $CDS_ROOT/tools/inca/files/NCINTERNAL/    
+DEFINE ncmodels          $CDS_ROOT/tools/inca/files/NCMODELS/      
+DEFINE cds_assertions    $CDS_ROOT/tools/inca/files/CDS_ASSERTIONS/
+DEFINE work              ./libraries/work/                         
+DEFINE altera_iopll_1931 ./libraries/altera_iopll_1931/            
+DEFINE io_pll            ./libraries/io_pll/                       
+DEFINE lpm_ver           ./libraries/lpm_ver/                      
+DEFINE sgate_ver         ./libraries/sgate_ver/                    
+DEFINE altera_ver        ./libraries/altera_ver/                   
+DEFINE altera_mf_ver     ./libraries/altera_mf_ver/                
+DEFINE altera_lnsim_ver  ./libraries/altera_lnsim_ver/             
+DEFINE tennm_ver         ./libraries/tennm_ver/                    
+DEFINE tennm_hssi_ver    ./libraries/tennm_hssi_ver/               
+DEFINE tennm_hssi_e0_ver ./libraries/tennm_hssi_e0_ver/            
+DEFINE tennm_hssi_p0_ver ./libraries/tennm_hssi_p0_ver/            

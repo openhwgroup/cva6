@@ -1,0 +1,30 @@
+// This file is dynamically generated and is for information purposes only.
+// It is not used during compilation or simulation.
+
+SEQ_GPT
+   0x7400   SEQ_GPT_GLOBAL_PAR_VER        : 2          0x00000002
+   0x7404   SEQ_GPT_NIOS_C_VER            : 1          0x00000001
+   0x7408   SEQ_GPT_COLUMN_ID             : 1          0x00000001
+   0x740C   SEQ_GPT_NUM_IOPACKS           : 16         0x00000010
+   0x7410   SEQ_GPT_NIOS_CLK_FREQ_KHZ     : 1250000    0x001312D0
+   0x7414   SEQ_GPT_PARAM_TABLE_SIZE      : 612        0x00000264
+   0x7418   SEQ_GPT_GLOBAL_SKIP_STEPS     : 1055       0x0000041F
+   0x741C   SEQ_GPT_GLOBAL_CAL_CONFIG     : 0          0x00000000
+   0x7420   SEQ_GPT_SLAVE_CLK_DIVIDER     : 28         0x0000001C
+   0x7424   SEQ_GPT_INTERFACE_PAR_PTRS    
+   0x7424      static_array_elem [0]      : 100        0x00000064
+   0x7428      static_array_elem [1]      : 0          0x00000000
+   0x742C      static_array_elem [2]      : 0          0x00000000
+   0x7430      static_array_elem [3]      : 0          0x00000000
+   0x7434      static_array_elem [4]      : 0          0x00000000
+   0x7438      static_array_elem [5]      : 0          0x00000000
+   0x743C      static_array_elem [6]      : 0          0x00000000
+   0x7440      static_array_elem [7]      : 0          0x00000000
+   0x7444      static_array_elem [8]      : 0          0x00000000
+   0x7448      static_array_elem [9]      : 0          0x00000000
+   0x744C      static_array_elem [10]     : 0          0x00000000
+   0x7450      static_array_elem [11]     : 0          0x00000000
+   0x7454      static_array_elem [12]     : 0          0x00000000
+   0x7458      static_array_elem [13]     : 0          0x00000000
+   0x745C      static_array_elem [14]     : 0          0x00000000
+   0x7460      static_array_elem [15]     : 0          0x00000000

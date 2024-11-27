@@ -1,0 +1,15 @@
+
+WORK > DEFAULT
+DEFAULT:           ./libraries/work/             
+work:              ./libraries/work/             
+altera_iopll_1931: ./libraries/altera_iopll_1931/
+io_pll:            ./libraries/io_pll/           
+lpm_ver:           ./libraries/lpm_ver/          
+sgate_ver:         ./libraries/sgate_ver/        
+altera_ver:        ./libraries/altera_ver/       
+altera_mf_ver:     ./libraries/altera_mf_ver/    
+altera_lnsim_ver:  ./libraries/altera_lnsim_ver/ 
+tennm_ver:         ./libraries/tennm_ver/        
+tennm_hssi_ver:    ./libraries/tennm_hssi_ver/   
+tennm_hssi_e0_ver: ./libraries/tennm_hssi_e0_ver/
+tennm_hssi_p0_ver: ./libraries/tennm_hssi_p0_ver/

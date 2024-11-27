@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ipxact:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact2014/extensions" xmlns:ipxact="http://www.accellera.org/XMLSchema/IPXACT/1685-2014">
+    <ipxact:vendor>Intel Corporation</ipxact:vendor>
+    <ipxact:library>io_pll</ipxact:library>
+    <ipxact:name>io_pll</ipxact:name>
+    <ipxact:version>1.0</ipxact:version>
+    <ipxact:busInterfaces>
+        <ipxact:busInterface>
+            <ipxact:name>refclk</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>refclk</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:slave/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>100000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>input</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>locked</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>export</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>locked</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:slave/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedClock" type="string">
+                    <ipxact:name>associatedClock</ipxact:name>
+                    <ipxact:displayName>associatedClock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="associatedReset" type="string">
+                    <ipxact:name>associatedReset</ipxact:name>
+                    <ipxact:displayName>associatedReset</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="prSafe" type="bit">
+                    <ipxact:name>prSafe</ipxact:name>
+                    <ipxact:displayName>Partial Reconfiguration Safe</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>reset</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="reset" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="reset" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>reset</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>rst</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:slave/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedClock" type="string">
+                    <ipxact:name>associatedClock</ipxact:name>
+                    <ipxact:displayName>Associated clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="synchronousEdges" type="string">
+                    <ipxact:name>synchronousEdges</ipxact:name>
+                    <ipxact:displayName>Synchronous edges</ipxact:displayName>
+                    <ipxact:value>NONE</ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>input</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>outclk0</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>outclk_0</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:master/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedDirectClock" type="string">
+                    <ipxact:name>associatedDirectClock</ipxact:name>
+                    <ipxact:displayName>Associated direct clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>200000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRateKnown" type="bit">
+                    <ipxact:name>clockRateKnown</ipxact:name>
+                    <ipxact:displayName>Clock rate known</ipxact:displayName>
+                    <ipxact:value>true</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>outclk1</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>outclk_1</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:master/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedDirectClock" type="string">
+                    <ipxact:name>associatedDirectClock</ipxact:name>
+                    <ipxact:displayName>Associated direct clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>125000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRateKnown" type="bit">
+                    <ipxact:name>clockRateKnown</ipxact:name>
+                    <ipxact:displayName>Clock rate known</ipxact:displayName>
+                    <ipxact:value>true</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>outclk2</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>outclk_2</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:master/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedDirectClock" type="string">
+                    <ipxact:name>associatedDirectClock</ipxact:name>
+                    <ipxact:displayName>Associated direct clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>200000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRateKnown" type="bit">
+                    <ipxact:name>clockRateKnown</ipxact:name>
+                    <ipxact:displayName>Clock rate known</ipxact:displayName>
+                    <ipxact:value>true</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>outclk3</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>outclk_3</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:master/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedDirectClock" type="string">
+                    <ipxact:name>associatedDirectClock</ipxact:name>
+                    <ipxact:displayName>Associated direct clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>125000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRateKnown" type="bit">
+                    <ipxact:name>clockRateKnown</ipxact:name>
+                    <ipxact:displayName>Clock rate known</ipxact:displayName>
+                    <ipxact:value>true</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+        <ipxact:busInterface>
+            <ipxact:name>outclk4</ipxact:name>
+            <ipxact:busType vendor="intel" library="intel" name="clock" version="24.1"/>
+            <ipxact:abstractionTypes>
+                <ipxact:abstractionType>
+                    <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.1"/>
+                    <ipxact:portMaps>
+                        <ipxact:portMap>
+                            <ipxact:logicalPort>
+                                <ipxact:name>clk</ipxact:name>
+                            </ipxact:logicalPort>
+                            <ipxact:physicalPort>
+                                <ipxact:name>outclk_4</ipxact:name>
+                            </ipxact:physicalPort>
+                        </ipxact:portMap>
+                    </ipxact:portMaps>
+                </ipxact:abstractionType>
+            </ipxact:abstractionTypes>
+            <ipxact:master/>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="associatedDirectClock" type="string">
+                    <ipxact:name>associatedDirectClock</ipxact:name>
+                    <ipxact:displayName>Associated direct clock</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRate" type="longint">
+                    <ipxact:name>clockRate</ipxact:name>
+                    <ipxact:displayName>Clock rate</ipxact:displayName>
+                    <ipxact:value>100000000</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="clockRateKnown" type="bit">
+                    <ipxact:name>clockRateKnown</ipxact:name>
+                    <ipxact:displayName>Clock rate known</ipxact:displayName>
+                    <ipxact:value>true</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="externallyDriven" type="bit">
+                    <ipxact:name>externallyDriven</ipxact:name>
+                    <ipxact:displayName>Externally driven</ipxact:displayName>
+                    <ipxact:value>false</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="ptfSchematicName" type="string">
+                    <ipxact:name>ptfSchematicName</ipxact:name>
+                    <ipxact:displayName>PTF schematic name</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+            <ipxact:vendorExtensions>
+                <altera:altera_assignments>
+                    <ipxact:parameters>
+                        <ipxact:parameter parameterId="ui.blockdiagram.direction" type="string">
+                            <ipxact:name>ui.blockdiagram.direction</ipxact:name>
+                            <ipxact:value>output</ipxact:value>
+                        </ipxact:parameter>
+                    </ipxact:parameters>
+                </altera:altera_assignments>
+            </ipxact:vendorExtensions>
+        </ipxact:busInterface>
+    </ipxact:busInterfaces>
+    <ipxact:model>
+        <ipxact:views>
+            <ipxact:view>
+                <ipxact:name>QUARTUS_SYNTH</ipxact:name>
+                <ipxact:envIdentifier>:quartus.altera.com:</ipxact:envIdentifier>
+                <ipxact:componentInstantiationRef>QUARTUS_SYNTH</ipxact:componentInstantiationRef>
+            </ipxact:view>
+        </ipxact:views>
+        <ipxact:instantiations>
+            <ipxact:componentInstantiation>
+                <ipxact:name>QUARTUS_SYNTH</ipxact:name>
+                <ipxact:moduleName>io_pll</ipxact:moduleName>
+                <ipxact:fileSetRef>
+                    <ipxact:localName>QUARTUS_SYNTH</ipxact:localName>
+                </ipxact:fileSetRef>
+            </ipxact:componentInstantiation>
+        </ipxact:instantiations>
+        <ipxact:ports>
+            <ipxact:port>
+                <ipxact:name>refclk</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>in</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>locked</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>rst</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>in</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>outclk_0</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>outclk_1</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>outclk_2</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>outclk_3</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+            <ipxact:port>
+                <ipxact:name>outclk_4</ipxact:name>
+                <ipxact:wire>
+                    <ipxact:direction>out</ipxact:direction>
+                    <ipxact:wireTypeDefs>
+                        <ipxact:wireTypeDef>
+                            <ipxact:typeName>STD_LOGIC</ipxact:typeName>
+                            <ipxact:viewRef>QUARTUS_SYNTH</ipxact:viewRef>
+                        </ipxact:wireTypeDef>
+                    </ipxact:wireTypeDefs>
+                </ipxact:wire>
+            </ipxact:port>
+        </ipxact:ports>
+    </ipxact:model>
+    <ipxact:fileSets>
+        <ipxact:fileSet>
+            <ipxact:name>QUARTUS_SYNTH</ipxact:name>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/io_pll_altera_iopll_1931_oypl3jq.v</ipxact:name>
+                <ipxact:fileType>verilogSource</ipxact:fileType>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/io_pll_altera_iopll_1931_oypl3jq_all_ip_params.tcl</ipxact:name>
+                <ipxact:fileType/>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/io_pll_altera_iopll_1931_oypl3jq_parameters.tcl</ipxact:name>
+                <ipxact:fileType/>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/io_pll_altera_iopll_1931_oypl3jq.sdc</ipxact:name>
+                <ipxact:fileType/>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/io_pll_altera_iopll_1931_oypl3jq_pin_map.tcl</ipxact:name>
+                <ipxact:fileType/>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>altera_iopll_1931/synth/agilex_iobank_pll.ipxact</ipxact:name>
+                <ipxact:fileType>unknown</ipxact:fileType>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+            <ipxact:file>
+                <ipxact:name>synth/io_pll.v</ipxact:name>
+                <ipxact:fileType>verilogSource</ipxact:fileType>
+                <ipxact:isIncludeFile>false</ipxact:isIncludeFile>
+                <ipxact:vendorExtensions>
+                    <altera:altera_hdl_compilation_library>io_pll</altera:altera_hdl_compilation_library>
+                </ipxact:vendorExtensions>
+            </ipxact:file>
+        </ipxact:fileSet>
+    </ipxact:fileSets>
+    <ipxact:vendorExtensions>
+        <altera:entity_info>
+            <ipxact:vendor>Intel Corporation</ipxact:vendor>
+            <ipxact:library>io_pll</ipxact:library>
+            <ipxact:name>io_pll</ipxact:name>
+            <ipxact:version>1.0</ipxact:version>
+        </altera:entity_info>
+        <altera:altera_module_parameters>
+            <ipxact:parameters>
+                <ipxact:parameter parameterId="AUTO_GENERATION_ID" type="longint">
+                    <ipxact:name>AUTO_GENERATION_ID</ipxact:name>
+                    <ipxact:displayName>Auto GENERATION_ID</ipxact:displayName>
+                    <ipxact:value>0</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_UNIQUE_ID" type="string">
+                    <ipxact:name>AUTO_UNIQUE_ID</ipxact:name>
+                    <ipxact:displayName>Auto UNIQUE_ID</ipxact:displayName>
+                    <ipxact:value></ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_DEVICE_FAMILY" type="string">
+                    <ipxact:name>AUTO_DEVICE_FAMILY</ipxact:name>
+                    <ipxact:displayName>Auto DEVICE_FAMILY</ipxact:displayName>
+                    <ipxact:value>Agilex 7</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_DEVICE" type="string">
+                    <ipxact:name>AUTO_DEVICE</ipxact:name>
+                    <ipxact:displayName>Auto DEVICE</ipxact:displayName>
+                    <ipxact:value>AGFB014R24B2E2V</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_DEVICE_SPEEDGRADE" type="string">
+                    <ipxact:name>AUTO_DEVICE_SPEEDGRADE</ipxact:name>
+                    <ipxact:displayName>Auto DEVICE_SPEEDGRADE</ipxact:displayName>
+                    <ipxact:value>2</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_BOARD" type="string">
+                    <ipxact:name>AUTO_BOARD</ipxact:name>
+                    <ipxact:displayName>Auto BOARD</ipxact:displayName>
+                    <ipxact:value>default</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_REFCLK_CLOCK_RATE" type="longint">
+                    <ipxact:name>AUTO_REFCLK_CLOCK_RATE</ipxact:name>
+                    <ipxact:displayName>Auto CLOCK_RATE</ipxact:displayName>
+                    <ipxact:value>-1</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_REFCLK_CLOCK_DOMAIN" type="longint">
+                    <ipxact:name>AUTO_REFCLK_CLOCK_DOMAIN</ipxact:name>
+                    <ipxact:displayName>Auto CLOCK_DOMAIN</ipxact:displayName>
+                    <ipxact:value>-1</ipxact:value>
+                </ipxact:parameter>
+                <ipxact:parameter parameterId="AUTO_REFCLK_RESET_DOMAIN" type="longint">
+                    <ipxact:name>AUTO_REFCLK_RESET_DOMAIN</ipxact:name>
+                    <ipxact:displayName>Auto RESET_DOMAIN</ipxact:displayName>
+                    <ipxact:value>-1</ipxact:value>
+                </ipxact:parameter>
+            </ipxact:parameters>
+        </altera:altera_module_parameters>
+    </ipxact:vendorExtensions>
+</ipxact:component>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_iopll_1931/sim/io_pll_altera_iopll_1931_oypl3jq.vo"
+   type="VERILOG"
+   library="altera_iopll_1931" />
+ <file
+   path="sim/io_pll.v"
+   type="VERILOG"
+   library="io_pll"
+   hasInlineConfiguration="true" />
+ <topLevel name="io_pll.io_pll" />
+ <deviceFamily name="agilex7" />
+ <device name="AGFB014R24B2E2V" />
+</simPackage>

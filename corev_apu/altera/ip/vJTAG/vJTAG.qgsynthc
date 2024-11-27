@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<node xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:altera="http://www.altera.com/XMLSchema/Qsys/SystemTree">
+  <instanceKey xsi:type="xs:string">vJTAG</instanceKey>
+  <instanceData xsi:type="data">
+    <parameters></parameters>
+    <interconnectAssignments></interconnectAssignments>
+    <className>vJTAG</className>
+    <version>1.0</version>
+    <name>vJTAG</name>
+    <uniqueName>vJTAG</uniqueName>
+    <nonce>0</nonce>
+    <incidentConnections></incidentConnections>
+  </instanceData>
+  <children>
+    <node>
+      <instanceKey xsi:type="xs:string">virtual_jtag_0</instanceKey>
+      <instanceData xsi:type="data">
+        <parameters>
+          <parameter>
+            <name>CREATE_PRIMITIVE_JTAG_STATE_SIGNAL_PORTS</name>
+            <value>true</value>
+          </parameter>
+          <parameter>
+            <name>device_family</name>
+            <value>Agilex 7</value>
+          </parameter>
+          <parameter>
+            <name>gui_use_auto_index</name>
+            <value>true</value>
+          </parameter>
+          <parameter>
+            <name>sld_auto_instance_index</name>
+            <value>YES</value>
+          </parameter>
+          <parameter>
+            <name>sld_instance_index</name>
+            <value>0</value>
+          </parameter>
+          <parameter>
+            <name>sld_ir_width</name>
+            <value>10</value>
+          </parameter>
+        </parameters>
+        <interconnectAssignments></interconnectAssignments>
+        <className>altera_virtual_jtag</className>
+        <version>19.2.1</version>
+        <name>virtual_jtag_0</name>
+        <uniqueName>sld_virtual_jtag</uniqueName>
+        <fixedName>sld_virtual_jtag</fixedName>
+        <nonce>0</nonce>
+        <incidentConnections></incidentConnections>
+        <path>vJTAG.virtual_jtag_0</path>
+      </instanceData>
+      <children></children>
+    </node>
+  </children>
+</node>

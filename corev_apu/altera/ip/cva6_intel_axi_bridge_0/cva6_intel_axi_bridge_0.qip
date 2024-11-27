@@ -1,0 +1,41 @@
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TOOL_NAME "QsysPrimePro"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TOOL_VERSION "24.1"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TOOL_VENDOR_NAME "Intel Corporation"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TOP_LEVEL_COMPONENT_NAME "altera_axi_bridge"
+set_global_assignment -library "cva6_intel_axi_bridge_0" -name SOPCINFO_FILE [file join $::quartus(qip_path) "cva6_intel_axi_bridge_0.sopcinfo"]
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name SLD_INFO "QSYS_NAME cva6_intel_axi_bridge_0 HAS_SOPCINFO 1 GENERATION_ID 0"
+set_global_assignment -library "cva6_intel_axi_bridge_0" -name MISC_FILE [file join $::quartus(qip_path) "cva6_intel_axi_bridge_0.cmp"]
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_TARGETED_DEVICE_FAMILY "Agilex 7"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_GENERATED_DEVICE_FAMILY "{Agilex 7}"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "cva6_intel_axi_bridge_0" -name MISC_FILE [file join $::quartus(qip_path) "../cva6_intel_axi_bridge_0.ip"]
+
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_NAME "Y3ZhNl9pbnRlbF9heGlfYnJpZGdlXzBfYWx0ZXJhX2F4aV9icmlkZ2VfMTk0MF83MnN0Znlx"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_DISPLAY_NAME "QVhJIEJyaWRnZSBJbnRlbCBGUEdBIElQ"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_VERSION "MTkuNC4w"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_DESCRIPTION "QVhJL0FIQiBicmlkZ2UgZm9yIG5ldHdvcmsgdG9wb2xvZ3kgZGV0ZXJtaW5hdGlvbg=="
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_GROUP "QmFzaWMgRnVuY3Rpb25zL0JyaWRnZXMgYW5kIEFkYXB0b3JzL01lbW9yeSBNYXBwZWQ="
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvZGFtL3d3dy9wcm9ncmFtbWFibGUvdXMvZW4vcGRmcy9saXRlcmF0dXJlL3VnL3VnLXFwcC1wbGF0Zm9ybS1kZXNpZ25lci5wZGY="
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL3Byb2dyYW1tYWJsZS9kb2N1bWVudGF0aW9uL2hjbzE0MTY4MzYxNDU1NTUuaHRtbCNoY28xNDE2ODM2NjUzMjIx"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_NAME "Y3ZhNl9pbnRlbF9heGlfYnJpZGdlXzA="
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "cva6_intel_axi_bridge_0" -library "cva6_intel_axi_bridge_0" -name IP_COMPONENT_VERSION "MS4w"
+
+
+set_global_assignment -library "altera_axi_bridge_1940" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "altera_axi_bridge_1940/synth/cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq.sv"]
+set_global_assignment -library "altera_axi_bridge_1940" -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "altera_axi_bridge_1940/synth/altera_avalon_st_pipeline_base.v"]
+set_global_assignment -library "cva6_intel_axi_bridge_0" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/cva6_intel_axi_bridge_0.v"]
+
+
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_TOOL_NAME "altera_axi_bridge"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_TOOL_VERSION "19.4.0"
+set_global_assignment -entity "cva6_intel_axi_bridge_0_altera_axi_bridge_1940_72stfyq" -library "altera_axi_bridge_1940" -name IP_TOOL_ENV "QsysPrimePro"
+
