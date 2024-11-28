@@ -1,8 +1,0 @@
-	component iddr_intel is
-		port (
-			ck     : in  std_logic                    := 'X';             -- export
-			dout   : out std_logic_vector(1 downto 0);                    -- export
-			pad_in : in  std_logic_vector(0 downto 0) := (others => 'X')  -- export
-		);
-	end component iddr_intel;
-
