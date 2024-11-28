@@ -133,6 +133,7 @@ clean:
 	rm -rf dni
 	rm -f *.backup
 	rm -f *.hex
+	rm -f *.txt
 	rm -rf output_files
 
 .PHONY: all write_search_paths write_source_files map fit asm sta clean
