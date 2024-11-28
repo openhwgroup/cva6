@@ -48,7 +48,9 @@ int main()
     uint8_t uart_res = 0;
     uintptr_t start;
 
-    init_uart(CLOCK_FREQUENCY, UART_BITRATE);
+    #ifndef PLAT_AGILEX
+    init_uart(CLOCK_FREQUENCY, UART_BITRATE); //not needed in intel setup as UART IP is already configured via HW
+    #endif 
     print_uart("Hello World!\r\n");
 
     // See if we should enter update mode
