@@ -14,55 +14,34 @@
 
 `include "cvxif_types.svh"
 
-<<<<<<< HEAD
-module ariane import ariane_pkg::*; #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter type rvfi_probes_instr_t = logic,
-  parameter type rvfi_probes_csr_t = logic,
-  parameter type rvfi_probes_t = struct packed {
-    logic csr;
-    logic instr;
-  },
-<<<<<<< HEAD
-  // CVXIF Types
-  localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
-  localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
-  localparam type id_t                = `ID_T(CVA6Cfg),
-  localparam type hartid_t            = `HARTID_T(CVA6Cfg),
-  localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
-  localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
-  localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
-  localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
-  localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
-  localparam type x_result_t          = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
-  localparam type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
-  localparam type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
-  // AXI Types
-=======
-  parameter type tip_instr_t = logic,
->>>>>>> 783ea21d (feat: Trace Ingress Port)
-  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
-  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
-  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
-  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
-  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
-  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
-  parameter type noc_req_t = ariane_axi::req_t,
-  parameter type noc_resp_t = ariane_axi::resp_t
-=======
+
 module ariane
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rvfi_probes_instr_t = logic,
     parameter type rvfi_probes_csr_t = logic,
-    parameter bit IsTIP = bit'(0),
     parameter type rvfi_probes_t = struct packed {
       logic csr;
       logic instr;
     },
-    parameter type tip_instr_t = logic,
+    // CVXIF Types
+    localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
+    localparam type writeregflags_t = `WRITEREGFLAGS_T(CVA6Cfg),
+    localparam type id_t = `ID_T(CVA6Cfg),
+    localparam type hartid_t = `HARTID_T(CVA6Cfg),
+    localparam type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
+    localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
+    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+    localparam type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
+    localparam type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
+    localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
+    localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
+    localparam type cvxif_req_t =
+    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+    localparam type cvxif_resp_t =
+    `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
+    // AXI Types
     parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
     parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
     parameter int unsigned AxiIdWidth = ariane_axi::IdWidth,
@@ -70,8 +49,10 @@ module ariane
     parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
     parameter type axi_w_chan_t = ariane_axi::w_chan_t,
     parameter type noc_req_t = ariane_axi::req_t,
-    parameter type noc_resp_t = ariane_axi::resp_t
->>>>>>> 201110b4 (fix: TIP is disabled)
+    parameter type noc_resp_t = ariane_axi::resp_t,
+    // TIP
+    parameter bit IsTIP = bit'(0),
+    parameter type tip_instr_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -90,6 +71,7 @@ module ariane
     output rvfi_probes_t       rvfi_probes_o,
 
     //Tracing port: TIP
+    // Can be left open when formal tracing is not needed.
     output tip_instr_t [CVA6Cfg.NrCommitPorts-1:0] tip_o,
 
     // memory side
@@ -101,30 +83,6 @@ module ariane
   cvxif_resp_t cvxif_resp;
 
   cva6 #(
-<<<<<<< HEAD
-    .CVA6Cfg ( CVA6Cfg ),
-    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
-    .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
-    .rvfi_probes_t ( rvfi_probes_t ),
-    .axi_ar_chan_t (axi_ar_chan_t),
-    .axi_aw_chan_t (axi_aw_chan_t),
-    .axi_w_chan_t (axi_w_chan_t),
-    .noc_req_t (noc_req_t),
-    .noc_resp_t (noc_resp_t),
-    .readregflags_t (readregflags_t),
-    .writeregflags_t (writeregflags_t),
-    .id_t (id_t),
-    .hartid_t (hartid_t),
-    .x_compressed_req_t (x_compressed_req_t),
-    .x_compressed_resp_t (x_compressed_resp_t),
-    .x_issue_req_t (x_issue_req_t),
-    .x_issue_resp_t (x_issue_resp_t),
-    .x_register_t (x_register_t),
-    .x_commit_t (x_commit_t),
-    .x_result_t (x_result_t),
-    .cvxif_req_t (cvxif_req_t),
-    .cvxif_resp_t (cvxif_resp_t)
-=======
       .CVA6Cfg(CVA6Cfg),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
       .rvfi_probes_csr_t(rvfi_probes_csr_t),
@@ -134,8 +92,20 @@ module ariane
       .axi_w_chan_t(axi_w_chan_t),
       .noc_req_t(noc_req_t),
       .noc_resp_t(noc_resp_t),
+      .readregflags_t(readregflags_t),
+      .writeregflags_t(writeregflags_t),
+      .id_t(id_t),
+      .hartid_t(hartid_t),
+      .x_compressed_req_t(x_compressed_req_t),
+      .x_compressed_resp_t(x_compressed_resp_t),
+      .x_issue_req_t(x_issue_req_t),
+      .x_issue_resp_t(x_issue_resp_t),
+      .x_register_t(x_register_t),
+      .x_commit_t(x_commit_t),
+      .x_result_t(x_result_t),
+      .cvxif_req_t(cvxif_req_t),
+      .cvxif_resp_t(cvxif_resp_t),
       .IsTIP(IsTIP)
->>>>>>> 201110b4 (fix: TIP is disabled)
   ) i_cva6 (
       .clk_i        (clk_i),
       .rst_ni       (rst_ni),
@@ -155,25 +125,21 @@ module ariane
 
   if (CVA6Cfg.CvxifEn) begin : gen_example_coprocessor
     cvxif_example_coprocessor #(
-<<<<<<< HEAD
-      .NrRgprPorts (CVA6Cfg.NrRgprPorts),
-      .XLEN (CVA6Cfg.XLEN),
-      .readregflags_t (readregflags_t),
-      .writeregflags_t (writeregflags_t),
-      .id_t (id_t),
-      .hartid_t (hartid_t),
-      .x_compressed_req_t (x_compressed_req_t),
-      .x_compressed_resp_t (x_compressed_resp_t),
-      .x_issue_req_t (x_issue_req_t),
-      .x_issue_resp_t (x_issue_resp_t),
-      .x_register_t (x_register_t),
-      .x_commit_t (x_commit_t),
-      .x_result_t (x_result_t),
-      .cvxif_req_t (cvxif_req_t),
-      .cvxif_resp_t (cvxif_resp_t)
-=======
-        .CVA6Cfg(CVA6Cfg)
->>>>>>> 201110b4 (fix: TIP is disabled)
+        .NrRgprPorts(CVA6Cfg.NrRgprPorts),
+        .XLEN(CVA6Cfg.XLEN),
+        .readregflags_t(readregflags_t),
+        .writeregflags_t(writeregflags_t),
+        .id_t(id_t),
+        .hartid_t(hartid_t),
+        .x_compressed_req_t(x_compressed_req_t),
+        .x_compressed_resp_t(x_compressed_resp_t),
+        .x_issue_req_t(x_issue_req_t),
+        .x_issue_resp_t(x_issue_resp_t),
+        .x_register_t(x_register_t),
+        .x_commit_t(x_commit_t),
+        .x_result_t(x_result_t),
+        .cvxif_req_t(cvxif_req_t),
+        .cvxif_resp_t(cvxif_resp_t)
     ) i_cvxif_coprocessor (
         .clk_i       (clk_i),
         .rst_ni      (rst_ni),
@@ -189,10 +155,6 @@ module ariane
     end
   end
 
-<<<<<<< HEAD
 
 
-endmodule // ariane
-=======
 endmodule  // ariane
->>>>>>> 201110b4 (fix: TIP is disabled)

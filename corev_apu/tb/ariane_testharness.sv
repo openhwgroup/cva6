@@ -810,20 +810,11 @@ module ariane_testharness #(
 `endif
 
 `ifdef VERILATOR
-<<<<<<< HEAD
-    initial begin
-        string verbosity;
-        if ($value$plusargs("UVM_VERBOSITY=%s",verbosity)) begin
-          uvm_set_verbosity_level(verbosity);
-          `uvm_info("ariane_testharness", $sformatf("Set UVM_VERBOSITY to %s", verbosity), UVM_NONE)
-        end
-=======
   initial begin
-    string verbosity = 0;
+    string verbosity;
     if ($value$plusargs("UVM_VERBOSITY=%s", verbosity)) begin
       uvm_set_verbosity_level(verbosity);
       `uvm_info("ariane_testharness", $sformatf("Set UVM_VERBOSITY to %s", verbosity), UVM_NONE)
->>>>>>> 201110b4 (fix: TIP is disabled)
     end
   end
 `endif
