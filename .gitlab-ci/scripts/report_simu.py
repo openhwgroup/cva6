@@ -45,9 +45,9 @@ for i in list_of_tests:
 
     if with_logs:
         logsPath = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
-        output_log = logsPath + 'logfile.log.head'
-        tb_log = logsPath + test + "." + target + '.log.iss.head'
-        disassembly = logsPath + test + "." + target + '.csv.head'
+        output_log = logsPath + 'logfile.log'
+        tb_log = logsPath + test + "." + target + '.log.iss'
+        disassembly = logsPath + test + "." + target + '.csv'
         col = [target, isa, test, output_log, tb_log, disassembly]
     else:
         col = [target, isa, test]
