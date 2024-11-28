@@ -74,11 +74,11 @@ def add_test_row(report_file, metrics_table, with_logs):
 
         if with_logs:
             logs_path = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
-            output_log = logs_path + "logfile.log.head"
+            output_log = logs_path + "logfile.log"
             log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
                 if "iteration" in report else logs_path + report['test'] + "." + report["target"]
-            tb_log = log_prefix + '.log.iss.head'
-            disassembly = log_prefix + '.log.csv.head'
+            tb_log = log_prefix + '.log.iss'
+            disassembly = log_prefix + '.log.csv'
 
             row.append(output_log)
             row.append(tb_log)
