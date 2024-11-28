@@ -175,7 +175,7 @@ smoke-bench:
   extends:
     - .fe_smoke_test
   variables:
-    DASHBOARD_JOB_TITLE: "smoke-bench"
+    DASHBOARD_JOB_TITLE: "smoke-bench $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
