@@ -153,7 +153,6 @@ smoke-tests:
         DV_TARGET: "cv32a65x"
   script:
     - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
-    - if [[ $DV_TARGET == *"65x"* ]]; then unset SPIKE_TANDEM; export DV_SIMULATORS=vcs-uvm,spike; fi
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
     - !reference [.simu_after_script]
 
