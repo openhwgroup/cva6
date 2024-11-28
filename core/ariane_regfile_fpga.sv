@@ -140,10 +140,9 @@ module ariane_regfile_fpga #(
   initial begin
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       for (int j = 0; j < NUM_WORDS; j++) begin
-        if(!CVA6Cfg.FpgaAlteraEn)
-          mem[i][j] = $random(); //quartus does not support this random statement on synthesis
-        else
-          mem[i][j] = '0;
+        if (!CVA6Cfg.FpgaAlteraEn)
+          mem[i][j] = $random();  //quartus does not support this random statement on synthesis
+        else mem[i][j] = '0;
       end
     end
   end
