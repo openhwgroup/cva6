@@ -38,6 +38,7 @@ all: create_project \
 	write_search_paths \
 	write_source_files \
 	write_timing_constraints \
+	generate_ips \
 	sta
 
 clean:
@@ -108,6 +109,10 @@ write_source_files:
 write_timing_constraints:
 	@echo "Generating constraints file list"
 	find ./constraints -type f -name "*.sdc" -exec realpath {} \; | sed 's|^|set_global_assignment -name SDC_FILE |' >> "$(PROJECT).qsf" 
+
+generate_ips:
+	$(QUARTUS_PATH)quartus_ipgenerate --generate_project_ip_files $(PROJECT) 
+
 map:
 	@echo "Running Quartus Map"
 	$(QUARTUS_PATH)quartus_syn $(PROJECT)
