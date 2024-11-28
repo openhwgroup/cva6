@@ -49,3 +49,9 @@
 [submodule "docs/06_cv32a65x_riscv/riscv-isa-manual"]
 	path = docs/riscv-isa/riscv-isa-manual
 	url = https://github.com/riscv/riscv-isa-manual.git
+[submodule "corev_apu/fpga/src/apb"]
+	path = corev_apu/fpga/src/apb
+	url = https://github.com/pulp-platform/apb.git
+[submodule "corev_apu/fpga/src/gpio"]
+	path = corev_apu/fpga/src/gpio
+	url = https://github.com/pulp-platform/gpio.git
