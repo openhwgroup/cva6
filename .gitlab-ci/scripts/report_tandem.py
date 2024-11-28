@@ -83,9 +83,9 @@ def add_test_row(report_file, metrics_table, with_logs):
             tandem_report = log_prefix + '.log.yaml'
 
             row.append(output_log)
+            row.append(tandem_report)
             row.append(tb_log)
             row.append(disassembly)
-            row.append(tandem_report)
 
         if report["exit_cause"] == "SUCCESS" and report["exit_code"] == 0:
             metrics_table.add_pass(*row)
