@@ -401,7 +401,7 @@ module cva6
   // --------------
   // ID <-> ISSUE
   // --------------
-  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_id_issue;
+  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_id_issue, issue_entry_id_issue_prev;
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_id_issue;
   logic [CVA6Cfg.NrIssuePorts-1:0] issue_entry_valid_id_issue;
   logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_fow_id_issue;
@@ -690,6 +690,7 @@ module cva6
       .fetch_entry_ready_o(fetch_ready_id_if),
 
       .issue_entry_o      (issue_entry_id_issue),
+      .issue_entry_o_prev (issue_entry_id_issue_prev),
       .orig_instr_o       (orig_instr_id_issue),
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
@@ -806,6 +807,7 @@ module cva6
       .stall_i                 (stall_acc_id),
       // ID Stage
       .decoded_instr_i         (issue_entry_id_issue),
+      .decoded_instr_i_prev    (issue_entry_id_issue_prev),
       .orig_instr_i            (orig_instr_id_issue),
       .decoded_instr_valid_i   (issue_entry_valid_id_issue),
       .is_ctrl_flow_i          (is_ctrl_fow_id_issue),
