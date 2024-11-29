@@ -16,6 +16,7 @@ build:
     ruby: "3.3"
   apt_packages:
     - cmake
+    - bison
   jobs:
     post_install:
       - npm install docs/riscv-isa/riscv-isa-manual/dependencies
