@@ -19,7 +19,7 @@ build:
     - bison
     - flex
     - libpango1.0-dev
-    - gdk-pixbuf-2.0
+    - gdk-pixbuf
   jobs:
     post_install:
       - npm install docs/riscv-isa/riscv-isa-manual/dependencies
