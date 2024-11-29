@@ -11,10 +11,10 @@ build:
     nodejs: "20"
     ruby: "3.3"
   jobs:
-    post-install:
+    post_install:
       - npm install docs/riscv-isa/riscv-isa-manual/dependencies
       - gem install -g docs/riscv-isa/riscv-isa-manual/dependencies/Gemfile
-    pre-build:
+    pre_build:
       - make -C docs prepare
 
 # Build from the docs directory with Sphinx
