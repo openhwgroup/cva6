@@ -18,6 +18,7 @@ build:
     - cmake
     - bison
     - flex
+    - pango
   jobs:
     post_install:
       - npm install docs/riscv-isa/riscv-isa-manual/dependencies
