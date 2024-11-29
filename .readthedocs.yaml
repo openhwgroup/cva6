@@ -17,6 +17,7 @@ build:
   apt_packages:
     - cmake
     - bison
+    - flex
   jobs:
     post_install:
       - npm install docs/riscv-isa/riscv-isa-manual/dependencies
