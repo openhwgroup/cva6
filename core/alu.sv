@@ -51,17 +51,11 @@ module alu
   logic lz_tz_empty, lz_tz_wempty;
   logic [CVA6Cfg.XLEN-1:0] orcbw_result, rev8w_result;
 
-  logic [CVA6Cfg.XLEN-1:0] pack_result;
-  logic [            31:0] packh_result;
-  logic [            63:0] packw_result;
   logic [CVA6Cfg.XLEN-1:0] brev8_reversed;
-  logic [CVA6Cfg.XLEN-1:0] brev8_result;
   logic [            15:0] unzip_gen_hi;
   logic [            15:0] unzip_gen_lo;
-  logic [            31:0] unzip_result;
   logic [            31:0] zip_gen_even;
   logic [            31:0] zip_gen_odd;
-  logic [            31:0] zip_result;
   // bit reverse operand_a for left shifts and bit counting
   generate
     genvar k;
@@ -274,8 +268,8 @@ module alu
     end
   end
 
-  // ZKN Instructions
-  if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : zkn_block
+  // ZKN gen block
+  if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : zkn_gen_block
     genvar i, m, n;
     // Generate brev8_reversed by reversing bits within each byte
     for (i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_gen
@@ -292,17 +286,6 @@ module alu
       // Assigning even and odd bits of operand into lower and upper halves of result
       assign unzip_gen_lo[n] = fu_data_i.operand_a[n<<1];
       assign unzip_gen_hi[n+CVA6Cfg.XLEN/2] = fu_data_i.operand_a[(n<<1)+1];
-    end
-    if (CVA6Cfg.IS_XLEN32) begin
-      assign pack_result = {{fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}};  // 32-bit pack
-      assign packh_result = {16'b0, {fu_data_i.operand_b[7:0]}, {fu_data_i.operand_a[7:0]}};  // zero extended pack_h
-      assign brev8_result = brev8_reversed;  // 32-bit brev8
-      assign unzip_result = {{unzip_gen_hi}, {unzip_gen_lo}};  // 32-bit unzip
-      assign zip_result = {zip_gen_even} | {zip_gen_odd};  // 32-bit zip
-    end else begin
-      assign pack_result = {{fu_data_i.operand_b[31:0]}, {fu_data_i.operand_a[31:0]}};  // 64-bit pack
-      assign packw_result = {{32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}};  // sign extended pack_w
-      assign brev8_result = brev8_reversed;  // 64-bit brev8
     end
   end
 
@@ -401,15 +384,16 @@ module alu
         default: ;  // default case to suppress unique warning
       endcase
     end
+    // ZKN instructions
     if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin
       unique case (fu_data_i.operation)
-        PACK: result_o = pack_result;
-        PACK_H: result_o = packh_result;
-        BREV8: result_o = brev8_result;
-        UNZIP: result_o = unzip_result;
-        ZIP: result_o = zip_result;
+        PACK: result_o = (CVA6Cfg.IS_XLEN32) ? ({fu_data_i.operand_b[15:0], fu_data_i.operand_a[15:0]}) : ({fu_data_i.operand_b[31:0], fu_data_i.operand_a[31:0]});
+        PACK_H: result_o = (CVA6Cfg.IS_XLEN32) ? ({16'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]}) : ({48'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]});
+        BREV8: result_o = brev8_reversed;
+        UNZIP: result_o = {{unzip_gen_hi}, {unzip_gen_lo}};
+        ZIP: result_o = {zip_gen_even} | {zip_gen_odd};
       endcase
-      if (fu_data_i.operation == PACK_W && CVA6Cfg.IS_XLEN64) result_o = packw_result;
+      if (fu_data_i.operation == PACK_W && CVA6Cfg.IS_XLEN64) result_o = {{32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}};
     end
   end
 endmodule
