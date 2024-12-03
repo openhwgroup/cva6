@@ -276,15 +276,16 @@ module alu
 
   // ZKN Instructions
   if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : zkn_block
+    genvar i, m, n;
     // Generate brev8_reversed by reversing bits within each byte
-    for (int i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_gen
-      for (int m = 0; m < 8; m++) begin : reverse_bits
+    for (i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_gen
+      for (m = 0; m < 8; m++) begin : reverse_bits
         // Reversing the order of bits within a single byte
         assign brev8_reversed[(i<<3)+m] = fu_data_i.operand_a[(i<<3)+(7-m)];
       end
     end
     // Generate zip and unzip results
-    for (int n = 0; n < CVA6Cfg.XLEN / 2; n++) begin : zip_unzip_gen
+    for (n = 0; n < CVA6Cfg.XLEN / 2; n++) begin : zip_unzip_gen
       // Assigning lower and upper half of operand into the even and odd positions of result
       assign zip_gen_even[n<<1] = fu_data_i.operand_a[n];
       assign zip_gen_odd[(n<<1)+1] = fu_data_i.operand_a[n+CVA6Cfg.XLEN/2];
