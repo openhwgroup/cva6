@@ -199,7 +199,7 @@ module wt_dcache_missunit
   // generate random cacheline index
   lfsr #(
       .LfsrWidth(8),
-      .OutWidth ($clog2(CVA6Cfg.DCACHE_SET_ASSOC))
+      .OutWidth (CVA6Cfg.DCACHE_SET_ASSOC_WIDTH)
   ) i_lfsr_inv (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
