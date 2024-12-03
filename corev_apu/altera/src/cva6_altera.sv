@@ -9,7 +9,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Description: Intel FPGA top-level
+// Description: Intel FPGA top-level based on the existing Xilinx top-level designed by ETH Zurich and University of Bologna.
 // Author: Angela Gonzalez, PlanV Technology
 
 `include "rvfi_types.svh"
