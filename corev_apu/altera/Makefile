@@ -111,6 +111,15 @@ write_timing_constraints:
 	find ./constraints -type f -name "*.sdc" -exec realpath {} \; | sed 's|^|set_global_assignment -name SDC_FILE |' >> "$(PROJECT).qsf" 
 
 generate_ips:
+	$(QSYS_PATH)qsys-script --script=ip/test_mm_ccb_0.tcl
+	$(QSYS_PATH)qsys-script --script=ip/cva6_intel_jtag_uart_0.tcl
+	$(QSYS_PATH)qsys-script --script=ip/ed_synth_emif_fm_0.tcl
+	$(QSYS_PATH)qsys-script --script=ip/emif_cal.tcl
+	$(QSYS_PATH)qsys-script --script=ip/iddr_intel.tcl
+	$(QSYS_PATH)qsys-script --script=ip/io_pll.tcl
+	$(QSYS_PATH)qsys-script --script=ip/iobuf.tcl
+	$(QSYS_PATH)qsys-script --script=ip/oddr_intel.tcl
+	$(QSYS_PATH)qsys-script --script=ip/vJTAG.tcl
 	$(QUARTUS_PATH)quartus_ipgenerate --generate_project_ip_files $(PROJECT) 
 
 map:
@@ -139,6 +148,14 @@ clean:
 	rm -f *.backup
 	rm -f *.hex
 	rm -f *.txt
+	rm -f *.ip
+	rm -f ip/board.info
+	rm -f ip/*.qpf
+	rm -f ip/*.qsf
+	rm -rf ip/dni
+	rm -rf ip/.qsys_edit
+	rm -rf ip/qdb
 	rm -rf output_files
+	$(QUARTUS_PATH)quartus_ipgenerate --clean $(PROJECT) 
 
 .PHONY: all write_search_paths write_source_files map fit asm sta clean
