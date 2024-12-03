@@ -64,6 +64,7 @@ module wt_axi_adapter
   localparam MaxNumWords = $clog2(CVA6Cfg.AxiDataWidth / 8);
   localparam AxiRdBlenIcache = CVA6Cfg.ICACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
   localparam AxiRdBlenDcache = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth - 1;
+  localparam AxiBlenWidth = AxiNumWords > 1 ? $clog2(AxiNumWords) : AxiNumWords;
 
   ///////////////////////////////////////////////////////
   // request path
@@ -82,7 +83,7 @@ module wt_axi_adapter
   logic axi_wr_valid, axi_rd_valid, axi_rd_rdy, axi_wr_rdy;
   logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay;
   logic [CVA6Cfg.AxiAddrWidth-1:0] axi_rd_addr, axi_wr_addr;
-  logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
+  logic [AxiBlenWidth-1:0] axi_rd_blen, axi_wr_blen;
   logic [2:0] axi_rd_size, axi_wr_size;
   logic [CVA6Cfg.AxiIdWidth-1:0]
       axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
@@ -170,14 +171,14 @@ module wt_axi_adapter
       // If dcache_data.size MSB is set, we want to read as much as possible
       axi_rd_size = dcache_data.size[2] ? MaxNumWords[2:0] : dcache_data.size;
       if (dcache_data.size[2]) begin
-        axi_rd_blen = AxiRdBlenDcache[$clog2(AxiNumWords)-1:0];
+        axi_rd_blen = AxiRdBlenDcache[AxiBlenWidth-1:0];
       end
     end else begin
       // Cast to AXI address width
       axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - CVA6Cfg.PLEN{1'b0}}, icache_data.paddr};
       axi_rd_size = MaxNumWords[2:0];  // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = AxiRdBlenIcache[$clog2(AxiNumWords)-1:0];
+        axi_rd_blen = AxiRdBlenDcache[AxiBlenWidth-1:0];
       end
     end
 
