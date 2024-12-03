@@ -201,7 +201,7 @@ module axi_adapter #(
               end else begin
                 // bursts of AMOs unsupported
                 assert (amo_i == ariane_pkg::AMO_NONE)
-                else $fatal("Bursts of atomic operations are not supported");
+                else $fatal(1, "Bursts of atomic operations are not supported");
 
                 axi_req_o.aw.len = BURST_SIZE[7:0];  // number of bursts to do
                 axi_req_o.w.data = wdata_i[0];
@@ -232,7 +232,7 @@ module axi_adapter #(
               gnt_o = axi_resp_i.ar_ready;
               if (type_i != ariane_pkg::SINGLE_REQ) begin
                 assert (amo_i == ariane_pkg::AMO_NONE)
-                else $fatal("Bursts of atomic operations are not supported");
+                else $fatal(1, "Bursts of atomic operations are not supported");
 
                 axi_req_o.ar.len = BURST_SIZE[7:0];
                 cnt_d = BURST_SIZE[ADDR_INDEX-1:0];

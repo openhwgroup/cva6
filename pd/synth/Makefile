@@ -60,7 +60,7 @@ rm_synth: pre_cva6_synth
 	cp Flist.cva6_synth ../../$(SYNTH_FLOW_NAME)/synth/
 	CVA6_REPO_DIR=$(CVA6_REPO_DIR) make -C ../../$(SYNTH_FLOW_NAME)/synth/ platform_synth_topo
 	sed -i -n -e '/module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v
-	sed -i -n -e '/module hpdcache_sram_1rw_00000006_0000001a_00000040/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v
+	sed -i -n -e '/module hpdcache_sram_1rw_00000006_0000001c_00000040/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v
 	echo $(NAND2_AREA) > $(DESIGN_NAME)_$(TARGET)/nand2area.txt
 
 cva6_read:

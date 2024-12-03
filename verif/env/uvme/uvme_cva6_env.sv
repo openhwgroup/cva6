@@ -41,12 +41,12 @@ class uvme_cva6_env_c extends uvm_env;
    uvmc_rvfi_reference_model reference_model;
 
    // Agents
-   uvma_clknrst_agent_c   clknrst_agent;
-   uvma_axi_agent_c       axi_agent;
-   uvma_cva6_core_cntrl_agent_c core_cntrl_agent;
+   uvma_clknrst_agent_c               clknrst_agent;
+   uvma_axi_agent_c                   axi_agent;
+   uvma_cva6_core_cntrl_agent_c       core_cntrl_agent;
    uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
-   uvma_interrupt_agent_c    interrupt_agent;
+   uvma_interrupt_agent_c             interrupt_agent;
 
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
@@ -162,9 +162,6 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
-   else begin
-      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_NONE)
-   end
 
    cfg.rvfi_cfg.nret = RTLCVA6Cfg.NrCommitPorts;
 
@@ -236,7 +233,7 @@ endfunction: connect_phase
 function void uvme_cva6_env_c::end_of_elaboration_phase(uvm_phase phase);
    super.end_of_elaboration_phase(phase);
 
-   `uvm_info("UVMECVA6ENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_MEDIUM)
+   `uvm_info("UVMECVA6ENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_NONE)
 
 endfunction : end_of_elaboration_phase
 
@@ -408,15 +405,15 @@ function void uvme_cva6_env_c::connect_coverage_model();
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
    if(cfg.axi_cfg.cov_model_enabled) begin
-      axi_agent.monitor.m_axi_superset_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_req_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_req_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_req_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
 
-      axi_agent.monitor.m_axi_superset_write_rsp_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_rsp_packets_collected . connect(cov_model.axi_ext_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_read_req_packets_collected .connect(cov_model.axi_ext_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
-      axi_agent.monitor.m_axi_superset_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected . connect(cov_model.axi_ext_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_read_req_packets_collected .connect(cov_model.axi_ext_covg.uvme_axi_cov_ar_req_fifo.analysis_export);
+      axi_agent.monitor.m_uvma_axi_write_req_packets_collected.connect(cov_model.axi_ext_covg.uvme_axi_cov_aw_req_fifo.analysis_export);
    end
 
    if(cfg.interrupt_cfg.cov_model_enabled) begin

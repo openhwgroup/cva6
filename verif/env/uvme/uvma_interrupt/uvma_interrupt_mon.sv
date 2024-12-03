@@ -61,11 +61,6 @@ class uvma_interrupt_mon_c extends uvm_monitor;
     */
    extern virtual task mon_irq_post_reset();
 
-   //~ /**
-    //~ * Monitor interrupt
-    //~ */
-   //~ extern virtual task mon_irq();
-
 endclass : uvma_interrupt_mon_c
 
 
