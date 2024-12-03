@@ -205,7 +205,7 @@ module load_store_unit
   logic                    translation_req;
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
-  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, pmp_paddr, lsu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
+  logic [CVA6Cfg.PLEN-1:0] mmu_paddr, lsu_paddr;
   logic         [                     31:0] mmu_tinst;
   logic                                     mmu_hs_ld_st_inst;
   logic                                     mmu_hlvx_inst;
@@ -353,7 +353,7 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = pmp_paddr[CVA6Cfg.PLEN-1:12];
+    assign dtlb_ppn                            = mmu_vaddr[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
   end
