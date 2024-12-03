@@ -131,8 +131,8 @@ build_tools:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
 
 .simu_after_script: &simu_after_script
-  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" -o -name "*.yaml" \)) ; do head -10000 $i > artifacts/logs/$(basename $i).head ; done
-  - head -10000 verif/sim/logfile.log > artifacts/logs/logfile.log.head
+  - for i in $(find verif/sim/out*/[vq]*_sim -type f \( -name "*.csv" -o -name "*.iss" -o -name "*.yaml" \)) ; do tail -10000 $i > artifacts/logs/$(basename $i) ; done
+  - tail -10000 verif/sim/logfile.log > artifacts/logs/logfile.log
   - if [ -n "$SPIKE_TANDEM" ]; then python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/"$DV_SIMULATORS"_sim; else python3 .gitlab-ci/scripts/report_simu.py verif/sim/logfile.log; fi
 
 smoke-tests:
@@ -175,7 +175,7 @@ smoke-bench:
   extends:
     - .fe_smoke_test
   variables:
-    DASHBOARD_JOB_TITLE: "smoke-bench"
+    DASHBOARD_JOB_TITLE: "smoke-bench $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
@@ -275,6 +275,7 @@ asic-synthesis:
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 1e166766d2c91ca905577cccc70813a2a8bbefc2
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
@@ -544,8 +545,8 @@ simu-gate:
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
-    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b testelf
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cb92f846
+    - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 1e166766d2c91ca905577cccc70813a2a8bbefc2
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh

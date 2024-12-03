@@ -39,6 +39,7 @@ module issue_read_operands
     input logic stall_i,
     // Entry about the instruction to issue - SCOREBOARD
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i,
+    input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i_prev,
     // Instruction to issue - SCOREBOARD
     input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     // Is there an instruction to issue - SCOREBOARD
@@ -954,11 +955,12 @@ module issue_read_operands
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
-  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1;
-    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2;
+  //adjust address to read from register file (when synchronous RAM is used reads take one cycle, so we advance the address)   
+  for (genvar i = 0; i <= CVA6Cfg.NrIssuePorts - 1; i++) begin
+    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn ? issue_instr_i_prev[i].rs1[4:0] : issue_instr_i[i].rs1[4:0];
+    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn ? issue_instr_i_prev[i].rs2[4:0] : issue_instr_i[i].rs2[4:0];
     if (OPERANDS_PER_INSTR == 3) begin
-      assign raddr_pack[i*OPERANDS_PER_INSTR+2] = issue_instr_i[i].result[4:0];
+      assign raddr_pack[i*OPERANDS_PER_INSTR+2] = CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn ? issue_instr_i_prev[i].result[4:0] : issue_instr_i[i].result[4:0];
     end
   end
 

@@ -47,6 +47,7 @@ def add_table_legend(metrics_table, with_logs):
 
     if with_logs:
         metrics_table.add_column("OUTPUT", "log")
+        metrics_table.add_column("TANDEM REPORT", "log")
         metrics_table.add_column("TB LOGS", "log")
         metrics_table.add_column("DISASSEMBLY", "log")
 
@@ -74,13 +75,15 @@ def add_test_row(report_file, metrics_table, with_logs):
 
         if with_logs:
             logs_path = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
-            output_log = logs_path + "logfile.log.head"
+            output_log = logs_path + "logfile.log"
             log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
                 if "iteration" in report else logs_path + report['test'] + "." + report["target"]
-            tb_log = log_prefix + '.log.iss.head'
-            disassembly = log_prefix + '.log.csv.head'
+            tb_log = log_prefix + '.log.iss'
+            disassembly = log_prefix + '.log.csv'
+            tandem_report = log_prefix + '.log.yaml'
 
             row.append(output_log)
+            row.append(tandem_report)
             row.append(tb_log)
             row.append(disassembly)
 
