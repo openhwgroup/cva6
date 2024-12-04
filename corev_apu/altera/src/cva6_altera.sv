@@ -9,7 +9,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Description: Intel FPGA top-level
+// Description: Intel FPGA top-level based on the existing Xilinx top-level designed by ETH Zurich and University of Bologna.
 // Author: Angela Gonzalez, PlanV Technology
 
 `include "rvfi_types.svh"
@@ -44,31 +44,7 @@ module cva6_altera (
  input  logic [ 0:0]  ddr4_alert_n,
  input  logic         oct_rzqin   ,
  
-
-// output wire          eth_rst_n   ,
-// input  wire          eth_rxck    ,
-// input  wire          eth_rxctl   ,
-// input  wire [3:0]    eth_rxd     ,
-// output wire          eth_txck    ,
-// output wire          eth_txctl   ,
-// output wire [3:0]    eth_txd     ,
-// inout  wire          eth_mdio    ,
-// output logic         eth_mdc     ,
  output logic [ 3:0]  led         
-
-//  // SPI
-//  output logic        spi_mosi    ,
-//  input  logic        spi_miso    ,
-//  output logic        spi_ss      ,
-//  output logic        spi_clk_o   ,
-//  // common part
-//  // input logic      trst_n      ,
-//  input  logic        TCK         ,
-//  input  logic        TMS         ,
-//  input  logic        TDI         ,
-//  output wire         TDO         ,
-//  input  logic        rx          ,
-//  output logic        tx
 );
 
 // CVA6 Intel configuration
@@ -852,7 +828,7 @@ cva6_intel_jtag_uart_0 uart_i (
 );
 
 //axi4 to avalon converter
-cva6_intel_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
+interconnect_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
 		.axi_bridge_1_m0_awid                                             (master[ariane_soc::UART].aw_id),                                        //   input,   width = 8,                                            axi_bridge_1_m0.awid
 		.axi_bridge_1_m0_awaddr                                           (master[ariane_soc::UART].aw_addr),                                      //   input,  width = 64,                                                           .awaddr
 		.axi_bridge_1_m0_awlen                                            (master[ariane_soc::UART].aw_len),                                       //   input,   width = 8,                                                           .awlen
@@ -1009,7 +985,7 @@ generate
         );
     end else begin
         //axi4 to avalon converter
-        cva6_intel_altera_mm_interconnect_1920_otvf3ky axi_to_avalon_ddr (
+        interconnect_altera_mm_interconnect_1920_otvf3ky axi_to_avalon_ddr (
             .axi_bridge_0_m0_awid                                                      (axi_cdc_src_req.aw.id),                                 //   input,    width = 8,                                                     axi_bridge_0_m0.awid
             .axi_bridge_0_m0_awaddr                                                    (axi_cdc_src_req.aw.addr),                               //   input,   width = 64,                                                                    .awaddr
             .axi_bridge_0_m0_awlen                                                     (axi_cdc_src_req.aw.len),                                //   input,    width = 8,                                                                    .awlen
@@ -1096,68 +1072,7 @@ generate
         `AXI_ASSIGN_FROM_RESP(dram, axi_cdc_src_resp)
     end
   endgenerate
-//
-//`ifdef PROTOCOL_CHECKER
-//logic pc_status;
-//
-//xlnx_protocol_checker i_xlnx_protocol_checker (
-//  .pc_status(),
-//  .pc_asserted(pc_status),
-//  .aclk(clk),
-//  .aresetn(ndmreset_n),
-//  .pc_axi_awid     (dram.aw_id),
-//  .pc_axi_awaddr   (dram.aw_addr),
-//  .pc_axi_awlen    (dram.aw_len),
-//  .pc_axi_awsize   (dram.aw_size),
-//  .pc_axi_awburst  (dram.aw_burst),
-//  .pc_axi_awlock   (dram.aw_lock),
-//  .pc_axi_awcache  (dram.aw_cache),
-//  .pc_axi_awprot   (dram.aw_prot),
-//  .pc_axi_awqos    (dram.aw_qos),
-//  .pc_axi_awregion (dram.aw_region),
-//  .pc_axi_awuser   (dram.aw_user),
-//  .pc_axi_awvalid  (dram.aw_valid),
-//  .pc_axi_awready  (dram.aw_ready),
-//  .pc_axi_wlast    (dram.w_last),
-//  .pc_axi_wdata    (dram.w_data),
-//  .pc_axi_wstrb    (dram.w_strb),
-//  .pc_axi_wuser    (dram.w_user),
-//  .pc_axi_wvalid   (dram.w_valid),
-//  .pc_axi_wready   (dram.w_ready),
-//  .pc_axi_bid      (dram.b_id),
-//  .pc_axi_bresp    (dram.b_resp),
-//  .pc_axi_buser    (dram.b_user),
-//  .pc_axi_bvalid   (dram.b_valid),
-//  .pc_axi_bready   (dram.b_ready),
-//  .pc_axi_arid     (dram.ar_id),
-//  .pc_axi_araddr   (dram.ar_addr),
-//  .pc_axi_arlen    (dram.ar_len),
-//  .pc_axi_arsize   (dram.ar_size),
-//  .pc_axi_arburst  (dram.ar_burst),
-//  .pc_axi_arlock   (dram.ar_lock),
-//  .pc_axi_arcache  (dram.ar_cache),
-//  .pc_axi_arprot   (dram.ar_prot),
-//  .pc_axi_arqos    (dram.ar_qos),
-//  .pc_axi_arregion (dram.ar_region),
-//  .pc_axi_aruser   (dram.ar_user),
-//  .pc_axi_arvalid  (dram.ar_valid),
-//  .pc_axi_arready  (dram.ar_ready),
-//  .pc_axi_rid      (dram.r_id),
-//  .pc_axi_rlast    (dram.r_last),
-//  .pc_axi_rdata    (dram.r_data),
-//  .pc_axi_rresp    (dram.r_resp),
-//  .pc_axi_ruser    (dram.r_user),
-//  .pc_axi_rvalid   (dram.r_valid),
-//  .pc_axi_rready   (dram.r_ready)
-//);
-//`endif
-//
-// assign dram.r_user = '0;
-// assign dram.b_user = '0;
-//
 
-
-// assign led[1] = cal_success;
 
 ed_synth_emif_fm_0 inst_ddr4 (
     .local_reset_req           ('0),           //   input,     width = 1,           local_reset_req.local_reset_req
