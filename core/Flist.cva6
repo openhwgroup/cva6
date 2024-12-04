@@ -178,6 +178,7 @@ ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv
 // NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
 ${CVA6_REPO_DIR}/core/pmp/src/pmp.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
+${CVA6_REPO_DIR}/core/pmp/src/pmp_data_if.sv
 
 // Tracer (behavioral code, not RTL)
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv

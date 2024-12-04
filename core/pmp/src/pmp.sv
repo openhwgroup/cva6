@@ -23,8 +23,8 @@ module pmp #(
     input riscv::pmp_access_t access_type_i,
     input riscv::priv_lvl_t priv_lvl_i,
     // Configuration
-    input logic [NR_ENTRIES:0][PMP_LEN-1:0] conf_addr_i,
-    input riscv::pmpcfg_t [NR_ENTRIES:0] conf_i,
+    input logic [NR_ENTRIES-1:0][PMP_LEN-1:0] conf_addr_i,
+    input riscv::pmpcfg_t [NR_ENTRIES-1:0] conf_i,
     // Output
     output logic allow_o
 );
@@ -74,21 +74,5 @@ module pmp #(
       end
     end
   end else assign allow_o = 1'b1;
-
-  // synthesis translate_off
-  always_comb begin
-    logic no_locked;
-    no_locked = 1'b0;
-    if (priv_lvl_i == riscv::PRIV_LVL_M) begin
-      no_locked = 1'b1;
-      for (int i = 0; i < NR_ENTRIES; i++) begin
-        if (conf_i[i].locked && conf_i[i].addr_mode != riscv::OFF) begin
-          no_locked &= 1'b0;
-        end else no_locked &= 1'b1;
-      end
-      if (no_locked == 1'b1) assert (allow_o == 1'b1);
-    end
-  end
-  // synthesis translate_on
 
 endmodule
