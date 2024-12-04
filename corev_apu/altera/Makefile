@@ -1,3 +1,16 @@
+# // Copyright (c) 2024 PlanV Technologies
+# // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+# // Copyright and related rights are licensed under the Solderpad Hardware
+# // License, Version 0.51 (the "License"); you may not use this file except in
+# // compliance with the License.  You may obtain a copy of the License at
+# // http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+# // or agreed to in writing, software, hardware and materials distributed under
+# // this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# // CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# // specific language governing permissions and limitations under the License.
+
+# // Description: Makefile for Altera project
+# // Author: Mustafa Karadayi, PlanV Technology
 ###################################################################
 # Project Configuration: 
 # 
@@ -57,6 +70,11 @@ create_project:
 	@echo "Creating or regenerating $(PROJECT).qsf"
 	@rm -f "$(PROJECT).qsf"
 	@touch "$(PROJECT).qsf"
+	$(QSYS_PATH)qsys-script --script=ip/interconnect.tcl
+	$(QSYS_PATH)qsys-generate interconnect.qsys --quartus_project=ip/interconnect --synthesis
+	rm -f interconnect/*.v
+	rm -f interconnect/*.vhd
+	rm -f interconnect/synth/*.v
 
 write_settings:
 	@echo "Reading from settings.csv and writing to $(PROJECT).qsf with modifications"
@@ -89,6 +107,9 @@ write_search_paths:
 	done < search_paths.csv
 
 write_source_files:
+	@find ./interconnect -type f -name "*.v" -o -name "*.sv" -o -name "*.svh" >> $(SOURCES_FILE)
+	@echo $(var)
+	@echo >> $(SOURCES_FILE)
 	@echo "Reading from $(SOURCES_FILE) and writing to $(PROJECT).qsf with modifications"
 	@while IFS= read -r line; do \
 		for word in $$line; do \
@@ -141,10 +162,7 @@ sta: asm
 clean:
 	@echo "Cleaning project files"
 	rm -f $(PROJECT).qsf $(PROJECT).qpf $(PROJECT).map.rpt $(PROJECT).fit.rpt $(PROJECT).asm.rpt $(PROJECT).sta.rpt
-	rm -rf db incremental_db
-	rm -rf qdb
-	rm -rf tmp-clearbox
-	rm -rf dni
+	rm -f interconnect.qsys*
 	rm -f *.backup
 	rm -f *.hex
 	rm -f *.txt
@@ -156,6 +174,24 @@ clean:
 	rm -rf ip/.qsys_edit
 	rm -rf ip/qdb
 	rm -rf output_files
+	rm -rf db incremental_db
+	rm -rf qdb
+	rm -rf tmp-clearbox
+	rm -rf intel
+	rm -rf dni
+	rm -rf interconnect
+	rm -rf ip/interconnect
+	rm -rf cva6_intel_jtag_uart_0
+	rm -rf ed_synth_emif_fm_0
+	rm -rf emif_cal
+	rm -rf iddr_intel
+	rm -rf oddr_intel
+	rm -rf test_mm_ccb_0
+	rm -rf vJTAG
+	rm -rf interconnect
+	rm -rf io_pll
+	rm -rf iobuf
+
 	$(QUARTUS_PATH)quartus_ipgenerate --clean $(PROJECT) 
 
 .PHONY: all write_search_paths write_source_files map fit asm sta clean
