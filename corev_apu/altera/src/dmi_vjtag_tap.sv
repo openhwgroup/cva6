@@ -131,14 +131,6 @@ module dmi_vjtag_tap #(
     idcode_select  = 1'b0;
     bypass_select  = 1'b0;
 
-    // if(ir_in_i == IDCODE) 
-    //   idcode_select = 1'b1;
-    // else if (ir_in_i == DTMCSR)
-    //   dtmcs_select_o = 1'b1;
-    // else if (ir_in_i == DMIACCESS)
-    //   dmi_access_o = 1'b1;
-    // else
-    //   bypass_select = 1'b1;
     unique case (ir_in_i)
       BYPASS0:   bypass_select  = 1'b1;
       IDCODE:    idcode_select  = 1'b1;
