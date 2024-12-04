@@ -211,7 +211,6 @@ module load_store_unit
   logic                                     mmu_hlvx_inst;
   exception_t                               mmu_exception;
   exception_t                               pmp_exception;
-  exception_t                               pmp_misaligned_ex;
   icache_areq_t                             pmp_icache_areq_i;
   logic                                     pmp_translation_valid;
   logic                                     dtlb_hit;
@@ -234,7 +233,6 @@ module load_store_unit
   logic                                     hs_ld_st_inst;
   logic                                     hlvx_inst;
 
-  logic [2:0] enable_translation, en_ld_st_translation, flush_tlb;
   logic [1:0] sum, mxr;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn[2:0];
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid[2:0], asid_to_be_flushed[1:0];
@@ -317,9 +315,9 @@ module load_store_unit
   end else begin : gen_no_mmu
     // icache request without MMU, virtual and physical address are identical
     assign pmp_icache_areq_i.fetch_valid = icache_areq_i.fetch_req;
-    if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction
+    if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
-    end else begin
+    end else begin : gen_virtual_physical_address_instruction_plen_greater
       assign pmp_icache_areq_i.fetch_paddr = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr);
     end
     assign pmp_icache_areq_i.fetch_exception = 'h0;
@@ -329,6 +327,7 @@ module load_store_unit
       if (~rst_ni) begin
         lsu_paddr <= '0;
         pmp_exception <= '0;
+        pmp_translation_valid <= 1'b0;
       end else begin
         if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_lsu
           lsu_paddr <= mmu_vaddr[CVA6Cfg.PLEN-1:0];
@@ -353,7 +352,7 @@ module load_store_unit
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = mmu_vaddr[CVA6Cfg.PLEN-1:12];
+    assign dtlb_ppn                            = lsu_paddr[CVA6Cfg.PLEN-1:12];
     assign dtlb_hit                            = 1'b1;
 
   end
