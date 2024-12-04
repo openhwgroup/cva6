@@ -852,7 +852,7 @@ cva6_intel_jtag_uart_0 uart_i (
 );
 
 //axi4 to avalon converter
-cva6_intel_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
+interconnect_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
 		.axi_bridge_1_m0_awid                                             (master[ariane_soc::UART].aw_id),                                        //   input,   width = 8,                                            axi_bridge_1_m0.awid
 		.axi_bridge_1_m0_awaddr                                           (master[ariane_soc::UART].aw_addr),                                      //   input,  width = 64,                                                           .awaddr
 		.axi_bridge_1_m0_awlen                                            (master[ariane_soc::UART].aw_len),                                       //   input,   width = 8,                                                           .awlen
@@ -1009,7 +1009,7 @@ generate
         );
     end else begin
         //axi4 to avalon converter
-        cva6_intel_altera_mm_interconnect_1920_otvf3ky axi_to_avalon_ddr (
+        interconnect_altera_mm_interconnect_1920_otvf3ky axi_to_avalon_ddr (
             .axi_bridge_0_m0_awid                                                      (axi_cdc_src_req.aw.id),                                 //   input,    width = 8,                                                     axi_bridge_0_m0.awid
             .axi_bridge_0_m0_awaddr                                                    (axi_cdc_src_req.aw.addr),                               //   input,   width = 64,                                                                    .awaddr
             .axi_bridge_0_m0_awlen                                                     (axi_cdc_src_req.aw.len),                                //   input,    width = 8,                                                                    .awlen
