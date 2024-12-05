@@ -817,6 +817,8 @@ clean:
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
 	$(MAKE) -C corev_apu/fpga clean
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) clean
+
+clean-altera: clean
 	$(MAKE) -C corev_apu/altera clean
 
 .PHONY:
