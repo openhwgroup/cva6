@@ -52,10 +52,8 @@ module alu
   logic [CVA6Cfg.XLEN-1:0] orcbw_result, rev8w_result;
 
   logic [CVA6Cfg.XLEN-1:0] brev8_reversed;
-  logic [            15:0] unzip_gen_hi;
-  logic [            15:0] unzip_gen_lo;
-  logic [            31:0] zip_gen_even;
-  logic [            31:0] zip_gen_odd;
+  logic [            31:0] unzip_gen;
+  logic [            31:0] zip_gen;
   // bit reverse operand_a for left shifts and bit counting
   generate
     genvar k;
@@ -279,13 +277,15 @@ module alu
       end
     end
     // Generate zip and unzip results
-    for (n = 0; n < CVA6Cfg.XLEN / 2; n++) begin : zip_unzip_gen
-      // Assigning lower and upper half of operand into the even and odd positions of result
-      assign zip_gen_even[n<<1] = fu_data_i.operand_a[n];
-      assign zip_gen_odd[(n<<1)+1] = fu_data_i.operand_a[n+CVA6Cfg.XLEN/2];
-      // Assigning even and odd bits of operand into lower and upper halves of result
-      assign unzip_gen_lo[n] = fu_data_i.operand_a[n<<1];
-      assign unzip_gen_hi[n+CVA6Cfg.XLEN/2] = fu_data_i.operand_a[(n<<1)+1];
+    if (CVA6Cfg.IS_XLEN32) begin
+      for (n = 0; n < CVA6Cfg.XLEN / 2; n++) begin : zip_unzip_gen
+        // Assigning lower and upper half of operand into the even and odd positions of result
+        assign zip_gen[n<<1] = fu_data_i.operand_a[n];
+        assign zip_gen[(n<<1)+1] = fu_data_i.operand_a[n+CVA6Cfg.XLEN/2];
+        // Assigning even and odd bits of operand into lower and upper halves of result
+        assign unzip_gen[n] = fu_data_i.operand_a[n<<1];
+        assign unzip_gen[n+CVA6Cfg.XLEN/2] = fu_data_i.operand_a[(n<<1)+1];
+      end
     end
   end
 
@@ -390,10 +390,11 @@ module alu
         PACK: result_o = (CVA6Cfg.IS_XLEN32) ? ({fu_data_i.operand_b[15:0], fu_data_i.operand_a[15:0]}) : ({fu_data_i.operand_b[31:0], fu_data_i.operand_a[31:0]});
         PACK_H: result_o = (CVA6Cfg.IS_XLEN32) ? ({16'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]}) : ({48'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]});
         BREV8: result_o = brev8_reversed;
-        UNZIP: result_o = {{unzip_gen_hi}, {unzip_gen_lo}};
-        ZIP: result_o = {zip_gen_even} | {zip_gen_odd};
+        default: ;
       endcase
       if (fu_data_i.operation == PACK_W && CVA6Cfg.IS_XLEN64) result_o = {{32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}};
+      if (fu_data_i.operation == UNZIP && CVA6Cfg.IS_XLEN32) result_o = unzip_gen;
+      if (fu_data_i.operation == ZIP && CVA6Cfg.IS_XLEN32) result_o = zip_gen;
     end
   end
 endmodule
