@@ -278,13 +278,13 @@ module alu
     end
     // Generate zip and unzip results
     if (CVA6Cfg.IS_XLEN32) begin
-      for (n = 0; n < CVA6Cfg.XLEN / 2; n++) begin : zip_unzip_gen
+      for (n = 0; n < 16; n++) begin : zip_unzip_gen
         // Assigning lower and upper half of operand into the even and odd positions of result
         assign zip_gen[n<<1] = fu_data_i.operand_a[n];
-        assign zip_gen[(n<<1)+1] = fu_data_i.operand_a[n+CVA6Cfg.XLEN/2];
+        assign zip_gen[(n<<1)+1] = fu_data_i.operand_a[n+16];
         // Assigning even and odd bits of operand into lower and upper halves of result
         assign unzip_gen[n] = fu_data_i.operand_a[n<<1];
-        assign unzip_gen[n+CVA6Cfg.XLEN/2] = fu_data_i.operand_a[(n<<1)+1];
+        assign unzip_gen[n+16] = fu_data_i.operand_a[(n<<1)+1];
       end
     end
   end

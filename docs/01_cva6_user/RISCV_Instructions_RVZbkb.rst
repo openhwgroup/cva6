@@ -114,9 +114,9 @@ RV32 specific Instructions
 
     **Description**: This instruction places bits in the low half of the source register into the even bit positions of the destination, and bits in the high half of the source register into the odd bit positions of the destination. It is the inverse of the unzip instruction.
 
-    **Pseudocode**: foreach (i from 0 to xlen/2-1) {
+    **Pseudocode**: foreach (i from 0 to 15) {
                         X(rd)[i << 1] = X(rs1)[i]
-                        X(rd)[i+1 << 1] = X(rs1)[i+XLEN/2] 
+                        X(rd)[i+1 << 1] = X(rs1)[i+16] 
                     }
 
     **Invalid values**: NONE
@@ -129,9 +129,9 @@ RV32 specific Instructions
 
     **Description**: This instruction places the even bits of the source register into the low half of the destination, and the odd bits of the source into the high bits of the destination. It is the inverse of the zip instruction.
 
-    **Pseudocode**: foreach (i from 0 to xlen/2-1) {
+    **Pseudocode**: foreach (i from 0 to 15) {
                         X(rd)[i] = X(rs1)[i << 1]
-                        X(rd)[i+XLEN/2] = X(rs1)[i+1 << 1]
+                        X(rd)[i+16] = X(rs1)[i+1 << 1]
                     }
 
     **Invalid values**: NONE
