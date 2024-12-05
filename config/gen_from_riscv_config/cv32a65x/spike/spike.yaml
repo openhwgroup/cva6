@@ -44,6 +44,14 @@ spike_param_tree:
       tdata2_accessible: 0
       tdata3_accessible: 0
       tselect_accessible: 0
+      pmpaddr0_write_mask: 0xFFFFFFFE
+      pmpaddr1_write_mask: 0xFFFFFFFE
+      pmpaddr2_write_mask: 0xFFFFFFFE
+      pmpaddr3_write_mask: 0xFFFFFFFE
+      pmpaddr4_write_mask: 0xFFFFFFFE
+      pmpaddr5_write_mask: 0xFFFFFFFE
+      pmpaddr6_write_mask: 0xFFFFFFFE
+      pmpaddr7_write_mask: 0xFFFFFFFE
       mhartid: 0
       mvendorid_override_mask : 0xFFFFFFFF
       mvendorid_override_value: 1538

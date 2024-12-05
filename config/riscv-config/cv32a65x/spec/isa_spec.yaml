@@ -1440,7 +1440,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr0[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr0[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1453,7 +1453,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr1[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr1[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1466,7 +1466,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr2[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr2[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1479,7 +1479,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr3[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr3[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1492,7 +1492,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr4[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr4[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1505,7 +1505,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr5[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr5[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1518,7 +1518,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr6[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr6[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:
@@ -1531,7 +1531,7 @@ hart0: &hart0
                 warl:
                     dependency_fields: []
                     legal:
-                      - pmpaddr7[31:0] in [0x00000000:0xFFFFFFFF]
+                      - pmpaddr7[31:0] bitmask [0xFFFFFFFE, 0x00000000]
                     wr_illegal:
                       - unchanged
         rv64:

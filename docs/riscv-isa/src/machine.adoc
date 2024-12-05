@@ -4346,9 +4346,7 @@ ifdef::archi-CVA6[]
 [{ohg-config}] The PMP grain is 8 bytes (latexmath:[$2^{G+2}$] with G = 1)
 and must be the same across all PMP regions.
 As latexmath:[${\tt pmpcfg}_i$].A[1] is always clear, i.e. the mode is OFF or TOR,
-then bit latexmath:[${\tt pmpaddr}_i$][0] read as zero. Bit
-latexmath:[${\tt pmpaddr}_i$][0] does not affect the TOR address-matching
-logic.
+then bit latexmath:[${\tt pmpaddr}_i$][0] is read-only zero.
 endif::[]
 
 ifeval::[{note} == true]
