@@ -1,7 +1,6 @@
-// Author: Darshak Sheladiya, SYSGO GmbH
-// Date: 11/14/2024
-// Description: Trace Ingress Port (TIP).
-
+// Copyright (c), 2024 Darshak Sheladiya, SYSGO GmbH
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+ 
 
 
 module encoder_16_4 (
