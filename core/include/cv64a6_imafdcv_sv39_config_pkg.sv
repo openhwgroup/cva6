@@ -12,6 +12,8 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigXlen = 64;
 
+  localparam CVA6ConfigNrCommitPorts = 2;
+
   localparam CVA6ConfigRVF = 1;
   localparam CVA6ConfigF16En = 0;
   localparam CVA6ConfigF16AltEn = 0;
@@ -32,7 +34,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigFetchUserWidth = 1; // Just not to raise warnings
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
@@ -73,11 +75,14 @@ package cva6_config_pkg;
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
+      PLEN: unsigned'(56),
+      GPLEN: unsigned'(41),
+      PPNW: unsigned'(44),
       FpgaEn: bit'(0),  // for Xilinx and Altera
       FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
-      NrCommitPorts: unsigned'(1),
+      NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
@@ -148,6 +153,73 @@ package cva6_config_pkg;
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
-      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
+      TRANS_ID_BITS: $clog2(unsigned'(CVA6ConfigNrScoreboardEntries))
   };
+
+  typedef struct packed {
+    logic [cva6_cfg.XLEN-1:0] cause;  // cause of exception
+    logic [cva6_cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+    // address of LD/ST fault
+    logic [cva6_cfg.GPLEN-1:0] tval2;  // additional information when the causing exception in a guest exception
+    logic [31:0] tinst;  // transformed instruction information
+    logic gva;  // signals when a guest virtual address is written to tval
+    logic valid;
+  } exception_t;
+
+  // Accelerator - CVA6's
+  typedef struct packed {
+    logic                              req_valid;
+    logic                              resp_ready;
+    logic [31:0]                       insn;
+    logic [cva6_cfg.XLEN-1:0]          rs1;
+    logic [cva6_cfg.XLEN-1:0]          rs2;
+    fpnew_pkg::roundmode_e             frm;
+    logic [cva6_cfg.TRANS_ID_BITS-1:0] trans_id;
+    logic                              store_pending;
+    logic                              acc_cons_en; // Invalidation interface
+    logic                              inval_ready; // Invalidation interface
+  } accelerator_req_t;
+
+  typedef struct packed {
+    logic                                 req_ready;
+    logic                                 resp_valid;
+    logic [cva6_cfg.XLEN-1:0]             result;
+    logic [cva6_cfg.TRANS_ID_BITS-1:0]    trans_id;
+    exception_t                           exception;
+    logic                                 store_pending;
+    logic                                 store_complete;
+    logic                                 load_complete;
+    logic [4:0]                           fflags;
+    logic                                 fflags_valid;
+    logic                                 inval_valid; // Invalidation interface
+    logic [63:0]                          inval_addr; // Invalidation interface
+  } accelerator_resp_t;
+
+  // Accelerator - CVA6's MMU
+  typedef struct packed {
+    logic                     acc_mmu_misaligned_ex;
+    logic                     acc_mmu_req;
+    logic [cva6_cfg.VLEN-1:0] acc_mmu_vaddr;
+    logic                     acc_mmu_is_store;
+  } acc_mmu_req_t;
+
+  typedef struct packed {
+    logic                     acc_mmu_dtlb_hit;
+    logic [cva6_cfg.PPNW-1:0] acc_mmu_dtlb_ppn;
+    logic                     acc_mmu_valid;
+    logic [cva6_cfg.PLEN-1:0] acc_mmu_paddr;
+    exception_t               acc_mmu_exception;
+  } acc_mmu_resp_t;
+
+  typedef struct packed {
+    accelerator_req_t                     acc_req; // Insn/mem
+    logic                                 acc_mmu_en; // MMU
+    acc_mmu_resp_t                        acc_mmu_resp; // MMU
+  } cva6_to_acc_t;
+
+  typedef struct packed {
+    accelerator_resp_t                    acc_resp; // Insn/mem
+    acc_mmu_req_t                         acc_mmu_req; // MMU
+  } acc_to_cva6_t;
 endpackage
