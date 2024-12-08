@@ -32,6 +32,7 @@ module uvmt_cva6_dut_wrap # (
                             uvma_axi_intf                       axi_if,
                             uvmt_axi_switch_intf                axi_switch_vif,
                             uvmt_default_inputs_intf            default_inputs_vif,
+                            uvmt_frontend_intf                  frontend_intf,
                             uvme_cva6_core_cntrl_if             core_cntrl_if,
                             uvma_interrupt_if                   interrupt_vif,
                             uvma_debug_if                       debug_if,
@@ -64,6 +65,7 @@ module uvmt_cva6_dut_wrap # (
          .axi_slave              ( axi_if                         ),
          .axi_switch_vif         ( axi_switch_vif                 ),
          .default_inputs_vif     ( default_inputs_vif             ),
+         .cva6_frontend_bus      ( frontend_intf                  ),
          .tb_exit_o              ( tb_exit_o                      ),
          .rvfi_csr_o             ( rvfi_csr_o                     ),
          .rvfi_o                 ( rvfi_o                         )

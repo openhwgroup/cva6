@@ -99,6 +99,9 @@ package uvme_cva6_pkg;
    `include "reg/cva6_csr_reg_predictor.sv"
 
    // Environment components
+   `include "uvme_cva6_frontend_mon.sv"
+   `include "uvme_cva6_frontend_model.sv"
+   `include "uvme_cva6_frontend_sb.sv"
    `include "uvma_cva6_core_cntrl_drv.sv"
    `include "uvma_cva6_core_cntrl_agent.sv"
    `include "uvme_cva6_sb.sv"
