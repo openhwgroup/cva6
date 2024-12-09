@@ -46,6 +46,7 @@ package cva6_config_pkg;
       XF8: bit'(0),
       RVA: bit'(0),
       RVB: bit'(CVA6ConfigBExtEn),
+      ZKN: bit'(0),
       RVV: bit'(0),
       RVC: bit'(1),
       RVH: bit'(0),

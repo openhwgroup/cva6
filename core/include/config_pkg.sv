@@ -54,6 +54,8 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
+    // Scalar Cryptography RISC-V entension
+    bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
     // Compress RISC-V extension
@@ -240,6 +242,7 @@ package config_pkg;
     bit          XF8;
     bit          RVA;
     bit          RVB;
+    bit          ZKN;
     bit          RVV;
     bit          RVC;
     bit          RVH;
