@@ -777,8 +777,16 @@ module decoder
                 {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROL;  // rol
                 {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::ROR;  // ror
                 // Packing
-                {7'b000_0100, 3'b100} : if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK; else illegal_instr_bm = 1'b1;  //pack
-                {7'b000_0100, 3'b111} : if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H; else illegal_instr_bm = 1'b1;  //packh
+                {
+                  7'b000_0100, 3'b100
+                } : 
+                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK;
+                else illegal_instr_bm = 1'b1;  //pack
+                {
+                  7'b000_0100, 3'b111
+                } : 
+                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H; 
+                else illegal_instr_bm = 1'b1;  //packh
                 // Zero Extend Op RV32 encoding
                 {
                   7'b000_0100, 3'b100
@@ -852,10 +860,14 @@ module decoder
                 // Unsigned word Op's
                 {7'b000_0100, 3'b000}: instruction_o.op = ariane_pkg::ADDUW;    // add.uw
                 // Bitwise Shifting
-                {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROLW;     // rolw
-                {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
+                {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROLW;  // rolw
+                {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::RORW;  // rorw
                 // Pack_W
-                {7'b000_0100, 3'b100}: if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W; else illegal_instr_bm = 1'b1;  //packw
+                {
+                  7'b000_0100, 3'b100
+                } : 
+                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W; 
+                else illegal_instr_bm = 1'b1;  //packw
                 // Zero Extend Op RV64 encoding
                 {7'b000_0100, 3'b100}:
                 begin

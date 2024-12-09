@@ -26,7 +26,6 @@
    :header: "Configuration", "Implementation"
 
    "CV32A60AX", "Implemented extension"
-   "CV32A60X", "Implemented extension"
    "CV64A6_MMU", "Implemented extension"
 
 =============================

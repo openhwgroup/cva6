@@ -12,7 +12,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigXlen = 64;
 
   localparam CVA6ConfigBExtEn = 1;  // UVM
-  localparam CVA6ConfigZknExtEn = 0;
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
@@ -47,7 +46,7 @@ package cva6_config_pkg;
       XF8: bit'(0),
       RVA: bit'(0),
       RVB: bit'(CVA6ConfigBExtEn),
-      ZKN: bit'(CVA6ConfigZknExtEn),
+      ZKN: bit'(0),
       RVV: bit'(0),
       RVC: bit'(1),
       RVH: bit'(0),
