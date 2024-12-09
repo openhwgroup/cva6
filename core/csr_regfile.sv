@@ -1709,7 +1709,7 @@ module csr_regfile
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+            pmpaddr_d[index] = {csr_wdata[CVA6Cfg.PLEN-3:1], 1'b0};
           end
         end
         default: update_access_exception = 1'b1;
