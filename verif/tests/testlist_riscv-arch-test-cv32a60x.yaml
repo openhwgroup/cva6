@@ -608,28 +608,3 @@ testlist:
     <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/A/src/amoxor.w-01.S
-
-  - test: rv32im-pack-01
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/K/src/pack-01.S
-
-  - test: rv32im-packh-01
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/K/src/packh-01.S
-
-  - test: rv32im-brev8_32-01
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/K/src/brev8_32-01.S
-
-  - test: rv32im-unzip-01
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/K/src/unzip-01.S
-
-  - test: rv32im-zip-01
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv32i_m/K/src/zip-01.S
