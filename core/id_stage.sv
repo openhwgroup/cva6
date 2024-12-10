@@ -125,10 +125,10 @@ module id_stage #(
   logic [CVA6Cfg.NrIssuePorts-1:0] is_macro_instr_i;
   logic                            stall_instr_fetch;
   logic stall_macro_deco, stall_macro_deco_zcmp, stall_macro_deco_zcmt;
-  logic                                          is_last_macro_instr_o;
-  logic                                          is_double_rd_macro_instr_o;
-  logic                                          is_zcmt_instr_i;
-  branchpredict_sbe_t                            branch_predict;
+  logic               is_last_macro_instr_o;
+  logic               is_double_rd_macro_instr_o;
+  logic               is_zcmt_instr_i;
+  branchpredict_sbe_t branch_predict;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -189,7 +189,7 @@ module id_stage #(
       );
 
       assign instruction_cvxif[0] = is_zcmt_instr_i ? instruction_cvxif_zcmt : instruction_cvxif_zcmp;
-      assign is_illegal_cvxif[0] = is_zcmt_instr_i ? is_illegal_cvxif_zcmt :  is_illegal_cvxif_zcmp;
+      assign is_illegal_cvxif[0] = is_zcmt_instr_i ? is_illegal_cvxif_zcmt : is_illegal_cvxif_zcmp;
       assign is_compressed_cvxif[0] = is_zcmt_instr_i ? is_compressed_cvxif_zcmt : is_compressed_cvxif_zcmp;
       assign stall_macro_deco = is_zcmt_instr_i ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
       if (CVA6Cfg.SuperscalarEn) begin
