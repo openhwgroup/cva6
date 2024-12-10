@@ -43,7 +43,7 @@ __jvt_base$:
 
 # Target Addresses (Where cm.jalt will jump)
 target0:
-    li x5, 99
+    li x5, 9
     j write_tohost   
 target1:
     li x2, 99

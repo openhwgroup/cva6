@@ -18,6 +18,7 @@ module csr_regfile
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg            = config_pkg::cva6_cfg_empty,
     parameter type                   exception_t        = logic,
+    parameter type                   jvt_t              = logic,
     parameter type                   irq_ctrl_t         = logic,
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
@@ -169,8 +170,7 @@ module csr_regfile
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
-    output logic [CVA6Cfg.XLEN-1:6] jvt_base_o,
-    output logic [5:0] jvt_mode_o
+    output jvt_t jvt_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -355,7 +355,11 @@ module csr_regfile
           end
         end
         riscv::CSR_JVT: begin
-          csr_rdata = {jvt_q.base, jvt_q.mode};
+          if (CVA6Cfg.RVZCMT) begin
+            csr_rdata = {jvt_q.base, jvt_q.mode};
+          end else begin
+            read_access_exception = 1'b1;
+          end
         end
         // non-standard extension
         riscv::CSR_FTRAN: begin
@@ -1068,8 +1072,12 @@ module csr_regfile
         if (CVA6Cfg.DebugEn) dscratch1_d = csr_wdata;
         else update_access_exception = 1'b1;
         riscv::CSR_JVT: begin
-          jvt_d.base = csr_wdata[CVA6Cfg.XLEN-1:6];
-          jvt_d.mode = 6'b000000;
+          if (CVA6Cfg.RVZCMT) begin
+            jvt_d.base = csr_wdata[CVA6Cfg.XLEN-1:6];
+            jvt_d.mode = 6'b000000;
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         // trigger module CSRs
         riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
@@ -2456,8 +2464,8 @@ module csr_regfile
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
   //JVT outputs
-  assign jvt_base_o = jvt_q.base;
-  assign jvt_mode_o = jvt_q.mode;
+  assign jvt_o.base = jvt_q.base;
+  assign jvt_o.mode = jvt_q.mode;
   // MMU outputs
   assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
@@ -2728,7 +2736,7 @@ module csr_regfile
   // RVFI
   //-------------
   assign rvfi_csr_o.fcsr_q = CVA6Cfg.FpPresent ? fcsr_q : '0;
-  assign rvfi_csr_o.jvt_q = jvt_q;
+  assign rvfi_csr_o.jvt_q = CVA6Cfg.RVZCMT ? jvt_q : '0;
   assign rvfi_csr_o.dcsr_q = CVA6Cfg.DebugEn ? dcsr_q : '0;
   assign rvfi_csr_o.dpc_q = CVA6Cfg.DebugEn ? dpc_q : '0;
   assign rvfi_csr_o.dscratch0_q = CVA6Cfg.DebugEn ? dscratch0_q : '0;

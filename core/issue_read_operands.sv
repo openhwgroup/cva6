@@ -56,6 +56,8 @@ module issue_read_operands
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    //is zcmt
+    output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Fixed Latency Unit is ready - EX_STAGE
@@ -119,11 +121,8 @@ module issue_read_operands
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // FPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
-
     // Issue stall - PERF_COUNTERS
-    output logic stall_issue_o,
-    input  logic is_zcmt_i,
-    output logic is_zcmt_o
+    output logic stall_issue_o
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
@@ -195,9 +194,6 @@ module issue_read_operands
 
   // forwarding signals
   logic [CVA6Cfg.NrIssuePorts-1:0] forward_rs1, forward_rs2, forward_rs3;
-  logic is_zcmt_n, is_zcmt_q;
-  assign is_zcmt_n = is_zcmt_i;
-  assign is_zcmt_o = is_zcmt_q;
 
   // original instruction
   riscv::instruction_t orig_instr;
@@ -1145,13 +1141,13 @@ module issue_read_operands
         tinst_q <= '0;
       end
       pc_o                     <= '0;
+      is_zcmt_o                <= '0;
       is_compressed_instr_o    <= 1'b0;
       branch_predict_o         <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
       x_transaction_rejected_o <= 1'b0;
-      is_zcmt_q                <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
-      is_zcmt_q <= is_zcmt_n;
+      is_zcmt_o <= issue_instr_i[0].is_zcmt;
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end

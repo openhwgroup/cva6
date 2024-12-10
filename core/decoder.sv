@@ -87,8 +87,7 @@ module decoder
     // Is a control flow instruction - ISSUE_STAGE
     output logic is_control_flow_instr_o,
     //zcmt instruction
-    input logic is_zcmt_i,
-    output logic is_zcmt_o
+    input logic is_zcmt_i
 );
   logic illegal_instr;
   logic illegal_instr_bm;
@@ -181,10 +180,10 @@ module decoder
     instruction_o.use_zimm                 = 1'b0;
     instruction_o.bp                       = branch_predict_i;
     instruction_o.vfp                      = 1'b0;
+    instruction_o.is_zcmt                  = is_zcmt_i;
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
-    is_zcmt_o                              = 1'b0;
 
     if (~ex_i.valid) begin
       case (instr.rtype.opcode)
@@ -1437,7 +1436,6 @@ module decoder
           imm_select              = JIMM;
           instruction_o.rd        = instr.utype.rd;
           is_control_flow_instr_o = 1'b1;
-          is_zcmt_o               = is_zcmt_i;
         end
 
         riscv::OpcodeAuipc: begin

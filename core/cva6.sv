@@ -86,6 +86,11 @@ module cva6
       branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     },
+    //JVT struct{base,mode}
+    localparam type jvt_t = struct packed {
+      logic [CVA6Cfg.XLEN-7:0] base;
+      logic [5:0] mode;
+    },
 
     // ID/EX/WB Stage
     localparam type scoreboard_entry_t = struct packed {
@@ -113,6 +118,7 @@ module cva6
       logic is_last_macro_instr;  // is last decoded 32bit instruction of macro definition
       logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
+      logic is_zcmt;  //is a zcmt instruction
     },
     localparam type writeback_t = struct packed {
       logic valid;  // wb data is valid
@@ -415,6 +421,7 @@ module cva6
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
+  logic zcmt_id_ex;
   logic is_compressed_instr_id_ex;
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_ex;
   // fixed latency units
@@ -564,9 +571,7 @@ module cva6
   logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
   //jvt
-  logic [CVA6Cfg.XLEN-1:6] jvt_base;
-  logic [5:0] jvt_mode;
-  logic is_zcmt_id_is, is_zcmt_is_ex;
+  jvt_t jvt;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -681,6 +686,7 @@ module cva6
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
+      .jvt_t(jvt_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
@@ -725,9 +731,7 @@ module cva6
       .compressed_resp_i (x_compressed_resp),
       .compressed_valid_o(x_compressed_valid),
       .compressed_req_o  (x_compressed_req),
-      .jvt_base_i        (jvt_base),
-      .jvt_mode_i        (jvt_mode),
-      .is_zcmt_o         (is_zcmt_id_is),
+      .jvt_i             (jvt),
       // DCACHE interfaces
       .dcache_req_ports_i(dcache_req_ports_cache_id),
       .dcache_req_ports_o(dcache_req_ports_id_cache)
@@ -826,13 +830,12 @@ module cva6
       .decoded_instr_valid_i   (issue_entry_valid_id_issue),
       .is_ctrl_flow_i          (is_ctrl_fow_id_issue),
       .decoded_instr_ack_o     (issue_instr_issue_id),
-      .is_zcmt_i               (is_zcmt_id_is),
-      .is_zcmt_o               (is_zcmt_is_ex),
       // Functional Units
       .rs1_forwarding_o        (rs1_forwarding_id_ex),
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
       .fu_data_o               (fu_data_id_ex),
       .pc_o                    (pc_id_ex),
+      .is_zcmt_o               (zcmt_id_ex),
       .is_compressed_instr_o   (is_compressed_instr_id_ex),
       .tinst_o                 (tinst_ex),
       // fixed latency unit ready
@@ -924,6 +927,7 @@ module cva6
       .rs2_forwarding_i(rs2_forwarding_id_ex),
       .fu_data_i(fu_data_id_ex),
       .pc_i(pc_id_ex),
+      .is_zcmt_i(zcmt_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
       .tinst_i(tinst_ex),
       // fixed latency units
@@ -1034,8 +1038,7 @@ module cva6
       .pmpaddr_i               (pmpaddr),
       //RVFI
       .rvfi_lsu_ctrl_o         (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o        (rvfi_mem_paddr),
-      .is_zcmt_i               (is_zcmt_is_ex)
+      .rvfi_mem_paddr_o        (rvfi_mem_paddr)
   );
 
   // ---------
@@ -1095,6 +1098,7 @@ module cva6
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
       .exception_t       (exception_t),
+      .jvt_t             (jvt_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
@@ -1171,8 +1175,7 @@ module cva6
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
-      .jvt_base_o              (jvt_base),
-      .jvt_mode_o              (jvt_mode),
+      .jvt_o                   (jvt),
       //RVFI
       .rvfi_csr_o              (rvfi_csr)
   );
@@ -1277,8 +1280,7 @@ module cva6
   dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
 
   // D$ request
-  // D$ request
-  if (CVA6Cfg.RVZCMT) begin
+  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin // Cache port 0 is ultilize in implicit read access in ZCMT extension. Therefore, MMU should be turn off.           
     assign dcache_req_to_cache[0] = dcache_req_ports_id_cache;
   end else begin
     assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
@@ -1289,7 +1291,7 @@ module cva6
                                                                           dcache_req_ports_acc_cache[1];
 
   // D$ response
-  if (CVA6Cfg.RVZCMT) begin
+  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin // Cache port 0 is ultilize in implicit read access in ZCMT extension. Therefore, MMU should be turn off.
     assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
   end else begin
     assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];

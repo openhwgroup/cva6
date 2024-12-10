@@ -31,6 +31,8 @@ module branch_unit #(
     input fu_data_t fu_data_i,
     // Instruction PC - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
+    // is zcmt instruction
+    input logic is_zcmt_i,
     // Instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Branch unit instruction is valid - ISSUE_STAGE
@@ -46,18 +48,10 @@ module branch_unit #(
     // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
     output logic resolve_branch_o,
     // Branch exception out - TO_BE_COMPLETED
-    output exception_t branch_exception_o,
-    //zcmt
-    input logic is_zcmt_i
+    output exception_t branch_exception_o
 );
   logic [CVA6Cfg.VLEN-1:0] target_address;
   logic [CVA6Cfg.VLEN-1:0] next_pc;
-  logic is_zcmt_q;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) is_zcmt_q <= '0;
-    else is_zcmt_q <= is_zcmt_i;
-  end
 
   // here we handle the various possibilities of mis-predicts
   always_comb begin : mispredict_handler
@@ -82,20 +76,18 @@ module branch_unit #(
     // we need to put the branch target address into rd, this is the result of this unit
     branch_result_o = next_pc;
     resolved_branch_o.pc = pc_i;
-    // There are only two sources of mispredicts:
+    // There are only three sources of mispredicts:
     // 1. Branches
     // 2. Jumps to register addresses
+    // 3. Zcmt instructions
     if (branch_valid_i) begin
-      if (is_zcmt_q) begin
+      // write target address which goes to PC Gen or select target address if zcmt
+      resolved_branch_o.target_address = (branch_comp_res_i) | is_zcmt_i ? target_address : next_pc;
+      resolved_branch_o.is_taken = is_zcmt_i ? 1'b1 : branch_comp_res_i;
+      if (is_zcmt_i) begin
         // Unconditional jump handling
-        resolved_branch_o.is_taken = 1'b1;
         resolved_branch_o.is_mispredict = 1'b1;  // miss prediction for ZCMT 
-        resolved_branch_o.target_address = target_address;  // Use calculated address directly
         resolved_branch_o.cf_type = ariane_pkg::Jump;
-      end else begin
-        // write target address which goes to PC Gen
-        resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
-        resolved_branch_o.is_taken = branch_comp_res_i;
       end
       // check the outcome of the branch speculation
       if (ariane_pkg::op_is_branch(fu_data_i.operation)) begin
