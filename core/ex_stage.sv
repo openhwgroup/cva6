@@ -47,6 +47,8 @@ module ex_stage
     input fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
+    // is_zcmt instruction
+    input logic is_zcmt_i,
     // Report whether instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Report instruction encoding - ISSUE_STAGE
@@ -228,9 +230,7 @@ module ex_stage
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
-    //zcmt instruction
-    input logic is_zcmt_i
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
 );
 
   // -------------------------
@@ -322,6 +322,7 @@ module ex_stage
       .debug_mode_i,
       .fu_data_i         (one_cycle_data),
       .pc_i,
+      .is_zcmt_i,
       .is_compressed_instr_i,
       .branch_valid_i    (|branch_valid_i),
       .branch_comp_res_i (alu_branch_res),
@@ -329,8 +330,7 @@ module ex_stage
       .branch_predict_i,
       .resolved_branch_o,
       .resolve_branch_o,
-      .branch_exception_o(flu_exception_o),
-      .is_zcmt_i         (is_zcmt_i)
+      .branch_exception_o(flu_exception_o)
   );
 
   // 3. CSR (sequential)
