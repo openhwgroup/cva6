@@ -779,13 +779,13 @@ module decoder
                 // Packing
                 {
                   7'b000_0100, 3'b100
-                } : 
+                } :
                 if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK;
                 else illegal_instr_bm = 1'b1;  //pack
                 {
                   7'b000_0100, 3'b111
-                } : 
-                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H; 
+                } :
+                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H;
                 else illegal_instr_bm = 1'b1;  //packh
                 // Zero Extend Op RV32 encoding
                 {
@@ -854,27 +854,26 @@ module decoder
                 instr.rtype.funct7, instr.rtype.funct3
               })
                 // Shift with Add (Unsigned Word)
-                {7'b001_0000, 3'b010}: instruction_o.op = ariane_pkg::SH1ADDUW; // sh1add.uw
-                {7'b001_0000, 3'b100}: instruction_o.op = ariane_pkg::SH2ADDUW; // sh2add.uw
-                {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADDUW; // sh3add.uw
+                {7'b001_0000, 3'b010} : instruction_o.op = ariane_pkg::SH1ADDUW;  // sh1add.uw
+                {7'b001_0000, 3'b100} : instruction_o.op = ariane_pkg::SH2ADDUW;  // sh2add.uw
+                {7'b001_0000, 3'b110} : instruction_o.op = ariane_pkg::SH3ADDUW;  // sh3add.uw
                 // Unsigned word Op's
-                {7'b000_0100, 3'b000}: instruction_o.op = ariane_pkg::ADDUW;    // add.uw
+                {7'b000_0100, 3'b000} : instruction_o.op = ariane_pkg::ADDUW;  // add.uw
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROLW;  // rolw
                 {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::RORW;  // rorw
                 // Pack_W
                 {
                   7'b000_0100, 3'b100
-                } : 
-                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W; 
+                } :
+                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W;
                 else illegal_instr_bm = 1'b1;  //packw
                 // Zero Extend Op RV64 encoding
-                {7'b000_0100, 3'b100}:
-                begin
-                  if (instr.instr[24:20] == 5'b00000)
-                    instruction_o.op = ariane_pkg::ZEXTH;
-                  else
-                    illegal_instr_bm = 1'b1;
+                {
+                  7'b000_0100, 3'b100
+                } : begin
+                  if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::ZEXTH;
+                  else illegal_instr_bm = 1'b1;
                 end
                 default: illegal_instr_bm = 1'b1;
               endcase
