@@ -395,8 +395,8 @@ module alu
         default: ;
       endcase
       if (fu_data_i.operation == PACK_W && CVA6Cfg.IS_XLEN64)
-       result_o = {
-        {32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}
+        result_o = {
+          {32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}
         };
       if (fu_data_i.operation == UNZIP && CVA6Cfg.IS_XLEN32) result_o = unzip_gen;
       if (fu_data_i.operation == ZIP && CVA6Cfg.IS_XLEN32) result_o = zip_gen;
