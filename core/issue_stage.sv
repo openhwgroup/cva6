@@ -60,6 +60,8 @@ module issue_stage
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    //is zcmt instruction
+    output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Transformed trap instruction - EX_STAGE
@@ -157,10 +159,7 @@ module issue_stage
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_issue_pointer_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o,
-    //zcmt instruction
-    input logic is_zcmt_i,
-    output logic is_zcmt_o
+    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] rvfi_commit_pointer_o
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -189,7 +188,6 @@ module issue_stage
 
   assign issue_instr_o    = issue_instr_sb_iro[0];
   assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];
-  assign is_zcmt_o = is_zcmt_i;
 
   logic x_transaction_accepted_iro_sb, x_issue_writeback_iro_sb;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_iro_sb;
@@ -267,6 +265,7 @@ module issue_stage
       .rs1_forwarding_o        (rs1_forwarding_xlen),
       .rs2_forwarding_o        (rs2_forwarding_xlen),
       .pc_o,
+      .is_zcmt_o               (is_zcmt_o),
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
@@ -303,9 +302,7 @@ module issue_stage
       .wdata_i,
       .we_gpr_i,
       .we_fpr_i,
-      .stall_issue_o,
-      .is_zcmt_i               (is_zcmt_i),
-      .is_zcmt_o               (is_zcmt_o)
+      .stall_issue_o
   );
 
 endmodule
