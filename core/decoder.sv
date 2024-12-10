@@ -862,17 +862,11 @@ module decoder
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROLW;  // rolw
                 {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::RORW;  // rorw
-                // Pack_W
-                {
-                  7'b000_0100, 3'b100
-                } :
-                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W;
-                else illegal_instr_bm = 1'b1;  //packw
-                // Zero Extend Op RV64 encoding
                 {
                   7'b000_0100, 3'b100
                 } : begin
-                  if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::ZEXTH;
+                  if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::ZEXTH;  // Zero Extend Op RV64 encoding
+                  else if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W;  // packw
                   else illegal_instr_bm = 1'b1;
                 end
                 default: illegal_instr_bm = 1'b1;
