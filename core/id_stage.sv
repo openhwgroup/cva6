@@ -129,7 +129,6 @@ module id_stage #(
   logic                                          is_double_rd_macro_instr_o;
   logic               [CVA6Cfg.NrIssuePorts-1:0] is_zcmt_instr_i;
   branchpredict_sbe_t                            branch_predict;
-  logic                                          is_zcmt;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
