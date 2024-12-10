@@ -776,23 +776,19 @@ module decoder
                 // Bitwise Shifting
                 {7'b011_0000, 3'b001} : instruction_o.op = ariane_pkg::ROL;  // rol
                 {7'b011_0000, 3'b101} : instruction_o.op = ariane_pkg::ROR;  // ror
-                // Packing
-                {
-                  7'b000_0100, 3'b100
-                } :
-                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK;
-                else illegal_instr_bm = 1'b1;  //pack
                 {
                   7'b000_0100, 3'b111
-                } :
-                if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H;
-                else illegal_instr_bm = 1'b1;  //packh
+                } : begin
+                  if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_H;  //packh
+                  else illegal_instr_bm = 1'b1;
+                end
                 // Zero Extend Op RV32 encoding
                 {
                   7'b000_0100, 3'b100
                 } : begin
                   if (!CVA6Cfg.IS_XLEN64 && instr.instr[24:20] == 5'b00000)
-                    instruction_o.op = ariane_pkg::ZEXTH;
+                    instruction_o.op = ariane_pkg::ZEXTH;  // Zero Extend Op RV32 encoding
+                  else if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK;  // pack
                   else illegal_instr_bm = 1'b1;
                 end
                 default: begin
@@ -865,7 +861,8 @@ module decoder
                 {
                   7'b000_0100, 3'b100
                 } : begin
-                  if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::ZEXTH;  // Zero Extend Op RV64 encoding
+                  if (instr.instr[24:20] == 5'b00000)
+                    instruction_o.op = ariane_pkg::ZEXTH;  // Zero Extend Op RV64 encoding
                   else if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::PACK_W;  // packw
                   else illegal_instr_bm = 1'b1;
                 end
