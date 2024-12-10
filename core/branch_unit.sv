@@ -31,6 +31,8 @@ module branch_unit #(
     input fu_data_t fu_data_i,
     // Instruction PC - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
+    // is zcmt instruction
+    input logic is_zcmt_i,
     // Instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
     // Branch unit instruction is valid - ISSUE_STAGE
@@ -75,13 +77,19 @@ module branch_unit #(
     // we need to put the branch target address into rd, this is the result of this unit
     branch_result_o = next_pc;
     resolved_branch_o.pc = pc_i;
-    // There are only two sources of mispredicts:
+    // There are only three sources of mispredicts:
     // 1. Branches
     // 2. Jumps to register addresses
+    // 3. Zcmt instructions
     if (branch_valid_i) begin
-      // write target address which goes to PC Gen
-      resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
-      resolved_branch_o.is_taken = branch_comp_res_i;
+      // write target address which goes to PC Gen or select target address if zcmt
+      resolved_branch_o.target_address = (branch_comp_res_i) | is_zcmt_i ? target_address : next_pc;
+      resolved_branch_o.is_taken = is_zcmt_i ? 1'b1 : branch_comp_res_i;
+      if (is_zcmt_i) begin
+        // Unconditional jump handling
+        resolved_branch_o.is_mispredict = 1'b1;  // miss prediction for ZCMT 
+        resolved_branch_o.cf_type = ariane_pkg::Jump;
+      end
       // check the outcome of the branch speculation
       if (ariane_pkg::op_is_branch(fu_data_i.operation)) begin
         // Set the `cf_type` of the output as `branch`, this will update the BHT.

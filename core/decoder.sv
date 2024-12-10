@@ -85,7 +85,9 @@ module decoder
     // Instruction - ISSUE_STAGE
     output logic [31:0] orig_instr_o,
     // Is a control flow instruction - ISSUE_STAGE
-    output logic is_control_flow_instr_o
+    output logic is_control_flow_instr_o,
+    //zcmt instruction
+    input logic is_zcmt_i
 );
   logic illegal_instr;
   logic illegal_instr_bm;
@@ -178,6 +180,7 @@ module decoder
     instruction_o.use_zimm                 = 1'b0;
     instruction_o.bp                       = branch_predict_i;
     instruction_o.vfp                      = 1'b0;
+    instruction_o.is_zcmt                  = is_zcmt_i;
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
