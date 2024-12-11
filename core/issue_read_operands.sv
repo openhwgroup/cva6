@@ -1147,14 +1147,27 @@ module issue_read_operands
       x_transaction_rejected_o <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
-      is_zcmt_o <= issue_instr_i[0].is_zcmt;
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
-      pc_o <= pc_n;
-      is_compressed_instr_o <= is_compressed_instr_n;
-      branch_predict_o <= branch_predict_n;
-      x_transaction_rejected_o <= x_transaction_rejected_n;
+      if (CVA6Cfg.SuperscalarEn) begin
+        if (issue_instr_i[1].fu == CTRL_FLOW) begin
+          pc_o                  <= issue_instr_i[1].pc;
+          is_compressed_instr_o <= issue_instr_i[1].is_compressed;
+          branch_predict_o      <= issue_instr_i[1].bp;
+        end
+      end
+      if (issue_instr_i[0].fu == CTRL_FLOW) begin
+        pc_o                  <= issue_instr_i[0].pc;
+        is_compressed_instr_o <= issue_instr_i[0].is_compressed;
+        branch_predict_o      <= issue_instr_i[0].bp;
+        if (CVA6Cfg.RVZCMT)  is_zcmt_o <= issue_instr_i[0].is_zcmt;
+        else is_zcmt_o                 <= '0;
+      end
+      x_transaction_rejected_o <= 1'b0;
+      if (issue_instr_i[0].fu == CVXIF) begin
+        x_transaction_rejected_o <= x_transaction_rejected;
+      end
     end
   end
 

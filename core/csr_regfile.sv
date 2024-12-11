@@ -919,7 +919,9 @@ module csr_regfile
 
     perf_we_o                       = 1'b0;
     perf_data_o                     = 'b0;
-    jvt_d                           = jvt_q;
+    if (CVA6Cfg.RVZCMT) begin
+      jvt_d                         = jvt_q;
+    end
     fcsr_d                          = fcsr_q;
 
     priv_lvl_d                      = priv_lvl_q;
@@ -2464,8 +2466,13 @@ module csr_regfile
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
   //JVT outputs
-  assign jvt_o.base = jvt_q.base;
-  assign jvt_o.mode = jvt_q.mode;
+  if (CVA6Cfg.RVZCMT) begin
+    assign jvt_o.base = jvt_q.base;
+    assign jvt_o.mode = jvt_q.mode;
+  end else begin
+    assign jvt_o.base = '0;
+    assign jvt_o.mode = '0;
+  end
   // MMU outputs
   assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
@@ -2532,7 +2539,9 @@ module csr_regfile
       priv_lvl_q <= riscv::PRIV_LVL_M;
       // floating-point registers
       fcsr_q       <= '0;
-      jvt_q        <= '0;
+      if (CVA6Cfg.RVZCMT) begin
+        jvt_q      <= '0;
+      end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= 1'b0;
@@ -2614,7 +2623,9 @@ module csr_regfile
       priv_lvl_q <= priv_lvl_d;
       // floating-point registers
       fcsr_q     <= fcsr_d;
-      jvt_q      <= jvt_d;
+      if (CVA6Cfg.RVZCMT) begin
+        jvt_q    <= jvt_d;
+      end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= debug_mode_d;
