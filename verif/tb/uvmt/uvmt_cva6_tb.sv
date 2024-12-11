@@ -70,6 +70,11 @@ module uvmt_cva6_tb;
                                          .reset_n(clknrst_if.reset_n)
                                 );
 
+   uvma_cvxif_intf              cvxif_vif(
+                                         .clk(clknrst_if.clk),
+                                         .reset_n(clknrst_if.reset_n)
+                                );
+
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
    uvma_rvfi_instr_if #(
@@ -80,6 +85,10 @@ module uvmt_cva6_tb;
     uvma_rvfi_csr_if#(uvme_cva6_pkg::XLEN)        rvfi_csr_if [RVFI_NRET-1:0]();
 
     uvmt_default_inputs_intf         default_inputs_vif();
+
+   //bind assertion module for cvxif interface
+   bind uvmt_cva6_dut_wrap
+      uvma_cvxif_assert                             cvxif_assert(.cvxif_assert(cvxif_vif));
 
    //bind assertion module for axi interface
    bind uvmt_cva6_dut_wrap
@@ -122,6 +131,7 @@ module uvmt_cva6_tb;
                     .default_inputs_vif    (default_inputs_vif),
                     .core_cntrl_if(core_cntrl_if),
                     .interrupt_vif(interrupt_vif),
+                    .cvxif_vif(cvxif_vif),
                     .tb_exit_o(tb_exit_if.tb_exit_o),
                     .rvfi_o(rvfi_if.rvfi_o),
                     .rvfi_csr_o(rvfi_if.rvfi_csr_o)
@@ -382,6 +392,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvmt_rvfi_if#( .CVA6Cfg(CVA6Cfg), .rvfi_instr_t(rvfi_instr_t), .rvfi_csr_t (rvfi_csr_t)))::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),  .value(rvfi_if));
      uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
      uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*"), .field_name("interrupt_vif"),  .value(interrupt_vif));
+     uvm_config_db#(virtual uvma_cvxif_intf)::set(.cntxt(null), .inst_name("*"), .field_name("vif"),  .value(cvxif_vif));
 
      uvm_config_db#(virtual uvmt_tb_exit_if)::set(.cntxt(null), .inst_name("*"), .field_name("tb_exit_vif"), .value(tb_exit_if));
 
