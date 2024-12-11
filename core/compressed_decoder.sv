@@ -44,7 +44,7 @@ module compressed_decoder #(
     is_compressed_o  = 1'b1;
     instr_o          = instr_i;
     is_macro_instr_o = 0;
-    is_zcmt_instr_o  = 0;
+    is_zcmt_instr_o  = 1'b0;
 
     // I: |    imm[11:0]    | rs1 | funct3 |    rd    | opcode |
     // S: | imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode |
@@ -875,7 +875,7 @@ module compressed_decoder #(
                 is_macro_instr_o = 1;
                 instr_o = instr_i;
               end else if (instr_i[12:10] == 3'b000) begin  //jt/jalt instruction
-                is_zcmt_instr_o = 1;
+                is_zcmt_instr_o = 1'b1;
               end else begin
                 illegal_instr_o = 1'b1;
               end

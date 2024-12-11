@@ -264,7 +264,7 @@ module issue_stage
       .fu_data_o               (fu_data_o),
       .rs1_forwarding_o        (rs1_forwarding_xlen),
       .rs2_forwarding_o        (rs2_forwarding_xlen),
-      .pc_o,
+      .pc_o                    (pc_o),
       .is_zcmt_o               (is_zcmt_o),
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),

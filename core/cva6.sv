@@ -1297,8 +1297,10 @@ module cva6
   // Cache port 0 is being ultilized in implicit read access in ZCMT extension.
   if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
     assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
+    assign dcache_req_ports_cache_ex[0] = '0;
   end else begin
     assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
+    assign dcache_req_ports_cache_id = '0;
   end
   assign dcache_req_ports_cache_ex[1]  = dcache_req_from_cache[1];
   assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];

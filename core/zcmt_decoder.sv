@@ -35,10 +35,9 @@ module zcmt_decoder #(
   }
       state_d, state_q;
   // Temporary registers
-  logic [7:0] index;  //index of instruction
   //Physical address: jvt + (index <<2)
   logic [CVA6Cfg.XLEN+1:0] table_address;  //Virtual  address: {00,Physical address}
-  logic [20:0] jump_addr;  //jump address immidiate
+  logic [31:0] jump_addr;  //jump address immidiate
 
   always_comb begin
     state_d               = state_q;
@@ -47,21 +46,22 @@ module zcmt_decoder #(
     fetch_stall_o         = is_zcmt_instr_i ? 1'b1 : 0;
 
     //cache request port
-    req_port_o.data_wdata = 1'b0;
+    req_port_o.data_wdata = '0;
     req_port_o.data_wuser = '0;
     req_port_o.data_req   = 1'b0;
     req_port_o.data_we    = 1'b0;
-    req_port_o.data_be    = 1'b0;
+    req_port_o.data_be    = '0;
     req_port_o.data_size  = 2'b10;
-    req_port_o.data_id    = 1;
-    req_port_o.kill_req   = 0;
-    req_port_o.tag_valid  = 1;
+    req_port_o.data_id    = 1'b1;
+    req_port_o.kill_req   = 1'b0;
+    req_port_o.tag_valid  = 1'b1;
 
     unique case (state_q)
       IDLE: begin
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.XLEN == 32) begin  //It is only target for 32 bit targets in cva6 with No MMU
-            table_address = {2'b00, ({jvt_i.base, jvt_i.mode} + (instr_i[9:2] << 2))};
+            // table_address = {2'b00, ({jvt_i.base, instr_i[7:2], 2'b00})};
+            table_address = {2'b00, ({jvt_i.base, jvt_i.mode} + {24'h0, instr_i[7:2], 2'b00})};
             req_port_o.address_index = table_address[9:0];
             req_port_o.address_tag = table_address[33:10];
             state_d = TABLE_JUMP;
