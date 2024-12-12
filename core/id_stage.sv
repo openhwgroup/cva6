@@ -193,17 +193,10 @@ module id_stage #(
         );
       end
 
-      if (is_zcmt_instr_i[0]) begin
-        assign instruction_cvxif[0] = instruction_cvxif_zcmt;
-        assign is_illegal_cvxif[0] = is_illegal_cvxif_zcmt;
-        assign is_compressed_cvxif[0] = is_compressed_cvxif_zcmt;
-        assign stall_macro_deco = stall_macro_deco_zcmt;
-      end else begin
-        assign instruction_cvxif[0] = instruction_cvxif_zcmp;
-        assign is_illegal_cvxif[0] = is_illegal_cvxif_zcmp;
-        assign is_compressed_cvxif[0] = is_compressed_cvxif_zcmp;
-        assign stall_macro_deco = stall_macro_deco_zcmp;
-      end
+      assign instruction_cvxif[0] = is_zcmt_instr_i[0] ? instruction_cvxif_zcmt : instruction_cvxif_zcmp;
+      assign is_illegal_cvxif[0] = is_zcmt_instr_i[0] ? is_illegal_cvxif_zcmt :  is_illegal_cvxif_zcmp;
+      assign is_compressed_cvxif[0] = is_zcmt_instr_i[0] ? is_compressed_cvxif_zcmt : is_compressed_cvxif_zcmp;
+      assign stall_macro_deco = is_zcmt_instr_i[0] ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
 
       if (CVA6Cfg.SuperscalarEn) begin
         assign instruction_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;

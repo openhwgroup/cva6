@@ -1161,7 +1161,8 @@ module issue_read_operands
         pc_o                  <= issue_instr_i[0].pc;
         is_compressed_instr_o <= issue_instr_i[0].is_compressed;
         branch_predict_o      <= issue_instr_i[0].bp;
-        is_zcmt_o <= issue_instr_i[0].is_zcmt;
+        if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
+        else is_zcmt_o <= '0;
       end
       x_transaction_rejected_o <= 1'b0;
       if (issue_instr_i[0].fu == CVXIF) begin
