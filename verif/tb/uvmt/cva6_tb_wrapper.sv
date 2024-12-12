@@ -75,6 +75,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   input  logic [15:0]                  irq_i,
   uvma_debug_if                        debug_if,
   uvma_axi_intf                        axi_slave,
+  uvma_cvxif_intf                      cvxif_if,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
 );
@@ -111,18 +112,9 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     .rvfi_probes_o        ( rvfi_probes                  ),
     .cvxif_req_o          ( cvxif_req                    ),
     .cvxif_resp_i         ( cvxif_resp                   ),
-    .noc_req_o            ( axi_ariane_req            ),
-    .noc_resp_i           ( axi_ariane_resp           )
+    .noc_req_o            ( axi_ariane_req               ),
+    .noc_resp_i           ( axi_ariane_resp              )
   );
-
-  if (CVA6Cfg.CvxifEn) begin : gen_cvxif_default_response
-    always_comb begin
-      cvxif_resp = '0;
-      cvxif_resp.compressed_ready = 1'b1;
-      cvxif_resp.issue_ready = 1'b1;
-      cvxif_resp.register_ready = 1'b1;
-    end
-  end
 
   //----------------------------------------------------------------------------
   // RVFI
@@ -241,6 +233,27 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
    assign axi_slave.ar_qos    = axi_ariane_req.ar.qos;
    assign axi_slave.ar_region = axi_ariane_req.ar.region;
    assign axi_slave.ar_user   = 0;
+
+  //CVXIF Response structs
+   assign cvxif_resp.compressed_ready  = cvxif_if.compressed_ready;
+   assign cvxif_resp.compressed_resp   = cvxif_if.compressed_resp;
+   assign cvxif_resp.issue_ready       = cvxif_if.issue_ready;
+   assign cvxif_resp.issue_resp        = cvxif_if.issue_resp;
+   assign cvxif_resp.register_ready    = cvxif_if.register_ready;
+   assign cvxif_resp.result_valid      = cvxif_if.result_valid;
+   assign cvxif_resp.result            = cvxif_if.result;
+
+   // Request structs
+   assign cvxif_if.compressed_valid    = cvxif_req.compressed_valid;
+   assign cvxif_if.compressed_req      = cvxif_req.compressed_req;
+   assign cvxif_if.issue_valid         = cvxif_req.issue_valid;
+   assign cvxif_if.issue_req           = cvxif_req.issue_req;
+   assign cvxif_if.register_valid      = cvxif_req.register_valid;
+   assign cvxif_if.register            = cvxif_req.register;
+   assign cvxif_if.commit_valid        = cvxif_req.commit_valid;
+   assign cvxif_if.commit_req          = cvxif_req.commit;
+   assign cvxif_if.result_ready        = cvxif_req.result_ready;
+
 
 
   AXI_BUS #(

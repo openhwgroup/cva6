@@ -30,6 +30,7 @@
 `include "uvml_mem_macros.sv"
 `include "uvma_axi_macros.sv"
 `include "uvma_clknrst_macros.sv"
+`include "uvma_cvxif_macros.sv"
 `include "uvma_isacov_macros.sv"
 `include "uvme_cva6_macros.sv"
 
@@ -53,6 +54,7 @@ package uvme_cva6_pkg;
    import uvmc_rvfi_reference_model_pkg::*;
    import uvma_isacov_pkg::*;
    import uvma_interrupt_pkg::*;
+   import uvma_cvxif_pkg::*;
    import config_pkg::*;
 
    import "DPI-C" function void read_elf(input string filename);

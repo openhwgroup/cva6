@@ -18,6 +18,7 @@ class uvme_cvxif_vseq_c extends uvme_cvxif_base_vseq_c;
 
    string info_tag = "CVXIF_VSEQ_RESP";
    string instr;
+   string compressed_instr;
 
    /**
     * Default constructor.
@@ -38,17 +39,22 @@ class uvme_cvxif_vseq_c extends uvme_cvxif_base_vseq_c;
    /**
     * Generate an issue response depending on received request
    */
-   extern task do_issue_resp();
+   extern virtual task do_issue_resp();
 
    /**
     * Generate the result response independent of instruction received
    */
-   extern task do_result_resp();
+   extern virtual task do_result_resp();
 
    /**
     * Generate the result response depending on instruction received
    */
-   extern task do_instr_result();
+   extern virtual task do_compressed_resp();
+
+   /**
+    * Generate the result response depending on instruction received
+   */
+   extern virtual task do_instr_result();
 
    /**
     * Main sequence body
@@ -59,25 +65,44 @@ endclass
 
 task uvme_cvxif_vseq_c::body();
 
-   forever begin
-      // wait for a transaction request (get is blocking)
-      `uvm_info(info_tag, $sformatf("Waiting for the transaction request from monitor"), UVM_HIGH);
-      p_sequencer.mm_req_fifo.get(req_item);
+   if (cfg.enabled_cvxif) begin
 
-      //Decode the instruction received
-      instr = decode(req_item.issue_req.instr);
+      do_default();
+      forever begin
+         // wait for a transaction request (get is blocking)
+         `uvm_info(info_tag, $sformatf("Waiting for the transaction request from monitor"), UVM_HIGH);
+         p_sequencer.mm_req_fifo.get(req_item);
+         resp_item = uvma_cvxif_resp_item_c::type_id::create("resp_item");
+         `uvm_info(info_tag, $sformatf("Request: %p ", req_item), UVM_HIGH);
 
-      // generate response based on observed request, e.g:
-      if (instr == "") begin
-         do_default();
-      end
-      else begin
-         if (req_item.issue_valid && req_item.issue_ready) begin
-            //issue_resp
-            do_issue_resp();
-            //result_resp
-            do_result_resp();
-            //send resp to sqr
+         resp_item.issue_valid      = '0;
+         resp_item.compressed_valid = '0;
+
+         compressed_instr = compressed_decode(req_item.compressed_req.instr);
+         instr = decode(req_item.issue_req.instr);
+         `uvm_info(info_tag, $sformatf("Compressed Instr: %s ", compressed_instr), UVM_HIGH);
+         `uvm_info(info_tag, $sformatf("Uncompressed Instr: %s ", instr), UVM_HIGH);
+
+         if (req_item.compressed_valid) begin
+           if (compressed_instr == "") do_default();
+           else begin
+              resp_item.compressed_valid = 1;
+              // compressed response
+              do_compressed_resp();
+           end
+         end
+         if (req_item.issue_valid) begin
+           if (instr == "") do_default();
+           else begin
+              resp_item.issue_valid = 1;
+              //issue response
+              do_issue_resp();
+              //result response
+              do_result_resp();
+           end
+         end
+         if (resp_item.issue_valid || resp_item.compressed_valid) begin
+            //send response to the sequencer
             send_resp(resp_item);
          end
       end
@@ -93,186 +118,308 @@ endfunction : new
 
 task uvme_cvxif_vseq_c::do_default();
 
-   resp_item.issue_resp.accept=0;
-   resp_item.issue_resp.writeback=0;
-   resp_item.issue_resp.dualwrite=0;
-   resp_item.issue_resp.dualread=0;
-   resp_item.issue_resp.exc=0;
-   resp_item.result_valid=0;
-   resp_item.result.id=0;
-   resp_item.result.exc=0;
-   resp_item.result.data=0;
-   resp_item.result.rd=0;
-   resp_item.result.we=0;
-   resp_item.result.exccode=0;
-   `uvm_info(info_tag, $sformatf("Sending default sequence response to sqr, accept = %d, result_valid = %d", resp_item.issue_resp.accept, resp_item.result_valid), UVM_HIGH);
+   resp_item.compressed_ready         = 0;
+   resp_item.compressed_valid         = 0;
+   resp_item.compressed_resp.accept   = 0;
+   resp_item.compressed_resp.instr    = 0;
+
+   resp_item.issue_ready              = 0;
+   resp_item.issue_valid              = 0;
+   resp_item.issue_resp.accept        = 0;
+   resp_item.issue_resp.writeback     = 0;
+   resp_item.issue_resp.register_read = 0;
+
+   resp_item.result_valid             = 0;
+   resp_item.result.id                = 0;
+   resp_item.result.hartid            = 0;
+   resp_item.result.data              = 0;
+   resp_item.result.rd                = 0;
+   resp_item.result.we                = 0;
+
+   resp_item.delay_resp               = 0;
+   `uvm_info(info_tag, $sformatf("Sending default sequence response to sqr"), UVM_NONE);
+
    send_resp(resp_item);
 
 endtask
 
 task uvme_cvxif_vseq_c::do_issue_resp();
 
-   resp_item.issue_resp.dualwrite  = 0;
-   resp_item.issue_resp.dualread   = 0;
-   resp_item.issue_resp.exc        = 0;
+   resp_item.issue_resp.writeback     = 0;
+   resp_item.issue_resp.accept        = 0;
+   resp_item.issue_resp.register_read = 0;
+
    case (instr) inside
-      "CUS_ADD", "CUS_ADD_MULTI" : begin
-          if (req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
-             resp_item.issue_resp.writeback  = 1;
-             resp_item.issue_resp.accept     = 1;
-          end
-        end
-      "CUS_ADD_RS3" : begin
-          if (req_item.issue_req.rs_valid == 3'b111) begin
-             resp_item.issue_resp.writeback  = 1;
-             resp_item.issue_resp.accept     = 1;
-          end
-          else begin
-             resp_item.issue_resp.writeback  = 0;
-             resp_item.issue_resp.accept     = 1;
-             resp_item.issue_resp.exc        = 1;
-          end
-        end
       "CUS_NOP" : begin
-          resp_item.issue_resp.writeback  = 0;
-          resp_item.issue_resp.accept     = 1;
+          resp_item.issue_resp.writeback     = 0;
+          resp_item.issue_resp.accept        = 1;
+          resp_item.issue_resp.register_read = 0;
+          resp_item.delay_resp = 0;
         end
-      "CUS_EXC" : begin
-          resp_item.issue_resp.writeback  = 0;
-          resp_item.issue_resp.accept     = 1;
-          resp_item.issue_resp.exc        = 1;
-        end
-      "CUS_U_ADD" : begin
-          if (req_item.issue_req.mode == PRIV_LVL_U && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
+      "CUS_ADD" : begin
+          if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
              resp_item.issue_resp.writeback  = 1;
              resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b011;
+             resp_item.delay_resp = 0;
           end
           else begin
-             resp_item.issue_resp.writeback  = 0;
-             resp_item.issue_resp.accept     = 1;
-             resp_item.issue_resp.exc        = 1;
+            resp_item.delay_resp = 1;
           end
         end
-      "CUS_S_ADD" : begin
-          if (req_item.issue_req.mode == PRIV_LVL_S && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
+      "CUS_DOUBLE_RS1" : begin
+          if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
              resp_item.issue_resp.writeback  = 1;
              resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b001;
+             resp_item.delay_resp = 0;
           end
           else begin
-             resp_item.issue_resp.writeback  = 0;
-             resp_item.issue_resp.accept     = 1;
-             resp_item.issue_resp.exc        = 1;
+            resp_item.delay_resp = 1;
           end
         end
-      "ILLEGAL" : begin
+      "CUS_DOUBLE_RS2" : begin
+          if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b010;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_MULTI" : begin
+          if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_RS3_MADD" : begin
+          if (req_item.register.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 3'b111;
+             resp_item.delay_resp = 0;
+          end
+          else if (req_item.register.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 2'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_RS3_MSUB" : begin
+          if (req_item.register.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b111;
+             resp_item.delay_resp = 0;
+          end
+          else if (req_item.register.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 2'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_RS3_NMADD" : begin
+          if (req_item.register.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b111;
+             resp_item.delay_resp = 0;
+          end
+          else if (req_item.register.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 2'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_RS3_NMSUB" : begin
+          if (req_item.register.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b111;
+             resp_item.delay_resp = 0;
+          end
+          else if (req_item.register.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 2'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      "CUS_ADD_RS3_RTYPE" : begin
+          if (req_item.register.rs_valid == 3'b111) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 'b111;
+             resp_item.delay_resp = 0;
+          end
+          else if (req_item.register.rs_valid == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+             resp_item.issue_resp.register_read  = 2'b11;
+             resp_item.delay_resp = 0;
+          end
+          else begin
+            resp_item.delay_resp = 1;
+          end
+        end
+      default : begin
           resp_item.issue_resp.writeback  = 0;
-          resp_item.issue_resp.accept     = 1;
-          resp_item.issue_resp.exc        = 1;
+          resp_item.issue_resp.accept     = 0;
+          resp_item.issue_resp.register_read = 0;
+          resp_item.issue_ready = 1;
         end
    endcase
-   `uvm_info(info_tag, $sformatf("instr =  %s", instr), UVM_LOW);
-   `uvm_info(info_tag, $sformatf("Response :  accept = %h	writeback = %h	dualwrite = %h	dualread = %h	exc = %h",
-				resp_item.issue_resp.accept, resp_item.issue_resp.writeback, resp_item.issue_resp.dualwrite, resp_item.issue_resp.dualread, resp_item.issue_resp.exc), UVM_LOW);
+
+endtask
+
+task uvme_cvxif_vseq_c::do_compressed_resp();
+
+   case (compressed_instr) inside
+      "CUS_CNOP" : begin
+         resp_item.compressed_resp.accept  = 1;
+         resp_item.compressed_resp.instr   = 32'b00000000000000000000000001111011;
+        end
+      "CUS_CADD" : begin
+         resp_item.compressed_resp.accept  = 1;        
+         resp_item.compressed_resp.instr   = 32'b00000000000000000001010101111011;
+         resp_item.compressed_resp.instr[19:15] = req_item.compressed_req.instr[11:7];
+         resp_item.compressed_resp.instr[24:20] = req_item.compressed_req.instr[6:2];   
+        end
+        default : begin
+             resp_item.compressed_resp.accept = 0;
+             resp_item.compressed_resp.instr = req_item.compressed_req.instr; 
+        end
+    endcase
 
 endtask
 
 task uvme_cvxif_vseq_c::do_result_resp();
 
-   //result_resp
-   if (!req_item.commit_req.commit_kill && req_item.commit_valid) begin
-      resp_item.result_valid = 1;
-      resp_item.result.id = req_item.commit_req.id;
-      resp_item.result.rd = req_item.issue_req.instr[11:7];
-      resp_item.result.we = resp_item.issue_resp.writeback;
-      resp_item.result.data = 0;
-      resp_item.result_ready = req_item.result_ready;
+   if (req_item.commit_valid && !req_item.commit_req.commit_kill) begin
+      resp_item.result_valid  = 1;
+      resp_item.result.id     = req_item.commit_req.id;
+      resp_item.result.hartid = req_item.commit_req.hartid;
+      resp_item.result.we     = resp_item.issue_resp.writeback;
+      `uvm_info(info_tag, $sformatf("Request ID : %1d", req_item.commit_req.id), UVM_HIGH);
       do_instr_result();
-      if (cfg.instr_delayed) begin
-         cfg.randomize(rnd_delay);
-         resp_item.rnd_delay = cfg.rnd_delay;
-      end
-      else begin
-         resp_item.rnd_delay = 0;
-      end
    end
    else begin
       resp_item.result_valid = 0;
       resp_item.result.id = 0;
-      resp_item.result.exc = 0;
+      resp_item.result.hartid = 0;
       resp_item.result.data = 0;
       resp_item.result.rd = 0;
       resp_item.result.we = 0;
-      resp_item.result.exccode = 0;
-      resp_item.rnd_delay = 0;
    end
 
 endtask
 
 task uvme_cvxif_vseq_c::do_instr_result();
 
-   //result response depend on instruction
-   resp_item.result.exc = 0;
-   resp_item.result.exccode = 0;
-   cfg.instr_delayed = 0;
+   resp_item.result.rd   = 0;
+   resp_item.result.data = 0;
    case (instr)
       "CUS_ADD": begin
-         if (req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
-            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-         else begin
-            resp_item.result.exc = 1;
-            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+         if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
          end
-        end
+      end
+      "CUS_DOUBLE_RS1": begin
+         if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[0];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+      end
+      "CUS_DOUBLE_RS2": begin
+         if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+            resp_item.result.data = req_item.register.rs[1] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+      end
       "CUS_ADD_MULTI": begin
-         if (req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111) begin
-            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-            cfg.instr_delayed = 1;
+         if (req_item.register.rs_valid inside {2'b11, 3'b111}) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
          end
-         else begin
-            resp_item.result.exc = 1;
-            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+      end
+      "CUS_ADD_RS3_MADD": begin
+         if (req_item.register.rs_valid == 3'b111) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1] + req_item.register.rs[2];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
          end
-        end
-      "CUS_EXC":  begin
-         resp_item.result.exc = 1;
-         resp_item.result.exccode[4:0] = req_item.issue_req.instr[19:15];
-         resp_item.result.exccode[5] = 1'b0;
-         `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
-        end
-      "CUS_ADD_RS3": begin
-         if (req_item.issue_req.rs_valid == 3'b111)
-            resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1] + req_item.issue_req.rs[2];
-         else begin
-            resp_item.result.exc = 1;
-            resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-            `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
+         else if (req_item.register.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
          end
-        end
-      "CUS_U_ADD": begin
-          if (req_item.issue_req.mode == PRIV_LVL_U && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
-             resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-          else begin
-             resp_item.result.exc = 1;
-             resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-             `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
-          end
-        end
-      "CUS_S_ADD": begin
-          if (req_item.issue_req.mode == PRIV_LVL_S && req_item.issue_req.rs_valid == 2'b11 || req_item.issue_req.rs_valid == 3'b111)
-             resp_item.result.data = req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-          else begin
-             resp_item.result.exc = 1;
-             resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-             `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
-          end
-        end
+      end
+      "CUS_ADD_RS3_MSUB": begin
+         if (req_item.register.rs_valid == 3'b111) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1] + req_item.register.rs[2];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+         else if (req_item.register.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+      end
+      "CUS_ADD_RS3_NMADD": begin
+         if (req_item.register.rs_valid == 3'b111) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1] + req_item.register.rs[2];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+         else if (req_item.register.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+      end
+      "CUS_ADD_RS3_NMSUB": begin
+         if (req_item.register.rs_valid == 3'b111) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1] + req_item.register.rs[2];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+         else if (req_item.register.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = req_item.issue_req.instr[11:7];
+         end
+      end
+      "CUS_ADD_RS3_RTYPE": begin
+         if (req_item.register.rs_valid == 3'b111) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1] + req_item.register.rs[2];
+            resp_item.result.rd   = 5'h10;
+         end
+         else if (req_item.register.rs_valid == 2'b11) begin
+            resp_item.result.data = req_item.register.rs[0] + req_item.register.rs[1];
+            resp_item.result.rd   = 5'h10;
+         end
+      end
       "ILLEGAL": begin
-          resp_item.result.exc = 1;
-          resp_item.result.exccode[5:0] = 6'b000010; //Exception Illegal instruction
-          `uvm_info(info_tag, $sformatf("Exception Illegal instruction -> EXCCODE: %d", resp_item.result.exccode), UVM_LOW);
-        end
+            resp_item.result.data = '0;
+            resp_item.result.rd   = '0;
+      end
    endcase
 
 endtask

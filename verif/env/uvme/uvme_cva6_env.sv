@@ -47,6 +47,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_rvfi_agent_c#(ILEN,XLEN)      rvfi_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)    isacov_agent;
    uvma_interrupt_agent_c             interrupt_agent;
+   uvma_cvxif_agent_c                 cvxif_agent;
 
    // Handle to agent switch interface
    virtual uvmt_axi_switch_intf  axi_switch_vif;
@@ -256,6 +257,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
 
+   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
+
 endfunction: assign_cfg
 
 
@@ -266,18 +269,20 @@ function void uvme_cva6_env_c::assign_cntxt();
    uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
+   uvm_config_db#(uvma_cvxif_cntxt_c)::set(this, "cvxif_agent", "cntxt", cntxt.cvxif_cntxt);
 
 endfunction: assign_cntxt
 
 
 function void uvme_cva6_env_c::create_agents();
 
-   clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
-   axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
+   clknrst_agent    = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
+   axi_agent        = uvma_axi_agent_c::type_id::create("axi_agent", this);
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
-   rvfi_agent    = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
-   isacov_agent  = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
+   rvfi_agent       = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
+   isacov_agent     = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
    interrupt_agent  = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
+   cvxif_agent      = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
 
 endfunction: create_agents
 
@@ -364,9 +369,10 @@ endfunction: connect_scoreboard
 
 function void uvme_cva6_env_c::assemble_vsequencer();
 
-   vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.axi_vsequencer      = axi_agent.vsequencer;
-   vsequencer.interrupt_sequencer      = interrupt_agent.sequencer;
+   vsequencer.clknrst_sequencer    = clknrst_agent.sequencer;
+   vsequencer.axi_vsequencer       = axi_agent.vsequencer;
+   vsequencer.interrupt_sequencer  = interrupt_agent.sequencer;
+   vsequencer.cvxif_vsequencer     = cvxif_agent.vsequencer;
 
 endfunction: assemble_vsequencer
 
@@ -389,6 +395,12 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
             interrupt_seq = uvma_interrupt_seq_c::type_id::create("interrupt_seq");
             interrupt_seq.start(interrupt_agent.sequencer);
          end
+      end
+
+      begin
+            uvme_cvxif_vseq_c  cvxif_vseq;
+            cvxif_vseq = uvme_cvxif_vseq_c::type_id::create("cvxif_vseq");
+            cvxif_vseq.start(cvxif_agent.vsequencer);
       end
    join_none
 endtask
