@@ -149,80 +149,62 @@ module id_stage #(
     end
     if (CVA6Cfg.RVZCMP || (CVA6Cfg.RVZCMT & ~CVA6Cfg.MmuPresent)) begin //MMU should be off when using ZCMT 
       //sequencial decoder
-      macro_decoder #(
-          .CVA6Cfg(CVA6Cfg)
-      ) macro_decoder_i (
-          .instr_i                   (compressed_instr[0]),
-          .is_macro_instr_i          (is_macro_instr_i[0]),
-          .clk_i                     (clk_i),
-          .rst_ni                    (rst_ni),
-          .instr_o                   (instruction_cvxif_zcmp[0]),
-          .illegal_instr_i           (is_illegal[0]),
-          .is_compressed_i           (is_compressed[0]),
-          .issue_ack_i               (issue_instr_ack_i[0]),
-          .illegal_instr_o           (is_illegal_cvxif_zcmp[0]),
-          .is_compressed_o           (is_compressed_cvxif_zcmp[0]),
-          .fetch_stall_o             (stall_macro_deco_zcmp),
-          .is_last_macro_instr_o     (is_last_macro_instr_o),
-          .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
-      );
-
-      if (CVA6Cfg.SuperscalarEn) begin
-        assign instruction_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
-        assign is_illegal_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
-        assign is_compressed_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
+      if (CVA6Cfg.RVZCMP) begin
+        macro_decoder #(
+            .CVA6Cfg(CVA6Cfg)
+        ) macro_decoder_i (
+            .instr_i                   (compressed_instr[0]),
+            .is_macro_instr_i          (is_macro_instr_i[0]),
+            .clk_i                     (clk_i),
+            .rst_ni                    (rst_ni),
+            .instr_o                   (instruction_cvxif_zcmp),
+            .illegal_instr_i           (is_illegal[0]),
+            .is_compressed_i           (is_compressed[0]),
+            .issue_ack_i               (issue_instr_ack_i[0]),
+            .illegal_instr_o           (is_illegal_cvxif_zcmp),
+            .is_compressed_o           (is_compressed_cvxif_zcmp),
+            .fetch_stall_o             (stall_macro_deco_zcmp),
+            .is_last_macro_instr_o     (is_last_macro_instr_o),
+            .is_double_rd_macro_instr_o(is_double_rd_macro_instr_o)
+        );
       end
-      cvxif_compressed_if_driver #(
-          .CVA6Cfg(CVA6Cfg),
-          .x_compressed_req_t(x_compressed_req_t),
-          .x_compressed_resp_t(x_compressed_resp_t)
-      ) i_cvxif_compressed_if_driver_i (
-          .clk_i              (clk_i),
-          .rst_ni             (rst_ni),
-          .hart_id_i          (hart_id_i),
-          .is_compressed_i    (is_compressed_cvxif),
-          .is_illegal_i       (is_illegal_cvxif),
-          .instruction_i      (instruction_cvxif),
-          .instruction_valid_i(fetch_entry_valid_i),
-          .is_compressed_o    (is_compressed_cmp),
-          .is_illegal_o       (is_illegal_cmp),
-          .instruction_o      (instruction),
-          .stall_i            (stall_macro_deco),
-          .stall_o            (stall_instr_fetch),
-          .compressed_ready_i (compressed_ready_i),
-          .compressed_resp_i  (compressed_resp_i),
-          .compressed_valid_o (compressed_valid_o),
-          .compressed_req_o   (compressed_req_o)
-      );
-    end else if (CVA6Cfg.RVZCMT) begin
+      if (CVA6Cfg.RVZCMT) begin
+        zcmt_decoder #(
+            .CVA6Cfg(CVA6Cfg),
+            .dcache_req_i_t(dcache_req_i_t),
+            .dcache_req_o_t(dcache_req_o_t),
+            .jvt_t(jvt_t),
+            .branchpredict_sbe_t(branchpredict_sbe_t)
+        ) zcmt_decoder_i (
+            .instr_i        (compressed_instr[0]),
+            .pc_i           (fetch_entry_i[0].address),
+            .is_zcmt_instr_i(is_zcmt_instr_i[0]),
+            .clk_i          (clk_i),
+            .rst_ni         (rst_ni),
+            .instr_o        (instruction_cvxif_zcmt),
+            .illegal_instr_i(is_illegal[0]),
+            .is_compressed_i(is_compressed[0]),
+            .illegal_instr_o(is_illegal_cvxif_zcmt),
+            .is_compressed_o(is_compressed_cvxif_zcmt),
+            .fetch_stall_o  (stall_macro_deco_zcmt),
+            .jvt_i          (jvt_i),
+            .req_port_i     (dcache_req_ports_i),
+            .req_port_o     (dcache_req_ports_o)
+        );
+      end
 
-      zcmt_decoder #(
-          .CVA6Cfg(CVA6Cfg),
-          .dcache_req_i_t(dcache_req_i_t),
-          .dcache_req_o_t(dcache_req_o_t),
-          .jvt_t(jvt_t),
-          .branchpredict_sbe_t(branchpredict_sbe_t)
-      ) zcmt_decoder_i (
-          .instr_i        (compressed_instr[0]),
-          .pc_i           (fetch_entry_i[0].address),
-          .is_zcmt_instr_i(is_zcmt_instr_i[0]),
-          .clk_i          (clk_i),
-          .rst_ni         (rst_ni),
-          .instr_o        (instruction_cvxif_zcmt[0]),
-          .illegal_instr_i(is_illegal[0]),
-          .is_compressed_i(is_compressed[0]),
-          .illegal_instr_o(is_illegal_cvxif_zcmt[0]),
-          .is_compressed_o(is_compressed_cvxif_zcmt[0]),
-          .fetch_stall_o  (stall_macro_deco_zcmt),
-          .jvt_i          (jvt_i),
-          .req_port_i     (dcache_req_ports_i),
-          .req_port_o     (dcache_req_ports_o)
-      );
+      if (is_zcmt_instr_i[0]) begin
+        assign instruction_cvxif[0] = instruction_cvxif_zcmt;
+        assign is_illegal_cvxif[0] = is_illegal_cvxif_zcmt;
+        assign is_compressed_cvxif[0] = is_compressed_cvxif_zcmt;
+        assign stall_macro_deco = stall_macro_deco_zcmt;
+      end else begin
+        assign instruction_cvxif[0] = instruction_cvxif_zcmp;
+        assign is_illegal_cvxif[0] = is_illegal_cvxif_zcmp;
+        assign is_compressed_cvxif[0] = is_compressed_cvxif_zcmp;
+        assign stall_macro_deco = stall_macro_deco_zcmp;
+      end
 
-      assign instruction_cvxif[0] = is_zcmt_instr_i[0] ? instruction_cvxif_zcmt[0] : instruction_cvxif_zcmp[0];
-      assign is_illegal_cvxif[0] = is_zcmt_instr_i[0] ? is_illegal_cvxif_zcmt[0] :  is_illegal_cvxif_zcmp[0];
-      assign is_compressed_cvxif[0] = is_zcmt_instr_i[0] ? is_compressed_cvxif_zcmt[0] : is_compressed_cvxif_zcmp[0];
-      assign stall_macro_deco = is_zcmt_instr_i[0] ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
       if (CVA6Cfg.SuperscalarEn) begin
         assign instruction_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
         assign is_illegal_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
