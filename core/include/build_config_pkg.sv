@@ -108,6 +108,7 @@ package build_config_pkg;
     cfg.PMPCfgRstVal = CVA6Cfg.PMPCfgRstVal;
     cfg.PMPAddrRstVal = CVA6Cfg.PMPAddrRstVal;
     cfg.PMPEntryReadOnly = CVA6Cfg.PMPEntryReadOnly;
+    cfg.PmpNapotEn = CVA6Cfg.PmpNapotEn;
     cfg.NOCType = CVA6Cfg.NOCType;
     cfg.NrNonIdempotentRules = CVA6Cfg.NrNonIdempotentRules;
     cfg.NonIdempotentAddrBase = CVA6Cfg.NonIdempotentAddrBase;
