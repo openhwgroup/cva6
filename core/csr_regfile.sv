@@ -2692,7 +2692,9 @@ module csr_regfile
           pmpcfg_next[i] = pmpcfg_q[i];
         end
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
-          pmpaddr_next[i] = pmpaddr_d[i];
+          if (pmpcfg_q[i].addr_mode == riscv::OFF | pmpcfg_q[i].addr_mode == riscv::TOR)
+            pmpaddr_next[i] = {pmpaddr_d[i][31:CVA6Cfg.PMPG], {CVA6Cfg.PMPG{1'b0}}};
+          else pmpaddr_next[i] = pmpaddr_d[i];
         end else begin
           pmpaddr_next[i] = pmpaddr_q[i];
         end
