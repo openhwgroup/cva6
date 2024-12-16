@@ -91,8 +91,8 @@ module wt_dcache_missunit
   // 010: word
   // 011: dword
   // 111: DCACHE line
-  function automatic logic [CVA6Cfg.PLEN-1:0] paddrSizeAlign(input logic [CVA6Cfg.PLEN-1:0] paddr,
-                                                             input logic [2:0] size);
+  function automatic logic [CVA6Cfg.PLEN-1:0] paddrSizeAlign(
+      input logic [CVA6Cfg.PLEN-1:0] paddr, input logic [2:0] size);
     logic [CVA6Cfg.PLEN-1:0] out;
     out = paddr;
     unique case (size)

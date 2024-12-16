@@ -34,7 +34,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = 1; // Just not to raise warnings
+  localparam CVA6ConfigFetchUserWidth = 1;  // Just not to raise warnings
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
@@ -177,23 +177,23 @@ package cva6_config_pkg;
     fpnew_pkg::roundmode_e             frm;
     logic [cva6_cfg.TRANS_ID_BITS-1:0] trans_id;
     logic                              store_pending;
-    logic                              acc_cons_en; // Invalidation interface
-    logic                              inval_ready; // Invalidation interface
+    logic                              acc_cons_en;    // Invalidation interface
+    logic                              inval_ready;    // Invalidation interface
   } accelerator_req_t;
 
   typedef struct packed {
-    logic                                 req_ready;
-    logic                                 resp_valid;
-    logic [cva6_cfg.XLEN-1:0]             result;
-    logic [cva6_cfg.TRANS_ID_BITS-1:0]    trans_id;
-    exception_t                           exception;
-    logic                                 store_pending;
-    logic                                 store_complete;
-    logic                                 load_complete;
-    logic [4:0]                           fflags;
-    logic                                 fflags_valid;
-    logic                                 inval_valid; // Invalidation interface
-    logic [63:0]                          inval_addr; // Invalidation interface
+    logic                              req_ready;
+    logic                              resp_valid;
+    logic [cva6_cfg.XLEN-1:0]          result;
+    logic [cva6_cfg.TRANS_ID_BITS-1:0] trans_id;
+    exception_t                        exception;
+    logic                              store_pending;
+    logic                              store_complete;
+    logic                              load_complete;
+    logic [4:0]                        fflags;
+    logic                              fflags_valid;
+    logic                              inval_valid;     // Invalidation interface
+    logic [63:0]                       inval_addr;      // Invalidation interface
   } accelerator_resp_t;
 
   // Accelerator - CVA6's MMU
@@ -213,13 +213,13 @@ package cva6_config_pkg;
   } acc_mmu_resp_t;
 
   typedef struct packed {
-    accelerator_req_t                     acc_req; // Insn/mem
-    logic                                 acc_mmu_en; // MMU
-    acc_mmu_resp_t                        acc_mmu_resp; // MMU
+    accelerator_req_t acc_req;       // Insn/mem
+    logic             acc_mmu_en;    // MMU
+    acc_mmu_resp_t    acc_mmu_resp;  // MMU
   } cva6_to_acc_t;
 
   typedef struct packed {
-    accelerator_resp_t                    acc_resp; // Insn/mem
-    acc_mmu_req_t                         acc_mmu_req; // MMU
+    accelerator_resp_t acc_resp;     // Insn/mem
+    acc_mmu_req_t      acc_mmu_req;  // MMU
   } acc_to_cva6_t;
 endpackage

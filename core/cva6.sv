@@ -212,11 +212,11 @@ module cva6
     },
 
     // Accelerator - CVA6
-    parameter type accelerator_req_t = logic,
+    parameter type accelerator_req_t  = logic,
     parameter type accelerator_resp_t = logic,
 
     // Accelerator - CVA6's MMU
-    parameter type acc_mmu_req_t = logic,
+    parameter type acc_mmu_req_t  = logic,
     parameter type acc_mmu_resp_t = logic,
 
     // AXI types

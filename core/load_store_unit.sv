@@ -26,7 +26,7 @@ module load_store_unit
     parameter type icache_dreq_t = logic,
     parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic,
-    parameter type acc_mmu_req_t  = logic,
+    parameter type acc_mmu_req_t = logic,
     parameter type acc_mmu_resp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -85,7 +85,7 @@ module load_store_unit
     input logic en_ld_st_g_translation_i,
 
     // Accelerator request for CVA6's MMU
-    input  acc_mmu_req_t acc_mmu_req_i,
+    input  acc_mmu_req_t  acc_mmu_req_i,
     output acc_mmu_resp_t acc_mmu_resp_o,
 
     // Instruction cache input request - CACHES
@@ -165,26 +165,26 @@ module load_store_unit
 );
 
   // data is misaligned
-  logic                             data_misaligned;
+  logic data_misaligned;
   // --------------------------------------
   // 1st register stage - (stall registers)
   // --------------------------------------
   // those are the signals which are always correct
   // e.g.: they keep the value in the stall case
-  lsu_ctrl_t                        lsu_ctrl, lsu_ctrl_byp;
+  lsu_ctrl_t lsu_ctrl, lsu_ctrl_byp;
 
-  logic                             pop_st;
-  logic                             pop_ld;
+  logic                        pop_st;
+  logic                        pop_ld;
 
   // ------------------------------
   // Address Generation Unit (AGU)
   // ------------------------------
   // virtual address as calculated by the AGU in the first cycle
-  logic      [    CVA6Cfg.VLEN-1:0] vaddr_i;
-  logic      [    CVA6Cfg.XLEN-1:0] vaddr_xlen;
-  logic                             overflow;
-  logic                             g_overflow;
-  logic      [(CVA6Cfg.XLEN/8)-1:0] be_i;
+  logic [    CVA6Cfg.VLEN-1:0] vaddr_i;
+  logic [    CVA6Cfg.XLEN-1:0] vaddr_xlen;
+  logic                        overflow;
+  logic                        g_overflow;
+  logic [(CVA6Cfg.XLEN/8)-1:0] be_i;
 
   assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
   assign vaddr_i = vaddr_xlen[CVA6Cfg.VLEN-1:0];
@@ -196,10 +196,10 @@ module load_store_unit
     assign g_overflow = 1'b0;
   end
 
-  logic                    st_valid_i;
-  logic                    ld_valid_i;
-  logic                    ld_translation_req;
-  logic                    st_translation_req, cva6_st_translation_req, acc_st_translation_req;
+  logic st_valid_i;
+  logic ld_valid_i;
+  logic ld_translation_req;
+  logic st_translation_req, cva6_st_translation_req, acc_st_translation_req;
   logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
   logic [            31:0] ld_tinst;
   logic                    ld_hs_ld_st_inst;
@@ -208,36 +208,36 @@ module load_store_unit
   logic [            31:0] st_tinst;
   logic                    st_hs_ld_st_inst;
   logic                    st_hlvx_inst;
-  logic                    translation_req, cva6_translation_req, acc_translation_req;
-  logic                    translation_valid, cva6_translation_valid, acc_translataion_valid;
+  logic translation_req, cva6_translation_req, acc_translation_req;
+  logic translation_valid, cva6_translation_valid, acc_translataion_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr, cva6_mmu_vaddr, acc_mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, cva6_mmu_paddr, acc_mmu_paddr, lsu_paddr;
-  logic       [                     31:0] mmu_tinst;
-  logic                                   mmu_hs_ld_st_inst;
-  logic                                   mmu_hlvx_inst;
-  exception_t                             mmu_exception, cva6_mmu_exception, acc_mmu_exception;
-  exception_t                             pmp_exception;
-  icache_areq_t                           pmp_icache_areq_i;
-  logic                                   pmp_translation_valid;
-  logic                                   dtlb_hit, cva6_dtlb_hit, acc_dtlb_hit;
-  logic       [         CVA6Cfg.PPNW-1:0] dtlb_ppn, cva6_dtlb_ppn, acc_dtlb_ppn;
+  logic [31:0] mmu_tinst;
+  logic        mmu_hs_ld_st_inst;
+  logic        mmu_hlvx_inst;
+  exception_t mmu_exception, cva6_mmu_exception, acc_mmu_exception;
+  exception_t   pmp_exception;
+  icache_areq_t pmp_icache_areq_i;
+  logic         pmp_translation_valid;
+  logic dtlb_hit, cva6_dtlb_hit, acc_dtlb_hit;
+  logic [CVA6Cfg.PPNW-1:0] dtlb_ppn, cva6_dtlb_ppn, acc_dtlb_ppn;
 
-  logic                                   ld_valid;
-  logic       [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
-  logic       [         CVA6Cfg.XLEN-1:0] ld_result;
-  logic                                   st_valid;
-  logic       [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
-  logic       [         CVA6Cfg.XLEN-1:0] st_result;
+  logic                             ld_valid;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] ld_trans_id;
+  logic [         CVA6Cfg.XLEN-1:0] ld_result;
+  logic                             st_valid;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] st_trans_id;
+  logic [         CVA6Cfg.XLEN-1:0] st_result;
 
-  logic       [                     11:0] page_offset;
-  logic                                   page_offset_matches;
+  logic [                     11:0] page_offset;
+  logic                             page_offset_matches;
 
-  exception_t                             misaligned_exception, cva6_misaligned_exception, acc_misaligned_exception;
-  exception_t                             ld_ex;
-  exception_t                             st_ex;
+  exception_t misaligned_exception, cva6_misaligned_exception, acc_misaligned_exception;
+  exception_t ld_ex;
+  exception_t st_ex;
 
-  logic                                   hs_ld_st_inst;
-  logic                                   hlvx_inst;
+  logic       hs_ld_st_inst;
+  logic       hlvx_inst;
   logic [1:0] sum, mxr;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn[2:0];
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid[2:0], asid_to_be_flushed[1:0];
@@ -399,7 +399,11 @@ module load_store_unit
 
   if (CVA6Cfg.EnableAccelerator) begin
     // The MMU can be connected to CVA6 or the ACCELERATOR
-    enum logic {CVA6, ACC} mmu_state_d, mmu_state_q;
+    enum logic {
+      CVA6,
+      ACC
+    }
+        mmu_state_d, mmu_state_q;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         mmu_state_q <= CVA6;
@@ -411,7 +415,7 @@ module load_store_unit
     // This logic can be optimized to reduce answer latency and contention
     always_comb begin
       // Maintain state
-      mmu_state_d = mmu_state_q;
+      mmu_state_d                      = mmu_state_q;
       // Serve CVA6 and gate the accelerator by default
       // MMU input
       misaligned_exception             = cva6_misaligned_exception;
@@ -487,9 +491,9 @@ module load_store_unit
     assign cva6_dtlb_hit          = dtlb_hit;
     assign cva6_dtlb_ppn          = dtlb_ppn;
     // No accelerator
-    assign acc_mmu_resp_o = '0;
+    assign acc_mmu_resp_o         = '0;
     // Feed forward the lsu_ctrl bypass
-    assign lsu_ctrl = lsu_ctrl_byp;
+    assign lsu_ctrl               = lsu_ctrl_byp;
   end
 
   logic store_buffer_empty;
@@ -614,8 +618,8 @@ module load_store_unit
   // determine whether this is a load or store
   always_comb begin : which_op
 
-    ld_valid_i        = 1'b0;
-    st_valid_i        = 1'b0;
+    ld_valid_i           = 1'b0;
+    st_valid_i           = 1'b0;
 
     cva6_translation_req = 1'b0;
     cva6_mmu_vaddr       = {CVA6Cfg.VLEN{1'b0}};

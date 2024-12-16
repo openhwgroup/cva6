@@ -27,7 +27,7 @@ module acc_dispatcher
     parameter type acc_resp_t = logic,
     parameter type accelerator_req_t = logic,
     parameter type accelerator_resp_t = logic,
-    parameter type acc_mmu_req_t  = logic,
+    parameter type acc_mmu_req_t = logic,
     parameter type acc_mmu_resp_t = logic,
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0
@@ -207,21 +207,21 @@ module acc_dispatcher
    *************************/
 
   accelerator_req_t acc_req;
-  logic     acc_req_valid;
-  logic     acc_req_ready;
+  logic             acc_req_valid;
+  logic             acc_req_ready;
 
   accelerator_req_t acc_req_int;
   spill_register #(
       .T(accelerator_req_t)
   ) i_accelerator_req_register (
-      .clk_i     (clk_i),
-      .rst_ni    (rst_ni),
-      .data_i    (acc_req),
-      .valid_i   (acc_req_valid),
-      .ready_o   (acc_req_ready),
-      .data_o    (acc_req_int),
-      .valid_o   (acc_req_o.acc_req.req_valid),
-      .ready_i   (acc_resp_i.acc_resp.req_ready)
+      .clk_i  (clk_i),
+      .rst_ni (rst_ni),
+      .data_i (acc_req),
+      .valid_i(acc_req_valid),
+      .ready_o(acc_req_ready),
+      .data_o (acc_req_int),
+      .valid_o(acc_req_o.acc_req.req_valid),
+      .ready_i(acc_resp_i.acc_resp.req_ready)
   );
 
   assign acc_req_o.acc_req.insn          = acc_req_int.insn;
@@ -234,8 +234,8 @@ module acc_dispatcher
   assign acc_req_o.acc_req.inval_ready   = inval_ready_i;
 
   // MMU interface
-  assign acc_req_o.acc_mmu_resp = acc_mmu_resp_i;
-  assign acc_req_o.acc_mmu_en   = acc_mmu_en_i;
+  assign acc_req_o.acc_mmu_resp          = acc_mmu_resp_i;
+  assign acc_req_o.acc_mmu_en            = acc_mmu_en_i;
 
   always_comb begin : accelerator_req_dispatcher
     // Do not fetch from the instruction queue
@@ -279,13 +279,13 @@ module acc_dispatcher
   logic acc_ld_disp;
   logic acc_st_disp;
 
-  assign acc_trans_id_o     = acc_resp_i.acc_resp.trans_id;
-  assign acc_result_o       = acc_resp_i.acc_resp.result;
-  assign acc_valid_o        = acc_resp_i.acc_resp.resp_valid;
-  assign acc_exception_o    = acc_resp_i.acc_resp.exception;
+  assign acc_trans_id_o = acc_resp_i.acc_resp.trans_id;
+  assign acc_result_o = acc_resp_i.acc_resp.result;
+  assign acc_valid_o = acc_resp_i.acc_resp.resp_valid;
+  assign acc_exception_o = acc_resp_i.acc_resp.exception;
   // Unpack the accelerator response
   assign acc_fflags_valid_o = acc_resp_i.acc_resp.fflags_valid;
-  assign acc_fflags_o       = acc_resp_i.acc_resp.fflags;
+  assign acc_fflags_o = acc_resp_i.acc_resp.fflags;
 
   // MMU interface
   assign acc_mmu_req_o = acc_resp_i.acc_mmu_req;
@@ -294,8 +294,8 @@ module acc_dispatcher
   assign acc_req_o.acc_req.resp_ready = 1'b1;
 
   // Signal dispatched load/store to issue stage
-  assign acc_ld_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
-  assign acc_st_disp          = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
+  assign acc_ld_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_LOAD);
+  assign acc_st_disp = acc_req_valid && (acc_insn_queue_o.operation == ACCEL_OP_STORE);
 
   // Cache invalidation
   assign inval_valid_o = acc_resp_i.acc_resp.inval_valid;
@@ -338,7 +338,7 @@ module acc_dispatcher
 
   // Set on store barrier. Clear when no store is pending.
   assign wait_acc_store_d = (wait_acc_store_q | commit_st_barrier_i) & acc_resp_i.acc_resp.store_pending;
-  assign ctrl_halt_o      = wait_acc_store_q;
+  assign ctrl_halt_o = wait_acc_store_q;
 
   /**************************
    *  Load/Store tracking   *

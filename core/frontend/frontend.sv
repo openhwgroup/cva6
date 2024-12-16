@@ -127,7 +127,8 @@ module frontend
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvi_imm;
   // RVC branching
-  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0]
+      rvc_branch, rvc_jump, rvc_jr, rvc_return, rvc_jalr, rvc_call;
   logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][CVA6Cfg.VLEN-1:0] rvc_imm;
   // re-aligned instruction and address (coming from cache - combinationally)
   logic            [CVA6Cfg.INSTR_PER_FETCH-1:0][            31:0] instr;
