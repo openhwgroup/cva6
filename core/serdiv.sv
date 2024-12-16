@@ -218,12 +218,10 @@ module serdiv
     endcase
 
     if (flush_i) begin
-      in_rdy_o  = 1'b0;
-      out_vld_o = 1'b0;
-      a_reg_en  = 1'b0;
-      b_reg_en  = 1'b0;
-      load_en   = 1'b0;
-      state_d   = IDLE;
+      a_reg_en = 1'b0;
+      b_reg_en = 1'b0;
+      load_en  = 1'b0;
+      state_d  = IDLE;
     end
   end
 
