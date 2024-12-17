@@ -35,7 +35,7 @@ module csr_regfile
     // halt requested - CONTROLLER
     output logic halt_csr_o,
     // Instruction to be committed - ID_STAGE
-    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    input scoreboard_entry_t commit_instr_i,
     // Commit acknowledged a instruction -> increase instret CSR - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Address from which to start booting, mtvec is set to the same address - SUBSYSTEM
@@ -2000,11 +2000,11 @@ module csr_regfile
         dcsr_d.prv = priv_lvl_o;
         dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // valid CTRL flow change
-        if (commit_instr_i[0].fu == CTRL_FLOW) begin
+        if (commit_instr_i.fu == CTRL_FLOW) begin
           // we saved the correct target address during execute
           dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].bp.predict_address[CVA6Cfg.VLEN-1]}},
-            commit_instr_i[0].bp.predict_address
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.bp.predict_address[CVA6Cfg.VLEN-1]}},
+            commit_instr_i.bp.predict_address
           };
           // exception valid
         end else if (ex_i.valid) begin
@@ -2015,8 +2015,8 @@ module csr_regfile
           // consecutive PC
         end else begin
           dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].pc[CVA6Cfg.VLEN-1]}},
-            commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.pc[CVA6Cfg.VLEN-1]}},
+            commit_instr_i.pc + (commit_instr_i.is_compressed ? 'h2 : 'h4)
           };
         end
         debug_mode_d   = 1'b1;

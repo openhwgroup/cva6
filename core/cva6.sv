@@ -1088,7 +1088,7 @@ module cva6
       .time_irq_i,
       .flush_o                 (flush_csr_ctrl),
       .halt_csr_o              (halt_csr_ctrl),
-      .commit_instr_i          (commit_instr_id_commit),
+      .commit_instr_i          (commit_instr_id_commit[0]),
       .commit_ack_i            (commit_ack),
       .boot_addr_i             (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
