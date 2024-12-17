@@ -256,7 +256,7 @@ DECODE pops them when decode stage is ready and indicates to the FRONTEND the in
 
 
 The instruction queue contains two FIFOs: one for instructions and one for addresses, which stores addresses in case of a prediction.
-The instruction FIFO can hold up to 4×{INSTR_PER_FETCH} instructions, while the address FIFO can hold up to 2 addresses.
+The instruction FIFO can hold up to 4×{instr-per-fetch} instructions, while the address FIFO can hold up to 2 addresses.
 If the instruction FIFO is full, a replay request is sent to inform the fetch mechanism to replay the fetch.
 If the address FIFO is full and there is a prediction, a replay request is sent to inform the fetch mechanism to replay the fetch, even if the instruction FIFO is not full.
 
@@ -285,23 +285,23 @@ BHT (Branch History Table) submodule
 The BHT is implemented as a memory which is composed of {BHTEntries} entries.
 The BHT is a two-dimensional table:
 
-*	The first dimension represents the access address, with a length equal to `{BHTEntries} / {INSTR_PER_FETCH}`.
-*	The second dimension represents the row index, with a length equal to `INSTR_PER_FETCH`.
+*	The first dimension represents the access address, with a length equal to `{BHTEntries} / {instr-per-fetch}`.
+*	The second dimension represents the row index, with a length equal to `{instr-per-fetch}`.
 
 In the case of branch prediction, the BHT uses only part of the virtual address to get the value of the saturation counter.
 In the case of a valid misprediction, the BHT uses only part of the misprediction address to access the BHT table and update the saturation counter.
 
-'UPPER_ADDRESS_INDEX = $clog2(BHTDepth) + ((RVC == 1) ? 1 : 2)'
+`UPPER_ADDRESS_INDEX = $clog2(BHTDepth) + ((RVC == 1) ? 1 : 2)`
 
-'LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 + $clog2(INSTR_PER_FETCH)'
+`LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 + $clog2(INSTR_PER_FETCH)`
 
 `ACCESS_ADDRESS = PC/MISPREDICT_ADDRESS [ UPPER_ADDRESS_INDEX : LOWER_ADDRESS_INDEX ]`
 
 The lower address bits of the virtual address point to the memory entry.
 
-'UPPER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +  $clog2(INSTR_PER_FETCH)'
+`UPPER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +  $clog2(INSTR_PER_FETCH)`
 
-'LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +    $clog2(INSTR_PER_FETCH)'
+`LOWER_ADDRESS_INDEX = (RVC == 1) ? 1 : 2 +    $clog2(INSTR_PER_FETCH)`
 
 `ACCESS_INDEX = PC/MISPREDICT_ADDRESS [ UPPER_ADDRESS_INDEX : LOWER_ADDRESS_INDEX]`
 

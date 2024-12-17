@@ -500,7 +500,7 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
   if test_type != "o":
     # gcc compilation
-    logging.info("Compiling test: %s" % test)
+    logging.info("Compiling test: %s" % test_path)
     cmd = ("%s %s \
           -I%s/dv/user_extension \
             -T%s %s -o %s " % \
@@ -874,7 +874,10 @@ def load_config(args, cwd):
       os.system("cp ../../config/gen_from_riscv_config/%s/linker/*.ld ../../config/gen_from_riscv_config/hwconfig/linker/" % (base))
     else:
       base = args.target
-    if base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
+    if base in ("cv64a6_imafdch_sv39", "cv64a6_imafdch_sv39_wb"):
+      args.mabi = "lp64d"
+      args.isa  = "rv64gch_zba_zbb_zbs_zbc"
+    elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
     elif base == "cv32a60x":
@@ -1029,7 +1032,7 @@ def check_verilator_version():
 
 def check_tools_version():
   check_cc_version()
-  # check_spike_version()
+  check_spike_version()
   check_verilator_version()
 
 

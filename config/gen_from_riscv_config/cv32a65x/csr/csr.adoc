@@ -334,7 +334,7 @@ Description:: Physical memory protection address register
 |===
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
-| [31:0] | PMPADDR[I] | 0x00000000 | WARL | 0x00000000 - 0xFFFFFFFF | Physical memory protection address register 
+| [31:0] | PMPADDR[I] | 0x00000000 | WARL | masked: & 0xFFFFFFFE \| 0x0 | Physical memory protection address register 
 |===
 
 [[_PMPADDR8-63]]

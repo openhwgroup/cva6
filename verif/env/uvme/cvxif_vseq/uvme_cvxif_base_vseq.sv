@@ -28,7 +28,9 @@ class uvme_cvxif_base_vseq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
 
    extern virtual task pre_body();
 
-   extern function string decode(input logic [31:0] instr);
+   extern virtual function string decode(input logic [31:0] instr);
+
+   extern virtual function string compressed_decode(input logic [15:0] instr);
 
 endclass
 
@@ -47,10 +49,30 @@ task uvme_cvxif_base_vseq_c::pre_body();
 
 endtask
 
+function string uvme_cvxif_base_vseq_c::compressed_decode(input logic [15:0] instr);
+
+   bit [2:0] Cfunc3    = instr [15:13];
+   bit [1:0] op        = instr [1:0];
+
+   if (instr[1:0] != 2'b11) begin
+      if (op == 2'b00 && Cfunc3 == 3'b111) begin
+         if (!instr[12]) return ("CUS_CNOP");
+         else return ("CUS_CADD");
+      end
+   end
+
+   return ("ILLEGAL");
+
+endfunction
+
 function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
 
    bit [6:0] opcode    = instr [6:0];
    bit [6:0] custom3   = 7'b1111011;
+   bit [6:0] MADD      = 7'b1000011;
+   bit [6:0] MSUB      = 7'b1000111;
+   bit [6:0] NMADD     = 7'b1001111;
+   bit [6:0] NMSUB     = 7'b1001011;
    bit [6:0] func7     = instr [31:25];
    bit [1:0] func2     = instr [26:25];
    bit [2:0] func3     = instr [14:12];
@@ -59,34 +81,50 @@ function string uvme_cvxif_base_vseq_c::decode(input logic [31:0] instr);
    bit [4:0] rs2       = instr [24:20];
 
    if (opcode == custom3) begin
-      if (func3 == 3'b000) begin
-         if (func7 == 7'b0001000) begin
+      if (func3 == 3'b001) begin
+         if (func7 == 7'b0000011) begin
             return ("CUS_ADD_MULTI");
          end
-         if (func2 == 2'b01) begin
-            return ("CUS_ADD_RS3");
-         end
          if (func7 == 7'b0000010) begin
-            return ("CUS_U_ADD");
+            return ("CUS_DOUBLE_RS2");
          end
-         if (func7 == 7'b0000110) begin
-            return ("CUS_S_ADD");
+         if (func7 == 7'b0000001) begin
+            return ("CUS_DOUBLE_RS1");
          end
-         if (func7 == 7'b0000000 && rd == 0 && rs1 == 0 && rs2 == 0) begin
-            return ("CUS_NOP");
-         end
-      end
-      if (func3 == 3'b001) begin
          if (func7 == 7'b0000000) begin
             return ("CUS_ADD");
          end
       end
-      if (func3 == 3'b010 && rd == 0 && rs2 == 0) begin
-         if (func7 == 7'b1100000) begin
-            return ("CUS_EXC");
+      if (func3 == 3'b000) begin
+         if (func7 == 7'b0000000) begin
+            return ("CUS_NOP");
          end
       end
    end
+   else if (opcode == MADD) begin
+      if (func3 == 3'b000 && func2 == 2'b00) begin
+         return ("CUS_ADD_RS3_MADD");
+      end
+      if (func3 == 3'b001 && func7 == 7'b0000100) begin
+         return ("CUS_ADD_RS3_RTYPE");
+      end
+   end
+   else if (opcode == MSUB) begin
+      if (func3 == 3'b000 && func2 == 2'b00) begin
+         return ("CUS_ADD_RS3_MSUB");
+      end
+   end
+   else if (opcode == NMADD) begin
+      if (func3 == 3'b000 && func2 == 2'b00) begin
+         return ("CUS_ADD_RS3_NMADD");
+      end
+   end
+   else if (opcode == NMSUB) begin
+      if (func3 == 3'b000 && func2 == 2'b00) begin
+         return ("CUS_ADD_RS3_NMSUB");
+      end
+   end
+
    return ("ILLEGAL");
 
 endfunction
