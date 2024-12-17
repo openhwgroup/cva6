@@ -10,7 +10,7 @@
 package cva6_config_pkg;
 
 
-  localparam CVA6ConfigSuperscalarEn = 0;  // superscalar
+  localparam CVA6ConfigSuperscalarEn = 1;  // superscalar
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(64),
