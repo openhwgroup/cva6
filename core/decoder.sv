@@ -48,6 +48,8 @@ module decoder
     input logic is_last_macro_instr_i,
     // Is mvsa01/mva01s macro instruction - macro_decoder
     input logic is_double_rd_macro_instr_i,
+    //zcmt instruction
+    input logic is_zcmt_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND
@@ -178,6 +180,7 @@ module decoder
     instruction_o.use_zimm                 = 1'b0;
     instruction_o.bp                       = branch_predict_i;
     instruction_o.vfp                      = 1'b0;
+    instruction_o.is_zcmt                  = is_zcmt_i;
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
