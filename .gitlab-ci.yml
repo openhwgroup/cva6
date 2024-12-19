@@ -250,12 +250,6 @@ cvxif-regression:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Basic"
     COLLECT_SIMU_LOGS: 1
-    SPIKE_TANDEM: 1
-  parallel:
-    matrix:
-      - DV_SIMULATORS:
-        - "veri-testharness,spike"
-        - "vcs-testharness"
   script:
     - bash verif/regress/cvxif_verif_regression.sh
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
