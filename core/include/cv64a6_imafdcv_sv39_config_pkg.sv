@@ -12,6 +12,8 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigXlen = 64;
 
+  localparam CVA6ConfigNrCommitPorts = 2;
+
   localparam CVA6ConfigRVF = 1;
   localparam CVA6ConfigF16En = 0;
   localparam CVA6ConfigF16AltEn = 0;
@@ -32,7 +34,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
+  localparam CVA6ConfigFetchUserWidth = 1;  // Just not to raise warnings
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
@@ -77,7 +79,7 @@ package cva6_config_pkg;
       FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
-      NrCommitPorts: unsigned'(1),
+      NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
@@ -151,4 +153,5 @@ package cva6_config_pkg;
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
+
 endpackage
