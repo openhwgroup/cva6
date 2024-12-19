@@ -83,8 +83,8 @@ module cva6_ptw
     output logic shared_tlb_miss_o,
 
     // PMP
-    input riscv::pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
+    input logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o,
     output logic [CVA6Cfg.GPLEN-1:0] bad_gpaddr_o
 );
