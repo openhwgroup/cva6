@@ -94,7 +94,8 @@ module cva6_shared_tlb #(
   shared_tag_t shared_tag_wr;
   shared_tag_t [SHARED_TLB_WAYS-1:0] shared_tag_rd;
 
-  logic [CVA6Cfg.SharedTlbDepth-1:0][SHARED_TLB_WAYS-1:0] shared_tag_valid_q, shared_tag_valid_d;
+  logic [CVA6Cfg.SharedTlbDepth-1:0][SHARED_TLB_WAYS-1:0]
+      shared_tag_valid_q, shared_tag_valid_d;
 
   logic [               SHARED_TLB_WAYS-1:0] shared_tag_valid;
 
@@ -122,7 +123,8 @@ module cva6_shared_tlb #(
   logic [               SHARED_TLB_WAYS-1:0] pte_we;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] pte_addr;
 
-  logic [CVA6Cfg.PtLevels+HYP_EXT-1:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vpn_d, vpn_q;
+  logic [CVA6Cfg.PtLevels+HYP_EXT-1:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0]
+      vpn_d, vpn_q;
   logic [SHARED_TLB_WAYS-1:0][CVA6Cfg.PtLevels-1:0] vpn_match;
   logic [SHARED_TLB_WAYS-1:0][CVA6Cfg.PtLevels-1:0] page_match;
   logic [SHARED_TLB_WAYS-1:0][CVA6Cfg.PtLevels-1:0] level_match;
