@@ -64,7 +64,7 @@ module fpu_wrap
         Width: unsigned'(CVA6Cfg.FLen),  // parameterized using CVA6Cfg.FLen
         EnableVectors: CVA6Cfg.XFVec,
         EnableNanBox: 1'b1,
-        FpFmtMask: {CVA6Cfg.RVF, CVA6Cfg.RVD, CVA6Cfg.XF16, CVA6Cfg.XF8, CVA6Cfg.XF16ALT},
+        FpFmtMask: {CVA6Cfg.RVF, CVA6Cfg.RVD, CVA6Cfg.XF16, CVA6Cfg.XF8, CVA6Cfg.XF16ALT, 1'b0},
         IntFmtMask: {
           CVA6Cfg.XFVec && CVA6Cfg.XF8,
           CVA6Cfg.XFVec && (CVA6Cfg.XF16 || CVA6Cfg.XF16ALT),
