@@ -41,8 +41,8 @@ module acc_dispatcher
     // Interface with the CSRs
     input priv_lvl_t ld_st_priv_lvl_i,
     input logic sum_i,
-    input pmpcfg_t [CVA6Cfg.NrPMPEntries-1:0] pmpcfg_i,
-    input logic [CVA6Cfg.NrPMPEntries-1:0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg_i,
+    input logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     input logic [2:0] fcsr_frm_i,
     output logic dirty_v_state_o,
     input logic acc_mmu_en_i,
