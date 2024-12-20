@@ -18,7 +18,8 @@ package tb_pkg;
       parameter WIDTH   = 32,
       parameter PMP_LEN = 32
   );
-    static function logic [PMP_LEN-1:0] base_to_conf(logic [WIDTH-1:0] base, int unsigned size_i);
+    static function logic [PMP_LEN-1:0] base_to_conf(logic [WIDTH-1:0] base,
+                                                       int unsigned size_i);
       logic [PMP_LEN-1:0] pmp_reg;
 
       pmp_reg = '0;

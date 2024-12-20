@@ -12,7 +12,9 @@
 // Date: 2.10.2019
 // Description: purely combinatorial PMP unit (with extraction for more complex configs such as NAPOT)
 
-module pmp #(
+module pmp
+  import ariane_pkg::*;
+#(
     parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty,
     parameter int unsigned           PLEN       = 34,                          // rv64: 56
     parameter int unsigned           PMP_LEN    = 32,                          // rv64: 54
@@ -23,8 +25,8 @@ module pmp #(
     input riscv::pmp_access_t access_type_i,
     input riscv::priv_lvl_t priv_lvl_i,
     // Configuration
-    input logic [NR_ENTRIES-1:0][PMP_LEN-1:0] conf_addr_i,
-    input riscv::pmpcfg_t [NR_ENTRIES-1:0] conf_i,
+    input logic [avoid_neg(NR_ENTRIES-1):0][PMP_LEN-1:0] conf_addr_i,
+    input riscv::pmpcfg_t [avoid_neg(NR_ENTRIES-1):0] conf_i,
     // Output
     output logic allow_o
 );
