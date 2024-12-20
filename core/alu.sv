@@ -54,6 +54,8 @@ module alu
   logic [CVA6Cfg.XLEN-1:0] brev8_reversed;
   logic [            31:0] unzip_gen;
   logic [            31:0] zip_gen;
+  logic [CVA6Cfg.XLEN-1:0] xperm8_result;
+  logic [CVA6Cfg.XLEN-1:0] xperm4_result;
   // bit reverse operand_a for left shifts and bit counting
   generate
     genvar k;
@@ -268,13 +270,17 @@ module alu
 
   // ZKN gen block
   if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : zkn_gen_block
-    genvar i, m, n;
-    // Generate brev8_reversed by reversing bits within each byte
-    for (i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_gen
+    genvar i, m, n, q;
+    for (i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_xperm8_gen
+      assign xperm8_result[i << 3 +: 8] = (fu_data_i.operand_b[i << 3 +: 8] < (CVA6Cfg.XLEN / 8)) ? fu_data_i.operand_a[fu_data_i.operand_b[i << 3 +: 8] << 3 +: 8] : 8'b0;
+      // Generate brev8_reversed by reversing bits within each byte
       for (m = 0; m < 8; m++) begin : reverse_bits
         // Reversing the order of bits within a single byte
         assign brev8_reversed[(i<<3)+m] = fu_data_i.operand_a[(i<<3)+(7-m)];
       end
+    end
+    for (q = 0; q < (CVA6Cfg.XLEN / 4); q++) begin : xperm4_gen
+      assign xperm4_result[q << 2 +: 4] = (fu_data_i.operand_b[q << 2 +: 4] < (CVA6Cfg.XLEN / 4)) ? fu_data_i.operand_a[{2'b0, fu_data_i.operand_b[q << 2 +: 4]} << 2 +: 4] : 4'b0;
     end
     // Generate zip and unzip results
     if (CVA6Cfg.IS_XLEN32) begin
@@ -392,6 +398,8 @@ module alu
         PACK_H:
         result_o = (CVA6Cfg.IS_XLEN32) ? ({16'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]}) : ({48'b0, fu_data_i.operand_b[7:0], fu_data_i.operand_a[7:0]});
         BREV8: result_o = brev8_reversed;
+        XPERM8: result_o = xperm8_result;
+        XPERM4: result_o = xperm4_result;
         default: ;
       endcase
       if (fu_data_i.operation == PACK_W && CVA6Cfg.IS_XLEN64)
