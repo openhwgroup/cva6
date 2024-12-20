@@ -31,6 +31,14 @@ module cva6
       rvfi_probes_instr_t instr;
     },
 
+    // branchpredict scoreboard entry
+    // this is the struct which we will inject into the pipeline to guide the various
+    // units towards the correct branch decision and resolve
+    localparam type branchpredict_sbe_t = struct packed {
+      cf_t                     cf;               // type of control flow prediction
+      logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
+    },
+
     parameter type exception_t = struct packed {
       logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
       logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
@@ -39,14 +47,6 @@ module cva6
       logic [31:0] tinst;  // transformed instruction information
       logic gva;  // signals when a guest virtual address is written to tval
       logic valid;
-    },
-
-    // branchpredict scoreboard entry
-    // this is the struct which we will inject into the pipeline to guide the various
-    // units towards the correct branch decision and resolve
-    localparam type branchpredict_sbe_t = struct packed {
-      cf_t                     cf;               // type of control flow prediction
-      logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
     // cache request ports
