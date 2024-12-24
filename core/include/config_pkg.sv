@@ -399,6 +399,8 @@ package config_pkg;
     // Software Interrupt can be disabled when there is only M machine mode in CVA6.
     assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMT));
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
     // pragma translate_on
   endfunction
 
