@@ -41,7 +41,7 @@ module zcmt_decoder #(
     output dcache_req_i_t                    req_port_o,
     // jump_address
     output logic          [            31:0] jump_address_o,
-    output logic is_zcmt_o
+    output logic                             is_zcmt_o
 );
 
   // FSM States
