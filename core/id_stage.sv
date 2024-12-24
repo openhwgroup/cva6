@@ -124,12 +124,11 @@ module id_stage #(
   logic [CVA6Cfg.NrIssuePorts-1:0] is_macro_instr_i;
   logic                            stall_instr_fetch;
   logic stall_macro_deco, stall_macro_deco_zcmp, stall_macro_deco_zcmt;
-  logic                                          is_last_macro_instr_o;
-  logic                                          is_double_rd_macro_instr_o;
-  logic               [CVA6Cfg.NrIssuePorts-1:0] is_zcmt_instr_i;
-  branchpredict_sbe_t                            branch_predict;
-  logic                                          is_zcmt;
-
+  logic                            is_last_macro_instr_o;
+  logic                            is_double_rd_macro_instr_o;
+  logic [CVA6Cfg.NrIssuePorts-1:0] is_zcmt_instr_i;
+  logic [                    31:0] jump_address;
+  logic                            is_zcmt;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -189,7 +188,9 @@ module id_stage #(
             .fetch_stall_o  (stall_macro_deco_zcmt),
             .jvt_i          (jvt_i),
             .req_port_i     (dcache_req_ports_i),
-            .req_port_o     (dcache_req_ports_o)
+            .req_port_o     (dcache_req_ports_o),
+            .jump_address_o (jump_address),
+            .is_zcmt_o      (is_zcmt)
         );
       end
 
@@ -258,6 +259,7 @@ module id_stage #(
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
     assign is_zcmt_instr_i = '0;
+    assign jump_address = '0;
     assign is_last_macro_instr_o = '0;
     assign is_double_rd_macro_instr_o = '0;
     if (CVA6Cfg.CvxifEn) begin
@@ -287,9 +289,10 @@ module id_stage #(
         .pc_i                      (fetch_entry_i[i].address),
         .is_compressed_i           (is_compressed_cmp[i]),
         .is_macro_instr_i          (is_macro_instr_i[i]),
-        .is_zcmt_i                 (is_zcmt_instr_i[i]),
+        .is_zcmt_i                 (is_zcmt),
         .is_last_macro_instr_i     (is_last_macro_instr_o),
         .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
+        .jump_address_i            (jump_address),
         .is_illegal_i              (is_illegal_cmp[i]),
         .instruction_i             (instruction[i]),
         .compressed_instr_i        (fetch_entry_i[i].instruction[15:0]),

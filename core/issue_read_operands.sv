@@ -56,7 +56,7 @@ module issue_read_operands
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
-    //is zcmt
+    // Is zcmt - EX_STAGE
     output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
