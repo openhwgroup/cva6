@@ -383,6 +383,8 @@ package config_pkg;
     assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
     else $fatal(1, "[frontend] fetch width != not supported");
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMT));
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
     // pragma translate_on
   endfunction
 

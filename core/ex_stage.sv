@@ -47,7 +47,7 @@ module ex_stage
     input fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
-    // is_zcmt instruction
+    // Is_zcmt instruction - ISSUE_STAGE
     input logic is_zcmt_i,
     // Report whether instruction is compressed - ISSUE_STAGE
     input logic is_compressed_instr_i,
@@ -321,8 +321,8 @@ module ex_stage
       .v_i,
       .debug_mode_i,
       .fu_data_i         (one_cycle_data),
-      .pc_i              (pc_i),
-      .is_zcmt_i         (is_zcmt_i),
+      .pc_i,
+      .is_zcmt_i,
       .is_compressed_instr_i,
       .branch_valid_i    (|branch_valid_i),
       .branch_comp_res_i (alu_branch_res),
