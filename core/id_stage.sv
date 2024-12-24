@@ -262,6 +262,7 @@ module id_stage #(
     assign jump_address = '0;
     assign is_last_macro_instr_o = '0;
     assign is_double_rd_macro_instr_o = '0;
+    assign is_zcmt = '0;
     if (CVA6Cfg.CvxifEn) begin
       assign compressed_valid_o = '0;
       assign compressed_req_o.instr = '0;
