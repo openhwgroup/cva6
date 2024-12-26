@@ -122,13 +122,12 @@ module id_stage #(
       is_compressed_cvxif, is_compressed_cvxif_zcmp, is_compressed_cvxif_zcmt;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] is_macro_instr_i;
-  logic                            stall_instr_fetch;
+  logic [CVA6Cfg.NrIssuePorts-1:0] stall_instr_fetch;
   logic stall_macro_deco, stall_macro_deco_zcmp, stall_macro_deco_zcmt;
   logic                            is_last_macro_instr_o;
   logic                            is_double_rd_macro_instr_o;
-  logic [CVA6Cfg.NrIssuePorts-1:0] is_zcmt_instr_i;
-  logic [                    31:0] jump_address;
-  logic                            is_zcmt;
+  logic [CVA6Cfg.NrIssuePorts-1:0] is_zcmt_instr;
+  logic [        CVA6Cfg.XLEN-1:0] jump_address;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -143,7 +142,7 @@ module id_stage #(
           .illegal_instr_o (is_illegal[i]),
           .is_compressed_o (is_compressed[i]),
           .is_macro_instr_o(is_macro_instr_i[i]),
-          .is_zcmt_instr_o (is_zcmt_instr_i[i])
+          .is_zcmt_instr_o (is_zcmt_instr[i])
       );
     end
     if (CVA6Cfg.RVZCMP || (CVA6Cfg.RVZCMT & ~CVA6Cfg.MmuPresent)) begin //MMU should be off when using ZCMT 
@@ -177,7 +176,7 @@ module id_stage #(
         ) zcmt_decoder_i (
             .instr_i        (compressed_instr[0]),
             .pc_i           (fetch_entry_i[0].address),
-            .is_zcmt_instr_i(is_zcmt_instr_i[0]),
+            .is_zcmt_instr_i(is_zcmt_instr[0]),
             .clk_i          (clk_i),
             .rst_ni         (rst_ni),
             .instr_o        (instruction_cvxif_zcmt),
@@ -189,15 +188,14 @@ module id_stage #(
             .jvt_i          (jvt_i),
             .req_port_i     (dcache_req_ports_i),
             .req_port_o     (dcache_req_ports_o),
-            .jump_address_o (jump_address),
-            .is_zcmt_o      (is_zcmt)
+            .jump_address_o (jump_address)
         );
       end
 
-      assign instruction_cvxif[0] = is_zcmt_instr_i[0] ? instruction_cvxif_zcmt : instruction_cvxif_zcmp;
-      assign is_illegal_cvxif[0] = is_zcmt_instr_i[0] ? is_illegal_cvxif_zcmt :  is_illegal_cvxif_zcmp;
-      assign is_compressed_cvxif[0] = is_zcmt_instr_i[0] ? is_compressed_cvxif_zcmt : is_compressed_cvxif_zcmp;
-      assign stall_macro_deco = is_zcmt_instr_i[0] ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
+      assign instruction_cvxif[0] = is_zcmt_instr[0] ? instruction_cvxif_zcmt : instruction_cvxif_zcmp;
+      assign is_illegal_cvxif[0] = is_zcmt_instr[0] ? is_illegal_cvxif_zcmt : is_illegal_cvxif_zcmp;
+      assign is_compressed_cvxif[0] = is_zcmt_instr[0] ? is_compressed_cvxif_zcmt : is_compressed_cvxif_zcmp;
+      assign stall_macro_deco = is_zcmt_instr[0] ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
 
       if (CVA6Cfg.SuperscalarEn) begin
         assign instruction_cvxif[CVA6Cfg.NrIssuePorts-1] = '0;
@@ -215,6 +213,7 @@ module id_stage #(
           .is_compressed_i   (is_compressed_cvxif),
           .is_illegal_i      (is_illegal_cvxif),
           .instruction_i     (instruction_cvxif),
+          .instruction_valid_i (fetch_entry_valid_i),
           .is_compressed_o   (is_compressed_cmp),
           .is_illegal_o      (is_illegal_cmp),
           .instruction_o     (instruction),
@@ -258,11 +257,10 @@ module id_stage #(
     assign is_illegal_cmp = '0;
     assign is_compressed_cmp = '0;
     assign is_macro_instr_i = '0;
-    assign is_zcmt_instr_i = '0;
+    assign is_zcmt_instr = '0;
     assign jump_address = '0;
     assign is_last_macro_instr_o = '0;
     assign is_double_rd_macro_instr_o = '0;
-    assign is_zcmt = '0;
     if (CVA6Cfg.CvxifEn) begin
       assign compressed_valid_o = '0;
       assign compressed_req_o.instr = '0;
@@ -290,7 +288,7 @@ module id_stage #(
         .pc_i                      (fetch_entry_i[i].address),
         .is_compressed_i           (is_compressed_cmp[i]),
         .is_macro_instr_i          (is_macro_instr_i[i]),
-        .is_zcmt_i                 (is_zcmt),
+        .is_zcmt_i                 (is_zcmt_instr[i]),
         .is_last_macro_instr_i     (is_last_macro_instr_o),
         .is_double_rd_macro_instr_i(is_double_rd_macro_instr_o),
         .jump_address_i            (jump_address),

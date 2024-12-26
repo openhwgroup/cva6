@@ -40,8 +40,7 @@ module zcmt_decoder #(
     // Data cache request input - CACHE
     output dcache_req_i_t                    req_port_o,
     // jump_address
-    output logic          [            31:0] jump_address_o,
-    output logic                             is_zcmt_o
+    output logic          [CVA6Cfg.XLEN-1:0] jump_address_o
 );
 
   // FSM States
@@ -60,7 +59,6 @@ module zcmt_decoder #(
     is_compressed_o       = is_zcmt_instr_i ? 1'b1 : is_compressed_i;
     fetch_stall_o         = is_zcmt_instr_i ? 1'b1 : 0;
     jump_address_o        = '0;
-    is_zcmt_o             = 1'b0;
 
     // cache request port
     req_port_o.data_wdata = '0;
@@ -94,7 +92,6 @@ module zcmt_decoder #(
         if (req_port_i.data_rvalid) begin
           // save the PC relative Xlen table jump address 
           jump_address_o = $unsigned($signed(req_port_i.data_rdata) - $signed(pc_i));
-          is_zcmt_o = 1'b1;
           if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
             instr_o = {
               20'h0, 5'h0, riscv::OpcodeJal
