@@ -51,7 +51,7 @@ module decoder
     // Zcmt instruction - FRONTEND
     input logic is_zcmt_i,
     // Jump address - zcmt_decoder
-    input logic [31:0] jump_address_i,
+    input logic [CVA6Cfg.XLEN-1:0] jump_address_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occured in fetch stage - FRONTEND
