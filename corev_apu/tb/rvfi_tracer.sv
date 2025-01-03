@@ -64,7 +64,7 @@ module rvfi_tracer #(
 
   logic [31:0] cycles;
   // Generate the trace based on RVFI
-  logic [63:0] pc64;
+  logic [CVA6Cfg.XLEN-1:0] pc64;
   string cause;
   logic[31:0] end_of_test_q;
   logic[31:0] end_of_test_d;
@@ -78,15 +78,29 @@ module rvfi_tracer #(
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
         // Instruction information
-        $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
-          pc64, rvfi_i[i].insn, rvfi_i[i].insn);
-        // Destination register information
-        if (rvfi_i[i].insn[1:0] != 2'b11) begin
-          $fwrite(f, "%h 0x%h (0x%h)",
-            rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
-        end else begin
-          $fwrite(f, "%h 0x%h (0x%h)",
-            rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+        if (rvfi_i[i].intr[2]) begin
+           $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
+             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+           // Destination register information
+           if (rvfi_i[i].insn[1:0] != 2'b11) begin
+             $fwrite(f, "%h 0x%h (0x%h)",
+               rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+           end else begin
+             $fwrite(f, "%h 0x%h (0x%h)",
+               rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+           end
+        end
+        else begin
+           $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
+             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+           // Destination register information
+           if (rvfi_i[i].insn[1:0] != 2'b11) begin
+             $fwrite(f, "%h 0x%h (0x%h)",
+               rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+           end else begin
+             $fwrite(f, "%h 0x%h (0x%h)",
+               rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+           end
         end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
@@ -129,8 +143,13 @@ module rvfi_tracer #(
             32'h5: cause = "LD_ACCESS_FAULT";
             32'h6: cause = "ST_ADDR_MISALIGNED";
             32'h7: cause = "ST_ACCESS_FAULT";
+            32'hb: cause = "ENV_CALL_MMODE";
           endcase;
-          $fwrite(f, "%s exception @ 0x%h\n", cause, pc64);
+          if (rvfi_i[i].insn[1:0] != 2'b11) begin
+            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn[15:0]);
+          end else begin
+            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn);
+          end
         end
       end
     end
