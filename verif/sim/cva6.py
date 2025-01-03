@@ -775,7 +775,7 @@ def parse_args(cwd):
                       help="switch AXI agent mode: yes for Active, no for Passive")
   parser.add_argument("--gen_sv_seed", type=int, default=0,
                       help="Run test N times with random seed")
-  parser.add_argument("--sv_seed", type=str, default=str(random.getrandbits(31),
+  parser.add_argument("--sv_seed", type=str, default=str(random.getrandbits(31)),
                       help="Run test with a specific seed")
   parser.add_argument("--isa_extension", type=str, default="",
                       help="Choose additional z, s, x extensions")
