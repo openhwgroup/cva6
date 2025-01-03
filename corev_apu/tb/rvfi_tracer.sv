@@ -81,26 +81,18 @@ module rvfi_tracer #(
         if (rvfi_i[i].intr[2]) begin
            $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
              pc, rvfi_i[i].insn, rvfi_i[i].insn);
-           // Destination register information
-           if (rvfi_i[i].insn[1:0] != 2'b11) begin
-             $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc, rvfi_i[i].insn[15:0]);
-           end else begin
-             $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc, rvfi_i[i].insn);
-           end
         end
         else begin
            $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
              pc, rvfi_i[i].insn, rvfi_i[i].insn);
-           // Destination register information
-           if (rvfi_i[i].insn[1:0] != 2'b11) begin
-             $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc, rvfi_i[i].insn[15:0]);
-           end else begin
-             $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc, rvfi_i[i].insn);
-           end
+        end
+        // Destination register information
+        if (rvfi_i[i].insn[1:0] != 2'b11) begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc, rvfi_i[i].insn[15:0]);
+        end else begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc, rvfi_i[i].insn);
         end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
