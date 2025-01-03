@@ -66,6 +66,8 @@ package config_pkg;
     bit                          RVZCB;
     // Zcmp RISC-V extension
     bit                          RVZCMP;
+    // Zcmt RISC-V extension
+    bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
     // Zicntr RISC-V extension
@@ -248,6 +250,7 @@ package config_pkg;
     bit          RVH;
     bit          RVZCB;
     bit          RVZCMP;
+    bit          RVZCMT;
     bit          XFVec;
     bit          CvxifEn;
     bit          RVZiCond;
@@ -376,6 +379,8 @@ package config_pkg;
     assert (Cfg.NrPMPEntries <= 64);
     assert (!(Cfg.SuperscalarEn && Cfg.RVF));
     assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMT));
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
 `endif
     // pragma translate_on
   endfunction
