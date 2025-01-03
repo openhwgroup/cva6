@@ -64,7 +64,7 @@ module rvfi_tracer #(
 
   logic [31:0] cycles;
   // Generate the trace based on RVFI
-  logic [CVA6Cfg.XLEN-1:0] pc64;
+  logic [CVA6Cfg.XLEN-1:0] pc;
   string cause;
   logic[31:0] end_of_test_q;
   logic[31:0] end_of_test_d;
@@ -74,32 +74,32 @@ module rvfi_tracer #(
   always_ff @(posedge clk_i) begin
     end_of_test_q <= (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-      pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
+      pc = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
            $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
-             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+             pc, rvfi_i[i].insn, rvfi_i[i].insn);
            // Destination register information
            if (rvfi_i[i].insn[1:0] != 2'b11) begin
              $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+               rvfi_i[i].mode, pc, rvfi_i[i].insn[15:0]);
            end else begin
              $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+               rvfi_i[i].mode, pc, rvfi_i[i].insn);
            end
         end
         else begin
            $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
-             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+             pc, rvfi_i[i].insn, rvfi_i[i].insn);
            // Destination register information
            if (rvfi_i[i].insn[1:0] != 2'b11) begin
              $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+               rvfi_i[i].mode, pc, rvfi_i[i].insn[15:0]);
            end else begin
              $fwrite(f, "%h 0x%h (0x%h)",
-               rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+               rvfi_i[i].mode, pc, rvfi_i[i].insn);
            end
         end
         // Decode instruction to know if destination register is FP register.
@@ -146,9 +146,9 @@ module rvfi_tracer #(
             32'hb: cause = "ENV_CALL_MMODE";
           endcase;
           if (rvfi_i[i].insn[1:0] != 2'b11) begin
-            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn[15:0]);
+            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc, rvfi_i[i].insn[15:0]);
           end else begin
-            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn);
+            $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc, rvfi_i[i].insn);
           end
         end
       end
