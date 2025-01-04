@@ -431,6 +431,13 @@ def analyze_tandem_report(yaml_path):
   except KeyError:
     logging.info("Incomplete TANDEM YAML report")
 
+def log_uvm_seed(sv_seed , filename="uvm_seed.log"):
+  try:
+      with open(filename, 'a') as file:
+          timestamp = datetime.datetime.now().strftime('%Y-%m-%d  %H:%M:%S')
+          file.write(f"{timestamp} - UVM Seed: {sv_seed}\n")
+  except IOError as error:
+      print(f"Failed to log UVM seed: {error}")
 
 def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, initial_creation , iteration = None):
   if not initial_creation:
@@ -712,7 +719,7 @@ def parse_args(cwd):
                       help="simulation run options")
   parser.add_argument("--isscomp_opts", type=str, default="",
                       help="simulation comp options")
-  parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
+  parser.add_argument("--isspostrun_opts", type=str, default="0x80000000",
                       help="simulation post run options")
   parser.add_argument("-s", "--steps", type=str, default="all",
                       help="Run steps: gen,gcc_compile,iss_sim,iss_cmp", dest="steps")
@@ -1104,6 +1111,8 @@ def main():
       log_format = 0
     else:
       logging.error('gen_sv_seed can not take a negative value')
+
+    log_uvm_seed(args.sv_seed)
 
     issrun_opts = "\""+args.issrun_opts+"\""
 
