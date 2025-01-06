@@ -113,7 +113,7 @@ package config_pkg;
     // PMP CSR read-only bits
     bit [63:0]                   PMPEntryReadOnly;
     // PMP NA4 and NAPOT mode enable
-    int unsigned                 PMPNapotEn;
+    bit                          PMPNapotEn;
     // PMA non idempotent rules number
     int unsigned                 NrNonIdempotentRules;
     // PMA NonIdempotent region base address
@@ -293,7 +293,7 @@ package config_pkg;
     logic [63:0][63:0]           PMPCfgRstVal;
     logic [63:0][63:0]           PMPAddrRstVal;
     bit [63:0]                   PMPEntryReadOnly;
-    int unsigned                 PMPNapotEn;
+    bit                          PMPNapotEn;
     noc_type_e                   NOCType;
     int unsigned                 NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
