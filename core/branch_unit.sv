@@ -87,8 +87,6 @@ module branch_unit #(
       if (CVA6Cfg.RVZCMT) begin
         if (is_zcmt_i) begin
           // Unconditional jump handling
-          resolved_branch_o.target_address = target_address;
-          resolved_branch_o.is_taken = 1'b1;
           resolved_branch_o.is_mispredict = 1'b1;  // miss prediction for ZCMT 
           resolved_branch_o.cf_type = ariane_pkg::JumpR;
         end
