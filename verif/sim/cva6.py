@@ -880,7 +880,7 @@ def load_config(args, cwd):
     elif base in ("cv64a6_imafdc_sv39_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
-    elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache"):
+    elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_hpdcache_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc_zbkb"
     elif base == "cv32a60x":
