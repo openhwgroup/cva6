@@ -155,7 +155,8 @@ module cva6_hpdcache_wrapper
           .hpdcache_rsp_t       (hpdcache_rsp_t),
           .dcache_req_i_t       (dcache_req_i_t),
           .dcache_req_o_t       (dcache_req_o_t),
-          .is_load_port         (1'b1)
+          .InvalidateOnFlush    (1'b0),
+          .IsLoadPort           (1'b1)
       ) i_cva6_hpdcache_load_if_adapter (
           .clk_i,
           .rst_ni,
@@ -192,7 +193,8 @@ module cva6_hpdcache_wrapper
         .hpdcache_rsp_t       (hpdcache_rsp_t),
         .dcache_req_i_t       (dcache_req_i_t),
         .dcache_req_o_t       (dcache_req_o_t),
-        .is_load_port         (1'b0)
+        .InvalidateOnFlush    (CVA6Cfg.DcacheInvalidateOnFlush),
+        .IsLoadPort           (1'b0)
     ) i_cva6_hpdcache_store_if_adapter (
         .clk_i,
         .rst_ni,

@@ -22,7 +22,8 @@ module cva6_hpdcache_if_adapter
     parameter type hpdcache_rsp_t = logic,
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
-    parameter bit is_load_port = 1'b1
+    parameter bit InvalidateOnFlush = 1'b0,
+    parameter bit IsLoadPort = 1'b1
 )
 //  }}}
 
@@ -72,7 +73,7 @@ module cva6_hpdcache_if_adapter
   generate
     //  LOAD request
     //  {{{
-    if (is_load_port == 1'b1) begin : load_port_gen
+    if (IsLoadPort == 1'b1) begin : load_port_gen
       assign hpdcache_req_is_uncacheable = !config_pkg::is_inside_cacheable_regions(
           CVA6Cfg,
           {
@@ -109,6 +110,16 @@ module cva6_hpdcache_if_adapter
       assign cva6_req_o.data_rdata = hpdcache_rsp_i.rdata;
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
       assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
+
+      //  Assertions
+      //  {{{
+      //    pragma translate_off
+      flush_on_load_port_assert :
+      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
+          (cva6_dcache_flush_i == 1'b0)) else
+          $error("Flush unsupported on load adapters");
+      //    pragma translate_on
+      //  }}}
     end  //  }}}
 
          //  {{{
@@ -258,7 +269,9 @@ module cva6_hpdcache_if_adapter
         addr_offset: '0,
         addr_tag: '0,
         wdata: '0,
-        op: hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_ALL,
+        op: InvalidateOnFlush ?
+            hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_INVAL_ALL :
+            hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_ALL,
         be: '0,
         size: '0,
         sid: hpdcache_req_sid_i,
@@ -323,8 +336,9 @@ module cva6_hpdcache_if_adapter
       //  {{{
       //    pragma translate_off
       forward_one_request_assert :
-      assert property (@(posedge clk_i) ($onehot0({forward_store, forward_amo, forward_flush})))
-      else $error("Only one request shall be forwarded");
+      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
+          ($onehot0({forward_store, forward_amo, forward_flush}))) else
+          $error("Only one request shall be forwarded");
       //    pragma translate_on
       //  }}}
     end

@@ -146,6 +146,9 @@ package build_config_pkg;
 
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
+    cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
+    cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
+
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
     cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
