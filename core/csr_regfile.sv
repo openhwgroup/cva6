@@ -1791,38 +1791,24 @@ module csr_regfile
       // a m-mode trap might be delegated if we are taking it in S mode
       // first figure out if this was an exception or an interrupt e.g.: look at bit (XLEN-1)
       // the cause register can only be $clog2(CVA6Cfg.XLEN) bits long (as we only support XLEN exceptions)
-      if (CVA6Cfg.RVH) begin
+      if (CVA6Cfg.RVS) begin
         if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
-            )-1:0]] && ~hideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
             )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]] && ~hedeleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
             )-1:0]])) begin
           // traps never transition from a more-privileged mode to a less privileged mode
           // so if we are already in M mode, stay there
           trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
-        end else if ((ex_i.cause[CVA6Cfg.XLEN-1] && hideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && hedeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]])) begin
-          trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
-          // trap to VS only if it is  the currently active mode
-          trap_to_v = v_q;
-        end
-      end else begin
-        if (CVA6Cfg.RVS) begin
-          if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
-                  CVA6Cfg.XLEN
-              )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                  CVA6Cfg.XLEN
-              )-1:0]])) begin
-            // traps never transition from a more-privileged mode to a less privileged mode
-            // so if we are already in M mode, stay there
-            trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+          if (CVA6Cfg.RVH) begin
+            if ((ex_i.cause[CVA6Cfg.XLEN-1] && hideleg_q[ex_i.cause[$clog2(
+                    CVA6Cfg.XLEN
+                )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && hedeleg_q[ex_i.cause[$clog2(
+                    CVA6Cfg.XLEN
+                )-1:0]])) begin
+              // trap to VS only if it is  the currently active mode
+              trap_to_v = v_q;
+            end
           end
         end
       end
