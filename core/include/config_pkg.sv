@@ -54,6 +54,8 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
+    // Scalar Cryptography RISC-V entension
+    bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
     // Compress RISC-V extension
@@ -110,6 +112,8 @@ package config_pkg;
     logic [63:0][63:0]           PMPAddrRstVal;
     // PMP CSR read-only bits
     bit [63:0]                   PMPEntryReadOnly;
+    // PMP NA4 and NAPOT mode enable
+    bit                          PMPNapotEn;
     // PMA non idempotent rules number
     int unsigned                 NrNonIdempotentRules;
     // PMA NonIdempotent region base address
@@ -240,6 +244,7 @@ package config_pkg;
     bit          XF8;
     bit          RVA;
     bit          RVB;
+    bit          ZKN;
     bit          RVV;
     bit          RVC;
     bit          RVH;
@@ -288,6 +293,7 @@ package config_pkg;
     logic [63:0][63:0]           PMPCfgRstVal;
     logic [63:0][63:0]           PMPAddrRstVal;
     bit [63:0]                   PMPEntryReadOnly;
+    bit                          PMPNapotEn;
     noc_type_e                   NOCType;
     int unsigned                 NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;

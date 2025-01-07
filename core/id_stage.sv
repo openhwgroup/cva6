@@ -111,10 +111,11 @@ module id_stage #(
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_cvxif;
 
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_macro_instr_i;
-  logic                                               stall_instr_fetch;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       stall_instr_fetch;
   logic                                               stall_macro_deco;
   logic                                               is_last_macro_instr_o;
   logic                                               is_double_rd_macro_instr_o;
+
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -166,6 +167,7 @@ module id_stage #(
           .is_compressed_i   (is_compressed_cvxif),
           .is_illegal_i      (is_illegal_cvxif),
           .instruction_i     (instruction_cvxif),
+          .instruction_valid_i (fetch_entry_valid_i),
           .is_compressed_o   (is_compressed_cmp),
           .is_illegal_o      (is_illegal_cmp),
           .instruction_o     (instruction),
@@ -187,6 +189,7 @@ module id_stage #(
           .hart_id_i         (hart_id_i),
           .is_compressed_i   (is_compressed),
           .is_illegal_i      (is_illegal),
+          .instruction_valid_i (fetch_entry_valid_i),
           .instruction_i     (compressed_instr),
           .is_compressed_o   (is_compressed_cmp),
           .is_illegal_o      (is_illegal_cmp),
@@ -290,7 +293,7 @@ module id_stage #(
         if (issue_n[1].valid) begin
           issue_n[0] = issue_n[1];
           issue_n[1].valid = 1'b0;
-        end else if (fetch_entry_valid_i[0]) begin
+        end else if (fetch_entry_valid_i[0] && !stall_instr_fetch[0]) begin
           fetch_entry_ready_o[0] = 1'b1;
           issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
         end
@@ -298,11 +301,11 @@ module id_stage #(
 
       if (!issue_n[1].valid) begin
         if (fetch_entry_ready_o[0]) begin
-          if (fetch_entry_valid_i[1]) begin
+          if (fetch_entry_valid_i[1] && !stall_instr_fetch[1]) begin
             fetch_entry_ready_o[1] = 1'b1;
             issue_n[1] = '{1'b1, decoded_instruction[1], orig_instr[1], is_control_flow_instr[1]};
           end
-        end else if (fetch_entry_valid_i[0]) begin
+        end else if (fetch_entry_valid_i[0] && !stall_instr_fetch[0]) begin
           fetch_entry_ready_o[0] = 1'b1;
           issue_n[1] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
         end
@@ -325,7 +328,7 @@ module id_stage #(
       // or the issue stage is currently acknowledging an instruction, which means that we will have space
       // for a new instruction
       if ((!issue_q[0].valid || issue_instr_ack_i[0]) && fetch_entry_valid_i[0]) begin
-        if (stall_instr_fetch) begin
+        if (stall_instr_fetch[0]) begin
           fetch_entry_ready_o[0] = 1'b0;
         end else begin
           fetch_entry_ready_o[0] = 1'b1;

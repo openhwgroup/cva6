@@ -24,7 +24,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigZcmpExtEn = 0;
   localparam CVA6ConfigAExtEn = 1;
   localparam CVA6ConfigHExtEn = 0;  // always disabled
-  localparam CVA6ConfigBExtEn = 0;
   localparam CVA6ConfigVExtEn = 0;
   localparam CVA6ConfigRVZiCond = 0;
 
@@ -90,7 +89,8 @@ package cva6_config_pkg;
       XF16ALT: bit'(CVA6ConfigF16AltEn),
       XF8: bit'(CVA6ConfigF8En),
       RVA: bit'(CVA6ConfigAExtEn),
-      RVB: bit'(CVA6ConfigBExtEn),
+      RVB: bit'(1),
+      ZKN: bit'(1),
       RVV: bit'(CVA6ConfigVExtEn),
       RVC: bit'(CVA6ConfigCExtEn),
       RVH: bit'(CVA6ConfigHExtEn),
@@ -118,6 +118,7 @@ package cva6_config_pkg;
       PMPCfgRstVal: {64{64'h0}},
       PMPAddrRstVal: {64{64'h0}},
       PMPEntryReadOnly: 64'd0,
+      PMPNapotEn: bit'(1),
       NOCType: config_pkg::NOC_TYPE_AXI4_ATOP,
       NrNonIdempotentRules: unsigned'(1),
       NonIdempotentAddrBase: 1024'({64'b0}),
