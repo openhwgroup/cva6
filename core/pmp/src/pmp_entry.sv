@@ -64,13 +64,10 @@ module pmp_entry #(
         // synthesis translate_on
 
       end
-      riscv::NA4, riscv::NAPOT: begin
+      riscv::NAPOT: begin
 
-        if (conf_addr_mode_i == riscv::NA4) size = 2;
-        else begin
-          // use the extracted trailing ones
-          size = {{(32 - $clog2(PLEN)) {1'b0}}, trail_ones} + 3;
-        end
+        // use the extracted trailing ones
+        size = {{(32 - $clog2(PLEN)) {1'b0}}, trail_ones} + 3;
 
         mask = '1 << size;
         base = ({2'b0, conf_addr_i} << 2) & mask;
