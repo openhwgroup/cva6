@@ -2680,8 +2680,8 @@ module csr_regfile
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
           // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
-          // We only support >=8-byte granularity, NA4 is disabled
-          if (pmpcfg_d[i].addr_mode == riscv::NA4) begin
+          // We only support >=8-byte granularity, NA4 is not supported
+          if ((!CVA6Cfg.PMPNapotEn && pmpcfg_d[i].addr_mode == riscv::NAPOT) ||pmpcfg_d[i].addr_mode == riscv::NA4) begin
             pmpcfg_next[i].addr_mode = pmpcfg_q[i].addr_mode;
           end
           // Follow collective WARL spec for RWX fields
