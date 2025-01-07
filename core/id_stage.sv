@@ -190,7 +190,7 @@ module id_stage #(
             .req_port_o     (dcache_req_ports_o),
             .jump_address_o (jump_address)
         );
-      end
+      end else assign jump_address = '0;
 
       assign instruction_cvxif[0] = is_zcmt_instr[0] ? instruction_cvxif_zcmt : instruction_cvxif_zcmp;
       assign is_illegal_cvxif[0] = is_zcmt_instr[0] ? is_illegal_cvxif_zcmt : is_illegal_cvxif_zcmp;
@@ -249,6 +249,7 @@ module id_stage #(
       );
       assign is_last_macro_instr_o = '0;
       assign is_double_rd_macro_instr_o = '0;
+      assign jump_address = '0;
     end
   end else begin
     for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
