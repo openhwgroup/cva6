@@ -13,7 +13,7 @@
 // Description: purely combinatorial PMP unit (with extraction for more complex configs such as NAPOT)
 
 module pmp #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg    = config_pkg::cva6_cfg_empty
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
     // Input
     input logic [CVA6Cfg.PLEN-1:0] addr_i,
