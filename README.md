@@ -298,11 +298,18 @@ This will produce a bitstream file and memory configuration file (in `fpga/work-
 To generate the FPGA bitstream yourself for the Agilex 7 board run:
 
 ```
-make agilex
+make altera
 ```
+
+We recommend to set the parameter FpgaAlteraEn (and also FpgaEn) to benefit from the FPGA optimizations.
 
 This will produce a bitstream file (in `altera/output_files`) which you can program following the previous instructions. **Note: Bear in mind that you need a Quartus Pro Licence to be able to generate this bitstream**
 
+To clean the project after generating the bitstream, use 
+
+```
+make clean-altera
+```
 
 ## Debugging
 
