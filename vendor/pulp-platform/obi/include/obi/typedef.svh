@@ -147,4 +147,28 @@
   `OBI_TYPEDEF_R_CHAN_T(obi_t``_r_chan_t, cfg.DataWidth, cfg.IdWidth, obi_t``_r_optional_t)                                                                      \
   `OBI_TYPEDEF_INTEGRITY_RSP_T(obi_t``_rsp_t, obi_t``_r_chan_t)
 
+`define OBI_GENERIC_PARAM_TYPE_ALL(obi_t, cfg, keyword, separator)                                                                                                                 \
+  keyword type obi_t``_a_optional_t = `OBI_ALL_A_OPTIONAL(cfg.OptionalCfg.AUserWidth, cfg.OptionalCfg.WUserWidth, cfg.OptionalCfg.MidWidth, cfg.OptionalCfg.AChkWidth) separator  \
+  keyword type obi_t``_a_chan_t = `OBI_A_CHAN_T(cfg.AddrWidth, cfg.DataWidth, cfg.IdWidth, obi_t``_a_optional_t) separator                                                       \
+  keyword type obi_t``_req_t = `OBI_INTEGRITY_REQ_T(obi_t``_a_chan_t) separator                                                                                                  \
+  keyword type obi_t``_r_optional_t = `OBI_ALL_R_OPTIONAL(cfg.OptionalCfg.RUserWidth, cfg.OptionalCfg.RChkWidth) separator                                                       \
+  keyword type obi_t``_r_chan_t = `OBI_R_CHAN_T(cfg.DataWidth, cfg.IdWidth, obi_t``_r_optional_t) separator                                                                      \
+  keyword type obi_t``_rsp_t = `OBI_INTEGRITY_RSP_T(obi_t``_r_chan_t)
+
+`define OBI_SEPARATOR_COMMA   ,  
+`define OBI_SEPARATOR_SEMICOLON  ;  
+
+`define OBI_PARAM_TYPE_GLOBAL_ALL(obi_t, cfg) `OBI_GENERIC_PARAM_TYPE_ALL(obi_t, cfg, parameter, `OBI_SEPARATOR_COMMA)
+`define OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_t, cfg) `OBI_GENERIC_PARAM_TYPE_ALL(obi_t, cfg, parameter, `OBI_SEPARATOR_COMMA)                                                                               
+`define OBI_LOCALPARAM_TYPE_ALL(obi_t, cfg) `OBI_GENERIC_PARAM_TYPE_ALL(obi_t, cfg, localparam, `OBI_SEPARATOR_SEMICOLON)                                                                                                                  
+
+`define OBI_CFG_ALL_A_OPTIONAL_T(config) `OBI_ALL_A_OPTIONAL(config.OptionalCfg.AUserWidth, config.OptionalCfg.WUserWidth, config.OptionalCfg.MidWidth, config.OptionalCfg.AChkWidth)
+`define OBI_CFG_A_CHAN_T(config, optional_t) `OBI_A_CHAN_T(config.AddrWidth, config.DataWidth, config.IdWidth, optional_t)
+`define OBI_CFG_INTEGRITY_REQ_T(a_chan_t) `OBI_INTEGRITY_REQ_T(a_chan_t)
+`define OBI_CFG_ALL_R_OPTIONAL_T(config) `OBI_ALL_R_OPTIONAL(config.OptionalCfg.RUserWidth, config.OptionalCfg.RChkWidth)
+`define OBI_CFG_R_CHAN_T(config, optional_t) `OBI_R_CHAN_T(config.DataWidth, config.IdWidth, optional_t)
+`define OBI_CFG_INTEGRITY_RSP_T(r_chan_t) `OBI_INTEGRITY_RSP_T(r_chan_t)
+
+
+
 `endif  // OBI_TYPEDEF_SVH
