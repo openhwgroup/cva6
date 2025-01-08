@@ -230,7 +230,7 @@ module cva6_ptw
 
 
   pmp #(
-      .CVA6Cfg   (CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg)
   ) i_pmp_ptw (
       .addr_i       (ptw_pptr_q),
       // PTW access are always checked as if in S-Mode...
