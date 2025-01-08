@@ -96,7 +96,7 @@ module pmp_data_if
 
   // Instruction fetch
   pmp #(
-      .CVA6Cfg   (CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg)
   ) i_pmp_if (
       .addr_i       (icache_areq_i.fetch_paddr),
       .priv_lvl_i   (priv_lvl_i),
