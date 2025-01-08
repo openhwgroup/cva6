@@ -1533,9 +1533,7 @@ module cva6
   // Parameter Check
   // -------------------
   // pragma translate_off
-`ifndef VERILATOR
   initial config_pkg::check_cfg(CVA6Cfg);
-`endif
   // pragma translate_on
 
   // -------------------
