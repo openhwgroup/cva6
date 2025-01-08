@@ -141,7 +141,7 @@ module pmp_data_if
 
   // Load/store PMP check
   pmp #(
-      .CVA6Cfg   (CVA6Cfg)
+      .CVA6Cfg(CVA6Cfg)
   ) i_pmp_data (
       .addr_i       (lsu_paddr_i),
       .priv_lvl_i   (ld_st_priv_lvl_i),
