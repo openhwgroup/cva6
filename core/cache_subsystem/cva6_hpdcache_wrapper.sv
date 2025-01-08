@@ -169,7 +169,7 @@ module cva6_hpdcache_wrapper
           .cva6_amo_resp_o(  /* unused */),
 
           .cva6_dcache_flush_i    (1'b0),
-          .cva6_dcache_flush_ack_o(/* unused */),
+          .cva6_dcache_flush_ack_o(  /* unused */),
 
           .hpdcache_req_valid_o(dcache_req_valid[r]),
           .hpdcache_req_ready_i(dcache_req_ready[r]),

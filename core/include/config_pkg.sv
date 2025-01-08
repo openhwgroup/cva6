@@ -335,8 +335,8 @@ package config_pkg;
 
     int unsigned DCACHE_MAX_TX;
 
-    bit          DcacheFlushOnFence;
-    bit          DcacheInvalidateOnFlush;
+    bit DcacheFlushOnFence;
+    bit DcacheInvalidateOnFlush;
 
     int unsigned DATA_USER_EN;
     int unsigned WtDcacheWbufDepth;

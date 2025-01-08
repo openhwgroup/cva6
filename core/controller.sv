@@ -242,8 +242,7 @@ module controller
   // ----------------------
   always_comb begin
     // halt the core if the fence is active
-    halt_o = halt_csr_i || halt_acc_i ||
-      (CVA6Cfg.DcacheFlushOnFence && fence_active_q);
+    halt_o = halt_csr_i || halt_acc_i || (CVA6Cfg.DcacheFlushOnFence && fence_active_q);
   end
 
   // ----------------------

@@ -203,7 +203,7 @@ module cva6_hpdcache_subsystem
       dataWaysPerRamWord: __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN),
       dataSetsPerRam: CVA6Cfg.DCACHE_NUM_WORDS,
       dataRamByteEnable: 1'b1,
-      accessWords: __maxu(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN, 1/*reqWords*/),
+      accessWords: __maxu(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN, 1  /*reqWords*/),
       mshrSets: CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2,
       mshrWays: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
       mshrWaysPerRamWord: CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2,
@@ -217,8 +217,10 @@ module cva6_hpdcache_subsystem
       wbufWords: 1,
       wbufTimecntWidth: 3,
       rtabEntries: 4,
-      flushEntries: CVA6Cfg.WtDcacheWbufDepth, /*FIXME we should add additional CVA6 config parameters */
-      flushFifoDepth: CVA6Cfg.WtDcacheWbufDepth, /*FIXME we should add additional CVA6 config parameters */
+      flushEntries:
+      CVA6Cfg.WtDcacheWbufDepth,  /*FIXME we should add additional CVA6 config parameters */
+      flushFifoDepth:
+      CVA6Cfg.WtDcacheWbufDepth,  /*FIXME we should add additional CVA6 config parameters */
       memAddrWidth: CVA6Cfg.AxiAddrWidth,
       memIdWidth: CVA6Cfg.MEM_TID_WIDTH,
       memDataWidth: CVA6Cfg.AxiDataWidth,

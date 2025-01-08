@@ -115,9 +115,8 @@ module cva6_hpdcache_if_adapter
       //  {{{
       //    pragma translate_off
       flush_on_load_port_assert :
-      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
-          (cva6_dcache_flush_i == 1'b0)) else
-          $error("Flush unsupported on load adapters");
+      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1) (cva6_dcache_flush_i == 1'b0))
+      else $error("Flush unsupported on load adapters");
       //    pragma translate_on
       //  }}}
     end  //  }}}
@@ -135,19 +134,21 @@ module cva6_hpdcache_if_adapter
       logic                           [31:0] amo_resp_word;
       logic                                  amo_pending_q;
 
-      hpdcache_req_t hpdcache_req_amo;
-      hpdcache_req_t hpdcache_req_store;
-      hpdcache_req_t hpdcache_req_flush;
+      hpdcache_req_t                         hpdcache_req_amo;
+      hpdcache_req_t                         hpdcache_req_store;
+      hpdcache_req_t                         hpdcache_req_flush;
 
-      typedef enum {FLUSH_IDLE, FLUSH_PEND} flush_fsm_t;
+      typedef enum {
+        FLUSH_IDLE,
+        FLUSH_PEND
+      } flush_fsm_t;
       flush_fsm_t flush_fsm_q, flush_fsm_d;
 
       logic forward_store, forward_amo, forward_flush;
 
       //  DCACHE flush request
       //  {{{
-      always_ff @(posedge clk_i or negedge rst_ni)
-      begin : flush_ff
+      always_ff @(posedge clk_i or negedge rst_ni) begin : flush_ff
         if (!rst_ni) begin
           flush_fsm_q <= FLUSH_IDLE;
         end else begin
@@ -155,8 +156,7 @@ module cva6_hpdcache_if_adapter
         end
       end
 
-      always_comb
-      begin : flush_comb
+      always_comb begin : flush_comb
         forward_flush = 1'b0;
         cva6_dcache_flush_ack_o = 1'b0;
 
@@ -230,67 +230,68 @@ module cva6_hpdcache_if_adapter
       end
 
       assign hpdcache_req_amo = '{
-        addr_offset: amo_addr_offset,
-        wdata: amo_data,
-        op: amo_op,
-        be: amo_data_be,
-        size: cva6_amo_req_i.size,
-        sid: hpdcache_req_sid_i,
-        tid: '1,
-        need_rsp: 1'b1,
-        phys_indexed: 1'b1,
-        addr_tag: amo_tag,
-        pma: '{
-          uncacheable: hpdcache_req_is_uncacheable,
-          io: 1'b0,
-          wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
-        }
-      };
+              addr_offset: amo_addr_offset,
+              wdata: amo_data,
+              op: amo_op,
+              be: amo_data_be,
+              size: cva6_amo_req_i.size,
+              sid: hpdcache_req_sid_i,
+              tid: '1,
+              need_rsp: 1'b1,
+              phys_indexed: 1'b1,
+              addr_tag: amo_tag,
+              pma: '{
+                  uncacheable: hpdcache_req_is_uncacheable,
+                  io: 1'b0,
+                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+              }
+          };
 
       assign hpdcache_req_store = '{
-        addr_offset: cva6_req_i.address_index,
-        wdata: cva6_req_i.data_wdata,
-        op: hpdcache_pkg::HPDCACHE_REQ_STORE,
-        be: cva6_req_i.data_be,
-        size: cva6_req_i.data_size,
-        sid: hpdcache_req_sid_i,
-        tid: '0,
-        need_rsp: 1'b0,
-        phys_indexed: 1'b1,
-        addr_tag: cva6_req_i.address_tag,
-        pma: '{
-          uncacheable: hpdcache_req_is_uncacheable,
-          io: 1'b0,
-          wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
-        }
-      };
+              addr_offset: cva6_req_i.address_index,
+              wdata: cva6_req_i.data_wdata,
+              op: hpdcache_pkg::HPDCACHE_REQ_STORE,
+              be: cva6_req_i.data_be,
+              size: cva6_req_i.data_size,
+              sid: hpdcache_req_sid_i,
+              tid: '0,
+              need_rsp: 1'b0,
+              phys_indexed: 1'b1,
+              addr_tag: cva6_req_i.address_tag,
+              pma: '{
+                  uncacheable: hpdcache_req_is_uncacheable,
+                  io: 1'b0,
+                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+              }
+          };
 
       assign hpdcache_req_flush = '{
-        addr_offset: '0,
-        addr_tag: '0,
-        wdata: '0,
-        op: InvalidateOnFlush ?
-            hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_INVAL_ALL :
-            hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_ALL,
-        be: '0,
-        size: '0,
-        sid: hpdcache_req_sid_i,
-        tid: '0,
-        need_rsp: 1'b1,
-        phys_indexed: 1'b0,
-        pma: '{
-          uncacheable: 1'b0,
-          io: 1'b0,
-          wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
-        }
-      };
+              addr_offset: '0,
+              addr_tag: '0,
+              wdata: '0,
+              op:
+              InvalidateOnFlush
+              ?
+              hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_INVAL_ALL
+              :
+              hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_ALL,
+              be: '0,
+              size: '0,
+              sid: hpdcache_req_sid_i,
+              tid: '0,
+              need_rsp: 1'b1,
+              phys_indexed: 1'b0,
+              pma: '{
+                  uncacheable: 1'b0,
+                  io: 1'b0,
+                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+              }
+          };
 
       assign forward_store = cva6_req_i.data_req;
       assign forward_amo = cva6_amo_req_i.req;
 
-      assign hpdcache_req_valid_o = (forward_amo & ~amo_pending_q) |
-                                    forward_store |
-                                    forward_flush;
+      assign hpdcache_req_valid_o = (forward_amo & ~amo_pending_q) | forward_store | forward_flush;
 
       assign hpdcache_req = forward_amo   ? hpdcache_req_amo :
                             forward_store ? hpdcache_req_store : hpdcache_req_flush;
@@ -336,9 +337,10 @@ module cva6_hpdcache_if_adapter
       //  {{{
       //    pragma translate_off
       forward_one_request_assert :
-      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
-          ($onehot0({forward_store, forward_amo, forward_flush}))) else
-          $error("Only one request shall be forwarded");
+      assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1) ($onehot0(
+          {forward_store, forward_amo, forward_flush}
+      )))
+      else $error("Only one request shall be forwarded");
       //    pragma translate_on
       //  }}}
     end
