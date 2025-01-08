@@ -148,7 +148,7 @@ module load_store_unit
     input  amo_resp_t           amo_resp_i,
 
     // PMP configuration - CSR_REGFILE
-    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0]                   pmpcfg_i,
+    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
     // PMP address - CSR_REGFILE
     input logic           [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
