@@ -178,7 +178,7 @@ module wt_axi_adapter
       axi_rd_addr = {{CVA6Cfg.AxiAddrWidth - CVA6Cfg.PLEN{1'b0}}, icache_data.paddr};
       axi_rd_size = MaxNumWords[2:0];  // always request max number of words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = AxiRdBlenDcache[AxiBlenWidth-1:0];
+        axi_rd_blen = AxiRdBlenIcache[AxiBlenWidth-1:0];
       end
     end
 
