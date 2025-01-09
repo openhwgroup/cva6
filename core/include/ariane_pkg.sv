@@ -499,7 +499,15 @@ package ariane_pkg;
     ZIP,
     // Xperm instructions
     XPERM8,
-    XPERM4
+    XPERM4,
+    // AES Encryption instructions
+    //AES32ESI,
+    //AES32ESMI,
+    AES64ES,
+    AES64ESM,
+    // AES Key-Schedule instructions
+    //AES64KS1I,
+    AES64KS2
   } fu_op;
 
   function automatic logic op_is_branch(input fu_op op);
