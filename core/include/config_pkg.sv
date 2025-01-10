@@ -27,10 +27,12 @@ package config_pkg;
   } noc_type_e;
 
   /// Cache type parameter
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     WB = 0,
     WT = 1,
-    HPDCACHE = 2
+    HPDCACHE_WT = 2,
+    HPDCACHE_WB = 3,
+    HPDCACHE_WT_WB = 4
   } cache_type_t;
 
   /// Data and Address length
@@ -54,6 +56,8 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
+    // Scalar Cryptography RISC-V entension
+    bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
     // Compress RISC-V extension
@@ -110,6 +114,8 @@ package config_pkg;
     logic [63:0][63:0]           PMPAddrRstVal;
     // PMP CSR read-only bits
     bit [63:0]                   PMPEntryReadOnly;
+    // PMP NA4 and NAPOT mode enable
+    bit                          PMPNapotEn;
     // PMA non idempotent rules number
     int unsigned                 NrNonIdempotentRules;
     // PMA NonIdempotent region base address
@@ -160,6 +166,10 @@ package config_pkg;
     int unsigned                 DcacheSetAssoc;
     // Data cache line width
     int unsigned                 DcacheLineWidth;
+    // Data cache flush on fence
+    bit                          DcacheFlushOnFence;
+    // Data cache invalidate on flush
+    bit                          DcacheInvalidateOnFlush;
     // User field on data bus enable
     int unsigned                 DataUserEn;
     // Write-through data cache write buffer depth
@@ -240,6 +250,7 @@ package config_pkg;
     bit          XF8;
     bit          RVA;
     bit          RVB;
+    bit          ZKN;
     bit          RVV;
     bit          RVC;
     bit          RVH;
@@ -288,6 +299,7 @@ package config_pkg;
     logic [63:0][63:0]           PMPCfgRstVal;
     logic [63:0][63:0]           PMPAddrRstVal;
     bit [63:0]                   PMPEntryReadOnly;
+    bit                          PMPNapotEn;
     noc_type_e                   NOCType;
     int unsigned                 NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
@@ -322,6 +334,9 @@ package config_pkg;
     int unsigned DCACHE_NUM_WORDS;
 
     int unsigned DCACHE_MAX_TX;
+
+    bit DcacheFlushOnFence;
+    bit DcacheInvalidateOnFlush;
 
     int unsigned DATA_USER_EN;
     int unsigned WtDcacheWbufDepth;
@@ -363,7 +378,6 @@ package config_pkg;
   /// sense for all parameters, here is the place to sanity check them.
   function automatic void check_cfg(cva6_cfg_t Cfg);
     // pragma translate_off
-`ifndef VERILATOR
     assert (Cfg.RASDepth > 0);
     assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries));
     assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries));
@@ -373,7 +387,8 @@ package config_pkg;
     assert (Cfg.NrPMPEntries <= 64);
     assert (!(Cfg.SuperscalarEn && Cfg.RVF));
     assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
-`endif
+    assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
+    else $fatal(1, "[frontend] fetch width != not supported");
     // pragma translate_on
   endfunction
 

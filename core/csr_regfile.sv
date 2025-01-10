@@ -35,7 +35,7 @@ module csr_regfile
     // halt requested - CONTROLLER
     output logic halt_csr_o,
     // Instruction to be committed - ID_STAGE
-    input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
+    input scoreboard_entry_t commit_instr_i,
     // Commit acknowledged a instruction -> increase instret CSR - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Address from which to start booting, mtvec is set to the same address - SUBSYSTEM
@@ -1791,38 +1791,24 @@ module csr_regfile
       // a m-mode trap might be delegated if we are taking it in S mode
       // first figure out if this was an exception or an interrupt e.g.: look at bit (XLEN-1)
       // the cause register can only be $clog2(CVA6Cfg.XLEN) bits long (as we only support XLEN exceptions)
-      if (CVA6Cfg.RVH) begin
+      if (CVA6Cfg.RVS) begin
         if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
-            )-1:0]] && ~hideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
             )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]] && ~hedeleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
             )-1:0]])) begin
           // traps never transition from a more-privileged mode to a less privileged mode
           // so if we are already in M mode, stay there
           trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
-        end else if ((ex_i.cause[CVA6Cfg.XLEN-1] && hideleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && hedeleg_q[ex_i.cause[$clog2(
-                CVA6Cfg.XLEN
-            )-1:0]])) begin
-          trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
-          // trap to VS only if it is  the currently active mode
-          trap_to_v = v_q;
-        end
-      end else begin
-        if (CVA6Cfg.RVS) begin
-          if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
-                  CVA6Cfg.XLEN
-              )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
-                  CVA6Cfg.XLEN
-              )-1:0]])) begin
-            // traps never transition from a more-privileged mode to a less privileged mode
-            // so if we are already in M mode, stay there
-            trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
+          if (CVA6Cfg.RVH) begin
+            if ((ex_i.cause[CVA6Cfg.XLEN-1] && hideleg_q[ex_i.cause[$clog2(
+                    CVA6Cfg.XLEN
+                )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && hedeleg_q[ex_i.cause[$clog2(
+                    CVA6Cfg.XLEN
+                )-1:0]])) begin
+              // trap to VS only if it is  the currently active mode
+              trap_to_v = v_q;
+            end
           end
         end
       end
@@ -2000,11 +1986,11 @@ module csr_regfile
         dcsr_d.prv = priv_lvl_o;
         dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // valid CTRL flow change
-        if (commit_instr_i[0].fu == CTRL_FLOW) begin
+        if (commit_instr_i.fu == CTRL_FLOW) begin
           // we saved the correct target address during execute
           dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].bp.predict_address[CVA6Cfg.VLEN-1]}},
-            commit_instr_i[0].bp.predict_address
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.bp.predict_address[CVA6Cfg.VLEN-1]}},
+            commit_instr_i.bp.predict_address
           };
           // exception valid
         end else if (ex_i.valid) begin
@@ -2015,8 +2001,8 @@ module csr_regfile
           // consecutive PC
         end else begin
           dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i[0].pc[CVA6Cfg.VLEN-1]}},
-            commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.pc[CVA6Cfg.VLEN-1]}},
+            commit_instr_i.pc + (commit_instr_i.is_compressed ? 'h2 : 'h4)
           };
         end
         debug_mode_d   = 1'b1;
@@ -2680,8 +2666,8 @@ module csr_regfile
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
           // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
-          // We only support >=8-byte granularity, NA4 is disabled
-          if (pmpcfg_d[i].addr_mode == riscv::NA4) begin
+          // We only support >=8-byte granularity, NA4 is not supported
+          if ((!CVA6Cfg.PMPNapotEn && pmpcfg_d[i].addr_mode == riscv::NAPOT) ||pmpcfg_d[i].addr_mode == riscv::NA4) begin
             pmpcfg_next[i].addr_mode = pmpcfg_q[i].addr_mode;
           end
           // Follow collective WARL spec for RWX fields
