@@ -63,6 +63,10 @@ module cva6_hpdcache_if_adapter
 
   //  Internal nets and registers
   //  {{{
+  typedef enum {
+    FLUSH_IDLE,
+    FLUSH_PEND
+  } flush_fsm_t;
 
   logic hpdcache_req_is_uncacheable;
   hpdcache_req_t hpdcache_req;
@@ -138,10 +142,6 @@ module cva6_hpdcache_if_adapter
       hpdcache_req_t                         hpdcache_req_store;
       hpdcache_req_t                         hpdcache_req_flush;
 
-      typedef enum {
-        FLUSH_IDLE,
-        FLUSH_PEND
-      } flush_fsm_t;
       flush_fsm_t flush_fsm_q, flush_fsm_d;
 
       logic forward_store, forward_amo, forward_flush;
