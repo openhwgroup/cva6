@@ -916,9 +916,18 @@ module decoder
                   else if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::CLZ;
                   else if (instr.instr[24:20] == 5'b00001) instruction_o.op = ariane_pkg::CTZ;
                   else illegal_instr_bm = 1'b1;
-                end else if (instr.instr[31:26] == 6'b010010) instruction_o.op = ariane_pkg::BCLRI;
-                else if (instr.instr[31:26] == 6'b011010) instruction_o.op = ariane_pkg::BINVI;
-                else if (instr.instr[31:26] == 6'b001010) instruction_o.op = ariane_pkg::BSETI;
+                end else if (CVA6Cfg.IS_XLEN64 && instr.instr[31:26] == 6'b010010)
+                  instruction_o.op = ariane_pkg::BCLRI;
+                else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0100100)
+                  instruction_o.op = ariane_pkg::BCLRI;
+                else if (CVA6Cfg.IS_XLEN64 && instr.instr[31:26] == 6'b011010)
+                  instruction_o.op = ariane_pkg::BINVI;
+                else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0110100)
+                  instruction_o.op = ariane_pkg::BINVI;
+                else if (CVA6Cfg.IS_XLEN64 && instr.instr[31:26] == 6'b001010)
+                  instruction_o.op = ariane_pkg::BSETI;
+                else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0010100)
+                  instruction_o.op = ariane_pkg::BSETI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::ZIP;
                 else illegal_instr_bm = 1'b1;
@@ -929,8 +938,14 @@ module decoder
                   instruction_o.op = ariane_pkg::REV8;
                 else if (instr.instr[31:20] == 12'b011010011000)
                   instruction_o.op = ariane_pkg::REV8;
-                else if (instr.instr[31:26] == 6'b010_010) instruction_o.op = ariane_pkg::BEXTI;
-                else if (instr.instr[31:26] == 6'b011_000) instruction_o.op = ariane_pkg::RORI;
+                else if (CVA6Cfg.IS_XLEN64 && instr.instr[31:26] == 6'b010_010)
+                  instruction_o.op = ariane_pkg::BEXTI;
+                else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b010_0100)
+                  instruction_o.op = ariane_pkg::BEXTI;
+                else if (CVA6Cfg.IS_XLEN64 && instr.instr[31:26] == 6'b011_000)
+                  instruction_o.op = ariane_pkg::RORI;
+                else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b011_0000)
+                  instruction_o.op = ariane_pkg::RORI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b011010000111)
                   instruction_o.op = ariane_pkg::BREV8;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
