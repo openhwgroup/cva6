@@ -784,11 +784,13 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
+          automatic logic [3:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) read_access_exception = 1'b1;
           else begin
+            // The following line has no effect. It's here just to prevent the synthesizer from crashing
+            if (CVA6Cfg.XLEN == 64) index = (index >> 1) << 1;
             csr_rdata = pmpcfg_q[index*4+:CVA6Cfg.XLEN/8];
           end
         end
