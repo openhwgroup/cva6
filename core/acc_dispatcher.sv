@@ -211,19 +211,17 @@ module acc_dispatcher
   logic             acc_req_ready;
 
   accelerator_req_t acc_req_int;
-  fall_through_register #(
+  spill_register #(
       .T(accelerator_req_t)
   ) i_accelerator_req_register (
-      .clk_i     (clk_i),
-      .rst_ni    (rst_ni),
-      .clr_i     (1'b0),
-      .testmode_i(1'b0),
-      .data_i    (acc_req),
-      .valid_i   (acc_req_valid),
-      .ready_o   (acc_req_ready),
-      .data_o    (acc_req_int),
-      .valid_o   (acc_req_o.acc_req.req_valid),
-      .ready_i   (acc_resp_i.acc_resp.req_ready)
+      .clk_i  (clk_i),
+      .rst_ni (rst_ni),
+      .data_i (acc_req),
+      .valid_i(acc_req_valid),
+      .ready_o(acc_req_ready),
+      .data_o (acc_req_int),
+      .valid_o(acc_req_o.acc_req.req_valid),
+      .ready_i(acc_resp_i.acc_resp.req_ready)
   );
 
   assign acc_req_o.acc_req.insn          = acc_req_int.insn;
