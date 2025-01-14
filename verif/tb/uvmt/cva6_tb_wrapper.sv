@@ -77,6 +77,10 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvma_axi_intf                        axi_slave,
   uvma_cvxif_intf                      cvxif_if,
   uvma_obi_memory_if                   obi_fetch_slave,
+  uvma_obi_memory_if                   obi_store_slave,
+  uvma_obi_memory_if                   obi_amo_slave,
+  //uvma_obi_memory_if                   obi_load_slave,
+  //uvma_obi_memory_if                   obi_mmu_ptw_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
 );
@@ -259,7 +263,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
    //Obi Interface
    if (CVA6Cfg.PipelineOnly) begin
-      assign obi_fetch_slave.req        = i_cva6.obi_fetch_req_if_cache.req;
+     assign obi_fetch_slave.req        = i_cva6.obi_fetch_req_if_cache.req;
       assign obi_fetch_slave.addr       = i_cva6.obi_fetch_req_if_cache.a.addr;
       assign obi_fetch_slave.we         = i_cva6.obi_fetch_req_if_cache.a.we;
       assign obi_fetch_slave.be         = i_cva6.obi_fetch_req_if_cache.a.be;
@@ -288,6 +292,114 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
          force i_cva6.fetch_dreq_cache_if.ready = 1;
          force i_cva6.fetch_dreq_cache_if.invalid_data = 0;
       end
+
+      assign obi_store_slave.req        = i_cva6.obi_store_req_ex_cache.req;
+      assign obi_store_slave.addr       = i_cva6.obi_store_req_ex_cache.a.addr;
+      assign obi_store_slave.we         = i_cva6.obi_store_req_ex_cache.a.we;
+      assign obi_store_slave.be         = i_cva6.obi_store_req_ex_cache.a.be;
+      assign obi_store_slave.wdata      = i_cva6.obi_store_req_ex_cache.a.wdata;
+      assign obi_store_slave.auser      = i_cva6.obi_store_req_ex_cache.a.a_optional.auser;
+      assign obi_store_slave.wuser      = i_cva6.obi_store_req_ex_cache.a.a_optional.wuser;
+      assign obi_store_slave.aid        = i_cva6.obi_store_req_ex_cache.a.aid;
+      assign obi_store_slave.atop       = i_cva6.obi_store_req_ex_cache.a.a_optional.atop;
+      assign obi_store_slave.memtype    = i_cva6.obi_store_req_ex_cache.a.a_optional.memtype;
+      assign obi_store_slave.prot       = i_cva6.obi_store_req_ex_cache.a.a_optional.prot;
+      assign obi_store_slave.reqpar     = i_cva6.obi_store_req_ex_cache.reqpar;
+      assign obi_store_slave.achk       = i_cva6.obi_store_req_ex_cache.a.a_optional.achk;
+      assign obi_store_slave.rready     = i_cva6.obi_store_req_ex_cache.rready;
+      assign obi_store_slave.rreadypar  = i_cva6.obi_store_req_ex_cache.rreadypar;
+      assign i_cva6.obi_store_rsp_cache_ex.gnt                  = obi_store_slave.gnt;
+      assign i_cva6.obi_store_rsp_cache_ex.gntpar               = obi_store_slave.gntpar;
+      assign i_cva6.obi_store_rsp_cache_ex.rvalid               = obi_store_slave.rvalid;
+      assign i_cva6.obi_store_rsp_cache_ex.r.rdata              = obi_store_slave.rdata;
+      assign i_cva6.obi_store_rsp_cache_ex.r.err                = obi_store_slave.err;
+      assign i_cva6.obi_store_rsp_cache_ex.r.r_optional.ruser   = obi_store_slave.ruser;
+      assign i_cva6.obi_store_rsp_cache_ex.r.rid                = obi_store_slave.rid;
+      assign i_cva6.obi_store_rsp_cache_ex.r.r_optional.exokay  = obi_store_slave.exokay;
+      assign i_cva6.obi_store_rsp_cache_ex.rvalidpar            = obi_store_slave.rvalidpar;
+      assign i_cva6.obi_store_rsp_cache_ex.r.r_optional.rchk    = obi_store_slave.rchk;
+
+      assign obi_amo_slave.req        = i_cva6.obi_amo_req_ex_cache.req;
+      assign obi_amo_slave.addr       = i_cva6.obi_amo_req_ex_cache.a.addr;
+      assign obi_amo_slave.we         = i_cva6.obi_amo_req_ex_cache.a.we;
+      assign obi_amo_slave.be         = i_cva6.obi_amo_req_ex_cache.a.be;
+      assign obi_amo_slave.wdata      = i_cva6.obi_amo_req_ex_cache.a.wdata;
+      assign obi_amo_slave.auser      = i_cva6.obi_amo_req_ex_cache.a.a_optional.auser;
+      assign obi_amo_slave.wuser      = i_cva6.obi_amo_req_ex_cache.a.a_optional.wuser;
+      assign obi_amo_slave.aid        = i_cva6.obi_amo_req_ex_cache.a.aid;
+      assign obi_amo_slave.atop       = i_cva6.obi_amo_req_ex_cache.a.a_optional.atop;
+      assign obi_amo_slave.memtype    = i_cva6.obi_amo_req_ex_cache.a.a_optional.memtype;
+      assign obi_amo_slave.prot       = i_cva6.obi_amo_req_ex_cache.a.a_optional.prot;
+      assign obi_amo_slave.reqpar     = i_cva6.obi_amo_req_ex_cache.reqpar;
+      assign obi_amo_slave.achk       = i_cva6.obi_amo_req_ex_cache.a.a_optional.achk;
+      assign obi_amo_slave.rready     = i_cva6.obi_amo_req_ex_cache.rready;
+      assign obi_amo_slave.rreadypar  = i_cva6.obi_amo_req_ex_cache.rreadypar;
+      assign i_cva6.obi_amo_rsp_cache_ex.gnt                  = obi_amo_slave.gnt;
+      assign i_cva6.obi_amo_rsp_cache_ex.gntpar               = obi_amo_slave.gntpar;
+      assign i_cva6.obi_amo_rsp_cache_ex.rvalid               = obi_amo_slave.rvalid;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.rdata              = obi_amo_slave.rdata;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.err                = obi_amo_slave.err;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.r_optional.ruser   = obi_amo_slave.ruser;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.rid                = obi_amo_slave.rid;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.r_optional.exokay  = obi_amo_slave.exokay;
+      assign i_cva6.obi_amo_rsp_cache_ex.rvalidpar            = obi_amo_slave.rvalidpar;
+      assign i_cva6.obi_amo_rsp_cache_ex.r.r_optional.rchk    = obi_amo_slave.rchk;
+
+      //assign obi_load_slave.req        = i_cva6.obi_load_req_ex_cache.req;
+      //assign obi_load_slave.addr       = i_cva6.obi_load_req_ex_cache.a.addr;
+      //assign obi_load_slave.we         = i_cva6.obi_load_req_ex_cache.a.we;
+      //assign obi_load_slave.be         = i_cva6.obi_load_req_ex_cache.a.be;
+      //assign obi_load_slave.wdata      = i_cva6.obi_load_req_ex_cache.a.wdata;
+      //assign obi_load_slave.auser      = i_cva6.obi_load_req_ex_cache.a.a_optional.auser;
+      //assign obi_load_slave.wuser      = i_cva6.obi_load_req_ex_cache.a.a_optional.wuser;
+      //assign obi_load_slave.aid        = i_cva6.obi_load_req_ex_cache.a.aid;
+      //assign obi_load_slave.atop       = i_cva6.obi_load_req_ex_cache.a.a_optional.atop;
+      //assign obi_load_slave.memtype    = i_cva6.obi_load_req_ex_cache.a.a_optional.memtype;
+      //assign obi_load_slave.prot       = i_cva6.obi_load_req_ex_cache.a.a_optional.prot;
+      //assign obi_load_slave.reqpar     = i_cva6.obi_load_req_ex_cache.reqpar;
+      //assign obi_load_slave.achk       = i_cva6.obi_load_req_ex_cache.a.a_optional.achk;
+      //assign obi_load_slave.rready     = i_cva6.obi_load_req_ex_cache.rready;
+      //assign obi_load_slave.rreadypar  = i_cva6.obi_load_req_ex_cache.rreadypar;
+      //assign i_cva6.obi_load_rsp_cache_ex.gnt                  = obi_load_slave.gnt;
+      //assign i_cva6.obi_load_rsp_cache_ex.gntpar               = obi_load_slave.gntpar;
+      //assign i_cva6.obi_load_rsp_cache_ex.rvalid               = obi_load_slave.rvalid;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.rdata              = obi_load_slave.rdata;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.err                = obi_load_slave.err;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.r_optional.ruser   = obi_load_slave.ruser;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.rid                = obi_load_slave.rid;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.r_optional.exokay  = obi_load_slave.exokay;
+      //assign i_cva6.obi_load_rsp_cache_ex.rvalidpar            = obi_load_slave.rvalidpar;
+      //assign i_cva6.obi_load_rsp_cache_ex.r.r_optional.rchk    = obi_load_slave.rchk;
+      //initial begin // TODO: workaround, need to emulate with OBI agent
+      //   force i_cva6.load_dreq_cache_exec.gnt = 1;
+      //end
+
+      //assign obi_mmu_ptw_slave.req        = i_cva6.obi_fetch_req_ex_cache.req;
+      //assign obi_mmu_ptw_slave.addr       = i_cva6.obi_fetch_req_ex_cache.a.addr;
+      //assign obi_mmu_ptw_slave.we         = i_cva6.obi_fetch_req_ex_cache.a.we;
+      //assign obi_mmu_ptw_slave.be         = i_cva6.obi_fetch_req_ex_cache.a.be;
+      //assign obi_mmu_ptw_slave.wdata      = i_cva6.obi_fetch_req_ex_cache.a.wdata;
+      //assign obi_mmu_ptw_slave.auser      = i_cva6.obi_fetch_req_ex_cache.a.a_optional.auser;
+      //assign obi_mmu_ptw_slave.wuser      = i_cva6.obi_fetch_req_ex_cache.a.a_optional.wuser;
+      //assign obi_mmu_ptw_slave.aid        = i_cva6.obi_fetch_req_ex_cache.a.aid;
+      //assign obi_mmu_ptw_slave.atop       = i_cva6.obi_fetch_req_ex_cache.a.a_optional.atop;
+      //assign obi_mmu_ptw_slave.memtype    = i_cva6.obi_fetch_req_ex_cache.a.a_optional.memtype;
+      //assign obi_mmu_ptw_slave.prot       = i_cva6.obi_fetch_req_ex_cache.a.a_optional.prot;
+      //assign obi_mmu_ptw_slave.reqpar     = i_cva6.obi_fetch_req_ex_cache.reqpar;
+      //assign obi_mmu_ptw_slave.achk       = i_cva6.obi_fetch_req_ex_cache.a.a_optional.achk;
+      //assign obi_mmu_ptw_slave.rready     = i_cva6.obi_fetch_req_ex_cache.rready;
+      //assign obi_mmu_ptw_slave.rreadypar  = i_cva6.obi_fetch_req_ex_cache.rreadypar;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.gnt                  = obi_mmu_ptw_slave.gnt;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.gntpar               = obi_mmu_ptw_slave.gntpar;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.rvalid               = obi_mmu_ptw_slave.rvalid;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.rdata              = obi_mmu_ptw_slave.rdata;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.err                = obi_mmu_ptw_slave.err;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.r_optional.ruser   = obi_mmu_ptw_slave.ruser;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.rid                = obi_mmu_ptw_slave.rid;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.r_optional.exokay  = obi_mmu_ptw_slave.exokay;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.rvalidpar            = obi_mmu_ptw_slave.rvalidpar;
+      //assign i_cva6.obi_fetch_rsp_cache_ex.r.r_optional.rchk    = obi_mmu_ptw_slave.rchk;
+
    end else begin //OBI in PASSIVE mode
       assign obi_fetch_slave.req        = i_cva6.obi_fetch_req_if_cache.req;
       assign obi_fetch_slave.addr       = i_cva6.obi_fetch_req_if_cache.a.addr;
@@ -314,10 +426,113 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
       assign obi_fetch_slave.exokay     = i_cva6.obi_fetch_rsp_cache_if.r.r_optional.exokay;
       assign obi_fetch_slave.rvalidpar  = i_cva6.obi_fetch_rsp_cache_if.rvalidpar;
       assign obi_fetch_slave.rchk       = i_cva6.obi_fetch_rsp_cache_if.r.r_optional.rchk;
-   end
-   ///assign obi_fetch_slave.mid    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.mid;
-   ///assign obi_fetch_slave.dbg    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.dbg;
 
+      assign obi_store_slave.req        = i_cva6.obi_store_req_ex_cache.req;
+      assign obi_store_slave.addr       = i_cva6.obi_store_req_ex_cache.a.addr;
+      assign obi_store_slave.we         = i_cva6.obi_store_req_ex_cache.a.we;
+      assign obi_store_slave.be         = i_cva6.obi_store_req_ex_cache.a.be;
+      assign obi_store_slave.wdata      = i_cva6.obi_store_req_ex_cache.a.wdata;
+      assign obi_store_slave.auser      = i_cva6.obi_store_req_ex_cache.a.a_optional.auser;
+      assign obi_store_slave.wuser      = i_cva6.obi_store_req_ex_cache.a.a_optional.wuser;
+      assign obi_store_slave.aid        = i_cva6.obi_store_req_ex_cache.a.aid;
+      assign obi_store_slave.atop       = i_cva6.obi_store_req_ex_cache.a.a_optional.atop;
+      assign obi_store_slave.memtype    = i_cva6.obi_store_req_ex_cache.a.a_optional.memtype;
+      assign obi_store_slave.prot       = i_cva6.obi_store_req_ex_cache.a.a_optional.prot;
+      assign obi_store_slave.reqpar     = i_cva6.obi_store_req_ex_cache.reqpar;
+      assign obi_store_slave.achk       = i_cva6.obi_store_req_ex_cache.a.a_optional.achk;
+      assign obi_store_slave.rready     = i_cva6.obi_store_req_ex_cache.rready;
+      assign obi_store_slave.rreadypar  = i_cva6.obi_store_req_ex_cache.rreadypar;
+      assign obi_store_slave.gnt        = i_cva6.obi_store_rsp_cache_ex.gnt;
+      assign obi_store_slave.gntpar     = i_cva6.obi_store_rsp_cache_ex.gntpar;
+      assign obi_store_slave.rvalid     = i_cva6.obi_store_rsp_cache_ex.rvalid;
+      assign obi_store_slave.rdata      = i_cva6.obi_store_rsp_cache_ex.r.rdata;
+      assign obi_store_slave.err        = i_cva6.obi_store_rsp_cache_ex.r.err;
+      assign obi_store_slave.ruser      = i_cva6.obi_store_rsp_cache_ex.r.r_optional.ruser;
+      assign obi_store_slave.rid        = i_cva6.obi_store_rsp_cache_ex.r.rid;
+      assign obi_store_slave.exokay     = i_cva6.obi_store_rsp_cache_ex.r.r_optional.exokay;
+      assign obi_store_slave.rvalidpar  = i_cva6.obi_store_rsp_cache_ex.rvalidpar;
+      assign obi_store_slave.rchk       = i_cva6.obi_store_rsp_cache_ex.r.r_optional.rchk;
+
+      assign obi_amo_slave.req        = i_cva6.obi_amo_req_ex_cache.req;
+      assign obi_amo_slave.addr       = i_cva6.obi_amo_req_ex_cache.a.addr;
+      assign obi_amo_slave.we         = i_cva6.obi_amo_req_ex_cache.a.we;
+      assign obi_amo_slave.be         = i_cva6.obi_amo_req_ex_cache.a.be;
+      assign obi_amo_slave.wdata      = i_cva6.obi_amo_req_ex_cache.a.wdata;
+      assign obi_amo_slave.auser      = i_cva6.obi_amo_req_ex_cache.a.a_optional.auser;
+      assign obi_amo_slave.wuser      = i_cva6.obi_amo_req_ex_cache.a.a_optional.wuser;
+      assign obi_amo_slave.aid        = i_cva6.obi_amo_req_ex_cache.a.aid;
+      assign obi_amo_slave.atop       = i_cva6.obi_amo_req_ex_cache.a.a_optional.atop;
+      assign obi_amo_slave.memtype    = i_cva6.obi_amo_req_ex_cache.a.a_optional.memtype;
+      assign obi_amo_slave.prot       = i_cva6.obi_amo_req_ex_cache.a.a_optional.prot;
+      assign obi_amo_slave.reqpar     = i_cva6.obi_amo_req_ex_cache.reqpar;
+      assign obi_amo_slave.achk       = i_cva6.obi_amo_req_ex_cache.a.a_optional.achk;
+      assign obi_amo_slave.rready     = i_cva6.obi_amo_req_ex_cache.rready;
+      assign obi_amo_slave.rreadypar  = i_cva6.obi_amo_req_ex_cache.rreadypar;
+      assign obi_amo_slave.gnt        = i_cva6.obi_amo_rsp_cache_ex.gnt;
+      assign obi_amo_slave.gntpar     = i_cva6.obi_amo_rsp_cache_ex.gntpar;
+      assign obi_amo_slave.rvalid     = i_cva6.obi_amo_rsp_cache_ex.rvalid;
+      assign obi_amo_slave.rdata      = i_cva6.obi_amo_rsp_cache_ex.r.rdata;
+      assign obi_amo_slave.err        = i_cva6.obi_amo_rsp_cache_ex.r.err;
+      assign obi_amo_slave.ruser      = i_cva6.obi_amo_rsp_cache_ex.r.r_optional.ruser;
+      assign obi_amo_slave.rid        = i_cva6.obi_amo_rsp_cache_ex.r.rid;
+      assign obi_amo_slave.exokay     = i_cva6.obi_amo_rsp_cache_ex.r.r_optional.exokay;
+      assign obi_amo_slave.rvalidpar  = i_cva6.obi_amo_rsp_cache_ex.rvalidpar;
+      assign obi_amo_slave.rchk       = i_cva6.obi_amo_rsp_cache_ex.r.r_optional.rchk;
+
+      //assign obi_load_slave.req        = i_cva6.obi_load_req_ex_cache.req;
+      //assign obi_load_slave.addr       = i_cva6.obi_load_req_ex_cache.a.addr;
+      //assign obi_load_slave.we         = i_cva6.obi_load_req_ex_cache.a.we;
+      //assign obi_load_slave.be         = i_cva6.obi_load_req_ex_cache.a.be;
+      //assign obi_load_slave.wdata      = i_cva6.obi_load_req_ex_cache.a.wdata;
+      //assign obi_load_slave.auser      = i_cva6.obi_load_req_ex_cache.a.a_optional.auser;
+      //assign obi_load_slave.wuser      = i_cva6.obi_load_req_ex_cache.a.a_optional.wuser;
+      //assign obi_load_slave.aid        = i_cva6.obi_load_req_ex_cache.a.aid;
+      //assign obi_load_slave.atop       = i_cva6.obi_load_req_ex_cache.a.a_optional.atop;
+      //assign obi_load_slave.memtype    = i_cva6.obi_load_req_ex_cache.a.a_optional.memtype;
+      //assign obi_load_slave.prot       = i_cva6.obi_load_req_ex_cache.a.a_optional.prot;
+      //assign obi_load_slave.reqpar     = i_cva6.obi_load_req_ex_cache.reqpar;
+      //assign obi_load_slave.achk       = i_cva6.obi_load_req_ex_cache.a.a_optional.achk;
+      //assign obi_load_slave.rready     = i_cva6.obi_load_req_ex_cache.rready;
+      //assign obi_load_slave.rreadypar  = i_cva6.obi_load_req_ex_cache.rreadypar;
+      //assign obi_load_slave.gnt        = i_cva6.obi_load_rsp_cache_ex.gnt;
+      //assign obi_load_slave.gntpar     = i_cva6.obi_load_rsp_cache_ex.gntpar;
+      //assign obi_load_slave.rvalid     = i_cva6.obi_load_rsp_cache_ex.rvalid;
+      //assign obi_load_slave.rdata      = i_cva6.obi_load_rsp_cache_ex.r.rdata;
+      //assign obi_load_slave.err        = i_cva6.obi_load_rsp_cache_ex.r.err;
+      //assign obi_load_slave.ruser      = i_cva6.obi_load_rsp_cache_ex.r.r_optional.ruser;
+      //assign obi_load_slave.rid        = i_cva6.obi_load_rsp_cache_ex.r.rid;
+      //assign obi_load_slave.exokay     = i_cva6.obi_load_rsp_cache_ex.r.r_optional.exokay;
+      //assign obi_load_slave.rvalidpar  = i_cva6.obi_load_rsp_cache_ex.rvalidpar;
+      //assign obi_load_slave.rchk       = i_cva6.obi_load_rsp_cache_ex.r.r_optional.rchk;
+
+      //assign obi_mmu_ptw_slave.req        = i_cva6.obi_mmu_ptw_req_ex_cache.req;
+      //assign obi_mmu_ptw_slave.addr       = i_cva6.obi_mmu_ptw_req_ex_cache.a.addr;
+      //assign obi_mmu_ptw_slave.we         = i_cva6.obi_mmu_ptw_req_ex_cache.a.we;
+      //assign obi_mmu_ptw_slave.be         = i_cva6.obi_mmu_ptw_req_ex_cache.a.be;
+      //assign obi_mmu_ptw_slave.wdata      = i_cva6.obi_mmu_ptw_req_ex_cache.a.wdata;
+      //assign obi_mmu_ptw_slave.auser      = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.auser;
+      //assign obi_mmu_ptw_slave.wuser      = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.wuser;
+      //assign obi_mmu_ptw_slave.aid        = i_cva6.obi_mmu_ptw_req_ex_cache.a.aid;
+      //assign obi_mmu_ptw_slave.atop       = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.atop;
+      //assign obi_mmu_ptw_slave.memtype    = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.memtype;
+      //assign obi_mmu_ptw_slave.prot       = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.prot;
+      //assign obi_mmu_ptw_slave.reqpar     = i_cva6.obi_mmu_ptw_req_ex_cache.reqpar;
+      //assign obi_mmu_ptw_slave.achk       = i_cva6.obi_mmu_ptw_req_ex_cache.a.a_optional.achk;
+      //assign obi_mmu_ptw_slave.rready     = i_cva6.obi_mmu_ptw_req_ex_cache.rready;
+      //assign obi_mmu_ptw_slave.rreadypar  = i_cva6.obi_mmu_ptw_req_ex_cache.rreadypar;
+      //assign obi_mmu_ptw_slave.gnt        = i_cva6.obi_mmu_ptw_rsp_cache_ex.gnt;
+      //assign obi_mmu_ptw_slave.gntpar     = i_cva6.obi_mmu_ptw_rsp_cache_ex.gntpar;
+      //assign obi_mmu_ptw_slave.rvalid     = i_cva6.obi_mmu_ptw_rsp_cache_ex.rvalid;
+      //assign obi_mmu_ptw_slave.rdata      = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.rdata;
+      //assign obi_mmu_ptw_slave.err        = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.err;
+      //assign obi_mmu_ptw_slave.ruser      = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.r_optional.ruser;
+      //assign obi_mmu_ptw_slave.rid        = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.rid;
+      //assign obi_mmu_ptw_slave.exokay     = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.r_optional.exokay;
+      //assign obi_mmu_ptw_slave.rvalidpar  = i_cva6.obi_mmu_ptw_rsp_cache_ex.rvalidpar;
+      //assign obi_mmu_ptw_slave.rchk       = i_cva6.obi_mmu_ptw_rsp_cache_ex.r.r_optional.rchk;
+   end
+   ///assign obi_slave.mid    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.mid;
+   ///assign obi_slave.dbg    = i_cva6.obi_fetch_rsp_cache_if.a.a_optional.dbg;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( CVA6Cfg.AxiAddrWidth         ),
