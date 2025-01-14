@@ -58,7 +58,6 @@ module branch_unit #(
     // TODO(zarubaf): The ALU can be used to calculate the branch target
     jump_base = (fu_data_i.operation == ariane_pkg::JALR) ? fu_data_i.operand_a[CVA6Cfg.VLEN-1:0] : pc_i;
 
-    target_address = {CVA6Cfg.VLEN{1'b0}};
     resolve_branch_o = 1'b0;
     resolved_branch_o.target_address = {CVA6Cfg.VLEN{1'b0}};
     resolved_branch_o.is_taken = 1'b0;
