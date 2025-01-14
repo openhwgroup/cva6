@@ -816,6 +816,7 @@ module decoder
               2'b01: illegal_instr = illegal_instr_non_bm & illegal_instr_zic;
               2'b10: illegal_instr = illegal_instr_non_bm & illegal_instr_bm;
               2'b11: illegal_instr = illegal_instr_non_bm & illegal_instr_bm & illegal_instr_zic;
+              default:; // TODO: Check that default case is not synthesized.
             endcase
           end
         end

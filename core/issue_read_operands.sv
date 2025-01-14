@@ -362,6 +362,7 @@ module issue_read_operands
           fus_busy[1].store = 1'b1;
         end
         CVXIF: ;
+        default: ;
       endcase
     end
   end
