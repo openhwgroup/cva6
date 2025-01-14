@@ -225,8 +225,7 @@ module issue_read_operands
       .x_off_instr_i   (orig_instr_i[0]),
       .x_trans_id_i    (issue_instr_i[0].trans_id),
       .register_i      (rs),
-      .rs_valid_i      (rs_valid),
-      .cvxif_busy_o    ()
+      .rs_valid_i      (rs_valid)
   );
   if (OPERANDS_PER_INSTR == 3) begin
     assign rs_valid = {~stall_rs3[0], ~stall_rs2[0], ~stall_rs1[0]};
