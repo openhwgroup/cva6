@@ -886,7 +886,7 @@ module csr_regfile
     // --------------------
     cycle_d         = cycle_q;
     instret_d       = instret_q;
-    if (!debug_mode_q) begin
+    if (!(CVA6Cfg.DebugEn && debug_mode_q)) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
         if (commit_ack_i[i] && !ex_i.valid && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
@@ -949,7 +949,7 @@ module csr_regfile
     mcause_d     = mcause_q;
     mcounteren_d = mcounteren_q;
     mscratch_d   = mscratch_q;
-    mtval_d      = mtval_q;
+    if (CVA6Cfg.TvalEn) mtval_d = mtval_q;
     if (CVA6Cfg.RVH) begin
       mtinst_d = mtinst_q;
       mtval2_d = mtval2_q;
@@ -1720,9 +1720,10 @@ module csr_regfile
         default: update_access_exception = 1'b1;
       endcase
     end
-
-    mstatus_d.sxl = riscv::XLEN_64;
-    mstatus_d.uxl = riscv::XLEN_64;
+    if (CVA6Cfg.IS_XLEN64) begin
+      mstatus_d.sxl = riscv::XLEN_64;
+      mstatus_d.uxl = riscv::XLEN_64;
+    end
     if (!CVA6Cfg.RVU) begin
       mstatus_d.mpp = riscv::PRIV_LVL_M;
     end
@@ -2510,11 +2511,10 @@ module csr_regfile
       // floating-point registers
       fcsr_q       <= '0;
       // debug signals
-      debug_mode_q <= 1'b0;
       if (CVA6Cfg.DebugEn) begin
-        dcsr_q           <= '0;
-        dcsr_q.prv       <= riscv::PRIV_LVL_M;
-        dcsr_q.xdebugver <= 4'h4;
+        debug_mode_q     <= 1'b0;
+        // xdebugver = 4'h4, 26'b0 ,prv = PRIV_LVL_M
+        dcsr_q           <= {4'h4, 26'b0, riscv::PRIV_LVL_M}; 
         dpc_q            <= '0;
         dscratch0_q      <= {CVA6Cfg.XLEN{1'b0}};
         dscratch1_q      <= {CVA6Cfg.XLEN{1'b0}};
@@ -2530,7 +2530,7 @@ module csr_regfile
       mcause_q         <= {CVA6Cfg.XLEN{1'b0}};
       mcounteren_q     <= {CVA6Cfg.XLEN{1'b0}};
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
-      mtval_q          <= {CVA6Cfg.XLEN{1'b0}};
+      if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       fiom_q           <= '0;
       dcache_q         <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       icache_q         <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
@@ -2734,7 +2734,7 @@ module csr_regfile
   assign rvfi_csr_o.mscratch_q = mscratch_q;
   assign rvfi_csr_o.mepc_q = mepc_q;
   assign rvfi_csr_o.mcause_q = mcause_q;
-  assign rvfi_csr_o.mtval_q = mtval_q;
+  assign rvfi_csr_o.mtval_q = CVA6Cfg.TvalEn ? mtval_q : '0;
   assign rvfi_csr_o.fiom_q = fiom_q;
   assign rvfi_csr_o.mcountinhibit_q = mcountinhibit_q;
   assign rvfi_csr_o.cycle_q = cycle_q;
