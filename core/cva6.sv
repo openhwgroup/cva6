@@ -39,7 +39,7 @@ module cva6
       logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
 
-    localparam type exception_t = struct packed {
+    parameter type exception_t = struct packed {
       logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
       logic [CVA6Cfg.XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
       // address of LD/ST fault
@@ -216,6 +216,14 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
     },
+
+    // Accelerator - CVA6
+    parameter type accelerator_req_t  = logic,
+    parameter type accelerator_resp_t = logic,
+
+    // Accelerator - CVA6's MMU
+    parameter type acc_mmu_req_t  = logic,
+    parameter type acc_mmu_resp_t = logic,
 
     // AXI types
     parameter type axi_ar_chan_t = struct packed {
@@ -506,6 +514,11 @@ module cva6
   logic amo_valid_commit;
   // ACCEL Commit
   logic acc_valid_acc_ex;
+  // --------------
+  // EX <-> ACC_DISP
+  // --------------
+  acc_mmu_req_t acc_mmu_req;
+  acc_mmu_resp_t acc_mmu_resp;
   // --------------
   // ID <-> COMMIT
   // --------------
@@ -917,7 +930,9 @@ module cva6
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t),
-      .x_result_t(x_result_t)
+      .x_result_t(x_result_t),
+      .acc_mmu_req_t(acc_mmu_req_t),
+      .acc_mmu_resp_t(acc_mmu_resp_t)
   ) ex_stage_i (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -1001,6 +1016,9 @@ module cva6
       .x_result_ready_o        (x_result_ready),
       // Accelerator
       .acc_valid_i             (acc_valid_acc_ex),
+      // Accelerator MMU access
+      .acc_mmu_req_i           (acc_mmu_req),
+      .acc_mmu_resp_o          (acc_mmu_resp),
       // Performance counters
       .itlb_miss_o             (itlb_miss_ex_perf),
       .dtlb_miss_o             (dtlb_miss_ex_perf),
@@ -1500,7 +1518,11 @@ module cva6
         .acc_cfg_t         (acc_cfg_t),
         .AccCfg            (AccCfg),
         .acc_req_t         (cvxif_req_t),
-        .acc_resp_t        (cvxif_resp_t)
+        .acc_resp_t        (cvxif_resp_t),
+        .accelerator_req_t (accelerator_req_t),
+        .accelerator_resp_t(accelerator_resp_t),
+        .acc_mmu_req_t     (acc_mmu_req_t),
+        .acc_mmu_resp_t    (acc_mmu_resp_t)
     ) i_acc_dispatcher (
         .clk_i                 (clk_i),
         .rst_ni                (rst_ni),
@@ -1516,6 +1538,7 @@ module cva6
         .pmpcfg_i              (pmpcfg),
         .pmpaddr_i             (pmpaddr),
         .fcsr_frm_i            (frm_csr_id_issue_ex),
+        .acc_mmu_en_i          (enable_translation_csr_ex),
         .dirty_v_state_o       (dirty_v_state),
         .issue_instr_i         (issue_instr_id_acc),
         .issue_instr_hs_i      (issue_instr_hs_id_acc),
@@ -1532,6 +1555,8 @@ module cva6
         .acc_stall_st_pending_o(stall_st_pending_ex),
         .acc_no_st_pending_i   (no_st_pending_commit),
         .dcache_req_ports_i    (dcache_req_ports_ex_cache),
+        .acc_mmu_req_o         (acc_mmu_req),
+        .acc_mmu_resp_i        (acc_mmu_resp),
         .ctrl_halt_o           (halt_acc_ctrl),
         .csr_addr_i            (csr_addr_ex_csr),
         .acc_dcache_req_ports_o(dcache_req_ports_acc_cache),
@@ -1560,6 +1585,9 @@ module cva6
 
     // D$ connection is unused
     assign dcache_req_ports_acc_cache = '0;
+
+    // MMU access is unused
+    assign acc_mmu_req                = '0;
 
     // No invalidation interface
     assign inval_valid                = '0;
