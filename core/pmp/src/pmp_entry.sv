@@ -78,8 +78,8 @@ module pmp_entry #(
         assert (size >= 2);
         if (conf_addr_mode_i == riscv::NAPOT) begin
           assert (size > 2);
-          if (size < CVA6Cfg.PLEN-2) assert (conf_addr_i[size-3] == 0);
-          for (int i = 0; i < CVA6Cfg.PLEN-2; i++) begin
+          if (size < CVA6Cfg.PLEN - 2) assert (conf_addr_i[size-3] == 0);
+          for (int i = 0; i < CVA6Cfg.PLEN - 2; i++) begin
             if (size > 3 && i <= size - 4) begin
               assert (conf_addr_i[i] == 1);  // check that all the rest are ones
             end
