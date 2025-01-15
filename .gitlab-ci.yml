@@ -170,6 +170,7 @@ smoke-gen:
     SPIKE_TANDEM: 1
   script:
     - bash verif/regress/smoke-gen_tests.sh
+    - cp verif/sim/seedlist.yaml artifacts/logs/
     - !reference [.simu_after_script]
 
 smoke-bench:
