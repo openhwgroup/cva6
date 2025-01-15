@@ -72,7 +72,7 @@ Except for 4 of them using opcode `MADD, MSUB, NMADD, NMSUB`
 
     **Description**: add register rs1, rs2 to rs3, and store the result in rd.
 
-    **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
+    **Pseudocode**: x[rd] = x[rs1] - x[rs2] - x[rs3]
 
 - **CUS_ADD_RS3_NMADD**: Custom Add with RS3 opcode == NMADD
 
@@ -80,7 +80,7 @@ Except for 4 of them using opcode `MADD, MSUB, NMADD, NMSUB`
 
     **Description**: add register rs1, rs2 to rs3, and store the result in rd.
 
-    **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
+    **Pseudocode**: x[rd] = ¬(x[rs1] + x[rs2] + x[rs3])
 
 - **CUS_ADD_RS3_NMSUB**: Custom Add with RS3 opcode == NMSUB
 
@@ -88,7 +88,7 @@ Except for 4 of them using opcode `MADD, MSUB, NMADD, NMSUB`
 
     **Description**: add register rs1, rs2 to rs3, and store the result in rd.
 
-    **Pseudocode**: x[rd] = x[rs1] + x[rs2] + x[rs3]
+    **Pseudocode**: x[rd] = ¬(x[rs1] - x[rs2] - x[rs3])
 
 - **CUS_ADD_RS3_RTYPE**: Custom Add with RS3, rd is x10 (a0)
 
