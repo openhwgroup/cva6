@@ -94,6 +94,8 @@ package config_pkg;
     bit                          RVS;
     // User mode
     bit                          RVU;
+    // Software interrupts are enabled
+    bit                          SoftwareInterruptEn;
     // Debug support
     bit                          DebugEn;
     // Base address of the debug module
@@ -279,6 +281,7 @@ package config_pkg;
     bit          MmuPresent;
     bit          RVS;                //Supervisor mode
     bit          RVU;                //User mode
+    bit          SoftwareInterruptEn;
 
     logic [63:0] HaltAddress;
     logic [63:0] ExceptionAddress;
@@ -388,6 +391,10 @@ package config_pkg;
     assert (!(Cfg.SuperscalarEn && Cfg.RVF));
     assert (!(Cfg.SuperscalarEn && Cfg.RVZCMP));
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
+    // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
+    // Software Interrupt can be disabled when there is only M machine mode in CVA6.
+    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn))
+    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
     else $fatal(1, "[frontend] fetch width != not supported");
     // pragma translate_on
   endfunction

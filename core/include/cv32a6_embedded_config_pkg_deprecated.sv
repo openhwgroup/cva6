@@ -106,6 +106,7 @@ package cva6_config_pkg;
       MmuPresent: bit'(CVA6ConfigMmuPresent),
       RVS: bit'(0),
       RVU: bit'(0),
+      SoftwareInterruptEn: bit'(1),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
       RASDepth: unsigned'(CVA6ConfigRASDepth),
