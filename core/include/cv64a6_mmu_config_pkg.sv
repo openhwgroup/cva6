@@ -95,6 +95,8 @@ package cva6_config_pkg;
       DcacheByteSize: unsigned'(32768),
       DcacheSetAssoc: unsigned'(8),
       DcacheLineWidth: unsigned'(128),
+      DcacheFlushOnFence: bit'(0),
+      DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: unsigned'(0),
       WtDcacheWbufDepth: int'(2),
       FetchUserWidth: unsigned'(64),
