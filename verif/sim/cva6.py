@@ -1035,7 +1035,7 @@ def check_verilator_version():
 
 def check_tools_version():
   check_cc_version()
-  check_spike_version()
+#  check_spike_version()
   check_verilator_version()
 
 

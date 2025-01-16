@@ -77,7 +77,7 @@ module zcmt_decoder #(
           if (CVA6Cfg.XLEN == 32) begin  //It is only target for 32 bit targets in cva6 with No MMU
             table_address = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
             req_port_o.address_index = table_address[9:0];
-            req_port_o.address_tag = table_address[CVA6Cfg.VLEN-1:10]; // No MMU support
+            req_port_o.address_tag = table_address[CVA6Cfg.VLEN-1:10];  // No MMU support
             state_d = TABLE_JUMP;
             req_port_o.data_req = 1'b1;
           end else illegal_instr_o = 1'b1;

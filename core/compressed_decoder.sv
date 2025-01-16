@@ -870,20 +870,13 @@ module compressed_decoder #(
                 3'b000,
                 riscv::OpcodeStoreFp
               };
-            end else if (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT) begin
-              if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
-                is_macro_instr_o = 1;
-                instr_o = instr_i;
-              end else if (CVA6Cfg.RVZCMT && (instr_i[12:10] == 3'b000)) begin  //jt/jalt instruction
-                is_zcmt_instr_o = 1'b1;
-              end else begin
-                illegal_instr_o = 1'b1;
-              end
-            end else begin
-              illegal_instr_o = 1'b1;
-            end
+            end else if (CVA6Cfg.RVZCMP && (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011)) begin
+              is_macro_instr_o = 1;
+              instr_o = instr_i;
+            end else if (CVA6Cfg.RVZCMT && (instr_i[12:10] == 3'b000))  //jt/jalt instruction
+              is_zcmt_instr_o = 1'b1;
+            else illegal_instr_o = 1'b1;
           end
-
           riscv::OpcodeC2Swsp: begin
             // c.swsp -> sw rs2, imm(x2)
             instr_o = {

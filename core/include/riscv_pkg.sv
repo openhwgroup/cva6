@@ -863,12 +863,6 @@ package riscv;
     priv_lvl_t    prv;
   } dcsr_t;
 
-  //jvt struct
-  parameter JVT_ADDR_WIDTH = XLEN - 6;
-  typedef struct packed {
-    logic [JVT_ADDR_WIDTH-1:0] base;
-    logic [5:0] mode;
-  } jvt_t;
   // Instruction Generation *incomplete*
   function automatic logic [31:0] jal(logic [4:0] rd, logic [20:0] imm);
     // OpCode Jal

@@ -298,7 +298,7 @@ module csr_regfile
   assign pmpaddr_o = pmpaddr_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
-  riscv::jvt_t jvt_q, jvt_d;
+  jvt_t jvt_q, jvt_d;
   // ----------------
   // Assignments
   // ----------------

@@ -131,7 +131,7 @@
 `define RVFI_PROBES_CSR_T(Cfg) struct packed { \
   riscv::fcsr_t fcsr_q; \
   riscv::dcsr_t dcsr_q; \
-  riscv::jvt_t jvt_q; \
+  logic [Cfg.XLEN-1:0] jvt_q; \
   logic [Cfg.XLEN-1:0] dpc_q; \
   logic [Cfg.XLEN-1:0] dscratch0_q; \
   logic [Cfg.XLEN-1:0] dscratch1_q; \
