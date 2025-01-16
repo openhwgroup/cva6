@@ -279,8 +279,8 @@ package config_pkg;
     bit          EnableAccelerator;
     bit          PerfCounterEn;
     bit          MmuPresent;
-    bit          RVS;                //Supervisor mode
-    bit          RVU;                //User mode
+    bit          RVS;                  //Supervisor mode
+    bit          RVU;                  //User mode
     bit          SoftwareInterruptEn;
 
     logic [63:0] HaltAddress;
