@@ -51,13 +51,13 @@ module zcmt_decoder #(
       state_d, state_q;
   // Temporary registers
   // Physical address: jvt + (index <<2)
-  logic [CVA6Cfg.XLEN+1:0] table_address;  //Virtual  address: {00,Physical address}
+  logic [CVA6Cfg.VLEN-1:0] table_address;
 
   always_comb begin
     state_d               = state_q;
     illegal_instr_o       = 1'b0;
-    is_compressed_o       = is_zcmt_instr_i ? 1'b1 : is_compressed_i;
-    fetch_stall_o         = is_zcmt_instr_i ? 1'b1 : 0;
+    is_compressed_o       = is_zcmt_instr_i || is_compressed_i;
+    fetch_stall_o         = is_zcmt_instr_i;
     jump_address_o        = '0;
 
     // cache request port
@@ -75,9 +75,9 @@ module zcmt_decoder #(
       IDLE: begin
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.XLEN == 32) begin  //It is only target for 32 bit targets in cva6 with No MMU
-            table_address = {2'b00, ({jvt_i.base, jvt_i.mode} + {24'h0, instr_i[7:2], 2'b00})};
+            table_address = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
             req_port_o.address_index = table_address[9:0];
-            req_port_o.address_tag = table_address[33:10];
+            req_port_o.address_tag = table_address[CVA6Cfg.VLEN-1:10]; // No MMU support
             state_d = TABLE_JUMP;
             req_port_o.data_req = 1'b1;
           end else illegal_instr_o = 1'b1;

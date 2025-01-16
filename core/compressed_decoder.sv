@@ -874,7 +874,7 @@ module compressed_decoder #(
               if (instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111 || instr_i[12:10] == 3'b011) begin //is a push/pop instruction
                 is_macro_instr_o = 1;
                 instr_o = instr_i;
-              end else if (instr_i[12:10] == 3'b000) begin  //jt/jalt instruction
+              end else if (CVA6Cfg.RVZCMT && (instr_i[12:10] == 3'b000)) begin  //jt/jalt instruction
                 is_zcmt_instr_o = 1'b1;
               end else begin
                 illegal_instr_o = 1'b1;
