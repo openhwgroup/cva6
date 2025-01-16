@@ -51,6 +51,7 @@ module cva6_rvfi_probes
     input logic      [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
 
     input rvfi_probes_csr_t csr_i,
+    input logic [1:0] irq_i,
 
     output rvfi_probes_t rvfi_probes_o
 );
@@ -109,6 +110,7 @@ module cva6_rvfi_probes
     instr.wdata = wdata_i;
 
     csr = csr_i;
+    csr.mip_q = csr_i.mip_q | ({{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.RVS && irq_i[1]} << riscv::IRQ_S_EXT);
 
   end
 
