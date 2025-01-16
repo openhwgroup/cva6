@@ -1440,8 +1440,8 @@ module csr_regfile
                 | CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
                 | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
               end else begin
-                mask = CVA6Cfg.XLEN'(riscv::MIP_MTIP) // same shift as MTIE
-                        | CVA6Cfg.XLEN'(riscv::MIP_MEIP); // same shift as MEIE
+                mask = CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
+                | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
               end
             end
           end
