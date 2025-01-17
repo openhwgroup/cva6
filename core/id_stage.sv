@@ -161,22 +161,22 @@ module id_stage #(
           .x_compressed_req_t(x_compressed_req_t),
           .x_compressed_resp_t(x_compressed_resp_t)
       ) i_cvxif_compressed_if_driver_i (
-          .clk_i             (clk_i),
-          .rst_ni            (rst_ni),
-          .hart_id_i         (hart_id_i),
-          .is_compressed_i   (is_compressed_cvxif),
-          .is_illegal_i      (is_illegal_cvxif),
-          .instruction_i     (instruction_cvxif),
-          .instruction_valid_i (fetch_entry_valid_i),
-          .is_compressed_o   (is_compressed_cmp),
-          .is_illegal_o      (is_illegal_cmp),
-          .instruction_o     (instruction),
-          .stall_i           (stall_macro_deco),
-          .stall_o           (stall_instr_fetch),
-          .compressed_ready_i(compressed_ready_i),
-          .compressed_resp_i (compressed_resp_i),
-          .compressed_valid_o(compressed_valid_o),
-          .compressed_req_o  (compressed_req_o)
+          .clk_i              (clk_i),
+          .rst_ni             (rst_ni),
+          .hart_id_i          (hart_id_i),
+          .is_compressed_i    (is_compressed_cvxif),
+          .is_illegal_i       (is_illegal_cvxif),
+          .instruction_i      (instruction_cvxif),
+          .instruction_valid_i(fetch_entry_valid_i),
+          .is_compressed_o    (is_compressed_cmp),
+          .is_illegal_o       (is_illegal_cmp),
+          .instruction_o      (instruction),
+          .stall_i            (stall_macro_deco),
+          .stall_o            (stall_instr_fetch),
+          .compressed_ready_i (compressed_ready_i),
+          .compressed_resp_i  (compressed_resp_i),
+          .compressed_valid_o (compressed_valid_o),
+          .compressed_req_o   (compressed_req_o)
       );
     end else begin
       cvxif_compressed_if_driver #(
@@ -184,22 +184,22 @@ module id_stage #(
           .x_compressed_req_t(x_compressed_req_t),
           .x_compressed_resp_t(x_compressed_resp_t)
       ) i_cvxif_compressed_if_driver_i (
-          .clk_i             (clk_i),
-          .rst_ni            (rst_ni),
-          .hart_id_i         (hart_id_i),
-          .is_compressed_i   (is_compressed),
-          .is_illegal_i      (is_illegal),
-          .instruction_valid_i (fetch_entry_valid_i),
-          .instruction_i     (compressed_instr),
-          .is_compressed_o   (is_compressed_cmp),
-          .is_illegal_o      (is_illegal_cmp),
-          .instruction_o     (instruction),
-          .stall_i           (1'b0),
-          .stall_o           (stall_instr_fetch),
-          .compressed_ready_i(compressed_ready_i),
-          .compressed_resp_i (compressed_resp_i),
-          .compressed_valid_o(compressed_valid_o),
-          .compressed_req_o  (compressed_req_o)
+          .clk_i              (clk_i),
+          .rst_ni             (rst_ni),
+          .hart_id_i          (hart_id_i),
+          .is_compressed_i    (is_compressed),
+          .is_illegal_i       (is_illegal),
+          .instruction_valid_i(fetch_entry_valid_i),
+          .instruction_i      (compressed_instr),
+          .is_compressed_o    (is_compressed_cmp),
+          .is_illegal_o       (is_illegal_cmp),
+          .instruction_o      (instruction),
+          .stall_i            (1'b0),
+          .stall_o            (stall_instr_fetch),
+          .compressed_ready_i (compressed_ready_i),
+          .compressed_resp_i  (compressed_resp_i),
+          .compressed_valid_o (compressed_valid_o),
+          .compressed_req_o   (compressed_req_o)
       );
       assign is_last_macro_instr_o = '0;
       assign is_double_rd_macro_instr_o = '0;
