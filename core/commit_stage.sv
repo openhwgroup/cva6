@@ -116,7 +116,7 @@ module commit_stage
       dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           commit_instr_i[i].op
       // Check if we issued a vector floating-point instruction to the accellerator
-      ))) || commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
+      ))) | commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp;
     end
   end
 

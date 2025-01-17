@@ -2513,8 +2513,11 @@ module csr_regfile
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q     <= 1'b0;
-        // xdebugver = 4'h4, 26'b0 ,prv = PRIV_LVL_M
-        dcsr_q           <= {4'h4, 26'b0, riscv::PRIV_LVL_M}; 
+        dcsr_q           <= '{
+          xdebugver: 4'h4,
+          prv: riscv::PRIV_LVL_M,
+          default: '0
+        };
         dpc_q            <= '0;
         dscratch0_q      <= {CVA6Cfg.XLEN{1'b0}};
         dscratch1_q      <= {CVA6Cfg.XLEN{1'b0}};
