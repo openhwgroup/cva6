@@ -180,7 +180,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      if (!RTLCVA6Cfg.PipelineOnly) begin
+      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
          cntxt.axi_cntxt.mem              = cntxt.mem;
       end else begin
          cntxt.obi_memory_instr_cntxt.mem = cntxt.mem_obi;
@@ -259,14 +259,16 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
       uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
    end
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_store_agent", "cfg", cfg.obi_memory_store_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_amo_agent", "cfg", cfg.obi_memory_amo_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_load_agent", "cfg", cfg.obi_memory_load_cfg);
-   //uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_mmu_ptw_agent", "cfg", cfg.obi_memory_mmu_ptw_cfg);
+   else begin
+      uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
+      uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_store_agent", "cfg", cfg.obi_memory_store_cfg);
+      uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_amo_agent", "cfg", cfg.obi_memory_amo_cfg);
+      uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_load_agent", "cfg", cfg.obi_memory_load_cfg);
+      //uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_mmu_ptw_agent", "cfg", cfg.obi_memory_mmu_ptw_cfg);
+   end
 
    uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "core_cntrl_agent", "cfg", cfg);
 
@@ -288,14 +290,15 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
      uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
+   end else begin
+     uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
+     uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_store_agent", "cntxt", cntxt.obi_memory_store_cntxt);
+     uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_amo_agent", "cntxt", cntxt.obi_memory_amo_cntxt);
+     uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_load_agent", "cntxt", cntxt.obi_memory_load_cntxt);
+     //uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_mmu_ptw_agent", "cntxt", cntxt.obi_memory_mmu_ptw_cntxt);
    end
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_store_agent", "cntxt", cntxt.obi_memory_store_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_amo_agent", "cntxt", cntxt.obi_memory_amo_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_load_agent", "cntxt", cntxt.obi_memory_load_cntxt);
-   //uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_mmu_ptw_agent", "cntxt", cntxt.obi_memory_mmu_ptw_cntxt);
 
    uvm_config_db#(uvma_rvfi_cntxt_c)::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
@@ -307,14 +310,15 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
       axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
+   end else begin
+      obi_memory_instr_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_instr_agent", this);
+      obi_memory_store_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_store_agent", this);
+      obi_memory_amo_agent        = uvma_obi_memory_agent_c::type_id::create("obi_memory_amo_agent", this);
+      obi_memory_load_agent     = uvma_obi_memory_agent_c::type_id::create("obi_memory_load_agent", this);
+      //obi_memory_mmu_ptw_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_mmu_ptw_agent", this);
    end
-   obi_memory_instr_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_instr_agent", this);
-   obi_memory_store_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_store_agent", this);
-   obi_memory_amo_agent        = uvma_obi_memory_agent_c::type_id::create("obi_memory_amo_agent", this);
-   obi_memory_load_agent     = uvma_obi_memory_agent_c::type_id::create("obi_memory_load_agent", this);
-   //obi_memory_mmu_ptw_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_mmu_ptw_agent", this);
 
    core_cntrl_agent = uvma_cva6_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
    rvfi_agent       = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
@@ -360,7 +364,7 @@ function void uvme_cva6_env_c::retrieve_vif();
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
    end
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
       if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
          axi_switch_vif.active <= 0;
       end else begin
@@ -409,15 +413,16 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer    = clknrst_agent.sequencer;
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
      vsequencer.axi_vsequencer       = axi_agent.vsequencer;
+   end else begin
+     vsequencer.obi_memory_instr_sequencer     = obi_memory_instr_agent.sequencer;
+     vsequencer.obi_memory_store_sequencer     = obi_memory_store_agent.sequencer;
+     vsequencer.obi_memory_amo_sequencer       = obi_memory_amo_agent.sequencer;
+     vsequencer.obi_memory_load_sequencer      = obi_memory_load_agent.sequencer;
+     //vsequencer.obi_memory_mmu_ptw_sequencer   = obi_memory_mmu_ptw_agent.sequencer;
    end
    vsequencer.interrupt_sequencer  = interrupt_agent.sequencer;
-   vsequencer.obi_memory_instr_sequencer     = obi_memory_instr_agent.sequencer;
-   vsequencer.obi_memory_store_sequencer     = obi_memory_store_agent.sequencer;
-   vsequencer.obi_memory_amo_sequencer       = obi_memory_amo_agent.sequencer;
-   vsequencer.obi_memory_load_sequencer      = obi_memory_load_agent.sequencer;
-   //vsequencer.obi_memory_mmu_ptw_sequencer   = obi_memory_mmu_ptw_agent.sequencer;
    vsequencer.cvxif_vsequencer     = cvxif_agent.vsequencer;
 
 endfunction: assemble_vsequencer
@@ -435,7 +440,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    fork
 
       begin
-         if (!RTLCVA6Cfg.PipelineOnly) begin
+         if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
             if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
                uvma_axi_vseq_c  axi_vseq;
                axi_vseq = uvma_axi_vseq_c::type_id::create("axi_vseq");
@@ -459,7 +464,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : spawn_obi_instr_fw_preload_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
             if (!fw_preload_seq.randomize()) begin
                `uvm_fatal("FWPRELOAD", "Randomize failed");
@@ -469,7 +474,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : obi_instr_slv_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
             instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
             if (!instr_slv_seq.randomize()) begin
                `uvm_fatal("INSTRSLVSEQ", "Randomize failed");
@@ -478,7 +483,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_store_slv_thread
-         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
             store_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("store_slv_seq");
             if (!store_slv_seq.randomize()) begin
                `uvm_fatal("STORESLVSEQ", "Randomize failed");
@@ -487,7 +492,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_amo_slv_thread
-         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
             amo_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("amo_slv_seq");
             if (!amo_slv_seq.randomize()) begin
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
@@ -496,7 +501,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_load_slv_thread
-         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
             load_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("load_slv_seq");
             if (!load_slv_seq.randomize()) begin
                `uvm_fatal("LOADSLVSEQ", "Randomize failed");
@@ -505,7 +510,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       //begin : obi_mmu_ptw_slv_thread
-      //   if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE) begin
+      //   if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
       //      mmu_ptw_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("mmu_ptw_slv_seq");
       //      if (!mmu_ptw_slv_seq.randomize()) begin
       //         `uvm_fatal("MMUPTWSLVSEQ", "Randomize failed");
@@ -527,7 +532,7 @@ function void uvme_cva6_env_c::connect_coverage_model();
 
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
-   if (!RTLCVA6Cfg.PipelineOnly) begin
+   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
       if(cfg.axi_cfg.cov_model_enabled) begin
          axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
          axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);
