@@ -59,6 +59,7 @@
 ${CVA6_CORET_DIR}/uvma_cva6pkg_utils_pkg.sv
 +incdir+${TBSRC_HOME}
 ${CVA6_UVMT_DIR}/uvmt_cva6_pkg.sv
+${CVA6_UVMT_DIR}/uvmt_workflow${WORKFLOW_CFG}_pkg.sv // default WORKFLOW_CFG is empty
 
 // CVA6 test bench files
 ${CVA6_UVMT_DIR}/uvmt_cva6_tb_ifs.sv
