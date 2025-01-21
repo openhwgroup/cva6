@@ -445,7 +445,15 @@ module uvmt_cva6_tb;
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
 
-     if($value$plusargs("uvmt_set_axi_assert_cfg=%0d", axi_assert_on)) begin
+     if (CVA6Cfg.PipelineOnly) begin
+        axi_if.aw_assertion_enabled      = 0;
+        axi_if.w_assertion_enabled       = 0;
+        axi_if.b_assertion_enabled       = 0;
+        axi_if.ar_assertion_enabled      = 0;
+        axi_if.r_assertion_enabled       = 0;
+        axi_if.axi_assertion_enabled     = 0;
+        axi_if.axi_amo_assertion_enabled = 0;
+     end else if($value$plusargs("uvmt_set_axi_assert_cfg=%0d", axi_assert_on)) begin
         axi_if.aw_assertion_enabled      = axi_assert_on;
         axi_if.w_assertion_enabled       = axi_assert_on;
         axi_if.b_assertion_enabled       = axi_assert_on;

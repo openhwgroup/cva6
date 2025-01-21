@@ -309,7 +309,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft obi_memory_store_cfg.drv_slv_gnt_random_latency_max    <= 2;
       soft obi_memory_store_cfg.drv_slv_gnt_fixed_latency         <= 2;
       soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 0;
 
       soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max    <= 2;
       soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency         <= 2;

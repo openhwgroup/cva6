@@ -43,7 +43,7 @@ class uvme_obi_slv_seq_c extends uvma_obi_memory_slv_seq_c;
       slv_rsp.orig_trn = mon_req;
       slv_rsp.access_type = mon_req.access_type;
 
-      word_aligned_addr = { mon_req.address[31:3], 3'h0 };
+      word_aligned_addr = { mon_req.address[31:2], 2'h0 };
 
       `uvm_info("SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
       if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
