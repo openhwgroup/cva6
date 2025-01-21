@@ -270,7 +270,8 @@ endif
 vcs_uvm_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vcs $(COMMON_COMP_UVM_FLAGS) $(ALL_UVM_FLAGS) \
+	cd $(VCS_WORK_DIR) && $(if $(gate), WORKFLOW_CFG=_gatesimu, WORKFLOW_CFG=) \
+	vcs $(COMMON_COMP_UVM_FLAGS) $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
 	  $(cov-comp-opt) $(isscomp_opts)\

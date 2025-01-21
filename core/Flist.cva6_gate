@@ -14,6 +14,8 @@
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
+${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
@@ -35,7 +37,6 @@ ${CVA6_REPO_DIR}/core/cvxif_example/copro_alu.sv
 
 
 // Common Cells
-${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lfsr_8bit.sv
