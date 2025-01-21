@@ -31,8 +31,6 @@ package ariane_pkg;
   // TODO: Slowly move those parameters to the new system.
   localparam BITS_SATURATION_COUNTER = 2;
 
-  localparam ISSUE_WIDTH = 1;
-
   // depth of store-buffers, this needs to be a power of two
   localparam logic [2:0] DEPTH_SPEC = 'd4;
 
