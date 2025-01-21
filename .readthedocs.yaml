@@ -7,6 +7,7 @@ version: 2
 submodules:
   include:
     - docs/riscv-isa/riscv-isa-manual
+  recursive: true
 
 build:
   os: "ubuntu-20.04"
