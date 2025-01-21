@@ -445,7 +445,7 @@ module uvmt_cva6_tb;
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
 
-     if (CVA6Cfg.PipelineOnly) begin
+     if (CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
         axi_if.aw_assertion_enabled      = 0;
         axi_if.w_assertion_enabled       = 0;
         axi_if.b_assertion_enabled       = 0;

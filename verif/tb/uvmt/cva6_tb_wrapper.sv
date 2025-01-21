@@ -140,7 +140,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   load_req_t       load_req;
   load_rsp_t       load_rsp;
 
-  if (!CVA6Cfg.PipelineOnly) begin
+  if (!CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin : cva6_top
      cva6 #(
         .CVA6Cfg ( CVA6Cfg ),
         .rvfi_probes_t        ( rvfi_probes_t       )
@@ -339,7 +339,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
      end
 
 
- end else begin
+  end else begin : cva6_only_pipeline
      cva6_pipeline #(
        .CVA6Cfg ( CVA6Cfg ),
        .rvfi_probes_t       ( rvfi_probes_t       )
