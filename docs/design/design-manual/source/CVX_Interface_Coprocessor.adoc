@@ -126,7 +126,6 @@ MISA extensions implemented on the eXtension
 interface
 --
 
- |
 |=============================================
 
 [[cv-x-if-enabling]]
