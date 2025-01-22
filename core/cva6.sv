@@ -1731,6 +1731,7 @@ module cva6
       .wdata_i     (wdata_commit_id),
 
       .csr_i(rvfi_csr),
+      .irq_i(irq_i),
 
       .rvfi_probes_o(rvfi_probes_o)
 

@@ -2425,7 +2425,7 @@ module csr_regfile
 
     unique case (conv_csr_addr.address)
       riscv::CSR_MIP:
-      csr_rdata_o = csr_rdata | ({{CVA6Cfg.XLEN - 1{1'b0}}, irq_i[1]} << riscv::IRQ_S_EXT);
+      csr_rdata_o = csr_rdata | ({{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.RVS && irq_i[1]} << riscv::IRQ_S_EXT);
       // in supervisor mode we also need to check whether we delegated this bit
       riscv::CSR_SIP: begin
         if (CVA6Cfg.RVS) begin
