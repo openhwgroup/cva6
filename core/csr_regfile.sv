@@ -1435,9 +1435,14 @@ module csr_regfile
                       | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
             end else begin
-              mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)
-                      | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
-                      | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
+              if (CVA6Cfg.SoftwareInterruptEn) begin
+                mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)  // same shift as MSIE
+                | CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
+                | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+              end else begin
+                mask = CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
+                | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+              end
             end
           end
           mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
@@ -1771,7 +1776,7 @@ module csr_regfile
     // Machine Mode External Interrupt Pending
     mip_d[riscv::IRQ_M_EXT] = irq_i[0];
     // Machine software interrupt
-    mip_d[riscv::IRQ_M_SOFT] = ipi_i;
+    mip_d[riscv::IRQ_M_SOFT] = CVA6Cfg.SoftwareInterruptEn && ipi_i;
     // Timer interrupt pending, coming from platform timer
     mip_d[riscv::IRQ_M_TIMER] = time_irq_i;
 
@@ -2419,7 +2424,7 @@ module csr_regfile
 
     unique case (conv_csr_addr.address)
       riscv::CSR_MIP:
-      csr_rdata_o = csr_rdata | ({{CVA6Cfg.XLEN - 1{1'b0}}, irq_i[1]} << riscv::IRQ_S_EXT);
+      csr_rdata_o = csr_rdata | ({{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.RVS && irq_i[1]} << riscv::IRQ_S_EXT);
       // in supervisor mode we also need to check whether we delegated this bit
       riscv::CSR_SIP: begin
         if (CVA6Cfg.RVS) begin
