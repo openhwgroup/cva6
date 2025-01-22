@@ -43,8 +43,7 @@ module cvxif_issue_register_commit_if_driver #(
   assign register_valid_o  = issue_valid_o;
   assign register_o.hartid = issue_req_o.hartid;
   assign register_o.id     = issue_req_o.id;
-  // cvxif can not take any more instruction if issue transaction is still up.
-  assign cvxif_busy_o      = issue_valid_o && ~issue_ready_i;
+
   always_comb begin
     issue_valid_o       = valid_i && ~flush_i;
     issue_req_o.instr   = x_off_instr_i;
