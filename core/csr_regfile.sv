@@ -2507,20 +2507,16 @@ module csr_regfile
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      priv_lvl_q   <= riscv::PRIV_LVL_M;
+      priv_lvl_q <= riscv::PRIV_LVL_M;
       // floating-point registers
-      fcsr_q       <= '0;
+      fcsr_q     <= '0;
       // debug signals
       if (CVA6Cfg.DebugEn) begin
-        debug_mode_q     <= 1'b0;
-        dcsr_q           <= '{
-          xdebugver: 4'h4,
-          prv: riscv::PRIV_LVL_M,
-          default: '0
-        };
-        dpc_q            <= '0;
-        dscratch0_q      <= {CVA6Cfg.XLEN{1'b0}};
-        dscratch1_q      <= {CVA6Cfg.XLEN{1'b0}};
+        debug_mode_q <= 1'b0;
+        dcsr_q       <= '{xdebugver: 4'h4, prv: riscv::PRIV_LVL_M, default: '0};
+        dpc_q        <= '0;
+        dscratch0_q  <= {CVA6Cfg.XLEN{1'b0}};
+        dscratch1_q  <= {CVA6Cfg.XLEN{1'b0}};
       end
       // machine mode registers
       mstatus_q        <= 64'b0;
@@ -2534,11 +2530,11 @@ module csr_regfile
       mcounteren_q     <= {CVA6Cfg.XLEN{1'b0}};
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
-      fiom_q           <= '0;
-      dcache_q         <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
-      icache_q         <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
-      mcountinhibit_q  <= '0;
-      acc_cons_q       <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
+      fiom_q          <= '0;
+      dcache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
+      icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
+      mcountinhibit_q <= '0;
+      acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};

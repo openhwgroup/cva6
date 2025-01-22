@@ -86,10 +86,8 @@ module cva6_fifo_v3 #(
       if (DEPTH == 0) begin
         data_o = data_i;
       end else begin
-        if (FPGA_ALTERA)
-          data_o = first_word_q ? data_ft_q : fifo_ram_rdata;
-        else
-          data_o = fifo_ram_rdata;
+        if (FPGA_ALTERA) data_o = first_word_q ? data_ft_q : fifo_ram_rdata;
+        else data_o = fifo_ram_rdata;
       end
     end else begin
       data_o     = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
