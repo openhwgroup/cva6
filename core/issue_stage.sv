@@ -163,7 +163,9 @@ module issue_stage
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
+    // Original instruction bits for AES
+    output logic [5:0] orig_instr_aes_bits
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -300,7 +302,8 @@ module issue_stage
       .we_fpr_i,
       .stall_issue_o,
       .rvfi_rs1_o              (rvfi_rs1_o),
-      .rvfi_rs2_o              (rvfi_rs2_o)
+      .rvfi_rs2_o              (rvfi_rs2_o),
+      .orig_instr_aes_bits(orig_instr_aes_bits)
   );
 
 endmodule

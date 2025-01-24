@@ -235,7 +235,9 @@ module ex_stage
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    // Original instruction AES bits
+    input logic [5:0] orig_instr_aes_i
 );
 
   // -------------------------
@@ -308,7 +310,8 @@ module ex_stage
       .rst_ni,
       .fu_data_i       (one_cycle_data),
       .result_o        (alu_result),
-      .alu_branch_res_o(alu_branch_res)
+      .alu_branch_res_o(alu_branch_res),
+      .orig_instr_aes(orig_instr_aes_i)
   );
 
   // 2. Branch Unit (combinatorial)
@@ -476,7 +479,8 @@ module ex_stage
         .rst_ni,
         .fu_data_i       (alu2_data),
         .result_o        (alu2_result),
-        .alu_branch_res_o(  /* this ALU does not handle branching */)
+        .alu_branch_res_o(  /* this ALU does not handle branching */),
+        .orig_instr_aes()
     );
   end else begin
     assign alu2_data   = '0;
