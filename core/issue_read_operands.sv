@@ -126,8 +126,9 @@ module issue_read_operands
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o
-
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
+    // Original instruction bits for AES
+    output logic [5:0] orig_instr_aes_bits
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
@@ -1004,6 +1005,9 @@ module issue_read_operands
       x_transaction_rejected_o <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
+      if (CVA6Cfg.ZKN) begin
+          orig_instr_aes_bits <= {orig_instr_i[0][31:30], orig_instr_i[0][23:20]};
+      end
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
