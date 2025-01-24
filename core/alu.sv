@@ -34,7 +34,9 @@ module alu
     // ALU result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] result_o,
     // ALU branch compare result - branch_unit
-    output logic alu_branch_res_o
+    output logic alu_branch_res_o,
+    // Original instruction AES bits
+    input  logic [5:0] orig_instr_aes
 );
 
   logic [CVA6Cfg.XLEN-1:0] operand_a_rev;
@@ -56,15 +58,17 @@ module alu
   logic [            31:0] zip_gen;
   logic [CVA6Cfg.XLEN-1:0] xperm8_result;
   logic [CVA6Cfg.XLEN-1:0] xperm4_result;
-  //logic [             7:0] sbox_in;
-  //logic [             7:0] sbox_out;
-  //logic [            31:0] mix_out;
   logic [            63:0] sr;
-  //logic [            31:0] aes32esi_gen;
-  //logic [            31:0] aes32esmi_gen;
+  logic [            31:0] aes32esi_gen;
+  logic [            31:0] aes32esmi_gen;
   logic [            63:0] aes64es_gen;
   logic [            63:0] aes64esm_gen;
-  //logic [            63:0] aes64ks1i_gen;
+
+  // logic [            31:0] tmp1;
+  // logic [            31:0] tmp2;
+  // logic [            31:0] tmp3;
+  // logic [            31:0] rc;
+  // logic [            63:0] aes64ks1i_gen;
   logic [            63:0] aes64ks2_gen;
   // bit reverse operand_a for left shifts and bit counting
   generate
@@ -280,71 +284,6 @@ module alu
 
   // ZKN gen block
   if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : zkn_gen_block
-    // AES MixColumns Forward
-    function [31:0] aes_mixcolumn_fwd(input [31:0] x);
-      reg [7:0] s0, s1, s2, s3;
-      reg [7:0] b0, b1, b2, b3;
-      begin
-        s0 = x[7:0];
-        s1 = x[15:8];
-        s2 = x[23:16];
-        s3 = x[31:24];
-        b0 = ((s0 << 1) ^ ((s0[7]) ? 8'h1B : 8'h00)) ^ (((s1 << 1) ^ ((s1[7]) ? 8'h1B : 8'h00)) ^ s1) ^ s2 ^ s3;
-        b1 = s0 ^ ((s1 << 1) ^ ((s1[7]) ? 8'h1B : 8'h00)) ^ (((s2 << 1) ^ ((s2[7]) ? 8'h1B : 8'h00)) ^ s2) ^ s3;
-        b2 = s0 ^ s1 ^ ((s2 << 1) ^ ((s2[7]) ? 8'h1B : 8'h00)) ^ (((s3 << 1) ^ ((s3[7]) ? 8'h1B : 8'h00)) ^ s3);
-        b3 = (((s0 << 1) ^ ((s0[7]) ? 8'h1B : 8'h00)) ^ s0) ^ s1 ^ s2 ^ ((s3 << 1) ^ ((s3[7]) ? 8'h1B : 8'h00));
-        aes_mixcolumn_fwd = {b3, b2, b1, b0};
-      end
-    endfunction
-    // AES Sbox Forward
-    function [7:0] aes_sbox_fwd(input [7:0] si);
-    case (si)
-    8'h00: aes_sbox_fwd = 8'h63; 8'h01: aes_sbox_fwd = 8'h7C; 8'h02: aes_sbox_fwd = 8'h77; 8'h03: aes_sbox_fwd = 8'h7B; 8'h04: aes_sbox_fwd = 8'hF2; 8'h05: aes_sbox_fwd = 8'h6B;
-    8'h06: aes_sbox_fwd = 8'h6F; 8'h07: aes_sbox_fwd = 8'hC5; 8'h08: aes_sbox_fwd = 8'h30; 8'h09: aes_sbox_fwd = 8'h01; 8'h0A: aes_sbox_fwd = 8'h67; 8'h0B: aes_sbox_fwd = 8'h2B;
-    8'h0C: aes_sbox_fwd = 8'hFE; 8'h0D: aes_sbox_fwd = 8'hD7; 8'h0E: aes_sbox_fwd = 8'hAB; 8'h0F: aes_sbox_fwd = 8'h76; 8'h10: aes_sbox_fwd = 8'hCA; 8'h11: aes_sbox_fwd = 8'h82;
-    8'h12: aes_sbox_fwd = 8'hC9; 8'h13: aes_sbox_fwd = 8'h7D; 8'h14: aes_sbox_fwd = 8'hFA; 8'h15: aes_sbox_fwd = 8'h59; 8'h16: aes_sbox_fwd = 8'h47; 8'h17: aes_sbox_fwd = 8'hF0;
-    8'h18: aes_sbox_fwd = 8'hAD; 8'h19: aes_sbox_fwd = 8'hD4; 8'h1A: aes_sbox_fwd = 8'hA2; 8'h1B: aes_sbox_fwd = 8'hAF; 8'h1C: aes_sbox_fwd = 8'h9C; 8'h1D: aes_sbox_fwd = 8'hA4;
-    8'h1E: aes_sbox_fwd = 8'h72; 8'h1F: aes_sbox_fwd = 8'hC0; 8'h20: aes_sbox_fwd = 8'hB7; 8'h21: aes_sbox_fwd = 8'hFD; 8'h22: aes_sbox_fwd = 8'h93; 8'h23: aes_sbox_fwd = 8'h26;
-    8'h24: aes_sbox_fwd = 8'h36; 8'h25: aes_sbox_fwd = 8'h3F; 8'h26: aes_sbox_fwd = 8'hF7; 8'h27: aes_sbox_fwd = 8'hCC; 8'h28: aes_sbox_fwd = 8'h34; 8'h29: aes_sbox_fwd = 8'hA5;
-    8'h2A: aes_sbox_fwd = 8'hE5; 8'h2B: aes_sbox_fwd = 8'hF1; 8'h2C: aes_sbox_fwd = 8'h71; 8'h2D: aes_sbox_fwd = 8'hD8; 8'h2E: aes_sbox_fwd = 8'h31; 8'h2F: aes_sbox_fwd = 8'h15;
-    8'h30: aes_sbox_fwd = 8'h04; 8'h31: aes_sbox_fwd = 8'hC7; 8'h32: aes_sbox_fwd = 8'h23; 8'h33: aes_sbox_fwd = 8'hC3; 8'h34: aes_sbox_fwd = 8'h18; 8'h35: aes_sbox_fwd = 8'h96;
-    8'h36: aes_sbox_fwd = 8'h05; 8'h37: aes_sbox_fwd = 8'h9A; 8'h38: aes_sbox_fwd = 8'h07; 8'h39: aes_sbox_fwd = 8'h12; 8'h3A: aes_sbox_fwd = 8'h80; 8'h3B: aes_sbox_fwd = 8'hE2;
-    8'h3C: aes_sbox_fwd = 8'hEB; 8'h3D: aes_sbox_fwd = 8'h27; 8'h3E: aes_sbox_fwd = 8'hB2; 8'h3F: aes_sbox_fwd = 8'h75; 8'h40: aes_sbox_fwd = 8'h09; 8'h41: aes_sbox_fwd = 8'h83;
-    8'h42: aes_sbox_fwd = 8'h2C; 8'h43: aes_sbox_fwd = 8'h1A; 8'h44: aes_sbox_fwd = 8'h1B; 8'h45: aes_sbox_fwd = 8'h6E; 8'h46: aes_sbox_fwd = 8'h5A; 8'h47: aes_sbox_fwd = 8'hA0;
-    8'h48: aes_sbox_fwd = 8'h52; 8'h49: aes_sbox_fwd = 8'h3B; 8'h4A: aes_sbox_fwd = 8'hD6; 8'h4B: aes_sbox_fwd = 8'hB3; 8'h4C: aes_sbox_fwd = 8'h29; 8'h4D: aes_sbox_fwd = 8'hE3;
-    8'h4E: aes_sbox_fwd = 8'h2F; 8'h4F: aes_sbox_fwd = 8'h84; 8'h50: aes_sbox_fwd = 8'h53; 8'h51: aes_sbox_fwd = 8'hD1; 8'h52: aes_sbox_fwd = 8'h00; 8'h53: aes_sbox_fwd = 8'hED;
-    8'h54: aes_sbox_fwd = 8'h20; 8'h55: aes_sbox_fwd = 8'hFC; 8'h56: aes_sbox_fwd = 8'hB1; 8'h57: aes_sbox_fwd = 8'h5B; 8'h58: aes_sbox_fwd = 8'h6A; 8'h59: aes_sbox_fwd = 8'hCB;
-    8'h5A: aes_sbox_fwd = 8'hBE; 8'h5B: aes_sbox_fwd = 8'h39; 8'h5C: aes_sbox_fwd = 8'h4A; 8'h5D: aes_sbox_fwd = 8'h4C; 8'h5E: aes_sbox_fwd = 8'h58; 8'h5F: aes_sbox_fwd = 8'hCF;
-    8'h60: aes_sbox_fwd = 8'hD0; 8'h61: aes_sbox_fwd = 8'hEF; 8'h62: aes_sbox_fwd = 8'hAA; 8'h63: aes_sbox_fwd = 8'hFB; 8'h64: aes_sbox_fwd = 8'h43; 8'h65: aes_sbox_fwd = 8'h4D;
-    8'h66: aes_sbox_fwd = 8'h33; 8'h67: aes_sbox_fwd = 8'h85; 8'h68: aes_sbox_fwd = 8'h45; 8'h69: aes_sbox_fwd = 8'hF9; 8'h6A: aes_sbox_fwd = 8'h02; 8'h6B: aes_sbox_fwd = 8'h7F;
-    8'h6C: aes_sbox_fwd = 8'h50; 8'h6D: aes_sbox_fwd = 8'h3C; 8'h6E: aes_sbox_fwd = 8'h9F; 8'h6F: aes_sbox_fwd = 8'hA8; 8'h70: aes_sbox_fwd = 8'h51; 8'h71: aes_sbox_fwd = 8'hA3;
-    8'h72: aes_sbox_fwd = 8'h40; 8'h73: aes_sbox_fwd = 8'h8F; 8'h74: aes_sbox_fwd = 8'h92; 8'h75: aes_sbox_fwd = 8'h9D; 8'h76: aes_sbox_fwd = 8'h38; 8'h77: aes_sbox_fwd = 8'hF5;
-    8'h78: aes_sbox_fwd = 8'hBC; 8'h79: aes_sbox_fwd = 8'hB6; 8'h7A: aes_sbox_fwd = 8'hDA; 8'h7B: aes_sbox_fwd = 8'h21; 8'h7C: aes_sbox_fwd = 8'h10; 8'h7D: aes_sbox_fwd = 8'hFF;
-    8'h7E: aes_sbox_fwd = 8'hF3; 8'h7F: aes_sbox_fwd = 8'hD2; 8'h80: aes_sbox_fwd = 8'hCD; 8'h81: aes_sbox_fwd = 8'h0C; 8'h82: aes_sbox_fwd = 8'h13; 8'h83: aes_sbox_fwd = 8'hEC;
-    8'h84: aes_sbox_fwd = 8'h5F; 8'h85: aes_sbox_fwd = 8'h97; 8'h86: aes_sbox_fwd = 8'h44; 8'h87: aes_sbox_fwd = 8'h17; 8'h88: aes_sbox_fwd = 8'hC4; 8'h89: aes_sbox_fwd = 8'hA7;
-    8'h8A: aes_sbox_fwd = 8'h7E; 8'h8B: aes_sbox_fwd = 8'h3D; 8'h8C: aes_sbox_fwd = 8'h64; 8'h8D: aes_sbox_fwd = 8'h5D; 8'h8E: aes_sbox_fwd = 8'h19; 8'h8F: aes_sbox_fwd = 8'h73;
-    8'h90: aes_sbox_fwd = 8'h60; 8'h91: aes_sbox_fwd = 8'h81; 8'h92: aes_sbox_fwd = 8'h4F; 8'h93: aes_sbox_fwd = 8'hDC; 8'h94: aes_sbox_fwd = 8'h22; 8'h95: aes_sbox_fwd = 8'h2A;
-    8'h96: aes_sbox_fwd = 8'h90; 8'h97: aes_sbox_fwd = 8'h88; 8'h98: aes_sbox_fwd = 8'h46; 8'h99: aes_sbox_fwd = 8'hEE; 8'h9A: aes_sbox_fwd = 8'hB8; 8'h9B: aes_sbox_fwd = 8'h14;
-    8'h9C: aes_sbox_fwd = 8'hDE; 8'h9D: aes_sbox_fwd = 8'h5E; 8'h9E: aes_sbox_fwd = 8'h0B; 8'h9F: aes_sbox_fwd = 8'hDB; 8'hA0: aes_sbox_fwd = 8'hE0; 8'hA1: aes_sbox_fwd = 8'h32;
-    8'hA2: aes_sbox_fwd = 8'h3A; 8'hA3: aes_sbox_fwd = 8'h0A; 8'hA4: aes_sbox_fwd = 8'h49; 8'hA5: aes_sbox_fwd = 8'h06; 8'hA6: aes_sbox_fwd = 8'h24; 8'hA7: aes_sbox_fwd = 8'h5C;
-    8'hA8: aes_sbox_fwd = 8'hC2; 8'hA9: aes_sbox_fwd = 8'hD3; 8'hAA: aes_sbox_fwd = 8'hAC; 8'hAB: aes_sbox_fwd = 8'h62; 8'hAC: aes_sbox_fwd = 8'h91; 8'hAD: aes_sbox_fwd = 8'h95;
-    8'hAE: aes_sbox_fwd = 8'hE4; 8'hAF: aes_sbox_fwd = 8'h79; 8'hB0: aes_sbox_fwd = 8'hE7; 8'hB1: aes_sbox_fwd = 8'hC8; 8'hB2: aes_sbox_fwd = 8'h37; 8'hB3: aes_sbox_fwd = 8'h6D;
-    8'hB4: aes_sbox_fwd = 8'h8D; 8'hB5: aes_sbox_fwd = 8'hD5; 8'hB6: aes_sbox_fwd = 8'h4E; 8'hB7: aes_sbox_fwd = 8'hA9; 8'hB8: aes_sbox_fwd = 8'h6C; 8'hB9: aes_sbox_fwd = 8'h56;
-    8'hBA: aes_sbox_fwd = 8'hF4; 8'hBB: aes_sbox_fwd = 8'hEA; 8'hBC: aes_sbox_fwd = 8'h65; 8'hBD: aes_sbox_fwd = 8'h7A; 8'hBE: aes_sbox_fwd = 8'hAE; 8'hBF: aes_sbox_fwd = 8'h08;
-    8'hC0: aes_sbox_fwd = 8'hBA; 8'hC1: aes_sbox_fwd = 8'h78; 8'hC2: aes_sbox_fwd = 8'h25; 8'hC3: aes_sbox_fwd = 8'h2E; 8'hC4: aes_sbox_fwd = 8'h1C; 8'hC5: aes_sbox_fwd = 8'hA6;
-    8'hC6: aes_sbox_fwd = 8'hB4; 8'hC7: aes_sbox_fwd = 8'hC6; 8'hC8: aes_sbox_fwd = 8'hE8; 8'hC9: aes_sbox_fwd = 8'hDD; 8'hCA: aes_sbox_fwd = 8'h74; 8'hCB: aes_sbox_fwd = 8'h1F;
-    8'hCC: aes_sbox_fwd = 8'h4B; 8'hCD: aes_sbox_fwd = 8'hBD; 8'hCE: aes_sbox_fwd = 8'h8B; 8'hCF: aes_sbox_fwd = 8'h8A; 8'hD0: aes_sbox_fwd = 8'h70; 8'hD1: aes_sbox_fwd = 8'h3E;
-    8'hD2: aes_sbox_fwd = 8'hB5; 8'hD3: aes_sbox_fwd = 8'h66; 8'hD4: aes_sbox_fwd = 8'h48; 8'hD5: aes_sbox_fwd = 8'h03; 8'hD6: aes_sbox_fwd = 8'hF6; 8'hD7: aes_sbox_fwd = 8'h0E;
-    8'hD8: aes_sbox_fwd = 8'h61; 8'hD9: aes_sbox_fwd = 8'h35; 8'hDA: aes_sbox_fwd = 8'h57; 8'hDB: aes_sbox_fwd = 8'hB9; 8'hDC: aes_sbox_fwd = 8'h86; 8'hDD: aes_sbox_fwd = 8'hC1;
-    8'hDE: aes_sbox_fwd = 8'h1D; 8'hDF: aes_sbox_fwd = 8'h9E; 8'hE0: aes_sbox_fwd = 8'hE1; 8'hE1: aes_sbox_fwd = 8'hF8; 8'hE2: aes_sbox_fwd = 8'h98; 8'hE3: aes_sbox_fwd = 8'h11;
-    8'hE4: aes_sbox_fwd = 8'h69; 8'hE5: aes_sbox_fwd = 8'hD9; 8'hE6: aes_sbox_fwd = 8'h8E; 8'hE7: aes_sbox_fwd = 8'h94; 8'hE8: aes_sbox_fwd = 8'h9B; 8'hE9: aes_sbox_fwd = 8'h1E;
-    8'hEA: aes_sbox_fwd = 8'h87; 8'hEB: aes_sbox_fwd = 8'hE9; 8'hEC: aes_sbox_fwd = 8'hCE; 8'hED: aes_sbox_fwd = 8'h55; 8'hEE: aes_sbox_fwd = 8'h28; 8'hEF: aes_sbox_fwd = 8'hDF; 8'hF0: aes_sbox_fwd = 8'h8C;
-    8'hF1: aes_sbox_fwd = 8'hA1; 8'hF2: aes_sbox_fwd = 8'h89; 8'hF3: aes_sbox_fwd = 8'h0D; 8'hF4: aes_sbox_fwd = 8'hBF; 8'hF5: aes_sbox_fwd = 8'hE6; 8'hF6: aes_sbox_fwd = 8'h42;
-    8'hF7: aes_sbox_fwd = 8'h68; 8'hF8: aes_sbox_fwd = 8'h41; 8'hF9: aes_sbox_fwd = 8'h99; 8'hFA: aes_sbox_fwd = 8'h2D; 8'hFB: aes_sbox_fwd = 8'h0F; 8'hFC: aes_sbox_fwd = 8'hB0;
-    8'hFD: aes_sbox_fwd = 8'h54; 8'hFE: aes_sbox_fwd = 8'hBB; 8'hFF: aes_sbox_fwd = 8'h16;
-    default: aes_sbox_fwd = 8'h00;
-    endcase
-    endfunction
     genvar i, m, n, q;
     for (i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : brev8_xperm8_gen
       // Generating xperm8_result by extracting bytes from operand a based on indices from operand b
@@ -369,20 +308,21 @@ module alu
         assign unzip_gen[n] = fu_data_i.operand_a[n<<1];
         assign unzip_gen[n+16] = fu_data_i.operand_a[(n<<1)+1];
       end
-      // AES encryption results
-      //assign sbox_in = (fu_data_i.operand_b >> {bs, 3'b000}) & 8'hFF;
-      //assign sbox_out = aes_sbox_fwd(sbox_in);
-      //assign aes32esi_gen = fu_data_i.operand_a ^ (({24'b0, sbox_out} << {bs, 3'b000}) | ({24'b0, sbox_out} >> (32 - {bs, 3'b000})));
-      //assign mix_out = aes_mixcolumn_fwd(aes32esi_gen);
-      //assign aes32esmi_gen = fu_data_i.operand_a ^ ((mix_out << {bs, 3'b000}) | (mix_out >> (32 - {bs, 3'b000})));
+    assign aes32esi_gen = (fu_data_i.operand_a ^ ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} << {orig_instr_aes[5:4], 3'b000}) | ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} >> (32 - {orig_instr_aes[5:4], 3'b000})));
+    assign aes32esmi_gen = fu_data_i.operand_a ^ ((aes_mixcolumn_fwd({24'h000000, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) << {orig_instr_aes[5:4], 3'b000}) | (aes_mixcolumn_fwd({24'h000000, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) >> (32 - {orig_instr_aes[5:4], 3'b000})));
     end
     else if (CVA6Cfg.IS_XLEN64) begin
       // Shift rows step
       assign sr = {fu_data_i.operand_a[31:24], fu_data_i.operand_b[55:48], fu_data_i.operand_b[15:8], fu_data_i.operand_a[39:32], fu_data_i.operand_b[63:56], fu_data_i.operand_b[23:16], fu_data_i.operand_a[47:40], fu_data_i.operand_a[7:0]};
+      // AES64 encryption results
       assign aes64es_gen = {aes_sbox_fwd(sr[63:56]), aes_sbox_fwd(sr[55:48]), aes_sbox_fwd(sr[47:40]), aes_sbox_fwd(sr[39:32]), aes_sbox_fwd(sr[31:24]), aes_sbox_fwd(sr[23:16]), aes_sbox_fwd(sr[15:8]),  aes_sbox_fwd(sr[7:0])};
       assign aes64esm_gen = {aes_mixcolumn_fwd(aes64es_gen[63:32]), aes_mixcolumn_fwd(aes64es_gen[31:0])};
       assign aes64ks2_gen = {(fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0] ^ fu_data_i.operand_b[63:32]), (fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0])};
-      //assign aes64ks1i_gen = bring inst bits here too
+      // assign tmp1 = fu_data_i.operand_a[63:32];
+      // assign rc = orig_instr_aes[3:0];
+      // assign tmp2 = (orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24));
+      // assign tmp3 = aes_subword_fwd(tmp2);
+      // assign aes64ks1i_gen = (orig_instr_aes[3:0] <= 4'hA) ? {(tmp3 ^ rc), (tmp3 ^ rc)} : 64'h0;
     end
   end
 
@@ -499,8 +439,8 @@ module alu
         };
       if (fu_data_i.operation == UNZIP && CVA6Cfg.IS_XLEN32) result_o = unzip_gen;
       if (fu_data_i.operation == ZIP && CVA6Cfg.IS_XLEN32) result_o = zip_gen;
-      //if (fu_data_i.operation == AES32ESI && CVA6Cfg.IS_XLEN32) result_o = aes32esi_gen;
-      //if (fu_data_i.operation == AES32ESMI && CVA6Cfg.IS_XLEN32) result_o = aes32esmi_gen;
+      if (fu_data_i.operation == AES32ESI && CVA6Cfg.IS_XLEN32) result_o = aes32esi_gen;
+      if (fu_data_i.operation == AES32ESMI && CVA6Cfg.IS_XLEN32) result_o = aes32esmi_gen;
       if (fu_data_i.operation == AES64ES && CVA6Cfg.IS_XLEN64) result_o = aes64es_gen;
       if (fu_data_i.operation == AES64ESM && CVA6Cfg.IS_XLEN64) result_o = aes64esm_gen;
       //if (fu_data_i.operation == AES64KS1I && CVA6Cfg.IS_XLEN64) result_o = aes64ks1i_gen;
