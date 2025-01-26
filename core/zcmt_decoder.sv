@@ -1,3 +1,8 @@
+// Licensed under the Solderpad Hardware Licence, Version 2.1 (the "License");
+// you may not use this file except in compliance with the License.
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// You may obtain a copy of the License at https://solderpad.org/licenses/
+//
 // Author: Farhan Ali Shah, 10xEngineers
 // Date: 15.11.2024
 // Description: ZCMT extension in the CVA6 core targeting the 32-bit embedded-class platforms (CV32A60x).
