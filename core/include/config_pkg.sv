@@ -87,6 +87,8 @@ package config_pkg;
     bit                          RVZiCond;
     // Zicntr RISC-V extension
     bit                          RVZicntr;
+    // Zifencei RISC-V extension
+    bit                          RVZifencei;
     // Zihpm RISC-V extension
     bit                          RVZihpm;
     // Floating Point
@@ -285,6 +287,7 @@ package config_pkg;
     copro_type_t CoproType;
     bit          RVZiCond;
     bit          RVZicntr;
+    bit          RVZifencei;
     bit          RVZihpm;
 
     int unsigned NR_SB_ENTRIES;
