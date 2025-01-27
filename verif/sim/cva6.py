@@ -719,7 +719,7 @@ def parse_args(cwd):
                       help="simulation run options")
   parser.add_argument("--isscomp_opts", type=str, default="",
                       help="simulation comp options")
-  parser.add_argument("--isspostrun_opts", type=str, default="0x80000000",
+  parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
                       help="simulation post run options")
   parser.add_argument("-s", "--steps", type=str, default="all",
                       help="Run steps: gen,gcc_compile,iss_sim,iss_cmp", dest="steps")
