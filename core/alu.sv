@@ -63,7 +63,12 @@ module alu
   logic [            31:0] aes32esmi_gen;
   logic [            63:0] aes64es_gen;
   logic [            63:0] aes64esm_gen;
-
+  logic [            31:0] aes32dsi_gen;
+  logic [            31:0] aes32dsmi_gen;
+  logic [            63:0] sr_inv;
+  logic [            63:0] aes64ds_gen;
+  logic [            63:0] aes64dsm_gen;
+  logic [            63:0] aes64im_gen;
   // logic [            31:0] tmp1;
   // logic [            31:0] tmp2;
   // logic [            31:0] tmp3;
@@ -310,13 +315,20 @@ module alu
       end
     assign aes32esi_gen = (fu_data_i.operand_a ^ ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} << {orig_instr_aes[5:4], 3'b000}) | ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} >> (32 - {orig_instr_aes[5:4], 3'b000})));
     assign aes32esmi_gen = fu_data_i.operand_a ^ ((aes_mixcolumn_fwd({24'h000000, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) << {orig_instr_aes[5:4], 3'b000}) | (aes_mixcolumn_fwd({24'h000000, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) >> (32 - {orig_instr_aes[5:4], 3'b000})));
+    assign aes32dsi_gen = (fu_data_i.operand_a ^ ({24'b0, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} << {orig_instr_aes[5:4], 3'b000}) | ({24'b0, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} >> (32 - {orig_instr_aes[5:4], 3'b000})));
+    assign aes32dsmi_gen = fu_data_i.operand_a ^ ((aes_mixcolumn_inv({24'h000000, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) << {orig_instr_aes[5:4], 3'b000}) | (aes_mixcolumn_inv({24'h000000, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) >> (32 - {orig_instr_aes[5:4], 3'b000})));
     end
     else if (CVA6Cfg.IS_XLEN64) begin
       // Shift rows step
       assign sr = {fu_data_i.operand_a[31:24], fu_data_i.operand_b[55:48], fu_data_i.operand_b[15:8], fu_data_i.operand_a[39:32], fu_data_i.operand_b[63:56], fu_data_i.operand_b[23:16], fu_data_i.operand_a[47:40], fu_data_i.operand_a[7:0]};
+      assign sr_inv = {fu_data_i.operand_b[31:24], fu_data_i.operand_b[55:48], fu_data_i.operand_a[15:8], fu_data_i.operand_a[39:32], fu_data_i.operand_a[63:56], fu_data_i.operand_b[23:16], fu_data_i.operand_b[47:40], fu_data_i.operand_a[7:0]};
       // AES64 encryption results
       assign aes64es_gen = {aes_sbox_fwd(sr[63:56]), aes_sbox_fwd(sr[55:48]), aes_sbox_fwd(sr[47:40]), aes_sbox_fwd(sr[39:32]), aes_sbox_fwd(sr[31:24]), aes_sbox_fwd(sr[23:16]), aes_sbox_fwd(sr[15:8]),  aes_sbox_fwd(sr[7:0])};
       assign aes64esm_gen = {aes_mixcolumn_fwd(aes64es_gen[63:32]), aes_mixcolumn_fwd(aes64es_gen[31:0])};
+      assign aes64ds_gen = {aes_sbox_inv(sr_inv[63:56]), aes_sbox_inv(sr_inv[55:48]), aes_sbox_inv(sr_inv[47:40]), aes_sbox_inv(sr_inv[39:32]), aes_sbox_inv(sr_inv[31:24]), aes_sbox_inv(sr_inv[23:16]), aes_sbox_inv(sr_inv[15:8]),  aes_sbox_inv(sr_inv[7:0])};
+      assign aes64dsm_gen = {aes_mixcolumn_inv(aes64ds_gen[63:32]), aes_mixcolumn_inv(aes64ds_gen[31:0])};
+      assign aes64im_gen = {aes_mixcolumn_inv(fu_data_i.operand_a[63:32]), aes_mixcolumn_inv(fu_data_i.operand_a[31:0])};
+      // AES Key Schedule results
       assign aes64ks2_gen = {(fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0] ^ fu_data_i.operand_b[63:32]), (fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0])};
       // assign tmp1 = fu_data_i.operand_a[63:32];
       // assign rc = orig_instr_aes[3:0];
@@ -443,6 +455,11 @@ module alu
       if (fu_data_i.operation == AES32ESMI && CVA6Cfg.IS_XLEN32) result_o = aes32esmi_gen;
       if (fu_data_i.operation == AES64ES && CVA6Cfg.IS_XLEN64) result_o = aes64es_gen;
       if (fu_data_i.operation == AES64ESM && CVA6Cfg.IS_XLEN64) result_o = aes64esm_gen;
+      if (fu_data_i.operation == AES32DSI && CVA6Cfg.IS_XLEN32) result_o = aes32dsi_gen;
+      if (fu_data_i.operation == AES32DSMI && CVA6Cfg.IS_XLEN32) result_o = aes32dsmi_gen;
+      if (fu_data_i.operation == AES64DS && CVA6Cfg.IS_XLEN64) result_o = aes64ds_gen;
+      if (fu_data_i.operation == AES64DSM && CVA6Cfg.IS_XLEN64) result_o = aes64dsm_gen;
+      if (fu_data_i.operation == AES64IM && CVA6Cfg.IS_XLEN64) result_o = aes64im_gen;
       //if (fu_data_i.operation == AES64KS1I && CVA6Cfg.IS_XLEN64) result_o = aes64ks1i_gen;
       if (fu_data_i.operation == AES64KS2 && CVA6Cfg.IS_XLEN64) result_o = aes64ks2_gen;
     end

@@ -835,6 +835,26 @@ module decoder
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32ESMI;  // aes32esmi
                   else illegal_instr_bm = 1'b1;
                 end
+                {7'b0010101, 3'b000}, {7'b0110101, 3'b000}, {7'b1010101, 3'b000}, {7'b1110101, 3'b000}: begin
+                  if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32DSI;  // aes32dsi
+                  else illegal_instr_bm = 1'b1;
+                end
+                {7'b0010111, 3'b000}, {7'b0110111, 3'b000}, {7'b1010111, 3'b000}, {7'b1110111, 3'b000}: begin
+                  if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32DSMI;  // aes32dsmi
+                  else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b001_1101, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES64DS;  // aes64ds
+                  else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b001_1111, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES64DSM;  // aes64dsm
+                  else illegal_instr_bm = 1'b1;
+                end
                 default: begin
                   illegal_instr_bm = 1'b1;
                 end
@@ -977,6 +997,8 @@ module decoder
                   instruction_o.op = ariane_pkg::ZIP;
                 // else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001)
                 //   instruction_o.op = ariane_pkg::AES64KS1I;
+                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b001100000000)
+                  instruction_o.op = ariane_pkg::AES64IM;
                 else illegal_instr_bm = 1'b1;
               end
               3'b101: begin
