@@ -18,6 +18,7 @@ module csr_regfile
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg            = config_pkg::cva6_cfg_empty,
     parameter type                   exception_t        = logic,
+    parameter type                   jvt_t              = logic,
     parameter type                   irq_ctrl_t         = logic,
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
@@ -167,7 +168,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
-    output rvfi_probes_csr_t rvfi_csr_o
+    output rvfi_probes_csr_t rvfi_csr_o,
+    //jvt output
+    output jvt_t jvt_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -295,6 +298,7 @@ module csr_regfile
   assign pmpaddr_o = pmpaddr_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
 
   riscv::fcsr_t fcsr_q, fcsr_d;
+  jvt_t jvt_q, jvt_d;
   // ----------------
   // Assignments
   // ----------------
@@ -346,6 +350,13 @@ module csr_regfile
         riscv::CSR_FCSR: begin
           if (CVA6Cfg.FpPresent && !(mstatus_q.fs == riscv::Off || (CVA6Cfg.RVH && v_q && vsstatus_q.fs == riscv::Off))) begin
             csr_rdata = {{CVA6Cfg.XLEN - 8{1'b0}}, fcsr_q.frm, fcsr_q.fflags};
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_JVT: begin
+          if (CVA6Cfg.RVZCMT) begin
+            csr_rdata = {jvt_q.base, jvt_q.mode};
           end else begin
             read_access_exception = 1'b1;
           end
@@ -908,12 +919,14 @@ module csr_regfile
 
     perf_we_o                       = 1'b0;
     perf_data_o                     = 'b0;
+    if (CVA6Cfg.RVZCMT) begin
+      jvt_d = jvt_q;
+    end
+    fcsr_d       = fcsr_q;
 
-    fcsr_d                          = fcsr_q;
-
-    priv_lvl_d                      = priv_lvl_q;
-    v_d                             = v_q;
-    debug_mode_d                    = debug_mode_q;
+    priv_lvl_d   = priv_lvl_q;
+    v_d          = v_q;
+    debug_mode_d = debug_mode_q;
 
     if (CVA6Cfg.DebugEn) begin
       dcsr_d      = dcsr_q;
@@ -1060,6 +1073,14 @@ module csr_regfile
         riscv::CSR_DSCRATCH1:
         if (CVA6Cfg.DebugEn) dscratch1_d = csr_wdata;
         else update_access_exception = 1'b1;
+        riscv::CSR_JVT: begin
+          if (CVA6Cfg.RVZCMT) begin
+            jvt_d.base = csr_wdata[CVA6Cfg.XLEN-1:6];
+            jvt_d.mode = 6'b000000;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         // trigger module CSRs
         riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
         riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
@@ -2444,8 +2465,16 @@ module csr_regfile
   assign fflags_o = fcsr_q.fflags;
   assign frm_o = fcsr_q.frm;
   assign fprec_o = fcsr_q.fprec;
+  //JVT outputs
+  if (CVA6Cfg.RVZCMT) begin
+    assign jvt_o.base = jvt_q.base;
+    assign jvt_o.mode = jvt_q.mode;
+  end else begin
+    assign jvt_o.base = '0;
+    assign jvt_o.mode = '0;
+  end
   // MMU outputs
-  assign satp_ppn_o = CVA6Cfg.RVS ? satp_q.ppn : '0;
+  assign satp_ppn_o  = CVA6Cfg.RVS ? satp_q.ppn : '0;
   assign vsatp_ppn_o = CVA6Cfg.RVH ? vsatp_q.ppn : '0;
   assign hgatp_ppn_o = CVA6Cfg.RVH ? hgatp_q.ppn : '0;
   if (CVA6Cfg.RVS) begin
@@ -2510,6 +2539,9 @@ module csr_regfile
       priv_lvl_q <= riscv::PRIV_LVL_M;
       // floating-point registers
       fcsr_q     <= '0;
+      if (CVA6Cfg.RVZCMT) begin
+        jvt_q <= '0;
+      end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= 1'b0;
@@ -2591,6 +2623,9 @@ module csr_regfile
       priv_lvl_q <= priv_lvl_d;
       // floating-point registers
       fcsr_q     <= fcsr_d;
+      if (CVA6Cfg.RVZCMT) begin
+        jvt_q <= jvt_d;
+      end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
         debug_mode_q <= debug_mode_d;
@@ -2712,6 +2747,7 @@ module csr_regfile
   // RVFI
   //-------------
   assign rvfi_csr_o.fcsr_q = CVA6Cfg.FpPresent ? fcsr_q : '0;
+  assign rvfi_csr_o.jvt_q = CVA6Cfg.RVZCMT ? jvt_q : '0;
   assign rvfi_csr_o.dcsr_q = CVA6Cfg.DebugEn ? dcsr_q : '0;
   assign rvfi_csr_o.dpc_q = CVA6Cfg.DebugEn ? dpc_q : '0;
   assign rvfi_csr_o.dscratch0_q = CVA6Cfg.DebugEn ? dscratch0_q : '0;

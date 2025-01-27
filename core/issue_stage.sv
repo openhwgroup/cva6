@@ -60,6 +60,8 @@ module issue_stage
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    // Is zcmt instruction - EX_STAGE
+    output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
     output logic is_compressed_instr_o,
     // Transformed trap instruction - EX_STAGE
@@ -263,6 +265,7 @@ module issue_stage
       .rs1_forwarding_o        (rs1_forwarding_xlen),
       .rs2_forwarding_o        (rs2_forwarding_xlen),
       .pc_o,
+      .is_zcmt_o,
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
