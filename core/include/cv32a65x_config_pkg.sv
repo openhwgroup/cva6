@@ -50,6 +50,7 @@ package cva6_config_pkg;
       CvxifEn: bit'(1),
       RVZiCond: bit'(0),
       RVZicntr: bit'(0),
+      RVZifencei: bit'(0),
       RVZihpm: bit'(0),
       NrScoreboardEntries: unsigned'(8),
       PerfCounterEn: bit'(0),
