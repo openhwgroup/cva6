@@ -76,6 +76,7 @@ package build_config_pkg;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
     cfg.RVZiCond = CVA6Cfg.RVZiCond;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
+    cfg.RVZifencei = CVA6Cfg.RVZifencei;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
     cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);

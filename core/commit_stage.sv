@@ -267,11 +267,13 @@ module commit_stage
         // from interrupt service routine
         // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
         // and the private dcache. This is the most expensive instruction.
-        if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && CVA6Cfg.DCacheType == config_pkg::WB && commit_instr_i[0].fu != STORE)) begin
-          if (!commit_drop_i[0]) begin
-            commit_ack_o[0] = no_st_pending_i;
-            // tell the controller to flush the I$
-            fence_i_o = no_st_pending_i;
+        if (CVA6Cfg.RVZifencei) begin
+          if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && CVA6Cfg.DCacheType == config_pkg::WB && commit_instr_i[0].fu != STORE)) begin /* FIXME */ //confirm that flush_dcache_i & not STORE is only related to  RVZifencei
+            if (!commit_drop_i[0]) begin
+              commit_ack_o[0] = no_st_pending_i;
+              // tell the controller to flush the I$
+              fence_i_o = no_st_pending_i;
+            end
           end
         end
         // ------------------
