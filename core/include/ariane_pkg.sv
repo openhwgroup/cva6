@@ -982,8 +982,7 @@ package ariane_pkg;
     result = 8'h00;
     if (y[0]) result ^= x;
     if (y[1]) begin
-        temp = (x << 1) ^ ((x[7]) ? 8'h1B : 8'h00);
-        result ^= (x << 1) ^ ((x[7]) ? 8'h1B : 8'h00);
+        result ^= ((x << 1) ^ ((x[7]) ? 8'h1B : 8'h00));
     end
     if (y[2]) begin
         temp = (x << 1) ^ ((x[7]) ? 8'h1B : 8'h00);
