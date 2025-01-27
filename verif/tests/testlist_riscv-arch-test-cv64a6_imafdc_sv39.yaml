@@ -1017,3 +1017,18 @@ testlist:
   #   iterations: 1
   #   <<: *common_test_config
   #   asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/aes64ks1i-01.S
+
+  - test: rv64i_m-aes64ds-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/aes64ds-01.S
+
+  - test: rv64i_m-aes64dsm-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/aes64dsm-01.S
+
+  - test: rv64i_m-aes64im-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/aes64im-01.S
