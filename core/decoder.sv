@@ -451,10 +451,14 @@ module decoder
           case (instr.stype.funct3)
             // FENCE
             // Currently implemented as a whole DCache flush boldly ignoring other things
-            3'b000: instruction_o.op = ariane_pkg::FENCE;
+            3'b000:  instruction_o.op = ariane_pkg::FENCE;
             // FENCE.I
-            3'b001: instruction_o.op = ariane_pkg::FENCE_I;
-
+            3'b001:
+            if (CVA6Cfg.RVZifencei) begin
+              instruction_o.op = ariane_pkg::FENCE_I;
+            end else begin
+              illegal_instr = 1'b1;
+            end
             default: illegal_instr = 1'b1;
           endcase
         end

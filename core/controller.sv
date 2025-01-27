@@ -133,7 +133,7 @@ module controller
     // ---------------------------------
     // FENCE.I
     // ---------------------------------
-    if (fence_i_i) begin
+    if (fence_i_i && (CVA6Cfg.RVZifencei || CVA6Cfg.DCacheType == config_pkg::WB)) begin  /* FIXME */ //confirm that it's only config_pkg::WB and not others caches configurations
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;
