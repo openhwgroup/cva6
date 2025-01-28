@@ -301,7 +301,7 @@ module commit_stage
     end
 
     if (CVA6Cfg.NrCommitPorts > 1) begin
-
+      commit_macro_ack[1] = 1'b0;
       commit_ack_o[1] = 1'b0;
       we_gpr_o[1]     = 1'b0;
       wdata_o[1]      = commit_instr_i[1].result;
@@ -350,10 +350,9 @@ module commit_stage
       end
     end
     if (CVA6Cfg.RVZCMP) begin
-      if (CVA6Cfg.NrCommitPorts > 1)
-        commit_macro_ack_o = (commit_instr_i[0].is_macro_instr || commit_instr_i[1].is_macro_instr) ? commit_macro_ack : commit_ack_o;
-      else
-        commit_macro_ack_o = (commit_instr_i[0].is_macro_instr) ? commit_macro_ack : commit_ack_o;
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+        commit_macro_ack_o[i] = commit_instr_i[i].is_macro_instr ? commit_macro_ack[i] : commit_ack_o[i];
+      end
     end else commit_macro_ack_o = commit_ack_o;
   end
 
