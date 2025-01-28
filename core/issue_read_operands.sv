@@ -51,9 +51,9 @@ module issue_read_operands
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // Unregistered version of fu_data_o.operanda - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
     // Program Counter - EX_STAGE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Is zcmt - EX_STAGE
@@ -122,7 +122,12 @@ module issue_read_operands
     // FPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
     // Issue stall - PERF_COUNTERS
-    output logic stall_issue_o
+    output logic stall_issue_o,
+    // Information dedicated to RVFI - RVFI
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1_o,
+    // Information dedicated to RVFI - RVFI
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o
+
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
@@ -253,6 +258,8 @@ module issue_read_operands
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assign rs1_forwarding_o[i] = fu_data_n[i].operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
     assign rs2_forwarding_o[i] = fu_data_n[i].operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
+    assign rvfi_rs1_o[i] = fu_data_n[i].operand_a;
+    assign rvfi_rs2_o[i] = fu_data_n[i].operand_b;
   end
 
   assign fu_data_o = fu_data_q;
