@@ -187,6 +187,16 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
    }
 
+   constraint mem_sel_cons {
+      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) {
+         interrupt_cfg.mem_axi_sel == 1;
+         interrupt_cfg.mem_obi_sel == 0;
+      } else {
+         interrupt_cfg.mem_axi_sel == 0;
+         interrupt_cfg.mem_obi_sel == 1;
+      }
+   }
+
    constraint obi_zero_stall_sim_dist_cons {
       //zero_stall_sim dist { 0 :/ 2,  1 :/ 1}; // TODO: Randomize
       zero_stall_sim == 0;

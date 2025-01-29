@@ -34,7 +34,8 @@ task automatic uvma_interrupt_seq_c::clear_irq_channel(int channel, uvma_interru
 
    IRQ_TIMEOUT = cfg.irq_timeout;
    while(1) begin
-      IRQ_ACK_VALUE = cntxt.mem.read(cfg.irq_addr);
+      if (cfg.mem_axi_sel) IRQ_ACK_VALUE = cntxt.mem_axi.read(cfg.irq_addr); //read from axi memory if where using AXI
+      else if (cfg.mem_obi_sel) IRQ_ACK_VALUE = cntxt.mem_obi.read(cfg.irq_addr); //read from obi memory if where using OBI
       if (IRQ_ACK_VALUE[channel]) begin
         req_item.interrupt_vector[channel] = 1'h0;
         `uvm_info(get_type_name(), $sformatf("Clear interrupt channel N-%2d -> mem = 0x%x",channel, IRQ_ACK_VALUE), UVM_NONE);
