@@ -35,8 +35,8 @@ module cva6_rvfi_probes
     input logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_valid_i,
     input logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_ack_i,
 
-    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_i,
-    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs1_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rs2_i,
 
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_i,
