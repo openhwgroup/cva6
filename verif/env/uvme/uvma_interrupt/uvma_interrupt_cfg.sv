@@ -29,6 +29,10 @@ class uvma_interrupt_cfg_c extends uvm_object;
 
    // Interrupt memory ack
    rand bit [XLEN-1:0]           irq_addr;
+   // Select axi mem
+   rand bit                      mem_axi_sel;
+   // Select obi mem
+   rand bit                      mem_obi_sel;
 
    // enbale/disable clear mechanism
    rand bit                      enable_clear_irq;
@@ -45,6 +49,8 @@ class uvma_interrupt_cfg_c extends uvm_object;
       `uvm_field_int (                         interrupt_plusarg_valid  , UVM_DEFAULT)
       `uvm_field_int (                         num_irq_supported  , UVM_DEFAULT)
       `uvm_field_int (                         irq_addr           , UVM_DEFAULT)
+      `uvm_field_int (                         mem_axi_sel        , UVM_DEFAULT)
+      `uvm_field_int (                         mem_obi_sel        , UVM_DEFAULT)
       `uvm_field_int (                         enable_clear_irq   , UVM_DEFAULT)
       `uvm_field_int (                         irq_timeout        , UVM_DEFAULT)
       `uvm_object_utils_end
@@ -63,6 +69,8 @@ class uvma_interrupt_cfg_c extends uvm_object;
       soft num_irq_supported == 2;
       soft enable_clear_irq  == 1;
       soft irq_timeout       == 10_000;
+      soft mem_axi_sel       == 1;
+      soft mem_obi_sel       == 0;
    }
 
    /**
