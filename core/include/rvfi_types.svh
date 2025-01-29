@@ -104,8 +104,8 @@
   logic [Cfg.NrIssuePorts-1:0] fetch_entry_valid; \
   logic [Cfg.NrIssuePorts-1:0][31:0] instruction; \
   logic [Cfg.NrIssuePorts-1:0] is_compressed; \
-  logic [Cfg.NrIssuePorts-1:0][Cfg.VLEN-1:0] rs1_forwarding; \
-  logic [Cfg.NrIssuePorts-1:0][Cfg.VLEN-1:0] rs2_forwarding; \
+  logic [Cfg.NrIssuePorts-1:0][Cfg.XLEN-1:0] rs1; \
+  logic [Cfg.NrIssuePorts-1:0][Cfg.XLEN-1:0] rs2; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_pc; \
   ariane_pkg::fu_op [Cfg.NrCommitPorts-1:0] commit_instr_op; \
   logic [Cfg.NrCommitPorts-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] commit_instr_rs1; \
