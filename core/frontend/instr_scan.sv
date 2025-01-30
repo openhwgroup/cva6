@@ -30,7 +30,7 @@ module instr_scan #(
     output logic rvi_jalr_o,
     // Unconditional jump instruction - FRONTEND
     output logic rvi_jump_o,
-    // Instruction immediat - FRONTEND
+    // Instruction immediate - FRONTEND
     output logic [CVA6Cfg.VLEN-1:0] rvi_imm_o,
     // Branch compressed instruction - FRONTEND
     output logic rvc_branch_o,
@@ -44,7 +44,7 @@ module instr_scan #(
     output logic rvc_jalr_o,
     // JAL compressed instruction - FRONTEND
     output logic rvc_call_o,
-    // Instruction compressed immediat - FRONTEND
+    // Instruction compressed immediate - FRONTEND
     output logic [CVA6Cfg.VLEN-1:0] rvc_imm_o
 );
 
