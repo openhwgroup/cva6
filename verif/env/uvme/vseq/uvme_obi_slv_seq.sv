@@ -30,48 +30,59 @@ class uvme_obi_slv_seq_c extends uvma_obi_memory_slv_seq_c;
    `uvm_object_utils_begin(uvme_obi_slv_seq_c)
    `uvm_object_utils_end
 
-   function new(string name="uvme_obi_slv_seq_c");
-      super.new(name);
-   endfunction : new
-   
-   
-   task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
-      bit [31:0] word_aligned_addr;
+function new(string name="uvme_obi_slv_seq_c");
+   super.new(name);
+endfunction : new
 
-      uvma_obi_memory_slv_seq_item_c  slv_rsp;
-      `uvm_create(slv_rsp)
-      slv_rsp.orig_trn = mon_req;
-      slv_rsp.access_type = mon_req.access_type;
+task do_response(ref uvma_obi_memory_mon_trn_c mon_req);
 
-      word_aligned_addr = { mon_req.address[31:2], 2'h0 };
+   automatic uvma_obi_memory_mon_trn_c curr_req = mon_req;
 
-      `uvm_info("SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
-      if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-         if (mon_req.be[7]) cntxt.mem.write(word_aligned_addr+7, mon_req.data[63:56]);
-         if (mon_req.be[6]) cntxt.mem.write(word_aligned_addr+6, mon_req.data[55:48]);
-         if (mon_req.be[5]) cntxt.mem.write(word_aligned_addr+5, mon_req.data[47:40]);
-         if (mon_req.be[4]) cntxt.mem.write(word_aligned_addr+4, mon_req.data[39:32]);
-         if (mon_req.be[3]) cntxt.mem.write(word_aligned_addr+3, mon_req.data[31:24]);
-         if (mon_req.be[2]) cntxt.mem.write(word_aligned_addr+2, mon_req.data[23:16]);
-         if (mon_req.be[1]) cntxt.mem.write(word_aligned_addr+1, mon_req.data[15:08]);
-         if (mon_req.be[0]) cntxt.mem.write(word_aligned_addr+0, mon_req.data[07:00]);
+   fork
+      begin
+        super.do_response(curr_req);
       end
-      else begin
-         if (mon_req.be[7]) slv_rsp.rdata[63:56] = cntxt.mem.read(word_aligned_addr+7);
-         if (mon_req.be[6]) slv_rsp.rdata[55:48] = cntxt.mem.read(word_aligned_addr+6);
-         if (mon_req.be[5]) slv_rsp.rdata[47:40] = cntxt.mem.read(word_aligned_addr+5);
-         if (mon_req.be[4]) slv_rsp.rdata[39:32] = cntxt.mem.read(word_aligned_addr+4);
-         if (mon_req.be[3]) slv_rsp.rdata[31:24] = cntxt.mem.read(word_aligned_addr+3);
-         if (mon_req.be[2]) slv_rsp.rdata[23:16] = cntxt.mem.read(word_aligned_addr+2);
-         if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem.read(word_aligned_addr+1);
-         if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem.read(word_aligned_addr+0);
-      end
+   join_none
 
-      add_r_fields(mon_req, slv_rsp);
-      slv_rsp.set_sequencer(p_sequencer);
-      `uvm_send(slv_rsp)
+endtask : do_response
 
-   endtask : do_mem_operation
+task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
+   bit [31:0] word_aligned_addr;
+
+   uvma_obi_memory_slv_seq_item_c  slv_rsp;
+   `uvm_create(slv_rsp)
+   slv_rsp.orig_trn = mon_req;
+   slv_rsp.access_type = mon_req.access_type;
+
+   word_aligned_addr = { mon_req.address[31:2], 2'h0 };
+
+   `uvm_info("SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
+   if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      if (mon_req.be[7]) cntxt.mem.write(word_aligned_addr+7, mon_req.data[63:56]);
+      if (mon_req.be[6]) cntxt.mem.write(word_aligned_addr+6, mon_req.data[55:48]);
+      if (mon_req.be[5]) cntxt.mem.write(word_aligned_addr+5, mon_req.data[47:40]);
+      if (mon_req.be[4]) cntxt.mem.write(word_aligned_addr+4, mon_req.data[39:32]);
+      if (mon_req.be[3]) cntxt.mem.write(word_aligned_addr+3, mon_req.data[31:24]);
+      if (mon_req.be[2]) cntxt.mem.write(word_aligned_addr+2, mon_req.data[23:16]);
+      if (mon_req.be[1]) cntxt.mem.write(word_aligned_addr+1, mon_req.data[15:08]);
+      if (mon_req.be[0]) cntxt.mem.write(word_aligned_addr+0, mon_req.data[07:00]);
+   end
+   else begin
+      if (mon_req.be[7]) slv_rsp.rdata[63:56] = cntxt.mem.read(word_aligned_addr+7);
+      if (mon_req.be[6]) slv_rsp.rdata[55:48] = cntxt.mem.read(word_aligned_addr+6);
+      if (mon_req.be[5]) slv_rsp.rdata[47:40] = cntxt.mem.read(word_aligned_addr+5);
+      if (mon_req.be[4]) slv_rsp.rdata[39:32] = cntxt.mem.read(word_aligned_addr+4);
+      if (mon_req.be[3]) slv_rsp.rdata[31:24] = cntxt.mem.read(word_aligned_addr+3);
+      if (mon_req.be[2]) slv_rsp.rdata[23:16] = cntxt.mem.read(word_aligned_addr+2);
+      if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem.read(word_aligned_addr+1);
+      if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem.read(word_aligned_addr+0);
+   end
+
+   add_r_fields(mon_req, slv_rsp);
+   slv_rsp.set_sequencer(p_sequencer);
+   `uvm_send(slv_rsp)
+
+endtask : do_mem_operation
 
 
 endclass : uvme_obi_slv_seq_c
