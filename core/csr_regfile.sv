@@ -1958,14 +1958,14 @@ module csr_regfile
     // 3: The debugger requested entry to Debug Mode. (priority 2)
     // 4: The hart single stepped because step was set. (priority 1)
     // we are currently not in debug mode and could potentially enter
-    if (!debug_mode_q) begin
+    if (CVA6Cfg.DebugEn && !debug_mode_q) begin
       dcsr_d.prv = priv_lvl_o;
       // save virtualization mode bit
       dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
       // trigger module fired
 
       // caused by a breakpoint
-      if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
+      if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
         dcsr_d.prv = priv_lvl_o;
         // save virtualization mode bit
         dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
@@ -1995,7 +1995,7 @@ module csr_regfile
       end
 
       // we've got a debug request
-      if (CVA6Cfg.DebugEn && ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
+      if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
         dcsr_d.prv = priv_lvl_o;
         dcsr_d.v = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // save the PC
@@ -2009,7 +2009,7 @@ module csr_regfile
       end
 
       // single step enable and we just retired an instruction
-      if (CVA6Cfg.DebugEn && dcsr_q.step && commit_ack_i[0]) begin
+      if (dcsr_q.step && commit_ack_i[0]) begin
         dcsr_d.prv = priv_lvl_o;
         dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // valid CTRL flow change
