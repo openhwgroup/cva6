@@ -86,6 +86,11 @@ module cva6
       branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     },
+    //JVT struct{base,mode}
+    localparam type jvt_t = struct packed {
+      logic [CVA6Cfg.XLEN-7:0] base;
+      logic [5:0] mode;
+    },
 
     // ID/EX/WB Stage
     localparam type scoreboard_entry_t = struct packed {
@@ -113,6 +118,7 @@ module cva6
       logic is_last_macro_instr;  // is last decoded 32bit instruction of macro definition
       logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
+      logic is_zcmt;  //is a zcmt instruction
     },
     localparam type writeback_t = struct packed {
       logic valid;  // wb data is valid
@@ -412,9 +418,12 @@ module cva6
   // --------------
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1;
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2;
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
+  logic zcmt_id_ex;
   logic is_compressed_instr_id_ex;
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_ex;
   // fixed latency units
@@ -563,6 +572,8 @@ module cva6
   riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg;
   logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
+  //jvt
+  jvt_t jvt;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -617,6 +628,8 @@ module cva6
   // ----------------
   dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
+  dcache_req_i_t dcache_req_ports_id_cache;
+  dcache_req_o_t dcache_req_ports_cache_id;
   dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
   dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
   logic dcache_commit_wbuffer_empty;
@@ -671,8 +684,11 @@ module cva6
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
+      .jvt_t(jvt_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
@@ -716,7 +732,11 @@ module cva6
       .compressed_ready_i(x_compressed_ready),
       .compressed_resp_i (x_compressed_resp),
       .compressed_valid_o(x_compressed_valid),
-      .compressed_req_o  (x_compressed_req)
+      .compressed_req_o  (x_compressed_req),
+      .jvt_i             (jvt),
+      // DCACHE interfaces
+      .dcache_req_ports_i(dcache_req_ports_cache_id),
+      .dcache_req_ports_o(dcache_req_ports_id_cache)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -817,6 +837,7 @@ module cva6
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
       .fu_data_o               (fu_data_id_ex),
       .pc_o                    (pc_id_ex),
+      .is_zcmt_o               (zcmt_id_ex),
       .is_compressed_instr_o   (is_compressed_instr_id_ex),
       .tinst_o                 (tinst_ex),
       // fixed latency unit ready
@@ -879,7 +900,9 @@ module cva6
       .stall_issue_o        (stall_issue),
       //RVFI
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer)
+      .rvfi_commit_pointer_o(rvfi_commit_pointer),
+      .rvfi_rs1_o           (rvfi_rs1),
+      .rvfi_rs2_o           (rvfi_rs2)
   );
 
   // ---------
@@ -908,6 +931,7 @@ module cva6
       .rs2_forwarding_i(rs2_forwarding_id_ex),
       .fu_data_i(fu_data_id_ex),
       .pc_i(pc_id_ex),
+      .is_zcmt_i(zcmt_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
       .tinst_i(tinst_ex),
       // fixed latency units
@@ -1078,6 +1102,7 @@ module cva6
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
       .exception_t       (exception_t),
+      .jvt_t             (jvt_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
@@ -1154,6 +1179,7 @@ module cva6
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
+      .jvt_o                   (jvt),
       //RVFI
       .rvfi_csr_o              (rvfi_csr)
   );
@@ -1258,15 +1284,29 @@ module cva6
   dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
 
   // D$ request
-  assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
+  // Since ZCMT is only enable for embdeed class so MMU should be disable. 
+  // Cache port 0 is being ultilize in implicit read access in ZCMT extension.
+  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
+    assign dcache_req_to_cache[0] = dcache_req_ports_id_cache;
+  end else begin
+    assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
+  end
   assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];
   assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0];
   assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
                                                                           dcache_req_ports_acc_cache[1];
 
   // D$ response
-  assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
-  assign dcache_req_ports_cache_ex[1] = dcache_req_from_cache[1];
+  // Since ZCMT is only enable for embdeed class so MMU should be disable.
+  // Cache port 0 is being ultilized in implicit read access in ZCMT extension.
+  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
+    assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
+    assign dcache_req_ports_cache_ex[0] = '0;
+  end else begin
+    assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
+    assign dcache_req_ports_cache_id = '0;
+  end
+  assign dcache_req_ports_cache_ex[1]  = dcache_req_from_cache[1];
   assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];
   always_comb begin : gen_dcache_req_store_data_gnt
     dcache_req_ports_cache_ex[2]  = dcache_req_from_cache[3];
@@ -1715,8 +1755,8 @@ module cva6
       .decoded_instr_valid_i (issue_entry_valid_id_issue),
       .decoded_instr_ack_i   (issue_instr_issue_id),
 
-      .rs1_forwarding_i(rs1_forwarding_id_ex),
-      .rs2_forwarding_i(rs2_forwarding_id_ex),
+      .rs1_i(rvfi_rs1),
+      .rs2_i(rvfi_rs2),
 
       .commit_instr_i(commit_instr_id_commit),
       .commit_drop_i (commit_drop_id_commit),

@@ -68,6 +68,8 @@ package config_pkg;
     bit                          RVZCB;
     // Zcmp RISC-V extension
     bit                          RVZCMP;
+    // Zcmt RISC-V extension
+    bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
     // Zicntr RISC-V extension
@@ -258,6 +260,7 @@ package config_pkg;
     bit          RVH;
     bit          RVZCB;
     bit          RVZCMP;
+    bit          RVZCMT;
     bit          XFVec;
     bit          CvxifEn;
     bit          RVZiCond;
@@ -396,6 +399,8 @@ package config_pkg;
     // Software Interrupt can be disabled when there is only M machine mode in CVA6.
     assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn));
+    assert (!(Cfg.SuperscalarEn && Cfg.RVZCMT));
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
     // pragma translate_on
   endfunction
 
