@@ -183,6 +183,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
          cntxt.axi_cntxt.mem              = cntxt.mem;
          cntxt.interrupt_cntxt.mem_axi    = cntxt.mem;
+         `uvm_info("UVMECVA6ENV", "AXI interface is active", UVM_NONE)
       end else begin
          cntxt.obi_memory_instr_cntxt.mem = cntxt.mem_obi;
          cntxt.obi_memory_store_cntxt.mem = cntxt.mem_obi;
@@ -190,6 +191,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt.obi_memory_load_cntxt.mem  = cntxt.mem_obi;
          //cntxt.obi_memory_mmu_ptw_cntxt.mem = cntxt.mem_obi;
          cntxt.interrupt_cntxt.mem_obi    = cntxt.mem_obi;
+         `uvm_info("UVMECVA6ENV", "OBI interface is active", UVM_NONE)
       end
       // get irq_addr ack from CVA6 UVM env
       cfg.interrupt_cfg.irq_addr = cfg.get_irq_addr();
