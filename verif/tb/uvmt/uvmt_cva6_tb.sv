@@ -97,57 +97,63 @@ module uvmt_cva6_tb;
    //                                     .reset_n(clknrst_if.reset_n)
    //                             );
 
-   //bind assertion module for obi interface
-   bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-                       .AUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth),
-                       .WUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth),
-                       .RUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth),
-                       .ADDR_WIDTH(CVA6Cfg.ObiFetchbusCfg.AddrWidth),
-                       .DATA_WIDTH(CVA6Cfg.ObiFetchbusCfg.DataWidth),
-                       .ID_WIDTH(CVA6Cfg.ObiFetchbusCfg.IdWidth),
-                       .ACHK_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth),
-                       .RCHK_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth),
-                       .IS_1P2(1)) obi_fetch_assert(.obi(obi_fetch_if));
-   bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-                       .AUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.AUserWidth),
-                       .WUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.WUserWidth),
-                       .RUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.RUserWidth),
-                       .ADDR_WIDTH(CVA6Cfg.ObiStorebusCfg.AddrWidth),
-                       .DATA_WIDTH(CVA6Cfg.ObiStorebusCfg.DataWidth),
-                       .ID_WIDTH(CVA6Cfg.ObiStorebusCfg.IdWidth),
-                       .ACHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.AChkWidth),
-                       .RCHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.RChkWidth),
-                       .IS_1P2(1)) obi_store_assert(.obi(obi_store_if));
-   bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-                       .AUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AUserWidth),
-                       .WUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.WUserWidth),
-                       .RUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RUserWidth),
-                       .ADDR_WIDTH(CVA6Cfg.ObiAmobusCfg.AddrWidth),
-                       .DATA_WIDTH(CVA6Cfg.ObiAmobusCfg.DataWidth),
-                       .ID_WIDTH(CVA6Cfg.ObiAmobusCfg.IdWidth),
-                       .ACHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AChkWidth),
-                       .RCHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RChkWidth),
-                       .IS_1P2(1)) obi_amo_assert(.obi(obi_amo_if));
-   bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-                       .AUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AUserWidth),
-                       .WUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.WUserWidth),
-                       .RUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RUserWidth),
-                       .ADDR_WIDTH(CVA6Cfg.ObiLoadbusCfg.AddrWidth),
-                       .DATA_WIDTH(CVA6Cfg.ObiLoadbusCfg.DataWidth),
-                       .ID_WIDTH(CVA6Cfg.ObiLoadbusCfg.IdWidth),
-                       .ACHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth),
-                       .RCHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth),
-                       .IS_1P2(1)) obi_load_assert(.obi(obi_load_if));
-   //bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-   //                    .AUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth),
-   //                    .WUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth),
-   //                    .RUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth),
-   //                    .ADDR_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.AddrWidth),
-   //                    .DATA_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.DataWidth),
-   //                    .ID_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.IdWidth),
-   //                    .ACHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth),
-   //                    .RCHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth),
-   //                    .IS_1P2(1)) obi_mmu_ptw_assert(.obi(obi_mmu_ptw_if));
+   if (!CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+      //bind assertion module for axi interface
+      bind uvmt_cva6_dut_wrap
+         uvmt_axi_assert #(CVA6Cfg.DCacheType)           axi_assert(.axi_assert_if(axi_if));
+   end else begin
+      //bind assertion module for obi interface
+      bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                          .AUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AUserWidth),
+                          .WUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.WUserWidth),
+                          .RUSER_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RUserWidth),
+                          .ADDR_WIDTH(CVA6Cfg.ObiFetchbusCfg.AddrWidth),
+                          .DATA_WIDTH(CVA6Cfg.ObiFetchbusCfg.DataWidth),
+                          .ID_WIDTH(CVA6Cfg.ObiFetchbusCfg.IdWidth),
+                          .ACHK_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.AChkWidth),
+                          .RCHK_WIDTH(CVA6Cfg.ObiFetchbusCfg.OptionalCfg.RChkWidth),
+                          .IS_1P2(1)) obi_fetch_assert(.obi(obi_fetch_if));
+      bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                          .AUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.AUserWidth),
+                          .WUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.WUserWidth),
+                          .RUSER_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.RUserWidth),
+                          .ADDR_WIDTH(CVA6Cfg.ObiStorebusCfg.AddrWidth),
+                          .DATA_WIDTH(CVA6Cfg.ObiStorebusCfg.DataWidth),
+                          .ID_WIDTH(CVA6Cfg.ObiStorebusCfg.IdWidth),
+                          .ACHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.AChkWidth),
+                          .RCHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.RChkWidth),
+                          .IS_1P2(1)) obi_store_assert(.obi(obi_store_if));
+      bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                          .AUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AUserWidth),
+                          .WUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.WUserWidth),
+                          .RUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RUserWidth),
+                          .ADDR_WIDTH(CVA6Cfg.ObiAmobusCfg.AddrWidth),
+                          .DATA_WIDTH(CVA6Cfg.ObiAmobusCfg.DataWidth),
+                          .ID_WIDTH(CVA6Cfg.ObiAmobusCfg.IdWidth),
+                          .ACHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AChkWidth),
+                          .RCHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RChkWidth),
+                          .IS_1P2(1)) obi_amo_assert(.obi(obi_amo_if));
+      bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                          .AUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AUserWidth),
+                          .WUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.WUserWidth),
+                          .RUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RUserWidth),
+                          .ADDR_WIDTH(CVA6Cfg.ObiLoadbusCfg.AddrWidth),
+                          .DATA_WIDTH(CVA6Cfg.ObiLoadbusCfg.DataWidth),
+                          .ID_WIDTH(CVA6Cfg.ObiLoadbusCfg.IdWidth),
+                          .ACHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth),
+                          .RCHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth),
+                          .IS_1P2(1)) obi_load_assert(.obi(obi_load_if));
+      //bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+      //                    .AUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth),
+      //                    .WUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth),
+      //                    .RUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth),
+      //                    .ADDR_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.AddrWidth),
+      //                    .DATA_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.DataWidth),
+      //                    .ID_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.IdWidth),
+      //                    .ACHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth),
+      //                    .RCHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth),
+      //                    .IS_1P2(1)) obi_mmu_ptw_assert(.obi(obi_mmu_ptw_if));
+   end
 
    uvmt_axi_switch_intf         axi_switch_vif();
    uvme_cva6_core_cntrl_if      core_cntrl_if();
@@ -163,10 +169,6 @@ module uvmt_cva6_tb;
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
       uvma_cvxif_assert                             cvxif_assert(.cvxif_assert(cvxif_vif));
-
-   //bind assertion module for axi interface
-   bind uvmt_cva6_dut_wrap
-      uvmt_axi_assert #(CVA6Cfg.DCacheType)           axi_assert(.axi_assert_if(axi_if));
 
    // DUT Wrapper Interfaces
    uvmt_rvfi_if #(

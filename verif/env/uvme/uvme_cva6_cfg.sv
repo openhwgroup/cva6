@@ -199,22 +199,22 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
 
    constraint obi_zero_stall_sim_dist_cons {
       //zero_stall_sim dist { 0 :/ 2,  1 :/ 1}; // TODO: Randomize
-      zero_stall_sim == 0;
+      zero_stall_sim == 1;
    }
 
    constraint zero_stall_sim_cons {
       if (zero_stall_sim) {
-         obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
+         obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
 
-         obi_memory_store_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         obi_memory_store_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_store_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
+         obi_memory_store_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
 
-         obi_memory_amo_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         obi_memory_amo_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_amo_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
+         obi_memory_amo_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
 
-         obi_memory_load_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         obi_memory_load_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_load_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
+         obi_memory_load_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
 
          //obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
          //obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
@@ -321,15 +321,16 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max <= 3;
       soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 3;
 
-      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max    <= 2;
-      soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max      <= 2;
+      soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency           <= 2;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max   <= 3;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency        <= 3;
 
-      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max    <= 2;
-      soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_min     <= 0;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max     == 5;
+      soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency          <= 2;
+      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max  <= 3;
+      soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency       <= 3;
 
       //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max    <= 2;
       //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_fixed_latency         <= 2;
