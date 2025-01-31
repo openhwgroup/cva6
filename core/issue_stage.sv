@@ -176,11 +176,11 @@ module issue_stage
     scoreboard_entry_t [CVA6Cfg.NR_SB_ENTRIES-1:0] sbe;
   } forwarding_t;
 
-  forwarding_t                                                    fwd;
-  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]                   issue_instr_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0][            31:0] orig_instr_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                   issue_instr_valid_sb_iro;
-  logic              [CVA6Cfg.NrIssuePorts-1:0]                   issue_ack_iro_sb;
+  forwarding_t                                        fwd;
+  scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_valid_sb_iro;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_ack_iro_sb;
 
   assign issue_instr_o    = issue_instr_sb_iro[0];
   assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];

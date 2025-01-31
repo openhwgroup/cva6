@@ -302,9 +302,9 @@ module commit_stage
 
     if (CVA6Cfg.NrCommitPorts > 1) begin
       commit_macro_ack[1] = 1'b0;
-      commit_ack_o[1] = 1'b0;
-      we_gpr_o[1]     = 1'b0;
-      wdata_o[1]      = commit_instr_i[1].result;
+      commit_ack_o[1]     = 1'b0;
+      we_gpr_o[1]         = 1'b0;
+      wdata_o[1]          = commit_instr_i[1].result;
 
       // -----------------
       // Commit Port 2
