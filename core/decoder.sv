@@ -995,8 +995,8 @@ module decoder
                   instruction_o.op = ariane_pkg::BSETI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::ZIP;
-                // else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001)
-                //   instruction_o.op = ariane_pkg::AES64KS1I;
+                else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001)
+                  instruction_o.op = ariane_pkg::AES64KS1I;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b001100000000)
                   instruction_o.op = ariane_pkg::AES64IM;
                 else illegal_instr_bm = 1'b1;

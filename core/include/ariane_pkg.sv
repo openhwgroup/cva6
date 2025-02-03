@@ -512,7 +512,7 @@ package ariane_pkg;
     AES64DSM,
     AES64IM,
     // AES Key-Schedule instructions
-    //AES64KS1I,
+    AES64KS1I,
     AES64KS2
   } fu_op;
 
