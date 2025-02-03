@@ -352,7 +352,7 @@ module id_stage #(
       issue_n = issue_q;
       fetch_entry_ready_o = '0;
       // instruction is not valid if we stall due to ZCMT or CVXIF
-      decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr && stall_macro_deco_zcmt) ||
+      decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr[0] && stall_macro_deco_zcmt) ||
                                      (CVA6Cfg.CvxifEn && is_illegal_cvxif_i && ~stall_macro_deco) && stall_instr_fetch[0]
                                      ? 1'b0 : 1'b1;
       // Instruction on port 1 are always valid. It is either 32bits or legal 16bits.
@@ -413,7 +413,7 @@ module id_stage #(
       issue_n = issue_q;
       fetch_entry_ready_o = '0;
       // instruction is not valid if we stall due to ZCMT or CVXIF
-      decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr && stall_macro_deco_zcmt) ||
+      decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr[0] && stall_macro_deco_zcmt) ||
                                      (CVA6Cfg.CvxifEn && is_illegal_cvxif_i && ~stall_macro_deco && stall_instr_fetch[0])
                                      ? 1'b0 : 1'b1;
       // Clear the valid flag if issue has acknowledged the instruction
