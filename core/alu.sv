@@ -69,11 +69,7 @@ module alu
   logic [            63:0] aes64ds_gen;
   logic [            63:0] aes64dsm_gen;
   logic [            63:0] aes64im_gen;
-  // logic [            31:0] tmp1;
-  // logic [            31:0] tmp2;
-  // logic [            31:0] tmp3;
-  // logic [            31:0] rc;
-  // logic [            63:0] aes64ks1i_gen;
+  logic [            63:0] aes64ks1i_gen;
   logic [            63:0] aes64ks2_gen;
   // bit reverse operand_a for left shifts and bit counting
   generate
@@ -329,12 +325,8 @@ module alu
       assign aes64dsm_gen = {aes_mixcolumn_inv(aes64ds_gen[63:32]), aes_mixcolumn_inv(aes64ds_gen[31:0])};
       assign aes64im_gen = {aes_mixcolumn_inv(fu_data_i.operand_a[63:32]), aes_mixcolumn_inv(fu_data_i.operand_a[31:0])};
       // AES Key Schedule results
-      assign aes64ks2_gen = {(fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0] ^ fu_data_i.operand_b[63:32]), (fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0])};
-      // assign tmp1 = fu_data_i.operand_a[63:32];
-      // assign rc = orig_instr_aes[3:0];
-      // assign tmp2 = (orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24));
-      // assign tmp3 = aes_subword_fwd(tmp2);
-      // assign aes64ks1i_gen = (orig_instr_aes[3:0] <= 4'hA) ? {(tmp3 ^ rc), (tmp3 ^ rc)} : 64'h0;
+      assign aes64ks2_gen = {(fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0] ^ fu_data_i.operand_b[63:32]), (fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0])};      
+      assign aes64ks1i_gen = (orig_instr_aes[3:0] <= 4'hA) ? {((aes_subword_fwd((orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24)))) ^ (aes_decode_rcon(orig_instr_aes[3:0]))), ((aes_subword_fwd((orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24)))) ^ (aes_decode_rcon(orig_instr_aes[3:0])))} : 64'h0;
     end
   end
 
@@ -460,7 +452,7 @@ module alu
       if (fu_data_i.operation == AES64DS && CVA6Cfg.IS_XLEN64) result_o = aes64ds_gen;
       if (fu_data_i.operation == AES64DSM && CVA6Cfg.IS_XLEN64) result_o = aes64dsm_gen;
       if (fu_data_i.operation == AES64IM && CVA6Cfg.IS_XLEN64) result_o = aes64im_gen;
-      //if (fu_data_i.operation == AES64KS1I && CVA6Cfg.IS_XLEN64) result_o = aes64ks1i_gen;
+      if (fu_data_i.operation == AES64KS1I && CVA6Cfg.IS_XLEN64) result_o = aes64ks1i_gen;
       if (fu_data_i.operation == AES64KS2 && CVA6Cfg.IS_XLEN64) result_o = aes64ks2_gen;
     end
   end
