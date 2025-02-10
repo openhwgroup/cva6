@@ -827,19 +827,51 @@ module decoder
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES64KS2;  // aes64ks2
                   else illegal_instr_bm = 1'b1;
                 end
-                {7'b0010001, 3'b000}, {7'b0110001, 3'b000}, {7'b1010001, 3'b000}, {7'b1110001, 3'b000}: begin
+                {
+                  7'b0010001, 3'b000
+                }, {
+                  7'b0110001, 3'b000
+                }, {
+                  7'b1010001, 3'b000
+                }, {
+                  7'b1110001, 3'b000
+                } : begin
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32ESI;  // aes32esi
                   else illegal_instr_bm = 1'b1;
                 end
-                {7'b0010011, 3'b000}, {7'b0110011, 3'b000}, {7'b1010011, 3'b000}, {7'b1110011, 3'b000}: begin
+                {
+                  7'b0010011, 3'b000
+                }, {
+                  7'b0110011, 3'b000
+                }, {
+                  7'b1010011, 3'b000
+                }, {
+                  7'b1110011, 3'b000
+                } : begin
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32ESMI;  // aes32esmi
                   else illegal_instr_bm = 1'b1;
                 end
-                {7'b0010101, 3'b000}, {7'b0110101, 3'b000}, {7'b1010101, 3'b000}, {7'b1110101, 3'b000}: begin
+                {
+                  7'b0010101, 3'b000
+                }, {
+                  7'b0110101, 3'b000
+                }, {
+                  7'b1010101, 3'b000
+                }, {
+                  7'b1110101, 3'b000
+                } : begin
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32DSI;  // aes32dsi
                   else illegal_instr_bm = 1'b1;
                 end
-                {7'b0010111, 3'b000}, {7'b0110111, 3'b000}, {7'b1010111, 3'b000}, {7'b1110111, 3'b000}: begin
+                {
+                  7'b0010111, 3'b000
+                }, {
+                  7'b0110111, 3'b000
+                }, {
+                  7'b1010111, 3'b000
+                }, {
+                  7'b1110111, 3'b000
+                } : begin
                   if (CVA6Cfg.ZKN) instruction_o.op = ariane_pkg::AES32DSMI;  // aes32dsmi
                   else illegal_instr_bm = 1'b1;
                 end
