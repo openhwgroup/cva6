@@ -1006,7 +1006,7 @@ module issue_read_operands
     end else begin
       fu_data_q <= fu_data_n;
       if (CVA6Cfg.ZKN) begin
-          orig_instr_aes_bits <= {orig_instr_i[0][31:30], orig_instr_i[0][23:20]};
+        orig_instr_aes_bits <= {orig_instr_i[0][31:30], orig_instr_i[0][23:20]};
       end
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;

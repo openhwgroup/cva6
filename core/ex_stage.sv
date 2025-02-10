@@ -311,7 +311,7 @@ module ex_stage
       .fu_data_i       (one_cycle_data),
       .result_o        (alu_result),
       .alu_branch_res_o(alu_branch_res),
-      .orig_instr_aes(orig_instr_aes_i)
+      .orig_instr_aes  (orig_instr_aes_i)
   );
 
   // 2. Branch Unit (combinatorial)
@@ -480,7 +480,7 @@ module ex_stage
         .fu_data_i       (alu2_data),
         .result_o        (alu2_result),
         .alu_branch_res_o(  /* this ALU does not handle branching */),
-        .orig_instr_aes()
+        .orig_instr_aes  ()
     );
   end else begin
     assign alu2_data   = '0;
