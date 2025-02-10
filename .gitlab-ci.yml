@@ -73,8 +73,6 @@ stages:
 .setup_job:
   stage: setup
   tags: [$TAGS_RUNNER]
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
   rules: &on_dev
     - if: $CI_KIND == "regress"
     - if: $CI_KIND == "verif"
@@ -87,6 +85,7 @@ check_env:
     - .setup_job
   variables:
     GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
   script:
     - env
   artifacts:
@@ -96,8 +95,6 @@ build_tools:
   extends:
     - .setup_job
   script:
-    # core-v-verif imports yaml-cpp as a submodule ==> recurse
-    - git submodule update --init --recursive verif/core-v-verif
     - source $SYN_VCS_BASHRC
     # ROOT_PROJECT is used by Spike installer and designates the toplevel of core-v-verif tree.
     - 'export ROOT_PROJECT=$(pwd)'
@@ -124,7 +121,6 @@ build_tools:
   stage: light tests
   rules: *on_dev
   before_script:
-    - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
     - rm -rf artifacts/
     - mkdir -p artifacts/{reports,logs}
@@ -278,7 +274,6 @@ asic-synthesis:
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
@@ -548,12 +543,10 @@ simu-gate:
     PERIOD: "15"  # 66 Mhz
   script:
     - mkdir -p artifacts/{reports,logs}
-    - git -C verif/core-v-verif fetch --unshallow
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh
