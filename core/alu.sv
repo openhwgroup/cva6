@@ -318,7 +318,7 @@ module alu
       // Shift rows step
       assign sr = {fu_data_i.operand_a[31:24], fu_data_i.operand_b[55:48], fu_data_i.operand_b[15:8], fu_data_i.operand_a[39:32], fu_data_i.operand_b[63:56], fu_data_i.operand_b[23:16], fu_data_i.operand_a[47:40], fu_data_i.operand_a[7:0]};
       assign sr_inv = {fu_data_i.operand_b[31:24], fu_data_i.operand_b[55:48], fu_data_i.operand_a[15:8], fu_data_i.operand_a[39:32], fu_data_i.operand_a[63:56], fu_data_i.operand_b[23:16], fu_data_i.operand_b[47:40], fu_data_i.operand_a[7:0]};
-      // AES64 encryption results
+      // AES64 results
       assign aes64es_gen = {aes_sbox_fwd(sr[63:56]), aes_sbox_fwd(sr[55:48]), aes_sbox_fwd(sr[47:40]), aes_sbox_fwd(sr[39:32]), aes_sbox_fwd(sr[31:24]), aes_sbox_fwd(sr[23:16]), aes_sbox_fwd(sr[15:8]),  aes_sbox_fwd(sr[7:0])};
       assign aes64esm_gen = {aes_mixcolumn_fwd(aes64es_gen[63:32]), aes_mixcolumn_fwd(aes64es_gen[31:0])};
       assign aes64ds_gen = {aes_sbox_inv(sr_inv[63:56]), aes_sbox_inv(sr_inv[55:48]), aes_sbox_inv(sr_inv[47:40]), aes_sbox_inv(sr_inv[39:32]), aes_sbox_inv(sr_inv[31:24]), aes_sbox_inv(sr_inv[23:16]), aes_sbox_inv(sr_inv[15:8]),  aes_sbox_inv(sr_inv[7:0])};

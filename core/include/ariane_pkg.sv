@@ -849,55 +849,6 @@ package ariane_pkg;
                            aes_sbox_fwd(word[15:8]),
                            aes_sbox_fwd(word[7:0])};
     endfunction
-  // AES Sbox Forward
-    function [7:0] aes_sbox_fwd(input [7:0] si);
-    case (si)
-    8'h00: aes_sbox_fwd = 8'h63; 8'h01: aes_sbox_fwd = 8'h7C; 8'h02: aes_sbox_fwd = 8'h77; 8'h03: aes_sbox_fwd = 8'h7B; 8'h04: aes_sbox_fwd = 8'hF2; 8'h05: aes_sbox_fwd = 8'h6B;
-    8'h06: aes_sbox_fwd = 8'h6F; 8'h07: aes_sbox_fwd = 8'hC5; 8'h08: aes_sbox_fwd = 8'h30; 8'h09: aes_sbox_fwd = 8'h01; 8'h0A: aes_sbox_fwd = 8'h67; 8'h0B: aes_sbox_fwd = 8'h2B;
-    8'h0C: aes_sbox_fwd = 8'hFE; 8'h0D: aes_sbox_fwd = 8'hD7; 8'h0E: aes_sbox_fwd = 8'hAB; 8'h0F: aes_sbox_fwd = 8'h76; 8'h10: aes_sbox_fwd = 8'hCA; 8'h11: aes_sbox_fwd = 8'h82;
-    8'h12: aes_sbox_fwd = 8'hC9; 8'h13: aes_sbox_fwd = 8'h7D; 8'h14: aes_sbox_fwd = 8'hFA; 8'h15: aes_sbox_fwd = 8'h59; 8'h16: aes_sbox_fwd = 8'h47; 8'h17: aes_sbox_fwd = 8'hF0;
-    8'h18: aes_sbox_fwd = 8'hAD; 8'h19: aes_sbox_fwd = 8'hD4; 8'h1A: aes_sbox_fwd = 8'hA2; 8'h1B: aes_sbox_fwd = 8'hAF; 8'h1C: aes_sbox_fwd = 8'h9C; 8'h1D: aes_sbox_fwd = 8'hA4;
-    8'h1E: aes_sbox_fwd = 8'h72; 8'h1F: aes_sbox_fwd = 8'hC0; 8'h20: aes_sbox_fwd = 8'hB7; 8'h21: aes_sbox_fwd = 8'hFD; 8'h22: aes_sbox_fwd = 8'h93; 8'h23: aes_sbox_fwd = 8'h26;
-    8'h24: aes_sbox_fwd = 8'h36; 8'h25: aes_sbox_fwd = 8'h3F; 8'h26: aes_sbox_fwd = 8'hF7; 8'h27: aes_sbox_fwd = 8'hCC; 8'h28: aes_sbox_fwd = 8'h34; 8'h29: aes_sbox_fwd = 8'hA5;
-    8'h2A: aes_sbox_fwd = 8'hE5; 8'h2B: aes_sbox_fwd = 8'hF1; 8'h2C: aes_sbox_fwd = 8'h71; 8'h2D: aes_sbox_fwd = 8'hD8; 8'h2E: aes_sbox_fwd = 8'h31; 8'h2F: aes_sbox_fwd = 8'h15;
-    8'h30: aes_sbox_fwd = 8'h04; 8'h31: aes_sbox_fwd = 8'hC7; 8'h32: aes_sbox_fwd = 8'h23; 8'h33: aes_sbox_fwd = 8'hC3; 8'h34: aes_sbox_fwd = 8'h18; 8'h35: aes_sbox_fwd = 8'h96;
-    8'h36: aes_sbox_fwd = 8'h05; 8'h37: aes_sbox_fwd = 8'h9A; 8'h38: aes_sbox_fwd = 8'h07; 8'h39: aes_sbox_fwd = 8'h12; 8'h3A: aes_sbox_fwd = 8'h80; 8'h3B: aes_sbox_fwd = 8'hE2;
-    8'h3C: aes_sbox_fwd = 8'hEB; 8'h3D: aes_sbox_fwd = 8'h27; 8'h3E: aes_sbox_fwd = 8'hB2; 8'h3F: aes_sbox_fwd = 8'h75; 8'h40: aes_sbox_fwd = 8'h09; 8'h41: aes_sbox_fwd = 8'h83;
-    8'h42: aes_sbox_fwd = 8'h2C; 8'h43: aes_sbox_fwd = 8'h1A; 8'h44: aes_sbox_fwd = 8'h1B; 8'h45: aes_sbox_fwd = 8'h6E; 8'h46: aes_sbox_fwd = 8'h5A; 8'h47: aes_sbox_fwd = 8'hA0;
-    8'h48: aes_sbox_fwd = 8'h52; 8'h49: aes_sbox_fwd = 8'h3B; 8'h4A: aes_sbox_fwd = 8'hD6; 8'h4B: aes_sbox_fwd = 8'hB3; 8'h4C: aes_sbox_fwd = 8'h29; 8'h4D: aes_sbox_fwd = 8'hE3;
-    8'h4E: aes_sbox_fwd = 8'h2F; 8'h4F: aes_sbox_fwd = 8'h84; 8'h50: aes_sbox_fwd = 8'h53; 8'h51: aes_sbox_fwd = 8'hD1; 8'h52: aes_sbox_fwd = 8'h00; 8'h53: aes_sbox_fwd = 8'hED;
-    8'h54: aes_sbox_fwd = 8'h20; 8'h55: aes_sbox_fwd = 8'hFC; 8'h56: aes_sbox_fwd = 8'hB1; 8'h57: aes_sbox_fwd = 8'h5B; 8'h58: aes_sbox_fwd = 8'h6A; 8'h59: aes_sbox_fwd = 8'hCB;
-    8'h5A: aes_sbox_fwd = 8'hBE; 8'h5B: aes_sbox_fwd = 8'h39; 8'h5C: aes_sbox_fwd = 8'h4A; 8'h5D: aes_sbox_fwd = 8'h4C; 8'h5E: aes_sbox_fwd = 8'h58; 8'h5F: aes_sbox_fwd = 8'hCF;
-    8'h60: aes_sbox_fwd = 8'hD0; 8'h61: aes_sbox_fwd = 8'hEF; 8'h62: aes_sbox_fwd = 8'hAA; 8'h63: aes_sbox_fwd = 8'hFB; 8'h64: aes_sbox_fwd = 8'h43; 8'h65: aes_sbox_fwd = 8'h4D;
-    8'h66: aes_sbox_fwd = 8'h33; 8'h67: aes_sbox_fwd = 8'h85; 8'h68: aes_sbox_fwd = 8'h45; 8'h69: aes_sbox_fwd = 8'hF9; 8'h6A: aes_sbox_fwd = 8'h02; 8'h6B: aes_sbox_fwd = 8'h7F;
-    8'h6C: aes_sbox_fwd = 8'h50; 8'h6D: aes_sbox_fwd = 8'h3C; 8'h6E: aes_sbox_fwd = 8'h9F; 8'h6F: aes_sbox_fwd = 8'hA8; 8'h70: aes_sbox_fwd = 8'h51; 8'h71: aes_sbox_fwd = 8'hA3;
-    8'h72: aes_sbox_fwd = 8'h40; 8'h73: aes_sbox_fwd = 8'h8F; 8'h74: aes_sbox_fwd = 8'h92; 8'h75: aes_sbox_fwd = 8'h9D; 8'h76: aes_sbox_fwd = 8'h38; 8'h77: aes_sbox_fwd = 8'hF5;
-    8'h78: aes_sbox_fwd = 8'hBC; 8'h79: aes_sbox_fwd = 8'hB6; 8'h7A: aes_sbox_fwd = 8'hDA; 8'h7B: aes_sbox_fwd = 8'h21; 8'h7C: aes_sbox_fwd = 8'h10; 8'h7D: aes_sbox_fwd = 8'hFF;
-    8'h7E: aes_sbox_fwd = 8'hF3; 8'h7F: aes_sbox_fwd = 8'hD2; 8'h80: aes_sbox_fwd = 8'hCD; 8'h81: aes_sbox_fwd = 8'h0C; 8'h82: aes_sbox_fwd = 8'h13; 8'h83: aes_sbox_fwd = 8'hEC;
-    8'h84: aes_sbox_fwd = 8'h5F; 8'h85: aes_sbox_fwd = 8'h97; 8'h86: aes_sbox_fwd = 8'h44; 8'h87: aes_sbox_fwd = 8'h17; 8'h88: aes_sbox_fwd = 8'hC4; 8'h89: aes_sbox_fwd = 8'hA7;
-    8'h8A: aes_sbox_fwd = 8'h7E; 8'h8B: aes_sbox_fwd = 8'h3D; 8'h8C: aes_sbox_fwd = 8'h64; 8'h8D: aes_sbox_fwd = 8'h5D; 8'h8E: aes_sbox_fwd = 8'h19; 8'h8F: aes_sbox_fwd = 8'h73;
-    8'h90: aes_sbox_fwd = 8'h60; 8'h91: aes_sbox_fwd = 8'h81; 8'h92: aes_sbox_fwd = 8'h4F; 8'h93: aes_sbox_fwd = 8'hDC; 8'h94: aes_sbox_fwd = 8'h22; 8'h95: aes_sbox_fwd = 8'h2A;
-    8'h96: aes_sbox_fwd = 8'h90; 8'h97: aes_sbox_fwd = 8'h88; 8'h98: aes_sbox_fwd = 8'h46; 8'h99: aes_sbox_fwd = 8'hEE; 8'h9A: aes_sbox_fwd = 8'hB8; 8'h9B: aes_sbox_fwd = 8'h14;
-    8'h9C: aes_sbox_fwd = 8'hDE; 8'h9D: aes_sbox_fwd = 8'h5E; 8'h9E: aes_sbox_fwd = 8'h0B; 8'h9F: aes_sbox_fwd = 8'hDB; 8'hA0: aes_sbox_fwd = 8'hE0; 8'hA1: aes_sbox_fwd = 8'h32;
-    8'hA2: aes_sbox_fwd = 8'h3A; 8'hA3: aes_sbox_fwd = 8'h0A; 8'hA4: aes_sbox_fwd = 8'h49; 8'hA5: aes_sbox_fwd = 8'h06; 8'hA6: aes_sbox_fwd = 8'h24; 8'hA7: aes_sbox_fwd = 8'h5C;
-    8'hA8: aes_sbox_fwd = 8'hC2; 8'hA9: aes_sbox_fwd = 8'hD3; 8'hAA: aes_sbox_fwd = 8'hAC; 8'hAB: aes_sbox_fwd = 8'h62; 8'hAC: aes_sbox_fwd = 8'h91; 8'hAD: aes_sbox_fwd = 8'h95;
-    8'hAE: aes_sbox_fwd = 8'hE4; 8'hAF: aes_sbox_fwd = 8'h79; 8'hB0: aes_sbox_fwd = 8'hE7; 8'hB1: aes_sbox_fwd = 8'hC8; 8'hB2: aes_sbox_fwd = 8'h37; 8'hB3: aes_sbox_fwd = 8'h6D;
-    8'hB4: aes_sbox_fwd = 8'h8D; 8'hB5: aes_sbox_fwd = 8'hD5; 8'hB6: aes_sbox_fwd = 8'h4E; 8'hB7: aes_sbox_fwd = 8'hA9; 8'hB8: aes_sbox_fwd = 8'h6C; 8'hB9: aes_sbox_fwd = 8'h56;
-    8'hBA: aes_sbox_fwd = 8'hF4; 8'hBB: aes_sbox_fwd = 8'hEA; 8'hBC: aes_sbox_fwd = 8'h65; 8'hBD: aes_sbox_fwd = 8'h7A; 8'hBE: aes_sbox_fwd = 8'hAE; 8'hBF: aes_sbox_fwd = 8'h08;
-    8'hC0: aes_sbox_fwd = 8'hBA; 8'hC1: aes_sbox_fwd = 8'h78; 8'hC2: aes_sbox_fwd = 8'h25; 8'hC3: aes_sbox_fwd = 8'h2E; 8'hC4: aes_sbox_fwd = 8'h1C; 8'hC5: aes_sbox_fwd = 8'hA6;
-    8'hC6: aes_sbox_fwd = 8'hB4; 8'hC7: aes_sbox_fwd = 8'hC6; 8'hC8: aes_sbox_fwd = 8'hE8; 8'hC9: aes_sbox_fwd = 8'hDD; 8'hCA: aes_sbox_fwd = 8'h74; 8'hCB: aes_sbox_fwd = 8'h1F;
-    8'hCC: aes_sbox_fwd = 8'h4B; 8'hCD: aes_sbox_fwd = 8'hBD; 8'hCE: aes_sbox_fwd = 8'h8B; 8'hCF: aes_sbox_fwd = 8'h8A; 8'hD0: aes_sbox_fwd = 8'h70; 8'hD1: aes_sbox_fwd = 8'h3E;
-    8'hD2: aes_sbox_fwd = 8'hB5; 8'hD3: aes_sbox_fwd = 8'h66; 8'hD4: aes_sbox_fwd = 8'h48; 8'hD5: aes_sbox_fwd = 8'h03; 8'hD6: aes_sbox_fwd = 8'hF6; 8'hD7: aes_sbox_fwd = 8'h0E;
-    8'hD8: aes_sbox_fwd = 8'h61; 8'hD9: aes_sbox_fwd = 8'h35; 8'hDA: aes_sbox_fwd = 8'h57; 8'hDB: aes_sbox_fwd = 8'hB9; 8'hDC: aes_sbox_fwd = 8'h86; 8'hDD: aes_sbox_fwd = 8'hC1;
-    8'hDE: aes_sbox_fwd = 8'h1D; 8'hDF: aes_sbox_fwd = 8'h9E; 8'hE0: aes_sbox_fwd = 8'hE1; 8'hE1: aes_sbox_fwd = 8'hF8; 8'hE2: aes_sbox_fwd = 8'h98; 8'hE3: aes_sbox_fwd = 8'h11;
-    8'hE4: aes_sbox_fwd = 8'h69; 8'hE5: aes_sbox_fwd = 8'hD9; 8'hE6: aes_sbox_fwd = 8'h8E; 8'hE7: aes_sbox_fwd = 8'h94; 8'hE8: aes_sbox_fwd = 8'h9B; 8'hE9: aes_sbox_fwd = 8'h1E;
-    8'hEA: aes_sbox_fwd = 8'h87; 8'hEB: aes_sbox_fwd = 8'hE9; 8'hEC: aes_sbox_fwd = 8'hCE; 8'hED: aes_sbox_fwd = 8'h55; 8'hEE: aes_sbox_fwd = 8'h28; 8'hEF: aes_sbox_fwd = 8'hDF; 8'hF0: aes_sbox_fwd = 8'h8C;
-    8'hF1: aes_sbox_fwd = 8'hA1; 8'hF2: aes_sbox_fwd = 8'h89; 8'hF3: aes_sbox_fwd = 8'h0D; 8'hF4: aes_sbox_fwd = 8'hBF; 8'hF5: aes_sbox_fwd = 8'hE6; 8'hF6: aes_sbox_fwd = 8'h42;
-    8'hF7: aes_sbox_fwd = 8'h68; 8'hF8: aes_sbox_fwd = 8'h41; 8'hF9: aes_sbox_fwd = 8'h99; 8'hFA: aes_sbox_fwd = 8'h2D; 8'hFB: aes_sbox_fwd = 8'h0F; 8'hFC: aes_sbox_fwd = 8'hB0;
-    8'hFD: aes_sbox_fwd = 8'h54; 8'hFE: aes_sbox_fwd = 8'hBB; 8'hFF: aes_sbox_fwd = 8'h16;
-    default: aes_sbox_fwd = 8'h00;
-    endcase
-    endfunction
   // AES Round Constant
     function [31:0] aes_decode_rcon(input [3:0] r);
         case (r)
@@ -920,55 +871,6 @@ package ariane_pkg;
             default: aes_decode_rcon = 32'h00000000;
         endcase
     endfunction
-  // AES Sbox Inverse
-    function [7:0] aes_sbox_inv(input [7:0] si);
-    case (si)
-    8'h00: aes_sbox_inv = 8'h52; 8'h01: aes_sbox_inv = 8'h09; 8'h02: aes_sbox_inv = 8'h6a; 8'h03: aes_sbox_inv = 8'hd5; 8'h04: aes_sbox_inv = 8'h30; 8'h05: aes_sbox_inv = 8'h36;
-    8'h06: aes_sbox_inv = 8'ha5; 8'h07: aes_sbox_inv = 8'h38; 8'h08: aes_sbox_inv = 8'hbf; 8'h09: aes_sbox_inv = 8'h40; 8'h0a: aes_sbox_inv = 8'ha3; 8'h0b: aes_sbox_inv = 8'h9e;
-    8'h0c: aes_sbox_inv = 8'h81; 8'h0d: aes_sbox_inv = 8'hf3; 8'h0e: aes_sbox_inv = 8'hd7; 8'h0f: aes_sbox_inv = 8'hfb; 8'h10: aes_sbox_inv = 8'h7c; 8'h11: aes_sbox_inv = 8'he3;
-    8'h12: aes_sbox_inv = 8'h39; 8'h13: aes_sbox_inv = 8'h82; 8'h14: aes_sbox_inv = 8'h9b; 8'h15: aes_sbox_inv = 8'h2f; 8'h16: aes_sbox_inv = 8'hff; 8'h17: aes_sbox_inv = 8'h87;
-    8'h18: aes_sbox_inv = 8'h34; 8'h19: aes_sbox_inv = 8'h8e; 8'h1a: aes_sbox_inv = 8'h43; 8'h1b: aes_sbox_inv = 8'h44; 8'h1c: aes_sbox_inv = 8'hc4; 8'h1d: aes_sbox_inv = 8'hde;
-    8'h1e: aes_sbox_inv = 8'he9; 8'h1f: aes_sbox_inv = 8'hcb; 8'h20: aes_sbox_inv = 8'h54; 8'h21: aes_sbox_inv = 8'h7b; 8'h22: aes_sbox_inv = 8'h94; 8'h23: aes_sbox_inv = 8'h32;
-    8'h24: aes_sbox_inv = 8'ha6; 8'h25: aes_sbox_inv = 8'hc2; 8'h26: aes_sbox_inv = 8'h23; 8'h27: aes_sbox_inv = 8'h3d; 8'h28: aes_sbox_inv = 8'hee; 8'h29: aes_sbox_inv = 8'h4c;
-    8'h2a: aes_sbox_inv = 8'h95; 8'h2b: aes_sbox_inv = 8'h0b; 8'h2c: aes_sbox_inv = 8'h42; 8'h2d: aes_sbox_inv = 8'hfa; 8'h2e: aes_sbox_inv = 8'hc3; 8'h2f: aes_sbox_inv = 8'h4e;
-    8'h30: aes_sbox_inv = 8'h08; 8'h31: aes_sbox_inv = 8'h2e; 8'h32: aes_sbox_inv = 8'ha1; 8'h33: aes_sbox_inv = 8'h66; 8'h34: aes_sbox_inv = 8'h28; 8'h35: aes_sbox_inv = 8'hd9;
-    8'h36: aes_sbox_inv = 8'h24; 8'h37: aes_sbox_inv = 8'hb2; 8'h38: aes_sbox_inv = 8'h76; 8'h39: aes_sbox_inv = 8'h5b; 8'h3a: aes_sbox_inv = 8'ha2; 8'h3b: aes_sbox_inv = 8'h49;
-    8'h3c: aes_sbox_inv = 8'h6d; 8'h3d: aes_sbox_inv = 8'h8b; 8'h3e: aes_sbox_inv = 8'hd1; 8'h3f: aes_sbox_inv = 8'h25; 8'h40: aes_sbox_inv = 8'h72; 8'h41: aes_sbox_inv = 8'hf8;
-    8'h42: aes_sbox_inv = 8'hf6; 8'h43: aes_sbox_inv = 8'h64; 8'h44: aes_sbox_inv = 8'h86; 8'h45: aes_sbox_inv = 8'h68; 8'h46: aes_sbox_inv = 8'h98; 8'h47: aes_sbox_inv = 8'h16;
-    8'h48: aes_sbox_inv = 8'hd4; 8'h49: aes_sbox_inv = 8'ha4; 8'h4a: aes_sbox_inv = 8'h5c; 8'h4b: aes_sbox_inv = 8'hcc; 8'h4c: aes_sbox_inv = 8'h5d; 8'h4d: aes_sbox_inv = 8'h65;
-    8'h4e: aes_sbox_inv = 8'hb6; 8'h4f: aes_sbox_inv = 8'h92; 8'h50: aes_sbox_inv = 8'h6c; 8'h51: aes_sbox_inv = 8'h70; 8'h52: aes_sbox_inv = 8'h48; 8'h53: aes_sbox_inv = 8'h50;
-    8'h54: aes_sbox_inv = 8'hfd; 8'h55: aes_sbox_inv = 8'hed; 8'h56: aes_sbox_inv = 8'hb9; 8'h57: aes_sbox_inv = 8'hda; 8'h58: aes_sbox_inv = 8'h5e; 8'h59: aes_sbox_inv = 8'h15;
-    8'h5a: aes_sbox_inv = 8'h46; 8'h5b: aes_sbox_inv = 8'h57; 8'h5c: aes_sbox_inv = 8'ha7; 8'h5d: aes_sbox_inv = 8'h8d; 8'h5e: aes_sbox_inv = 8'h9d; 8'h5f: aes_sbox_inv = 8'h84;
-    8'h60: aes_sbox_inv = 8'h90; 8'h61: aes_sbox_inv = 8'hd8; 8'h62: aes_sbox_inv = 8'hab; 8'h63: aes_sbox_inv = 8'h00; 8'h64: aes_sbox_inv = 8'h8c; 8'h65: aes_sbox_inv = 8'hbc;
-    8'h66: aes_sbox_inv = 8'hd3; 8'h67: aes_sbox_inv = 8'h0a; 8'h68: aes_sbox_inv = 8'hf7; 8'h69: aes_sbox_inv = 8'he4; 8'h6a: aes_sbox_inv = 8'h58; 8'h6b: aes_sbox_inv = 8'h05;
-    8'h6c: aes_sbox_inv = 8'hb8; 8'h6d: aes_sbox_inv = 8'hb3; 8'h6e: aes_sbox_inv = 8'h45; 8'h6f: aes_sbox_inv = 8'h06; 8'h70: aes_sbox_inv = 8'hd0; 8'h71: aes_sbox_inv = 8'h2c;
-    8'h72: aes_sbox_inv = 8'h1e; 8'h73: aes_sbox_inv = 8'h8f; 8'h74: aes_sbox_inv = 8'hca; 8'h75: aes_sbox_inv = 8'h3f; 8'h76: aes_sbox_inv = 8'h0f; 8'h77: aes_sbox_inv = 8'h02;
-    8'h78: aes_sbox_inv = 8'hc1; 8'h79: aes_sbox_inv = 8'haf; 8'h7a: aes_sbox_inv = 8'hbd; 8'h7b: aes_sbox_inv = 8'h03; 8'h7c: aes_sbox_inv = 8'h01; 8'h7d: aes_sbox_inv = 8'h13;
-    8'h7e: aes_sbox_inv = 8'h8a; 8'h7f: aes_sbox_inv = 8'h6b; 8'h80: aes_sbox_inv = 8'h3a; 8'h81: aes_sbox_inv = 8'h91; 8'h82: aes_sbox_inv = 8'h11; 8'h83: aes_sbox_inv = 8'h41;
-    8'h84: aes_sbox_inv = 8'h4f; 8'h85: aes_sbox_inv = 8'h67; 8'h86: aes_sbox_inv = 8'hdc; 8'h87: aes_sbox_inv = 8'hea; 8'h88: aes_sbox_inv = 8'h97; 8'h89: aes_sbox_inv = 8'hf2;
-    8'h8a: aes_sbox_inv = 8'hcf; 8'h8b: aes_sbox_inv = 8'hce; 8'h8c: aes_sbox_inv = 8'hf0; 8'h8d: aes_sbox_inv = 8'hb4; 8'h8e: aes_sbox_inv = 8'he6; 8'h8f: aes_sbox_inv = 8'h73;
-    8'h90: aes_sbox_inv = 8'h96; 8'h91: aes_sbox_inv = 8'hac; 8'h92: aes_sbox_inv = 8'h74; 8'h93: aes_sbox_inv = 8'h22; 8'h94: aes_sbox_inv = 8'he7; 8'h95: aes_sbox_inv = 8'had; 8'h96: aes_sbox_inv = 8'h35; 8'h97: aes_sbox_inv = 8'h85;
-    8'h98: aes_sbox_inv = 8'he2; 8'h99: aes_sbox_inv = 8'hf9; 8'h9a: aes_sbox_inv = 8'h37; 8'h9b: aes_sbox_inv = 8'he8; 8'h9c: aes_sbox_inv = 8'h1c; 8'h9d: aes_sbox_inv = 8'h75;
-    8'h9e: aes_sbox_inv = 8'hdf; 8'h9f: aes_sbox_inv = 8'h6e; 8'ha0: aes_sbox_inv = 8'h47; 8'ha1: aes_sbox_inv = 8'hf1; 8'ha2: aes_sbox_inv = 8'h1a; 8'ha3: aes_sbox_inv = 8'h71;
-    8'ha4: aes_sbox_inv = 8'h1d; 8'ha5: aes_sbox_inv = 8'h29; 8'ha6: aes_sbox_inv = 8'hc5; 8'ha7: aes_sbox_inv = 8'h89; 8'ha8: aes_sbox_inv = 8'h6f; 8'ha9: aes_sbox_inv = 8'hb7;
-    8'haa: aes_sbox_inv = 8'h62; 8'hab: aes_sbox_inv = 8'h0e; 8'hac: aes_sbox_inv = 8'haa; 8'had: aes_sbox_inv = 8'h18; 8'hae: aes_sbox_inv = 8'hbe; 8'haf: aes_sbox_inv = 8'h1b;
-    8'hb0: aes_sbox_inv = 8'hfc; 8'hb1: aes_sbox_inv = 8'h56; 8'hb2: aes_sbox_inv = 8'h3e; 8'hb3: aes_sbox_inv = 8'h4b; 8'hb4: aes_sbox_inv = 8'hc6; 8'hb5: aes_sbox_inv = 8'hd2;
-    8'hb6: aes_sbox_inv = 8'h79; 8'hb7: aes_sbox_inv = 8'h20; 8'hb8: aes_sbox_inv = 8'h9a; 8'hb9: aes_sbox_inv = 8'hdb; 8'hba: aes_sbox_inv = 8'hc0; 8'hbb: aes_sbox_inv = 8'hfe;
-    8'hbc: aes_sbox_inv = 8'h78; 8'hbd: aes_sbox_inv = 8'hcd; 8'hbe: aes_sbox_inv = 8'h5a; 8'hbf: aes_sbox_inv = 8'hf4; 8'hc0: aes_sbox_inv = 8'h1f; 8'hc1: aes_sbox_inv = 8'hdd;
-    8'hc2: aes_sbox_inv = 8'ha8; 8'hc3: aes_sbox_inv = 8'h33; 8'hc4: aes_sbox_inv = 8'h88; 8'hc5: aes_sbox_inv = 8'h07; 8'hc6: aes_sbox_inv = 8'hc7; 8'hc7: aes_sbox_inv = 8'h31;
-    8'hc8: aes_sbox_inv = 8'hb1; 8'hc9: aes_sbox_inv = 8'h12; 8'hca: aes_sbox_inv = 8'h10; 8'hcb: aes_sbox_inv = 8'h59; 8'hcc: aes_sbox_inv = 8'h27; 8'hcd: aes_sbox_inv = 8'h80;
-    8'hce: aes_sbox_inv = 8'hec; 8'hcf: aes_sbox_inv = 8'h5f; 8'hd0: aes_sbox_inv = 8'h60; 8'hd1: aes_sbox_inv = 8'h51; 8'hd2: aes_sbox_inv = 8'h7f; 8'hd3: aes_sbox_inv = 8'ha9;
-    8'hd4: aes_sbox_inv = 8'h19; 8'hd5: aes_sbox_inv = 8'hb5; 8'hd6: aes_sbox_inv = 8'h4a; 8'hd7: aes_sbox_inv = 8'h0d; 8'hd8: aes_sbox_inv = 8'h2d; 8'hd9: aes_sbox_inv = 8'he5;
-    8'hda: aes_sbox_inv = 8'h7a; 8'hdb: aes_sbox_inv = 8'h9f; 8'hdc: aes_sbox_inv = 8'h93; 8'hdd: aes_sbox_inv = 8'hc9; 8'hde: aes_sbox_inv = 8'h9c; 8'hdf: aes_sbox_inv = 8'hef;
-    8'he0: aes_sbox_inv = 8'ha0; 8'he1: aes_sbox_inv = 8'he0; 8'he2: aes_sbox_inv = 8'h3b; 8'he3: aes_sbox_inv = 8'h4d; 8'he4: aes_sbox_inv = 8'hae; 8'he5: aes_sbox_inv = 8'h2a;
-    8'he6: aes_sbox_inv = 8'hf5; 8'he7: aes_sbox_inv = 8'hb0; 8'he8: aes_sbox_inv = 8'hc8; 8'he9: aes_sbox_inv = 8'heb; 8'hea: aes_sbox_inv = 8'hbb; 8'heb: aes_sbox_inv = 8'h3c;
-    8'hec: aes_sbox_inv = 8'h83; 8'hed: aes_sbox_inv = 8'h53; 8'hee: aes_sbox_inv = 8'h99; 8'hef: aes_sbox_inv = 8'h61; 8'hf0: aes_sbox_inv = 8'h17; 8'hf1: aes_sbox_inv = 8'h2b;
-    8'hf2: aes_sbox_inv = 8'h04; 8'hf3: aes_sbox_inv = 8'h7e; 8'hf4: aes_sbox_inv = 8'hba; 8'hf5: aes_sbox_inv = 8'h77; 8'hf6: aes_sbox_inv = 8'hd6; 8'hf7: aes_sbox_inv = 8'h26;
-    8'hf8: aes_sbox_inv = 8'he1; 8'hf9: aes_sbox_inv = 8'h69; 8'hfa: aes_sbox_inv = 8'h14; 8'hfb: aes_sbox_inv = 8'h63; 8'hfc: aes_sbox_inv = 8'h55; 8'hfd: aes_sbox_inv = 8'h21;
-    8'hfe: aes_sbox_inv = 8'h0c; 8'hff: aes_sbox_inv = 8'h7d;
-    default: aes_sbox_inv = 8'h00;
-    endcase
-    endfunction
   // AES MixColumns Inverse
     function logic [31:0] aes_mixcolumn_inv(input logic [31:0] x);
         aes_mixcolumn_inv = {(gfmul(x[7:0], 4'hB) ^ gfmul(x[15:8], 4'hD) ^ gfmul(x[23:16], 4'h9) ^ gfmul(x[31:24], 4'hE)), 
@@ -986,15 +888,114 @@ package ariane_pkg;
     end
     if (y[2]) begin
         temp = (x << 1) ^ ((x[7]) ? 8'h1B : 8'h00);
-        temp = (temp << 1) ^ ((temp[7]) ? 8'h1B : 8'h00);
-        result ^= temp;
+        result ^= (temp << 1) ^ ((temp[7]) ? 8'h1B : 8'h00);
     end
     if (y[3]) begin
         temp = (x << 1) ^ ((x[7]) ? 8'h1B : 8'h00);
         temp = (temp << 1) ^ ((temp[7]) ? 8'h1B : 8'h00);
-        temp = (temp << 1) ^ ((temp[7]) ? 8'h1B : 8'h00);
-        result ^= temp;
+        result ^= (temp << 1) ^ ((temp[7]) ? 8'h1B : 8'h00);
     end
     return result;
     endfunction
+  // AES Sbox Forward
+    function automatic logic [7:0] aes_sbox_fwd(input logic [7:0] in_byte);
+    logic [20:0] expanded;
+    logic [17:0] non_linear;
+    logic [7:0]  compressed;
+    expanded   = linear_top_layer(in_byte);
+    non_linear = non_linear_layer(expanded);
+    compressed = linear_bottom_layer(non_linear);
+    aes_sbox_fwd = compressed;
+    endfunction
+  // AES Sbox Inverse
+    function automatic logic [7:0] aes_sbox_inv(input logic [7:0] in_byte);
+    logic [20:0] expanded;
+    logic [17:0] non_linear;
+    logic [7:0]  compressed;
+    expanded   = aes_sbox_inv_top(in_byte);
+    non_linear = non_linear_layer(expanded);
+    compressed = aes_sbox_inv_out(non_linear);
+    aes_sbox_inv = compressed;
+    endfunction
+  // AES Sbox Forward Top Layer
+    function automatic logic [20:0] linear_top_layer(input logic [7:0] x);
+    return { ((x[7] ^ x[4])  ^ (x[5] ^ x[2])), 
+             (((x[7] ^ x[4])  ^ ((x[6] ^ x[5])  ^ (x[4] ^ x[0]))) ^ ((x[0] ^ (x[6] ^ x[5]))  ^ ((x[3] ^ x[1])  ^ (x[5] ^ x[2])))),
+             ((x[7] ^ x[2])  ^ (((x[7] ^ x[4])  ^ (x[3] ^ x[1]))  ^ (x[6] ^ x[5]))),
+             ((x[7] ^ x[2])  ^ ((x[6] ^ x[5])  ^ (x[1] ^ x[0]))), ((x[6] ^ x[5])  ^ (x[1] ^ x[0])),
+             ((x[7] ^ x[4])  ^ ((x[6] ^ x[5])  ^ (x[4] ^ x[0]))), ((x[6] ^ x[5])  ^ (x[4] ^ x[0])),
+              ((x[0] ^ (x[6] ^ x[5]))  ^ ((x[3] ^ x[1])  ^ (x[5] ^ x[2]))), ((x[3] ^ x[1])  ^ (x[5] ^ x[2])), ((x[3] ^ x[1])  ^ (x[6] ^ x[2])),
+             (((x[7] ^ x[4])  ^ (x[3] ^ x[1]))  ^ (x[6] ^ x[2])), ((x[7] ^ x[1])  ^ (x[4] ^ x[2])),
+              (((x[7] ^ x[4])  ^ (x[3] ^ x[1]))  ^ (x[6] ^ x[5])),
+               (x[0] ^ (x[6] ^ x[5])), (x[0] ^ ((x[7] ^ x[4])  ^ (x[3] ^ x[1]))),
+              ((x[7] ^ x[4])  ^ (x[3] ^ x[1])), (x[4] ^ x[2]), (x[7] ^ x[1]), (x[7] ^ x[2]), (x[7] ^ x[4]), (x[0]) 
+            };
+    endfunction
+// AES Sbox Middle Layer
+    function automatic logic [17:0] non_linear_layer(input logic [20:0] x);
+    logic t1, t2, t3, t4, t5;
+    logic [17:0] y;
+    t1 = (((x[10] ^ (x[9] & x[5])) ^ (x[17] & x[6])) ^ ((x[4] & x[20]) ^ (x[1] & x[11])));
+    t2 = ((((x[14] & x[ 0]) ^ (x[9] & x[5])) ^ x[18]) ^ ((x[2] & x[8]) ^ (x[1] & x[11])));
+    t3 = ((((x[3] ^ x[12]) ^ (x[3] & x[12])) ^ (x[16] & x[7])) ^ ((x[4] & x[20]) ^ (x[1] & x[11])));
+    t4 = ((((x[15] & x[13]) ^ (x[3] & x[12])) ^ ((x[2] & x[8]) ^ (x[1] & x[11]))) ^ x[19]);
+    t5 = ((((t1 ^ t2) & (t1 & t4)) ^ ((t1 ^ t2) ^ (t3 & t1))) ^ (((t3 ^ t4) & (t2 & t3)) ^ ((t3 ^ t4) ^ (t3 & t1))));
+
+    y[0] = (((t1 ^ t2) & (t1 & t4)) ^ ((t1 ^ t2) ^ (t3 & t1))) & x[7];
+    y[1] = (t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) & x[13];
+    y[2] = ((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4)))) & x[11];
+    y[3] = (((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4)))) ^ t5) & x[20];
+    y[4] = t5 & x[8];
+    y[5] = ((t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4))) ^ (((t3 ^ t4) & (t2 & t3)) ^ ((t3 ^ t4) ^ (t3 & t1)))) & x[9];
+    y[6] = (((t3 ^ t4) & (t2 & t3)) ^ ((t3 ^ t4) ^ (t3 & t1))) & x[17];
+    y[7] = (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4))) & x[14];
+    y[8] = ((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (((t1 ^ t2) & (t1 & t4)) ^ ((t1 ^ t2) ^ (t3 & t1)))) & x[3];
+    y[9] = (((t1 ^ t2) & (t1 & t4)) ^ ((t1 ^ t2) ^ (t3 & t1))) & x[16];
+    y[10] = (t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) & x[15];
+    y[11] = ((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4)))) & x[1];
+    y[12] = (((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4)))) ^ t5) & x[4];
+    y[13] = t5 & x[2];
+    y[14] = ((t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4))) ^ (((t3 ^ t4) & (t2 & t3)) ^ ((t3 ^ t4) ^ (t3 & t1)))) & x[5];
+    y[15] = (((t3 ^ t4) & (t2 & t3)) ^ ((t3 ^ t4) ^ (t3 & t1))) & x[6];
+    y[16] = (t4 ^ ((t2 ^ (t3 & t1)) & (t3 ^ t4))) & x[0];
+    y[17] = ((t2 ^ ((t4 ^ (t3 & t1)) & (t1 ^ t2))) ^ (((t1 ^ t2) & (t1 & t4)) ^ ((t1 ^ t2) ^ (t3 & t1)))) & x[12];
+    return y;
+    endfunction
+// AES Sbox Forward Bottom Layer
+    function automatic logic [7:0] linear_bottom_layer(input logic [17:0] x);
+    logic [7:0] y;
+    y[0] = ((x[12] ^ (x[17] ^ x[11])) ^~ ((x[8] ^ (x[1] ^ x[9])) ^ (x[14] ^ x[16])));
+    y[1] = ((x[0] ^ (x[11] ^ x[12])) ^~ ((x[1] ^ x[9]) ^ (x[3] ^ (x[4] ^ x[8]))));
+    y[2] = (((x[12] ^ (x[17] ^ x[11])) ^ (x[3] ^ (x[4] ^ x[8]))) ^ ((x[10] ^ (x[14] ^ x[16])) ^ (x[7] ^ (x[0] ^ x[6]))));
+    y[3] = (((x[11] ^ x[12]) ^ (x[0] ^ x[6])) ^  ((x[15] ^ x[5]) ^ (x[16] ^ x[1])));
+    y[4] = ((x[12] ^ (x[17] ^ x[11]))  ^  ((x[0] ^ x[6]) ^ (x[14] ^ (x[15] ^ x[5]))));
+    y[5] = ((x[13] ^ (x[4] ^ x[8])) ^~ ((x[10] ^ (x[14] ^ x[16])) ^ (x[2] ^ x[11])));
+    y[6] = ((x[6] ^ (x[11] ^ x[12])) ^~ ((x[14] ^ (x[15] ^ x[5])) ^ (x[2] ^ x[3])));
+    y[7] = ((x[12] ^ (x[17] ^ x[11]))  ^  ((x[5] ^ (x[0] ^ x[6])) ^ (x[2] ^ x[3])));
+    return y;
+    endfunction
+// AES Sbox Inverse Top Layer
+function automatic logic [20:0] aes_sbox_inv_top(input logic [7:0] x);
+    return { ((x[4] ^ x[3]) ^ (x[2] ^~ x[1])), (x[5] ^~ (x[4] ^ x[3])), (x[3] ^~ x[0]),
+              (x[7] ^ x[4]), (x[6] ^~ x[4]), ((x[3] ^~ x[0]) ^ (x[6] ^ x[1])), ((x[6] ^~ x[4]) ^ (x[1] ^ x[0])),
+              (x[5] ^~ ((x[6] ^~ x[4]) ^ (x[1] ^ x[0]))), ((x[6] ^ x[1]) ^ (x[5] ^~ x[3])),
+              (((x[7] ^~ x[6]) ^ (x[3] ^~ x[0])) ^ ((x[4] ^ x[3]) ^ (x[2] ^~ x[1]))),
+              (((x[7] ^~ x[6]) ^ (x[3] ^~ x[0])) ^ (x[2] ^~ x[1])),
+              ((x[7] ^~ x[6]) ^ (x[1] ^ x[0])), ((x[7] ^~ x[6]) ^ (x[3] ^~ x[0])), (x[0] ^~ (x[4] ^ x[3])),
+              (x[6] ^~ (x[7] ^ x[4])), ((x[6] ^~ x[4]) ^ (x[5] ^~ x[2])), (x[3] ^ (x[6] ^~ (x[7] ^ x[4]))),
+              ((x[4] ^ x[3]) ^ (x[1] ^ x[0])), (x[7] ^~ x[6]), (x[4] ^ x[3]), (x[7] ^ (x[5] ^~ x[2])) };
+endfunction
+// AES Sbox Inverse Bottom Layer
+function automatic logic [7:0] aes_sbox_inv_out(input logic [17:0] x);
+    logic [7:0] y;
+    y[0] = ((x[5] ^ x[13]) ^ (x[7] ^ x[11]));
+    y[1] = ((x[17] ^ x[12]) ^ (((x[2] ^ x[11]) ^ (x[8] ^ x[9])) ^ (x[0] ^ x[3])));
+    y[2] = (((x[4] ^ x[12]) ^ (x[15] ^ x[0])) ^ ((x[14] ^ x[1]) ^ ((x[2] ^ x[11]) ^ (x[8] ^ x[9]))));
+    y[3] = ((((x[2] ^ x[11]) ^ (x[8] ^ x[9])) ^ (x[0] ^ x[3])) ^ ((x[7] ^ (x[16] ^ x[6])) ^ (x[13] ^ (x[14] ^ x[1]))));
+    y[4] = ((x[14] ^ x[16]) ^ ((x[4] ^ x[12]) ^ ((x[2] ^ x[11]) ^ (x[8] ^ x[9]))));
+    y[5] = ((x[8] ^ (x[4] ^ x[12])) ^ (((x[2] ^ x[11]) ^ (x[15] ^ x[0])) ^ ((x[17] ^ x[10]) ^ (x[7] ^ (x[16] ^ x[6])))));
+    y[6] = (((x[5] ^ x[13]) ^ ((x[2] ^ x[11]) ^ (x[15] ^ x[0]))) ^ ((x[4] ^ x[9]) ^ ((x[16] ^ x[6]) ^ (x[17] ^ x[10]))));
+    y[7] = ((x[17] ^ x[1]) ^ ((x[4] ^ x[12]) ^ ((x[2] ^ x[11]) ^ (x[8] ^ x[9]))));
+    return y;
+endfunction
 endpackage
