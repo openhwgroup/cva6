@@ -1667,9 +1667,11 @@ module decoder
       if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin
         interrupt_cause = INTERRUPTS.M_TIMER;
       end
-      // Machine Mode Software Interrupt
-      if (irq_ctrl_i.mip[riscv::IRQ_M_SOFT] && irq_ctrl_i.mie[riscv::IRQ_M_SOFT]) begin
-        interrupt_cause = INTERRUPTS.M_SW;
+      if (CVA6Cfg.SoftwareInterruptEn) begin
+        // Machine Mode Software Interrupt
+        if (irq_ctrl_i.mip[riscv::IRQ_M_SOFT] && irq_ctrl_i.mie[riscv::IRQ_M_SOFT]) begin
+          interrupt_cause = INTERRUPTS.M_SW;
+        end
       end
       // Machine Mode External Interrupt
       if (irq_ctrl_i.mip[riscv::IRQ_M_EXT] && irq_ctrl_i.mie[riscv::IRQ_M_EXT]) begin

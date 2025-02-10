@@ -426,6 +426,8 @@ module cva6
   // --------------
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_id_ex;  // unregistered version of fu_data_o.operanda
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_id_ex;  // unregistered version of fu_data_o.operandb
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1;
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2;
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
@@ -912,7 +914,9 @@ module cva6
       .stall_issue_o        (stall_issue),
       //RVFI
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer)
+      .rvfi_commit_pointer_o(rvfi_commit_pointer),
+      .rvfi_rs1_o           (rvfi_rs1),
+      .rvfi_rs2_o           (rvfi_rs2)
   );
 
   // ---------
@@ -1780,8 +1784,8 @@ module cva6
       .decoded_instr_valid_i (issue_entry_valid_id_issue),
       .decoded_instr_ack_i   (issue_instr_issue_id),
 
-      .rs1_forwarding_i(rs1_forwarding_id_ex),
-      .rs2_forwarding_i(rs2_forwarding_id_ex),
+      .rs1_i(rvfi_rs1),
+      .rs2_i(rvfi_rs2),
 
       .commit_instr_i(commit_instr_id_commit),
       .commit_drop_i (commit_drop_id_commit),
