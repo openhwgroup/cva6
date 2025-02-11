@@ -67,7 +67,7 @@ set DCRM_COMPILE_ULTRA_DDC_OUTPUT_FILE                  ${RESULTS_DIR}/${DESIGN_
 set DCRM_FINAL_DDC_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.ddc
 set DCRM_FINAL_VERILOG_OUTPUT_FILE                      ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.v
 set DCRM_FINAL_SDC_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.sdc
-set DCRM_FINAL_SPEF_OUTPUT_FILE                         ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.spef
+set DCRM_FINAL_SPEF_OUTPUT_FILE                         ${RESULTS_DIR}/${SCENARIO}.${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.spef
 set DCRM_FINAL_FSDB_OUTPUT_FILE                         ${OUTPUTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.fsdb
 set DCRM_FINAL_VCD_OUTPUT_FILE                          ${OUTPUTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.vcd
 set DCRM_FINAL_SDF_OUTPUT_FILE                          ${RESULTS_DIR}/${DESIGN_NAME}_${TARGET}_${TECH}_synth.${SCENARIO}.sdf
