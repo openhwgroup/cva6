@@ -162,9 +162,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic perf_we_o,
     // PMP configuration containing pmpcfg for max 64 PMPs - ACC_DISPATCHER
-    output riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_o,
+    output riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg_o,
     // PMP addresses - ACC_DISPATCHER
-    output logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
+    output logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_o,
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
@@ -784,11 +784,13 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
+          automatic logic [3:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) read_access_exception = 1'b1;
           else begin
+            // The following line has no effect. It's here just to prevent the synthesizer from crashing
+            if (CVA6Cfg.XLEN == 64) index = (index >> 1) << 1;
             csr_rdata = pmpcfg_q[index*4+:CVA6Cfg.XLEN/8];
           end
         end
