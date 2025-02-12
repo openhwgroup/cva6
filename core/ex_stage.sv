@@ -727,4 +727,24 @@ module ex_stage
     assign gpaddr_to_be_flushed               = '0;
   end
 
+  // // ----------------
+  // // Scalar Cryptography Unit
+  // // ----------------
+  // generate
+  //   if (CVA6Cfg.ZKN) begin : crypto_gen
+  //       crypto_fu #(
+  //     .CVA6Cfg  (CVA6Cfg),
+  //     .fu_data_t(fu_data_t)
+  // ) crypto_fu_i (
+  //     .clk_i,
+  //     .rst_ni,
+  //     .fu_data_i       (one_cycle_data),
+  //     .result_o        (crypto_result),
+  //     .orig_instr_aes  (orig_instr_aes_i)
+  // );
+  //   end else begin : no_crypto_gen
+
+  //   end
+  // endgenerate
+
 endmodule
