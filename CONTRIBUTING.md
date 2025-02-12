@@ -34,6 +34,11 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * Your complete contribution shall be identifiable with parameters (or `directives / templating if together we decide to go this way).
         - If at some point we need to revert it, e.g. if there is no-one maintaining nor using it and it has become a burden to the project.
         - We call this the "parachute" rule: The CVA6 team does not want to use it but is far more comfortable getting one.
+        - Also, this allows not to lose code coverage in verification when your contribution is not enabled (with some tweaks in the coverage tool).
+        - This rule also applies to CSRs which are specific to your contribution.
+    * To ease maintenance and, all common code lines shall exist only once.
+        - Counter-example: CVA6 used to have two different MMUs (Sv32 for 32-bit, Sv39 for 64-bit).
+        - It took the team time to refactor both in a joint design to ease maintenance.
     * Your contribution shall pass the Continuous Integration (CI) flow
         - When the contribution is disabled: in all cases, to ensure you have not broken the design.
         - When the contribution is disabled: the line and condition code coverage shall not be impacted.
