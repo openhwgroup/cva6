@@ -903,6 +903,7 @@ package ariane_pkg;
     end
     return result;
   endfunction
+  // AES Sbox implementation based on https://github.com/riscv/riscv-crypto
   // AES Sbox Forward
   function automatic logic [7:0] aes_sbox_fwd(input logic [7:0] in_byte);
     logic [20:0] expanded;
