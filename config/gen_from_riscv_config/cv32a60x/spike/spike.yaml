@@ -8,12 +8,12 @@ spike_param_tree:
   generic_core_config: false
   max_steps: 200000
   max_steps_enabled: false
-  isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
+  isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs_xcvxif
   priv: M
   core_configs:
     -
-      isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs
-      extensions: cv32a60x,cvxif
+      isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs_xcvxif
+      extensions: cv32a60x
       boot_addr: 2147483648
       marchid_override_mask: 0xFFFFFFFF
       marchid_override_value: 0x3
@@ -39,7 +39,6 @@ spike_param_tree:
       mip_override_mask: 0xfffff77f
       mip_override_value: 0x00000000
       mtval_write_mask: 0
-      mtvec_write_mask: 0xFFFFFFFE
       tinfo_accessible: 0
       mscontext_accessible: 0
       mcontext_accessible: 0
@@ -58,3 +57,4 @@ spike_param_tree:
       unified_traps: true
       mcycleh_implemented: false
       mhpmevent31_implemented: false
+      cvxif_x_num_rs: 2
