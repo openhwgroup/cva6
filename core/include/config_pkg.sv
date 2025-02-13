@@ -46,7 +46,7 @@ package config_pkg;
   } vm_mode_t;
 
   /// Coprocessor type parameter
-  typedef enum logic [0:0] {
+  typedef enum {
     COPRO_NONE,
     COPRO_EXAMPLE
   } copro_type_t;
