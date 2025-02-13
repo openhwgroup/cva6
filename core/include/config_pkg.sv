@@ -47,8 +47,8 @@ package config_pkg;
 
   /// Coprocessor type parameter
   typedef enum logic [0:0] {
-    NO_COPRO = 0,
-    COPRO_EXAMPLE = 1
+    COPRO_NONE,
+    COPRO_EXAMPLE
   } copro_type_t;
 
   localparam NrMaxRules = 16;
