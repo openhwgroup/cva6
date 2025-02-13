@@ -109,7 +109,7 @@ module ariane import ariane_pkg::*; #(
   );
 
   if (CVA6Cfg.CvxifEn) begin: gen_cvxif
-    if (CVA6Cfg.CoproType == config_pkg::NO_COPRO) begin: gen_no_copro
+    if (CVA6Cfg.CoproType == config_pkg::COPRO_NONE) begin: gen_COPRO_NONE
       assign cvxif_resp = '{compressed_ready: 1'b1, issue_ready: 1'b1, register_ready: 1'b1, default: '0}; 
     end else if (CVA6Cfg.CoproType == config_pkg::COPRO_EXAMPLE) begin: gen_copro_example
       cvxif_example_coprocessor #(
