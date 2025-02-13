@@ -102,6 +102,7 @@ package cva6_config_pkg;
       XFVec: bit'(CVA6ConfigFVecEn),
       RVZCMT: bit'(0),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
+      CoproType: config_pkg::NO_COPRO,
       RVZiCond: bit'(CVA6ConfigRVZiCond),
       RVZicntr: bit'(1),
       RVZihpm: bit'(1),
