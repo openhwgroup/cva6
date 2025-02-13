@@ -142,6 +142,10 @@ module csr_regfile
     output logic hcbcfe_o,
     // external interrupt in - SUBSYSTEM
     input logic [1:0] irq_i,
+    // interrupt request bit - CLIC
+    input logic clic_irq_req_i,
+    // selective hardware vectoring bit - CLIC
+    input logic clic_irq_shv_i,
     // inter processor interrupt -> connected to machine mode sw - SUBSYSTEM
     input logic ipi_i,
     // debug request in - ID_STAGE
@@ -160,6 +164,16 @@ module csr_regfile
     output logic hu_o,
     // we are in debug mode -> that will change some decoding - EX_STAGE
     output logic debug_mode_o,
+    // CLIC mode - ID_STAGE
+    output logic clic_mode_o,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    output riscv::intstatus_rv_t mintstatus_o,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    output logic [7:0] mintthresh_o,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    output logic [7:0] sintthresh_o,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    output logic clic_irq_ready_o,
     // we are in single-step mode - COMMIT_STAGE
     output logic single_step_o,
     // L1 ICache Enable - CACHE
@@ -300,10 +314,13 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] dscratch0_q, dscratch0_d;
   logic [CVA6Cfg.XLEN-1:0] dscratch1_q, dscratch1_d;
   logic [CVA6Cfg.XLEN-1:0] mtvec_q, mtvec_d;
+  logic [CVA6Cfg.XLEN-1:0] mtvt_q, mtvt_d;
   logic [CVA6Cfg.XLEN-1:0] medeleg_q, medeleg_d;
   logic [CVA6Cfg.XLEN-1:0] mideleg_q, mideleg_d;
   logic [CVA6Cfg.XLEN-1:0] mip_q, mip_d;
   logic [CVA6Cfg.XLEN-1:0] mie_q, mie_d;
+  riscv::intstatus_rv_t mintstatus_q, mintstatus_d;
+  riscv::intthresh_rv_t mintthresh_q, mintthresh_d;
   logic [CVA6Cfg.XLEN-1:0] mcounteren_q, mcounteren_d;
   logic [CVA6Cfg.XLEN-1:0] mscratch_q, mscratch_d;
   logic [CVA6Cfg.XLEN-1:0] mepc_q, mepc_d;
@@ -316,7 +333,9 @@ module csr_regfile
   logic hfiom_d, hfiom_q;
 
   logic [CVA6Cfg.XLEN-1:0] stvec_q, stvec_d;
+  riscv::intthresh_rv_t sintthresh_q, sintthresh_d;
   logic [CVA6Cfg.XLEN-1:0] scounteren_q, scounteren_d;
+  logic [CVA6Cfg.XLEN-1:0] stvt_q, stvt_d;
   logic [CVA6Cfg.XLEN-1:0] sscratch_q, sscratch_d;
   logic [CVA6Cfg.XLEN-1:0] sepc_q, sepc_d;
   logic [CVA6Cfg.XLEN-1:0] scause_q, scause_d;
@@ -418,6 +437,20 @@ module csr_regfile
     end
   end else begin
     assign vsstatus_extended = '0;
+  end
+
+  if (CVA6Cfg.RVSCLIC) begin : gen_clic_csr_signals
+    assign clic_mode_o = &mtvec_q[1:0];
+    assign mintstatus_o = mintstatus_q;
+    assign mintthresh_o = mintthresh_q.th;
+    assign sintthresh_o = sintthresh_q.th;
+    assign clic_irq_ready_o = clic_mode_o & ex_i.valid & ex_i.cause[CVA6Cfg.XLEN-1];
+  end else begin : gen_dummy_clic_csr_signals
+    assign clic_mode_o = 1'b0;
+    assign mintstatus_o = '0;
+    assign mintthresh_o = '0;
+    assign sintthresh_o = '0;
+    assign clic_irq_ready_o = 1'b0;
   end
 
   always_comb begin : csr_read_process
@@ -545,27 +578,63 @@ module csr_regfile
         end
         riscv::CSR_SIE:
         if (CVA6Cfg.RVS)
-          csr_rdata = (CVA6Cfg.RVH) ? mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mie_q & mideleg_q;
+          csr_rdata = clic_mode_o ? '0 : ((CVA6Cfg.RVH) ? mie_q & mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mie_q & mideleg_q);
         else read_access_exception = 1'b1;
         riscv::CSR_SIP:
         if (CVA6Cfg.RVS)
-          csr_rdata = (CVA6Cfg.RVH) ? mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mip_q & mideleg_q;
+          csr_rdata = clic_mode_o ? '0 : ((CVA6Cfg.RVH) ? mip_q & mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mip_q & mideleg_q);
         else read_access_exception = 1'b1;
         riscv::CSR_STVEC:
-        if (CVA6Cfg.RVS) csr_rdata = stvec_q;
+        if (CVA6Cfg.RVS) csr_rdata = clic_mode_o ? {stvec_q[CVA6Cfg.XLEN-1:6], 6'b11} : stvec_q;
         else read_access_exception = 1'b1;
+        riscv::CSR_SINTSTATUS: begin
+          if (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC) begin
+            // sintstatus reads 0 from CLINT mode
+            // Return a restricted view of mintstatus (sil and uil)
+            csr_rdata = clic_mode_o ? {{CVA6Cfg.XLEN - 16{1'b0}}, mintstatus_q[15:0]} : '0;
+            // The host's interrupt levels are not visible under V
+            if (CVA6Cfg.RVH && v_q) read_access_exception = 1'b1;
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SINTTHRESH: begin
+          if (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC) begin
+            // sintthresh reads 0 from CLINT mode
+            csr_rdata = clic_mode_o ? {{CVA6Cfg.XLEN - 8{1'b0}}, sintthresh_q} : '0;
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_SCOUNTEREN:
         if (CVA6Cfg.RVS) csr_rdata = scounteren_q;
         else read_access_exception = 1'b1;
+        riscv::CSR_STVT: begin
+          if (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC) begin
+            // stvt reads 0 from CLINT mode
+            csr_rdata = clic_mode_o ? stvt_q : '0;
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_SSCRATCH:
         if (CVA6Cfg.RVS) csr_rdata = sscratch_q;
         else read_access_exception = 1'b1;
         riscv::CSR_SEPC:
         if (CVA6Cfg.RVS) csr_rdata = sepc_q;
         else read_access_exception = 1'b1;
-        riscv::CSR_SCAUSE:
-        if (CVA6Cfg.RVS) csr_rdata = scause_q;
-        else read_access_exception = 1'b1;
+        riscv::CSR_SCAUSE: begin
+          if (CVA6Cfg.RVS) begin
+            csr_rdata = scause_q;
+            // In CLIC mode, reading or writing mstatus fields spp/spie in mcause is
+            // equivalent to reading or writing the homonymous field in mstatus.
+            if (CVA6Cfg.RVSCLIC && clic_mode_o) begin
+              csr_rdata[29:27] = {1'b0, mstatus_q.spp, mstatus_q.spie};
+            end
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_STVAL:
         if (CVA6Cfg.RVS) csr_rdata = stval_q;
         else read_access_exception = 1'b1;
@@ -663,14 +732,22 @@ module csr_regfile
         if (CVA6Cfg.RVS)
           csr_rdata = (CVA6Cfg.RVH) ? mideleg_q | HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
         else read_access_exception = 1'b1;
-        riscv::CSR_MIE: csr_rdata = mie_q;
+        riscv::CSR_MIE: csr_rdata = clic_mode_o ? '0 : mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
         riscv::CSR_MCOUNTEREN:
         if (CVA6Cfg.RVU) csr_rdata = mcounteren_q;
         else read_access_exception = 1'b1;
+        riscv::CSR_MTVT: csr_rdata = mtvt_q;
         riscv::CSR_MSCRATCH: csr_rdata = mscratch_q;
         riscv::CSR_MEPC: csr_rdata = mepc_q;
-        riscv::CSR_MCAUSE: csr_rdata = mcause_q;
+        riscv::CSR_MCAUSE: begin
+          csr_rdata = mcause_q;
+          // In CLIC mode, reading or writing mstatus fields mpp/mpie in mcause is
+          // equivalent to reading or writing the homonymous field in mstatus.
+          if (CVA6Cfg.RVSCLIC && clic_mode_o) begin
+            csr_rdata[29:27] = {mstatus_q.mpp, mstatus_q.mpie};
+          end
+        end
         riscv::CSR_MTVAL:
         if (CVA6Cfg.TvalEn) csr_rdata = mtval_q;
         else csr_rdata = '0;
@@ -680,7 +757,23 @@ module csr_regfile
         riscv::CSR_MTVAL2:
         if (CVA6Cfg.RVH) csr_rdata = mtval2_q;
         else read_access_exception = 1'b1;
-        riscv::CSR_MIP: csr_rdata = mip_q;
+        riscv::CSR_MIP: csr_rdata = clic_mode_o ? '0 : mip_q;
+        riscv::CSR_MINTSTATUS: begin
+          if (CVA6Cfg.RVSCLIC) begin
+            // mintstatus reads 0 from CLINT mode
+            csr_rdata = clic_mode_o ? {{CVA6Cfg.XLEN - 32{1'b0}}, mintstatus_q} : '0;
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_MINTTHRESH: begin
+          if (CVA6Cfg.RVSCLIC) begin
+            // mintthresh reads 0 from CLINT mode
+            csr_rdata = clic_mode_o ? {{CVA6Cfg.XLEN - 8{1'b0}}, mintthresh_q} : '0;
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_MENVCFG: begin
           csr_rdata = '0;
           if (CVA6Cfg.RVU) begin
@@ -1120,9 +1213,12 @@ module csr_regfile
     end
     mip_d = mip_q;
     mie_d = mie_q;
+    mintstatus_d = mintstatus_q;
+    mintthresh_d = mintthresh_q;
     mepc_d       = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : mepc_q;
     mcause_d     = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : mcause_q;
     mcounteren_d = mcounteren_q;
+    mtvt_d = mtvt_q;
     mscratch_d = mscratch_q;
     if (CVA6Cfg.TvalEn)
       mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : mtval_q;
@@ -1162,7 +1258,9 @@ module csr_regfile
       sepc_d       = sepc_q;
       scause_d     = scause_q;
       stvec_d      = stvec_q;
+      sintthresh_d = sintthresh_q;
       scounteren_d = scounteren_q;
+      stvt_d       = stvt_q;
       sscratch_d   = sscratch_q;
       stval_d      = stval_q;
       satp_d       = satp_q;
@@ -1357,7 +1455,7 @@ module csr_regfile
           if (CVA6Cfg.RVH) begin
             vstvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
             // vector mode: the same 64 * 4 byte alignment as stvec
-            if (csr_wdata[0]) vstvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
+            if (!clic_mode_o && csr_wdata[0]) vstvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1426,9 +1524,10 @@ module csr_regfile
         // if the corresponding bit in mideleg is set
         riscv::CSR_SIE: begin
           if (CVA6Cfg.RVS) begin
-            mask  = (CVA6Cfg.RVH) ? mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
+            mask = (CVA6Cfg.RVH) ? mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
             // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
-            mie_d = (mie_q & ~mask) | (csr_wdata & mask);
+            if (!clic_mode_o) mie_d = (mie_q & ~mask) | (csr_wdata & mask);
+            // In CLIC mode, writes to SIE are ignored.
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1436,9 +1535,12 @@ module csr_regfile
 
         riscv::CSR_SIP: begin
           if (CVA6Cfg.RVS) begin
-            // only the supervisor software interrupt is write-able, iff delegated
-            mask  = CVA6Cfg.XLEN'(riscv::MIP_SSIP) & mideleg_q;
-            mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+            // In CLIC mode, writes to SIP are ignored.
+            if (!clic_mode_o) begin
+              // only the supervisor software interrupt is write-able, iff delegated
+              mask  = CVA6Cfg.XLEN'(riscv::MIP_SSIP) & mideleg_q;
+              mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+            end
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1446,13 +1548,33 @@ module csr_regfile
 
         riscv::CSR_STVEC:
         if (CVA6Cfg.RVS) begin
-          stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
+          stvec_d = clic_mode_o ? {csr_wdata[CVA6Cfg.XLEN-1:2], 2'b11} : {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
           // vector mode: trap entry replaces base bits [7:2] with the cause
-          if (csr_wdata[0]) stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
+          if (!clic_mode_o && csr_wdata[0]) stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
         end else update_access_exception = 1'b1;
         riscv::CSR_SCOUNTEREN:
         if (CVA6Cfg.RVS) scounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
         else update_access_exception = 1'b1;
+        riscv::CSR_STVT: begin
+          if (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC) begin
+            // Writes are legal but ignored in CLINT mode
+            if (clic_mode_o) begin
+              stvt_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 8'b0};
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SINTTHRESH: begin
+          if (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC) begin
+            // Writes are legal but ignored in CLINT mode
+            if (clic_mode_o) begin
+              sintthresh_d.th = csr_wdata[7:0];
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_SSCRATCH:
         if (CVA6Cfg.RVS) sscratch_d = csr_wdata;
         else update_access_exception = 1'b1;
@@ -1462,8 +1584,14 @@ module csr_regfile
           sepc_d = {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
         else update_access_exception = 1'b1;
         riscv::CSR_SCAUSE:
-        if (CVA6Cfg.RVS) scause_d = csr_wdata;
-        else update_access_exception = 1'b1;
+        if (CVA6Cfg.RVS) begin
+          scause_d = csr_wdata;
+          // In CLIC mode, scause.spp/spie are aliases of mstatus.spp/spie
+          if (CVA6Cfg.RVSCLIC && clic_mode_o) begin
+            mstatus_d.spp  = csr_wdata[28];
+            mstatus_d.spie = csr_wdata[27];
+          end
+        end else update_access_exception = 1'b1;
         riscv::CSR_STVAL:
         if (CVA6Cfg.RVS && CVA6Cfg.TvalEn) stval_d = csr_wdata;
         else update_access_exception = 1'b1;
@@ -1732,34 +1860,37 @@ module csr_regfile
         end
         // mask the register so that unsupported interrupts can never be set
         riscv::CSR_MIE: begin
-          if (CVA6Cfg.RVH) begin
-            mask = HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]
-                    | CVA6Cfg.XLEN'(riscv::MIP_SSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_STIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
-          end else begin
-            if (CVA6Cfg.RVS) begin
-              mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+          // In CLIC mode, writes to MIE are ignored.
+          if (!clic_mode_o) begin
+            if (CVA6Cfg.RVH) begin
+              mask = HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]
+                      | CVA6Cfg.XLEN'(riscv::MIP_SSIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_STIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
                       | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
             end else begin
-              if (CVA6Cfg.SoftwareInterruptEn) begin
-                mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)  // same shift as MSIE
-                | CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
-                | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+              if (CVA6Cfg.RVS) begin
+                mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+                        | CVA6Cfg.XLEN'(riscv::MIP_STIP)
+                        | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
+                        | CVA6Cfg.XLEN'(riscv::MIP_MSIP)
+                        | CVA6Cfg.XLEN'(riscv::MIP_MTIP)
+                        | CVA6Cfg.XLEN'(riscv::MIP_MEIP);
               end else begin
-                mask = CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
-                | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+                if (CVA6Cfg.SoftwareInterruptEn) begin
+                  mask = CVA6Cfg.XLEN'(riscv::MIP_MSIP)  // same shift as MSIE
+                  | CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
+                  | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+                end else begin
+                  mask = CVA6Cfg.XLEN'(riscv::MIP_MTIP)  // same shift as MTIE
+                  | CVA6Cfg.XLEN'(riscv::MIP_MEIP);  // same shift as MEIE
+                end
               end
             end
+            mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
           end
-          mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
         end
 
         riscv::CSR_MTVEC: begin
@@ -1769,10 +1900,24 @@ module csr_regfile
           // we are in vector mode, this implementation requires the additional
           // alignment constraint of 64 * 4 bytes
           if (DirVecOnly) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, DirVecOnly};
+          // we are in CLIC mode.
+          if (CVA6Cfg.RVSCLIC && &csr_wdata[1:0])
+            mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 6'b0, csr_wdata[1:0]};
+
         end
         riscv::CSR_MCOUNTEREN: begin
           if (CVA6Cfg.RVU) mcounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
           else update_access_exception = 1'b1;
+        end
+        riscv::CSR_MTVT: begin
+          if (CVA6Cfg.RVSCLIC) begin
+            // Writes are legal but ignored in CLINT mode
+            if (clic_mode_o) begin
+              mtvt_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 8'b0};
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
 
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
@@ -1780,8 +1925,25 @@ module csr_regfile
         // bit[1] stays writable only with RVC; without RVC (IALIGN=32) mepc[1:0] are always zero
         mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc
         : {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
-        riscv::CSR_MCAUSE:
-        mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : {csr_wdata[CVA6Cfg.XLEN - 1], {CVA6Cfg.XLEN - 6{1'b0}}, csr_wdata[4:0]};
+        riscv::CSR_MCAUSE: begin
+          if (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret)
+            mcause_d = sdtrig_etrigger_context_mcause;
+          // In CLIC mode, mcause also holds minhv/mpp/mpie/mpil and a 12-bit
+          // exception code: keep them, mpil is restored into mintstatus on mret.
+          else if (CVA6Cfg.RVSCLIC && clic_mode_o) begin
+            mcause_d = csr_wdata;
+            // mcause.mpp/mpie are aliases of mstatus.mpp/mpie: writing them through
+            // mcause updates mstatus (MPP is legalized as for mstatus writes).
+            mstatus_d.mpie = csr_wdata[27];
+            if (!((csr_wdata[29:28] == riscv::PRIV_LVL_HS) |
+                  (!CVA6Cfg.RVS & csr_wdata[29:28] == riscv::PRIV_LVL_S) |
+                  (!CVA6Cfg.RVU & csr_wdata[29:28] == riscv::PRIV_LVL_U))) begin
+              mstatus_d.mpp = riscv::priv_lvl_t'(csr_wdata[29:28]);
+            end
+            // MPP sets the effective privilege of loads/stores when MPRV is set
+            if (mstatus_q.mprv) flush_o = 1'b1;
+          end else mcause_d = {csr_wdata[CVA6Cfg.XLEN-1], {CVA6Cfg.XLEN - 6{1'b0}}, csr_wdata[4:0]};
+        end
         riscv::CSR_MTVAL: begin
           if (CVA6Cfg.TvalEn)
             mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : csr_wdata;
@@ -1794,19 +1956,22 @@ module csr_regfile
           mtval2_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, csr_wdata[CVA6Cfg.GPLEN-3:0]};
         else update_access_exception = 1'b1;
         riscv::CSR_MIP: begin
-          if (CVA6Cfg.RVH) begin
-            mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_STIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_VSSIP);
-          end else if (CVA6Cfg.RVS) begin
-            mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_STIP)
-                    | CVA6Cfg.XLEN'(riscv::MIP_SEIP);
-          end else begin
-            mask = '0;
+          // In CLIC mode, writes to MIP are ignored.
+          if (!clic_mode_o) begin
+            if (CVA6Cfg.RVH) begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_STIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_SEIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_VSSIP);
+            end else if (CVA6Cfg.RVS) begin
+              mask = CVA6Cfg.XLEN'(riscv::MIP_SSIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_STIP)
+                      | CVA6Cfg.XLEN'(riscv::MIP_SEIP);
+            end else begin
+              mask = '0;
+            end
+            mip_d = (mip_q & ~mask) | (csr_wdata & mask);
           end
-          mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
         riscv::CSR_MENVCFG: begin
           if (CVA6Cfg.RVU) begin
@@ -1829,6 +1994,16 @@ module csr_regfile
         if (CVA6Cfg.PerfCounterEn)
           mcountinhibit_d = {csr_wdata[MHPMCounterNum+2:2], 1'b0, csr_wdata[0]};
         else mcountinhibit_d = '0;
+        riscv::CSR_MINTTHRESH: begin
+          if (CVA6Cfg.RVSCLIC) begin
+            // Writes are legal but ignored in CLINT mode
+            if (clic_mode_o) begin
+              mintthresh_d.th = csr_wdata[7:0];
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
         riscv::CSR_MCYCLEH:
@@ -2065,13 +2240,16 @@ module csr_regfile
       // the specification requires that decision to be made again right after an
       // explicit write to them. Instructions decoded before the write carry the
       // old one, so flush them as for mstatus: an interrupt the write enables is
-      // then taken before the next instruction.
-      if (conv_csr_addr.address inside {
-          riscv::CSR_MIE, riscv::CSR_MIP, riscv::CSR_MIDELEG,
-          riscv::CSR_SIE, riscv::CSR_SIP,
-          riscv::CSR_HIDELEG, riscv::CSR_HIE, riscv::CSR_HIP, riscv::CSR_HVIP, riscv::CSR_HGEIE,
-          riscv::CSR_VSIE, riscv::CSR_VSIP
-        })
+      // then taken before the next instruction. In CLIC mode the thresholds take
+      // that role, and writes to mie and mip are ignored.
+      if (clic_mode_o ? conv_csr_addr.address inside {
+            riscv::CSR_MINTTHRESH, riscv::CSR_SINTTHRESH
+          } : conv_csr_addr.address inside {
+            riscv::CSR_MIE, riscv::CSR_MIP, riscv::CSR_MIDELEG,
+            riscv::CSR_SIE, riscv::CSR_SIP,
+            riscv::CSR_HIDELEG, riscv::CSR_HIE, riscv::CSR_HIP, riscv::CSR_HVIP, riscv::CSR_HGEIE,
+            riscv::CSR_VSIE, riscv::CSR_VSIP
+          })
         flush_o = 1'b1;
     end
     if (CVA6Cfg.IS_XLEN64) begin
@@ -2153,10 +2331,11 @@ module csr_regfile
       // a m-mode trap might be delegated if we are taking it in S mode
       // first figure out if this was an exception or an interrupt e.g.: look at bit (XLEN-1)
       // the cause register can only be $clog2(CVA6Cfg.XLEN) bits long (as we only support XLEN exceptions)
+      // In CLIC mode, xideleg ceases to have effect.
       if (CVA6Cfg.RVS) begin
         if ((ex_i.cause[CVA6Cfg.XLEN-1] && mideleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
-            )-1:0]]) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
+            )-1:0]] && ~clic_mode_o) || (~ex_i.cause[CVA6Cfg.XLEN-1] && medeleg_q[ex_i.cause[$clog2(
                 CVA6Cfg.XLEN
             )-1:0]])) begin
           // traps never transition from a more-privileged mode to a less privileged mode
@@ -2202,6 +2381,11 @@ module csr_regfile
           mstatus_d.spp = priv_lvl_q[0];
           // set cause
           scause_d = ex_i.cause;
+          // update the current and previous interrupt level
+          if (CVA6Cfg.RVSCLIC && clic_mode_o && ex_i.cause[CVA6Cfg.XLEN-1]) begin
+            mintstatus_d.sil = ex_i.cause[23:16];
+            scause_d[23:16]  = mintstatus_q.sil;
+          end
           // set epc
           sepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
           // set mtval or stval
@@ -2243,6 +2427,11 @@ module csr_regfile
         //set cause and epc adapted to etrigger
         mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : ex_i.cause;
         mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+        // update the current and previous interrupt level
+        if (CVA6Cfg.RVSCLIC && clic_mode_o && ex_i.cause[CVA6Cfg.XLEN-1]) begin
+          mintstatus_d.mil = ex_i.cause[23:16];
+          mcause_d[23:16]  = mintstatus_q.mil;
+        end
         // set mtval or stval
         if (CVA6Cfg.TvalEn) begin
           if (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) begin
@@ -2458,6 +2647,9 @@ module csr_regfile
         //set mstatus mpv to false
         mstatus_d.mpv = 1'b0;
       end
+      // restore mintstatus
+      if (CVA6Cfg.RVSCLIC && clic_mode_o && mcause_q[CVA6Cfg.XLEN-1])
+        mintstatus_d.mil = mcause_q[23:16];
     end
 
     if (CVA6Cfg.RVS && sret && ((CVA6Cfg.RVH && !v_q) || !CVA6Cfg.RVH)) begin
@@ -2478,6 +2670,9 @@ module csr_regfile
         //set hstatus spv to false
         hstatus_d.spv = 1'b0;
       end
+      // restore sintstatus
+      if (CVA6Cfg.RVSCLIC && clic_mode_o && scause_q[CVA6Cfg.XLEN-1])
+        mintstatus_d.sil = scause_q[23:16];
     end
 
     if (CVA6Cfg.RVH) begin
@@ -2725,7 +2920,7 @@ module csr_regfile
     wfi_d = wfi_q;
     // if there is any (enabled) interrupt pending un-stall the core
     // also un-stall if we want to enter debug mode
-    if (|(mip_q & mie_q) || (CVA6Cfg.DebugEn && debug_req_i) || irq_i[1]) begin
+    if ((CVA6Cfg.DebugEn && debug_req_i) || (!clic_mode_o && (|(mip_q & mie_q) || irq_i[1])) || (CVA6Cfg.RVSCLIC && clic_mode_o && clic_irq_req_i)) begin
       wfi_d = 1'b0;
       // or alternatively if there is no exception pending and we are not in debug mode wait here
       // for the interrupt
@@ -2736,10 +2931,16 @@ module csr_regfile
 
   // output assignments dependent on privilege mode
   always_comb begin : priv_output
-    trap_vector_base_o = {mtvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
+    trap_vector_base_o = (CVA6Cfg.RVSCLIC && clic_mode_o && clic_irq_shv_i && ex_i.cause[CVA6Cfg.XLEN-1]) ? {mtvt_q[CVA6Cfg.VLEN-1:8], 8'b0} : {mtvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
     // output user mode stvec
     if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-      trap_vector_base_o = (CVA6Cfg.RVH && trap_to_v) ? {vstvec_q[CVA6Cfg.VLEN-1:2], 2'b0} : {stvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
+      if (CVA6Cfg.RVSCLIC && clic_mode_o && clic_irq_shv_i && ex_i.cause[CVA6Cfg.XLEN-1]) begin
+        trap_vector_base_o = {stvt_q[CVA6Cfg.VLEN-1:8], 8'b0};
+      end else if (CVA6Cfg.RVH && trap_to_v) begin
+        trap_vector_base_o = {vstvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
+      end else begin
+        trap_vector_base_o = {stvec_q[CVA6Cfg.VLEN-1:2], 2'b0};
+      end
     end
 
     // if we are in debug mode jump to a specific address
@@ -2752,13 +2953,18 @@ module csr_regfile
     // we want to spare the costly addition. Furthermore check to which
     // privilege level we are jumping and whether the vectored mode is
     // activated for _that_ privilege level.
+    // Note for CLIC mode: according to the spec, we should actually jump to the address
+    // stored at trap_vector_base. Since this would have significant HW implications and no
+    // significant benefit, we conciously diverge from the spec here by jumping to
+    // trap_vector_base instead.
     if (ex_i.cause[CVA6Cfg.XLEN-1] &&
-                ((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])))
-               || (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S && !trap_to_v && stvec_q[0]))) begin
+                (((((CVA6Cfg.RVS || CVA6Cfg.RVU) && trap_to_priv_lvl == riscv::PRIV_LVL_M && (!CVA6Cfg.DirectVecOnly && mtvec_q[0])) || (!CVA6Cfg.RVS && !CVA6Cfg.RVU && (!CVA6Cfg.DirectVecOnly && mtvec_q[0]))) && ~clic_mode_o)
+               || (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S && !trap_to_v && stvec_q[0] && ~clic_mode_o)
+               || (CVA6Cfg.RVSCLIC && clic_mode_o && clic_irq_shv_i))) begin
       trap_vector_base_o[7:2] = ex_i.cause[5:0];
     end
     if (ex_i.cause[CVA6Cfg.XLEN-1] &&
-                (CVA6Cfg.RVH && trap_to_priv_lvl == riscv::PRIV_LVL_S && trap_to_v && vstvec_q[0])) begin
+                (CVA6Cfg.RVH && trap_to_priv_lvl == riscv::PRIV_LVL_S && trap_to_v && vstvec_q[0]) && ~clic_mode_o) begin
       trap_vector_base_o[7:2] = {ex_i.cause[5:2], 2'b01};
     end
 
@@ -2913,9 +3119,12 @@ module csr_regfile
       mtvec_q          <= '0;
       mip_q            <= {CVA6Cfg.XLEN{1'b0}};
       mie_q            <= {CVA6Cfg.XLEN{1'b0}};
+      mintstatus_q     <= 32'b0;
+      mintthresh_q     <= 8'b0;
       mepc_q           <= {CVA6Cfg.XLEN{1'b0}};
       mcause_q         <= {CVA6Cfg.XLEN{1'b0}};
       mcounteren_q     <= {CVA6Cfg.XLEN{1'b0}};
+      mtvt_q           <= {CVA6Cfg.XLEN{1'b0}};
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       mfiom_q         <= 1'b0;
@@ -2946,6 +3155,10 @@ module csr_regfile
         if (CVA6Cfg.RVZiCbom) begin
           scbie_q  <= riscv::CBIE_INVAL;
           scbcfe_q <= 1'b1;
+        end
+        if (CVA6Cfg.RVSCLIC) begin
+          stvt_q       <= {CVA6Cfg.XLEN{1'b0}};
+          sintthresh_q <= '0;
         end
       end
 
@@ -3016,9 +3229,12 @@ module csr_regfile
       mtvec_q          <= mtvec_d;
       mip_q            <= mip_d;
       mie_q            <= mie_d;
+      mintstatus_q     <= mintstatus_d;
+      mintthresh_q     <= mintthresh_d;
       mepc_q           <= mepc_d;
       mcause_q         <= mcause_d;
       mcounteren_q     <= mcounteren_d;
+      mtvt_q           <= mtvt_d;
       mscratch_q       <= mscratch_d;
       if (CVA6Cfg.TvalEn) mtval_q <= mtval_d;
       mfiom_q         <= mfiom_d;
@@ -3049,6 +3265,10 @@ module csr_regfile
         if (CVA6Cfg.RVZiCbom) begin
           scbie_q  <= scbie_d;
           scbcfe_q <= scbcfe_d;
+        end
+        if (CVA6Cfg.RVSCLIC) begin
+          stvt_q       <= stvt_d;
+          sintthresh_q <= sintthresh_d;
         end
       end
       if (CVA6Cfg.RVH) begin

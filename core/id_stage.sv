@@ -71,6 +71,12 @@ module id_stage #(
     input logic [1:0] irq_i,
     // Interrupt control status - CSR_REGFILE
     input irq_ctrl_t irq_ctrl_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic clic_mode_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic clic_irq_req_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic [CVA6Cfg.XLEN-1:0] clic_irq_cause_i,
     // Is current mode debug ? - CSR_REGFILE
     input logic debug_mode_i,
     // Trap virtual memory - CSR_REGFILE
@@ -328,6 +334,9 @@ module id_stage #(
     ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
+        .clic_mode_i               (clic_mode_i),
+        .clic_irq_req_i            (clic_irq_req_i),
+        .clic_irq_cause_i          (clic_irq_cause_i),
         .irq_i,
         .pc_i                      (fetch_entry_i[i].address),
         .is_compressed_i           (is_compressed_deco[i]),

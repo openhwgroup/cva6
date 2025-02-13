@@ -60,6 +60,12 @@ module decoder
     input logic [1:0] irq_i,
     // Interrupt control status - CSR_REGFILE
     input irq_ctrl_t irq_ctrl_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic clic_mode_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic clic_irq_req_i,
+    // TO_BE_COMPLETED - CLIC_CTRL
+    input logic [CVA6Cfg.XLEN-1:0] clic_irq_cause_i,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -1917,49 +1923,56 @@ module decoder
       irq_sel = '0;
     end
 
-    // The highest-priority cause among the selected interrupts, in decreasing
-    // order MEI, MSI, MTI, SEI, SSI, STI, SGEI, VSEI, VSSI, VSTI: a later match
-    // overrides an earlier one.
+    // In CLIC mode the CLIC controller selects the interrupt, and xideleg ceases
+    // to have effect. Otherwise, the highest-priority cause among the selected
+    // interrupts, in decreasing order MEI, MSI, MTI, SEI, SSI, STI, SGEI, VSEI,
+    // VSSI, VSTI: a later match overrides an earlier one.
     interrupt_cause = '0;
-    // Virtual Supervisor Timer Interrupt
-    if (irq_sel[riscv::IRQ_VS_TIMER]) begin
-      interrupt_cause = INTERRUPTS.VS_TIMER;
-    end
-    // Virtual Supervisor Software Interrupt
-    if (irq_sel[riscv::IRQ_VS_SOFT]) begin
-      interrupt_cause = INTERRUPTS.VS_SW;
-    end
-    // Virtual Supervisor External Interrupt
-    if (irq_sel[riscv::IRQ_VS_EXT]) begin
-      interrupt_cause = INTERRUPTS.VS_EXT;
-    end
-    // Hypervisor Guest External Interrupts
-    if (irq_sel[riscv::IRQ_HS_EXT]) begin
-      interrupt_cause = INTERRUPTS.HS_EXT;
-    end
-    // Supervisor Timer Interrupt
-    if (irq_sel[riscv::IRQ_S_TIMER]) begin
-      interrupt_cause = INTERRUPTS.S_TIMER;
-    end
-    // Supervisor Software Interrupt
-    if (irq_sel[riscv::IRQ_S_SOFT]) begin
-      interrupt_cause = INTERRUPTS.S_SW;
-    end
-    // Supervisor External Interrupt
-    if (irq_sel[riscv::IRQ_S_EXT]) begin
-      interrupt_cause = INTERRUPTS.S_EXT;
-    end
-    // Machine Timer Interrupt
-    if (irq_sel[riscv::IRQ_M_TIMER]) begin
-      interrupt_cause = INTERRUPTS.M_TIMER;
-    end
-    // Machine Mode Software Interrupt
-    if (irq_sel[riscv::IRQ_M_SOFT]) begin
-      interrupt_cause = INTERRUPTS.M_SW;
-    end
-    // Machine Mode External Interrupt
-    if (irq_sel[riscv::IRQ_M_EXT]) begin
-      interrupt_cause = INTERRUPTS.M_EXT;
+    if (CVA6Cfg.RVSCLIC && clic_mode_i) begin
+      if (clic_irq_req_i) begin
+        interrupt_cause = clic_irq_cause_i;
+      end
+    end else begin
+      // Virtual Supervisor Timer Interrupt
+      if (irq_sel[riscv::IRQ_VS_TIMER]) begin
+        interrupt_cause = INTERRUPTS.VS_TIMER;
+      end
+      // Virtual Supervisor Software Interrupt
+      if (irq_sel[riscv::IRQ_VS_SOFT]) begin
+        interrupt_cause = INTERRUPTS.VS_SW;
+      end
+      // Virtual Supervisor External Interrupt
+      if (irq_sel[riscv::IRQ_VS_EXT]) begin
+        interrupt_cause = INTERRUPTS.VS_EXT;
+      end
+      // Hypervisor Guest External Interrupts
+      if (irq_sel[riscv::IRQ_HS_EXT]) begin
+        interrupt_cause = INTERRUPTS.HS_EXT;
+      end
+      // Supervisor Timer Interrupt
+      if (irq_sel[riscv::IRQ_S_TIMER]) begin
+        interrupt_cause = INTERRUPTS.S_TIMER;
+      end
+      // Supervisor Software Interrupt
+      if (irq_sel[riscv::IRQ_S_SOFT]) begin
+        interrupt_cause = INTERRUPTS.S_SW;
+      end
+      // Supervisor External Interrupt
+      if (irq_sel[riscv::IRQ_S_EXT]) begin
+        interrupt_cause = INTERRUPTS.S_EXT;
+      end
+      // Machine Timer Interrupt
+      if (irq_sel[riscv::IRQ_M_TIMER]) begin
+        interrupt_cause = INTERRUPTS.M_TIMER;
+      end
+      // Machine Mode Software Interrupt
+      if (irq_sel[riscv::IRQ_M_SOFT]) begin
+        interrupt_cause = INTERRUPTS.M_SW;
+      end
+      // Machine Mode External Interrupt
+      if (irq_sel[riscv::IRQ_M_EXT]) begin
+        interrupt_cause = INTERRUPTS.M_EXT;
+      end
     end
   end
 

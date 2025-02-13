@@ -139,6 +139,15 @@ package riscv;
     logic        fiom;   // fence of I/O implies memory
   } envcfg_rv_t;
 
+  typedef struct packed {
+    logic [7:0] mil;
+    logic [7:0] wpri;
+    logic [7:0] sil;
+    logic [7:0] uil;
+  } intstatus_rv_t;
+
+  typedef struct packed {logic [7:0] th;} intthresh_rv_t;
+
   // --------------------
   // Instruction Types
   // --------------------
@@ -420,12 +429,14 @@ package riscv;
     CSR_SIE              = 12'h104,
     CSR_STVEC            = 12'h105,
     CSR_SCOUNTEREN       = 12'h106,
+    CSR_STVT             = 12'h107,
     CSR_SENVCFG          = 12'h10A,
     CSR_SSCRATCH         = 12'h140,
     CSR_SEPC             = 12'h141,
     CSR_SCAUSE           = 12'h142,
     CSR_STVAL            = 12'h143,
     CSR_SIP              = 12'h144,
+    CSR_SINTTHRESH       = 12'h147,
     CSR_SATP             = 12'h180,
     // Hypervisor-extended Supervisor Mode CSRs
     CSR_HSTATUS          = 12'h600,
@@ -484,11 +495,14 @@ package riscv;
     CSR_MHPM_EVENT_29    = 12'h33D,  //Reserved
     CSR_MHPM_EVENT_30    = 12'h33E,  //Reserved
     CSR_MHPM_EVENT_31    = 12'h33F,  //Reserved
+    CSR_MTVT             = 12'h307,
     CSR_MSCRATCH         = 12'h340,
     CSR_MEPC             = 12'h341,
     CSR_MCAUSE           = 12'h342,
     CSR_MTVAL            = 12'h343,
     CSR_MIP              = 12'h344,
+    CSR_MINTSTATUS       = 12'h346,
+    CSR_MINTTHRESH       = 12'h347,
     CSR_MTINST           = 12'h34A,
     CSR_MTVAL2           = 12'h34B,
     CSR_MENVCFG          = 12'h30A,
@@ -727,7 +741,9 @@ package riscv;
     CSR_HPM_COUNTER_28H  = 12'hC9C,  // reserved
     CSR_HPM_COUNTER_29H  = 12'hC9D,  // reserved
     CSR_HPM_COUNTER_30H  = 12'hC9E,  // reserved
-    CSR_HPM_COUNTER_31H  = 12'hC9F   // reserved
+    CSR_HPM_COUNTER_31H  = 12'hC9F,  // reserved
+    // CLIC CSRs (Supervisor Mode)
+    CSR_SINTSTATUS       = 12'hDB1
   } csr_reg_t;
 
   localparam logic [63:0] SSTATUS_UIE = 'h00000001;
@@ -976,7 +992,7 @@ package riscv;
     csr_t ret;
     ret = csr_addr;
     unique case (csr_addr.address) inside
-      [CSR_SSTATUS : CSR_STVEC], [CSR_SSCRATCH : CSR_SATP]: begin
+      [CSR_SSTATUS : CSR_STVEC], CSR_STVT, [CSR_SSCRATCH : CSR_SATP]: begin
         if (v) begin
           ret.csr_decode.priv_lvl = PRIV_LVL_HS;
         end

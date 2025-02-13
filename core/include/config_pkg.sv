@@ -82,6 +82,8 @@ package config_pkg;
     bit                          RVZCMP;
     // Zcmt RISC-V extension
     bit                          RVZCMT;
+    // CLIC extension
+    bit                          RVSCLIC;
     // Zicond RISC-V extension
     bit                          RVZiCond;
     // Zicbom RISC-V extension (cache management / CBO)
@@ -174,6 +176,8 @@ package config_pkg;
     copro_type_t                 CoproType;
     // NOC bus type
     noc_type_e                   NOCType;
+    // Number of interrupt signals from the CLIC.
+    int unsigned                 CLICNumInterruptSrc;
     // AXI address width
     int unsigned                 AxiAddrWidth;
     // AXI data width
@@ -325,6 +329,7 @@ package config_pkg;
     bit          RVZCB;
     bit          RVZCMP;
     bit          RVZCMT;
+    bit          RVSCLIC;
     bit          XFVec;
     bit          CvxifEn;
     copro_type_t CoproType;
@@ -376,6 +381,7 @@ package config_pkg;
     bit [63:0] PMPEntryReadOnly;
     bit PMPNapotEn;
     noc_type_e NOCType;
+    int unsigned CLICNumInterruptSrc;
     int unsigned NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
