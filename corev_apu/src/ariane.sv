@@ -109,9 +109,7 @@ module ariane import ariane_pkg::*; #(
   );
 
   if (CVA6Cfg.CvxifEn) begin: gen_cvxif
-    if (CVA6Cfg.CoproType == config_pkg::COPRO_NONE) begin: gen_COPRO_NONE
-      assign cvxif_resp = '{compressed_ready: 1'b1, issue_ready: 1'b1, register_ready: 1'b1, default: '0}; 
-    end else if (CVA6Cfg.CoproType == config_pkg::COPRO_EXAMPLE) begin: gen_copro_example
+    if (CVA6Cfg.CoproType == config_pkg::COPRO_EXAMPLE) begin: gen_COPRO_EXAMPLE
       cvxif_example_coprocessor #(
         .NrRgprPorts (CVA6Cfg.NrRgprPorts),
         .XLEN (CVA6Cfg.XLEN),
@@ -134,6 +132,8 @@ module ariane import ariane_pkg::*; #(
         .cvxif_req_i          ( cvxif_req                      ),
         .cvxif_resp_o         ( cvxif_resp                     )
       );
+    end else begin: gen_COPRO_NONE
+      assign cvxif_resp = '{compressed_ready: 1'b1, issue_ready: 1'b1, register_ready: 1'b1, default: '0};
     end
   end else begin: gen_no_cvxif
     assign cvxif_resp = '0;
