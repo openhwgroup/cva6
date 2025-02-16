@@ -48,6 +48,7 @@ package cva6_config_pkg;
       RVZCMP: bit'(0),
       XFVec: bit'(0),
       CvxifEn: bit'(1),
+      CoproType: config_pkg::COPRO_EXAMPLE,
       RVZiCond: bit'(0),
       RVZicntr: bit'(0),
       RVZihpm: bit'(0),
