@@ -34,7 +34,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_zbs_supported = CVA6Cfg.RVB;
     cfg.ext_zbt_supported = 0;
     cfg.ext_zcb_supported = CVA6Cfg.RVZCB;
-    cfg.ext_zifencei_supported = 1;
+    cfg.ext_zifencei_supported = CVA6Cfg.RVZifencei;
     cfg.ext_zicsr_supported = 1;
     cfg.ext_zicntr_supported = 0;
 
