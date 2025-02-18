@@ -311,31 +311,40 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       //obi_memory_mmu_ptw_cfg.achk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth ;
       //obi_memory_mmu_ptw_cfg.rchk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth ;
 
-      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max    <= 2;
-      soft obi_memory_instr_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      soft obi_memory_instr_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_min     <= 0;
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max     <= 10;
+      //soft obi_memory_instr_cfg.drv_slv_gnt_fixed_latency         <= 2;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_min  <= 0;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max  <= 10;
+      //soft obi_memory_instr_cfg.drv_slv_rvalid_fixed_latency      <= 3;
 
-      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_max    <= 2;
-      soft obi_memory_store_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_min     <= 0;
+      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_max     <= 10;
+      //soft obi_memory_store_cfg.drv_slv_gnt_fixed_latency         <= 2;
+      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_min  <= 0;
+      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max  <= 10;
+      //soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 3;
 
-      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max      <= 2;
-      soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency           <= 2;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max   <= 3;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency        <= 3;
+      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_min       <= 0;
+      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max       <= 10;
+      //soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency           <= 2;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_min    <= 0;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max    <= 10;
+      //soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency        <= 3;
 
-      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_min     <= 0;
-      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max     == 5;
-      soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency          <= 2;
-      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max  <= 3;
-      soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency       <= 3;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_min      <= 0;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max      <= 10;
+      //soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency          <= 2;
+      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_min   <= 0;
+      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max   <= 10;
+      //soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency       <= 3;
 
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max    <= 2;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_max <= 3;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_min      <= 0;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max      <= 10;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_fixed_latency          <= 2;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_min   <= 0;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_max   <= 10;
+      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_fixed_latency       <= 3;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active        == UVM_ACTIVE;
