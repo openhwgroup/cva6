@@ -128,7 +128,14 @@ module frontend
   logic [CVA6Cfg.VLEN-1:0] replay_addr;
 
   logic [CVA6Cfg.VLEN-1:0]
-      npc_fetch_address, vaddr_d, obi_vaddr_q, obi_vaddr_d, vaddr_q, fetch_vaddr_d;
+      npc_fetch_address,
+      vaddr_d,
+      obi_vaddr_q,
+      obi_vaddr_d,
+      obir_vaddr_q,
+      obir_vaddr_d,
+      vaddr_q,
+      fetch_vaddr_d;
   logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
@@ -372,12 +379,14 @@ module frontend
 
   typedef enum logic [1:0] {
     TRANSPARENT,
-    REGISTRED
+    REGISTRED,
+    OBI_A_KILLED
   } obi_a_state_e;
   obi_a_state_e obi_a_state_d, obi_a_state_q;
 
   // OBI signals
   logic obi_r_req;
+  logic obi_r_req_killed;
   logic data_valid_obi;
   logic data_valid_under_ex;
 
@@ -410,6 +419,7 @@ module frontend
       vaddr_q <= '0;
       paddr_q <= '0;
       obi_vaddr_q <= '0;
+      obir_vaddr_q <= '0;
       paddr_is_cacheable_q <= '0;
     end else begin
       custom_state_q <= custom_state_d;
@@ -419,6 +429,7 @@ module frontend
       vaddr_q <= vaddr_d;
       paddr_q <= paddr_d;
       obi_vaddr_q <= obi_vaddr_d;
+      obir_vaddr_q <= obir_vaddr_d;
       paddr_is_cacheable_q <= paddr_is_cacheable;
     end
   end
@@ -613,6 +624,8 @@ module frontend
     obi_a_state_d = obi_a_state_q;
     obi_a_ready = 1'b0;
     obi_r_req = '0;
+    obi_r_req_killed = '0;
+    obir_vaddr_d = obir_vaddr_q;
     //default obi state registred
     obi_fetch_req_o.req    = 1'b1;
     obi_fetch_req_o.reqpar = 1'b0;
@@ -633,10 +646,11 @@ module frontend
 
     unique case (obi_a_state_q)
       TRANSPARENT: begin
-        obi_a_ready = '1;
+        obi_a_ready = (obi_r_state_q == OBI_R_IDLE);
         if (obi_a_req) begin
           if (obi_fetch_rsp_i.gnt) begin
             obi_r_req = '1;  //push pending request
+            obir_vaddr_d = obi_vaddr_d;
           end else begin
             obi_a_state_d = REGISTRED;
           end
@@ -662,6 +676,19 @@ module frontend
       REGISTRED: begin
         if (obi_fetch_rsp_i.gnt) begin
           obi_r_req = '1;  //push pending request
+          obi_r_req_killed = kill_s1;  //push pending killed request
+          obir_vaddr_d = obi_vaddr_q;
+          obi_a_state_d = TRANSPARENT;
+        end else if (kill_s1) begin
+          obi_a_state_d = OBI_A_KILLED;
+        end
+      end
+
+      OBI_A_KILLED: begin
+        if (obi_fetch_rsp_i.gnt) begin
+          obi_r_req = '1;  //push pending killed request
+          obi_r_req_killed = '1;  //push pending killed request
+          obir_vaddr_d = obi_vaddr_q;
           obi_a_state_d = TRANSPARENT;
         end
       end
@@ -682,7 +709,7 @@ module frontend
     unique case (obi_r_state_q)
       OBI_R_IDLE: begin
         if (obi_r_req) begin
-          if (kill_s2) begin
+          if (kill_s1 || obi_r_req_killed) begin
             obi_r_state_d = OBI_R_KILLED;
           end else begin
             obi_r_state_d = OBI_R_PENDING;
@@ -692,11 +719,11 @@ module frontend
 
       OBI_R_PENDING: begin
         if (obi_fetch_req_o.rready && obi_fetch_rsp_i.rvalid) begin
-          data_valid_obi = !kill_s2;
+          data_valid_obi = !kill_s1;
           if (!obi_r_req) begin
             obi_r_state_d = OBI_R_IDLE;
           end
-        end else if (kill_s2) begin
+        end else if (kill_s1) begin
           obi_r_state_d = OBI_R_KILLED;
         end
       end
@@ -704,7 +731,7 @@ module frontend
       OBI_R_KILLED: begin
         if (obi_fetch_req_o.rready && obi_fetch_rsp_i.rvalid) begin
           if (obi_r_req) begin
-            if (!kill_s2) begin
+            if (!kill_s1) begin
               obi_r_state_d = OBI_R_PENDING;
             end
           end else begin
@@ -824,7 +851,7 @@ module frontend
   // re-align the cache line
   assign fetch_data = data_valid_under_ex ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
   assign fetch_valid_d = data_valid_under_ex || data_valid_obi;
-  assign fetch_vaddr_d = data_valid_under_ex ? vaddr_q : obi_vaddr_q;
+  assign fetch_vaddr_d = data_valid_under_ex ? vaddr_q : obir_vaddr_q;
 
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
