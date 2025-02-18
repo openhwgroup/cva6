@@ -477,7 +477,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
       assign obi_fetch_rsp.gnt                         = obi_fetch_slave.gnt;
       assign obi_fetch_rsp.gntpar                      = obi_fetch_slave.gntpar;
-      assign obi_fetch_rsp.rvalid                      = 1;
+      assign obi_fetch_rsp.rvalid                      = obi_fetch_slave.rvalid;
       assign obi_fetch_rsp.r.rdata                     = obi_fetch_slave.rdata;
       assign obi_fetch_rsp.r.err                       = obi_fetch_slave.err;
       assign obi_fetch_rsp.r.r_optional.ruser          = obi_fetch_slave.ruser;
