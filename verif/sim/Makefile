@@ -127,8 +127,8 @@ endif
 cov-exclude-list ?= $(root-dir)/cov-exclude-mod.lst
 
 ifdef cov
-	cov-comp-opt = -cm line+cond+tgl -cm_hier $(cov-exclude-list)
-	cov-run-opt  = -cm line+cond+tgl -cm_name $(TESTNAME)
+	cov-comp-opt = -cm line+cond -cm_hier $(cov-exclude-list)
+	cov-run-opt  = -cm line+cond -cm_name $(TESTNAME)
 else
 	cov-comp-opt =
 	cov-run-opt  =
@@ -214,7 +214,7 @@ ALL_UVM_FLAGS   = -lca -sverilog +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(VCS_HOME)/etc/uvm/src/uvm_pkg.sv -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+$(VCS_HOME)/etc/uvm/src \
 	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon)) \
-	  -cm_seqnoconst -diag noconst -cm_cond arith \
+	  -cm_seqnoconst -diag noconst -cm_cond arith+for+tf \
 
 ALL_SIMV_UVM_FLAGS      = +vcs+lic+wait $(issrun_opts) \
 
