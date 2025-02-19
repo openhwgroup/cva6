@@ -124,7 +124,7 @@ build_tools:
   stage: light tests
   rules: *on_dev
   before_script:
-    - git -C verif/core-v-verif fetch --unshallow
+    - git -C verif/core-v-verif fetch --unshallow || git -C verif/core-v-verif fetch --all
     - !reference [.copy_spike_artifacts]
     - rm -rf artifacts/
     - mkdir -p artifacts/{reports,logs}
@@ -543,7 +543,7 @@ simu-gate:
     PERIOD: "15"  # 66 Mhz
   script:
     - mkdir -p artifacts/{reports,logs}
-    - git -C verif/core-v-verif fetch --unshallow
+    - git -C verif/core-v-verif fetch --unshallow || git -C verif/core-v-verif fetch --all
     - !reference [.copy_spike_artifacts]
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
