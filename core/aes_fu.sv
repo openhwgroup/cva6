@@ -13,13 +13,9 @@ module aes_fu
     // Original instruction bits for aes
     input  logic [                          5:0] orig_instr_aes,
     // Crypto result - ISSUE_STAGE
-    output logic     [         CVA6Cfg.XLEN-1:0] result_o
+    output logic [             CVA6Cfg.XLEN-1:0] result_o
 );
   logic aes_valid_op;
-
-  // ---------------------
-  // Input
-  // ---------------------
 
   assign aes_valid_op = fu_data_i.operation inside { AES32ESI, AES32ESMI, AES64ES, AES64ESM, AES32DSI, AES32DSMI, AES64DS, AES64DSM, AES64IM, AES64KS1I, AES64KS2 };
 
@@ -78,17 +74,27 @@ module aes_fu
     result_o = '0;
     // AES instructions
     if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin
-      if (fu_data_i.operation == AES32ESI && CVA6Cfg.IS_XLEN32) result_o = aes32esi_gen;
-      if (fu_data_i.operation == AES32ESMI && CVA6Cfg.IS_XLEN32) result_o = aes32esmi_gen;
-      if (fu_data_i.operation == AES64ES && CVA6Cfg.IS_XLEN64) result_o = aes64es_gen;
-      if (fu_data_i.operation == AES64ESM && CVA6Cfg.IS_XLEN64) result_o = aes64esm_gen;
-      if (fu_data_i.operation == AES32DSI && CVA6Cfg.IS_XLEN32) result_o = aes32dsi_gen;
-      if (fu_data_i.operation == AES32DSMI && CVA6Cfg.IS_XLEN32) result_o = aes32dsmi_gen;
-      if (fu_data_i.operation == AES64DS && CVA6Cfg.IS_XLEN64) result_o = aes64ds_gen;
-      if (fu_data_i.operation == AES64DSM && CVA6Cfg.IS_XLEN64) result_o = aes64dsm_gen;
-      if (fu_data_i.operation == AES64IM && CVA6Cfg.IS_XLEN64) result_o = aes64im_gen;
-      if (fu_data_i.operation == AES64KS1I && CVA6Cfg.IS_XLEN64) result_o = aes64ks1i_gen;
-      if (fu_data_i.operation == AES64KS2 && CVA6Cfg.IS_XLEN64) result_o = aes64ks2_gen;
+      if (CVA6Cfg.IS_XLEN32) begin
+        unique case (fu_data_i.operation)
+          AES32ESI: result_o = aes32esi_gen;
+          AES32ESMI: result_o = aes32esmi_gen;
+          AES32DSI: result_o = aes32dsi_gen;
+          AES32DSMI: result_o = aes32dsmi_gen;
+          default: ;
+        endcase
+      end
+      if (CVA6Cfg.IS_XLEN64) begin
+        unique case (fu_data_i.operation)
+          AES64ES: result_o = aes64es_gen;
+          AES64ESM: result_o = aes64esm_gen;
+          AES64DS: result_o = aes64ds_gen;
+          AES64DSM: result_o = aes64dsm_gen;
+          AES64IM: result_o = aes64im_gen;
+          AES64KS1I: result_o = aes64ks1i_gen;
+          AES64KS2: result_o = aes64ks2_gen;
+          default: ;
+        endcase
+      end
     end
   end
 endmodule
