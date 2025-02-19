@@ -156,6 +156,7 @@ module issue_read_operands
   logic               [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_n, alu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_n, aes_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_n, mult_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_n, fpu_valid_q;
   logic [1:0] fpu_fmt_n, fpu_fmt_q;
@@ -793,6 +794,7 @@ module issue_read_operands
 
   always_comb begin
     alu_valid_n    = '0;
+    aes_valid_n    = '0;
     lsu_valid_n    = '0;
     mult_valid_n   = '0;
     fpu_valid_n    = '0;
@@ -823,6 +825,9 @@ module issue_read_operands
           CSR: begin
             csr_valid_n[i] = 1'b1;
           end
+          AES: begin
+            aes_valid_n[i] = 1'b1;
+          end
           default: begin
             if (issue_instr_i[i].fu == FPU && CVA6Cfg.FpPresent) begin
               fpu_valid_n[i] = 1'b1;
@@ -841,6 +846,7 @@ module issue_read_operands
     // functional unit with the wrong inputs
     if (flush_i) begin
       alu_valid_n    = '0;
+      aes_valid_n    = '0;
       lsu_valid_n    = '0;
       mult_valid_n   = '0;
       fpu_valid_n    = '0;
@@ -854,7 +860,7 @@ module issue_read_operands
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       alu_valid_q    <= '0;
-      aes_valid_q <= '0;
+      aes_valid_q    <= '0;
       lsu_valid_q    <= '0;
       mult_valid_q   <= '0;
       fpu_valid_q    <= '0;
@@ -865,6 +871,7 @@ module issue_read_operands
       branch_valid_q <= '0;
     end else begin
       alu_valid_q    <= alu_valid_n;
+      aes_valid_q    <= aes_valid_n;
       lsu_valid_q    <= lsu_valid_n;
       mult_valid_q   <= mult_valid_n;
       fpu_valid_q    <= fpu_valid_n;

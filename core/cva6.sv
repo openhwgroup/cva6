@@ -860,7 +860,7 @@ module cva6
       .flu_ready_i             (flu_ready_ex_id),
       // ALU
       .alu_valid_o             (alu_valid_id_ex),
-      .aes_valid_o          (aes_valid_id_ex),
+      .aes_valid_o             (aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_o          (branch_valid_id_ex),            // branch is valid
       .branch_predict_o        (branch_predict_id_ex),          // branch predict to ex
