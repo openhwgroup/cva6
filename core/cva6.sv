@@ -443,6 +443,7 @@ module cva6
   // ALU
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_id_ex;
   logic [5:0] orig_instr_aes;
+  logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_id_ex;
   // Branches and Jumps
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_id_ex;
 
@@ -859,6 +860,7 @@ module cva6
       .flu_ready_i             (flu_ready_ex_id),
       // ALU
       .alu_valid_o             (alu_valid_id_ex),
+      .aes_valid_o          (aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_o          (branch_valid_id_ex),            // branch is valid
       .branch_predict_o        (branch_predict_id_ex),          // branch predict to ex
@@ -961,6 +963,7 @@ module cva6
       // ALU
       .alu_valid_i(alu_valid_id_ex),
       .orig_instr_aes_i(orig_instr_aes),
+      .aes_valid_i(aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_i(branch_valid_id_ex),
       .branch_predict_i(branch_predict_id_ex),  // branch predict to ex
