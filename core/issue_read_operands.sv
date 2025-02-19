@@ -64,6 +64,8 @@ module issue_read_operands
     input logic flu_ready_i,
     // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // AES output is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Transformed trap instruction - EX_STAGE
@@ -272,6 +274,7 @@ module issue_read_operands
 
   assign fu_data_o = fu_data_q;
   assign alu_valid_o = alu_valid_q;
+  assign aes_valid_o = aes_valid_q;
   assign branch_valid_o = branch_valid_q;
   assign lsu_valid_o = lsu_valid_q;
   assign csr_valid_o = csr_valid_q;
@@ -735,6 +738,7 @@ module issue_read_operands
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       alu_valid_q    <= '0;
+      aes_valid_q <= '0;
       lsu_valid_q    <= '0;
       mult_valid_q   <= '0;
       fpu_valid_q    <= '0;

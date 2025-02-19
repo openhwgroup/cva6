@@ -70,6 +70,8 @@ module issue_stage
     input logic flu_ready_i,
     // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // AES output is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Information of branch prediction - EX_STAGE
@@ -267,6 +269,7 @@ module issue_stage
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
+      .aes_valid_o          (aes_valid_o),
       .branch_valid_o          (branch_valid_o),
       .tinst_o                 (tinst_o),
       .branch_predict_o,

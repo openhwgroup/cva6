@@ -196,7 +196,8 @@ package ariane_pkg;
     FPU,        // 7
     FPU_VEC,    // 8
     CVXIF,      // 9
-    ACCEL       // 10
+    ACCEL,      // 10
+    AES      // 11
   } fu_t;
 
   // Index of writeback ports
