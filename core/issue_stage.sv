@@ -269,7 +269,7 @@ module issue_stage
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
-      .aes_valid_o          (aes_valid_o),
+      .aes_valid_o             (aes_valid_o),
       .branch_valid_o          (branch_valid_o),
       .tinst_o                 (tinst_o),
       .branch_predict_o,
