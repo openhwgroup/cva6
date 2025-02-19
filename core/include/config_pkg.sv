@@ -45,6 +45,12 @@ package config_pkg;
     ModeSv64 = 11
   } vm_mode_t;
 
+  /// Coprocessor type parameter
+  typedef enum {
+    COPRO_NONE,
+    COPRO_EXAMPLE
+  } copro_type_t;
+
   localparam NrMaxRules = 16;
 
   typedef struct packed {
@@ -140,6 +146,8 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     // CV-X-IF coprocessor interface enable
     bit                          CvxifEn;
+    // Coprocessor type
+    copro_type_t                 CoproType;
     // NOC bus type
     noc_type_e                   NOCType;
     // AXI address width
@@ -263,6 +271,7 @@ package config_pkg;
     bit          RVZCMT;
     bit          XFVec;
     bit          CvxifEn;
+    copro_type_t CoproType;
     bit          RVZiCond;
     bit          RVZicntr;
     bit          RVZihpm;
