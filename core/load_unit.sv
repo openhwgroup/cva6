@@ -116,7 +116,6 @@ module load_unit
   logic ldbuf_empty, ldbuf_full;
   ldbuf_id_t ldbuf_free_index;
   logic ldbuf_w, ldbuf_w_q;
-  ldbuf_t ldbuf_wdata;
   ldbuf_id_t ldbuf_windex, ldbuf_windex_q;
   logic      ldbuf_r;
   ldbuf_t    ldbuf_rdata;
@@ -124,9 +123,13 @@ module load_unit
   ldbuf_id_t ldbuf_last_id_q;
 
   logic kill_req_d, kill_req_q;
+
   logic [CVA6Cfg.PLEN-1:0] paddr_q;
   logic [(CVA6Cfg.XLEN/8)-1:0] be_q;
-  assign ldbuf_full = &ldbuf_valid_q;
+
+
+
+  assign ldbuf_full = &ldbuf_valid_q && !(LDBUF_FALLTHROUGH && ldbuf_r);
 
   //
   //  buffer of outstanding loads
@@ -163,7 +166,7 @@ module load_unit
       ldbuf_valid_d[ldbuf_rindex] = 1'b0;
     end
     // Free on exception
-    if ((ldbuf_w_q && ex_i.valid)) begin
+    if (CVA6Cfg.MmuPresent && (ldbuf_w_q && ex_i.valid)) begin
       ldbuf_valid_d[ldbuf_windex_q] = 1'b0;
     end
     //  Track a new outstanding operation in the load buffer
@@ -214,6 +217,10 @@ module load_unit
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
 
+  logic [CVA6Cfg.PLEN-1:0] paddr;
+
+  assign paddr = CVA6Cfg.MmuPresent ? paddr_i : lsu_ctrl_i.vaddr; //paddr_i is delayed in s1, but no s1 in mode no MMU
+
   // CHECK PMA regions
 
   logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
@@ -232,7 +239,6 @@ module load_unit
   logic stall_ni;
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
 
   typedef enum logic [1:0] {
     TRANSPARENT,
@@ -243,84 +249,86 @@ module load_unit
   // ---------------
   // Load Control
   // ---------------
+  logic ex_s0, ex_s1, kill_s1;
 
-  assign load_req_o.kill_req = kill_req_q || (ldbuf_w_q && ex_i.valid) || flush_i;
+  logic stall_obi, stall_translation;
+  logic data_req, data_rvalid;
 
-  // custom protocol FSM (combi)
+  assign load_req_o.kill_req = kill_req_q || kill_s1;
+
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_obi = (obi_a_state_q == REGISTRED);  //&& !obi_load_rsp_i.gnt;
+  assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
+
+  assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
+  assign ex_s1 = ((CVA6Cfg.MmuPresent ? ldbuf_w_q : valid_i) && ex_i.valid);
+  assign kill_s1 = CVA6Cfg.MmuPresent ? ex_s1 : 1'b0;
+
+  assign data_rvalid = obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
+  assign data_req = (CVA6Cfg.MmuPresent ? ldbuf_w_q && !ex_s1 : ldbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignment
     load_req_o.req = '0;
     kill_req_d = 1'b0;
     ldbuf_w = 1'b0;
-    pop_ld_o = 1'b0;
     translation_req_o = 1'b0;
     //response
-    trans_id_o = 1'b0;
+    trans_id_o = lsu_ctrl_i.trans_id;
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
+    pop_ld_o = 1'b0; // release lsu_bypass fifo
 
-    if (!flush_i) begin
-      //EXCEPTION PENDING in s1
-      if (ldbuf_w_q && ex_i.valid) begin
-        // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
-        // we got an rvalid and it's corresponding request was not flushed
-        if ((obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex]) && (ldbuf_rindex != ldbuf_windex_q)) begin
-          trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
-          valid_o    = 1'b1;
-          ex_o.valid = 1'b0;
-          // retire load that cause exception (misalign)
-        end else begin
-          trans_id_o = ldbuf_q[ldbuf_windex_q].trans_id;
-          valid_o    = 1'b1;
-          ex_o.valid = 1'b1;
-        end
-        //NO EXCEPTION PENDING in s0 (page fault)
-      end else if (valid_i && ex_i.valid) begin
-        trans_id_o = lsu_ctrl_i.trans_id;
-        valid_o    = 1'b1;
-        ex_o.valid = 1'b1;
-        pop_ld_o = 1'b1;  // release lsu_bypass fifo
-      end else begin
-        // REQUEST
-        if (valid_i && (!ldbuf_full)) begin
-          translation_req_o = 1'b1;
-          if (!page_offset_matches_i) begin
-            load_req_o.req = 1'b1;
-            if (load_rsp_i.gnt) begin
-              if ((CVA6Cfg.MmuPresent && !dtlb_hit_i) || stall_ni || (obi_a_state_q == REGISTRED)) begin
-                kill_req_d = 1'b1;  // next cycle kill s1
-              end else begin
-                ldbuf_w  = 1'b1;  // record request into outstanding load fifo
-                pop_ld_o = 1'b1;  // release lsu_bypass fifo
-              end
-            end
+    // REQUEST
+    if (valid_i) begin
+      translation_req_o = 1'b1;
+      if (!page_offset_matches_i) begin
+        load_req_o.req = 1'b1;
+        if (!CVA6Cfg.MmuPresent || load_rsp_i.gnt) begin
+          if (stall_translation || stall_ni || stall_obi || ldbuf_full || flush_i) begin
+            kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
+          end else begin
+            ldbuf_w  = CVA6Cfg.MmuPresent ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger OBI request
+            pop_ld_o = !ex_s1;  // release lsu_bypass fifo
           end
-        end
-        // RETIRE LOAD
-        // we got an rvalid and it's corresponding request was not flushed
-        if (obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
-          trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
-          valid_o    = 1'b1;
-          ex_o.valid = 1'b0;
         end
       end
     end
+    // RETIRE LOAD
+    // we got an rvalid and it's corresponding request was not flushed
+    if (data_rvalid) begin
+      trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
+      valid_o    = 1'b1;
+      ex_o.valid = 1'b0;
+      // RETIRE EXCEPTION (low priority)
+    end else if (ex_s1) begin
+      trans_id_o = CVA6Cfg.MmuPresent ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id;
+      valid_o    = 1'b1;
+      ex_o.valid = 1'b1;
+      pop_ld_o = 1'b1; // release lsu_bypass fifo
+      // RETIRE EXCEPTION (low priority)
+    end else if (CVA6Cfg.MmuPresent && ex_s0) begin
+      trans_id_o = lsu_ctrl_i.trans_id;
+      valid_o    = 1'b1;
+      ex_o.valid = 1'b1;
+      pop_ld_o = 1'b1; // release lsu_bypass fifo
+    end
+
   end
 
-  //default obi state registred
 
+  //default obi state registred
   assign obi_load_req_o.reqpar = !obi_load_req_o.req;
-  assign obi_load_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr_i : paddr_q;
+  assign obi_load_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign obi_load_req_o.a.we = '0;
-  assign obi_load_req_o.a.be = be_q;
+  assign obi_load_req_o.a.be = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
   assign obi_load_req_o.a.wdata = '0;
-  assign obi_load_req_o.a.aid = ldbuf_windex_q;
+  assign obi_load_req_o.a.aid = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
   assign obi_load_req_o.a.a_optional.auser = '0;
   assign obi_load_req_o.a.a_optional.wuser = '0;
   assign obi_load_req_o.a.a_optional.atop = '0;
   assign obi_load_req_o.a.a_optional.memtype[0] = '0;
-  assign obi_load_req_o.a.a_optional.memtype[1] = paddr_is_cacheable_q;
+  assign obi_load_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
   assign obi_load_req_o.a.a_optional.mid = '0;
   assign obi_load_req_o.a.a_optional.prot = '0;
   assign obi_load_req_o.a.a_optional.dbg = '0;
@@ -336,7 +344,7 @@ module load_unit
 
     unique case (obi_a_state_q)
       TRANSPARENT: begin
-        if (ldbuf_w_q && !(ldbuf_w_q && ex_i.valid)) begin
+        if (data_req) begin
           obi_load_req_o.req = 1'b1;
           if (!obi_load_rsp_i.gnt) begin
             obi_a_state_d = REGISTRED;
@@ -369,13 +377,17 @@ module load_unit
       ldbuf_windex_q <= '0;
       ldbuf_w_q <= '0;
     end else begin
+      if (obi_a_state_q == TRANSPARENT) begin
+        paddr_q <= paddr;
+        be_q <= lsu_ctrl_i.be;
+        paddr_is_cacheable_q <= paddr_is_cacheable;
+      end
       obi_a_state_q <= obi_a_state_d;
-      paddr_q <= paddr_i;
-      be_q <= lsu_ctrl_i.be;
-      paddr_is_cacheable_q <= paddr_is_cacheable;
       kill_req_q <= kill_req_d;
+      //if (!ex_s1) begin
       ldbuf_windex_q <= ldbuf_windex;
       ldbuf_w_q <= ldbuf_w;
+      //end
     end
   end
 

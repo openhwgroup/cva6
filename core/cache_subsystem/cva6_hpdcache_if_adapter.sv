@@ -108,91 +108,132 @@ module cva6_hpdcache_if_adapter
       logic [1:0] load_data_size;
 
       if (CVA6Cfg.XLEN == 64) begin
-        assign load_data_size = ariane_pkg::size_gen(load_req_i.be);
+        assign load_data_size = ariane_pkg::size_gen(hpdcache_req.be);
       end else begin
-        assign load_data_size = ariane_pkg::size_gen_32(load_req_i.be);
+        assign load_data_size = ariane_pkg::size_gen_32(hpdcache_req.be);
       end
 
-      //    Request forwarding
-      assign hpdcache_req_valid_o = load_req_i.req;
-      assign hpdcache_req.addr_offset = load_req_i.address_index;
+      //    Request forwarding OBI channel A
+
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
-      assign hpdcache_req.be = load_req_i.be;
       assign hpdcache_req.size = load_data_size;
       assign hpdcache_req.sid = hpdcache_req_sid_i;
-      assign hpdcache_req.tid = load_req_i.aid;
+
       assign hpdcache_req.need_rsp = 1'b1;
-      assign hpdcache_req.phys_indexed = 1'b0;
-      assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
-      assign hpdcache_req.pma.uncacheable = 1'b0;
-      assign hpdcache_req.pma.io = 1'b0;
-      assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
       assign hpdcache_req_abort_o = load_req_i.kill_req;
-      assign hpdcache_req_tag_o = obi_load_req_i.a.addr[CVA6Cfg.DCACHE_TAG_WIDTH     +
+
+      if (CVA6Cfg.MmuPresent) begin
+        // When MMu is present request is done in 2 phases, s0: index, s1:tag
+        assign hpdcache_req.phys_indexed = 1'b0;
+        assign hpdcache_req_valid_o = load_req_i.req;
+        assign hpdcache_req.addr_offset = load_req_i.address_index;
+        assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
+        assign hpdcache_req.be = load_req_i.be;
+        assign hpdcache_req.tid = load_req_i.aid;
+        assign hpdcache_req.pma.uncacheable = 1'b0;  // unused on virtually indexed request
+        assign hpdcache_req.pma.io = 1'b0;  // unused on virtually indexed request
+        assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;  // unused on virtually indexed request
+
+        assign hpdcache_req_pma_o.uncacheable = !obi_load_req_i.a.a_optional.memtype[1];
+        assign hpdcache_req_pma_o.io = 1'b0;
+        assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        assign hpdcache_req_tag_o = obi_load_req_i.a.addr[CVA6Cfg.DCACHE_TAG_WIDTH     +
                                                                                     CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
                                                                                     CVA6Cfg.DCACHE_INDEX_WIDTH];
-      assign hpdcache_req_pma_o.uncacheable = !obi_load_req_i.a.a_optional.memtype[1];
-      assign hpdcache_req_pma_o.io = 1'b0;
-      assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
-      assign load_rsp_o.gnt = hpdcache_req_ready_i;
+        assign obi_load_rsp_o.gnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
+        assign load_rsp_o.gnt = hpdcache_req_ready_i;
+      end else begin
+        // When MMu is not present request is done in 1 phases, s0: index+tag
+        assign hpdcache_req.phys_indexed = 1'b1;
+        assign hpdcache_req_valid_o = obi_load_req_i.req;
+        assign hpdcache_req.addr_offset = obi_load_req_i.a.addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+        assign hpdcache_req.addr_tag = obi_load_req_i.a.addr[CVA6Cfg.DCACHE_TAG_WIDTH     +
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
+                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+        assign hpdcache_req.be = obi_load_req_i.a.be;
+        assign hpdcache_req.tid = obi_load_req_i.a.aid;
+        assign hpdcache_req.pma.uncacheable = !obi_load_req_i.a.a_optional.memtype[1];
+        assign hpdcache_req.pma.io = 1'b0;
+        assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
-      obi_load_rsp_t obi_load_rsp_q, obi_load_rsp_d;
-      logic resp_while_request;
-      logic buffered_valid;
-      logic killed_in_s1;
+        assign hpdcache_req_pma_o.uncacheable = '0;  // unused on physically indexed request
+        assign hpdcache_req_pma_o.io = '0;  // unused on physically indexed request
+        assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        ;  // unused on physically indexed request
+        assign hpdcache_req_tag_o = '0;  // unused on physically indexed request
 
-      assign obi_load_rsp_o.gnt = 1'b1;  //if hpdcache is always ready to accept tag
-      assign obi_load_rsp_o.gntpar = 1'b0;
-      assign obi_load_rsp_o.rvalid = hpdcache_rsp_valid_i;
-      assign obi_load_rsp_o.rvalidpar = !hpdcache_rsp_valid_i;
-      assign obi_load_rsp_o.r.rid = hpdcache_rsp_i.tid;
-      assign obi_load_rsp_o.r.r_optional.exokay = '0;
-      assign obi_load_rsp_o.r.r_optional.rchk = '0;
-      assign obi_load_rsp_o.r.err = '0;
-      assign obi_load_rsp_o.r.rdata = hpdcache_rsp_i.rdata;
-      assign obi_load_rsp_o.r.r_optional.ruser = '0;
-
-      assign obi_load_rsp_d.gnt = '0;  //unused
-      assign obi_load_rsp_d.gntpar = '0;  //unused
-      assign obi_load_rsp_d.rvalid = hpdcache_rsp_valid_i;
-      assign obi_load_rsp_d.rvalidpar = !hpdcache_rsp_valid_i;
-      assign obi_load_rsp_d.r.rid = hpdcache_rsp_i.tid;
-      assign obi_load_rsp_d.r.r_optional.exokay = '0;
-      assign obi_load_rsp_d.r.r_optional.rchk = '0;
-      assign obi_load_rsp_d.r.err = '0;
-      assign obi_load_rsp_d.r.rdata = hpdcache_rsp_i.rdata;
-      assign obi_load_rsp_d.r.r_optional.ruser = '0;
-
-      assign resp_while_request = (CVA6Cfg.ObiVersion != 0 && (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) && (obi_load_req_i.req && obi_load_rsp_o.gnt)) ? hpdcache_rsp_valid_i : 1'b0;
-      assign killed_in_s1 = (CVA6Cfg.ObiVersion != 0 && (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) && (load_req_i.kill_req)) ? 1'b1 : 1'b0;
-
-      always @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-          buffered_valid <= 1'b0;
-          obi_load_rsp_q <= 1'b0;
-        end else begin
-          if (resp_while_request) begin
-            obi_load_rsp_q <= obi_load_rsp_d;
-            buffered_valid <= 1'b1;
-          end
-          if (buffered_valid) begin
-            buffered_valid <= 1'b0;
-          end
-        end
+        assign obi_load_rsp_o.gnt = obi_load_req_i.req && hpdcache_req_ready_i;
+        assign load_rsp_o.gnt = 1'b0;
       end
 
-      //    Response forwarding
-      assign obi_load_rsp_o.rvalid               = resp_while_request ? '0 : (buffered_valid ? 1'b1 : (killed_in_s1 ? 1'b0 : hpdcache_rsp_valid_i));
-      assign obi_load_rsp_o.rvalidpar = !obi_load_rsp_o.rvalid;
-      assign obi_load_rsp_o.r.rid                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rid               : obi_load_rsp_d.r.rid);
-      assign obi_load_rsp_o.r.r_optional.exokay  = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.exokay : obi_load_rsp_d.r.r_optional.exokay);
-      assign obi_load_rsp_o.r.r_optional.rchk    = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.rchk   : obi_load_rsp_d.r.r_optional.rchk);
-      assign obi_load_rsp_o.r.err                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.err               : obi_load_rsp_d.r.err);
-      assign obi_load_rsp_o.r.rdata              = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rdata             : obi_load_rsp_d.r.rdata);
-      assign obi_load_rsp_o.r.r_optional.ruser   = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.ruser  : obi_load_rsp_d.r.r_optional.ruser);
+      assign obi_load_rsp_o.gntpar = !obi_load_rsp_o.gnt;
+
+      //    Response forwarding OBI channel R
+
+      if (!CVA6Cfg.MmuPresent || (CVA6Cfg.ObiVersion == config_pkg::OBI_NOT_COMPLIANT)) begin
+
+        assign obi_load_rsp_o.rvalid = hpdcache_rsp_valid_i;
+        assign obi_load_rsp_o.rvalidpar = !hpdcache_rsp_valid_i;
+        assign obi_load_rsp_o.r.rid = hpdcache_rsp_i.tid;
+        assign obi_load_rsp_o.r.r_optional.exokay = '0;
+        assign obi_load_rsp_o.r.r_optional.rchk = '0;
+        assign obi_load_rsp_o.r.err = '0;
+        assign obi_load_rsp_o.r.rdata = hpdcache_rsp_i.rdata;
+        assign obi_load_rsp_o.r.r_optional.ruser = '0;
+
+      end else begin
+
+        // In case we have a MMU and we want a compliance to OBI protocol, we need to delay response in case of HIT.
+
+        obi_load_rsp_t obi_load_rsp_q, obi_load_rsp_d;
+        logic resp_while_request;
+        logic buffered_valid;
+        logic killed_in_s1;
+
+        assign obi_load_rsp_d.gnt = '0;  //unused
+        assign obi_load_rsp_d.gntpar = '0;  //unused
+        assign obi_load_rsp_d.rvalid = hpdcache_rsp_valid_i;
+        assign obi_load_rsp_d.rvalidpar = !hpdcache_rsp_valid_i;
+        assign obi_load_rsp_d.r.rid = hpdcache_rsp_i.tid;
+        assign obi_load_rsp_d.r.r_optional.exokay = '0;
+        assign obi_load_rsp_d.r.r_optional.rchk = '0;
+        assign obi_load_rsp_d.r.err = '0;
+        assign obi_load_rsp_d.r.rdata = hpdcache_rsp_i.rdata;
+        assign obi_load_rsp_d.r.r_optional.ruser = '0;
+
+        assign resp_while_request = (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) && obi_load_req_i.req && obi_load_rsp_o.gnt ? hpdcache_rsp_valid_i : 1'b0;
+        assign killed_in_s1 = (obi_load_req_i.a.aid == hpdcache_rsp_i.tid) ? load_req_i.kill_req : 1'b0; //maybe can be managed by need_resp = 0
+
+        always @(posedge clk_i or negedge rst_ni) begin
+          if (!rst_ni) begin
+            buffered_valid <= 1'b0;
+            obi_load_rsp_q <= 1'b0;
+          end else begin
+            if (resp_while_request) begin
+              obi_load_rsp_q <= obi_load_rsp_d;
+              buffered_valid <= 1'b1;
+            end
+            if (buffered_valid) begin
+              buffered_valid <= 1'b0;
+            end
+          end
+        end
+
+        assign obi_load_rsp_o.rvalid               = resp_while_request ? '0 : (buffered_valid ? 1'b1 : (killed_in_s1 ? 1'b0 : hpdcache_rsp_valid_i));
+        assign obi_load_rsp_o.rvalidpar = !obi_load_rsp_o.rvalid;
+        assign obi_load_rsp_o.r.rid                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rid               : obi_load_rsp_d.r.rid);
+        assign obi_load_rsp_o.r.r_optional.exokay  = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.exokay : obi_load_rsp_d.r.r_optional.exokay);
+        assign obi_load_rsp_o.r.r_optional.rchk    = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.rchk   : obi_load_rsp_d.r.r_optional.rchk);
+        assign obi_load_rsp_o.r.err                = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.err               : obi_load_rsp_d.r.err);
+        assign obi_load_rsp_o.r.rdata              = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.rdata             : obi_load_rsp_d.r.rdata);
+        assign obi_load_rsp_o.r.r_optional.ruser   = resp_while_request ? '0 : (buffered_valid ? obi_load_rsp_q.r.r_optional.ruser  : obi_load_rsp_d.r.r_optional.ruser);
+
+      end
+
+
 
       //  Assertions
       //  {{{
@@ -517,8 +558,8 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign obi_amo_valid = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid == '1);
 
       //OBI
-      assign obi_store_rsp_o.gnt = hpdcache_req_ready_i & forward_store;
-      assign obi_store_rsp_o.gntpar = !(hpdcache_req_ready_i & forward_store);
+      assign obi_store_rsp_o.gnt = hpdcache_req_ready_i & obi_store_req_i.req;
+      assign obi_store_rsp_o.gntpar = !obi_store_rsp_o.gnt;
       assign obi_store_rsp_o.rvalid = obi_store_valid;
       assign obi_store_rsp_o.rvalidpar = !obi_store_valid;
       assign obi_store_rsp_o.r.rid = '0;
@@ -529,7 +570,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign obi_store_rsp_o.r.r_optional.ruser = '0;
 
       assign obi_amo_rsp_o.gnt = hpdcache_req_ready_i & forward_amo;
-      assign obi_amo_rsp_o.gntpar = !(hpdcache_req_ready_i & forward_amo);
+      assign obi_amo_rsp_o.gntpar = !obi_amo_rsp_o.gnt;
       assign obi_amo_rsp_o.rvalid = obi_amo_valid;
       assign obi_amo_rsp_o.rvalidpar = !obi_amo_valid;
       assign obi_amo_rsp_o.r.rid = '0;

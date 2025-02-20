@@ -30,7 +30,7 @@ package build_config_pkg;
     int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;
-    cfg.ObiVersion = 1;  //FIXME CVA6Cfg.ObiVersion;    //0 not compliant
+    cfg.ObiVersion = CVA6Cfg.ObiVersion;
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
@@ -57,7 +57,7 @@ package build_config_pkg;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
     cfg.MEM_TID_WIDTH = CVA6Cfg.AxiIdWidth;  //CVA6Cfg.MemTidWidth; FIXME HPDCACHE related
-    cfg.NrLoadBufEntries = cfg.ObiVersion == 0 ? CVA6Cfg.NrLoadBufEntries : 1;
+    cfg.NrLoadBufEntries = cfg.ObiVersion == config_pkg::OBI_NOT_COMPLIANT ? CVA6Cfg.NrLoadBufEntries : 1;  //FIXME: To fix in order response 
     cfg.RVF = CVA6Cfg.RVF;
     cfg.RVD = CVA6Cfg.RVD;
     cfg.XF16 = CVA6Cfg.XF16;

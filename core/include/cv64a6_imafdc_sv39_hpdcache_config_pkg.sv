@@ -166,7 +166,7 @@ package cva6_config_pkg;
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
-      ObiVersion: int'(1),
+      ObiVersion: int'(config_pkg::OBI_V1_6),
       PipelineOnly: bit'(0)
   };
 

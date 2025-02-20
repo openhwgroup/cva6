@@ -78,7 +78,7 @@ module store_buffer
   logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n, commit_read_pointer_q;
   logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
 
-  assign store_buffer_empty_o = (speculative_status_cnt_q == 0) & no_st_pending_o;
+  assign store_buffer_empty_o = (speculative_status_cnt_q == 0) & !valid_i & no_st_pending_o;
   // ----------------------------------------
   // Speculative Queue - Core Interface
   // ----------------------------------------
@@ -127,23 +127,24 @@ module store_buffer
     end
 
     // we are ready if the speculative and the commit queue have a space left
-    ready_o = (speculative_status_cnt_n < (DEPTH_SPEC)) || commit_i;
+    ready_o = CVA6Cfg.MmuPresent ? (speculative_status_cnt_n < (DEPTH_SPEC)) || commit_i : speculative_status_cnt_q < (DEPTH_SPEC);
   end
 
   // ----------------------------------------
   // Commit Queue - Memory Interface
   // ----------------------------------------
 
+  logic direct_req_from_speculative;
   // we will never kill a request in the store buffer since we already know that the translation is valid
   // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
 
-  assign rvfi_mem_paddr_o = speculative_queue_q[speculative_read_pointer_q].address;
+  assign rvfi_mem_paddr_o = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_n[commit_read_pointer_n].address;
 
   assign obi_store_req_o.reqpar = !obi_store_req_o.req;
-  assign obi_store_req_o.a.addr = commit_queue_q[commit_read_pointer_q].address;
+  assign obi_store_req_o.a.addr = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address;
   assign obi_store_req_o.a.we = 1'b1;
-  assign obi_store_req_o.a.be = commit_queue_q[commit_read_pointer_q].be;
-  assign obi_store_req_o.a.wdata = commit_queue_q[commit_read_pointer_q].data;
+  assign obi_store_req_o.a.be = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].be : commit_queue_q[commit_read_pointer_q].be;
+  assign obi_store_req_o.a.wdata = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data : commit_queue_q[commit_read_pointer_q].data;
   assign obi_store_req_o.a.aid = '0;
   assign obi_store_req_o.a.a_optional.auser = '0;
   assign obi_store_req_o.a.a_optional.wuser = '0;
@@ -152,7 +153,8 @@ module store_buffer
   assign obi_store_req_o.a.a_optional.memtype[1] = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
-        {64 - CVA6Cfg.PLEN{1'b0}}, commit_queue_q[commit_read_pointer_q].address
+        {64 - CVA6Cfg.PLEN{1'b0}},
+        direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
       }  //TO DO CHECK GRANULARITY
   );
   assign obi_store_req_o.a.a_optional.mid = '0;
@@ -165,19 +167,20 @@ module store_buffer
 
   always_comb begin : store_if
     automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
-    commit_status_cnt      = commit_status_cnt_q;
+    commit_status_cnt           = commit_status_cnt_q;
 
-    commit_ready_o         = (commit_status_cnt_q < DEPTH_COMMIT);
+    commit_ready_o              = (commit_status_cnt_q < DEPTH_COMMIT);
     // no store is pending if we don't have any element in the commit queue e.g.: it is empty
-    no_st_pending_o        = (commit_status_cnt_q == 0);
+    no_st_pending_o             = (commit_status_cnt_q == 0);
     // default assignments
-    commit_read_pointer_n  = commit_read_pointer_q;
-    commit_write_pointer_n = commit_write_pointer_q;
+    commit_read_pointer_n       = commit_read_pointer_q;
+    commit_write_pointer_n      = commit_write_pointer_q;
 
-    commit_queue_n         = commit_queue_q;
+    commit_queue_n              = commit_queue_q;
 
-    obi_store_req_o.req    = 1'b0;
-    obi_store_req_o.rready = 1'b1;
+    obi_store_req_o.req         = 1'b0;
+    obi_store_req_o.rready      = 1'b1;
+    direct_req_from_speculative = 1'b0;
 
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
@@ -190,12 +193,15 @@ module store_buffer
         commit_read_pointer_n = commit_read_pointer_q + 1'b1;
         commit_status_cnt--;
       end
+    end else if (commit_i && speculative_queue_q[speculative_read_pointer_q].valid && (commit_write_pointer_q == speculative_read_pointer_q) && !stall_st_pending_i) begin
+      obi_store_req_o.req = 1'b1;
+      direct_req_from_speculative = 1'b1;
     end
     // we ignore the rvalid signal for now as we assume that the store
     // happened if we got a grant
 
     // shift the store request from the speculative buffer to the non-speculative
-    if (commit_i) begin
+    if (commit_i && !(obi_store_rsp_i.gnt && direct_req_from_speculative)) begin
       commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
       commit_write_pointer_n = commit_write_pointer_n + 1'b1;
       commit_status_cnt++;
