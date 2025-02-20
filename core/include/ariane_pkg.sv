@@ -627,23 +627,6 @@ package ariane_pkg;
     FE_INSTR_GUEST_PAGE_FAULT
   } frontend_exception_t;
 
-  // AMO request going to cache. this request is unconditionally valid as soon
-  // as request goes high.
-  // Furthermore, those signals are kept stable until the response indicates
-  // completion by asserting ack.
-  typedef struct packed {
-    logic        req;        // this request is valid
-    amo_t        amo_op;     // atomic memory operation to perform
-    logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
-    logic [63:0] operand_a;  // address
-    logic [63:0] operand_b;  // data as layouted in the register
-  } amo_req_t;
-
-  // AMO response coming from cache.
-  typedef struct packed {
-    logic        ack;     // response is valid
-    logic [63:0] result;  // sign-extended, result
-  } amo_resp_t;
 
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 
@@ -652,6 +635,49 @@ package ariane_pkg;
   // ----------------------
   function automatic logic [63:0] sext32to64(logic [31:0] operand);
     return {{32{operand[31]}}, operand[31:0]};
+  endfunction
+
+  // ----------------------
+  // AMO Functions
+  // ----------------------
+  function automatic logic [5:0] amo_cva6_to_obi(logic [3:0] cva6_amo);
+    case (cva6_amo)
+      AMO_NONE: return obi_pkg::ATOPNONE;
+      AMO_LR:   return obi_pkg::ATOPLR;
+      AMO_SC:   return obi_pkg::ATOPSC;
+      AMO_SWAP: return obi_pkg::AMOSWAP;
+      AMO_ADD:  return obi_pkg::AMOADD;
+      AMO_AND:  return obi_pkg::AMOAND;
+      AMO_OR:   return obi_pkg::AMOOR;
+      AMO_XOR:  return obi_pkg::AMOXOR;
+      AMO_MAX:  return obi_pkg::AMOMAX;
+      AMO_MAXU: return obi_pkg::AMOMAXU;
+      AMO_MIN:  return obi_pkg::AMOMIN;
+      AMO_MINU: return obi_pkg::AMOMINU;
+      AMO_CAS1: return 6'h0C;  // unused, not part of riscv spec, but provided in OpenPiton
+      AMO_CAS2: return 6'h0D;  // unused, not part of riscv spec, but provided in OpenPiton
+    endcase
+    return 8'b0;
+  endfunction
+
+  function automatic logic [3:0] amo_obi_to_cva6(logic [5:0] obi_amo);
+    case (obi_amo)
+      obi_pkg::ATOPNONE: return AMO_NONE;
+      obi_pkg::ATOPLR: return AMO_LR;
+      obi_pkg::ATOPSC: return AMO_SC;
+      obi_pkg::AMOSWAP: return AMO_SWAP;
+      obi_pkg::AMOADD: return AMO_ADD;
+      obi_pkg::AMOAND: return AMO_AND;
+      obi_pkg::AMOOR: return AMO_OR;
+      obi_pkg::AMOXOR: return AMO_XOR;
+      obi_pkg::AMOMAX: return AMO_MAX;
+      obi_pkg::AMOMAXU: return AMO_MAXU;
+      obi_pkg::AMOMIN: return AMO_MIN;
+      obi_pkg::AMOMINU: return AMO_MINU;
+      6'h0C: return AMO_CAS1;  // unused, not part of riscv spec, but provided in OpenPiton
+      6'h0D: return AMO_CAS2;  // unused, not part of riscv spec, but provided in OpenPiton
+    endcase
+    return 8'b0;
   endfunction
 
   // ----------------------
@@ -725,6 +751,43 @@ package ariane_pkg;
       default: return 4'b0;
     endcase
     return 4'b0;
+  endfunction
+
+  // generate size of transaction from byte ena
+  function automatic logic [1:0] size_gen(logic [7:0] be);
+    case (be)
+      8'b1111_1111: begin
+        return 2'b11;
+      end
+      8'b0000_1111, 8'b0001_1110, 8'b0011_1100, 8'b0111_1000, 8'b1111_0000: begin
+        return 2'b10;
+      end
+      8'b0000_0011,
+      8'b0000_0110,
+      8'b0000_1100,
+      8'b0001_1000,
+      8'b0011_0000,
+      8'b0110_0000,
+      8'b1100_0000 : begin
+        return 2'b01;
+      end
+      default: return 2'b00;
+    endcase
+    return 2'b0;
+  endfunction
+
+  // generate size of transaction from byte ena
+  function automatic logic [1:0] size_gen_32(logic [3:0] be);
+    case (be)
+      4'b1111: begin
+        return 2'b10;
+      end
+      4'b0011, 4'b0110, 4'b1100: begin
+        return 2'b01;
+      end
+      default: return 2'b00;
+    endcase
+    return 2'b0;
   endfunction
 
   // ----------------------

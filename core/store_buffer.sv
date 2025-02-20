@@ -18,8 +18,8 @@ module store_buffer
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic
+    parameter type obi_store_req_t = logic,
+    parameter type obi_store_rsp_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -47,8 +47,10 @@ module store_buffer
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    input  dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o
+    // Store cache response - DCACHE
+    output obi_store_req_t obi_store_req_o,
+    // Store cache request - DCACHE
+    input  obi_store_rsp_t obi_store_rsp_i
 );
 
   // the store queue has two parts:
@@ -85,6 +87,7 @@ module store_buffer
     speculative_status_cnt      = speculative_status_cnt_q;
 
     // default assignments
+    speculative_status_cnt_n    = speculative_status_cnt_q;
     speculative_read_pointer_n  = speculative_read_pointer_q;
     speculative_write_pointer_n = speculative_write_pointer_q;
     speculative_queue_n         = speculative_queue_q;
@@ -133,24 +136,32 @@ module store_buffer
 
   // we will never kill a request in the store buffer since we already know that the translation is valid
   // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
-  assign req_port_o.kill_req = 1'b0;
-  assign req_port_o.data_we = 1'b1;  // we will always write in the store queue
-  assign req_port_o.tag_valid = 1'b0;
-
-  // we do not require an acknowledgement for writes, thus we do not need to identify uniquely the responses
-  assign req_port_o.data_id = '0;
-  // those signals can directly be output to the memory
-  assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-  // if we got a new request we already saved the tag from the previous cycle
-  assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
-  assign req_port_o.data_wdata = commit_queue_q[commit_read_pointer_q].data;
-  assign req_port_o.data_wuser = '0;
-  assign req_port_o.data_be = commit_queue_q[commit_read_pointer_q].be;
-  assign req_port_o.data_size = commit_queue_q[commit_read_pointer_q].data_size;
 
   assign rvfi_mem_paddr_o = speculative_queue_q[speculative_read_pointer_q].address;
+
+  assign obi_store_req_o.reqpar = !obi_store_req_o.req;
+  assign obi_store_req_o.a.addr = commit_queue_q[commit_read_pointer_q].address;
+  assign obi_store_req_o.a.we = 1'b1;
+  assign obi_store_req_o.a.be = commit_queue_q[commit_read_pointer_q].be;
+  assign obi_store_req_o.a.wdata = commit_queue_q[commit_read_pointer_q].data;
+  assign obi_store_req_o.a.aid = '0;
+  assign obi_store_req_o.a.a_optional.auser = '0;
+  assign obi_store_req_o.a.a_optional.wuser = '0;
+  assign obi_store_req_o.a.a_optional.atop = '0;
+  assign obi_store_req_o.a.a_optional.memtype[0] = '0;
+  assign obi_store_req_o.a.a_optional.memtype[1] = config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg,
+      {
+        {64 - CVA6Cfg.PLEN{1'b0}}, commit_queue_q[commit_read_pointer_q].address
+      }  //TO DO CHECK GRANULARITY
+  );
+  assign obi_store_req_o.a.a_optional.mid = '0;
+  assign obi_store_req_o.a.a_optional.prot = '0;
+  assign obi_store_req_o.a.a_optional.dbg = '0;
+  assign obi_store_req_o.a.a_optional.achk = '0;
+
+  //TODO check parity : obi_store_rsp_i.gntpar != obi_store_rsp_i.gnt
+
 
   always_comb begin : store_if
     automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
@@ -165,13 +176,14 @@ module store_buffer
 
     commit_queue_n         = commit_queue_q;
 
-    req_port_o.data_req    = 1'b0;
+    obi_store_req_o.req    = 1'b0;
+    obi_store_req_o.rready = 1'b1;
 
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
-      req_port_o.data_req = 1'b1;
-      if (req_port_i.data_gnt) begin
+      obi_store_req_o.req = 1'b1;
+      if (obi_store_rsp_i.gnt) begin
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
         // advance the read_pointer

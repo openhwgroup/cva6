@@ -17,14 +17,20 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type load_req_t = logic,
+    parameter type load_rsp_t = logic,
+    parameter type obi_store_req_t = logic,
+    parameter type obi_store_rsp_t = logic,
+    parameter type obi_amo_req_t = logic,
+    parameter type obi_amo_rsp_t = logic,
+    parameter type obi_load_req_t = logic,
+    parameter type obi_load_rsp_t = logic,
+    parameter type obi_mmu_ptw_req_t = logic,
+    parameter type obi_mmu_ptw_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
     parameter type fetch_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -134,19 +140,31 @@ module load_store_unit
     // Data TLB miss - PERF_COUNTERS
     output logic                                      dtlb_miss_o,
 
-    // Data cache request output - CACHES
-    input  dcache_req_o_t [2:0] dcache_req_ports_i,
-    // Data cache request input - CACHES
-    output dcache_req_i_t [2:0] dcache_req_ports_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                dcache_wbuffer_empty_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic                dcache_wbuffer_not_ni_i,
-    // AMO request - CACHE
-    output amo_req_t            amo_req_o,
-    // AMO response - CACHE
-    input  amo_resp_t           amo_resp_i,
+    // Load cache input request ports - DCACHE
+    output load_req_t        load_req_o,
+    // Load cache output request ports - DCACHE
+    input  load_rsp_t        load_rsp_i,
+    // Store cache response - DCACHE
+    output obi_store_req_t   obi_store_req_o,
+    // Store cache request - DCACHE
+    input  obi_store_rsp_t   obi_store_rsp_i,
+    // AMO request - DCACHE
+    output obi_amo_req_t     obi_amo_req_o,
+    // AMO response - DCACHE
+    input  obi_amo_rsp_t     obi_amo_rsp_i,
+    // Load cache response - DCACHE
+    output obi_load_req_t    obi_load_req_o,
+    // Load cache request - DCACHE
+    input  obi_load_rsp_t    obi_load_rsp_i,
+    // MMU PTW cache response - DCACHE
+    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
+    // MMU PTW cache request - DCACHE
+    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
 
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic dcache_wbuffer_empty_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic dcache_wbuffer_not_ni_i,
     // PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
     // PMP address - CSR_REGFILE
@@ -245,13 +263,13 @@ module load_store_unit
     localparam HYP_EXT = CVA6Cfg.RVH ? 1 : 0;
 
     cva6_mmu #(
-        .CVA6Cfg       (CVA6Cfg),
-        .exception_t   (exception_t),
-        .fetch_areq_t  (fetch_areq_t),
-        .fetch_arsp_t  (fetch_arsp_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .HYP_EXT       (HYP_EXT)
+        .CVA6Cfg          (CVA6Cfg),
+        .exception_t      (exception_t),
+        .fetch_areq_t     (fetch_areq_t),
+        .fetch_arsp_t     (fetch_arsp_t),
+        .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
+        .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+        .HYP_EXT          (HYP_EXT)
     ) i_cva6_mmu (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
@@ -304,8 +322,8 @@ module load_store_unit
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
 
-        .req_port_i(dcache_req_ports_i[0]),
-        .req_port_o(dcache_req_ports_o[0]),
+        .obi_mmu_ptw_req_o(obi_mmu_ptw_req_o),
+        .obi_mmu_ptw_rsp_i(obi_mmu_ptw_rsp_i),
 
         .pmpcfg_i,
         .pmpaddr_i
@@ -392,8 +410,10 @@ module load_store_unit
   // ------------------
   store_unit #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .obi_store_req_t(obi_store_req_t),
+      .obi_store_rsp_t(obi_store_rsp_t),
+      .obi_amo_req_t(obi_amo_req_t),
+      .obi_amo_rsp_t(obi_amo_rsp_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
@@ -428,23 +448,24 @@ module load_store_unit
       // Load Unit
       .page_offset_i        (page_offset),
       .page_offset_matches_o(page_offset_matches),
-      // AMOs
-      .amo_req_o,
-      .amo_resp_i,
       // to memory arbiter
-      .req_port_i           (dcache_req_ports_i[2]),
-      .req_port_o           (dcache_req_ports_o[2])
+      .obi_amo_req_o        (obi_amo_req_o),
+      .obi_amo_rsp_i        (obi_amo_rsp_i),
+      .obi_store_req_o      (obi_store_req_o),
+      .obi_store_rsp_i      (obi_store_rsp_i)
   );
 
   // ------------------
   // Load Unit
   // ------------------
   load_unit #(
-      .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .exception_t(exception_t),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .CVA6Cfg       (CVA6Cfg),
+      .load_req_t    (load_req_t),
+      .load_rsp_t    (load_rsp_t),
+      .obi_load_req_t(obi_load_req_t),
+      .obi_load_rsp_t(obi_load_rsp_t),
+      .exception_t   (exception_t),
+      .lsu_ctrl_t    (lsu_ctrl_t)
   ) i_load_unit (
       .clk_i,
       .rst_ni,
@@ -473,8 +494,10 @@ module load_store_unit
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
       // to memory arbiter
-      .req_port_i           (dcache_req_ports_i[1]),
-      .req_port_o           (dcache_req_ports_o[1]),
+      .obi_load_req_o       (obi_load_req_o),
+      .obi_load_rsp_i       (obi_load_rsp_i),
+      .load_req_o           (load_req_o),
+      .load_rsp_i           (load_rsp_i),
       .dcache_wbuffer_not_ni_i
   );
 
@@ -764,5 +787,4 @@ module load_store_unit
   assign rvfi_lsu_ctrl_o = lsu_ctrl;
 
 endmodule
-
 

@@ -22,61 +22,68 @@ module load_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type load_req_t = logic,
+    parameter type load_rsp_t = logic,
+    parameter type obi_load_req_t = logic,
+    parameter type obi_load_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
-    input logic clk_i,
+    input  logic                                      clk_i,
     // Asynchronous reset active low - SUBSYSTEM
-    input logic rst_ni,
+    input  logic                                      rst_ni,
     // Flush signal - CONTROLLER
-    input logic flush_i,
+    input  logic                                      flush_i,
     // Load request is valid - LSU_BYPASS
-    input logic valid_i,
+    input  logic                                      valid_i,
     // Load request input - LSU_BYPASS
-    input lsu_ctrl_t lsu_ctrl_i,
+    input  lsu_ctrl_t                                 lsu_ctrl_i,
     // Pop the load request from the LSU bypass FIFO - LSU_BYPASS
-    output logic pop_ld_o,
+    output logic                                      pop_ld_o,
     // Load unit result is valid - ISSUE_STAGE
-    output logic valid_o,
+    output logic                                      valid_o,
     // Load transaction ID - ISSUE_STAGE
-    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
+    output logic          [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Load result - ISSUE_STAGE
-    output logic [CVA6Cfg.XLEN-1:0] result_o,
+    output logic          [         CVA6Cfg.XLEN-1:0] result_o,
     // Load exception - ISSUE_STAGE
-    output exception_t ex_o,
+    output exception_t                                ex_o,
     // Request address translation - MMU
-    output logic translation_req_o,
+    output logic                                      translation_req_o,
     // Virtual address - MMU
-    output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
+    output logic          [         CVA6Cfg.VLEN-1:0] vaddr_o,
     // Transformed trap instruction out - MMU
-    output logic [31:0] tinst_o,
+    output logic          [                     31:0] tinst_o,
     // Instruction is a hyp load store instruction - MMU
-    output logic hs_ld_st_inst_o,
+    output logic                                      hs_ld_st_inst_o,
     // Hyp load store with execute permissions - MMU
-    output logic hlvx_inst_o,
+    output logic                                      hlvx_inst_o,
     // Physical address - MMU
-    input logic [CVA6Cfg.PLEN-1:0] paddr_i,
+    input  logic          [         CVA6Cfg.PLEN-1:0] paddr_i,
     // Excepted which appears before load - MMU
-    input exception_t ex_i,
+    input  exception_t                                ex_i,
     // Data TLB hit - MMU
-    input logic dtlb_hit_i,
+    input  logic                                      dtlb_hit_i,
     // Physical page number from the DTLB - MMU
-    input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
+    input  logic          [         CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
     // Page offset for address checking - STORE_UNIT
-    output logic [11:0] page_offset_o,
+    output logic          [                     11:0] page_offset_o,
     // Indicates if the page offset matches a store unit entry - STORE_UNIT
-    input logic page_offset_matches_i,
+    input  logic                                      page_offset_matches_i,
     // Store buffer is empty - STORE_UNIT
-    input logic store_buffer_empty_i,
+    input  logic                                      store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
-    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // Data cache request out - CACHES
-    input dcache_req_o_t req_port_i,
-    // Data cache request in - CACHES
-    output dcache_req_i_t req_port_o,
+    input  logic          [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // Load cache input request ports - DCACHE
+    output load_req_t                                 load_req_o,
+    // Load cache output request ports - DCACHE
+    input  load_rsp_t                                 load_rsp_i,
+    // Load cache response - DCACHE
+    output obi_load_req_t                             obi_load_req_o,
+    // Load cache request - DCACHE
+    input  obi_load_rsp_t                             obi_load_rsp_i,
+
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i
 );
@@ -194,21 +201,21 @@ module load_unit
   // feed-through the transformed instruction for mmu
   assign tinst_o = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;
   // this is a read-only interface so set the write enable to 0
-  assign req_port_o.data_we = 1'b0;
-  assign req_port_o.data_wdata = '0;
+  assign load_req_o.data_we = 1'b0;
+  assign load_req_o.data_wdata = '0;
   // compose the load buffer write data, control is handled in the FSM
   assign ldbuf_wdata = {
     lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operation
   };
   // output address
   // we can now output the lower 12 bit as the index to the cache
-  assign req_port_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  assign load_req_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   // translation from last cycle, again: control is handled in the FSM
-  assign req_port_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
+  assign load_req_o.address_tag   = paddr_i[CVA6Cfg.DCACHE_TAG_WIDTH     +
                                               CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
                                               CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
-  assign req_port_o.data_id = ldbuf_windex;
+  assign load_req_o.data_id = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
@@ -237,12 +244,12 @@ module load_unit
     // default assignments
     state_d              = state_q;
     translation_req_o    = 1'b0;
-    req_port_o.data_req  = 1'b0;
+    load_req_o.data_req  = 1'b0;
     // tag control
-    req_port_o.kill_req  = 1'b0;
-    req_port_o.tag_valid = 1'b0;
-    req_port_o.data_be   = lsu_ctrl_i.be;
-    req_port_o.data_size = extract_transfer_size(lsu_ctrl_i.operation);
+    load_req_o.kill_req  = 1'b0;
+    load_req_o.tag_valid = 1'b0;
+    load_req_o.data_be   = lsu_ctrl_i.be;
+    load_req_o.data_size = extract_transfer_size(lsu_ctrl_i.operation);
     pop_ld_o             = 1'b0;
 
     // In IDLE and SEND_TAG states, this unit can accept a new load request
@@ -259,9 +266,9 @@ module load_unit
           // check if the page offset matches with a store, if it does then stall and wait
           if (!page_offset_matches_i) begin
             // make a load request to memory
-            req_port_o.data_req = 1'b1;
+            load_req_o.data_req = 1'b1;
             // we got no data grant so wait for the grant before sending the tag
-            if (!req_port_i.data_gnt) begin
+            if (!load_rsp_i.data_gnt) begin
               state_d = WAIT_GNT;
             end else begin
               if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
@@ -296,9 +303,9 @@ module load_unit
         // keep the translation request up
         translation_req_o   = 1'b1;
         // keep the request up
-        req_port_o.data_req = 1'b1;
+        load_req_o.data_req = 1'b1;
         // we finally got a data grant
-        if (req_port_i.data_gnt) begin
+        if (load_rsp_i.data_gnt) begin
           // so we send the tag in the next cycle
           if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
             state_d = ABORT_TRANSACTION;
@@ -318,7 +325,7 @@ module load_unit
       end
       // we know for sure that the tag we want to send is valid
       SEND_TAG: begin
-        req_port_o.tag_valid = 1'b1;
+        load_req_o.tag_valid = 1'b1;
         state_d = IDLE;
 
         if (accept_req) begin
@@ -328,9 +335,9 @@ module load_unit
           // check if the page offset matches with a store, if it does stall and wait
           if (!page_offset_matches_i) begin
             // make a load request to memory
-            req_port_o.data_req = 1'b1;
+            load_req_o.data_req = 1'b1;
             // we got no data grant so wait for the grant before sending the tag
-            if (!req_port_i.data_gnt) begin
+            if (!load_rsp_i.data_gnt) begin
               state_d = WAIT_GNT;
             end else begin
               // we got a grant so we can send the tag in the next cycle
@@ -357,15 +364,15 @@ module load_unit
         // ----------
         // if we got an exception we need to kill the request immediately
         if (ex_i.valid) begin
-          req_port_o.kill_req = 1'b1;
+          load_req_o.kill_req = 1'b1;
         end
       end
 
       WAIT_FLUSH: begin
         // the D$ arbiter will take care of presenting this to the memory only in case we
         // have an outstanding request
-        req_port_o.kill_req = 1'b1;
-        req_port_o.tag_valid = 1'b1;
+        load_req_o.kill_req = 1'b1;
+        load_req_o.tag_valid = 1'b1;
         // we've killed the current request so we can go back to idle
         state_d = IDLE;
       end
@@ -375,13 +382,13 @@ module load_unit
         // we are here because of a TLB miss, we need to abort the current request and give way for the
         // PTW walker to satisfy the TLB miss
         if (state_q == ABORT_TRANSACTION && CVA6Cfg.MmuPresent) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
+          load_req_o.kill_req = 1'b1;
+          load_req_o.tag_valid = 1'b1;
           // wait until the WB is empty
           state_d = WAIT_TRANSLATION;
         end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
+          load_req_o.kill_req = 1'b1;
+          load_req_o.tag_valid = 1'b1;
           // re-do the request
           state_d = WAIT_WB_EMPTY;
         end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
@@ -398,7 +405,7 @@ module load_unit
             // the next state will be the idle state
             state_d  = IDLE;
             // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            pop_ld_o = ~req_port_i.data_rvalid;
+            pop_ld_o = ~load_rsp_i.data_rvalid;
           end
         end else begin
           state_d = IDLE;
@@ -413,26 +420,26 @@ module load_unit
   end
 
   // track the load data for later usage
-  assign ldbuf_w = req_port_o.data_req & req_port_i.data_gnt;
+  assign ldbuf_w = load_req_o.data_req & load_rsp_i.data_gnt;
 
   // ---------------
   // Retire Load
   // ---------------
-  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(req_port_i.data_rid) : 1'b0,
+  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(load_rsp_i.data_rid) : 1'b0,
       ldbuf_rdata = ldbuf_q[ldbuf_rindex];
 
   // decoupled rvalid process
   always_comb begin : rvalid_output
     //  read the pending load buffer
-    ldbuf_r    = req_port_i.data_rvalid;
+    ldbuf_r    = load_rsp_i.data_rvalid;
     trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
 
     // we got an rvalid and it's corresponding request was not flushed
-    if (req_port_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
+    if (load_rsp_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
       // if the response corresponds to the last request, check that we are not killing it
-      if ((ldbuf_last_id_q != ldbuf_rindex) || !req_port_o.kill_req) valid_o = 1'b1;
+      if ((ldbuf_last_id_q != ldbuf_rindex) || !load_req_o.kill_req) valid_o = 1'b1;
       // the output is also valid if we got an exception. An exception arrives one cycle after
       // dtlb_hit_i is asserted, i.e. when we are in SEND_TAG. Otherwise, the exception
       // corresponds to the next request that is already being translated (see below).
@@ -446,7 +453,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !load_rsp_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
@@ -469,7 +476,7 @@ module load_unit
   logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
-  assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
+  assign shifted_data = load_rsp_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
 
   /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
@@ -499,7 +506,7 @@ module load_unit
                                                                                                                          ldbuf_rdata.address_offset;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
-    assign rdata_sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1];
+    assign rdata_sign_bits[i] = load_rsp_i.data_rdata[(i+1)*8-1];
   end
 
 

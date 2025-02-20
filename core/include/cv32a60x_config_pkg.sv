@@ -105,7 +105,7 @@ package cva6_config_pkg;
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(1),
       ObiVersion: int'(1),
-      PipelineOnly: bit'(0)  //FIXME
+      PipelineOnly: bit'(1)  //FIXME
   };
 
 endpackage

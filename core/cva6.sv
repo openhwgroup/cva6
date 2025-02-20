@@ -191,7 +191,7 @@ module cva6
     },
 
     // D$ data requests
-    localparam type dcache_req_i_t = struct packed {
+    localparam type dbus_req_t = struct packed {
       logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
       logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
       logic [CVA6Cfg.XLEN-1:0]               data_wdata;
@@ -205,7 +205,7 @@ module cva6
       logic                                  tag_valid;
     },
 
-    localparam type dcache_req_o_t = struct packed {
+    localparam type dbus_rsp_t = struct packed {
       logic                                 data_gnt;
       logic                                 data_rvalid;
       logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
@@ -328,8 +328,24 @@ module cva6
 
   //OBI FETCH
   `OBI_TYPEDEF_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg)
-  //OBI DATA
-  `OBI_TYPEDEF_ALL(obi_data, CVA6Cfg.ObiDatabusCfg)
+  //OBI STORE
+  `OBI_TYPEDEF_ALL(obi_store, CVA6Cfg.ObiStorebusCfg)
+  //OBI AMO
+  `OBI_TYPEDEF_ALL(obi_amo, CVA6Cfg.ObiAmobusCfg)
+  //OBI LOAD
+  `OBI_TYPEDEF_ALL(obi_load, CVA6Cfg.ObiLoadbusCfg)
+  //OBI MMU_PTW
+  //`OBI_TYPEDEF_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg)
+  //OBI ZCMT
+  //`OBI_TYPEDEF_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg)
+
+  //temp
+  localparam type load_req_t = dbus_req_t;
+  localparam type load_rsp_t = dbus_rsp_t;
+  localparam type obi_mmu_ptw_req_t = dbus_req_t;
+  localparam type obi_mmu_ptw_rsp_t = dbus_rsp_t;
+  localparam type obi_zcmt_req_t = dbus_req_t;
+  localparam type obi_zcmt_rsp_t = dbus_rsp_t;
 
   localparam type interrupts_t = struct packed {
     logic [CVA6Cfg.XLEN-1:0] S_SW;
@@ -587,7 +603,7 @@ module cva6
   logic dtlb_miss_ex_perf;
   logic dcache_miss_cache_perf;
   logic icache_miss_cache_perf;
-  logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+  //logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;   // CACHE WT only???
   logic stall_issue;
   // --------------
   // CTRL <-> *
@@ -624,19 +640,29 @@ module cva6
   obi_fetch_req_t obi_fetch_req_if_cache;
   obi_fetch_rsp_t obi_fetch_rsp_cache_if;
 
-  amo_req_t amo_req;
-  amo_resp_t amo_resp;
+  obi_store_req_t obi_store_req_ex_cache;
+  obi_store_rsp_t obi_store_rsp_cache_ex;
+
+  obi_amo_req_t obi_amo_req_ex_cache;
+  obi_amo_rsp_t obi_amo_rsp_cache_ex;
+
+
+  load_req_t load_req_ex_cache;
+  load_rsp_t load_rsp_cache_ex;
+  obi_load_req_t obi_load_req_ex_cache;
+  obi_load_rsp_t obi_load_rsp_cache_ex;
+
+  obi_mmu_ptw_req_t obi_mmu_ptw_req_ex_cache;
+  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_cache_ex;
+
+  obi_zcmt_req_t obi_zcmt_req_id_cache;
+  obi_zcmt_rsp_t obi_zcmt_rsp_cache_id;
+
   logic sb_full;
 
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
-  dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
-  dcache_req_i_t dcache_req_ports_id_cache;
-  dcache_req_o_t dcache_req_ports_cache_id;
-  dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
-  dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
   logic dcache_commit_wbuffer_empty;
   logic dcache_commit_wbuffer_not_ni;
 
@@ -697,8 +723,8 @@ module cva6
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
+      .obi_zcmt_req_t(obi_zcmt_req_t),
+      .obi_zcmt_rsp_t(obi_zcmt_rsp_t),
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
       .jvt_t(jvt_t),
@@ -747,9 +773,9 @@ module cva6
       .compressed_valid_o(x_compressed_valid),
       .compressed_req_o  (x_compressed_req),
       .jvt_i             (jvt),
-      // DCACHE interfaces
-      .dcache_req_ports_i(dcache_req_ports_cache_id),
-      .dcache_req_ports_o(dcache_req_ports_id_cache)
+      // OBI interfaces
+      .obi_zcmt_req_o(obi_zcmt_req_cache_id),
+      .obi_zcmt_rsp_i(obi_zcmt_rsp_id_cache)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -922,17 +948,25 @@ module cva6
   // EX
   // ---------
   ex_stage #(
-      .CVA6Cfg   (CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t),
+      .CVA6Cfg            (CVA6Cfg),
+      .bp_resolve_t       (bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .exception_t(exception_t),
-      .fu_data_t(fu_data_t),
-      .fetch_areq_t(fetch_areq_t),
-      .fetch_arsp_t(fetch_arsp_t),
-      .lsu_ctrl_t(lsu_ctrl_t),
-      .x_result_t(x_result_t)
+      .load_req_t         (load_req_t),
+      .load_rsp_t         (load_rsp_t),
+      .obi_store_req_t    (obi_store_req_t),
+      .obi_store_rsp_t    (obi_store_rsp_t),
+      .obi_amo_req_t      (obi_amo_req_t),
+      .obi_amo_rsp_t      (obi_amo_rsp_t),
+      .obi_load_req_t     (obi_load_req_t),
+      .obi_load_rsp_t     (obi_load_rsp_t),
+      .obi_mmu_ptw_req_t  (obi_mmu_ptw_req_t),
+      .obi_mmu_ptw_rsp_t  (obi_mmu_ptw_rsp_t),
+      .exception_t        (exception_t),
+      .fu_data_t          (fu_data_t),
+      .fetch_areq_t       (fetch_areq_t),
+      .fetch_arsp_t       (fetch_arsp_t),
+      .lsu_ctrl_t         (lsu_ctrl_t),
+      .x_result_t         (x_result_t)
   ) ex_stage_i (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -998,8 +1032,6 @@ module cva6
       // ALU2
       .alu2_valid_i            (alu2_valid_id_ex),
       .amo_valid_commit_i      (amo_valid_commit),
-      .amo_req_o               (amo_req),
-      .amo_resp_i              (amo_resp),
       // CoreV-X-Interface
       .x_valid_i               (x_issue_valid_id_ex),
       .x_ready_o               (x_issue_ready_ex_id),
@@ -1044,16 +1076,25 @@ module cva6
       .fetch_areq_i            (fetch_areq_frontend_ex),
       .fetch_arsp_o            (fetch_arsp_ex_frontend),
       // DCACHE interfaces
-      .dcache_req_ports_i      (dcache_req_ports_cache_ex),
-      .dcache_req_ports_o      (dcache_req_ports_ex_cache),
-      .dcache_wbuffer_empty_i  (dcache_commit_wbuffer_empty),
-      .dcache_wbuffer_not_ni_i (dcache_commit_wbuffer_not_ni),
+      .obi_store_req_o         (obi_store_req_ex_cache),
+      .obi_store_rsp_i         (obi_store_rsp_cache_ex),
+      .obi_amo_req_o           (obi_amo_req_ex_cache),
+      .obi_amo_rsp_i           (obi_amo_rsp_cache_ex),
+      .load_req_o              (load_req_ex_cache),
+      .load_rsp_i              (load_rsp_cache_ex),
+      .obi_load_req_o          (obi_load_req_ex_cache),
+      .obi_load_rsp_i          (obi_load_rsp_cache_ex),
+      .obi_mmu_ptw_req_o       (obi_mmu_ptw_req_ex_cache),
+      .obi_mmu_ptw_rsp_i       (obi_mmu_ptw_rsp_cache_ex),
+
+      .dcache_wbuffer_empty_i (dcache_commit_wbuffer_empty),
+      .dcache_wbuffer_not_ni_i(dcache_commit_wbuffer_not_ni),
       // PMP
-      .pmpcfg_i                (pmpcfg),
-      .pmpaddr_i               (pmpaddr),
+      .pmpcfg_i               (pmpcfg),
+      .pmpaddr_i              (pmpaddr),
       //RVFI
-      .rvfi_lsu_ctrl_o         (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o        (rvfi_mem_paddr)
+      .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
+      .rvfi_mem_paddr_o       (rvfi_mem_paddr)
   );
 
   // ---------
@@ -1084,7 +1125,7 @@ module cva6
       .wdata_o           (wdata_commit_id),
       .we_gpr_o          (we_gpr_commit_id),
       .we_fpr_o          (we_fpr_commit_id),
-      .amo_resp_i        (amo_resp),
+      .obi_amo_rsp_i     (obi_amo_rsp_cache_ex),
       .pc_o              (pc_commit),
       .csr_op_o          (csr_op_commit_csr),
       .csr_wdata_o       (csr_wdata_commit_csr),
@@ -1200,15 +1241,18 @@ module cva6
   // ------------------------
   if (CVA6Cfg.PerfCounterEn) begin : gen_perf_counter
     perf_counters #(
-        .CVA6Cfg(CVA6Cfg),
-        .bp_resolve_t(bp_resolve_t),
-        .exception_t(exception_t),
+        .CVA6Cfg           (CVA6Cfg),
+        .bp_resolve_t      (bp_resolve_t),
+        .exception_t       (exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
-        .fetch_req_t(fetch_req_t),
-        .obi_fetch_req_t(fetch_req_t),
-        .dcache_req_i_t(dcache_req_i_t),
-        .dcache_req_o_t(dcache_req_o_t),
-        .NumPorts(NumPorts)
+        .fetch_req_t       (fetch_req_t),
+        .obi_fetch_req_t   (fetch_req_t),
+        .obi_store_req_t   (obi_store_req_t),
+        .obi_amo_req_t     (obi_amo_req_t),
+        .load_req_t        (load_req_t),
+        .obi_load_req_t    (obi_load_req_t),
+        .obi_mmu_ptw_req_t (obi_mmu_ptw_req_t),
+        .NumMissPorts      (1  /*FIXME*/)         //WT cache only ??
     ) perf_counters_i (
         .clk_i         (clk_i),
         .rst_ni        (rst_ni),
@@ -1232,14 +1276,19 @@ module cva6
         .eret_i             (eret),
         .resolved_branch_i  (resolved_branch),
         .branch_exceptions_i(flu_exception_ex_id),
-        .l1_fetch_access_i  (fetch_dreq_if_cache),
-        .l1_dcache_access_i (dcache_req_ports_ex_cache),
-        .miss_vld_bits_i    (miss_vld_bits),
-        .fetch_req_i        (fetch_req_if_cache),
-        .fetch_obi_req_i    (obi_fetch_req_if_cache),
-        .i_tlb_flush_i      (flush_tlb_ctrl_ex),
-        .stall_issue_i      (stall_issue),
-        .mcountinhibit_i    (mcountinhibit_csr_perf)
+
+        .fetch_req_i      (fetch_req_if_cache),
+        .fetch_obi_req_i  (obi_fetch_req_if_cache),
+        .obi_store_req_i  (obi_store_req_ex_cache),
+        .obi_amo_req_i    (obi_amo_req_ex_cache),
+        .load_req_i       (load_req_ex_cache),
+        .obi_load_req_i   (obi_load_req_ex_cache),
+        .obi_mmu_ptw_req_i(obi_mmu_ptw_req_ex_cache),
+
+        .miss_vld_bits_i('0  /*FIXME*/),          //WT cache only ??
+        .i_tlb_flush_i  (flush_tlb_ctrl_ex),
+        .stall_issue_i  (stall_issue),
+        .mcountinhibit_i(mcountinhibit_csr_perf)
     );
   end : gen_perf_counter
   else begin : gen_no_perf_counter
@@ -1292,65 +1341,35 @@ module cva6
   // Cache Subsystem
   // -------------------
 
-  // Acc dispatcher and store buffer share a dcache request port.
-  // Store buffer always has priority access over acc dipsatcher.
-  dcache_req_i_t [NumPorts-1:0] dcache_req_to_cache;
-  dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
-
-  // D$ request
-  // Since ZCMT is only enable for embdeed class so MMU should be disable. 
-  // Cache port 0 is being ultilize in implicit read access in ZCMT extension.
-  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
-    assign dcache_req_to_cache[0] = dcache_req_ports_id_cache;
-  end else begin
-    assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
-  end
-  assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];
-  assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0];
-  assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
-                                                                          dcache_req_ports_acc_cache[1];
-
-  // D$ response
-  // Since ZCMT is only enable for embdeed class so MMU should be disable.
-  // Cache port 0 is being ultilized in implicit read access in ZCMT extension.
-  if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
-    assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
-    assign dcache_req_ports_cache_ex[0] = '0;
-  end else begin
-    assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
-    assign dcache_req_ports_cache_id = '0;
-  end
-  assign dcache_req_ports_cache_ex[1]  = dcache_req_from_cache[1];
-  assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];
-  always_comb begin : gen_dcache_req_store_data_gnt
-    dcache_req_ports_cache_ex[2]  = dcache_req_from_cache[3];
-    dcache_req_ports_cache_acc[1] = dcache_req_from_cache[3];
-
-    // Set gnt signal
-    dcache_req_ports_cache_ex[2].data_gnt &= dcache_req_ports_ex_cache[2].data_req;
-    dcache_req_ports_cache_acc[1].data_gnt &= !dcache_req_ports_ex_cache[2].data_req;
-  end
-
   cva6_hpdcache_subsystem #(
-      .CVA6Cfg   (CVA6Cfg),
-      .fetch_req_t(fetch_req_t),
-      .fetch_rsp_t(fetch_rsp_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .obi_fetch_req_t(obi_fetch_req_t),
-      .obi_fetch_rsp_t(obi_fetch_rsp_t),
-      .NumPorts  (NumPorts),
-      .axi_ar_chan_t(axi_ar_chan_t),
-      .axi_aw_chan_t(axi_aw_chan_t),
-      .axi_w_chan_t (axi_w_chan_t),
-      .axi_b_chan_t (b_chan_t),
-      .axi_r_chan_t (r_chan_t),
-      .noc_req_t (noc_req_t),
-      .noc_resp_t(noc_resp_t),
-      .cmo_req_t (logic  /*FIXME*/),
-      .cmo_rsp_t (logic  /*FIXME*/)
+      .CVA6Cfg          (CVA6Cfg),
+      .fetch_req_t      (fetch_req_t),
+      .fetch_rsp_t      (fetch_rsp_t),
+      .obi_fetch_req_t  (obi_fetch_req_t),
+      .obi_fetch_rsp_t  (obi_fetch_rsp_t),
+      .icache_req_t     (icache_req_t),
+      .icache_rtrn_t    (icache_rtrn_t),
+      .load_req_t       (load_req_t),
+      .load_rsp_t       (load_rsp_t),
+      .obi_store_req_t  (obi_store_req_t),
+      .obi_store_rsp_t  (obi_store_rsp_t),
+      .obi_amo_req_t    (obi_amo_req_t),
+      .obi_amo_rsp_t    (obi_amo_rsp_t),
+      .obi_load_req_t   (obi_load_req_t),
+      .obi_load_rsp_t   (obi_load_rsp_t),
+      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
+      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+      .obi_zcmt_req_t   (obi_zcmt_req_t),
+      .obi_zcmt_rsp_t   (obi_zcmt_rsp_t),
+      .axi_ar_chan_t    (axi_ar_chan_t),
+      .axi_aw_chan_t    (axi_aw_chan_t),
+      .axi_w_chan_t     (axi_w_chan_t),
+      .axi_b_chan_t     (b_chan_t),
+      .axi_r_chan_t     (r_chan_t),
+      .noc_req_t        (noc_req_t),
+      .noc_resp_t       (noc_resp_t),
+      .cmo_req_t        (logic  /*FIXME*/),
+      .cmo_rsp_t        (logic  /*FIXME*/)
   ) i_cache_subsystem (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
@@ -1368,14 +1387,21 @@ module cva6
       .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
       .dcache_miss_o     (dcache_miss_cache_perf),
 
-      .dcache_amo_req_i (amo_req),
-      .dcache_amo_resp_o(amo_resp),
+      .obi_store_req_i  (obi_store_req_ex_cache),
+      .obi_store_rsp_o  (obi_store_rsp_cache_ex),
+      .obi_amo_req_i    (obi_amo_req_ex_cache),
+      .obi_amo_rsp_o    (obi_amo_rsp_cache_ex),
+      .load_req_i       (load_req_ex_cache),
+      .load_rsp_o       (load_rsp_cache_ex),
+      .obi_load_req_i   (obi_load_req_ex_cache),
+      .obi_load_rsp_o   (obi_load_rsp_cache_ex),
+      .obi_mmu_ptw_req_i(obi_mmu_ptw_req_ex_cache),
+      .obi_mmu_ptw_rsp_o(obi_mmu_ptw_rsp_cache_ex),
+      .obi_zcmt_req_t   (obi_zcmt_req_id_cache),
+      .obi_zcmt_rsp_t   (obi_zcmt_rsp_cache_id),
 
-      .dcache_cmo_req_i ('0  /*FIXME*/),
-      .dcache_cmo_resp_o(  /*FIXME*/),
-
-      .dcache_req_ports_i(dcache_req_to_cache),
-      .dcache_req_ports_o(dcache_req_from_cache),
+      .dcache_cmo_req_i('0  /*FIXME*/),
+      .dcache_cmo_rsp_o(  /*FIXME*/),
 
       .wbuffer_empty_o (dcache_commit_wbuffer_empty),
       .wbuffer_not_ni_o(dcache_commit_wbuffer_not_ni),
@@ -1509,8 +1535,8 @@ module cva6
       .commit_ack(commit_ack),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
-      .ld_valid(ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid),
-      .ld_kill(ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req),
+      .ld_valid(ex_stage_i.lsu_i.i_load_unit.load_req_o.tag_valid),
+      .ld_kill(ex_stage_i.lsu_i.i_load_unit.load_req_o.kill_req),
       .ld_paddr(ex_stage_i.lsu_i.i_load_unit.paddr_i),
       .resolve_branch(resolved_branch),
       .commit_exception(commit_stage_i.exception_o),
