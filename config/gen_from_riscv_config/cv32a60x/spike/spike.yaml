@@ -22,7 +22,7 @@ spike_param_tree:
       pmpaddr0: 0
       pmpcfg0: 0
       pmpregions_max: 64
-      pmpregions_writable: 8
+      pmpregions_writable: 0
       priv: M
       status_fs_field_we: false
       status_fs_field_we_enable: false
