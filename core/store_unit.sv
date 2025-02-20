@@ -17,8 +17,10 @@ module store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type obi_store_req_t = logic,
+    parameter type obi_store_rsp_t = logic,
+    parameter type obi_amo_req_t = logic,
+    parameter type obi_amo_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
@@ -76,14 +78,14 @@ module store_unit
     input logic [11:0] page_offset_i,
     // Address check result - load_unit
     output logic page_offset_matches_o,
-    // AMO request - CACHES
-    output amo_req_t amo_req_o,
-    // AMO response - CACHES
-    input amo_resp_t amo_resp_i,
-    // Data cache request - CACHES
-    input dcache_req_o_t req_port_i,
-    // Data cache response - CACHES
-    output dcache_req_i_t req_port_o
+    // Store cache response - DCACHE
+    output obi_store_req_t obi_store_req_o,
+    // Store cache request - DCACHE
+    input obi_store_rsp_t obi_store_rsp_i,
+    // AMO request - DCACHE
+    output obi_amo_req_t obi_amo_req_o,
+    // AMO response - DCACHE
+    input obi_amo_rsp_t obi_amo_rsp_i
 );
 
   // align data to address e.g.: shift data to be naturally 64
@@ -289,8 +291,8 @@ module store_unit
   // ---------------
   store_buffer #(
       .CVA6Cfg(CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .obi_store_req_t(obi_store_req_t),
+      .obi_store_rsp_t(obi_store_rsp_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,
@@ -315,13 +317,15 @@ module store_unit
       .data_i               (st_data_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
-      .req_port_i           (req_port_i),
-      .req_port_o           (req_port_o)
+      .obi_store_req_o      (obi_store_req_o),
+      .obi_store_rsp_i      (obi_store_rsp_i)
   );
 
   if (CVA6Cfg.RVA) begin
     amo_buffer #(
-        .CVA6Cfg(CVA6Cfg)
+        .CVA6Cfg(CVA6Cfg),
+        .obi_amo_req_t(obi_amo_req_t),
+        .obi_amo_rsp_t(obi_amo_rsp_t)
     ) i_amo_buffer (
         .clk_i,
         .rst_ni,
@@ -332,14 +336,14 @@ module store_unit
         .amo_op_i          (amo_op_q),
         .data_i            (st_data_q),
         .data_size_i       (st_data_size_q),
-        .amo_req_o         (amo_req_o),
-        .amo_resp_i        (amo_resp_i),
+        .obi_amo_req_o     (obi_amo_req_o),
+        .obi_amo_rsp_i     (obi_amo_rsp_i),
         .amo_valid_commit_i(amo_valid_commit_i),
         .no_st_pending_i   (no_st_pending_o)
     );
   end else begin
     assign amo_buffer_ready = '1;
-    assign amo_req_o        = '0;
+    assign obi_amo_req_o    = '0;
   end
 
   // ---------------

@@ -11,8 +11,8 @@
 //
 module zcmt_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type obi_zcmt_req_t = logic,
+    parameter type obi_zcmt_rsp_t = logic,
     parameter type jvt_t = logic,
     parameter type branchpredict_sbe_t = logic
 ) (
@@ -32,8 +32,10 @@ module zcmt_decoder #(
     input  logic                             is_compressed_i,
     // JVT struct input - CSR
     input  jvt_t                             jvt_i,
-    // Data cache request output - CACHE
-    input  dcache_req_o_t                    req_port_i,
+    // Data cache request request
+    output obi_zcmt_req_t                    obi_zcmt_req_o,
+    // Data cache request response
+    input  obi_zcmt_rsp_t                    obi_zcmt_rsp_i,
     // Instruction out - cvxif_compressed_if_driver
     output logic          [            31:0] instr_o,
     // Instruction is illegal out - cvxif_compressed_if_driver     
@@ -42,8 +44,6 @@ module zcmt_decoder #(
     output logic                             is_compressed_o,
     // Fetch stall - cvxif_compressed_if_driver
     output logic                             fetch_stall_o,
-    // Data cache request input - CACHE
-    output dcache_req_i_t                    req_port_o,
     // jump_address
     output logic          [CVA6Cfg.XLEN-1:0] jump_address_o
 );
@@ -59,22 +59,22 @@ module zcmt_decoder #(
   logic [CVA6Cfg.VLEN-1:0] table_address;
 
   always_comb begin
-    state_d               = state_q;
-    illegal_instr_o       = 1'b0;
-    is_compressed_o       = is_zcmt_instr_i || is_compressed_i;
-    fetch_stall_o         = '0;
-    jump_address_o        = '0;
+    state_d                   = state_q;
+    illegal_instr_o           = 1'b0;
+    is_compressed_o           = is_zcmt_instr_i || is_compressed_i;
+    fetch_stall_o             = '0;
+    jump_address_o            = '0;
 
     // cache request port
-    req_port_o.data_wdata = '0;
-    req_port_o.data_wuser = '0;
-    req_port_o.data_req   = 1'b0;
-    req_port_o.data_we    = 1'b0;
-    req_port_o.data_be    = '0;
-    req_port_o.data_size  = 2'b10;
-    req_port_o.data_id    = 1'b1;
-    req_port_o.kill_req   = 1'b0;
-    req_port_o.tag_valid  = 1'b1;
+    obi_zcmt_req_o.data_wdata = '0;
+    obi_zcmt_req_o.data_wuser = '0;
+    obi_zcmt_req_o.data_req   = 1'b0;
+    obi_zcmt_req_o.data_we    = 1'b0;
+    obi_zcmt_req_o.data_be    = '0;
+    obi_zcmt_req_o.data_size  = 2'b10;
+    obi_zcmt_req_o.data_id    = 1'b1;
+    obi_zcmt_req_o.kill_req   = 1'b0;
+    obi_zcmt_req_o.tag_valid  = 1'b1;
 
     unique case (state_q)
       IDLE: begin
@@ -82,10 +82,10 @@ module zcmt_decoder #(
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.XLEN == 32) begin  //It is only target for 32 bit targets in cva6 with No MMU
             table_address = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
-            req_port_o.address_index = table_address[9:0];
-            req_port_o.address_tag = table_address[CVA6Cfg.VLEN-1:10];  // No MMU support
+            obi_zcmt_req_o.address_index = table_address[9:0];
+            obi_zcmt_req_o.address_tag = table_address[CVA6Cfg.VLEN-1:10];  // No MMU support
             state_d = TABLE_JUMP;
-            req_port_o.data_req = 1'b1;
+            obi_zcmt_req_o.data_req = 1'b1;
             fetch_stall_o = 1'b1;
           end else illegal_instr_o = 1'b1;
           // Condition may be extented for 64 bits embedded targets with No MMU
@@ -96,9 +96,9 @@ module zcmt_decoder #(
         end
       end
       TABLE_JUMP: begin
-        if (req_port_i.data_rvalid) begin
+        if (obi_zcmt_rsp_i.data_rvalid) begin
           // save the PC relative Xlen table jump address 
-          jump_address_o = $unsigned($signed(req_port_i.data_rdata) - $signed(pc_i));
+          jump_address_o = $unsigned($signed(obi_zcmt_rsp_i.data_rdata) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
             instr_o = {
               20'h0, 5'h0, riscv::OpcodeJal

@@ -19,13 +19,24 @@ module cva6_hpdcache_subsystem
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type fetch_req_t = logic,
     parameter type fetch_rsp_t = logic,
+    parameter type load_req_t = logic,
+    parameter type load_rsp_t = logic,
     parameter type obi_fetch_req_t = logic,
     parameter type obi_fetch_rsp_t = logic,
-    parameter type icache_req_t = logic,
+    parameter type obi_store_req_t = logic,
+    parameter type obi_store_rsp_t = logic,
+    parameter type obi_amo_req_t = logic,
+    parameter type obi_amo_rsp_t = logic,
+    parameter type obi_load_req_t = logic,
+    parameter type obi_load_rsp_t = logic,
+    parameter type obi_mmu_ptw_req_t = logic,
+    parameter type obi_mmu_ptw_rsp_t = logic,
+    parameter type obi_zcmt_req_t = logic,
+    parameter type obi_zcmt_rsp_t = logic,
+
+    parameter type icache_req_t  = logic,
     parameter type icache_rtrn_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
-    parameter int NumPorts = 4,
+
     parameter int NrHwPrefetchers = 4,
     // AXI types
     parameter type axi_ar_chan_t = logic,
@@ -89,22 +100,41 @@ module cva6_hpdcache_subsystem
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
-    // AMO request - EX_STAGE
-    input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
-    // AMO response - EX_STAGE
-    output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
     // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t                             dcache_cmo_req_i,
+    input  cmo_req_t dcache_cmo_req_i,
     // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t                             dcache_cmo_resp_o,
-    // Data cache input request ports - EX_STAGE
-    input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
-    // Data cache output request ports - EX_STAGE
-    output dcache_req_o_t         [NumPorts-1:0] dcache_req_ports_o,
+    output cmo_rsp_t dcache_cmo_rsp_o,
+
+    // Load cache input request ports - EX_STAGE
+    input  load_req_t load_req_i,
+    // Load cache output request ports - EX_STAGE
+    output load_rsp_t load_rsp_o,
+
+    // Store cache response - CACHES
+    input obi_store_req_t obi_store_req_i,
+    // Store cache request - CACHES
+    output obi_store_rsp_t obi_store_rsp_o,
+    // AMO cache request - CACHES
+    input obi_amo_req_t obi_amo_req_i,
+    // AMO cache response - CACHES
+    output obi_amo_rsp_t obi_amo_rsp_o,
+    // Load cache request - CACHES
+    input obi_load_req_t obi_load_req_i,
+    // Load cache response - CACHES
+    output obi_load_rsp_t obi_load_rsp_o,
+    // MMU Ptw cache request - CACHES
+    input obi_mmu_ptw_req_t obi_mmu_ptw_req_i,
+    // MMU Ptw cache response - CACHES
+    output obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_o,
+    // Zcmt cache response - CACHES
+    input obi_zcmt_req_t obi_zcmt_req_i,
+    // Zcmt cache response - CACHES
+    output obi_zcmt_rsp_t obi_zcmt_rsp_o,
+
     // Write buffer status to know if empty - EX_STAGE
-    output logic                                 wbuffer_empty_o,
+    output logic wbuffer_empty_o,
     // Write buffer status to know if not non idempotent - EX_STAGE
-    output logic                                 wbuffer_not_ni_o,
+    output logic wbuffer_not_ni_o,
 
     //  Hardware memory prefetcher configuration
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -189,7 +219,16 @@ module cva6_hpdcache_subsystem
   //    .
   //    NumPorts: CMO
   //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
-  localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
+  localparam int HPDCACHE_ENABLE_CMO = 0;
+  localparam int HPDCACHE_NREQUESTERS = 3 + (HPDCACHE_ENABLE_CMO ? 1:0) + (CVA6Cfg.MmuPresent ? 1:0) + (CVA6Cfg.RVZCMT ? 1:0);
+  localparam int NUM_SNOOP_PORTS = HPDCACHE_ENABLE_CMO ? 3 : 2;
+
+  localparam int MMU_PTW_INDEX = 0;
+  localparam int ZCMT_INDEX = (CVA6Cfg.RVZCMT ? 1 : 0);
+  localparam int LOAD_INDEX = (CVA6Cfg.MmuPresent ? ZCMT_INDEX + 1 : ZCMT_INDEX);
+  localparam int STORE_AMO_INDEX = LOAD_INDEX + 1;
+  localparam int CMO_INDEX = STORE_AMO_INDEX + 1;
+  localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
     hpdcache_pkg::hpdcache_user_cfg_t userCfg;
@@ -280,33 +319,53 @@ module cva6_hpdcache_subsystem
   hpdcache_mem_resp_w_t dcache_write_resp;
 
   cva6_hpdcache_wrapper #(
-      .CVA6Cfg(CVA6Cfg),
-      .HPDcacheCfg(HPDcacheCfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .NumPorts(NumPorts),
-      .NrHwPrefetchers(NrHwPrefetchers),
-      .cmo_req_t(cmo_req_t),
-      .cmo_rsp_t(cmo_rsp_t),
-      .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
-      .hpdcache_mem_id_t(hpdcache_mem_id_t),
-      .hpdcache_mem_data_t(hpdcache_mem_data_t),
-      .hpdcache_mem_be_t(hpdcache_mem_be_t),
-      .hpdcache_mem_req_t(hpdcache_mem_req_t),
-      .hpdcache_mem_req_w_t(hpdcache_mem_req_w_t),
-      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
-      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
-      .hpdcache_req_offset_t(hpdcache_req_offset_t),
-      .hpdcache_data_word_t(hpdcache_data_word_t),
-      .hpdcache_req_data_t(hpdcache_req_data_t),
-      .hpdcache_req_be_t(hpdcache_req_be_t),
-      .hpdcache_req_sid_t(hpdcache_req_sid_t),
-      .hpdcache_req_tid_t(hpdcache_req_tid_t),
-      .hpdcache_tag_t(hpdcache_tag_t),
-      .hpdcache_req_t(hpdcache_req_t),
-      .hpdcache_rsp_t(hpdcache_rsp_t),
+      .CVA6Cfg          (CVA6Cfg),
+      .HPDcacheCfg      (HPDcacheCfg),
+      .load_req_t       (load_req_t),
+      .load_rsp_t       (load_rsp_t),
+      .obi_store_req_t  (obi_store_req_t),
+      .obi_store_rsp_t  (obi_store_rsp_t),
+      .obi_amo_req_t    (obi_amo_req_t),
+      .obi_amo_rsp_t    (obi_amo_rsp_t),
+      .obi_load_req_t   (obi_load_req_t),
+      .obi_load_rsp_t   (obi_load_rsp_t),
+      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
+      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+      .obi_zcmt_req_t   (obi_zcmt_req_t),
+      .obi_zcmt_rsp_t   (obi_zcmt_rsp_t),
+
+      .HPDCACHE_ENABLE_CMO (HPDCACHE_ENABLE_CMO),
+      .HPDCACHE_NREQUESTERS(HPDCACHE_NREQUESTERS),
+      .NUM_SNOOP_PORTS     (NUM_SNOOP_PORTS),
+      .MMU_PTW_INDEX       (MMU_PTW_INDEX),
+      .ZCMT_INDEX          (ZCMT_INDEX),
+      .LOAD_INDEX          (LOAD_INDEX),
+      .STORE_AMO_INDEX     (STORE_AMO_INDEX),
+      .CMO_INDEX           (CMO_INDEX),
+      .HWPF_INDEX          (HWPF_INDEX),
+
+      .NrHwPrefetchers        (NrHwPrefetchers),
+      .cmo_req_t              (cmo_req_t),
+      .cmo_rsp_t              (cmo_rsp_t),
+      .hpdcache_mem_addr_t    (hpdcache_mem_addr_t),
+      .hpdcache_mem_id_t      (hpdcache_mem_id_t),
+      .hpdcache_mem_data_t    (hpdcache_mem_data_t),
+      .hpdcache_mem_be_t      (hpdcache_mem_be_t),
+      .hpdcache_mem_req_t     (hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t   (hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t  (hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t  (hpdcache_mem_resp_w_t),
+      .hpdcache_req_offset_t  (hpdcache_req_offset_t),
+      .hpdcache_data_word_t   (hpdcache_data_word_t),
+      .hpdcache_req_data_t    (hpdcache_req_data_t),
+      .hpdcache_req_be_t      (hpdcache_req_be_t),
+      .hpdcache_req_sid_t     (hpdcache_req_sid_t),
+      .hpdcache_req_tid_t     (hpdcache_req_tid_t),
+      .hpdcache_tag_t         (hpdcache_tag_t),
+      .hpdcache_req_t         (hpdcache_req_t),
+      .hpdcache_rsp_t         (hpdcache_rsp_t),
       .hpdcache_wbuf_timecnt_t(hpdcache_wbuf_timecnt_t),
-      .hpdcache_data_be_t(hpdcache_data_be_t)
+      .hpdcache_data_be_t     (hpdcache_data_be_t)
   ) i_dcache (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -314,12 +373,20 @@ module cva6_hpdcache_subsystem
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
       .dcache_miss_o(dcache_miss_o),
-      .dcache_amo_req_i(dcache_amo_req_i),
-      .dcache_amo_resp_o(dcache_amo_resp_o),
       .dcache_cmo_req_i(dcache_cmo_req_i),
-      .dcache_cmo_resp_o(dcache_cmo_resp_o),
-      .dcache_req_ports_i(dcache_req_ports_i),
-      .dcache_req_ports_o(dcache_req_ports_o),
+      .dcache_cmo_rsp_o(dcache_cmo_rsp_o),
+      .obi_store_req_i(obi_store_req_i),
+      .obi_store_rsp_o(obi_store_rsp_o),
+      .obi_amo_req_i(obi_amo_req_i),
+      .obi_amo_rsp_o(obi_amo_rsp_o),
+      .obi_load_req_i(obi_load_req_i),
+      .obi_load_rsp_o(obi_load_rsp_o),
+      .obi_mmu_ptw_req_i(obi_mmu_ptw_req_i),
+      .obi_mmu_ptw_rsp_o(obi_mmu_ptw_rsp_o),
+      .obi_zcmt_req_i(obi_zcmt_req_i),
+      .obi_zcmt_rsp_o(obi_zcmt_rsp_o),
+      .load_req_i(load_req_i),
+      .load_rsp_o(load_rsp_o),
       .wbuffer_empty_o(wbuffer_empty_o),
       .wbuffer_not_ni_o(wbuffer_not_ni_o),
       .hwpf_base_set_i(hwpf_base_set_i),
@@ -436,32 +503,60 @@ module cva6_hpdcache_subsystem
         1, "[l1 icache] FETCH reading invalid instructions: data=%08X", obi_fetch_rsp_o.r.rdata
     );
 
-  a_invalid_write_data :
+  a_invalid_read_amo :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_rsp_o.rvalid && obi_amo_req_i.rready) |-> (|obi_amo_rsp_o.r.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] AMO reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+
+  a_invalid_read_load :
+  assert property (
+    @(posedge clk_i) disable iff (~rst_ni) (obi_load_rsp_o.rvalid && obi_load_req_i.rready) |-> (|obi_load_rsp_o.r.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] LOAD reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+
+  //  a_invalid_read_mmu_ptw :
+  //  assert property (
+  //    @(posedge clk_i) disable iff (~rst_ni) (obi_mmu_ptw_rsp_o.rvalid && !obi_mmu_ptw_rsp_o.invalid_data) |-> (|obi_mmu_ptw_rsp_o.r.rdata) !== 1'hX)
+  //  else
+  //    $warning(
+  //        1,
+  //        "[l1 dcache] MMU PTW reading invalid data: data=%08X",
+  //        obi_mmu_ptw_rsp_o.r.rdata
+  //    );
+
+  //  a_invalid_read_zcmt :
+  //  assert property (
+  //    @(posedge clk_i) disable iff (~rst_ni) (obi_zcmt_rsp_o.rvalid && !obi_zcmt_rsp_o.invalid_data) |-> (|obi_zcmt_rsp_o.r.rdata) !== 1'hX)
+  //  else
+  //    $warning(
+  //        1,
+  //        "[l1 dcache] ZCMT reading invalid data: data=%08X",
+  //        obi_zcmt_rsp_o.r.rdata
+  //    );
+
+  a_invalid_write_store :
+  assert property (
+    @(posedge clk_i) disable iff (~rst_ni) (obi_store_req_i.req && obi_store_rsp_o.gnt) |-> (|obi_store_req_i.a.wdata) !== 1'hX)
   else
     $warning(
         1,
-        "[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        {
-          dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index
-        },
-        dcache_req_ports_i[2].data_be,
-        dcache_req_ports_i[2].data_wdata
+        "[l1 dcache] STORE writing invalid data: paddr=%016X, be=%02X, data=%016X",
+        obi_store_req_i.a.addr,
+        obi_store_req_i.a.be,
+        obi_store_req_i.a.wdata
     );
 
-  for (genvar j = 0; j < 2; j++) begin : gen_assertion
-    a_invalid_read_data :
-    assert property (
-      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid && ~dcache_req_ports_i[j].kill_req |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
-    else
-      $warning(
-          1,
-          "[l1 dcache] reading invalid data on port %01d: data=%016X",
-          j,
-          dcache_req_ports_o[j].data_rdata
-      );
-  end
+  a_invalid_write_amo :
+  assert property (
+    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_req_i.req && obi_amo_rsp_o.gnt) |-> (|obi_amo_req_i.a.wdata) !== 1'hX)
+  else
+    $warning(
+        1,
+        "[l1 dcache] AMO writing invalid data: paddr=%016X, be=%02X, data=%016X",
+        obi_amo_req_i.a.addr,
+        obi_amo_req_i.a.be,
+        obi_amo_req_i.a.wdata
+    );
+
   //  pragma translate_on
   //  }}}
 

@@ -25,13 +25,13 @@
 module cva6_mmu
   import ariane_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
-    parameter type                   fetch_areq_t   = logic,
-    parameter type                   fetch_arsp_t   = logic,
-    parameter type                   dcache_req_i_t = logic,
-    parameter type                   dcache_req_o_t = logic,
-    parameter type                   exception_t    = logic,
-    parameter int unsigned           HYP_EXT        = 0
+    parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
+    parameter type                   fetch_areq_t      = logic,
+    parameter type                   fetch_arsp_t      = logic,
+    parameter type                   obi_mmu_ptw_req_t = logic,
+    parameter type                   obi_mmu_ptw_rsp_t = logic,
+    parameter type                   exception_t       = logic,
+    parameter int unsigned           HYP_EXT           = 0
 
 ) (
     input logic clk_i,
@@ -90,12 +90,11 @@ module cva6_mmu
     input logic flush_tlb_gvma_i,
 
     // Performance counters
-    output logic itlb_miss_o,
-    output logic dtlb_miss_o,
+    output logic             itlb_miss_o,
+    output logic             dtlb_miss_o,
     // PTW memory interface
-    input dcache_req_o_t req_port_i,
-    output dcache_req_i_t req_port_o,
-
+    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
+    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
     // PMP
 
     input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
@@ -290,8 +289,8 @@ module cva6_mmu
       .CVA6Cfg          (CVA6Cfg),
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
-      .dcache_req_i_t   (dcache_req_i_t),
-      .dcache_req_o_t   (dcache_req_o_t),
+      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
+      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
       .clk_i (clk_i),
@@ -312,10 +311,10 @@ module cva6_mmu
       .ld_st_v_i,
       .hlvx_inst_i           (hlvx_inst_i),
 
-      .lsu_is_store_i(lsu_is_store_i),
+      .lsu_is_store_i   (lsu_is_store_i),
       // PTW memory interface
-      .req_port_i    (req_port_i),
-      .req_port_o    (req_port_o),
+      .obi_mmu_ptw_req_o(obi_mmu_ptw_req_o),
+      .obi_mmu_ptw_rsp_i(obi_mmu_ptw_rsp_i),
 
       // to Shared TLB, update logic
       .shared_tlb_update_o(update_shared_tlb),
@@ -431,11 +430,11 @@ module cva6_mmu
           fetch_arsp_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
           fetch_arsp_o.fetch_exception.valid = 1'b1;
           if (CVA6Cfg.TvalEn)
-            icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(icache_areq_i.fetch_vaddr);
+            fetch_arsp_o.fetch_exception.tval = CVA6Cfg.XLEN'(fetch_areq_i.fetch_vaddr);
           if (CVA6Cfg.RVH) begin
-            icache_areq_o.fetch_exception.tval2 = '0;
-            icache_areq_o.fetch_exception.tinst = '0;
-            icache_areq_o.fetch_exception.gva   = v_i;
+            fetch_arsp_o.fetch_exception.tval2 = '0;
+            fetch_arsp_o.fetch_exception.tinst = '0;
+            fetch_arsp_o.fetch_exception.gva   = v_i;
           end
         end
       end else if (ptw_active && walking_instr) begin

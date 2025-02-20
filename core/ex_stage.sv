@@ -20,8 +20,16 @@ module ex_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter type load_req_t = logic,
+    parameter type load_rsp_t = logic,
+    parameter type obi_store_req_t = logic,
+    parameter type obi_store_rsp_t = logic,
+    parameter type obi_amo_req_t = logic,
+    parameter type obi_amo_rsp_t = logic,
+    parameter type obi_load_req_t = logic,
+    parameter type obi_load_rsp_t = logic,
+    parameter type obi_mmu_ptw_req_t = logic,
+    parameter type obi_mmu_ptw_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
@@ -205,18 +213,32 @@ module ex_stage
     input fetch_areq_t fetch_areq_i,
     // fetch translation response - FETCH
     output fetch_arsp_t fetch_arsp_o,
-    // Data cache request ouput - CACHE
-    input dcache_req_o_t [2:0] dcache_req_ports_i,
-    // Data cache request input - CACHE
-    output dcache_req_i_t [2:0] dcache_req_ports_o,
+    // Load cache input request ports - DCACHE
+    output load_req_t load_req_o,
+    // Load cache output request ports - DCACHE
+    input load_rsp_t load_rsp_i,
+
+    // Store cache response - DCACHE
+    output obi_store_req_t obi_store_req_o,
+    // Store cache request - DCACHE
+    input obi_store_rsp_t obi_store_rsp_i,
+    // AMO request - DCACHE
+    output obi_amo_req_t obi_amo_req_o,
+    // AMO response - DCACHE
+    input obi_amo_rsp_t obi_amo_rsp_i,
+    // Load cache response - DCACHE
+    output obi_load_req_t obi_load_req_o,
+    // Load cache request - DCACHE
+    input obi_load_rsp_t obi_load_rsp_i,
+    // MMU PTW cache response - DCACHE
+    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
+    // MMU PTW cache request - DCACHE
+    input obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
+
     // Write buffer is empty - CACHE
     input logic dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - CACHE
     input logic dcache_wbuffer_not_ni_i,
-    // AMO request - CACHE
-    output amo_req_t amo_req_o,
-    // AMO response - CACHE
-    input amo_resp_t amo_resp_i,
     // To count the instruction TLB misses - PERF_COUNTERS
     output logic itlb_miss_o,
     // To count the data TLB misses - PERF_COUNTERS
@@ -518,14 +540,22 @@ module ex_stage
   end
 
   load_store_unit #(
-      .CVA6Cfg   (CVA6Cfg),
-      .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .exception_t(exception_t),
-      .fu_data_t (fu_data_t),
-      .fetch_areq_t(fetch_areq_t),
-      .fetch_arsp_t(fetch_arsp_t),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .CVA6Cfg          (CVA6Cfg),
+      .load_req_t       (load_req_t),
+      .load_rsp_t       (load_rsp_t),
+      .obi_store_req_t  (obi_store_req_t),
+      .obi_store_rsp_t  (obi_store_rsp_t),
+      .obi_amo_req_t    (obi_amo_req_t),
+      .obi_amo_rsp_t    (obi_amo_rsp_t),
+      .obi_load_req_t   (obi_load_req_t),
+      .obi_load_rsp_t   (obi_load_rsp_t),
+      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
+      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+      .exception_t      (exception_t),
+      .fu_data_t        (fu_data_t),
+      .fetch_areq_t     (fetch_areq_t),
+      .fetch_arsp_t     (fetch_arsp_t),
+      .lsu_ctrl_t       (lsu_ctrl_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -576,13 +606,20 @@ module ex_stage
       .flush_tlb_gvma_i,
       .itlb_miss_o,
       .dtlb_miss_o,
-      .dcache_req_ports_i,
-      .dcache_req_ports_o,
+      // DCACHE interfaces
+      .obi_amo_req_o         (obi_amo_req_o),
+      .obi_amo_rsp_i         (obi_amo_rsp_i),
+      .obi_store_req_o       (obi_store_req_o),
+      .obi_store_rsp_i       (obi_store_rsp_i),
+      .obi_load_req_o        (obi_load_req_o),
+      .obi_load_rsp_i        (obi_load_rsp_i),
+      .load_req_o            (load_req_o),
+      .load_rsp_i            (load_rsp_i),
+      .obi_mmu_ptw_req_o     (obi_mmu_ptw_req_o),
+      .obi_mmu_ptw_rsp_i     (obi_mmu_ptw_rsp_i),
       .dcache_wbuffer_empty_i,
       .dcache_wbuffer_not_ni_i,
       .amo_valid_commit_i,
-      .amo_req_o,
-      .amo_resp_i,
       .tinst_i               (lsu_tinst),
       .pmpcfg_i,
       .pmpaddr_i,
