@@ -94,7 +94,7 @@ module instr_tracer #(
     forever begin
       automatic bp_resolve_t bp_instruction = '0;
       // new cycle, we are only interested if reset is de-asserted
-      @(pck) if (rstn !== 1'b1) begin
+      @(posedge pck) if (rstn !== 1'b1) begin
         flush();
         continue;
       end
