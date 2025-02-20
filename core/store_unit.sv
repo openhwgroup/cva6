@@ -116,134 +116,103 @@ module store_unit
   endfunction
 
   // it doesn't matter what we are writing back as stores don't return anything
-  assign result_o = lsu_ctrl_i.data;
+  assign result_o   = lsu_ctrl_i.data;
 
-  enum logic [1:0] {
-    IDLE,
-    VALID_STORE,
-    WAIT_TRANSLATION,
-    WAIT_STORE_READY
-  }
-      state_d, state_q;
+  // directly forward exception fields (valid bit is set below)
+  assign ex_o.cause = ex_i.cause;
+  assign ex_o.tval  = ex_i.tval;
+  assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
+  assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
+  assign ex_o.gva   = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
 
   // store buffer control signals
-  logic st_ready;
-  logic st_valid;
-  logic st_valid_without_flush;
   logic instr_is_amo;
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
   // keep the data and the byte enable for the second cycle (after address translation)
-  logic [CVA6Cfg.XLEN-1:0] st_data_n, st_data_q;
-  logic [(CVA6Cfg.XLEN/8)-1:0] st_be_n, st_be_q;
-  logic [1:0] st_data_size_n, st_data_size_q;
-  amo_t amo_op_d, amo_op_q;
+  logic [CVA6Cfg.XLEN-1:0] st_data, st_data_n, st_data_q;
+  logic [(CVA6Cfg.XLEN/8)-1:0] st_be, st_be_n, st_be_q;
+  logic [1:0] st_data_size, st_data_size_n, st_data_size_q;
+  amo_t amo_op, amo_op_d, amo_op_q;
+
+  logic store_buffer_valid, store_buffer_valid_d, store_buffer_valid_q;
+  logic store_buffer_valid_no_flush, store_buffer_valid_no_flush_d, store_buffer_valid_no_flush_q;
+
+  logic amo_buffer_valid, amo_buffer_valid_d, amo_buffer_valid_q;
+
+  logic store_buffer_ready, amo_buffer_ready;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
+  logic ex_s0, ex_s1;
+  logic stall_translation;
+
   // output assignments
-  assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
+  assign vaddr_o = lsu_ctrl_i.vaddr;  // virtual address
   assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
-  assign hlvx_inst_o     = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
-  assign tinst_o         = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
-  assign trans_id_o      = trans_id_q;  // transaction id from previous cycle
+  assign hlvx_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
+  assign tinst_o = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
+
+  assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
+
+  assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
+  assign ex_s1 = CVA6Cfg.MmuPresent ? (store_buffer_valid_q || (CVA6Cfg.RVA && amo_buffer_valid_q)) && ex_i.valid : valid_i && ex_i.valid;
 
   always_comb begin : store_control
-    translation_req_o      = 1'b0;
-    valid_o                = 1'b0;
-    st_valid               = 1'b0;
-    st_valid_without_flush = 1'b0;
-    pop_st_o               = 1'b0;
-    ex_o                   = ex_i;
-    trans_id_n             = lsu_ctrl_i.trans_id;
-    state_d                = state_q;
+    // default assignment
+    translation_req_o             = 1'b0;
+    valid_o                       = 1'b0;
+    amo_buffer_valid_d            = 1'b0;
+    store_buffer_valid_d          = 1'b0;
+    store_buffer_valid_no_flush_d = 1'b0;
+    pop_st_o                      = 1'b0;
+    ex_o.valid                    = 1'b0;
+    trans_id_n                    = lsu_ctrl_i.trans_id;
+    trans_id_o                    = lsu_ctrl_i.trans_id;
 
-    case (state_q)
-      // we got a valid store
-      IDLE: begin
-        if (valid_i) begin
-          state_d = VALID_STORE;
-          translation_req_o = 1'b1;
-          pop_st_o = 1'b1;
-          // check if translation was valid and we have space in the store buffer
-          // otherwise simply stall
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d  = WAIT_TRANSLATION;
-            pop_st_o = 1'b0;
+    // REQUEST
+    if (valid_i) begin
+      translation_req_o = 1'b1;
+      if (!CVA6Cfg.MmuPresent || !stall_translation) begin
+        if (CVA6Cfg.RVA && instr_is_amo) begin
+          if (amo_buffer_ready) begin
+            pop_st_o = 1'b1;
+            amo_buffer_valid_d = !flush_i;
+            // RETIRE STORE NO MMU
+            if (!CVA6Cfg.MmuPresent) begin
+              trans_id_o = lsu_ctrl_i.trans_id;
+              valid_o    = 1'b1;
+              ex_o.valid = ex_s1;
+            end
           end
-
-          if (!st_ready) begin
-            state_d  = WAIT_STORE_READY;
-            pop_st_o = 1'b0;
-          end
-        end
-      end
-
-      VALID_STORE: begin
-        valid_o = 1'b1;
-        // post this store to the store buffer if we are not flushing
-        if (!flush_i) st_valid = 1'b1;
-
-        st_valid_without_flush = 1'b1;
-
-        // we have another request and its not an AMO (the AMO buffer only has depth 1)
-        if ((valid_i && CVA6Cfg.RVA && !instr_is_amo) || (valid_i && !CVA6Cfg.RVA)) begin
-
-          translation_req_o = 1'b1;
-          state_d = VALID_STORE;
-          pop_st_o = 1'b1;
-
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d  = WAIT_TRANSLATION;
-            pop_st_o = 1'b0;
-          end
-
-          if (!st_ready) begin
-            state_d  = WAIT_STORE_READY;
-            pop_st_o = 1'b0;
-          end
-          // if we do not have another request go back to idle
         end else begin
-          state_d = IDLE;
-        end
-      end
-
-      // the store queue is currently full
-      WAIT_STORE_READY: begin
-        // keep the translation request high
-        translation_req_o = 1'b1;
-
-        if (st_ready && dtlb_hit_i) begin
-          state_d = IDLE;
-        end
-      end
-
-      default: begin
-        // we didn't receive a valid translation, wait for one
-        // but we know that the store queue is not full as we could only have landed here if
-        // it wasn't full
-        if (state_q == WAIT_TRANSLATION && CVA6Cfg.MmuPresent) begin
-          translation_req_o = 1'b1;
-
-          if (dtlb_hit_i) begin
-            state_d = IDLE;
+          if (store_buffer_ready) begin
+            pop_st_o = 1'b1;
+            store_buffer_valid_d = !flush_i;
+            store_buffer_valid_no_flush_d = 1'b1;
+            // RETIRE STORE NO MMU
+            if (!CVA6Cfg.MmuPresent) begin
+              trans_id_o = lsu_ctrl_i.trans_id;
+              valid_o    = 1'b1;
+              ex_o.valid = ex_s1;
+            end
           end
         end
       end
-    endcase
-
-    // -----------------
-    // Access Exception
-    // -----------------
-    // we got an address translation exception (access rights, misaligned or page fault)
-    if (ex_i.valid && (state_q != IDLE)) begin
-      // the only difference is that we do not want to store this request
-      pop_st_o = 1'b1;
-      st_valid = 1'b0;
-      state_d  = IDLE;
-      valid_o  = 1'b1;
     end
-
-    if (flush_i) state_d = IDLE;
+    // RETIRE STORE WITH MMU
+    if (CVA6Cfg.MmuPresent) begin
+      if (store_buffer_valid_q || (CVA6Cfg.RVA && amo_buffer_valid_q)) begin
+        trans_id_o = trans_id_q;
+        valid_o    = 1'b1;
+        ex_o.valid = ex_s1;
+      end
+      if (ex_s0) begin
+        trans_id_o = lsu_ctrl_i.trans_id;
+        valid_o    = 1'b1;
+        ex_o.valid = 1'b1;
+        pop_st_o = 1'b1;
+      end
+    end
   end
 
   // -----------
@@ -277,14 +246,13 @@ module store_unit
     end
   end
 
-  logic store_buffer_valid, amo_buffer_valid;
-  logic store_buffer_ready, amo_buffer_ready;
-
-  // multiplex between store unit and amo buffer
-  assign store_buffer_valid = st_valid & (!CVA6Cfg.RVA || (amo_op_q == AMO_NONE));
-  assign amo_buffer_valid = st_valid & (CVA6Cfg.RVA && (amo_op_q != AMO_NONE));
-
-  assign st_ready = store_buffer_ready & amo_buffer_ready;
+  assign st_be = CVA6Cfg.MmuPresent ? st_be_q : st_be_n;
+  assign st_data = CVA6Cfg.MmuPresent ? st_data_q : st_data_n;
+  assign st_data_size = CVA6Cfg.MmuPresent ? st_data_size_q : st_data_size_n;
+  assign amo_op = CVA6Cfg.MmuPresent ? amo_op_q : amo_op_d;
+  assign store_buffer_valid = CVA6Cfg.MmuPresent ? store_buffer_valid_q && !ex_s1 : store_buffer_valid_d;
+  assign store_buffer_valid_no_flush = CVA6Cfg.MmuPresent ? store_buffer_valid_no_flush_q && !ex_s1 : store_buffer_valid_no_flush_d;
+  assign amo_buffer_valid = CVA6Cfg.MmuPresent ? amo_buffer_valid_q && !ex_s1 : amo_buffer_valid_d;
 
   // ---------------
   // Store Queue
@@ -311,12 +279,12 @@ module store_unit
       // functionaly it doesn't make a difference whether we use
       // the correct valid signal or not as we are flushing
       // the whole pipeline anyway
-      .valid_without_flush_i(st_valid_without_flush),
-      .paddr_i,
+      .valid_without_flush_i(store_buffer_valid_no_flush),
+      .paddr_i              (paddr_i),
       .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
-      .data_i               (st_data_q),
-      .be_i                 (st_be_q),
-      .data_size_i          (st_data_size_q),
+      .data_i               (st_data),
+      .be_i                 (st_be),
+      .data_size_i          (st_data_size),
       .obi_store_req_o      (obi_store_req_o),
       .obi_store_rsp_i      (obi_store_rsp_i)
   );
@@ -333,9 +301,9 @@ module store_unit
         .valid_i           (amo_buffer_valid),
         .ready_o           (amo_buffer_ready),
         .paddr_i           (paddr_i),
-        .amo_op_i          (amo_op_q),
-        .data_i            (st_data_q),
-        .data_size_i       (st_data_size_q),
+        .amo_op_i          (amo_op),
+        .data_i            (st_data),
+        .data_size_i       (st_data_size),
         .obi_amo_req_o     (obi_amo_req_o),
         .obi_amo_rsp_i     (obi_amo_rsp_i),
         .amo_valid_commit_i(amo_valid_commit_i),
@@ -351,19 +319,23 @@ module store_unit
   // ---------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      state_q        <= IDLE;
-      st_be_q        <= '0;
-      st_data_q      <= '0;
-      st_data_size_q <= '0;
-      trans_id_q     <= '0;
-      amo_op_q       <= AMO_NONE;
+      st_be_q                       <= '0;
+      st_data_q                     <= '0;
+      st_data_size_q                <= '0;
+      trans_id_q                    <= '0;
+      amo_op_q                      <= AMO_NONE;
+      amo_buffer_valid_q            <= '0;
+      store_buffer_valid_q          <= '0;
+      store_buffer_valid_no_flush_q <= '0;
     end else begin
-      state_q        <= state_d;
-      st_be_q        <= st_be_n;
-      st_data_q      <= st_data_n;
-      trans_id_q     <= trans_id_n;
-      st_data_size_q <= st_data_size_n;
-      amo_op_q       <= amo_op_d;
+      st_be_q                       <= st_be_n;
+      st_data_q                     <= st_data_n;
+      trans_id_q                    <= trans_id_n;
+      st_data_size_q                <= st_data_size_n;
+      amo_op_q                      <= amo_op_d;
+      amo_buffer_valid_q            <= amo_buffer_valid_d;
+      store_buffer_valid_q          <= store_buffer_valid_d;
+      store_buffer_valid_no_flush_q <= store_buffer_valid_no_flush_d;
     end
   end
 

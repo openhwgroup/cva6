@@ -104,7 +104,7 @@ package cva6_config_pkg;
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(1),
-      ObiVersion: int'(1),
+      ObiVersion: int'(config_pkg::OBI_V1_6),
       PipelineOnly: bit'(1)  //FIXME
   };
 

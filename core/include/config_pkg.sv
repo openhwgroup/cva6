@@ -15,6 +15,13 @@ package config_pkg;
   localparam int unsigned ILEN = 32;
   localparam int unsigned NRET = 1;
 
+  // ---------------
+  // OBI
+  // ---------------
+
+  localparam int unsigned OBI_NOT_COMPLIANT = 0;
+  localparam int unsigned OBI_V1_6 = 1600;
+
   /// The NoC type is a top-level parameter, hence we need a bit more
   /// information on what protocol those type parameters are supporting.
   /// Currently two values are supported"

@@ -337,39 +337,19 @@ module load_store_unit
       assign pmp_fetch_arsp.fetch_paddr = CVA6Cfg.PLEN'(fetch_areq_i.fetch_vaddr);
     end
     assign pmp_fetch_arsp.fetch_exception = 'h0;
-    // dcache request without mmu for load or store,
-    // Delay of 1 cycle to match MMU latency giving the address tag
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-        lsu_paddr <= '0;
-        pmp_exception <= '0;
-        pmp_translation_valid <= 1'b0;
-      end else begin
-        if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_lsu
-          lsu_paddr <= mmu_vaddr[CVA6Cfg.PLEN-1:0];
-        end else begin
-          lsu_paddr <= CVA6Cfg.PLEN'(mmu_vaddr);
-        end
-        pmp_exception <= misaligned_exception;
-        pmp_translation_valid <= translation_req;
-      end
+    assign pmp_exception = misaligned_exception;
+    assign pmp_translation_valid = translation_req;
+
+    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
+      assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
+    end else begin
+      assign lsu_paddr = CVA6Cfg.PLEN'(mmu_vaddr);
     end
 
-    // dcache interface of PTW not used
-    assign dcache_req_ports_o[0].address_index = '0;
-    assign dcache_req_ports_o[0].address_tag   = '0;
-    assign dcache_req_ports_o[0].data_wdata    = '0;
-    assign dcache_req_ports_o[0].data_req      = 1'b0;
-    assign dcache_req_ports_o[0].data_be       = '1;
-    assign dcache_req_ports_o[0].data_size     = 2'b11;
-    assign dcache_req_ports_o[0].data_we       = 1'b0;
-    assign dcache_req_ports_o[0].kill_req      = '0;
-    assign dcache_req_ports_o[0].tag_valid     = 1'b0;
-
-    assign itlb_miss_o                         = 1'b0;
-    assign dtlb_miss_o                         = 1'b0;
-    assign dtlb_ppn                            = lsu_paddr[CVA6Cfg.PLEN-1:12];
-    assign dtlb_hit                            = 1'b1;
+    assign itlb_miss_o = 1'b0;
+    assign dtlb_miss_o = 1'b0;
+    assign dtlb_ppn    = lsu_paddr[CVA6Cfg.PLEN-1:12];
+    assign dtlb_hit    = 1'b1;
 
   end
 
