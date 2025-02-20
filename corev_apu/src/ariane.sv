@@ -16,8 +16,6 @@
 
 module ariane import ariane_pkg::*; #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter type rvfi_probes_instr_t = logic,
-  parameter type rvfi_probes_csr_t = logic,
   parameter type rvfi_probes_t = struct packed {
     logic csr;
     logic instr;
@@ -70,28 +68,8 @@ module ariane import ariane_pkg::*; #(
   cvxif_resp_t cvxif_resp;
 
   cva6 #(
-    .CVA6Cfg ( CVA6Cfg ),
-    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
-    .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
-    .rvfi_probes_t ( rvfi_probes_t ),
-    .axi_ar_chan_t (axi_ar_chan_t),
-    .axi_aw_chan_t (axi_aw_chan_t),
-    .axi_w_chan_t (axi_w_chan_t),
-    .noc_req_t (noc_req_t),
-    .noc_resp_t (noc_resp_t),
-    .readregflags_t (readregflags_t),
-    .writeregflags_t (writeregflags_t),
-    .id_t (id_t),
-    .hartid_t (hartid_t),
-    .x_compressed_req_t (x_compressed_req_t),
-    .x_compressed_resp_t (x_compressed_resp_t),
-    .x_issue_req_t (x_issue_req_t),
-    .x_issue_resp_t (x_issue_resp_t),
-    .x_register_t (x_register_t),
-    .x_commit_t (x_commit_t),
-    .x_result_t (x_result_t),
-    .cvxif_req_t (cvxif_req_t),
-    .cvxif_resp_t (cvxif_resp_t)
+    .CVA6Cfg              ( CVA6Cfg                   ),
+    .rvfi_probes_t        ( rvfi_probes_t             )
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),

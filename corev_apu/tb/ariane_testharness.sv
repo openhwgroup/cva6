@@ -628,11 +628,7 @@ module ariane_testharness #(
 
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
-    .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),
-    .rvfi_probes_csr_t    ( rvfi_probes_csr_t   ),
-    .rvfi_probes_t        ( rvfi_probes_t       ),
-    .noc_req_t            ( ariane_axi::req_t   ),
-    .noc_resp_t           ( ariane_axi::resp_t  )
+    .rvfi_probes_t        ( rvfi_probes_t       )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
