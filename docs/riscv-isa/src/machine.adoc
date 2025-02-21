@@ -4068,6 +4068,13 @@ endif::[]
 [[pmp]]
 === Physical Memory Protection
 
+ifeval::[{NrPMPEntries} == 0]
+[{ohg-config}] There is no optional physical memory protection (PMP)
+unit.
+endif::[]
+
+ifeval::[{NrPMPEntries} != 0]
+
 To support secure processing and contain faults, it is desirable to
 limit the physical addresses accessible by software running on a hart.
 An optional physical memory protection (PMP) unit provides per-hart
@@ -4490,4 +4497,6 @@ endif::[]
 ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] As page-based virtual memory systems is not implemented, memory accesses
 check the PMP settings synchronously.
+endif::[]
+
 endif::[]
