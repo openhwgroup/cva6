@@ -28,7 +28,7 @@ def get_cc_scores(component):
 		if re.search(r'\b'+component+r'\b', l):
 			line = l
 	scores = pattern.findall(line)
-	return [float(score) for score in scores[0:4]]
+	return [float(score) for score in scores[0:3]]
 
 def get_fc_scores(component):
 	for l in fc_log.splitlines():
@@ -38,7 +38,7 @@ def get_fc_scores(component):
 	return [float(scores[0])]
 
 cc_components = [
-	"i_cva6",
+	"i_cva6_pipeline",
 	"commit_stage_i",
 	"controller_i",
 	"csr_regfile_i",
@@ -55,7 +55,7 @@ fc_components = [
 ]
 
 cc_score_metric = rb.TableMetric('Coverage results')
-cc_score_metric.add_value("COMPONENT", "SCORE", "LINE", "COND", "TOGGLE")
+cc_score_metric.add_value("COMPONENT", "SCORE", "LINE", "COND")
 for component in cc_components:
 	cc_scores = get_cc_scores(component)
 	cc_score_metric.add_value(component, *cc_scores)
@@ -66,7 +66,7 @@ for component in fc_components:
 	fc_scores = get_fc_scores(component)
 	fc_score_metric.add_value(component, *fc_scores)
 
-coverage_score = int(get_cc_scores("i_cva6")[0])
+coverage_score = int(get_cc_scores("i_cva6_pipeline")[0])
 report = rb.Report(f'{coverage_score}%')
 report.add_metric(cc_score_metric)
 report.add_metric(fc_score_metric)
