@@ -968,6 +968,8 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/A/src/amoxor.w-01.S
 
+
+    #K
   - test: rv64im-pack-01
     <<: *common_test_config
     iterations: 1
@@ -1032,3 +1034,123 @@ testlist:
     iterations: 1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/aes64im-01.S
+  
+  - test: rv64i_m-sha256sig0-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig0-01.S
+
+  - test: rv64i_m-sha256sig0-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig0-rwp1.S
+
+  - test: rv64i_m-sha256sig0-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig0-rwp2.S
+
+  - test: rv64i_m-sha256sig1-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig1-01.S
+
+  - test: rv64i_m-sha256sig1-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig1-rwp1.S
+
+  - test: rv64i_m-sha256sig1-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sig1-rwp2.S
+
+  - test: rv64i_m-sha256sum0-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum0-01.S
+
+  - test: rv64i_m-sha256sum0-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum0-rwp1.S
+
+  - test: rv64i_m-sha256sum0-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum0-rwp2.S
+
+  - test: rv64i_m-sha256sum1-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum1-01.S
+  
+  - test: rv64i_m-sha256sum1-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum1-rwp1.S
+
+  - test: rv64i_m-sha256sum1-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha256sum1-rwp2.S
+
+  - test: rv64i_m-sha512sig0-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig0-01.S
+  
+  - test: rv64i_m-sha512sig0-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig0-rwp1.S
+
+  - test: rv64i_m-sha512sig0-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig0-rwp2.S
+
+  - test: rv64i_m-sha512sig1-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig1-01.S
+  
+  - test: rv64i_m-sha512sig1-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig1-rwp1.S
+
+  - test: rv64i_m-sha512sig1-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sig1-rwp2.S
+
+  - test: rv64i_m-sha512sum0-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum0-01.S
+  
+  - test: rv64i_m-sha512sum0-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum0-rwp1.S
+
+  - test: rv64i_m-sha512sum0-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum0-rwp2.S
+
+  - test: rv64i_m-sha512sum1-01
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum1-01.S
+  
+  - test: rv64i_m-sha512sum1-rwp1
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum1-rwp1.S
+
+  - test: rv64i_m-sha512sum1-rwp2
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/riscv-arch-test/riscv-test-suite/rv64i_m/K/src/sha512sum1-rwp2.S
