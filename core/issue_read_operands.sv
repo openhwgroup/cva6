@@ -690,7 +690,7 @@ module issue_read_operands
           stall_rs3[0]   = 1'b0;
         end
       end
-      stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || stall_rs3[0];
+      stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || (CVA6Cfg.NrRgprPorts == 3 && stall_rs3[0]);
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
