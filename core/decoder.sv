@@ -905,6 +905,54 @@ module decoder
                     instruction_o.fu = AES;
                   end else illegal_instr_bm = 1'b1;
                 end
+                {
+                  7'b010_1110, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SIG0H;  // sha512sig0h
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b010_1010, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SIG0L;  // sha512sig0l
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b010_1111, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SIG1H;  // sha512sig1h
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b010_1011, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SIG1L;  // sha512sig1l
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b010_1000, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SUM0R;  // sha512sum0r
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
+                {
+                  7'b010_1001, 3'b000
+                } : begin
+                  if (CVA6Cfg.ZKN) begin
+                    instruction_o.op = ariane_pkg::SHA512SUM1R;  // sha512sum1r
+                    instruction_o.fu = AES;
+                  end else illegal_instr_bm = 1'b1;
+                end
                 default: begin
                   illegal_instr_bm = 1'b1;
                 end
@@ -1050,6 +1098,30 @@ module decoder
                   instruction_o.fu = AES;
                 end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b001100000000) begin
                   instruction_o.op = ariane_pkg::AES64IM;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000010) begin
+                  instruction_o.op = ariane_pkg::SHA256SIG0;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000011) begin
+                  instruction_o.op = ariane_pkg::SHA256SIG1;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000000) begin
+                  instruction_o.op = ariane_pkg::SHA256SUM0;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000001) begin
+                  instruction_o.op = ariane_pkg::SHA256SUM1;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000110) begin
+                  instruction_o.op = ariane_pkg::SHA512SIG0;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000111) begin
+                  instruction_o.op = ariane_pkg::SHA512SIG1;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000100) begin
+                  instruction_o.op = ariane_pkg::SHA512SUM0;
+                  instruction_o.fu = AES;
+                end else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000100000101) begin
+                  instruction_o.op = ariane_pkg::SHA512SUM1;
                   instruction_o.fu = AES;
                 end else illegal_instr_bm = 1'b1;
               end

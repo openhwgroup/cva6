@@ -136,7 +136,7 @@ module issue_read_operands
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
 
   typedef struct packed {
-    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
+    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel, aes;
   } fus_busy_t;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] stall_raw, stall_rs1, stall_rs2, stall_rs3;
@@ -299,6 +299,7 @@ module issue_read_operands
     // Since we can not have two CVXIF instruction on 1st issue port, CVXIF is always ready for the pending instruction.
     if (!flu_ready_i) begin
       fus_busy[0].alu = 1'b1;
+      fus_busy[0].aes = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
       fus_busy[0].mult = 1'b1;
@@ -308,6 +309,7 @@ module issue_read_operands
     // otherwise we will get contentions on the fixed latency bus
     if (|mult_valid_q) begin
       fus_busy[0].alu = 1'b1;
+      fus_busy[0].aes = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
     end
@@ -406,6 +408,7 @@ module issue_read_operands
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
+        AES: fu_busy[i] = fus_busy[i].aes;
         default:
         if (CVA6Cfg.FpPresent) begin
           unique case (issue_instr_i[i].fu)

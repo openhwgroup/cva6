@@ -514,7 +514,22 @@ package ariane_pkg;
     AES64IM,
     // AES Key-Schedule instructions
     AES64KS1I,
-    AES64KS2
+    AES64KS2,
+    // Hashing instructions
+    SHA256SIG0,
+    SHA256SIG1,
+    SHA256SUM0,
+    SHA256SUM1,
+    SHA512SIG0H,
+    SHA512SIG0L,
+    SHA512SIG1H,
+    SHA512SIG1L,
+    SHA512SUM0R,
+    SHA512SUM1R,
+    SHA512SIG0,
+    SHA512SIG1,
+    SHA512SUM0,
+    SHA512SUM1
   } fu_op;
 
   function automatic logic op_is_branch(input fu_op op);

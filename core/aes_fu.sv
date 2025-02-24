@@ -12,13 +12,9 @@ module aes_fu
     input  fu_data_t                             fu_data_i,
     // Original instruction bits for aes
     input  logic [                          5:0] orig_instr_aes,
-    // Crypto result - ISSUE_STAGE
+    // AES result - ISSUE_STAGE
     output logic [             CVA6Cfg.XLEN-1:0] result_o
 );
-  logic aes_valid_op;
-
-  assign aes_valid_op = fu_data_i.operation inside { AES32ESI, AES32ESMI, AES64ES, AES64ESM, AES32DSI, AES32DSMI, AES64DS, AES64DSM, AES64IM, AES64KS1I, AES64KS2 };
-
 
   logic [            63:0] sr;
   logic [            31:0] aes32esi_gen;
@@ -34,8 +30,33 @@ module aes_fu
   logic [            63:0] aes64ks1i_gen;
   logic [            63:0] aes64ks2_gen;
   
+  logic [            31:0] sha256sig0_gen;
+  logic [            31:0] sha256sig1_gen;
+  logic [            31:0] sha256sum0_gen;
+  logic [            31:0] sha256sum1_gen;
+
+  logic [            31:0] sha512sig0h_gen;
+  logic [            31:0] sha512sig0l_gen;
+  logic [            31:0] sha512sig1h_gen;
+  logic [            31:0] sha512sig1l_gen;
+  logic [            31:0] sha512sum0r_gen;
+  logic [            31:0] sha512sum1r_gen;
+
+  logic [            63:0] sha512sig0_gen;
+  logic [            63:0] sha512sig1_gen;
+  logic [            63:0] sha512sum0_gen;
+  logic [            63:0] sha512sum1_gen;
+
   // AES gen block
   if (CVA6Cfg.ZKN && CVA6Cfg.RVB) begin : aes_gen_block
+    // SHA256 sigma0 transformation function by rotating, shifting and XORing rs1
+    assign sha256sig0_gen = (fu_data_i.operand_a[31:0] >> 7 | fu_data_i.operand_a[31:0] << 25) ^ (fu_data_i.operand_a[31:0] >> 18 | fu_data_i.operand_a[31:0] << 14) ^ (fu_data_i.operand_a[31:0] >> 3);
+    // SHA256 sigma1 transformation function by rotating, shifting and XORing rs1
+    assign sha256sig1_gen = (fu_data_i.operand_a[31:0] >> 17 | fu_data_i.operand_a[31:0] << 15) ^ (fu_data_i.operand_a[31:0] >> 19 | fu_data_i.operand_a[31:0] << 13) ^ (fu_data_i.operand_a[31:0] >> 10);
+    // SHA256 sum0 transformation function by rotating, shifting and XORing rs1
+    assign sha256sum0_gen = (fu_data_i.operand_a[31:0] >> 2 | fu_data_i.operand_a[31:0] << 30) ^ (fu_data_i.operand_a[31:0] >> 13 | fu_data_i.operand_a[31:0] << 19) ^ (fu_data_i.operand_a[31:0] >> 22 | fu_data_i.operand_a[31:0] << 10);
+    // SHA256 sum1 transformation function by rotating, shifting and XORing rs1
+    assign sha256sum1_gen = (fu_data_i.operand_a[31:0] >> 6 | fu_data_i.operand_a[31:0] << 26) ^ (fu_data_i.operand_a[31:0] >> 11 | fu_data_i.operand_a[31:0] << 21) ^ (fu_data_i.operand_a[31:0] >> 25 | fu_data_i.operand_a[31:0] << 7);
     if (CVA6Cfg.IS_XLEN32) begin
         // AES 32-bit final round encryption by applying rotations and the forward sbox to a single byte of rs2 based on the MSB byte of the instruction itself  
         assign aes32esi_gen = (fu_data_i.operand_a ^ ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} << {orig_instr_aes[5:4], 3'b000}) | ({24'b0, aes_sbox_fwd((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} >> (32 - {orig_instr_aes[5:4], 3'b000})));
@@ -45,6 +66,13 @@ module aes_fu
         assign aes32dsi_gen = (fu_data_i.operand_a ^ ({24'b0, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} << {orig_instr_aes[5:4], 3'b000}) | ({24'b0, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))} >> (32 - {orig_instr_aes[5:4], 3'b000})));
         // AES 32-bit middle round decryption by applying rotations, inverse mix-columns and the inverse sbox to a single byte of rs2 based on the MSB byte of the instruction itself
         assign aes32dsmi_gen = fu_data_i.operand_a ^ ((aes_mixcolumn_inv({24'h000000, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) << {orig_instr_aes[5:4], 3'b000}) | (aes_mixcolumn_inv({24'h000000, aes_sbox_inv((fu_data_i.operand_b >> {orig_instr_aes[5:4], 3'b000}[7:0]))}) >> (32 - {orig_instr_aes[5:4], 3'b000})));
+        // SHA512 32-bit shifting and XORing rs1 and rs2
+        assign sha512sig0h_gen = (fu_data_i.operand_a >> 1) ^ (fu_data_i.operand_a >> 7) ^ (fu_data_i.operand_a >> 8) ^ (fu_data_i.operand_b << 31) ^ (fu_data_i.operand_b << 24);
+        assign sha512sig0l_gen = (fu_data_i.operand_a >> 1) ^ (fu_data_i.operand_a >> 7) ^ (fu_data_i.operand_a >> 8) ^ (fu_data_i.operand_b << 31) ^ (fu_data_i.operand_b << 25) ^ (fu_data_i.operand_b << 24);
+        assign sha512sig1h_gen = (fu_data_i.operand_a << 3) ^ (fu_data_i.operand_a >> 6) ^ (fu_data_i.operand_a >> 19) ^ (fu_data_i.operand_b >> 29) ^ (fu_data_i.operand_b << 13);
+        assign sha512sig1l_gen = (fu_data_i.operand_a << 3) ^ (fu_data_i.operand_a >> 6) ^ (fu_data_i.operand_a >> 19) ^ (fu_data_i.operand_b >> 29) ^ (fu_data_i.operand_b << 26) ^ (fu_data_i.operand_b << 13);
+        assign sha512sum0r_gen = (fu_data_i.operand_a << 25) ^ (fu_data_i.operand_a << 30) ^ (fu_data_i.operand_a >> 28) ^ (fu_data_i.operand_b >> 7) ^ (fu_data_i.operand_b >> 2) ^ (fu_data_i.operand_b << 4);
+        assign sha512sum1r_gen = (fu_data_i.operand_a << 23) ^ (fu_data_i.operand_a >> 14) ^ (fu_data_i.operand_a >> 18) ^ (fu_data_i.operand_b >> 9) ^ (fu_data_i.operand_b << 18) ^ (fu_data_i.operand_b << 14);
     end
     else if (CVA6Cfg.IS_XLEN64) begin
       // AES Shift rows forward and inverse step
@@ -64,6 +92,11 @@ module aes_fu
       assign aes64ks2_gen = {(fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0] ^ fu_data_i.operand_b[63:32]), (fu_data_i.operand_a[63:32] ^ fu_data_i.operand_b[31:0])};      
       // AES Key Schedule part by substituting round constant based on round number(from instruction), rotations and forward subword substitutions
       assign aes64ks1i_gen = (orig_instr_aes[3:0] <= 4'hA) ? {((aes_subword_fwd((orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24)))) ^ (aes_decode_rcon(orig_instr_aes[3:0]))), ((aes_subword_fwd((orig_instr_aes[3:0] == 4'hA) ? fu_data_i.operand_a[63:32] : ((fu_data_i.operand_a[63:32] >> 8) | (fu_data_i.operand_a[63:32] << 24)))) ^ (aes_decode_rcon(orig_instr_aes[3:0])))} : 64'h0;
+      // SHA512 64bit rotating, shifting and XORing rs1
+      assign sha512sig0_gen = (fu_data_i.operand_a >> 1 | fu_data_i.operand_a << 63) ^ (fu_data_i.operand_a >> 8 | fu_data_i.operand_a << 56) ^ (fu_data_i.operand_a >> 7);
+      assign sha512sig1_gen = (fu_data_i.operand_a >> 19 | fu_data_i.operand_a << 45) ^ (fu_data_i.operand_a >> 61 | fu_data_i.operand_a << 3) ^ (fu_data_i.operand_a >> 6);
+      assign sha512sum0_gen = (fu_data_i.operand_a >> 28 | fu_data_i.operand_a << 36) ^ (fu_data_i.operand_a >> 34 | fu_data_i.operand_a << 30) ^ (fu_data_i.operand_a >> 39 | fu_data_i.operand_a << 25);
+      assign sha512sum1_gen = (fu_data_i.operand_a >> 14 | fu_data_i.operand_a << 50) ^ (fu_data_i.operand_a >> 18 | fu_data_i.operand_a << 46) ^ (fu_data_i.operand_a >> 41 | fu_data_i.operand_a << 23);
     end
   end
 
@@ -80,6 +113,16 @@ module aes_fu
           AES32ESMI: result_o = aes32esmi_gen;
           AES32DSI: result_o = aes32dsi_gen;
           AES32DSMI: result_o = aes32dsmi_gen;
+          SHA256SIG0: result_o = sha256sig0_gen;
+          SHA256SIG1: result_o = sha256sig1_gen;
+          SHA256SUM0: result_o = sha256sum0_gen;
+          SHA256SUM1: result_o = sha256sum1_gen;
+          SHA512SIG0H: result_o = sha512sig0h_gen;
+          SHA512SIG0L: result_o = sha512sig0l_gen;
+          SHA512SIG1H: result_o = sha512sig1h_gen;
+          SHA512SIG1L: result_o = sha512sig1l_gen;
+          SHA512SUM0R: result_o = sha512sum0r_gen;
+          SHA512SUM1R: result_o = sha512sum1r_gen;
           default: ;
         endcase
       end
@@ -92,6 +135,14 @@ module aes_fu
           AES64IM: result_o = aes64im_gen;
           AES64KS1I: result_o = aes64ks1i_gen;
           AES64KS2: result_o = aes64ks2_gen;
+          SHA256SIG0: result_o = {{32{sha256sig0_gen[31]}}, sha256sig0_gen};
+          SHA256SIG1: result_o = {{32{sha256sig1_gen[31]}}, sha256sig1_gen};
+          SHA256SUM0: result_o = {{32{sha256sum0_gen[31]}}, sha256sum0_gen};
+          SHA256SUM1: result_o = {{32{sha256sum1_gen[31]}}, sha256sum1_gen};
+          SHA512SIG0: result_o = sha512sig0_gen;
+          SHA512SIG1: result_o = sha512sig1_gen;
+          SHA512SUM0: result_o = sha512sum0_gen;
+          SHA512SUM1: result_o = sha512sum1_gen;
           default: ;
         endcase
       end
