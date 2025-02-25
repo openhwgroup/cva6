@@ -53,7 +53,7 @@ workflow:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DASHBOARD: cva6
-  DV_TARGET: cv32a65x
+  DV_TARGET: cv32a60x
 
 default:
   tags: [$TAGS_RUNNER_SIMU]
