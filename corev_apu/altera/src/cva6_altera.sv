@@ -437,60 +437,60 @@ if (CVA6Cfg.XLEN==32 ) begin
 
 end else begin
 
-    assign master[ariane_soc::Debug].aw_id = master_to_dm[0].aw_id;
-    assign master[ariane_soc::Debug].aw_addr = master_to_dm[0].aw_addr;
-    assign master[ariane_soc::Debug].aw_len = master_to_dm[0].aw_len;
-    assign master[ariane_soc::Debug].aw_size = master_to_dm[0].aw_size;
-    assign master[ariane_soc::Debug].aw_burst = master_to_dm[0].aw_burst;
-    assign master[ariane_soc::Debug].aw_lock = master_to_dm[0].aw_lock;
-    assign master[ariane_soc::Debug].aw_cache = master_to_dm[0].aw_cache;
-    assign master[ariane_soc::Debug].aw_prot = master_to_dm[0].aw_prot;
-    assign master[ariane_soc::Debug].aw_qos = master_to_dm[0].aw_qos;
-    assign master[ariane_soc::Debug].aw_atop = master_to_dm[0].aw_atop;
-    assign master[ariane_soc::Debug].aw_region = master_to_dm[0].aw_region;
-    assign master[ariane_soc::Debug].aw_user = master_to_dm[0].aw_user;
-    assign master[ariane_soc::Debug].aw_valid = master_to_dm[0].aw_valid;
+    assign master_to_dm[0].aw_id   = master[ariane_soc::Debug].aw_id;
+    assign master_to_dm[0].aw_addr = master[ariane_soc::Debug].aw_addr;
+    assign master_to_dm[0].aw_len  = master[ariane_soc::Debug].aw_len;
+    assign master_to_dm[0].aw_size = master[ariane_soc::Debug].aw_size;
+    assign master_to_dm[0].aw_burst= master[ariane_soc::Debug].aw_burst;
+    assign master_to_dm[0].aw_lock = master[ariane_soc::Debug].aw_lock;
+    assign master_to_dm[0].aw_cache= master[ariane_soc::Debug].aw_cache;
+    assign master_to_dm[0].aw_prot = master[ariane_soc::Debug].aw_prot;
+    assign master_to_dm[0].aw_qos  = master[ariane_soc::Debug].aw_qos;
+    assign master_to_dm[0].aw_atop = master[ariane_soc::Debug].aw_atop;
+    assign master_to_dm[0].aw_region = master[ariane_soc::Debug].aw_region;
+    assign master_to_dm[0].aw_user = master[ariane_soc::Debug].aw_user;
+    assign master_to_dm[0].aw_valid= master[ariane_soc::Debug].aw_valid;
 
-    assign master_to_dm[0].aw_ready =master[ariane_soc::Debug].aw_ready;
+    assign master[ariane_soc::Debug].aw_ready = master_to_dm[0].aw_ready;
 
-    assign master[ariane_soc::Debug].w_data = master_to_dm[0].w_data;
-    assign master[ariane_soc::Debug].w_strb = master_to_dm[0].w_strb;
-    assign master[ariane_soc::Debug].w_last = master_to_dm[0].w_last;
-    assign master[ariane_soc::Debug].w_user = master_to_dm[0].w_user;
-    assign master[ariane_soc::Debug].w_valid = master_to_dm[0].w_valid;
+    assign master_to_dm[0].w_data = master[ariane_soc::Debug].w_data;
+    assign master_to_dm[0].w_strb = master[ariane_soc::Debug].w_strb;
+    assign master_to_dm[0].w_last = master[ariane_soc::Debug].w_last;
+    assign master_to_dm[0].w_user = master[ariane_soc::Debug].w_user;
+    assign master_to_dm[0].w_valid= master[ariane_soc::Debug].w_valid;
 
-    assign master_to_dm[0].w_ready =master[ariane_soc::Debug].w_ready;
+    assign master[ariane_soc::Debug].w_ready = master_to_dm[0].w_ready;
 
-    assign master_to_dm[0].b_id =master[ariane_soc::Debug].b_id;
-    assign master_to_dm[0].b_resp =master[ariane_soc::Debug].b_resp;
-    assign master_to_dm[0].b_user =master[ariane_soc::Debug].b_user;
-    assign master_to_dm[0].b_valid =master[ariane_soc::Debug].b_valid;
+    assign master[ariane_soc::Debug].b_id = master_to_dm[0].b_id;
+    assign master[ariane_soc::Debug].b_resp = master_to_dm[0].b_resp;
+    assign master[ariane_soc::Debug].b_user = master_to_dm[0].b_user;
+    assign master[ariane_soc::Debug].b_valid= master_to_dm[0].b_valid;
 
-    assign master[ariane_soc::Debug].b_ready = master_to_dm[0].b_ready;
+    assign master_to_dm[0].b_ready = master[ariane_soc::Debug].b_ready;
 
-    assign master[ariane_soc::Debug].ar_id = master_to_dm[0].ar_id;
-    assign master[ariane_soc::Debug].ar_addr = master_to_dm[0].ar_addr;
-    assign master[ariane_soc::Debug].ar_len = master_to_dm[0].ar_len;
-    assign master[ariane_soc::Debug].ar_size = master_to_dm[0].ar_size;
-    assign master[ariane_soc::Debug].ar_burst = master_to_dm[0].ar_burst;
-    assign master[ariane_soc::Debug].ar_lock = master_to_dm[0].ar_lock;
-    assign master[ariane_soc::Debug].ar_cache = master_to_dm[0].ar_cache;
-    assign master[ariane_soc::Debug].ar_prot = master_to_dm[0].ar_prot;
-    assign master[ariane_soc::Debug].ar_qos = master_to_dm[0].ar_qos;
-    assign master[ariane_soc::Debug].ar_region = master_to_dm[0].ar_region;
-    assign master[ariane_soc::Debug].ar_user = master_to_dm[0].ar_user;
-    assign master[ariane_soc::Debug].ar_valid = master_to_dm[0].ar_valid;
+    assign master_to_dm[0].ar_id = master[ariane_soc::Debug].ar_id;
+    assign master_to_dm[0].ar_addr = master[ariane_soc::Debug].ar_addr;
+    assign master_to_dm[0].ar_len = master[ariane_soc::Debug].ar_len;
+    assign master_to_dm[0].ar_size = master[ariane_soc::Debug].ar_size;
+    assign master_to_dm[0].ar_burst = master[ariane_soc::Debug].ar_burst;
+    assign master_to_dm[0].ar_lock = master[ariane_soc::Debug].ar_lock;
+    assign master_to_dm[0].ar_cache = master[ariane_soc::Debug].ar_cache;
+    assign master_to_dm[0].ar_prot = master[ariane_soc::Debug].ar_prot;
+    assign master_to_dm[0].ar_qos = master[ariane_soc::Debug].ar_qos;
+    assign master_to_dm[0].ar_region = master[ariane_soc::Debug].ar_region;
+    assign master_to_dm[0].ar_user = master[ariane_soc::Debug].ar_user;
+    assign master_to_dm[0].ar_valid = master[ariane_soc::Debug].ar_valid;
 
-    assign master_to_dm[0].ar_ready =master[ariane_soc::Debug].ar_ready;
+    assign master[ariane_soc::Debug].ar_ready = master_to_dm[0].ar_ready;
 
-    assign master_to_dm[0].r_id =master[ariane_soc::Debug].r_id;
-    assign master_to_dm[0].r_data =master[ariane_soc::Debug].r_data;
-    assign master_to_dm[0].r_resp =master[ariane_soc::Debug].r_resp;
-    assign master_to_dm[0].r_last =master[ariane_soc::Debug].r_last;
-    assign master_to_dm[0].r_user =master[ariane_soc::Debug].r_user;
-    assign master_to_dm[0].r_valid =master[ariane_soc::Debug].r_valid;
+    assign master[ariane_soc::Debug].r_id = master_to_dm[0].r_id;
+    assign master[ariane_soc::Debug].r_data = master_to_dm[0].r_data;
+    assign master[ariane_soc::Debug].r_resp = master_to_dm[0].r_resp;
+    assign master[ariane_soc::Debug].r_last = master_to_dm[0].r_last;
+    assign master[ariane_soc::Debug].r_user = master_to_dm[0].r_user;
+    assign master[ariane_soc::Debug].r_valid = master_to_dm[0].r_valid;
 
-    assign master[ariane_soc::Debug].r_ready = master_to_dm[0].r_ready;
+    assign master_to_dm[0].r_ready = master[ariane_soc::Debug].r_ready;
 
 end
 
@@ -744,19 +744,13 @@ end
 
 
 logic clk_200MHz_ref;
-AXI_BUS #(
-   .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-   .AXI_DATA_WIDTH ( AxiDataWidth     ),
-   .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
-   .AXI_USER_WIDTH ( AxiUserWidth     )
-) uart_bus();
 
 cva6_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
     .AxiIdWidth   ( AxiIdWidthSlaves ),
     .AxiUserWidth ( AxiUserWidth     ),
-    .InclUART     ( 1'b0             ),
+    .InclUART     ( 1'b1             ),
     .InclGPIO     ( 1'b1             ),
 	.InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
@@ -765,8 +759,7 @@ cva6_peripherals #(
     .clk_200MHz_i ( clk_200MHz_ref               ),
     .rst_ni       ( ndmreset_n                   ),
     .plic         ( master[ariane_soc::PLIC]     ),
-    // .uart         ( master[ariane_soc::UART]     ),
-    .uart         ( uart_bus    ),
+    .uart         ( master[ariane_soc::UART]     ),
     .spi          ( master[ariane_soc::SPI]      ),
     .gpio         ( master[ariane_soc::GPIO]     ),
     .eth_clk_i    ( eth_clk                      ),
@@ -797,84 +790,6 @@ cva6_peripherals #(
 
 
 
-// UART Through JTAG//
-
-logic uart_amm_ready;
-logic uart_amm_read;
-logic uart_amm_write;
-logic uart_amm_read_n;
-logic uart_amm_write_n;
-logic uart_amm_chipselect;
-logic uart_amm_irq;
-logic [0:0] uart_amm_address;
-logic [31:0] uart_amm_rdata;
-logic [31:0] uart_amm_wdata;
-
-
-assign uart_amm_read_n = ~uart_amm_read;
-assign uart_amm_write_n = ~uart_amm_write;
-
-cva6_intel_jtag_uart_0 uart_i (
-    .clk            (clk),            //   input,   width = 1,               clk.clk
-    .rst_n          (ndmreset_n),          //   input,   width = 1,             reset.reset_n
-    .av_chipselect  (uart_amm_chipselect),  //   input,   width = 1, avalon_jtag_slave.chipselect
-    .av_address     (uart_amm_address),     //   input,   width = 1,                  .address
-    .av_read_n      (uart_amm_read_n),      //   input,   width = 1,                  .read_n
-    .av_readdata    (uart_amm_rdata),    //  output,  width = 32,                  .readdata
-    .av_write_n     (uart_amm_write_n),     //   input,   width = 1,                  .write_n
-    .av_writedata   (uart_amm_wdata),   //   input,  width = 32,                  .writedata
-    .av_waitrequest (uart_amm_ready), //  output,   width = 1,                  .waitrequest
-    .av_irq         (uart_amm_irq)          //  output,   width = 1,               irq.irq
-);
-
-//axi4 to avalon converter
-interconnect_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
-		.axi_bridge_1_m0_awid                                             (master[ariane_soc::UART].aw_id),                                        //   input,   width = 8,                                            axi_bridge_1_m0.awid
-		.axi_bridge_1_m0_awaddr                                           (master[ariane_soc::UART].aw_addr),                                      //   input,  width = 64,                                                           .awaddr
-		.axi_bridge_1_m0_awlen                                            (master[ariane_soc::UART].aw_len),                                       //   input,   width = 8,                                                           .awlen
-		.axi_bridge_1_m0_awsize                                           (master[ariane_soc::UART].aw_size),                                      //   input,   width = 3,                                                           .awsize
-		.axi_bridge_1_m0_awburst                                          (master[ariane_soc::UART].aw_burst),                                     //   input,   width = 2,                                                           .awburst
-		.axi_bridge_1_m0_awlock                                           (master[ariane_soc::UART].aw_lock),                                      //   input,   width = 1,                                                           .awlock
-		.axi_bridge_1_m0_awcache                                          (master[ariane_soc::UART].aw_cache),                                     //   input,   width = 4,                                                           .awcache
-		.axi_bridge_1_m0_awprot                                           (master[ariane_soc::UART].aw_prot),                                      //   input,   width = 3,                                                           .awprot
-		.axi_bridge_1_m0_awvalid                                          (master[ariane_soc::UART].aw_valid),                                     //   input,   width = 1,                                                           .awvalid
-		.axi_bridge_1_m0_awready                                          (master[ariane_soc::UART].aw_ready),                                     //  output,   width = 1,                                                           .awready
-		.axi_bridge_1_m0_wdata                                            (master[ariane_soc::UART].w_data),                                       //   input,  width = 64,                                                           .wdata
-		.axi_bridge_1_m0_wstrb                                            (master[ariane_soc::UART].w_strb),                                       //   input,   width = 8,                                                           .wstrb
-		.axi_bridge_1_m0_wlast                                            (master[ariane_soc::UART].w_last),                                       //   input,   width = 1,                                                           .wlast
-		.axi_bridge_1_m0_wvalid                                           (master[ariane_soc::UART].w_valid),                                      //   input,   width = 1,                                                           .wvalid
-		.axi_bridge_1_m0_wready                                           (master[ariane_soc::UART].w_ready),                                      //  output,   width = 1,                                                           .wready
-		.axi_bridge_1_m0_bid                                              (master[ariane_soc::UART].b_id),                                         //  output,   width = 8,                                                           .bid
-		.axi_bridge_1_m0_bresp                                            (master[ariane_soc::UART].b_resp),                                       //  output,   width = 2,                                                           .bresp
-		.axi_bridge_1_m0_bvalid                                           (master[ariane_soc::UART].b_valid),                                      //  output,   width = 1,                                                           .bvalid
-		.axi_bridge_1_m0_bready                                           (master[ariane_soc::UART].b_ready),                                      //   input,   width = 1,                                                           .bready
-		.axi_bridge_1_m0_arid                                             (master[ariane_soc::UART].ar_id),                                        //   input,   width = 8,                                                           .arid
-		.axi_bridge_1_m0_araddr                                           (master[ariane_soc::UART].ar_addr),                                      //   input,  width = 64,                                                           .araddr
-		.axi_bridge_1_m0_arlen                                            (master[ariane_soc::UART].ar_len),                                       //   input,   width = 8,                                                           .arlen
-		.axi_bridge_1_m0_arsize                                           (master[ariane_soc::UART].ar_size),                                      //   input,   width = 3,                                                           .arsize
-		.axi_bridge_1_m0_arburst                                          (master[ariane_soc::UART].ar_burst),                                     //   input,   width = 2,                                                           .arburst
-		.axi_bridge_1_m0_arlock                                           (master[ariane_soc::UART].ar_lock),                                      //   input,   width = 1,                                                           .arlock
-		.axi_bridge_1_m0_arcache                                          (master[ariane_soc::UART].ar_cache),                                     //   input,   width = 4,                                                           .arcache
-		.axi_bridge_1_m0_arprot                                           (master[ariane_soc::UART].ar_prot),                                      //   input,   width = 3,                                                           .arprot
-		.axi_bridge_1_m0_arvalid                                          (master[ariane_soc::UART].ar_valid),                                     //   input,   width = 1,                                                           .arvalid
-		.axi_bridge_1_m0_arready                                          (master[ariane_soc::UART].ar_ready),                                     //  output,   width = 1,                                                           .arready
-		.axi_bridge_1_m0_rid                                              (master[ariane_soc::UART].r_id),                                         //  output,   width = 8,                                                           .rid
-		.axi_bridge_1_m0_rdata                                            (master[ariane_soc::UART].r_data),                                       //  output,  width = 64,                                                           .rdata
-		.axi_bridge_1_m0_rresp                                            (master[ariane_soc::UART].r_resp),                                       //  output,   width = 2,                                                           .rresp
-		.axi_bridge_1_m0_rlast                                            (master[ariane_soc::UART].r_last),                                       //  output,   width = 1,                                                           .rlast
-		.axi_bridge_1_m0_rvalid                                           (master[ariane_soc::UART].r_valid),                                      //  output,   width = 1,                                                           .rvalid
-		.axi_bridge_1_m0_rready                                           (master[ariane_soc::UART].r_ready),                                      //   input,   width = 1,                                                           .rready
-		.jtag_uart_0_avalon_jtag_slave_address                            (uart_amm_address),     //  output,   width = 1,                              jtag_uart_0_avalon_jtag_slave.address
-		.jtag_uart_0_avalon_jtag_slave_write                              (uart_amm_write),       //  output,   width = 1,                                                           .write
-		.jtag_uart_0_avalon_jtag_slave_read                               (uart_amm_read),        //  output,   width = 1,                                                           .read
-		.jtag_uart_0_avalon_jtag_slave_readdata                           (uart_amm_rdata),    //   input,  width = 32,                                                           .readdata
-		.jtag_uart_0_avalon_jtag_slave_writedata                          (uart_amm_wdata),   //  output,  width = 32,                                                           .writedata
-		.jtag_uart_0_avalon_jtag_slave_waitrequest                        (uart_amm_ready), //   input,   width = 1,                                                           .waitrequest
-		.jtag_uart_0_avalon_jtag_slave_chipselect                         (uart_amm_chipselect),  //  output,   width = 1,                                                           .chipselect
-		.axi_bridge_1_clk_reset_reset_bridge_in_reset_reset               (~ndmreset_n),                              //   input,   width = 1,               axi_bridge_1_clk_reset_reset_bridge_in_reset.reset
-		.axi_bridge_1_m0_translator_clk_reset_reset_bridge_in_reset_reset (~ndmreset_n),                              //   input,   width = 1, axi_bridge_1_m0_translator_clk_reset_reset_bridge_in_reset.reset
-		.emif_fm_0_emif_usr_clk_clk                                       (clk)                                   //   input,   width = 1,                                     emif_fm_0_emif_usr_clk.clk
-	);
 
 // ---------------------
 // Board peripherals
