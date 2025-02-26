@@ -2701,7 +2701,7 @@ module csr_regfile
   // write logic pmp
   always_comb begin : write
     for (int i = 0; i < 64; i++) begin
-      if (i < CVA6Cfg.NrPMPEntries) begin
+      if (CVA6Cfg.NrPMPEntries != 0 && i < CVA6Cfg.NrPMPEntries) begin
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
           // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
