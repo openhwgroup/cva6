@@ -34,7 +34,7 @@ module decoder
     input logic debug_req_i,
     // PC from fetch stage - FRONTEND
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
-    // Is a compressed instruction - compressed_decoder
+    // Is a compressed instruction - cvxif decoder
     input logic is_compressed_i,
     // Compressed form of instruction - FRONTEND
     input logic [15:0] compressed_instr_i,
@@ -1580,14 +1580,12 @@ module decoder
   always_comb begin : exception_handling
     interrupt_cause = '0;
     instruction_o.ex = ex_i;
-    orig_instr_o = '0;
+    orig_instr_o = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
     // look if we didn't already get an exception in any previous
     // stage - we should not overwrite it as we retain order regarding the exception
     if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
-      if (CVA6Cfg.CvxifEn || CVA6Cfg.RVF)
-        orig_instr_o = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       if (CVA6Cfg.TvalEn)
         instruction_o.ex.tval  = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
       else instruction_o.ex.tval = '0;

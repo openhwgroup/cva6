@@ -432,6 +432,7 @@ module cva6_pipeline
   // --------------
   scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_id_issue, issue_entry_id_issue_prev;
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_id_issue;
+  logic [CVA6Cfg.NrIssuePorts-1:0] was_compressed;
   logic [CVA6Cfg.NrIssuePorts-1:0] issue_entry_valid_id_issue;
   logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_fow_id_issue;
   logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_issue_id;
@@ -699,11 +700,10 @@ module cva6_pipeline
       .issue_entry_o      (issue_entry_id_issue),
       .issue_entry_o_prev (issue_entry_id_issue_prev),
       .orig_instr_o       (orig_instr_id_issue),
+      .was_compressed_o   (was_compressed),
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
       .issue_instr_ack_i  (issue_instr_issue_id),
-
-      .rvfi_is_compressed_o(rvfi_is_compressed),
 
       .priv_lvl_i        (priv_lvl),
       .v_i               (v),
@@ -1444,8 +1444,10 @@ module cva6_pipeline
 
   //RVFI INSTR
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] rvfi_fetch_instr;
+  fu_t [CVA6Cfg.NrIssuePorts-1:0] rvfi_decoded_fu;
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign rvfi_fetch_instr[i] = fetch_entry_if_id[i].instruction;
+    assign rvfi_fetch_instr[i] = orig_instr_id_issue[i];
+    assign rvfi_decoded_fu[i]  = issue_entry_id_issue[i].fu;
   end
 
   cva6_rvfi_probes #(
@@ -1458,11 +1460,11 @@ module cva6_pipeline
       .rvfi_probes_t      (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
-      .flush_i            (flush_ctrl_if),
-      .issue_instr_ack_i  (issue_instr_issue_id),
-      .fetch_entry_valid_i(fetch_valid_if_id),
-      .instruction_i      (rvfi_fetch_instr),
-      .is_compressed_i    (rvfi_is_compressed),
+      .flush_i          (flush_ctrl_if),
+      .issue_instr_ack_i(issue_instr_issue_id),
+      .instruction_i    (orig_instr_id_issue),
+      .decoded_fu_i     (rvfi_decoded_fu),
+      .was_compressed_i (was_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),
       .commit_pointer_i(rvfi_commit_pointer),

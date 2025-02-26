@@ -52,11 +52,9 @@ module cva6_rvfi
 
   logic flush;
   logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack;
-  logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_valid;
-  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction;
-  logic [CVA6Cfg.NrIssuePorts-1:0] is_compressed;
-  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] truncated;
-
+  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction, instruction_safe;
+  fu_t [CVA6Cfg.NrIssuePorts-1:0] decoded_fu;
+  logic [CVA6Cfg.NrIssuePorts-1:0] was_compressed;
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
 
@@ -121,9 +119,9 @@ module cva6_rvfi
 
   assign flush = instr.flush;
   assign issue_instr_ack = instr.issue_instr_ack;
-  assign fetch_entry_valid = instr.fetch_entry_valid;
   assign instruction = instr.instruction;
-  assign is_compressed = instr.is_compressed;
+  assign decoded_fu = instr.decoded_fu;
+  assign was_compressed = instr.was_compressed;
 
   assign issue_pointer = instr.issue_pointer;
   assign commit_pointer = instr.commit_pointer;
@@ -160,64 +158,33 @@ module cva6_rvfi
   assign lsu_wmask = instr.lsu_ctrl_fu == STORE ? instr.lsu_ctrl_be : '0;
   assign lsu_addr_trans_id = instr.lsu_ctrl_trans_id;
 
-
-  //ID STAGE
-
-  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign truncated[i] = (is_compressed[i]) ? {16'b0, instruction[i][15:0]} : instruction[i];
-  end
-
-  typedef struct packed {
-    logic        valid;
-    logic [31:0] instr;
-  } issue_struct_t;
-  issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
-  logic took0;
-
-  always_comb begin
-    issue_n = issue_q;
-    took0   = 1'b0;
-
-    for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-      if (issue_instr_ack[i]) begin
-        issue_n[i].valid = 1'b0;
-      end
-    end
-
-    if (!issue_n[CVA6Cfg.NrIssuePorts-1].valid) begin
-      issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[0];
-      issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[0];
-      took0 = 1'b1;
-    end
-
-    if (!issue_n[0].valid) begin
-      issue_n[0] = issue_n[CVA6Cfg.NrIssuePorts-1];
-      issue_n[CVA6Cfg.NrIssuePorts-1].valid = 1'b0;
-    end
-
-    if (!issue_n[CVA6Cfg.NrIssuePorts-1].valid) begin
-      if (took0) begin
-        issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[CVA6Cfg.NrIssuePorts-1];
-        issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[CVA6Cfg.NrIssuePorts-1];
-      end else begin
-        issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[0];
-        issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[0];
-      end
-    end
-
-    if (flush) begin
-      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-        issue_n[i].valid = 1'b0;
-      end
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
-      issue_q <= '0;
+  function automatic logic [31:0] compress_instr_copro_example(logic [31:0] instruction, fu_t fu,
+                                                               logic was_compressed);
+    if (fu != ariane_pkg::CVXIF) begin
+      return instruction;
     end else begin
-      issue_q <= issue_n;
+      logic is_nop, is_add;
+      // Only cus_nop and cus_add map to compressed instruction
+      is_nop = (instruction & {32'b11111_11_00000_00000_1_11_00000_1111111}) == {32'b00000_00_00000_00000_0_00_00000_1111011} ? 1'b1 : 1'b0;
+      is_add = (instruction & {32'b11111_11_00000_00000_1_11_00000_1111111}) == {32'b00000_00_00000_00000_0_01_00000_1111011} ? 1'b1 : 1'b0;
+      if (was_compressed) begin
+        if (is_nop) begin  // CUS_NOP
+          return {{16'b0}, {4'b111_0}, instruction[19:15], instruction[24:20], {2'b00}};
+        end else if (is_add) begin
+          return {{16'b0}, {4'b111_1}, instruction[19:15], instruction[24:20], {2'b00}};
+        end else return instruction;
+      end else begin
+        return instruction;
+      end
     end
+  endfunction
+  //ID STAGE
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+    if (CVA6Cfg.CoproType == config_pkg::COPRO_EXAMPLE) begin
+      assign instruction_safe[i] = compress_instr_copro_example(
+          instruction[i], decoded_fu[i], was_compressed[i]
+      );
+    end else assign instruction_safe[i] = instruction[i];
   end
 
   //ISSUE STAGE
@@ -246,7 +213,7 @@ module cva6_rvfi
             lsu_rmask: '0,
             lsu_wmask: '0,
             lsu_wdata: '0,
-            instr: issue_q[i].instr
+            instr: instruction_safe[i]
         };
       end
     end
