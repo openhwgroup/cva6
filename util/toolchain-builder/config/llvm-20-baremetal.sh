@@ -27,8 +27,8 @@
 # typically a tag, a commit or the output of "git describe" of a Git tree.
 
 # LLVM
-LLVM_COMMIT=release/18.x
+LLVM_COMMIT=release/20.x
 
 # newlib
-NEWLIB_COMMIT=newlib-4.4.0
+NEWLIB_COMMIT=newlib-4.5.0
 

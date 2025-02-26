@@ -72,7 +72,7 @@ BINUTILS_CONFIGURE_OPTS() {
 GCC_CONFIGURE_OPTS() {
     OPTS=(
         --prefix=${INSTALL_DIR}
-        --target=riscv-none-elf
+        --target=$1
         --enable-languages=c
         --disable-libssp
         --disable-libgomp
@@ -85,12 +85,18 @@ LLVM_CONFIGURE_OPTS() {
     OPTS=(
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-        -DLLVM_ENABLE_PROJECTS='clang;lld'
-        -DLLVM_DISTRIBUTION_COMPONENTS='clang;clang-resource-headers;lld;llvm-ar;llvm-cov;llvm-cxxfilt;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-profdata;llvm-symbolizer'
+        -DLLVM_ENABLE_PROJECTS='clang;lld;lldb'
+        -DLLVM_DISTRIBUTION_COMPONENTS='clang;clang-resource-headers;lld;lldb;llvm-ar;llvm-cov;llvm-cxxfilt;llvm-dwp;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readobj;llvm-size;llvm-strings;llvm-strip;llvm-profdata;llvm-symbolizer'
         -DLLVM_TARGETS_TO_BUILD='RISCV'
+        -DLLVM_DEFAULT_TARGET_TRIPLE=$1
         -DLLVM_OPTIMIZED_TABLEGEN=ON
         -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON
         -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON
+        -DLLVM_ENABLE_BINDINGS=OFF
+        -DLLVM_ENABLE_UNWIND_TABLES=OFF
+        -DLLVM_INCLUDE_BENCHMARKS=OFF
+        -DLLVM_INCLUDE_EXAMPLES=OFF
+        -DLLVM_INCLUDE_DOCS=OFF
     )
     echo "${OPTS[@]}"
 }
@@ -99,7 +105,6 @@ NEWLIB_CONFIGURE_OPTS() {
     OPTS=(
         --target=$1
         --prefix=${INSTALL_DIR}
-        --enable-multilib
         --enable-newlib-io-long-double
         --enable-newlib-io-long-long
         --enable-newlib-io-c99-formats
