@@ -77,6 +77,7 @@ class uvmt_cva6_base_test_c extends uvm_test;
          env_cfg.cov_model_enabled         == 0;
          env_cfg.force_disable_csr_checks  == 1;
          env_cfg.scoreboard_enabled        == 0;
+         env_cfg.zero_obi_stall            == 1;
       }
    }
 
