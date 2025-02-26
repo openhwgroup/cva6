@@ -74,7 +74,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand bit                      sw_int_supported;
 
    //OBI stall gnt and rvalid
-   rand bit zero_stall_sim;
+   rand bit                      zero_obi_stall;
 
    `uvm_object_utils_begin(uvme_cva6_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -90,6 +90,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
       `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
       `uvm_field_int (                         sw_int_supported            , UVM_DEFAULT          )
+      `uvm_field_int (                         zero_obi_stall              , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int (                         performance_mode            , UVM_DEFAULT          )
 
@@ -197,45 +198,44 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       }
    }
 
-   constraint obi_zero_stall_sim_dist_cons {
-      //zero_stall_sim dist { 0 :/ 2,  1 :/ 1}; // TODO: Randomize
-      zero_stall_sim == 1;
+   constraint obi_zero_stall_dist_cons {
+      zero_obi_stall dist { 0 :/ 9,  1 :/ 1};
    }
 
    constraint zero_stall_sim_cons {
-      if (zero_stall_sim) {
-         obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
-         obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
+      if (zero_obi_stall) {
+         obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
 
-         obi_memory_store_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
-         obi_memory_store_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
+         obi_memory_store_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_store_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
 
-         obi_memory_amo_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
-         obi_memory_amo_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
+         obi_memory_amo_cfg.drv_slv_gnt_mode      == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_amo_cfg.drv_slv_rvalid_mode   == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
 
-         obi_memory_load_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
-         obi_memory_load_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
+         obi_memory_load_cfg.drv_slv_gnt_mode     == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_load_cfg.drv_slv_rvalid_mode  == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
 
          //obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
          //obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
       }
+     else {
+         obi_memory_instr_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_instr_cfg.drv_slv_rvalid_mode != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+
+         obi_memory_store_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_store_cfg.drv_slv_rvalid_mode != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+
+         obi_memory_amo_cfg.drv_slv_gnt_mode      != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_amo_cfg.drv_slv_rvalid_mode   != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+
+         obi_memory_load_cfg.drv_slv_gnt_mode     != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_load_cfg.drv_slv_rvalid_mode  != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+
+         //obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         //obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+      }
    }
-
-   // TODO FIX
-   //constraint max_data_zero_instr_stall_sim_cons {
-      //if (max_data_zero_instr_stall) {
-         //obi_memory_instr_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         //obi_memory_instr_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
-
-         //obi_memory_data_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY;
-         //obi_memory_data_cfg.drv_slv_gnt_random_latency_min == 0;
-         //obi_memory_data_cfg.drv_slv_gnt_random_latency_max == 8;
-
-         //obi_memory_data_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY;
-         //obi_memory_data_cfg.drv_slv_rvalid_random_latency_min == 0;
-         //obi_memory_data_cfg.drv_slv_rvalid_random_latency_max == 8;
-      //}
-   //}
 
    constraint agent_cfg_cons {
       if (enabled) {
@@ -311,33 +311,33 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       //obi_memory_mmu_ptw_cfg.achk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth ;
       //obi_memory_mmu_ptw_cfg.rchk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth ;
 
-      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_min     <= 0;
-      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max     <= 10;
-      //soft obi_memory_instr_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_min  <= 0;
-      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max  <= 10;
-      //soft obi_memory_instr_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_min     == 2;
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max     == 5;
+      soft obi_memory_instr_cfg.drv_slv_gnt_fixed_latency          <= 5;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_min  == 2;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max  == 5;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_fixed_latency       <= 5;
 
-      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_min     <= 0;
-      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_max     <= 10;
-      //soft obi_memory_store_cfg.drv_slv_gnt_fixed_latency         <= 2;
-      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_min  <= 0;
-      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max  <= 10;
-      //soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency      <= 3;
+      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_min     == 2;
+      soft obi_memory_store_cfg.drv_slv_gnt_random_latency_max     == 5;
+      soft obi_memory_store_cfg.drv_slv_gnt_fixed_latency          <= 5;
+      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_min  == 2;
+      soft obi_memory_store_cfg.drv_slv_rvalid_random_latency_max  == 5;
+      soft obi_memory_store_cfg.drv_slv_rvalid_fixed_latency       <= 5;
 
-      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_min       <= 0;
-      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max       <= 10;
-      //soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency           <= 2;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_min    <= 0;
-      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max    <= 10;
-      //soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency        <= 3;
+      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_min       == 2;
+      soft obi_memory_amo_cfg.drv_slv_gnt_random_latency_max       == 5;
+      soft obi_memory_amo_cfg.drv_slv_gnt_fixed_latency            <= 5;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_min    == 2;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_random_latency_max    == 5;
+      soft obi_memory_amo_cfg.drv_slv_rvalid_fixed_latency         <= 5;
 
-      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_min      <= 0;
-      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max      <= 10;
-      //soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency          <= 2;
-      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_min   <= 0;
-      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max   <= 10;
-      //soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency       <= 3;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_min      == 2;
+      soft obi_memory_load_cfg.drv_slv_gnt_random_latency_max      == 5;
+      soft obi_memory_load_cfg.drv_slv_gnt_fixed_latency           <= 5;
+      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_min   == 2;
+      soft obi_memory_load_cfg.drv_slv_rvalid_random_latency_max   == 5;
+      soft obi_memory_load_cfg.drv_slv_rvalid_fixed_latency        <= 5;
 
       //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_min      <= 0;
       //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max      <= 10;
