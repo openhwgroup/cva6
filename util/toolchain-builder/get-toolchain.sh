@@ -123,9 +123,8 @@ setup_sources_from_git()
     # Check out the required revision as local branch (the shallow clone
     # leaves a "detached HEAD" state.)
     cd $SRC_DIR/$2
-    LOCAL_BRANCH="${3}-local"
-    { git branch | grep -q "$LOCAL_BRANCH" ; } || git checkout -b "$LOCAL_BRANCH"
-    git checkout "$LOCAL_BRANCH"
+    { git branch | grep -q "$3" ; } || git checkout -b "$3"
+    git checkout "$3"
     # Pull any updates available upstream (useful for 'master' branches).
     git pull origin "$3"
     cd -

@@ -136,6 +136,11 @@ build_gcc() {
     $SRC_DIR/$GCC_DIR/configure $(GCC_CONFIGURE_OPTS $1)
     make -j$NUM_JOBS
     make install
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$GCC_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$GCC_DIR" rev-parse HEAD)
+    echo "GCC $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -164,6 +169,11 @@ build_llvm() {
 EOF
     chmod +x $1-readelf
     chmod +x llvm-readelf
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$LLVM_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$LLVM_DIR" rev-parse HEAD)
+    echo "LLVM $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -183,6 +193,11 @@ build_newlib() {
     [ -f Makefile ] || CFLAGS_FOR_TARGET="$cflags" $SRC_DIR/$NEWLIB_DIR/configure $(NEWLIB_CONFIGURE_OPTS $1) $MULTILIB
     make -j$NUM_JOBS
     make install
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$NEWLIB_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$NEWLIB_DIR" rev-parse HEAD)
+    echo "Newlib $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -252,6 +267,9 @@ if [ -n "$(ls -A $INSTALL_DIR 2>/dev/null)" ]; then
         echo "Install directory $INSTALL_DIR is not empty!"
         echo "Use -y or --force-install if you want to skip this check"
         exit 1
+    else
+        rm -f $INSTALL_DIR/VERSION
+        echo "WARNING: Toolchain created with --force-install; may contain oudated files!" > $INSTALL_DIR/VERSION
     fi
 else
     mkdir -p "$INSTALL_DIR"
