@@ -306,7 +306,7 @@ module issue_stage
       .stall_issue_o,
       .rvfi_rs1_o              (rvfi_rs1_o),
       .rvfi_rs2_o              (rvfi_rs2_o),
-      .orig_instr_aes_bits(orig_instr_aes_bits)
+      .orig_instr_aes_bits     (orig_instr_aes_bits)
   );
 
 endmodule

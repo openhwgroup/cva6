@@ -920,7 +920,7 @@ module cva6
       .rvfi_commit_pointer_o(rvfi_commit_pointer),
       .rvfi_rs1_o           (rvfi_rs1),
       .rvfi_rs2_o           (rvfi_rs2),
-      .orig_instr_aes_bits(orig_instr_aes)
+      .orig_instr_aes_bits  (orig_instr_aes)
   );
 
   // ---------
