@@ -212,7 +212,7 @@ module frontend
   // function return -> RAS
   assign is_return = instruction_valid & (rvi_return | rvc_return);
   // unconditional jumps with known target -> immediately resolved
-  assign is_jump = instruction_valid & (rvi_jump | rvc_jump);
+  assign is_jump   = instruction_valid & (rvi_jump | rvc_jump);
   // unconditional jumps with unknown target -> BTB
   assign is_jalr   = instruction_valid & ~is_return & (rvi_jalr | rvc_jalr | rvc_jr);
 
