@@ -128,14 +128,7 @@ module frontend
   logic [CVA6Cfg.VLEN-1:0] replay_addr;
 
   logic [CVA6Cfg.VLEN-1:0]
-      npc_fetch_address,
-      vaddr_d,
-      obi_vaddr_q,
-      obi_vaddr_d,
-      obir_vaddr_q,
-      obir_vaddr_d,
-      vaddr_q,
-      fetch_vaddr_d;
+      npc_fetch_address, vaddr_d, obi_vaddr_q, obi_vaddr_d, vaddr_q, fetch_vaddr_d;
   logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
@@ -351,51 +344,132 @@ module frontend
 
   // Caches optimisation signals
 
-  typedef enum logic [1:0] {
-    WAIT_NEW_REQ,
-    WAIT_ATRANS,
-    WAIT_OBI,
-    WAIT_FLUSH
-  } custom_state_e;
-  custom_state_e custom_state_d, custom_state_q;
+  logic [CVA6Cfg.VLEN-1:0] vaddr_rvalid;
+  logic rvalid;
+  logic ex_rvalid;
+  logic pop_fetch;
 
-  // Address translation signals
-  logic atrans_req;
-  logic atrans_kill;
-  logic atrans_ready;
-  logic atrans_valid;
-  logic atrans_ex;
+  // in order to decouple the response interface from the request interface,
+  // we need a a buffer which can hold all inflight memory fetch requests
+  typedef struct packed {
+    logic [CVA6Cfg.VLEN-1:0] vaddr;  // scoreboard identifier
+  } fetchbuf_t;
 
-  typedef enum logic [1:0] {
-    IDLE,
-    READ,
-    KILL_ATRANS
-  } atrans_state_e;
-  atrans_state_e atrans_state_d, atrans_state_q;
+  logic [CVA6Cfg.PLEN-1:0] paddr;
 
-  // OBI signals
-  logic obi_a_req;
-  logic obi_a_ready;
+  // to support a throughput of one fetch per cycle, if the number of entries
+  // of the fetch buffer is 1, implement a fall-through mode. This however
+  // adds a combinational path between the request and response interfaces
+  // towards the cache.
+  localparam logic FETCHBUF_FALLTHROUGH = (CVA6Cfg.NrFetchBufEntries == 1);
+  localparam int unsigned REQ_ID_BITS = CVA6Cfg.NrFetchBufEntries > 1 ? $clog2(
+      CVA6Cfg.NrFetchBufEntries
+  ) : 1;
+
+  typedef logic [REQ_ID_BITS-1:0] fetchbuf_id_t;
+
+  logic [CVA6Cfg.NrFetchBufEntries-1:0] fetchbuf_valid_q, fetchbuf_valid_d;
+  logic [CVA6Cfg.NrFetchBufEntries-1:0] fetchbuf_flushed_q, fetchbuf_flushed_d;
+  fetchbuf_t [CVA6Cfg.NrFetchBufEntries-1:0] fetchbuf_q;
+  logic fetchbuf_empty, fetchbuf_full;
+  fetchbuf_id_t fetchbuf_free_index;
+  logic fetchbuf_w, fetchbuf_w_q;
+  fetchbuf_id_t fetchbuf_windex, fetchbuf_windex_q;
+  logic         fetchbuf_r;
+  fetchbuf_t    fetchbuf_rdata;
+  fetchbuf_id_t fetchbuf_rindex;
+  fetchbuf_id_t fetchbuf_last_id_q;
+
+  logic kill_req_d, kill_req_q;
+  logic ex_s1;
+
+
+  assign fetchbuf_full = &fetchbuf_valid_q && !(FETCHBUF_FALLTHROUGH && fetchbuf_r);
+
+
+  //
+  //  buffer of outstanding fetchs
+
+  //  write in the first available slot
+  generate
+    if (CVA6Cfg.NrFetchBufEntries > 1) begin : fetchbuf_free_index_multi_gen
+      lzc #(
+          .WIDTH(CVA6Cfg.NrFetchBufEntries),
+          .MODE (1'b0)                        // Count leading zeros
+      ) lzc_windex_i (
+          .in_i   (~fetchbuf_valid_q),
+          .cnt_o  (fetchbuf_free_index),
+          .empty_o(fetchbuf_empty)
+      );
+    end else begin : fetchbuf_free_index_single_gen
+      assign fetchbuf_free_index = 1'b0;
+    end
+  endgenerate
+
+  assign fetchbuf_windex = (FETCHBUF_FALLTHROUGH && fetchbuf_r) ? fetchbuf_rindex : fetchbuf_free_index;
+
+  always_comb begin : fetchbuf_comb
+    fetchbuf_flushed_d = fetchbuf_flushed_q;
+    fetchbuf_valid_d   = fetchbuf_valid_q;
+
+    //  In case of flush, raise the flushed flag in all slots.
+    if (flush_i) begin
+      fetchbuf_flushed_d = '1;
+    end
+    //  Free read entry (in the case of fall-through mode, free the entry
+    //  only if there is no pending fetch)
+    if (fetchbuf_r && (!FETCHBUF_FALLTHROUGH || !fetchbuf_w)) begin
+      fetchbuf_valid_d[fetchbuf_rindex] = 1'b0;
+    end
+    // Flush on bp_valid
+    if (bp_valid) begin
+      fetchbuf_flushed_d[fetchbuf_last_id_q] = 1'b1;
+    end
+    // Free on exception
+    //if (fetchbuf_w_q && ((CVA6Cfg.MmuPresent && ex_s1) || bp_valid) || kill_req_q) begin
+    //  fetchbuf_valid_d[fetchbuf_windex_q] = 1'b0;
+    //end
+    //  Track a new outstanding operation in the fetch buffer
+    if (fetchbuf_w) begin
+      fetchbuf_flushed_d[fetchbuf_windex] = 1'b0;
+      fetchbuf_valid_d[fetchbuf_windex]   = 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : fetchbuf_ff
+    if (!rst_ni) begin
+      fetchbuf_flushed_q <= '0;
+      fetchbuf_valid_q   <= '0;
+      fetchbuf_last_id_q <= '0;
+      fetchbuf_q         <= '0;
+    end else begin
+      fetchbuf_flushed_q <= fetchbuf_flushed_d;
+      fetchbuf_valid_q   <= fetchbuf_valid_d;
+      if (fetchbuf_w) begin
+        fetchbuf_last_id_q                <= fetchbuf_windex;
+        fetchbuf_q[fetchbuf_windex].vaddr <= vaddr_d;
+      end
+    end
+  end
+
+
 
   typedef enum logic [1:0] {
     TRANSPARENT,
-    REGISTRED,
-    OBI_A_KILLED
+    REGISTRED
   } obi_a_state_e;
   obi_a_state_e obi_a_state_d, obi_a_state_q;
 
-  // OBI signals
-  logic obi_r_req;
-  logic obi_r_req_killed;
-  logic data_valid_obi;
-  logic data_valid_under_ex;
 
-  typedef enum logic [1:0] {
-    OBI_R_IDLE,
-    OBI_R_PENDING,
-    OBI_R_KILLED
-  } obi_r_state_e;
-  obi_r_state_e obi_r_state_d, obi_r_state_q;
+  logic stall_obi, stall_translation;
+  logic data_req, data_rvalid;
+
+  assign stall_ni = spec_req_non_idempot;
+  assign stall_obi = (obi_a_state_q == REGISTRED);  //&& !obi_load_rsp_i.gnt;
+  assign stall_translation = CVA6Cfg.MmuPresent ? areq_o.fetch_req && (!arsp_i.fetch_valid) : 1'b0;
+  assign stall_instr_queue = instr_queue_ready;
+
+  assign ex_s1 = (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.valid);
 
   // We need to flush the cache pipeline if:
   // 1. We mispredicted
@@ -406,349 +480,142 @@ module frontend
   // also if we killed the first stage we also need to kill the second stage (inclusive flush)
   assign kill_s2 = kill_s1 | bp_valid;
 
-  assign fetch_req_o.vaddr = vaddr_d;
-  assign fetch_req_o.kill_req = kill_s1 | kill_s2 | atrans_ex;
+  assign fetch_req_o.kill_req = kill_req_q || kill_s2 || ex_s1;
 
-  // Common clocked process
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      custom_state_q <= WAIT_NEW_REQ;
-      atrans_state_q <= IDLE;
-      obi_a_state_q <= TRANSPARENT;
-      obi_r_state_q <= OBI_R_IDLE;
-      vaddr_q <= '0;
-      paddr_q <= '0;
-      obi_vaddr_q <= '0;
-      obir_vaddr_q <= '0;
-      paddr_is_cacheable_q <= '0;
-    end else begin
-      custom_state_q <= custom_state_d;
-      atrans_state_q <= atrans_state_d;
-      obi_a_state_q <= obi_a_state_d;
-      obi_r_state_q <= obi_r_state_d;
-      vaddr_q <= vaddr_d;
-      paddr_q <= paddr_d;
-      obi_vaddr_q <= obi_vaddr_d;
-      obir_vaddr_q <= obir_vaddr_d;
-      paddr_is_cacheable_q <= paddr_is_cacheable;
-    end
-  end
+  assign data_rvalid = fetchbuf_r && !fetchbuf_flushed_q[fetchbuf_rindex] && !kill_s2;
 
-  // custom protocol FSM (combi) 
+  //assign obi_vaddr_d = pop_fetch ?  : obi_vaddr_qvaddr_d;
+  assign vaddr_d = (pop_fetch || kill_s2) ? npc_fetch_address : vaddr_q;
+  assign fetch_req_o.vaddr = npc_fetch_address;
+  assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
+
+  assign data_req = (CVA6Cfg.MmuPresent ? fetchbuf_w_q && !ex_s1 && !bp_valid : fetchbuf_w);
 
   always_comb begin : p_fsm_common
-    // default assignment
-    custom_state_d = custom_state_q;
-    atrans_req = '0;
-    atrans_kill = '0;
-    obi_a_req = '0;
-    obi_vaddr_d = obi_vaddr_q;
-    fetch_req_o.req = '0;
-    data_valid_under_ex = '0;
-    if_ready = '0;
-    vaddr_d = vaddr_q;
+    // default assignmen
+    kill_req_d = 1'b0;
+    fetchbuf_w = 1'b0;
+    //response
+    vaddr_rvalid = npc_fetch_address;
+    rvalid    = 1'b0;
+    ex_rvalid = 1'b0;
+    pop_fetch = 1'b0; // release lsu_bypass fifo
 
-    unique case (custom_state_q)
-      WAIT_NEW_REQ: begin
-        vaddr_d = npc_fetch_address;
-        if ((obi_a_state_q == TRANSPARENT || obi_r_req == '1) && instr_queue_ready && atrans_ready && !kill_s2) begin
-          fetch_req_o.req = '1;
-          if (fetch_rsp_i.ready) begin
-            if_ready = '1;
-            atrans_req = '1;
-            custom_state_d = WAIT_ATRANS;
-          end
-        end
+    // REQUEST
+    //if (instr_queue_ready) begin
+    areq_o.fetch_req = 1'b1;
+    fetch_req_o.req = 1'b1;
+    if (!CVA6Cfg.MmuPresent || fetch_rsp_i.ready) begin
+      if (stall_ni || stall_obi || !instr_queue_ready || fetchbuf_full) begin
+        kill_req_d = CVA6Cfg.MmuPresent ? 1'b1 :  1'b0; // MmuPresent only : next cycle is s2 but we need to kill because not ready to sent tag
+      end else begin
+        fetchbuf_w  = !kill_s1 && !flush_i; // record request into outstanding fetch fifo and trigger OBI request
+        pop_fetch = 1'b1;  // release lsu_bypass fifo
       end
+    end
+    //end
+    // RETIRE FETCH
+    // we got an rvalid and it's corresponding request was not flushed
+    if (data_rvalid) begin
+      vaddr_rvalid = fetchbuf_q[fetchbuf_rindex].vaddr;
+      rvalid    = !bp_valid && !flush_i;
+      ex_rvalid = 1'b0;
+      // RETIRE EXCEPTION (low priority)
+    end else if (CVA6Cfg.MmuPresent && ex_s1) begin
+      vaddr_rvalid = CVA6Cfg.MmuPresent ? fetchbuf_q[fetchbuf_windex_q].vaddr : npc_fetch_address;
+      rvalid    = !bp_valid && !flush_i;
+      ex_rvalid = 1'b1;
+      pop_fetch = 1'b1; // release lsu_bypass fifo
+    end
 
-      WAIT_ATRANS: begin
-        if (atrans_valid) begin
-          if (kill_s2) begin
-            vaddr_d = npc_fetch_address;
-            if (instr_queue_ready && atrans_ready && !kill_s1) begin
-              fetch_req_o.req = '1;
-              if (fetch_rsp_i.ready) begin
-                if_ready   = '1;
-                atrans_req = '1;
-              end else begin
-                custom_state_d = WAIT_NEW_REQ;
-              end
-            end else begin
-              custom_state_d = WAIT_NEW_REQ;
-            end
-          end else if (atrans_ex) begin
-            obi_vaddr_d = vaddr_d;
-            data_valid_under_ex = '1;
-            custom_state_d = WAIT_FLUSH;
-          end else if (obi_a_ready && !spec_req_non_idempot) begin
-            obi_a_req = '1;
-            obi_vaddr_d = vaddr_d;
-            vaddr_d = npc_fetch_address;
-            if (obi_r_req && instr_queue_ready && atrans_ready && !kill_s1) begin
-              fetch_req_o.req = '1;
-              if (fetch_rsp_i.ready) begin
-                if_ready   = '1;
-                atrans_req = '1;
-              end else begin
-                custom_state_d = WAIT_NEW_REQ;
-              end
-            end else begin
-              custom_state_d = WAIT_NEW_REQ;
-            end
-          end else begin
-            custom_state_d = WAIT_OBI;
-          end
-        end
-        if (kill_s2) begin
-          atrans_kill = '1;
-          vaddr_d = npc_fetch_address;
-          if (instr_queue_ready && atrans_ready && !kill_s1) begin
-            fetch_req_o.req = '1;
-            if (fetch_rsp_i.ready) begin
-              if_ready   = '1;
-              atrans_req = '1;
-            end else begin
-              custom_state_d = WAIT_NEW_REQ;
-            end
-          end else begin
-            custom_state_d = WAIT_NEW_REQ;
-          end
-        end
-      end
-
-      WAIT_OBI: begin
-        if (kill_s2) begin
-          vaddr_d = npc_fetch_address;
-          if ((obi_a_state_q == TRANSPARENT || obi_r_req == '1) && instr_queue_ready && atrans_ready && !kill_s1) begin
-            fetch_req_o.req = '1;
-            if (fetch_rsp_i.ready) begin
-              if_ready = '1;
-              atrans_req = '1;
-              custom_state_d = WAIT_ATRANS;
-            end else begin
-              custom_state_d = WAIT_NEW_REQ;
-            end
-          end else begin
-            custom_state_d = WAIT_NEW_REQ;
-          end
-        end else if (obi_a_ready && !spec_req_non_idempot) begin
-          obi_a_req = '1;
-          obi_vaddr_d = vaddr_d;
-          vaddr_d = npc_fetch_address;
-          if (obi_r_req && instr_queue_ready && atrans_ready && !kill_s1) begin
-            fetch_req_o.req = '1;
-            if (fetch_rsp_i.ready) begin
-              if_ready = '1;
-              atrans_req = '1;
-              custom_state_d = WAIT_ATRANS;
-            end else begin
-              custom_state_d = WAIT_NEW_REQ;
-            end
-          end else begin
-            custom_state_d = WAIT_NEW_REQ;
-          end
-        end
-      end
-
-      WAIT_FLUSH: begin
-        if (kill_s1) begin
-          custom_state_d = WAIT_NEW_REQ;
-        end
-      end
-
-      default: begin
-        custom_state_d = WAIT_NEW_REQ;
-      end
-
-    endcase
   end
 
-  // Address translation protocol FSM (combi)
+  // ---------------
+  // Retire Load
+  // ---------------
+  assign fetchbuf_rindex = (CVA6Cfg.NrFetchBufEntries > 1) ? fetchbuf_id_t'(obi_fetch_rsp_i.r.rid) : 1'b0;
+  assign fetchbuf_rdata = fetchbuf_q[fetchbuf_rindex];
 
-  always_comb begin : p_fsm_atrans
-    // default assignment
-    atrans_state_d = atrans_state_q;
-    areq_o.fetch_req = 1'b0;
-    atrans_ready = 1'b0;
-    atrans_valid = 1'b0;
-    paddr_d = paddr_q;
-    atrans_ex = 1'b0;
+  //  read the pending fetch buffer
+  assign fetchbuf_r = obi_fetch_rsp_i.rvalid;
 
-    unique case (atrans_state_q)
-      IDLE: begin
-        atrans_ready = 1'b1;
-        if (atrans_req) begin
-          atrans_state_d = READ;
-        end
-      end
 
-      READ: begin
-        areq_o.fetch_req = '1;
-        if (arsp_i.fetch_valid) begin
-          atrans_ready = 1'b1;
-          if (!atrans_kill) begin
-            atrans_valid = 1'b1;
-            paddr_d = arsp_i.fetch_paddr;
-            atrans_ex = arsp_i.fetch_exception.valid;
-          end
-          if (!atrans_req) begin
-            atrans_state_d = IDLE;
-          end
-        end else if (atrans_kill) begin
-          atrans_state_d = KILL_ATRANS;
-        end
-      end
+  //default obi state registred
+  assign obi_fetch_req_o.reqpar = !obi_fetch_req_o.req;
+  assign obi_fetch_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr : paddr_q;
+  assign obi_fetch_req_o.a.we = '0;
+  assign obi_fetch_req_o.a.be = '1;
+  assign obi_fetch_req_o.a.wdata = '0;
+  assign obi_fetch_req_o.a.aid = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
+  assign obi_fetch_req_o.a.a_optional.auser = '0;
+  assign obi_fetch_req_o.a.a_optional.wuser = '0;
+  assign obi_fetch_req_o.a.a_optional.atop = '0;
+  assign obi_fetch_req_o.a.a_optional.memtype[0] = '0;
+  assign obi_fetch_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
+  assign obi_fetch_req_o.a.a_optional.mid = '0;
+  assign obi_fetch_req_o.a.a_optional.prot = '0;
+  assign obi_fetch_req_o.a.a_optional.dbg = '0;
+  assign obi_fetch_req_o.a.a_optional.achk = '0;
 
-      KILL_ATRANS: begin
-        areq_o.fetch_req = '1;
-        if (arsp_i.fetch_valid) begin
-          atrans_ready = 1'b1;
-          if (atrans_req) begin
-            atrans_state_d = READ;
-          end else begin
-            atrans_state_d = IDLE;
-          end
-        end
-      end
+  assign obi_fetch_req_o.rready = '1;  //always ready
+  assign obi_fetch_req_o.rreadypar = '0;
 
-      default: begin
-        atrans_state_d = IDLE;
-      end
-    endcase
-  end
 
-  // OBI CHANNEL A protocol FSM (combi)
+
 
   always_comb begin : p_fsm_obi_a
     // default assignment
     obi_a_state_d = obi_a_state_q;
-    obi_a_ready = 1'b0;
-    obi_r_req = '0;
-    obi_r_req_killed = '0;
-    obir_vaddr_d = obir_vaddr_q;
-    //default obi state registred
-    obi_fetch_req_o.req    = 1'b1;
-    obi_fetch_req_o.reqpar = 1'b0;
-    obi_fetch_req_o.a.addr = paddr_q;
-    obi_fetch_req_o.a.we   = '0;
-    obi_fetch_req_o.a.be   = '1;
-    obi_fetch_req_o.a.wdata= '0;
-    obi_fetch_req_o.a.aid  = '0;
-    obi_fetch_req_o.a.a_optional.auser= '0;
-    obi_fetch_req_o.a.a_optional.wuser= '0;
-    obi_fetch_req_o.a.a_optional.atop= '0;
-    obi_fetch_req_o.a.a_optional.memtype[0]='0;
-    obi_fetch_req_o.a.a_optional.memtype[1]=paddr_is_cacheable_q;
-    obi_fetch_req_o.a.a_optional.mid= '0;
-    obi_fetch_req_o.a.a_optional.prot= '0;
-    obi_fetch_req_o.a.a_optional.dbg= '0;
-    obi_fetch_req_o.a.a_optional.achk= '0;
+    obi_fetch_req_o.req    = 1'b0;
 
     unique case (obi_a_state_q)
       TRANSPARENT: begin
-        obi_a_ready = (obi_r_state_q == OBI_R_IDLE);
-        if (obi_a_req) begin
-          if (obi_fetch_rsp_i.gnt) begin
-            obi_r_req = '1;  //push pending request
-            obir_vaddr_d = obi_vaddr_d;
-          end else begin
+        if (data_req) begin
+          obi_fetch_req_o.req = 1'b1;
+          if (!obi_fetch_rsp_i.gnt) begin
             obi_a_state_d = REGISTRED;
           end
         end
-        obi_fetch_req_o.req    = obi_a_req;
-        obi_fetch_req_o.reqpar = !obi_a_req;
-        obi_fetch_req_o.a.addr = paddr_d;
-        obi_fetch_req_o.a.we   = '0;
-        obi_fetch_req_o.a.be   = '1;
-        obi_fetch_req_o.a.wdata= '0;
-        obi_fetch_req_o.a.aid  = '0;
-        obi_fetch_req_o.a.a_optional.auser= '0;
-        obi_fetch_req_o.a.a_optional.wuser= '0;
-        obi_fetch_req_o.a.a_optional.atop= '0;
-        obi_fetch_req_o.a.a_optional.memtype[0]='0;
-        obi_fetch_req_o.a.a_optional.memtype[1]=paddr_is_cacheable;
-        obi_fetch_req_o.a.a_optional.mid= '0;
-        obi_fetch_req_o.a.a_optional.prot= '0;
-        obi_fetch_req_o.a.a_optional.dbg= '0;
-        obi_fetch_req_o.a.a_optional.achk= '0;
       end
 
       REGISTRED: begin
+        obi_fetch_req_o.req = 1'b1;
         if (obi_fetch_rsp_i.gnt) begin
-          obi_r_req = '1;  //push pending request
-          obi_r_req_killed = kill_s1;  //push pending killed request
-          obir_vaddr_d = obi_vaddr_q;
-          obi_a_state_d = TRANSPARENT;
-        end else if (kill_s1) begin
-          obi_a_state_d = OBI_A_KILLED;
-        end
-      end
-
-      OBI_A_KILLED: begin
-        if (obi_fetch_rsp_i.gnt) begin
-          obi_r_req = '1;  //push pending killed request
-          obi_r_req_killed = '1;  //push pending killed request
-          obir_vaddr_d = obi_vaddr_q;
           obi_a_state_d = TRANSPARENT;
         end
       end
 
       default: begin
+        // we should never get here
         obi_a_state_d = TRANSPARENT;
       end
     endcase
   end
 
-  // OBI CHANNEL R protocol FSM (combi)
-
-  always_comb begin : p_fsm_obi_r
-    // default assignment
-    obi_r_state_d  = obi_r_state_q;
-    data_valid_obi = '0;
-
-    unique case (obi_r_state_q)
-      OBI_R_IDLE: begin
-        if (obi_r_req) begin
-          if (kill_s1 || obi_r_req_killed) begin
-            obi_r_state_d = OBI_R_KILLED;
-          end else begin
-            obi_r_state_d = OBI_R_PENDING;
-          end
-        end
+  // latch physical address for the tag cycle (one cycle after applying the index)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      obi_a_state_q <= TRANSPARENT;
+      paddr_q <= '0;
+      paddr_is_cacheable_q <= '0;
+      kill_req_q <= '0;
+      fetchbuf_windex_q <= '0;
+      fetchbuf_w_q <= '0;
+      vaddr_q <= '0;
+    end else begin
+      if (obi_a_state_q == TRANSPARENT) begin
+        paddr_q <= paddr;
+        paddr_is_cacheable_q <= paddr_is_cacheable;
       end
-
-      OBI_R_PENDING: begin
-        if (obi_fetch_req_o.rready && obi_fetch_rsp_i.rvalid) begin
-          data_valid_obi = !kill_s1;
-          if (!obi_r_req) begin
-            obi_r_state_d = OBI_R_IDLE;
-          end
-        end else if (kill_s1) begin
-          obi_r_state_d = OBI_R_KILLED;
-        end
-      end
-
-      OBI_R_KILLED: begin
-        if (obi_fetch_req_o.rready && obi_fetch_rsp_i.rvalid) begin
-          if (obi_r_req) begin
-            if (!kill_s1) begin
-              obi_r_state_d = OBI_R_PENDING;
-            end
-          end else begin
-            obi_r_state_d = OBI_R_IDLE;
-          end
-        end
-      end
-
-      default: begin
-        obi_r_state_d = OBI_R_IDLE;
-      end
-    endcase
+      obi_a_state_q <= obi_a_state_d;
+      kill_req_q <= kill_req_d;
+      //if (!ex_s1) begin
+      fetchbuf_windex_q <= fetchbuf_windex;
+      fetchbuf_w_q <= fetchbuf_w;
+      //end
+      vaddr_q <= vaddr_d;
+    end
   end
-
-  //always ready to get data
-  assign obi_fetch_req_o.rready = '1;
-  assign obi_fetch_req_o.rreadypar = !obi_fetch_req_o.rready;
 
   // Update Control Flow Predictions
   bht_update_t bht_update;
@@ -805,7 +672,7 @@ module frontend
       npc_d = predict_address;
     end
     // 1. Default assignment
-    if (if_ready) begin
+    if (pop_fetch) begin
       npc_d = {
         fetch_address[CVA6Cfg.VLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] + 1, {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
       };
@@ -849,10 +716,9 @@ module frontend
   logic fetch_valid_d;
 
   // re-align the cache line
-  assign fetch_data = data_valid_under_ex ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
-  assign fetch_valid_d = data_valid_under_ex || data_valid_obi;
-  assign fetch_vaddr_d = data_valid_under_ex ? vaddr_q : obir_vaddr_q;
-
+  assign fetch_data = ex_rvalid ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
+  assign fetch_valid_d = rvalid;
+  assign fetch_vaddr_d = vaddr_rvalid;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -926,7 +792,7 @@ module frontend
   //and can be read at the same cycle.
   //Same for BHT
   assign vpc_btb = (CVA6Cfg.FpgaEn) ? vaddr_q : fetch_vaddr_q;
-  assign vpc_bht = (CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn && data_valid_obi) ? vaddr_q : fetch_vaddr_q;
+  assign vpc_bht = (CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn && fetch_valid_d) ? vaddr_q : fetch_vaddr_q;
 
   if (CVA6Cfg.BTBEntries == 0) begin
     assign btb_prediction = '0;
