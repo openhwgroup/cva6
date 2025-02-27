@@ -205,18 +205,16 @@ module frontend
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_return;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_jalr;
 
-  for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-    // branch history table -> BHT
-    assign is_branch[i] = instruction_valid[i] & (rvi_branch[i] | rvc_branch[i]);
-    // function calls -> RAS
-    assign is_call[i] = instruction_valid[i] & (rvi_call[i] | rvc_call[i]);
-    // function return -> RAS
-    assign is_return[i] = instruction_valid[i] & (rvi_return[i] | rvc_return[i]);
-    // unconditional jumps with known target -> immediately resolved
-    assign is_jump[i] = instruction_valid[i] & (rvi_jump[i] | rvc_jump[i]);
-    // unconditional jumps with unknown target -> BTB
-    assign is_jalr[i] = instruction_valid[i] & ~is_return[i] & (rvi_jalr[i] | rvc_jalr[i] | rvc_jr[i]);
-  end
+  // branch history table -> BHT
+  assign is_branch = instruction_valid & (rvi_branch | rvc_branch);
+  // function calls -> RAS
+  assign is_call   = instruction_valid & (rvi_call | rvc_call);
+  // function return -> RAS
+  assign is_return = instruction_valid & (rvi_return | rvc_return);
+  // unconditional jumps with known target -> immediately resolved
+  assign is_jump   = instruction_valid & (rvi_jump | rvc_jump);
+  // unconditional jumps with unknown target -> BTB
+  assign is_jalr   = instruction_valid & ~is_return & (rvi_jalr | rvc_jalr | rvc_jr);
 
   // taken/not taken
   always_comb begin
