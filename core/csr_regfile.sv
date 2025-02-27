@@ -1734,7 +1734,7 @@ module csr_regfile
           // index is calculated using PMPADDR0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
+          if (CVA6Cfg.NrPMPEntries == 0 || (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR))) begin
             pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
           end
         end
@@ -2701,7 +2701,7 @@ module csr_regfile
   // write logic pmp
   always_comb begin : write
     for (int i = 0; i < 64; i++) begin
-      if (i < CVA6Cfg.NrPMPEntries) begin
+      if (CVA6Cfg.NrPMPEntries != 0 && i < CVA6Cfg.NrPMPEntries) begin
         if (!CVA6Cfg.PMPEntryReadOnly[i]) begin
           // PMP locked logic is handled in the CSR write process above
           pmpcfg_next[i] = pmpcfg_d[i];
