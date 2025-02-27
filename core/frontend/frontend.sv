@@ -208,7 +208,7 @@ module frontend
   // branch history table -> BHT
   assign is_branch = instruction_valid & (rvi_branch | rvc_branch);
   // function calls -> RAS
-  assign is_call = instruction_valid & (rvi_call | rvc_call);
+  assign is_call   = instruction_valid & (rvi_call | rvc_call);
   // function return -> RAS
   assign is_return = instruction_valid & (rvi_return | rvc_return);
   // unconditional jumps with known target -> immediately resolved
