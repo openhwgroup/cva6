@@ -214,7 +214,7 @@ module frontend
   // unconditional jumps with known target -> immediately resolved
   assign is_jump = instruction_valid & (rvi_jump | rvc_jump);
   // unconditional jumps with unknown target -> BTB
-  assign is_jalr = instruction_valid & ~is_return & (rvi_jalr | rvc_jalr | rvc_jr);
+  assign is_jalr   = instruction_valid & ~is_return & (rvi_jalr | rvc_jalr | rvc_jr);
 
   // taken/not taken
   always_comb begin
