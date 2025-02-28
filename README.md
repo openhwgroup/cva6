@@ -408,7 +408,7 @@ Info : Listening on port 4444 for telnet connections
 Then you will be able to either connect through `telnet` or with `gdb`:
 
 ```
-riscv64-unknown-elf-gdb /path/to/elf
+risc-none-elf-gdb /path/to/elf
 
 (gdb) target remote localhost:3333
 (gdb) load

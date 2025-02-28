@@ -100,8 +100,8 @@ module cva6_mmu
 
     // PMP
 
-    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
-    input logic           [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0]                   pmpcfg_i,
+    input logic           [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
 
   // memory management, pte for cva6
@@ -495,6 +495,7 @@ module cva6_mmu
   logic lsu_is_store_n, lsu_is_store_q;
   logic dtlb_hit_n, dtlb_hit_q;
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
+  exception_t misaligned_ex_n, misaligned_ex_q;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
@@ -509,9 +510,10 @@ module cva6_mmu
     dtlb_hit_n = dtlb_lu_hit;
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
+    misaligned_ex_n = misaligned_ex_i;
 
     lsu_valid_o = lsu_req_q;
-    lsu_exception_o = misaligned_ex_i;
+    lsu_exception_o = misaligned_ex_q;
 
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal to bit [CVA6Cfg.SV]
     canonical_addr_check = (lsu_req_i && en_ld_st_translation_i &&
@@ -736,6 +738,7 @@ module cva6_mmu
       dtlb_is_page_q  <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
+      misaligned_ex_q <= '0;
     end else begin
       lsu_vaddr_q    <= lsu_vaddr_n;
       lsu_req_q      <= lsu_req_n;
@@ -749,6 +752,7 @@ module cva6_mmu
         hs_ld_st_inst_q <= hs_ld_st_inst_n;
         dtlb_gpte_q     <= dtlb_gpte_n;
         lsu_gpaddr_q    <= lsu_gpaddr_n;
+        misaligned_ex_q <= misaligned_ex_n;
       end
     end
   end
