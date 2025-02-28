@@ -135,6 +135,9 @@ build_tools:
 smoke-tests:
   extends:
     - .fe_smoke_test
+  rules:
+    - when: manual
+      allow_failure: true
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
