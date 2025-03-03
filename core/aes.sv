@@ -1,5 +1,6 @@
-module aes_fu
+module aes
   import ariane_pkg::*;
+  import aes_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type fu_data_t = logic
