@@ -1,6 +1,6 @@
 /// This package contains `functions` for AES instructions used in Scalar Cryptography (ZKN).
 package aes_pkg;
-  
+
   // ----------------------
   // AES functions
   // ----------------------
