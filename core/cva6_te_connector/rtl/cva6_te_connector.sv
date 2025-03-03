@@ -12,6 +12,9 @@
 // Author:  Umberto Laghi
 // Contact: umberto.laghi@studio.unibo.it
 // Github:  @ubolakes
+// Contributors: 
+// Darshak Sheladiya, SYSGO GmbH
+// Maxime COLSON, Thales
 
 /* TOP LEVEL MODULE */
 
@@ -28,7 +31,7 @@ module cva6_te_connector #(
     input logic [NRET-1:0] valid_i,  // commit_ack in cva6
     // necessary inputs from scoreboard_entry_t
     input logic [NRET-1:0][connector_pkg::XLEN-1:0] pc_i,
-    input connector_pkg::fu_op [NRET-1:0] op_i,
+    input ariane_pkg::fu_op [NRET-1:0] op_i,
     input logic [NRET-1:0] is_compressed_i,
     // necessary inputs from bp_resolve_t
     input logic branch_valid_i,

@@ -12,6 +12,9 @@
 // Author:  Umberto Laghi
 // Contact: umberto.laghi@studio.unibo.it
 // Github:  @ubolakes
+// Contributors: 
+// Darshak Sheladiya, SYSGO GmbH
+// Maxime COLSON, Thales
 
 /* ITYPE DETECTOR */
 /*
@@ -19,13 +22,12 @@ it produces the type of the instruction
 */
 
 module itype_detector (
-    input logic                valid_i,
-    input logic                exception_i,
-    input logic                interrupt_i,
-    input connector_pkg::fu_op op_i,
-    input logic                branch_taken_i,
-
-    output logic [connector_pkg::ITYPE_LEN-1:0] itype_o
+    input  logic                                            valid_i,
+    input  logic                                            exception_i,
+    input  logic                                            interrupt_i,
+    input  ariane_pkg::fu_op                                op_i,
+    input  logic                                            branch_taken_i,
+    output logic             [connector_pkg::ITYPE_LEN-1:0] itype_o
 );
 
   // internal signals
@@ -39,24 +41,29 @@ module itype_detector (
   // assignments
   assign exception = exception_i;
   assign interrupt = interrupt_i;  // no need to have an inst committed
-  assign eret = ( op_i == connector_pkg::MRET || 
-                    op_i == connector_pkg::SRET ||
-                    op_i == connector_pkg::DRET );
-  assign nontaken_branch = (  op_i == connector_pkg::EQ ||
-                                op_i == connector_pkg::NE ||
-                                op_i == connector_pkg::LTS ||
-                                op_i == connector_pkg::GES ||
-                                op_i == connector_pkg::LTU ||
-                                op_i == connector_pkg::GEU) && 
-                                ~branch_taken_i;
-  assign taken_branch = ( op_i == connector_pkg::EQ ||
-                            op_i == connector_pkg::NE ||
-                            op_i == connector_pkg::LTS ||
-                            op_i == connector_pkg::GES ||
-                            op_i == connector_pkg::LTU ||
-                            op_i == connector_pkg::GEU) &&
+
+
+
+
+  assign eret = (op_i == ariane_pkg::MRET || op_i == ariane_pkg::SRET || op_i == ariane_pkg::DRET);
+
+  assign nontaken_branch = (  op_i == ariane_pkg::EQ ||
+                                op_i == ariane_pkg::NE ||
+                                op_i == ariane_pkg::LTS ||
+                                op_i == ariane_pkg::GES ||
+                                op_i == ariane_pkg::LTU ||
+                                op_i == ariane_pkg::GEU) &&
+                                 ~branch_taken_i;
+
+  assign taken_branch = ( op_i == ariane_pkg::EQ ||
+                            op_i == ariane_pkg::NE ||
+                            op_i == ariane_pkg::LTS ||
+                            op_i == ariane_pkg::GES ||
+                            op_i == ariane_pkg::LTU ||
+                            op_i == ariane_pkg::GEU) &&
                             branch_taken_i;
-  assign updiscon = op_i == connector_pkg::JALR;
+
+  assign updiscon = op_i == ariane_pkg::JALR;
 
   // assigning the itype
   always_comb begin

@@ -12,6 +12,9 @@
 // Author:  Umberto Laghi
 // Contact: umberto.laghi@studio.unibo.it
 // Github:  @ubolakes
+// Contributors: 
+// Darshak Sheladiya, SYSGO GmbH
+// Maxime COLSON, Thales
 
 /* FSM */
 /*
