@@ -737,7 +737,7 @@ module ex_stage
       aes #(
           .CVA6Cfg  (CVA6Cfg),
           .fu_data_t(fu_data_t)
-      ) aes_fu_i (
+      ) aes_i (
           .clk_i,
           .rst_ni,
           .fu_data_i     (one_cycle_data),
