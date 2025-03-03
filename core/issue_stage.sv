@@ -172,6 +172,7 @@ module issue_stage
   typedef struct packed {
     logic [CVA6Cfg.NR_SB_ENTRIES-1:0] still_issued;
     logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer;
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer;
     writeback_t [CVA6Cfg.NrWbPorts-1:0] wb;
     scoreboard_entry_t [CVA6Cfg.NR_SB_ENTRIES-1:0] sbe;
   } forwarding_t;
