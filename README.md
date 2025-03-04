@@ -4,7 +4,7 @@ This repository contains a cycle-accurate performance model of CVA6 control-path
 
 It was developed to explore microarchitecture changes in CVA6 before implementing them.
 
-CVA6 repository can be found here: https://github.com/openhwgroup/cva6
+To cite this model, please head to the end of this document.
 
 
 ## Getting started
@@ -55,3 +55,25 @@ The `display_scores` function is meant to print a 3D plot if you have `matplotli
 | `cycle_diff.py` | Calculates duration of each instruction in an RVFI trace |
 | `isa.py`        | Module to create Python objects from RISC-V instructions |
 | `model.py`      | The CVA6 performance model                               |
+
+
+## Citing
+
+```bibtex
+@inproceedings{cf24,
+   author = {Allart, C\^{o}me and Coulon, Jean-Roch and Sintzoff, Andr\'{e} and Potin, Olivier and Rigaud, Jean-Baptiste},
+   title = {Using a Performance Model to Implement a Superscalar CVA6},
+   year = {2024},
+   isbn = {9798400704925},
+   publisher = {Association for Computing Machinery},
+   url = {https://doi.org/10.1145/3637543.3652871},
+   doi = {10.1145/3637543.3652871},
+   abstract = {A performance model of CVA6 RISC-V processor is built to evaluate performance-related modifications before implementing them in RTL. Its accuracy is 99.2\% on CoreMark. This model is used to evaluate a superscalar feature for CVA6. During design phase, the model helped detecting and fixing performance bugs. The superscalar feature resulted in a CVA6 performance improvement of 40\% on CoreMark.},
+   booktitle = {Proceedings of the 21st ACM International Conference on Computing Frontiers: Workshops and Special Sessions},
+   pages = {43–46},
+   numpages = {4},
+   keywords = {CVA6, Cycle-Based Model, Multi-Issue, Performance, RISC-V, Superscalar},
+   location = {Ischia, Italy},
+   series = {CF '24 Companion}
+}
+```
