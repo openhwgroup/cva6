@@ -57,10 +57,13 @@ cflags=(
         -DNOPRINT
 )
 
+export DV_OPTS="$DV_OPTS --issrun_opts=+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+
 python3 cva6.py \
         --target $DV_TARGET \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "$src0" \
         --sv_seed 1 \
-        --gcc_opts "${srcA[*]} ${cflags[*]}"
+        --gcc_opts "${srcA[*]} ${cflags[*]}" \
+        $DV_OPTS
