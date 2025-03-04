@@ -67,10 +67,10 @@ module cva6_te_connector #(
   connector_pkg::uop_entry_s uop_entry_mux;
   logic [connector_pkg::ITYPE_LEN-1:0] itype[NRET];
   // FIFOs management
-  logic pop;  // signal to pop FIFOs
+  logic pop[NRET-1:0];  // signal to pop FIFOs
   logic empty[NRET-1:0];  // signal used to enable counter
   logic full[NRET-1:0];
-  logic push_enable;
+  logic push_enable[NRET-1:0];
   // mux arbiter management
   logic [$clog2(NRET)-1:0] mux_arb_val;
   logic clear_mux_arb;
@@ -110,10 +110,15 @@ module cva6_te_connector #(
   logic [       connector_pkg::XLEN-1:0]                                 iaddr_d;
 
   // assignments
-  assign pop =    (mux_arb_val == NRET-1 ||
+  assign pop[0] =    (mux_arb_val == 0 ||
                 uop_entry_o[0].itype == 1 ||
                 uop_entry_o[0].itype == 2) &&
                 !empty[0];
+  assign pop[1] =    (mux_arb_val == 1 ||
+                uop_entry_o[1].itype == 1 ||
+                uop_entry_o[1].itype == 2) &&
+                !empty[1];
+
   assign clear_mux_arb =  (mux_arb_val == NRET-1 ||
                         uop_entry_o[0].itype == 1 ||
                         uop_entry_o[0].itype == 2) &&
@@ -156,9 +161,9 @@ module cva6_te_connector #(
         .empty_o   (empty[i]),
         .usage_o   (),
         .data_i    (uop_entry_i[i]),
-        .push_i    (push_enable),
+        .push_i    (push_enable[i] && !full[i]),
         .data_o    (uop_entry_o[i]),
-        .pop_i     (pop)
+        .pop_i     (pop[i])
     );
   end
 
@@ -267,7 +272,7 @@ module cva6_te_connector #(
       uop_entry_i[i].compressed = '0;
       uop_entry_i[i].priv = '0;
     end
-    push_enable = '0;
+
 
     // populating uop FIFO entries
     for (int i = 0; i < NRET; i++) begin
@@ -276,6 +281,7 @@ module cva6_te_connector #(
       uop_entry_i[i].itype = itype[i];
       uop_entry_i[i].compressed = is_compressed_i[i];
       uop_entry_i[i].priv = priv_lvl_i;
+      push_enable[i] = '0;
     end
 
     // enabling push in input FIFOs
@@ -283,7 +289,7 @@ module cva6_te_connector #(
       if ((uop_entry_i[i].itype == 1 || uop_entry_i[i].itype == 2) ||
             ((uop_entry_i[i].itype == 0 || uop_entry_i[i].itype > 2) && 
             uop_entry_i[i].valid)) begin
-        push_enable = 1;
+        push_enable[i] = 1;
       end
     end
 
@@ -373,65 +379,6 @@ module cva6_te_connector #(
 
 
   assign time_o = time_i;
-
-  //*************************** TIP Signal dumping **************************//
-
-  int fd = $fopen("./tip_port_0_signals_dump.txt", "w");
-  int fj = $fopen("./tip_port_1_signals_dump.txt", "w");
-
-  always @(posedge valid_o[0]) begin
-
-    if (fd) begin
-      $fwrite(
-          fd,
-          "valid_o[0]   = 0x%h, iaddr_o = 0x%h, iretire_o[0] = 0x%h,itype_o[0] = 0%h,ilastsize_o[0]= 0%h,cause_o[0]=0%h,tval_o[0]=0%h,priv_o[0]=0%h\n",
-          valid_o[0], iaddr_o[0], iretire_o[0], itype_o[0], ilastsize_o[0], cause_o[0], tval_o[0],
-          priv_o[0]);
-    end else begin
-      $display("Error opening the file.");
-    end
-  end
-
-
-
-  always @(posedge valid_o[1]) begin
-
-    if (fj) begin
-      $fwrite(
-          fd,
-          "valid_o[1]   = 0x%h, iaddr_o = 0x%h, iretire_o[1] = 0x%h,itype_o[1] = 0%h,ilastsize_o[1]= 0%h,cause_o[1]=0%h,tval_o[1]=0%h,priv_o[1]=0%h\n",
-          valid_o[1], iaddr_o[1], iretire_o[1], itype_o[1], ilastsize_o[1], cause_o[1], tval_o[1],
-          priv_o[1]);
-    end else begin
-      $display("Error opening the file.");
-    end
-  end
-
-
-  int fm = $fopen("./cva6_signals_dump.txt", "w");
-
-  always @(posedge valid_i[0]) begin
-
-    if (fm) begin
-      $fwrite(
-          fm,
-          "valid_i[0]   = 0x%h, valid_i[1]   = 0x%h, pc_i[0] = 0x%h, pc_i[1] = 0x%h, op_i[0] = 0x%h, is_compressed_i[0] = 0%h, branch_valid_i= 0%h, is_taken_i=0%h\n",
-          valid_i[0], valid_i[1], pc_i[0], pc_i[1], op_i[0], is_compressed_i[0], branch_valid_i,
-          is_taken_i);
-    end else begin
-      $display("Error opening the file.");
-    end
-  end
-
-  //    always@(valid_o[1] == 1) begin
-
-  //           if (fj) begin
-  //                   $fwrite(fd, "valid_o[1]   = 0x%h, iretire_o[1] = 0x%h,itype_o[1] = 0%h\n", valid_o[1], iretire_o[1], itype_o[1]);
-  //           end else begin
-  //               $display("Error opening the file.");
-  //           end
-  //     end
-
 
 
 endmodule
