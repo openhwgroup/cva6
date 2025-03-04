@@ -19,12 +19,12 @@ iterations = None
 # Keep it up-to-date with compiler version and core performance improvements
 # Will fail if the number of cycles is different from this one
 valid_cycles = {
-    "dhrystone_dual": 18935,
-    "dhrystone_single": 24127,
-    "coremark_dual": 1001191,
-    "coremark_single": 1300030,
-    "dhrystone_cv32a65x": 31976,
-    "dhrystone_cv32a60x": 39449,
+    "dhrystone_dual": 21226,
+    "dhrystone_single": 23624,
+    "coremark_dual": 1194262,
+    "coremark_single": 1291549,
+    "dhrystone_cv32a65x": 35952,
+    "dhrystone_cv32a60x": 38856,
 }
 
 benchmark_iters = {
@@ -78,3 +78,5 @@ report = rb.Report(f"{cycles//1000} kCycles")
 report.add_metric(score_metric)
 report.dump()
 
+if report.failed:
+    sys.exit(1)

@@ -135,9 +135,6 @@ build_tools:
 smoke-tests:
   extends:
     - .fe_smoke_test
-  rules:
-    - when: manual
-      allow_failure: true
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
@@ -147,10 +144,10 @@ smoke-tests:
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
-      - DV_SIMULATORS: ["vcs-testharness", "questa-testharness"]
-        DV_TARGET: ["cv32a6_imac_sv32", "cv64a6_imafdc_sv39"]
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a65x"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a60x"
   script:
     - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
@@ -175,7 +172,7 @@ smoke-gen:
 
 smoke-bench:
   extends:
-    - .fe_smoke_test
+    - .synthesis_test
   variables:
     DASHBOARD_JOB_TITLE: "smoke-bench $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator"
@@ -228,7 +225,7 @@ spyglass:
   extends:
     - .synthesis_test
   variables:
-    DV_TARGET: cv32a65x
+    DV_TARGET: cv32a60x
     DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors"
     DASHBOARD_JOB_DESCRIPTION: "Report lint errors and warnings detected by Spyglass"
     DASHBOARD_SORT_INDEX: 5
@@ -261,7 +258,7 @@ cvxif-regression:
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
-asic-synthesis:
+.asic-synthesis:
   extends:
     - .synthesis_test
   tags: [$TAGS_RUNNER_SYNTH]
@@ -289,7 +286,7 @@ asic-synthesis:
     - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/ || echo "fail"
     - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/ || echo "fail"
 
-fpga-build:
+.fpga-build:
   extends:
     - .synthesis_test
   variables:
@@ -344,7 +341,7 @@ benchmarks:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
-riscv_arch_test:
+.riscv_arch_test:
   extends:
     - .regress_test
   variables:
@@ -357,7 +354,7 @@ riscv_arch_test:
   script: source verif/regress/dv-riscv-arch-test.sh
   after_script: *simu_after_script
 
-compliance:
+.compliance:
   timeout : 2 hours
   extends:
     - .regress_test
@@ -371,7 +368,7 @@ compliance:
   script: source verif/regress/dv-riscv-compliance.sh
   after_script: *simu_after_script
 
-riscv-tests-v:
+.riscv-tests-v:
   timeout : 2 hours
   extends:
     - .regress_test
@@ -386,7 +383,7 @@ riscv-tests-v:
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
 
-riscv-tests-p:
+.riscv-tests-p:
   extends:
     - .regress_test
   variables:
@@ -410,7 +407,7 @@ riscv-tests-p:
       allow_failure: true
   timeout: 6h
 
-mmu_sv32_tests:
+.mmu_sv32_tests:
   extends:
     - .verif_test
   variables:
@@ -523,7 +520,7 @@ csr_embedded_tests:
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
 
-simu-gate:
+.simu-gate:
   timeout : 4 hours
   extends:
     - .backend_test
@@ -569,7 +566,7 @@ simu-gate:
     - for i in verif/sim/out*/vcs-uvm-gate*/*; do cp $i $(dirname $(dirname $i))/vcs-uvm_sim/gate.$(basename $i); done
     - python3 .gitlab-ci/scripts/report_tandem.py verif/sim/out*/vcs-uvm_sim
 
-fpga-boot:
+.fpga-boot:
   extends:
     - .backend_test
   tags: [$TAGS_RUNNER_FPGA]
