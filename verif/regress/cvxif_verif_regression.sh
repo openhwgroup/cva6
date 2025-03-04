@@ -15,7 +15,7 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
+  DV_SIMULATORS=vcs-uvm
 fi
 
 # install the required tools
@@ -29,21 +29,22 @@ source ./verif/sim/setup-env.sh
 
 echo "$SPIKE_INSTALL_DIR$"
 
+if ! [ -n "$DV_TARGET" ]; then
+  DV_TARGET=cv32a60x
+fi
+
 if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
 
-export cvxif=1 # For CVXIF in Spike
+export cvxif=1 #enable cvxif extension for Spike
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
 
 cd verif/sim/
 make -C ../.. clean
 make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=vcs-testharness $DV_OPTS --linker=../../config/gen_from_riscv_config/linker/link.ld
-make -C ../.. clean
-make clean_all
-python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target cv32a65x --iss=vcs-uvm --issrun_opts="+enabled_cvxif" --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld
+python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --iss_yaml cva6.yaml --target $DV_TARGET --iss=$DV_SIMULATORS $DV_OPTS --issrun_opts="+enabled_cvxif" --linker=../../config/gen_from_riscv_config/linker/link.ld
 make -C ../.. clean
 make clean_all
 
