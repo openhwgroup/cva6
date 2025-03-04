@@ -69,5 +69,6 @@ The :doc:`CVA6 APU <05_cva6_apu/index>` describes an Application Processor Unit 
    01_cva6_user/index.rst
    03_cva6_design/index.rst
    04_cv32a65x/index.rst
+   07_cv32a60x/index.rst
    06_cv64a6_mmu/index.rst
    05_cva6_apu/index.rst
