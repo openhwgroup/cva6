@@ -68,8 +68,6 @@ ifneq ($(wildcard $(spike_yaml)),)
   spike_params_final := $(spike_params_final) --param-file $(spike_yaml)
   spike-yaml-plusarg = +config_file=$(spike_yaml)
   spike-yaml-makearg = config_file=$(spike_yaml)
-else
-  spike_params_final := $(spike_params_final) --extension=cvxif
 endif
 
 ##############################################
