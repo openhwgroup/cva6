@@ -18,7 +18,7 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-uvm
+  DV_SIMULATORS=veri-testharness
 fi
 
 # install the required tools
