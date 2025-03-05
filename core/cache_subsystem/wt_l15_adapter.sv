@@ -305,8 +305,6 @@ module wt_l15_adapter
     dcache_rtrn_o.rtype = DCACHE_LOAD_ACK;
     icache_rtrn_vld_o   = 1'b0;
     dcache_rtrn_vld_o   = 1'b0;
-    // Set here to work around Verilator bug #5829 - these are read in the
-    // L15_EVICT_REQ case just below
     icache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_icache_inval;
     icache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_icache_all_way;
     dcache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_dcache_inval;
