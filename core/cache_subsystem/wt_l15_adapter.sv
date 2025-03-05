@@ -305,6 +305,12 @@ module wt_l15_adapter
     dcache_rtrn_o.rtype = DCACHE_LOAD_ACK;
     icache_rtrn_vld_o   = 1'b0;
     dcache_rtrn_vld_o   = 1'b0;
+    // Set here to work around Verilator bug #5829 - these are read in the
+    // L15_EVICT_REQ case just below
+    icache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_icache_inval;
+    icache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_icache_all_way;
+    dcache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_dcache_inval;
+    dcache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_dcache_all_way;
     if (!rtrn_fifo_empty) begin
       unique case (rtrn_fifo_data.l15_returntype)
         L15_LOAD_RET: begin
@@ -370,13 +376,9 @@ module wt_l15_adapter
   // invalidation signal mapping
   assign icache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
   assign icache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
-  assign icache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_icache_inval;
-  assign icache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_icache_all_way;
 
   assign dcache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
   assign dcache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
-  assign dcache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_dcache_inval;
-  assign dcache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_dcache_all_way;
 
   fifo_v2 #(
       .dtype(l15_rtrn_t),
