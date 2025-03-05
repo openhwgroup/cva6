@@ -78,7 +78,6 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
 
     void'(spike_set_param_bool(base, "hide_csrs_based_on_priv", 1));
     void'(spike_set_param_uint64_t(base, "mtvec_vectored_alignment", 64 * 4));
-    void'(spike_set_param_str(base, "extensions", "cvxif"));
 
     // All enabled except XS and TW bits
     void'(spike_set_param_uint64_t(base, "mstatus_write_mask", 'hFFDE_7FFF));

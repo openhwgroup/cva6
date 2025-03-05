@@ -37,7 +37,6 @@ if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
 
-export cvxif=1 #enable cvxif extension for Spike
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
 
