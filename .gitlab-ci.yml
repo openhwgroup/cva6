@@ -248,7 +248,7 @@ cvxif-regression:
     - .synthesis_test
   variables:
     DASHBOARD_JOB_TITLE: "CVXIF non-regression test $DV_SIMULATORS"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most CoreV-X-Interface in testharness"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most CoreV-X-Interface"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Basic"
     COLLECT_SIMU_LOGS: 1
