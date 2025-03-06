@@ -175,6 +175,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    constraint default_cons {
       if (interrupt_cfg.interrupt_plusarg_valid) {
          interrupt_cfg.enable_interrupt == 'h1;
+         zero_obi_stall                 == 'h1;
       }
       else {
          interrupt_cfg.enable_interrupt == 'h0;
