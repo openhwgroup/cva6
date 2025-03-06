@@ -289,33 +289,35 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
          assign obi_store_slave.exokay     = i_cva6.obi_store_rsp.r.r_optional.exokay;
          assign obi_store_slave.rvalidpar  = i_cva6.obi_store_rsp.rvalidpar;
          assign obi_store_slave.rchk       = i_cva6.obi_store_rsp.r.r_optional.rchk;
-	     
-         assign obi_amo_slave.req        = i_cva6.obi_amo_req.req;
-         assign obi_amo_slave.addr       = i_cva6.obi_amo_req.a.addr;
-         assign obi_amo_slave.we         = i_cva6.obi_amo_req.a.we;
-         assign obi_amo_slave.be         = i_cva6.obi_amo_req.a.be;
-         assign obi_amo_slave.wdata      = i_cva6.obi_amo_req.a.wdata;
-         assign obi_amo_slave.auser      = i_cva6.obi_amo_req.a.a_optional.auser;
-         assign obi_amo_slave.wuser      = i_cva6.obi_amo_req.a.a_optional.wuser;
-         assign obi_amo_slave.aid        = i_cva6.obi_amo_req.a.aid;
-         assign obi_amo_slave.atop       = i_cva6.obi_amo_req.a.a_optional.atop;
-         assign obi_amo_slave.memtype    = i_cva6.obi_amo_req.a.a_optional.memtype;
-         assign obi_amo_slave.prot       = i_cva6.obi_amo_req.a.a_optional.prot;
-         assign obi_amo_slave.reqpar     = i_cva6.obi_amo_req.reqpar;
-         assign obi_amo_slave.achk       = i_cva6.obi_amo_req.a.a_optional.achk;
-         assign obi_amo_slave.rready     = i_cva6.obi_amo_req.rready;
-         assign obi_amo_slave.rreadypar  = i_cva6.obi_amo_req.rreadypar;
-         assign obi_amo_slave.gnt        = i_cva6.obi_amo_rsp.gnt;
-         assign obi_amo_slave.gntpar     = i_cva6.obi_amo_rsp.gntpar;
-         assign obi_amo_slave.rvalid     = i_cva6.obi_amo_rsp.rvalid;
-         assign obi_amo_slave.rdata      = i_cva6.obi_amo_rsp.r.rdata;
-         assign obi_amo_slave.err        = i_cva6.obi_amo_rsp.r.err;
-         assign obi_amo_slave.ruser      = i_cva6.obi_amo_rsp.r.r_optional.ruser;
-         assign obi_amo_slave.rid        = i_cva6.obi_amo_rsp.r.rid;
-         assign obi_amo_slave.exokay     = i_cva6.obi_amo_rsp.r.r_optional.exokay;
-         assign obi_amo_slave.rvalidpar  = i_cva6.obi_amo_rsp.rvalidpar;
-         assign obi_amo_slave.rchk       = i_cva6.obi_amo_rsp.r.r_optional.rchk;
-	     
+
+         if (CVA6Cfg.RVA) begin
+            assign obi_amo_slave.req        = i_cva6.obi_amo_req.req;
+            assign obi_amo_slave.addr       = i_cva6.obi_amo_req.a.addr;
+            assign obi_amo_slave.we         = i_cva6.obi_amo_req.a.we;
+            assign obi_amo_slave.be         = i_cva6.obi_amo_req.a.be;
+            assign obi_amo_slave.wdata      = i_cva6.obi_amo_req.a.wdata;
+            assign obi_amo_slave.auser      = i_cva6.obi_amo_req.a.a_optional.auser;
+            assign obi_amo_slave.wuser      = i_cva6.obi_amo_req.a.a_optional.wuser;
+            assign obi_amo_slave.aid        = i_cva6.obi_amo_req.a.aid;
+            assign obi_amo_slave.atop       = i_cva6.obi_amo_req.a.a_optional.atop;
+            assign obi_amo_slave.memtype    = i_cva6.obi_amo_req.a.a_optional.memtype;
+            assign obi_amo_slave.prot       = i_cva6.obi_amo_req.a.a_optional.prot;
+            assign obi_amo_slave.reqpar     = i_cva6.obi_amo_req.reqpar;
+            assign obi_amo_slave.achk       = i_cva6.obi_amo_req.a.a_optional.achk;
+            assign obi_amo_slave.rready     = i_cva6.obi_amo_req.rready;
+            assign obi_amo_slave.rreadypar  = i_cva6.obi_amo_req.rreadypar;
+            assign obi_amo_slave.gnt        = i_cva6.obi_amo_rsp.gnt;
+            assign obi_amo_slave.gntpar     = i_cva6.obi_amo_rsp.gntpar;
+            assign obi_amo_slave.rvalid     = i_cva6.obi_amo_rsp.rvalid;
+            assign obi_amo_slave.rdata      = i_cva6.obi_amo_rsp.r.rdata;
+            assign obi_amo_slave.err        = i_cva6.obi_amo_rsp.r.err;
+            assign obi_amo_slave.ruser      = i_cva6.obi_amo_rsp.r.r_optional.ruser;
+            assign obi_amo_slave.rid        = i_cva6.obi_amo_rsp.r.rid;
+            assign obi_amo_slave.exokay     = i_cva6.obi_amo_rsp.r.r_optional.exokay;
+            assign obi_amo_slave.rvalidpar  = i_cva6.obi_amo_rsp.rvalidpar;
+            assign obi_amo_slave.rchk       = i_cva6.obi_amo_rsp.r.r_optional.rchk;
+         end
+
          assign obi_load_slave.req        = i_cva6.obi_load_req.req;
          assign obi_load_slave.addr       = i_cva6.obi_load_req.a.addr;
          assign obi_load_slave.we         = i_cva6.obi_load_req.a.we;
@@ -515,31 +517,33 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
       assign obi_store_rsp.rvalidpar            = obi_store_slave.rvalidpar;
       assign obi_store_rsp.r.r_optional.rchk    = obi_store_slave.rchk;
 
-      assign obi_amo_slave.req                  = obi_amo_req.req;
-      assign obi_amo_slave.addr                 = obi_amo_req.a.addr;
-      assign obi_amo_slave.we                   = obi_amo_req.a.we;
-      assign obi_amo_slave.be                   = obi_amo_req.a.be;
-      assign obi_amo_slave.wdata                = obi_amo_req.a.wdata;
-      assign obi_amo_slave.auser                = obi_amo_req.a.a_optional.auser;
-      assign obi_amo_slave.wuser                = obi_amo_req.a.a_optional.wuser;
-      assign obi_amo_slave.aid                  = obi_amo_req.a.aid;
-      assign obi_amo_slave.atop                 = obi_amo_req.a.a_optional.atop;
-      assign obi_amo_slave.memtype              = obi_amo_req.a.a_optional.memtype;
-      assign obi_amo_slave.prot                 = obi_amo_req.a.a_optional.prot;
-      assign obi_amo_slave.reqpar               = obi_amo_req.reqpar;
-      assign obi_amo_slave.achk                 = obi_amo_req.a.a_optional.achk;
-      assign obi_amo_slave.rready               = obi_amo_req.rready;
-      assign obi_amo_slave.rreadypar            = obi_amo_req.rreadypar;
-      assign obi_amo_rsp.gnt                    = obi_amo_slave.gnt;
-      assign obi_amo_rsp.gntpar                 = obi_amo_slave.gntpar;
-      assign obi_amo_rsp.rvalid                 = obi_amo_slave.rvalid;
-      assign obi_amo_rsp.r.rdata                = obi_amo_slave.rdata;
-      assign obi_amo_rsp.r.err                  = obi_amo_slave.err;
-      assign obi_amo_rsp.r.r_optional.ruser     = obi_amo_slave.ruser;
-      assign obi_amo_rsp.r.rid                  = obi_amo_slave.rid;
-      assign obi_amo_rsp.r.r_optional.exokay    = obi_amo_slave.exokay;
-      assign obi_amo_rsp.rvalidpar              = obi_amo_slave.rvalidpar;
-      assign obi_amo_rsp.r.r_optional.rchk      = obi_amo_slave.rchk;
+      if (CVA6Cfg.RVA) begin
+         assign obi_amo_slave.req                  = obi_amo_req.req;
+         assign obi_amo_slave.addr                 = obi_amo_req.a.addr;
+         assign obi_amo_slave.we                   = obi_amo_req.a.we;
+         assign obi_amo_slave.be                   = obi_amo_req.a.be;
+         assign obi_amo_slave.wdata                = obi_amo_req.a.wdata;
+         assign obi_amo_slave.auser                = obi_amo_req.a.a_optional.auser;
+         assign obi_amo_slave.wuser                = obi_amo_req.a.a_optional.wuser;
+         assign obi_amo_slave.aid                  = obi_amo_req.a.aid;
+         assign obi_amo_slave.atop                 = obi_amo_req.a.a_optional.atop;
+         assign obi_amo_slave.memtype              = obi_amo_req.a.a_optional.memtype;
+         assign obi_amo_slave.prot                 = obi_amo_req.a.a_optional.prot;
+         assign obi_amo_slave.reqpar               = obi_amo_req.reqpar;
+         assign obi_amo_slave.achk                 = obi_amo_req.a.a_optional.achk;
+         assign obi_amo_slave.rready               = obi_amo_req.rready;
+         assign obi_amo_slave.rreadypar            = obi_amo_req.rreadypar;
+         assign obi_amo_rsp.gnt                    = obi_amo_slave.gnt;
+         assign obi_amo_rsp.gntpar                 = obi_amo_slave.gntpar;
+         assign obi_amo_rsp.rvalid                 = obi_amo_slave.rvalid;
+         assign obi_amo_rsp.r.rdata                = obi_amo_slave.rdata;
+         assign obi_amo_rsp.r.err                  = obi_amo_slave.err;
+         assign obi_amo_rsp.r.r_optional.ruser     = obi_amo_slave.ruser;
+         assign obi_amo_rsp.r.rid                  = obi_amo_slave.rid;
+         assign obi_amo_rsp.r.r_optional.exokay    = obi_amo_slave.exokay;
+         assign obi_amo_rsp.rvalidpar              = obi_amo_slave.rvalidpar;
+         assign obi_amo_rsp.r.r_optional.rchk      = obi_amo_slave.rchk;
+      end
 
       assign obi_load_slave.req                = obi_load_req.req;
       assign obi_load_slave.addr               = obi_load_req.a.addr;

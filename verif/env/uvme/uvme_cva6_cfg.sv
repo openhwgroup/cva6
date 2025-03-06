@@ -394,7 +394,11 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          axi_cfg.cov_model_enabled       == 1;
          obi_memory_instr_cfg.cov_model_enabled == 1;
          obi_memory_store_cfg.cov_model_enabled == 1;
-         obi_memory_amo_cfg.cov_model_enabled == 1;
+         if (ext_a_supported) {
+            obi_memory_amo_cfg.cov_model_enabled == 1;
+         } else {
+            obi_memory_amo_cfg.cov_model_enabled == 0;
+         }
          obi_memory_load_cfg.cov_model_enabled == 1;
          //obi_memory_mmu_ptw_cfg.cov_model_enabled == 1;
          interrupt_cfg.cov_model_enabled == 1;
