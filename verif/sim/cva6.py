@@ -359,7 +359,29 @@ def elf2bin(elf, binary, debug_cmd):
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
-def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
+def elf2dump(elf, dump, debug_cmd):
+
+  global COMPILER
+
+  OBJDUMP = COMPILER[:-2] + "OBJDUMP"
+  logging.info("Converting to %s" % dump)
+  subprocess.run("%s -d --show-all-symbols %s > %s" % (get_env_var(OBJDUMP, debug_cmd = debug_cmd), elf, dump), shell=True)
+
+
+# Sanitize the ISA:
+# - Remove unsupported ISA extensions.
+# - Add Zifencei for compilation only (but NOT on G-capable targets) to handle code produced by DV.
+def sanitize_compiler_isa(isa, compiler):
+  # TODO FIXME 1: Insert _zifencei before any supported _x* extensions to preserve canonical extension ordering.
+  # TODO FIXME 2: The list of unsupported/to-be-added extensions should come from SSoT (Single Source of Truth).
+  base_isa = isa.split('_')[0]
+  new_isa = isa
+  if '_zifencei' not in new_isa:
+    new_isa = new_isa + \
+      ('_zifencei' if not ('g' in base_isa and ('llvm' in compiler or 'clang' in compiler)) else '')    # Conflict between G and Zifencei in LLVM
+  return new_isa
+
+
   """Use riscv gcc toolchain to compile the assembly program
 
   Args:
@@ -370,6 +392,11 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
     debug_cmd  : Produce the debug cmd log without running
     linker     : Path to the linker
   """
+
+  global COMPILER
+
+  compiler = get_env_var(COMPILER, debug_cmd = debug_cmd)
+  sane_isa = sanitize_compiler_isa(isa, compiler)
   cwd = os.path.dirname(os.path.realpath(__file__))
   for test in test_list:
     for i in range(0, test['iterations']):
@@ -379,17 +406,20 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
       asm = prefix + ".S"
       elf = prefix + ".o"
       binary = prefix + ".bin"
-      test_isa=re.match("[a-z0-9A-Z]+", isa)
+      dump = prefix + ".dump"
+      test_isa=re.match("[a-z0-9A-Z]+", sane_isa)
+      sanitized_extension_list = sane_isa.split('_')[1:]
       test_isa=test_isa.group()
-      isa_ext=isa
+      isa_ext=sane_isa
       if not os.path.isfile(asm) and not debug_cmd:
         logging.error("Cannot find assembly test: %s\n", asm)
         sys.exit(RET_FAIL)
-      # gcc comilation
+      # gcc compilation
+      bitness = isa[2:4]
       cmd = ("%s %s \
              -I%s/../env/corev-dv/user_extension \
              -T%s %s -o %s " % \
-             (get_env_var("RISCV_CC", debug_cmd = debug_cmd), asm, cwd, linker, opts, elf))
+             (compiler, asm, cwd, linker, opts, elf))
       if 'gcc_opts' in test:
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
@@ -397,8 +427,8 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         if re.search('disable_compressed_instr=1', test['gen_opts']):
           test_isa = re.sub("c",  "", test_isa)
           #add z,s,x extensions to the isa if there are some
-          if isa_extension_list !=['none']:
-            for i in isa_extension_list:
+          if sanitized_extension_list != []:
+            for i in sanitized_extension_list:
               test_isa += (f"_{i}")
           isa_ext=test_isa
       # If march/mabi is not defined in the test gcc_opts, use the default
@@ -407,6 +437,8 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         cmd += (" -march=%s" % isa_ext)
       if not re.search('mabi', cmd):
         cmd += (" -mabi=%s" % mabi)
+      if 'clang' in compiler or 'llvm' in compiler:
+        cmd += (" --target=riscv%s-unknown-elf" % bitness)
       logging.info("Compiling test: %s" % asm)
       run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
       elf2bin(elf, binary, debug_cmd)
@@ -507,14 +539,20 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
   if test_type != "o":
     # gcc compilation
+    compiler = get_env_var(COMPILER, debug_cmd = debug_cmd)
+    # Sanitize compiler ISA
+    compiler_isa = sanitize_compiler_isa(isa, compiler)
+    bitness = isa[2:4]
     logging.info("Compiling test: %s" % test_path)
     cmd = ("%s %s \
           -I%s/dv/user_extension \
             -T%s %s -o %s " % \
-          (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, cwd,
+          (compiler, test_path, cwd,
               linker, gcc_opts, elf))
-    cmd += (" -march=%s" % isa)
+    cmd += (" -march=%s" % compiler_isa)
     cmd += (" -mabi=%s" % mabi)
+    if 'clang' in compiler or 'llvm' in compiler:
+      cmd += (" --target=riscv%s-unknown-elf" % bitness)
     run_cmd(cmd, debug_cmd = debug_cmd)
   log_list = []
   # ISS simulation
@@ -960,7 +998,9 @@ def load_config(args, cwd):
   isa_extension_list = args.isa_extension.split(",")
   if not "g" in args.isa: # LLVM complains if we add zicsr and zifencei when g is set.
     isa_extension_list.append("zicsr")
-    isa_extension_list.append("zifencei")
+    # Exclude CV32A6{0,56}X and hwconfig from Zifencei-capable targets.
+    if "cv32a65x" not in args.target and "cv32a60x" not in args.target and "hwconfig" not in args.target:
+      isa_extension_list.append("zifencei")
 
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 
