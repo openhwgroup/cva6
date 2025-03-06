@@ -303,8 +303,8 @@ module wt_l15_adapter
   always_comb begin : p_rtrn_logic
     icache_rtrn_o.rtype = ICACHE_IFILL_ACK;
     dcache_rtrn_o.rtype = DCACHE_LOAD_ACK;
-    icache_rtrn_vld_o   = 1'b0;
-    dcache_rtrn_vld_o   = 1'b0;
+    icache_rtrn_vld_o = 1'b0;
+    dcache_rtrn_vld_o = 1'b0;
     icache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_icache_inval;
     icache_rtrn_o.inv.all = rtrn_fifo_data.l15_inval_icache_all_way;
     dcache_rtrn_o.inv.vld = rtrn_fifo_data.l15_inval_dcache_inval;
