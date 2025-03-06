@@ -37,6 +37,7 @@ spike_param_tree:
       mip_override_mask: 0xfffff77f
       mip_override_value: 0x00000000
       mtval_write_mask: 0
+      mtvec_write_mask: 0xFFFFFFFE
       tinfo_accessible: 0
       mscontext_accessible: 0
       mcontext_accessible: 0
