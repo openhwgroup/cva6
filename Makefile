@@ -279,7 +279,8 @@ xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag_t
 xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag.sv)						
 src := $(filter-out $(xil_debug_filter), $(src))
 
-fpga_src := $(addprefix $(root-dir), $(fpga_src)) src/bootrom/bootrom_$(XLEN).sv
+fpga_src += corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv
+fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
 tbs := $(top_level_path) corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
@@ -780,7 +781,7 @@ fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/co
 fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv)
 fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv)
 
-src/bootrom/bootrom_$(XLEN).sv:
+$(addprefix $(root-dir), corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv):
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) PLATFORM=$(PLATFORM) bootrom_$(XLEN).sv
 
 fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)

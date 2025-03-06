@@ -216,7 +216,7 @@ module cva6_ptw
 
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
-    shared_tlb_update_o.vmid = tlb_update_vmid_q;
+    shared_tlb_update_o.vmid = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
 
     bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
@@ -296,7 +296,6 @@ module cva6_ptw
     global_mapping_n          = global_mapping_q;
     // input registers
     tlb_update_asid_n         = tlb_update_asid_q;
-    tlb_update_vmid_n         = tlb_update_vmid_q;
     vaddr_n                   = vaddr_q;
     pptr                      = ptw_pptr_q;
 
@@ -304,6 +303,7 @@ module cva6_ptw
       gpaddr_n    = gpaddr_q;
       gptw_pptr_n = gptw_pptr_q;
       gpte_d = gpte_q;
+      tlb_update_vmid_n = tlb_update_vmid_q;
     end
 
     shared_tlb_miss_o = 1'b0;
@@ -616,17 +616,17 @@ module cva6_ptw
       ptw_lvl_q         <= '0;
       tag_valid_q       <= 1'b0;
       tlb_update_asid_q <= '0;
-      tlb_update_vmid_q <= '0;
       vaddr_q           <= '0;
       ptw_pptr_q        <= '0;
       global_mapping_q  <= 1'b0;
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
       if (CVA6Cfg.RVH) begin
-        gpaddr_q    <= '0;
-        gptw_pptr_q <= '0;
-        ptw_stage_q <= S_STAGE;
-        gpte_q      <= '0;
+        gpaddr_q          <= '0;
+        gptw_pptr_q       <= '0;
+        ptw_stage_q       <= S_STAGE;
+        gpte_q            <= '0;
+        tlb_update_vmid_q <= '0;
       end
     end else begin
       state_q           <= state_d;
