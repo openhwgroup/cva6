@@ -163,7 +163,7 @@ module commit_stage
       // we will not commit the instruction if we took an exception
       if (commit_instr_i[0].ex.valid) begin
         // However we can drop it (with its exception)
-        if (commit_drop_i[0]) begin
+        if (CVA6Cfg.SpeculativeSb && commit_drop_i[0]) begin
           commit_ack_o[0] = 1'b1;
         end
       end else begin
@@ -378,7 +378,7 @@ module commit_stage
     exception_o.gva   = 1'b0;
 
     // we need a valid instruction in the commit stage
-    if (commit_instr_i[0].valid && !commit_drop_i[0]) begin
+    if (commit_instr_i[0].valid && !(CVA6Cfg.SpeculativeSb && commit_drop_i[0])) begin
       // ------------------------
       // check for CSR exception
       // ------------------------
