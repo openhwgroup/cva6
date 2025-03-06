@@ -74,6 +74,10 @@ ifeq ($(BOARD), genesys2)
 	XILINX_PART              := xc7k325tffg900-2
 	XILINX_BOARD             := digilentinc.com:genesys2:part0:1.1
 	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), cw305)
+	XILINX_PART		 := xc7a100tftg256-2
+	XILINX_BOARD		 := NULL
+	CLK_PERIOD_NS		 := 83
 else ifeq ($(BOARD), kc705)
 	XILINX_PART              := xc7k325tffg900-2
 	XILINX_BOARD             := xilinx.com:kc705:part0:1.5
@@ -163,13 +167,16 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         core/cva6_rvfi.sv                                                            \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
+		$(wildcard additional_files/trigger_ip/register_interface/*.sv)              \
+		$(wildcard additional_files/trigger_ip/register_interface/*.svh)             \
+		$(wildcard additional_files/trigger_ip/sv/trigger_reg_top.sv)				 \
         $(wildcard corev_apu/clint/*.sv)                                             \
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
         $(wildcard corev_apu/fpga/src/apb_timer/*.sv)                                \
         $(wildcard corev_apu/fpga/src/axi_slice/src/*.sv)                            \
         $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
-				$(wildcard corev_apu/riscv-dbg/src/*.sv)                                   \
+				$(wildcard corev_apu/riscv-dbg/src/*.sv)                             \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
@@ -177,6 +184,8 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
         vendor/pulp-platform/axi/src/axi_multicut.sv                                 \
+		vendor/pulp-platform/common_cells/src/id_queue.sv			     			 \
+		vendor/pulp-platform/common_cells/src/onehot_to_bin.sv					     \
         vendor/pulp-platform/common_cells/src/rstgen_bypass.sv                       \
         vendor/pulp-platform/common_cells/src/rstgen.sv                              \
         vendor/pulp-platform/common_cells/src/addr_decode.sv                         \
@@ -306,6 +315,8 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
           $(CVA6_REPO_DIR)/corev_apu/register_interface/include/ $(CVA6_REPO_DIR)/corev_apu/tb/common/ \
           $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
+		  $(CVA6_REPO_DIR)/additional_files/trigger_ip/ \
+	      $(CVA6_REPO_DIR)/additional_files/trigger_ip/sv/	\
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_reference_model/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_scoreboard/ \

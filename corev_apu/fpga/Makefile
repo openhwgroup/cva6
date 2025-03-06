@@ -5,14 +5,24 @@ work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
 mcs := $(work-dir)/ariane_xilinx.mcs
 ip-dir := xilinx
-ips := xlnx_axi_clock_converter.xci  \
-       xlnx_axi_dwidth_converter.xci \
-       xlnx_axi_dwidth_converter_dm_master.xci \
-       xlnx_axi_dwidth_converter_dm_slave.xci \
-       xlnx_axi_quad_spi.xci         \
-       xlnx_axi_gpio.xci             \
-       xlnx_clk_gen.xci              \
-       xlnx_mig_7_ddr3.xci
+ifeq ($(BOARD),cw305)
+	ips := xlnx_axi_clock_converter.xci  \
+	       xlnx_axi_dwidth_converter.xci \
+	       xlnx_axi_dwidth_converter_dm_master.xci \
+	       xlnx_axi_dwidth_converter_dm_slave.xci \
+	       xlnx_axi_quad_spi.xci         \
+	       xlnx_axi_gpio.xci             \
+	       xlnx_clk_gen.xci              
+else
+	ips := xlnx_axi_clock_converter.xci  \
+	       xlnx_axi_dwidth_converter.xci \
+	       xlnx_axi_dwidth_converter_dm_master.xci \
+	       xlnx_axi_dwidth_converter_dm_slave.xci \
+	       xlnx_axi_quad_spi.xci         \
+	       xlnx_axi_gpio.xci             \
+	       xlnx_clk_gen.xci              \
+	       xlnx_mig_7_ddr3.xci
+endif
 
 ips := $(addprefix $(work-dir)/, $(ips))
 ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)))), $(ips))

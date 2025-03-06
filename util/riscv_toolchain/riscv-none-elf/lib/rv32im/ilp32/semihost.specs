@@ -1,0 +1,10 @@
+# Spec file for semihosting syscalls.
+
+%rename lib	semihost_lib
+%rename link	semihost_link
+
+*lib:
+--start-group -lc -lsemihost --end-group
+
+*link:
+%(semihost_link) %:replace-outfile(-lgloss -lsemihost)

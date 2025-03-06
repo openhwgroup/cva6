@@ -35,6 +35,7 @@ from dv.scripts.sail_log_to_trace_csv import *
 from dv.scripts.instr_trace_compare import *
 from pathlib import Path
 from types import SimpleNamespace
+from typing import List
 
 LOGGER = logging.getLogger()
 
@@ -826,7 +827,7 @@ def parse_args(cwd):
   return args
 
 
-def get_full_spike_param_args(spike_params: list[str]):
+def get_full_spike_param_args(spike_params: List[str]):
   return ' '.join(list(map(lambda s: "--param=" + s, spike_params.split(','))))
 
 

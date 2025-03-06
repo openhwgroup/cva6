@@ -4,7 +4,9 @@ set boardName  $::env(XILINX_BOARD)
 set ipName xlnx_axi_quad_spi
 
 create_project $ipName . -part $partNumber
-set_property board_part $boardName [current_project]
+if {$::env(BOARD) ne "cw305"} {
+        set_property board_part $boardName [current_project]
+}
 
 create_ip -name axi_quad_spi -vendor xilinx.com -library ip -module_name $ipName
 set_property -dict [list CONFIG.C_USE_STARTUP {0} CONFIG.C_SCK_RATIO {4} CONFIG.C_FIFO_DEPTH {256} CONFIG.C_TYPE_OF_AXI4_INTERFACE {1} CONFIG.C_S_AXI4_ID_WIDTH {0}] [get_ips $ipName]

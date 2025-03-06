@@ -1,0 +1,56 @@
+{
+    name: "trigger",
+    clock_primary: "clk_i",
+    reset_primary: "rst_ni",
+    bus_device: "reg",
+    bus_host: "",
+
+    regwidth: "32",
+    registers: [
+        { multireg:
+          { name: "GPIO_O",
+            desc: "GPIO for trigger.",
+            count: "1", 
+            cname: "gpio_o",
+            swaccess: "ro",
+            hwaccess: "hwo",
+            hwext: "true",
+            fields: [
+                { bits: "31:0"
+                }
+            ],
+          }
+        },
+        { name: "CTRL"
+          desc: " Trigger the Keccak "
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwext: "true",
+          hwqe: "true",
+          fields: [
+            {
+                "bits": "0",
+                "name": "START",
+                "desc": "Put trigger to 1."
+            },
+            {
+                "bits": "1",
+                "name": "STOP",
+                "desc": "Put trigger to 0."
+            }
+          ]	
+        },        
+        { name: "STATUS",
+          desc: "Contains status information about the trigger component.", // Added missing `desc`
+          swaccess: "ro",
+          hwaccess: "hwo",
+          hwext: "true",
+          fields: [
+              { bits: "0", 
+                name: "STATUS",
+                desc: "Indicates the status of the GPIO output." // Added `desc` to STATUS field
+              }
+          ]
+        }
+    ],
+}

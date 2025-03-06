@@ -22,6 +22,7 @@ if [ -z "$RISCV" ]; then
   return
 fi
 # Set RISCV toolchain-related variables
+export RISCV="$ROOT_PROJECT/util/riscv_toolchain"
 export LIBRARY_PATH="$RISCV/lib"
 export LD_LIBRARY_PATH="$RISCV/lib:$LD_LIBRARY_PATH"
 export C_INCLUDE_PATH="$RISCV/include"

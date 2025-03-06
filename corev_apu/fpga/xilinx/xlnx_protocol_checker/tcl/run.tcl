@@ -4,7 +4,9 @@ set boardName  $::env(XILINX_BOARD)
 set ipName xlnx_protocol_checker
 
 create_project $ipName . -force -part $partNumber
-set_property board_part $boardName [current_project]
+if {$::env(BOARD) ne "cw305"} {
+        set_property board_part $boardName [current_project]
+}
 
 create_ip -name axi_protocol_checker -vendor xilinx.com -library ip -version 2.0 -module_name $ipName
 

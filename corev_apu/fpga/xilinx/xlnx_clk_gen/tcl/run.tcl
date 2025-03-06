@@ -4,7 +4,9 @@ set boardName  $::env(XILINX_BOARD)
 set ipName xlnx_clk_gen
 
 create_project $ipName . -force -part $partNumber
-set_property board_part $boardName [current_project]
+if {$::env(BOARD) ne "cw305"} {
+        set_property board_part $boardName [current_project]
+}
 
 create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name $ipName
 
