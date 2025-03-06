@@ -374,7 +374,7 @@ module ex_stage
     end else if (mult_valid) begin
       flu_result_o   = mult_result;
       flu_trans_id_o = mult_trans_id;
-    end else if (aes_valid_i) begin
+    end else if (|aes_valid_i) begin
       flu_result_o = aes_result;
     end
   end
@@ -744,6 +744,8 @@ module ex_stage
           .result_o      (aes_result),
           .orig_instr_aes(orig_instr_aes_i)
       );
+    end else begin : no_aes_gen
+      assign aes_result = '0;
     end
   endgenerate
 
