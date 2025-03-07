@@ -192,123 +192,85 @@ module cva6_peripherals #(
     // ---------------
     // 2. UART
     // ---------------
-    logic         uart_penable;
-    logic         uart_pwrite;
-    logic [31:0]  uart_paddr;
-    logic         uart_psel;
-    logic [31:0]  uart_pwdata;
-    logic [31:0]  uart_prdata;
-    logic         uart_pready;
-    logic         uart_pslverr;
 
-    axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_ID_WIDTH      ( AxiIdWidth   ),
-        .AXI4_USER_WIDTH    ( AxiUserWidth ),
-        .BUFF_DEPTH_SLAVE   ( 2            ),
-        .APB_ADDR_WIDTH     ( 32           )
-    ) i_axi2apb_64_32_uart (
-        .ACLK      ( clk_i          ),
-        .ARESETn   ( rst_ni         ),
-        .test_en_i ( 1'b0           ),
-        .AWID_i    ( uart.aw_id     ),
-        .AWADDR_i  ( uart.aw_addr   ),
-        .AWLEN_i   ( uart.aw_len    ),
-        .AWSIZE_i  ( uart.aw_size   ),
-        .AWBURST_i ( uart.aw_burst  ),
-        .AWLOCK_i  ( uart.aw_lock   ),
-        .AWCACHE_i ( uart.aw_cache  ),
-        .AWPROT_i  ( uart.aw_prot   ),
-        .AWREGION_i( uart.aw_region ),
-        .AWUSER_i  ( uart.aw_user   ),
-        .AWQOS_i   ( uart.aw_qos    ),
-        .AWVALID_i ( uart.aw_valid  ),
-        .AWREADY_o ( uart.aw_ready  ),
-        .WDATA_i   ( uart.w_data    ),
-        .WSTRB_i   ( uart.w_strb    ),
-        .WLAST_i   ( uart.w_last    ),
-        .WUSER_i   ( uart.w_user    ),
-        .WVALID_i  ( uart.w_valid   ),
-        .WREADY_o  ( uart.w_ready   ),
-        .BID_o     ( uart.b_id      ),
-        .BRESP_o   ( uart.b_resp    ),
-        .BVALID_o  ( uart.b_valid   ),
-        .BUSER_o   ( uart.b_user    ),
-        .BREADY_i  ( uart.b_ready   ),
-        .ARID_i    ( uart.ar_id     ),
-        .ARADDR_i  ( uart.ar_addr   ),
-        .ARLEN_i   ( uart.ar_len    ),
-        .ARSIZE_i  ( uart.ar_size   ),
-        .ARBURST_i ( uart.ar_burst  ),
-        .ARLOCK_i  ( uart.ar_lock   ),
-        .ARCACHE_i ( uart.ar_cache  ),
-        .ARPROT_i  ( uart.ar_prot   ),
-        .ARREGION_i( uart.ar_region ),
-        .ARUSER_i  ( uart.ar_user   ),
-        .ARQOS_i   ( uart.ar_qos    ),
-        .ARVALID_i ( uart.ar_valid  ),
-        .ARREADY_o ( uart.ar_ready  ),
-        .RID_o     ( uart.r_id      ),
-        .RDATA_o   ( uart.r_data    ),
-        .RRESP_o   ( uart.r_resp    ),
-        .RLAST_o   ( uart.r_last    ),
-        .RUSER_o   ( uart.r_user    ),
-        .RVALID_o  ( uart.r_valid   ),
-        .RREADY_i  ( uart.r_ready   ),
-        .PENABLE   ( uart_penable   ),
-        .PWRITE    ( uart_pwrite    ),
-        .PADDR     ( uart_paddr     ),
-        .PSEL      ( uart_psel      ),
-        .PWDATA    ( uart_pwdata    ),
-        .PRDATA    ( uart_prdata    ),
-        .PREADY    ( uart_pready    ),
-        .PSLVERR   ( uart_pslverr   )
-    );
+    // UART Through JTAG//
 
-    if (InclUART) begin : gen_uart
-        apb_uart i_apb_uart (
-            .CLK     ( clk_i           ),
-            .RSTN    ( rst_ni          ),
-            .PSEL    ( uart_psel       ),
-            .PENABLE ( uart_penable    ),
-            .PWRITE  ( uart_pwrite     ),
-            .PADDR   ( uart_paddr[4:2] ),
-            .PWDATA  ( uart_pwdata     ),
-            .PRDATA  ( uart_prdata     ),
-            .PREADY  ( uart_pready     ),
-            .PSLVERR ( uart_pslverr    ),
-            .INT     ( irq_sources[0]  ),
-            .OUT1N   (                 ), // keep open
-            .OUT2N   (                 ), // keep open
-            .RTSN    (                 ), // no flow control
-            .DTRN    (                 ), // no flow control
-            .CTSN    ( 1'b0            ),
-            .DSRN    ( 1'b0            ),
-            .DCDN    ( 1'b0            ),
-            .RIN     ( 1'b0            ),
-            .SIN     ( rx_i            ),
-            .SOUT    ( tx_o            )
-        );
-    end else begin
-        /* pragma translate_off */
-        `ifndef VERILATOR
-        mock_uart i_mock_uart (
-            .clk_i     ( clk_i        ),
-            .rst_ni    ( rst_ni       ),
-            .penable_i ( uart_penable ),
-            .pwrite_i  ( uart_pwrite  ),
-            .paddr_i   ( uart_paddr   ),
-            .psel_i    ( uart_psel    ),
-            .pwdata_i  ( uart_pwdata  ),
-            .prdata_o  ( uart_prdata  ),
-            .pready_o  ( uart_pready  ),
-            .pslverr_o ( uart_pslverr )
-        );
-        `endif
-        /* pragma translate_on */
-    end
+logic uart_amm_ready;
+logic uart_amm_read;
+logic uart_amm_write;
+logic uart_amm_read_n;
+logic uart_amm_write_n;
+logic uart_amm_chipselect;
+logic uart_amm_irq;
+logic [0:0] uart_amm_address;
+logic [31:0] uart_amm_rdata;
+logic [31:0] uart_amm_wdata;
+
+
+assign uart_amm_read_n = ~uart_amm_read;
+assign uart_amm_write_n = ~uart_amm_write;
+
+cva6_intel_jtag_uart_0 uart_i (
+    .clk            (clk_i),            //   input,   width = 1,               clk.clk
+    .rst_n          (rst_ni), 
+    .av_chipselect  (uart_amm_chipselect),  //   input,   width = 1, avalon_jtag_slave.chipselect
+    .av_address     (uart_amm_address),     //   input,   width = 1,                  .address
+    .av_read_n      (uart_amm_read_n),      //   input,   width = 1,                  .read_n
+    .av_readdata    (uart_amm_rdata),    //  output,  width = 32,                  .readdata
+    .av_write_n     (uart_amm_write_n),     //   input,   width = 1,                  .write_n
+    .av_writedata   (uart_amm_wdata),   //   input,  width = 32,                  .writedata
+    .av_waitrequest (uart_amm_ready), //  output,   width = 1,                  .waitrequest
+    .av_irq         (irq_sources[0])          //  output,   width = 1,               irq.irq
+);
+
+//axi4 to avalon converter
+interconnect_altera_mm_interconnect_1920_v5r556a axi_to_avalon_uart (
+		.axi_bridge_1_m0_awid                                             (uart.aw_id),                                        //   input,   width = 8,                                            axi_bridge_1_m0.awid
+		.axi_bridge_1_m0_awaddr                                           (uart.aw_addr),                                      //   input,  width = 64,                                                           .awaddr
+		.axi_bridge_1_m0_awlen                                            (uart.aw_len),                                       //   input,   width = 8,                                                           .awlen
+		.axi_bridge_1_m0_awsize                                           (uart.aw_size),                                      //   input,   width = 3,                                                           .awsize
+		.axi_bridge_1_m0_awburst                                          (uart.aw_burst),                                     //   input,   width = 2,                                                           .awburst
+		.axi_bridge_1_m0_awlock                                           (uart.aw_lock),                                      //   input,   width = 1,                                                           .awlock
+		.axi_bridge_1_m0_awcache                                          (uart.aw_cache),                                     //   input,   width = 4,                                                           .awcache
+		.axi_bridge_1_m0_awprot                                           (uart.aw_prot),                                      //   input,   width = 3,                                                           .awprot
+		.axi_bridge_1_m0_awvalid                                          (uart.aw_valid),                                     //   input,   width = 1,                                                           .awvalid
+		.axi_bridge_1_m0_awready                                          (uart.aw_ready),                                     //  output,   width = 1,                                                           .awready
+		.axi_bridge_1_m0_wdata                                            (uart.w_data),                                       //   input,  width = 64,                                                           .wdata
+		.axi_bridge_1_m0_wstrb                                            (uart.w_strb),                                       //   input,   width = 8,                                                           .wstrb
+		.axi_bridge_1_m0_wlast                                            (uart.w_last),                                       //   input,   width = 1,                                                           .wlast
+		.axi_bridge_1_m0_wvalid                                           (uart.w_valid),                                      //   input,   width = 1,                                                           .wvalid
+		.axi_bridge_1_m0_wready                                           (uart.w_ready),                                      //  output,   width = 1,                                                           .wready
+		.axi_bridge_1_m0_bid                                              (uart.b_id),                                         //  output,   width = 8,                                                           .bid
+		.axi_bridge_1_m0_bresp                                            (uart.b_resp),                                       //  output,   width = 2,                                                           .bresp
+		.axi_bridge_1_m0_bvalid                                           (uart.b_valid),                                      //  output,   width = 1,                                                           .bvalid
+		.axi_bridge_1_m0_bready                                           (uart.b_ready),                                      //   input,   width = 1,                                                           .bready
+		.axi_bridge_1_m0_arid                                             (uart.ar_id),                                        //   input,   width = 8,                                                           .arid
+		.axi_bridge_1_m0_araddr                                           (uart.ar_addr),                                      //   input,  width = 64,                                                           .araddr
+		.axi_bridge_1_m0_arlen                                            (uart.ar_len),                                       //   input,   width = 8,                                                           .arlen
+		.axi_bridge_1_m0_arsize                                           (uart.ar_size),                                      //   input,   width = 3,                                                           .arsize
+		.axi_bridge_1_m0_arburst                                          (uart.ar_burst),                                     //   input,   width = 2,                                                           .arburst
+		.axi_bridge_1_m0_arlock                                           (uart.ar_lock),                                      //   input,   width = 1,                                                           .arlock
+		.axi_bridge_1_m0_arcache                                          (uart.ar_cache),                                     //   input,   width = 4,                                                           .arcache
+		.axi_bridge_1_m0_arprot                                           (uart.ar_prot),                                      //   input,   width = 3,                                                           .arprot
+		.axi_bridge_1_m0_arvalid                                          (uart.ar_valid),                                     //   input,   width = 1,                                                           .arvalid
+		.axi_bridge_1_m0_arready                                          (uart.ar_ready),                                     //  output,   width = 1,                                                           .arready
+		.axi_bridge_1_m0_rid                                              (uart.r_id),                                         //  output,   width = 8,                                                           .rid
+		.axi_bridge_1_m0_rdata                                            (uart.r_data),                                       //  output,  width = 64,                                                           .rdata
+		.axi_bridge_1_m0_rresp                                            (uart.r_resp),                                       //  output,   width = 2,                                                           .rresp
+		.axi_bridge_1_m0_rlast                                            (uart.r_last),                                       //  output,   width = 1,                                                           .rlast
+		.axi_bridge_1_m0_rvalid                                           (uart.r_valid),                                      //  output,   width = 1,                                                           .rvalid
+		.axi_bridge_1_m0_rready                                           (uart.r_ready),                                      //   input,   width = 1,                                                           .rready
+		.jtag_uart_0_avalon_jtag_slave_address                            (uart_amm_address),     //  output,   width = 1,                              jtag_uart_0_avalon_jtag_slave.address
+		.jtag_uart_0_avalon_jtag_slave_write                              (uart_amm_write),       //  output,   width = 1,                                                           .write
+		.jtag_uart_0_avalon_jtag_slave_read                               (uart_amm_read),        //  output,   width = 1,                                                           .read
+		.jtag_uart_0_avalon_jtag_slave_readdata                           (uart_amm_rdata),    //   input,  width = 32,                                                           .readdata
+		.jtag_uart_0_avalon_jtag_slave_writedata                          (uart_amm_wdata),   //  output,  width = 32,                                                           .writedata
+		.jtag_uart_0_avalon_jtag_slave_waitrequest                        (uart_amm_ready), //   input,   width = 1,                                                           .waitrequest
+		.jtag_uart_0_avalon_jtag_slave_chipselect                         (uart_amm_chipselect),  //  output,   width = 1,                                                           .chipselect
+		.axi_bridge_1_clk_reset_reset_bridge_in_reset_reset               (~rst_ni),                              //   input,   width = 1,               axi_bridge_1_clk_reset_reset_bridge_in_reset.reset
+		.axi_bridge_1_m0_translator_clk_reset_reset_bridge_in_reset_reset (~rst_ni),                              //   input,   width = 1, axi_bridge_1_m0_translator_clk_reset_reset_bridge_in_reset.reset
+		.emif_fm_0_emif_usr_clk_clk                                       (clk_i)                                   //   input,   width = 1,                                     emif_fm_0_emif_usr_clk.clk
+	);
 
     // ---------------
     // 3. SPI
