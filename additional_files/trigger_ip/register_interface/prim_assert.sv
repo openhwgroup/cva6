@@ -100,7 +100,18 @@
 //  ASSUME_I:     Assume an immediate property
 
 
-`include "prim_assert_dummy_macros.svh"
+`define ASSERT_I(__name, __prop)
+`define ASSERT_INIT(__name, __prop)
+`define ASSERT_INIT_NET(__name, __prop)
+`define ASSERT_FINAL(__name, __prop)
+`define ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+`define ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+`define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+`define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+`define ASSERT_KNOWN(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+`define COVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+`define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+`define ASSUME_I(__name, __prop)
 
 
 //////////////////////////////
@@ -176,7 +187,143 @@
    `ASSERT(__name, __name``_p, __clk, 0)                                                                         \
   `endif
 
-`include "prim_assert_sec_cm.svh"
-`include "prim_flop_macros.sv"
+`define _SEC_CM_ALERT_MAX_CYC 30
+
+// When a named error signal rises, expect to see an associated error in at most MAX_CYCLES_ cycles.
+//
+// The NAME_ argument gets included in the name of the generated assertion, following an FpSecCm
+// prefix. The error signal should be at HIER_.ERR_NAME_ and the posedge is ignored if GATE_ is
+// true.
+//
+// This macro drives a magic "unused_assert_connected" signal, which is used for a static check to
+// ensure the assertions are in place.
+`define ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, ERR_NAME_, CLK_, RST_) \
+  `ASSERT(FpvSecCm``NAME_``,                                                                    \
+          $rose(HIER_.ERR_NAME_) && !(GATE_) |-> ##[0:MAX_CYCLES_] (ERR_),                      \
+          CLK_, RST_)                                                                           \
+  `ifdef INC_ASSERT                                                                             \
+    assign HIER_.unused_assert_connected = 1'b1;                                                \
+  `endif
+
+// When an error signal rises, expect to see the associated alert in at most MAX_CYCLE_ cycles.
+//
+// The NAME_, HIER_, GATE_, MAX_CYCLES_ and ERR_NAME_ arguments are the same as for
+// `ASSERT_ERROR_TRIGGER_ERR. The ALERT_ argument is the name of the alert that we expect to be
+// asserted.
+//
+// This macro adds an assumption that says the named error signal will stay low for the first 10
+// cycles after reset.
+`define ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, ERR_NAME_)    \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, (ALERT_.alert_p), GATE_, MAX_CYCLES_, ERR_NAME_, \
+                            `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)                      \
+  `ASSUME_FPV(``NAME_``TriggerAfterAlertInit_S,                                            \
+              $stable(rst_ni) == 0 |-> HIER_.ERR_NAME_ == 0 [*10])
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Assertions for CMs that trigger alerts
+//
+////////////////////////////////////////////////////////////////////////////////
+
+`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, unused_err_o)
+
+`define ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(NAME_, REG_TOP_HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(NAME_, \
+    REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ALERT_, GATE_, MAX_CYCLES_)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Assertions for CMs that trigger some other form of error
+//
+////////////////////////////////////////////////////////////////////////////////
+
+`define ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, unused_err_o, CLK_, RST_)
+
+`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, err_o, CLK_, RST_)
+
+`define ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, err_o, CLK_, RST_)
+
+`define ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC, CLK_ = clk_i, RST_ = !rst_ni) \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, err_o, CLK_, RST_)
+
+`define ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(NAME_, REG_TOP_HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC, CLK_ = clk_i, RST_ = !rst_ni) \
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ERR(NAME_, \
+    REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ERR_, GATE_, MAX_CYCLES_, CLK_, RST_)
+
+
+`define PRIM_FLOP_CLK clk_i
+`define PRIM_FLOP_RST rst_ni
+`define PRIM_FLOP_RESVAL '0
+
+/////////////////////
+// Register Macros //
+/////////////////////
+
+// TODO: define other variations of register macros so that they can be used throughout all designs
+// to make the code more concise.
+
+// Register with asynchronous reset.
+`define PRIM_FLOP_A(__d, __q, __resval = `PRIM_FLOP_RESVAL, __clk = `PRIM_FLOP_CLK, __rst_n = `PRIM_FLOP_RST) \
+  always_ff @(posedge __clk or negedge __rst_n) begin \
+    if (!__rst_n) begin                               \
+      __q <= __resval;                                \
+    end else begin                                    \
+      __q <= __d;                                     \
+    end                                               \
+  end
+
+///////////////////////////
+// Macro for Sparse FSMs //
+///////////////////////////
+
+// Simulation tools typically infer FSMs and report coverage for these separately. However, tools
+// like Xcelium and VCS seem to have problems inferring FSMs if the state register is not coded in
+// a behavioral always_ff block in the same hierarchy. To that end, this uses a modified variant
+// with a second behavioral register definition for RTL simulations so that FSMs can be inferred.
+// Note that in this variant, the __q output is disconnected from prim_sparse_fsm_flop and attached
+// to the behavioral flop. An assertion is added to ensure equivalence between the
+// prim_sparse_fsm_flop output and the behavioral flop output in that case.
+`define PRIM_FLOP_SPARSE_FSM(__name, __d, __q, __type, __resval = `PRIM_FLOP_RESVAL, __clk = `PRIM_FLOP_CLK, __rst_n = `PRIM_FLOP_RST, __alert_trigger_sva_en = 1) \
+  `ifdef SIMULATION                                   \
+    prim_sparse_fsm_flop #(                           \
+      .StateEnumT(__type),                            \
+      .Width($bits(__type)),                          \
+      .ResetValue($bits(__type)'(__resval)),          \
+      .EnableAlertTriggerSVA(__alert_trigger_sva_en), \
+      .CustomForceName(`PRIM_STRINGIFY(__q))          \
+    ) __name (                                        \
+      .clk_i   ( __clk   ),                           \
+      .rst_ni  ( __rst_n ),                           \
+      .state_i ( __d     ),                           \
+      .state_o (         )                            \
+    );                                                \
+    `PRIM_FLOP_A(__d, __q, __resval, __clk, __rst_n)  \
+    `ASSERT(``__name``_A, __q === ``__name``.state_o) \
+  `else                                               \
+    prim_sparse_fsm_flop #(                           \
+      .StateEnumT(__type),                            \
+      .Width($bits(__type)),                          \
+      .ResetValue($bits(__type)'(__resval)),          \
+      .EnableAlertTriggerSVA(__alert_trigger_sva_en)  \
+    ) __name (                                        \
+      .clk_i   ( __clk   ),                           \
+      .rst_ni  ( __rst_n ),                           \
+      .state_i ( __d     ),                           \
+      .state_o ( __q     )                            \
+    );                                                \
+  `endif
 
 `endif // PRIM_ASSERT_SV

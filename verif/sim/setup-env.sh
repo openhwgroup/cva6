@@ -17,10 +17,6 @@ export TESTS_PATH="$ROOT_PROJECT/verif/tests"
 export RISCV_DV_ROOT="$ROOT_PROJECT/verif/sim/dv"
 export CVA6_DV_ROOT="$ROOT_PROJECT/verif/env/corev-dv"
 
-if [ -z "$RISCV" ]; then
-  echo "Error: RISCV variable undefined."
-  return
-fi
 # Set RISCV toolchain-related variables
 export RISCV="$ROOT_PROJECT/util/riscv_toolchain"
 export LIBRARY_PATH="$RISCV/lib"
@@ -29,31 +25,19 @@ export C_INCLUDE_PATH="$RISCV/include"
 export CPLUS_INCLUDE_PATH="$RISCV/include"
 
 # Auto-detect RISC-V tool name prefix if not explicitly given.
-if [ -z "$CV_SW_PREFIX" ]; then
-    export CV_SW_PREFIX="$(ls -1 $RISCV/bin/riscv* | head -n 1 | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
-fi
+export CV_SW_PREFIX="$(ls -1 $RISCV/bin/riscv* | head -n 1 | rev | cut -d '/' -f 1 | cut -d '-' -f 2- | rev)-"
+
 # Default to auto-detected CC name if not explicitly given.
-if [ -z "$RISCV_CC" ]; then
-    export RISCV_CC="$RISCV/bin/${CV_SW_PREFIX}gcc"
-fi
+export RISCV_CC="$RISCV/bin/${CV_SW_PREFIX}gcc"
+
 # Default to auto-detected OBJCOPY name if not explicitly given.
-if [ -z "$RISCV_OBJCOPY" ]; then
-    export RISCV_OBJCOPY="$RISCV/bin/${CV_SW_PREFIX}objcopy"
-fi
+export RISCV_OBJCOPY="$RISCV/bin/${CV_SW_PREFIX}objcopy"
+
 
 # Set verilator and spike related variables
-if [ -z "$VERILATOR_INSTALL_DIR" ]; then
-    export VERILATOR_INSTALL_DIR="$ROOT_PROJECT"/tools/verilator
-fi
-
-if [ -z "$SPIKE_SRC_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-  export SPIKE_SRC_DIR="$ROOT_PROJECT"/verif/core-v-verif/vendor/riscv/riscv-isa-sim
-fi
-
-if [ -z "$SPIKE_INSTALL_DIR" -o "$SPIKE_INSTALL_DIR" = "__local__" ]; then
-    export SPIKE_INSTALL_DIR="$ROOT_PROJECT"/tools/spike
-fi
-
+export VERILATOR_INSTALL_DIR="$ROOT_PROJECT"/tools/verilator-v5.008
+export SPIKE_SRC_DIR="$ROOT_PROJECT"/verif/core-v-verif/vendor/riscv/riscv-isa-sim
+export SPIKE_INSTALL_DIR="$ROOT_PROJECT"/tools/spike
 export SPIKE_PATH="$SPIKE_INSTALL_DIR"/bin
 
 # Update the PATH to add all the tools

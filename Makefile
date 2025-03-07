@@ -126,6 +126,7 @@ ariane_pkg := \
               corev_apu/tb/axi_intf.sv                               \
               corev_apu/register_interface/src/reg_intf.sv           \
               corev_apu/tb/ariane_soc_pkg.sv                         \
+			  additional_files/trigger_ip/sv/trigger_reg_pkg.sv		 \
               corev_apu/riscv-dbg/src/dm_pkg.sv                      \
               corev_apu/tb/ariane_axi_soc_pkg.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
@@ -167,16 +168,19 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         core/cva6_rvfi.sv                                                            \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
-		$(wildcard additional_files/trigger_ip/register_interface/*.sv)              \
+		$(wildcard additional_files/trigger_ip/*.sv)								 \
 		$(wildcard additional_files/trigger_ip/register_interface/*.svh)             \
+		$(wildcard additional_files/trigger_ip/register_interface/*.sv)              \
 		$(wildcard additional_files/trigger_ip/sv/trigger_reg_top.sv)				 \
+		$(wildcard vendor/lowrisc_opentitan/src/*.sv)								 \
+		$(wildcard vendor/lowrisc_opentitan/include/*.svh)							 \
         $(wildcard corev_apu/clint/*.sv)                                             \
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
         $(wildcard corev_apu/fpga/src/apb_timer/*.sv)                                \
         $(wildcard corev_apu/fpga/src/axi_slice/src/*.sv)                            \
         $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
-				$(wildcard corev_apu/riscv-dbg/src/*.sv)                             \
+		$(wildcard corev_apu/riscv-dbg/src/*.sv)		                             \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
@@ -316,6 +320,7 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/corev_apu/register_interface/include/ $(CVA6_REPO_DIR)/corev_apu/tb/common/ \
           $(CVA6_REPO_DIR)/vendor/pulp-platform/axi/include/ \
 		  $(CVA6_REPO_DIR)/additional_files/trigger_ip/ \
+		  $(CVA6_REPO_DIR)/additional_files/trigger_ip/register_interface/ \
 	      $(CVA6_REPO_DIR)/additional_files/trigger_ip/sv/	\
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_rvfi/ \
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_components/uvmc_rvfi_reference_model/ \

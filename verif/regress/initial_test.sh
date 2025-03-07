@@ -6,7 +6,7 @@ source ./verif/sim/setup-env.sh
 export DV_SIMULATORS=veri-testharness,spike
 
 # set the target
-DV_TARGET = cv64a6_imafdc_sv39
+export DV_TARGET=cv64a6_imafdc_sv39
 
 if ! [ -n "$UVM_VERBOSITY" ]; then
   export UVM_VERBOSITY=UVM_NONE
