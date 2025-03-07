@@ -1686,7 +1686,7 @@ module decoder
         // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
         // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
         // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-        if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
+        if (CVA6Cfg.RVS && irq_ctrl_i.mideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
           if (CVA6Cfg.RVH) begin : hyp_int_gen
             if (v_i && irq_ctrl_i.hideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
               if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
