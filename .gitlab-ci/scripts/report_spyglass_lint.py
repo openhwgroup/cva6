@@ -68,7 +68,7 @@ def compare_summaries(baseline_info, new_info):
                 message = (
                     f"Count changed from {baseline_dict[key][0]} to {new_dict[key][0]}"
                 )
-                if key[0] == "ERROR" and new_dict[key][0] > baseline_dict[key][0]:
+                if new_dict[key][0] > baseline_dict[key][0]:
                     comparison_results.append((*key, *value, "FAIL", message))
                 else:
                     comparison_results.append((*key, *value, "PASS", message))
