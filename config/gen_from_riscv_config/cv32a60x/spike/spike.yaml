@@ -47,6 +47,9 @@ spike_param_tree:
       tdata2_accessible: 0
       tdata3_accessible: 0
       tselect_accessible: 0
+      mtvec_write_mask:     0xFFFFFFFC
+      mtvec_override_mask:  0x00000003
+      mtvec_override_value: 0x00000000
       mhartid: 0
       mvendorid_override_mask : 0xFFFFFFFF
       mvendorid_override_value: 1538
@@ -55,4 +58,3 @@ spike_param_tree:
       unified_traps: true
       mcycleh_implemented: false
       mhpmevent31_implemented: false
-      cvxif_x_num_rs: 2
