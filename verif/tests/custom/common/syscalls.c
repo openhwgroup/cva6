@@ -15,6 +15,8 @@
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
+register void *thread_pointer asm("tp");
+
 // tohost is 64 bits wide, irrespective of XLEN.  The structure expected in Spike is:
 // - tohost[63:56] == device (syscall: 0)
 // - tohost[55:48] == command (syscall: 0)
@@ -134,7 +136,6 @@ int __attribute__((weak)) main(int argc, char** argv)
 
 static void init_tls()
 {
-  register void* thread_pointer asm("tp");
   extern char _tdata_begin, _tdata_end, _tbss_end;
   size_t tdata_size = &_tdata_end - &_tdata_begin;
   memcpy(thread_pointer, &_tdata_begin, tdata_size);
