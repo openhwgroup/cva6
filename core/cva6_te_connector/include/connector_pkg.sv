@@ -26,7 +26,7 @@ package connector_pkg;
 `ifdef TE_ARCH64  // 64bit arch specific parameters
   localparam XLEN = 64;
 `else  // 32bit arch
-  localparam XLEN = 64;
+  localparam XLEN = 32;
 `endif
 
   // struct to save all itypes
