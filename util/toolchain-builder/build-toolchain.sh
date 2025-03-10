@@ -44,7 +44,7 @@ print_usage() {
     echo "  -h, --help           Print this help message and exit."
     echo "  -f, --force-rebuild  Rebuild toolchain from scratch (remove build dirs,"
     echo "                         configure and build again.)"
-    echo "  -y, --force-install  Don't exit if install dir ins't empty."
+    echo "  -y, --force-install  Don't exit if install dir isn't empty."
     echo "  CONFIG_NAME          Use configuration from file config/CONFIG_NAME.sh"
     echo "                         (default: '$CONFIG_NAME')"
     echo "  INSTALL_DIR          Path where the toolchain should be installed"
@@ -269,7 +269,7 @@ if [ -n "$(ls -A $INSTALL_DIR 2>/dev/null)" ]; then
         exit 1
     else
         rm -f $INSTALL_DIR/VERSION
-        echo "WARNING: Toolchain created with --force-install; may contain oudated files!" > $INSTALL_DIR/VERSION
+        echo "WARNING: Toolchain created with --force-install; may contain outdated files!" > $INSTALL_DIR/VERSION
     fi
 else
     mkdir -p "$INSTALL_DIR"

@@ -130,7 +130,6 @@ setup_sources_from_git()
     cd -
 }
 
-
 if [[ $CONFIG_NAME == "gcc"* ]]; then
     # Get Binutils sources
     echo "# Step 1: Obtaining sources of binutils..."
