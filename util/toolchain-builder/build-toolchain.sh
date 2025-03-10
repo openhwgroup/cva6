@@ -41,14 +41,15 @@ print_usage() {
     echo "  $SHELL $0 [-h|--help]"
     echo "  $SHELL $0 [-f|--force] [CONFIG_NAME] INSTALL_DIR"
     echo ""
-    echo "  -h, --help       Print this help message and exit."
-    echo "  -f, --force      Rebuild toolchain from scratch (remove build dirs,"
-    echo "                     configure and build again.)"
-    echo "  CONFIG_NAME      Use configuration from file config/CONFIG_NAME.sh"
-    echo "                     (default: '$CONFIG_NAME')"
-    echo "  INSTALL_DIR      Path where the toolchain should be installed"
-    echo "                     (relative paths will be converted to absolute ones,"
-    echo "                     missing parent directories will be created as needed.)"
+    echo "  -h, --help           Print this help message and exit."
+    echo "  -f, --force-rebuild  Rebuild toolchain from scratch (remove build dirs,"
+    echo "                         configure and build again.)"
+    echo "  -y, --force-install  Don't exit if install dir isn't empty."
+    echo "  CONFIG_NAME          Use configuration from file config/CONFIG_NAME.sh"
+    echo "                         (default: '$CONFIG_NAME')"
+    echo "  INSTALL_DIR          Path where the toolchain should be installed"
+    echo "                         (relative paths will be converted to absolute ones,"
+    echo "                         missing parent directories will be created as needed.)"
 }
 
 # Helper function to parse the cmdline args.
@@ -63,8 +64,12 @@ parse_cmdline() {
                 print_usage
                 exit 0
                 ;;
-            -f|--force)
+            -f|--force-rebuild)
                 FORCE_REBUILD=yes
+	            shift
+                ;;
+            -y|--force-install)
+                FORCE_INSTALL=yes
 	            shift
                 ;;
             -*|--*)
@@ -128,9 +133,14 @@ build_gcc() {
     cd "$BUILD_DIR/gcc"
 
     [ -f Makefile ] || CFLAGS="-O2" CXXFLAGS="-O2" \
-    $SRC_DIR/$GCC_DIR/configure $(GCC_CONFIGURE_OPTS)
+    $SRC_DIR/$GCC_DIR/configure $(GCC_CONFIGURE_OPTS $1)
     make -j$NUM_JOBS
     make install
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$GCC_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$GCC_DIR" rev-parse HEAD)
+    echo "GCC $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -139,16 +149,31 @@ build_llvm() {
     mkdir -p "$BUILD_DIR/llvm"
     cd "$BUILD_DIR/llvm"
 
-    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/llvm $(LLVM_CONFIGURE_OPTS)
+    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/llvm $(LLVM_CONFIGURE_OPTS $1)
     make -j$NUM_JOBS
     make install-distribution
 
     # Add symlinks to LLVM tools
     cd "$INSTALL_DIR/bin"
     for TOOL in clang clang++ cc c++; do
-        ln -sv clang riscv32-unknown-elf-$TOOL
-        ln -sv clang riscv64-unknown-elf-$TOOL
+        ln -sv clang $1-$TOOL
     done
+    for TOOL in ar nm objcopy objdump ranlib readobj size strings strip; do
+        ln -sv llvm-$TOOL $1-$TOOL
+    done
+    ln -sv lld $1-ld
+
+    cat <<EOF | tee $1-readelf > llvm-readelf
+#!/bin/bash
+\$(dirname "\$0")/llvm-readobj --elf-output-style=GNU "\$@"
+EOF
+    chmod +x $1-readelf
+    chmod +x llvm-readelf
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$LLVM_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$LLVM_DIR" rev-parse HEAD)
+    echo "LLVM $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -158,10 +183,21 @@ build_newlib() {
     mkdir -p "$BUILD_DIR/newlib-$1"
     cd "$BUILD_DIR/newlib-$1"
 
-    [ -f Makefile ] || CFLAGS_FOR_TARGET="-O2 -mcmodel=medany -Wno-unused-command-line-argument -Wno-implicit-function-declaration -Wno-int-conversion" \
-    $SRC_DIR/$NEWLIB_DIR/configure $(NEWLIB_CONFIGURE_OPTS $1)
+    # Only enable multilib for gcc
+    case "$2" in
+        "llvm") MULTILIB="--disable-multilib" ;;
+         "gcc") MULTILIB="--enable-multilib"  ;;
+    esac
+
+    cflags="-O2 -mcmodel=medany -Wno-unused-command-line-argument -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unknown-pragmas"
+    [ -f Makefile ] || CFLAGS_FOR_TARGET="$cflags" $SRC_DIR/$NEWLIB_DIR/configure $(NEWLIB_CONFIGURE_OPTS $1) $MULTILIB
     make -j$NUM_JOBS
     make install
+
+    # Write version
+    BRANCH_NAME=$(git -C "$SRC_DIR/$NEWLIB_DIR" branch --show-current)
+    COMMIT_HASH=$(git -C "$SRC_DIR/$NEWLIB_DIR" rev-parse HEAD)
+    echo "Newlib $BRANCH_NAME $COMMIT_HASH" >> "$INSTALL_DIR/VERSION"
 }
 
 
@@ -170,49 +206,39 @@ build_compiler_rt() {
     mkdir -p "$BUILD_DIR/compiler-rt-$1"
     cd "$BUILD_DIR/compiler-rt-$1"
 
-    COMPILER_RT_CONFIGURE_OPTS $1
-    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/compiler-rt $(COMPILER_RT_CONFIGURE_OPTS $1)
+    cflags="-fuse-ld=lld -O2 -Wno-unused-command-line-argument"
+    [ -f Makefile ] || cmake $SRC_DIR/$LLVM_DIR/compiler-rt $(COMPILER_RT_CONFIGURE_OPTS $1) -DCMAKE_C_FLAGS="$cflags" -DCMAKE_CXX_FLAGS="$cflags"
     make -j$NUM_JOBS
     make install
 }
 
 
 build_gcc_toolchain() {
-    [ $FORCE_REBUILD = "yes" ] && rm -rf $BUILD_DIR/{gcc,*-none-elf}
+    [ $FORCE_REBUILD = "yes" ] && rm -rf $BUILD_DIR/{gcc,*-$1}
 
     echo "### Building Binutils ..."
-    build_binutils riscv-none-elf
+    build_binutils $1
 
     echo "### Building GCC ..."
-    build_gcc
+    build_gcc $1
 
     echo "### Building Newlib ..."
-    build_newlib riscv-none-elf
+    build_newlib $1 gcc
 }
 
 
 build_llvm_toolchain() {
-    [ $FORCE_REBUILD = "yes" ] && rm -rf $BUILD_DIR/{llvm,*-unknown-elf}
-
-    echo "### Building Binutils ..."
-    build_binutils riscv32-unknown-elf
+    [ $FORCE_REBUILD = "yes" ] && rm -rf $BUILD_DIR/{llvm,*-$1}
 
     echo "### Building LLVM ..."
-    build_llvm
+    build_llvm $1
 
-    echo "### Building Newlib 32 bits ..."
-    build_newlib riscv32-unknown-elf
+    echo "### Building Newlib for $1 ..."
+    build_newlib $1 llvm
 
-    echo "### Building Newlib 64 bits ..."
-    build_newlib riscv64-unknown-elf
-
-    echo "### Building Compiler-RT 32 bits ..."
-    build_compiler_rt riscv32-unknown-elf
-
-    echo "### Building Compiler-RT 64 bits ..."
-    build_compiler_rt riscv64-unknown-elf
+    echo "### Building Compiler-RT for $1 ..."
+    build_compiler_rt $1
 }
-
 
 
 # Absolute path of the toolchain-builder directory
@@ -225,6 +251,8 @@ CONFIG_NAME="gcc-13.1.0-baremetal"
 
 # - rebuild mode
 FORCE_REBUILD=no
+# - install mode
+FORCE_INSTALL=no
 
 
 echo "### Parsing the cmdline..."
@@ -235,16 +263,22 @@ parse_cmdline "$@"
 
 # Make sure the install directory exists and is empty
 if [ -n "$(ls -A $INSTALL_DIR 2>/dev/null)" ]; then
-    echo "Install directory $INSTALL_DIR is not empty!"
-    exit 1
+    if [ $FORCE_INSTALL = "no" ]; then
+        echo "Install directory $INSTALL_DIR is not empty!"
+        echo "Use -y or --force-install if you want to skip this check"
+        exit 1
+    else
+        rm -f $INSTALL_DIR/VERSION
+        echo "WARNING: Toolchain created with --force-install; may contain outdated files!" > $INSTALL_DIR/VERSION
+    fi
 else
     mkdir -p "$INSTALL_DIR"
 fi
 
 if [[ $CONFIG_NAME == "gcc"* ]]; then
-    build_gcc_toolchain
+    build_gcc_toolchain riscv-none-elf
 else
-    build_llvm_toolchain
+    build_llvm_toolchain riscv32-unknown-elf
 fi
 
 

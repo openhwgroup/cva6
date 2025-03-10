@@ -123,31 +123,35 @@ setup_sources_from_git()
     # Check out the required revision as local branch (the shallow clone
     # leaves a "detached HEAD" state.)
     cd $SRC_DIR/$2
-    LOCAL_BRANCH="${3}-local"
-    { git branch | grep -q "$LOCAL_BRANCH" ; } || git checkout -b "$LOCAL_BRANCH"
-    git checkout "$LOCAL_BRANCH"
+    { git branch | grep -q "$3" ; } || git checkout -b "$3"
+    git checkout "$3"
     # Pull any updates available upstream (useful for 'master' branches).
     git pull origin "$3"
     cd -
 }
 
-# Get Binutils sources
-echo "# Step 1: Obtaining sources of binutils..."
-setup_sources_from_git $BINUTILS_REPO $BINUTILS_DIR $BINUTILS_COMMIT
-
 if [[ $CONFIG_NAME == "gcc"* ]]; then
+    # Get Binutils sources
+    echo "# Step 1: Obtaining sources of binutils..."
+    setup_sources_from_git $BINUTILS_REPO $BINUTILS_DIR $BINUTILS_COMMIT
+
     # Get GCC sources
     echo "# Step 2: Obtaining sources of GCC..."
     setup_sources_from_git $GCC_REPO $GCC_DIR $GCC_COMMIT
+
+    # Get Newlib sources
+    echo "# Step 3: Obtaining sources of newlib..."
+    setup_sources_from_git $NEWLIB_REPO $NEWLIB_DIR $NEWLIB_COMMIT
 else
     # Get LLVM sources
-    echo "# Step 2: Obtaining sources of LLVM..."
+    echo "# Step 1: Obtaining sources of LLVM..."
     setup_sources_from_git $LLVM_REPO $LLVM_DIR $LLVM_COMMIT
+
+    # Get Newlib sources
+    echo "# Step 2: Obtaining sources of newlib..."
+    setup_sources_from_git $NEWLIB_REPO $NEWLIB_DIR $NEWLIB_COMMIT
 fi
 
-# Get Newlib sources
-echo "# Step 3: Obtaining sources of newlib..."
-setup_sources_from_git $NEWLIB_REPO $NEWLIB_DIR $NEWLIB_COMMIT
 
 # Exit happily.
 exit 0
