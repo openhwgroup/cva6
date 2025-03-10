@@ -128,7 +128,7 @@
   logic [Cfg.NrCommitPorts-1:0][Cfg.XLEN-1:0] wdata; \
   logic branch_valid; \
   logic is_taken; \
-  logic tval; \
+  logic [Cfg.XLEN-1:0] tval; \
 }
 
 `define RVFI_PROBES_CSR_T(Cfg) struct packed { \
