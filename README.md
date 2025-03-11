@@ -8,7 +8,33 @@ It has a configurable size, separate TLBs, a hardware PTW and branch-prediction 
 # Resources and Ecosystem
 
 The CVA6 core is part of a vivid ecosystem. In [this document](RESOURCES.md), we gather pointers to this ecosystem (building blocks, designs, partners...)
-
+This guide provides step-by-step instructions to prepare and run a simulation using the CVA6 core.
+First, clone the core from the Git repository and initialize its submodules:
+```bash
+git clone https://github.com/X-Crpt/cva6.git
+cd cva6
+git submodule update --init --recursive
+```
+It is strongly recommended to use the toolchain built with the provided scripts:
+```bash
+export ROOT_PROJECT=$PWD
+export RISCV="$ROOT_PROJECT/util/riscv_toolchain"
+export INSTALL_DIR=$RISCV
+cd util/toolchain-builder/
+bash get-toolchain.sh
+bash build-toolchain.sh $INSTALL_DIR
+cd ../..
+```
+To set up the necessary simulators, run the following scripts:
+```bash
+source verif/regress/install-verilator.sh
+source verif/regress/install-spike.sh
+```
+`setup-env.sh` file located at `verif/sim/setup-env.sh` and `verif/sim/cva6.py` file have been modified for our application. 
+To run a test using the core and the Spike simulator, execute:
+```bash
+source verif/regress/initial_test.sh
+```
 
 # Branches and Organization
 ### 1. Basic CV-X-IF Coprocessor Test  
