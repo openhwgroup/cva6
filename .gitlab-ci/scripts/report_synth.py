@@ -82,7 +82,7 @@ hier_metric = rb.TableMetric('Hierarchies details')
 for i in hier:
     hier_metric.add_value(
         i[0],  # hier
-        f"{int(float(i[1])/kgate_ratio)} kGates",  # area
+        f"{float(i[1])/kgate_ratio:.3f} kGates",  # area
         f"{int(float(i[2]))} %",  # %
         #int(float(i[3]))/int(float(i[1])*100),  # % combi
         #int(float(i[4]))/int(float(i[1])*100),  # % reg
