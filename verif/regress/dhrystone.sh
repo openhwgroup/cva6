@@ -54,7 +54,7 @@ cflags=(
         -nostdlib
         -nostartfiles
         -lgcc
-        -O3 --no-inline
+        -O3 -fno-inline
         -Wno-implicit-function-declaration
         -Wno-implicit-int
         -I../tests/custom/env
@@ -71,4 +71,5 @@ python3 cva6.py \
         --c_tests "$src0" \
         --sv_seed 1 \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
+        --linker ../../config/gen_from_riscv_config/cv32a65x/linker/link.ld \
         $DV_OPTS

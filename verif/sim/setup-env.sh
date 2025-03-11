@@ -39,6 +39,10 @@ fi
 if [ -z "$RISCV_OBJCOPY" ]; then
     export RISCV_OBJCOPY="$RISCV/bin/${CV_SW_PREFIX}objcopy"
 fi
+# Default to auto-detected OBJDUMP name if not explicitly given.
+if [ -z "$RISCV_OBJDUMP" ]; then
+    export RISCV_OBJDUMP="$RISCV/bin/${CV_SW_PREFIX}objdump"
+fi
 
 # Set verilator and spike related variables
 if [ -z "$VERILATOR_INSTALL_DIR" ]; then

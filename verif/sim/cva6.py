@@ -354,8 +354,12 @@ def gen(test_list, argv, output_dir, cwd):
 
 # Convert the ELF to plain binary, used in RTL sim
 def elf2bin(elf, binary, debug_cmd):
+
+  global COMPILER
+
+  OBJCOPY = COMPILER[:-2] + "OBJCOPY"
   logging.info("Converting to %s" % binary)
-  cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
+  cmd = ("%s -O binary %s %s" % (get_env_var(OBJCOPY, debug_cmd = debug_cmd), elf, binary))
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
@@ -382,6 +386,7 @@ def sanitize_compiler_isa(isa, compiler):
   return new_isa
 
 
+def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
   """Use riscv gcc toolchain to compile the assembly program
 
   Args:
@@ -442,7 +447,7 @@ def sanitize_compiler_isa(isa, compiler):
       logging.info("Compiling test: %s" % asm)
       run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
       elf2bin(elf, binary, debug_cmd)
-
+      elf2dump(elf, dump, debug_cmd)
 
 
 def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss, iterations = None):
@@ -511,6 +516,9 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     iss_timeout : Timeout for ISS simulation (default: 500)
     testlist    : Test list identifier (default: "custom")
   """
+
+  global COMPILER
+
   if testlist != None:
     testlist = testlist.split('/')[-1].strip("testlist_").split('.')[0]
 
@@ -903,6 +911,9 @@ def load_config(args, cwd):
   else:
     args.core_setting_dir = args.custom_target
 
+  global COMPILER
+  COMPILER = "RISCV_CC"
+
   base = ""
   if not args.custom_target:
     if not args.testlist:
@@ -1012,7 +1023,7 @@ def incorrect_version_exit(tool, tool_version, required_version):
   sys.exit(RET_FAIL)
 
 
-def check_cc_version():
+def check_gcc_version():
   REQUIRED_GCC_VERSION = 11
 
   cc_path = get_env_var("RISCV_CC")
@@ -1024,6 +1035,19 @@ def check_cc_version():
 
   if int(cc_version_number[0]) < REQUIRED_GCC_VERSION:
     incorrect_version_exit("GCC", cc_version_string, f">={REQUIRED_GCC_VERSION}")
+
+def check_llvm_version():
+  REQUIRED_LLVM_VERSION = 19
+
+  cc_path = get_env_var("RISCV_LLVM_CC")
+  cc_version = run_cmd(f"{cc_path} --version").split("\n")[0].split(" ")
+  cc_version_string = cc_version[cc_version.index("version") + 1]
+  cc_version_number = re.split(r'\D+', cc_version_string)
+
+  logging.info(f"LLVM Version: {cc_version_string}")
+
+  if int(cc_version_number[0]) < REQUIRED_LLVM_VERSION:
+    incorrect_version_exit("LLVM", cc_version_string, f">={REQUIRED_LLVM_VERSION}")
 
 
 def check_spike_version():
@@ -1081,7 +1105,11 @@ def check_verilator_version():
 
 
 def check_tools_version():
-  check_cc_version()
+  global COMPILER
+  if COMPILER == "RISCV_CC":
+    check_gcc_version()
+  else:
+    check_llvm_version()
   check_spike_version()
   check_verilator_version()
 

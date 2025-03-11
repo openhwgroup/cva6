@@ -34,8 +34,15 @@ fi
 
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
-CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
-
+CC_OPTS="-static \
+         -mcmodel=medany \
+         -fvisibility=hidden \
+         -nostartfiles \
+         -g \
+         ../tests/custom/common/syscalls.c \
+         ../tests/custom/common/crt.S \
+         -I../tests/custom/env \
+         -I../tests/custom/common"
 
 cd verif/sim/
 
