@@ -5,9 +5,9 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_decreasing_entries_test.S (TST04-4)
+#   decreasing_entries_test.S (TST04-4)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:
@@ -31,15 +31,15 @@ main:
     csrw pmpaddr4, t0
 
     # From 0x0002_0000 to 0x8000_0000 no Permissions.
-    li t0, 0x20000000 
+    li t0, 0x20000000
     csrw pmpaddr3, t0
 
     # From 0x0001_0000 to 0x0002_0000 only Execute.
-    li t0, 0x00008000 
+    li t0, 0x00008000
     csrw pmpaddr2, t0
 
     # From 0x0000_1000 to 0x0001_0000 no Permissions.
-    li t0, 0x00004000 
+    li t0, 0x00004000
     csrw pmpaddr1, t0
 
     # From 0x0000_0000 to 0x0000_1000 only Execute.

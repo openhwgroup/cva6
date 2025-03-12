@@ -5,14 +5,14 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_exact_csrr_test.S (TST05-1)
+#   exact_csrr_test.S (TST05-1)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:
 
-    # Write in addresses and check what is written. 
+    # Write in addresses and check what is written.
 
     # Checking PMP ADDR 0
     li t0, 0xFACADE00

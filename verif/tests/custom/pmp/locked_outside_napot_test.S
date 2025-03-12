@@ -5,14 +5,14 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_locked_outside_napot_test.S (TST14-26, TST14-36)
+#   locked_outside_napot_test.S (TST14-26, TST14-36)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:
 
-    # Set up PMP using NAPOT, from 0x8000_0000 to 0xB000_0000. 
+    # Set up PMP using NAPOT, from 0x8000_0000 to 0xB000_0000.
     li t2, 0x25ffffff
     csrw pmpaddr0, t2
 
