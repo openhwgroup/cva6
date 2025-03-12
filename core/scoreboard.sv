@@ -262,7 +262,7 @@ module scoreboard #(
     end
   end
 
-  assign bmiss = resolved_branch_i.valid && resolved_branch_i.is_mispredict;
+  assign bmiss = resolved_branch_i.is_mispredict;
   assign after_flu_wb = trans_id_i[ariane_pkg::FLU_WB] + 'd1;
 
   // FIFO counter updates

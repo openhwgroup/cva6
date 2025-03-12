@@ -323,7 +323,7 @@ module frontend
     for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++)
     bp_valid |= ((cf_type[i] != NoCF & cf_type[i] != Return) | ((cf_type[i] == Return) & ras_predict.valid));
   end
-  assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
+  assign is_mispredict = resolved_branch_i.is_mispredict;
 
   logic spec_req_non_idempot;
 
@@ -632,8 +632,7 @@ module frontend
   assign bht_update.pc = resolved_branch_i.pc;
   assign bht_update.taken = resolved_branch_i.is_taken;
   // only update mispredicted branches e.g. no returns from the RAS
-  assign btb_update.valid = resolved_branch_i.valid
-                                & resolved_branch_i.is_mispredict
+  assign btb_update.valid = resolved_branch_i.is_mispredict
                                 & (resolved_branch_i.cf_type == ariane_pkg::JumpR);
   assign btb_update.pc = resolved_branch_i.pc;
   assign btb_update.target_address = resolved_branch_i.target_address;

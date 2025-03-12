@@ -126,8 +126,7 @@ module perf_counters
         5'b00111: events[i] = ex_i.valid;  //Exceptions
         5'b01000: events[i] = eret_i;  //Exception handler returns
         5'b01001: events[i] = |branch_event;  // Branch instructions
-        5'b01010:
-        events[i] = resolved_branch_i.valid && resolved_branch_i.is_mispredict;//Branch mispredicts
+        5'b01010: events[i] = resolved_branch_i.is_mispredict;  //Branch mispredicts
         5'b01011: events[i] = branch_exceptions_i.valid;  //Branch exceptions
         // The standard software calling convention uses register x1 to hold the return address on a call
         // the unconditional jump is decoded as ADD op
