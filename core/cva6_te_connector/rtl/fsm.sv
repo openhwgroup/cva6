@@ -21,28 +21,35 @@
 it determines the iaddr, ilastsize, iretire
 */
 
-module fsm (
+module fsm #(
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type uop_entry_t = logic
+) (
     input logic clk_i,
     input logic rst_ni,
 
-    input connector_pkg::uop_entry_s                                uop_entry_i,
-    input logic                      [connector_pkg::CAUSE_LEN-1:0] cause_i,
-    input logic                      [     connector_pkg::XLEN-1:0] tval_i,
+    input uop_entry_t                                uop_entry_i,
+    input logic       [connector_pkg::CAUSE_LEN-1:0] cause_i,
+    input logic       [            CVA6Cfg.XLEN-1:0] tval_i,
 
-    output logic                                  valid_o,
-    output logic [connector_pkg::IRETIRE_LEN-1:0] iretire_o,
-    output logic                                  ilastsize_o,
-    output logic [  connector_pkg::ITYPE_LEN-1:0] itype_o,
-    output logic [  connector_pkg::CAUSE_LEN-1:0] cause_o,
-    output logic [       connector_pkg::XLEN-1:0] tval_o,
-    output logic [   connector_pkg::PRIV_LEN-1:0] priv_o,
-    output logic [       connector_pkg::XLEN-1:0] iaddr_o
+    output logic                                              valid_o,
+    output logic             [connector_pkg::IRETIRE_LEN-1:0] iretire_o,
+    output logic                                              ilastsize_o,
+    output logic             [  connector_pkg::ITYPE_LEN-1:0] itype_o,
+    output logic             [  connector_pkg::CAUSE_LEN-1:0] cause_o,
+    output logic             [              CVA6Cfg.XLEN-1:0] tval_o,
+    output riscv::priv_lvl_t                                  priv_o,
+    output logic             [              CVA6Cfg.XLEN-1:0] iaddr_o
 );
+  typedef enum logic {
+    IDLE  = 0,
+    COUNT = 1
+  } state_t;
 
   /* internal signals */
-  connector_pkg::state_e current_state, next_state;
-  logic [connector_pkg::XLEN-1:0] iaddr_d, iaddr_q;
-  logic [connector_pkg::XLEN-1:0] iretire_d, iretire_q;
+  state_t current_state, next_state;
+  logic [CVA6Cfg.XLEN-1:0] iaddr_d, iaddr_q;
+  logic [CVA6Cfg.XLEN-1:0] iretire_d, iretire_q;
   logic ilastsize_d, ilastsize_q;
   logic exception;
   logic interrupt;
@@ -70,14 +77,14 @@ module fsm (
     itype_o = '0;
     cause_o = '0;
     tval_o = '0;
-    priv_o = '0;
+    priv_o = riscv::PRIV_LVL_U;
     iaddr_d = '0;
     one_cycle = '0;
     update_iaddr = '0;
     update_iretire = '0;
 
     case (current_state)
-      connector_pkg::IDLE: begin
+      IDLE: begin
         if (uop_entry_i.itype == 0 && uop_entry_i.valid) begin  // standard instr and valid
           // sets iaddr, increases iretire
           iaddr_d = uop_entry_i.pc;
@@ -89,7 +96,7 @@ module fsm (
           // saving iretire value
           update_iretire = '1;
           // goes to COUNT
-          next_state = connector_pkg::COUNT;
+          next_state = COUNT;
         end else if (special_inst) begin  // special inst as first inst
           // set all params for output
           iaddr_d = uop_entry_i.pc;
@@ -102,7 +109,7 @@ module fsm (
           // read now the output
           one_cycle = '1;
           // remains here
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else if (interrupt) begin
           itype_o = uop_entry_i.itype;
           cause_o = cause_i;
@@ -123,7 +130,7 @@ module fsm (
           // read now the output
           one_cycle = '1;
           // remains here
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else if (exception) begin
           itype_o = uop_entry_i.itype;
           cause_o = cause_i;
@@ -145,13 +152,13 @@ module fsm (
           // read now the output
           one_cycle = '1;
           // remains here
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else begin
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end
       end
 
-      connector_pkg::COUNT: begin
+      COUNT: begin
         if (uop_entry_i.itype == 0 && uop_entry_i.valid) begin  // standard inst
           // increases iretire
           iretire_d = uop_entry_i.compressed ? iretire_q + 1 : iretire_q + 2;
@@ -161,7 +168,7 @@ module fsm (
           // saving iretire value
           update_iretire = '1;
           // remains here
-          next_state = connector_pkg::COUNT;
+          next_state = COUNT;
         end else if (special_inst) begin
           // set all params for output
           iretire_d = uop_entry_i.compressed ? iretire_q + 1 : iretire_q + 2;
@@ -172,7 +179,7 @@ module fsm (
           // output readable
           valid_o = '1;
           // goes to IDLE
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else if (interrupt) begin
           itype_o = uop_entry_i.itype;
           cause_o = cause_i;
@@ -190,7 +197,7 @@ module fsm (
           // output readable
           valid_o = '1;
           // remains here
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else if (exception) begin
           itype_o = uop_entry_i.itype;
           cause_o = cause_i;
@@ -209,9 +216,9 @@ module fsm (
           // output readable
           valid_o = '1;
           // remains here
-          next_state = connector_pkg::IDLE;
+          next_state = IDLE;
         end else begin
-          next_state = connector_pkg::COUNT;
+          next_state = COUNT;
         end
       end
 
@@ -221,7 +228,7 @@ module fsm (
   // sequential logic
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      current_state <= connector_pkg::IDLE;
+      current_state <= IDLE;
       iaddr_q <= '0;
       iretire_q <= '0;
       ilastsize_q <= '0;

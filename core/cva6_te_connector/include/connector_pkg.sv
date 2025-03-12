@@ -17,20 +17,15 @@
 // Maxime COLSON, Thales
 
 package connector_pkg;
-  localparam CAUSE_LEN = 5;
-  localparam PRIV_LEN = 2;  // depends on CPU implementation
-  localparam INST_LEN = 32;
-  localparam ITYPE_LEN = 3;
-  localparam IRETIRE_LEN = 32;
-  localparam TIME_LEN = 64;
-`ifdef TE_ARCH64  // 64bit arch specific parameters
-  localparam XLEN = 64;
-`else  // 32bit arch
-  localparam XLEN = 32;
-`endif
+  // These parameters could be used in the ENCODER stage
+  localparam CAUSE_LEN = 5;  //Size is ecause_width_p in the E-Trace SPEC
+  localparam ITYPE_LEN = 3;  //Size is itype_width_p in the E-Trace SPEC (3 or 4)
+  localparam IRETIRE_LEN = 32;  //Size is iretire_width_p in the E-Trace SPEC
+  //localparam TIME_LEN = 64; //rvfi_csr used logic [63:0] cycle_q but TIME_LEN could be used in the ENCODER stage
 
   // struct to save all itypes
   // refer to page 21 of the spec
+  // The enum could be used in the ENCODER stage
   typedef enum logic [ITYPE_LEN-1:0] {
     STD = 0,  // none of the other named itype codes
     EXC = 1,  // exception
@@ -48,27 +43,6 @@ package connector_pkg;
     RET = 13, // return
     OUIJ = 14, // other uninferable jump
     OIJ = 15*/  // other inferable jump
-  } itype_e;
-
-  // struct to store data inside the uop FIFO
-  typedef struct packed {
-    logic                 valid;
-    logic [XLEN-1:0]      pc;
-    logic [ITYPE_LEN-1:0] itype;       // determined in itype detector
-    logic                 compressed;
-    logic [PRIV_LEN-1:0]  priv;
-  } uop_entry_s;
-
-  // struct to store exc and int infos
-  typedef struct packed {
-    logic [CAUSE_LEN-1:0] cause;
-    logic [XLEN-1:0]      tval;
-  } exc_info_s;
-
-  // states definition for FSM
-  typedef enum logic {
-    IDLE  = 0,
-    COUNT = 1
-  } state_e;
+  } itype_t;
 
 endpackage

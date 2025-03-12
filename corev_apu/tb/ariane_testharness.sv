@@ -723,7 +723,7 @@ module ariane_testharness #(
 
 
   cva6_te_connector #(
-      .NRET(2),
+      .CVA6Cfg   (CVA6Cfg),
       .N(1),  // max number of special inst in a cycle
       .FIFO_DEPTH(16)  // number of entries in each FIFO
   ) i_cva6_te_connector (
