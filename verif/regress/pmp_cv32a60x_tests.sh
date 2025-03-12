@@ -6,7 +6,6 @@
 ## Original Author: Konstantinos Leventos - Robert Bosch France SAS
 ##-----------------------------------------------------------------------------
 
-
 # Where the tools are
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -18,7 +17,6 @@ source ./verif/regress/install-spike.sh
 
 # Setup sim env
 source ./verif/sim/setup-env.sh
-
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=vcs-uvm
