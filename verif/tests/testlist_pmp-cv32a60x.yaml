@@ -31,28 +31,47 @@ common_test_config: &common_test_config
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
 
 testlist:
-  - test: granularity_test
+  - test: decreasing_entries_test
     <<: *common_test_config
     iterations: 1
-    asm_tests: <path_var>/custom/pmp/granularity_test.S
+    asm_tests: <path_var>/custom/pmp/decreasing_entries_test.S
+
+  - test: defined_matches
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/pmp/defined_matches.S
+
+  - test: double_entries_test
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/pmp/double_entries_test.S
 
   - test: exact_csrr_test
     <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/custom/pmp/exact_csrr_test.S
 
+  - test: granularity_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/pmp/granularity_test.S
+
+  - test: locked_outside_napot_test
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/pmp/locked_outside_napot_test.S
+
+  - test: locked_outside_tor_test
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/pmp/locked_outside_tor_test.S
+
+  - test: lsu_napot_test
+    <<: *common_test_config
+    iterations: 0
+    asm_tests: <path_var>/custom/pmp/lsu_napot_test.S
+
   - test: lsu_tor_test
     <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/custom/pmp/lsu_tor_test.S
-
-  - test: decreasing_entries_test
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/custom/pmp/decreasing_entries_test.S
-
-  - test: locked_outside_tor_test
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/custom/pmp/locked_outside_tor_test.S
-
