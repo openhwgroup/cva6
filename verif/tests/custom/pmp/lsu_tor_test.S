@@ -5,32 +5,46 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_lsu_napot_test.S (TST14-11, TST14-21, TST14-31)
+#   lsu_tor_test.S (TST16-11, TST16-21, TST16-31)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:
 
-    # Configure PMP using NAPOT.
+    # Configure PMP using TOR.
 
     # From 0x0000_0000 to 0x0000_1000 only Execute.
-    li t0, 0x000001ff
+    li t0, 0x00000400
     csrw pmpaddr0, t0
 
-    # From 0x0001_0000 to 0x0002_0000 only Execute.
-    li t0, 0x00005fff 
+    # From 0x0000_1000 to 0x0001_0000 no Permissions.
+    li t0, 0x00004000
     csrw pmpaddr1, t0
 
-    # From 0x8000_0000 to 0xC000_0000 Read-Write-Execute.
-    li t0, 0x27ffffff 
+    # From 0x0001_0000 to 0x0002_0000 only Execute.
+    li t0, 0x00008000
     csrw pmpaddr2, t0
 
+    # From 0x0002_0000 to 0x8000_0000 no Permissions.
+    li t0, 0x20000000
+    csrw pmpaddr3, t0
 
-    # Addr 0-2 configs, written in cfg0, with LOCK OFF, and NAPOT.
-    li t0, 0x001f1c1c
+    # From 0x8000_0000 to 0xC000_0000 Read-Write-Execute.
+    li t0, 0x30000000
+    csrw pmpaddr4, t0
+
+
+    # Addr 0-3 configs, written in cfg0, with LOCK OFF, and TOR.
+    li t0, 0x080c080c
     csrw pmpcfg0, t0
     csrr t1, pmpcfg0
+    bne t0, t1, fail
+
+    # Addr 4 config, written in cfg1, with LOCK OFF, and TOR.
+    li t0, 0x0000000f
+    csrw pmpcfg1, t0
+    csrr t1, pmpcfg1
     bne t0, t1, fail
 
 
@@ -65,10 +79,10 @@ main:
     bne t2, t3, fail
 
 
-    # Do the EXEC "RET" test.    
-    
+    # Do the EXEC "RET" test.
+
     # Exec test 1, at 0x0000_0800.
-    li t0, 0x00000800
+    li t0, 0xA0000800
     li t1, 0x8082
     sw t1, 0(t0)
     lw t2, 0(t0)
@@ -76,7 +90,7 @@ main:
     jalr t0
 
     # Exec test 2, at 0x0001_8000.
-    li t0, 0x00018000
+    li t0, 0xB0018000
     li t1, 0x8082
     sw t1, 0(t0)
     lw t2, 0(t0)

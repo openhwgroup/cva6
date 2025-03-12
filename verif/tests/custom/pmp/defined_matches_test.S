@@ -5,9 +5,9 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_defined_matches_test.S (TST10-1, TST10-2)
+#   defined_matches_test.S (TST10-1, TST10-2)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:

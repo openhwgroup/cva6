@@ -5,9 +5,9 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_locked_outside_tor_test.S (TST16-26, TST16-36)
+#   locked_outside_tor_test.S (TST16-26, TST16-36)
 # ------------------------------------------------------------------------------
-    
+
     .text
     .globl main
 main:
@@ -17,19 +17,19 @@ main:
     csrw pmpaddr0, t0
 
     # From 0x0000_1000 to 0x0001_0000 no Permissions.
-    li t0, 0x00004000 
+    li t0, 0x00004000
     csrw pmpaddr1, t0
 
     # From 0x0001_0000 to 0x0002_0000 only Execute.
-    li t0, 0x00008000 
+    li t0, 0x00008000
     csrw pmpaddr2, t0
 
     # From 0x0002_0000 to 0x8000_0000 no Permissions.
-    li t0, 0x20000000 
+    li t0, 0x20000000
     csrw pmpaddr3, t0
 
     # From 0x8000_0000 to 0xB000_0000 Read-Write-Execute.
-    li t0, 0x2C000000 
+    li t0, 0x2C000000
     csrw pmpaddr4, t0
 
     # Configure the TOR areas with LOCK ON.
@@ -41,7 +41,7 @@ main:
     csrw pmpcfg1, t0
     csrr t1, pmpcfg1
     bne t0, t1, fail
-    
+
     # Check a memory access succeeds when outside the LOCKED entry.
     li t1, 0xB8000000
     li t2, 0xC0D1F1ED

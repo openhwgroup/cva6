@@ -5,14 +5,14 @@
 #
 #   Original Author: Konstantinos LEVENTOS - Robert Bosch France SAS
 # ------------------------------------------------------------------------------
-#   pmp_cv32a65x_granularity_test.S (TST01)
+#   granularity_test.S (TST01)
 # ------------------------------------------------------------------------------
 
     .text
     .globl main
 main:
 
-    # Configure PMP to find its granularity. 
+    # Configure PMP to find its granularity.
 
     # Write all zeroes in cfg0.
     li t0, 0
