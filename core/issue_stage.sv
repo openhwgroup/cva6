@@ -70,6 +70,8 @@ module issue_stage
     input logic flu_ready_i,
     // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // AES output is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Information of branch prediction - EX_STAGE
@@ -163,7 +165,9 @@ module issue_stage
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
+    // Original instruction bits for AES
+    output logic [5:0] orig_instr_aes_bits
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -265,6 +269,7 @@ module issue_stage
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
       .alu_valid_o             (alu_valid_o),
+      .aes_valid_o             (aes_valid_o),
       .branch_valid_o          (branch_valid_o),
       .tinst_o                 (tinst_o),
       .branch_predict_o,
@@ -300,7 +305,8 @@ module issue_stage
       .we_fpr_i,
       .stall_issue_o,
       .rvfi_rs1_o              (rvfi_rs1_o),
-      .rvfi_rs2_o              (rvfi_rs2_o)
+      .rvfi_rs2_o              (rvfi_rs2_o),
+      .orig_instr_aes_bits     (orig_instr_aes_bits)
   );
 
 endmodule
