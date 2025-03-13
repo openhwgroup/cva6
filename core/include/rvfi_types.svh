@@ -101,9 +101,9 @@
   logic [Cfg.NrIssuePorts-1:0] decoded_instr_ack; \
   logic flush; \
   logic [Cfg.NrIssuePorts-1:0] issue_instr_ack; \
-  logic [Cfg.NrIssuePorts-1:0] fetch_entry_valid; \
   logic [Cfg.NrIssuePorts-1:0][31:0] instruction; \
-  logic [Cfg.NrIssuePorts-1:0] is_compressed; \
+  ariane_pkg::fu_t [Cfg.NrIssuePorts-1:0] decoded_fu; \
+  logic [Cfg.NrIssuePorts-1:0] was_compressed; \
   logic [Cfg.NrIssuePorts-1:0][Cfg.XLEN-1:0] rs1; \
   logic [Cfg.NrIssuePorts-1:0][Cfg.XLEN-1:0] rs2; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.VLEN-1:0] commit_instr_pc; \

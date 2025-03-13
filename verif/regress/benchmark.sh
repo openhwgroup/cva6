@@ -34,26 +34,29 @@ cd verif/sim/
 BDIR=../tests/riscv-tests/benchmarks/
 CVA6_FLAGS="--target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml cva6.yaml --linker ../../config/gen_from_riscv_config/linker/link.ld"
 
-GCC_COMMON_SRC=(
+CC_COMMON_SRC=(
         ../tests/custom/common/syscalls.c
         ../tests/custom/common/crt.S
 )
 
-GCC_CFLAGS=(
-        -fno-tree-loop-distribute-patterns
+CC_CFLAGS=(
         -static
         -mcmodel=medany
         -fvisibility=hidden
-        -nostdlib
         -nostartfiles
-        -lgcc
-        -O3 --no-inline
+        -O3 -fno-inline -lm
+        -Wno-implicit-function-declaration
+        -Wno-implicit-int
         -I../tests/custom/env
         -I../tests/custom/common
         -DNOPRINT
 )
 
-GCC_OPTS="${GCC_COMMON_SRC[*]} ${GCC_CFLAGS[*]}"
+CC_OPTS="${CC_COMMON_SRC[*]} ${CC_CFLAGS[*]}"
+
+if [[ "$DV_TARGET" != "cv32a65x" ]]; then
+	CC_OPTS+=(-fno-tree-loop-distribute-patterns -nostdlib -lgcc)
+fi
 
 python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/dhrystone/dhrystone_main.c --sv_seed 1 --gcc_opts "$BDIR/dhrystone/dhrystone.c $GCC_OPTS -I$BDIR/dhrystone/"
 python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/median/median_main.c       --sv_seed 1 --gcc_opts "$BDIR/median/median.c       $GCC_OPTS -I$BDIR/median/"

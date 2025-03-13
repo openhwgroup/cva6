@@ -47,14 +47,14 @@ module id_stage #(
     output scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_entry_o_prev,
     // Instruction value - ISSUE
     output logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_o,
+    // Instruction was compressed before CVXIF - RVFI
+    output logic [CVA6Cfg.NrIssuePorts-1:0] was_compressed_o,
     // Handshake's valid between decode and issue - ISSUE
     output logic [CVA6Cfg.NrIssuePorts-1:0] issue_entry_valid_o,
     // Report if instruction is a control flow instruction - ISSUE
     output logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack_i,
-    // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrIssuePorts-1:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -102,6 +102,7 @@ module id_stage #(
     scoreboard_entry_t sbe;
     logic [31:0]       orig_instr;
     logic              is_ctrl_flow;
+    logic              was_compressed;
   } issue_struct_t;
   issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
   // stall required for ZCMP ZCMT CVXIF
@@ -291,7 +292,6 @@ module id_stage #(
     end
   end
 
-  assign rvfi_is_compressed_o = is_compressed_rvc;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     decoder #(
@@ -345,6 +345,7 @@ module id_stage #(
     assign issue_entry_valid_o[i] = issue_q[i].valid;
     assign is_ctrl_flow_o[i] = issue_q[i].is_ctrl_flow;
     assign orig_instr_o[i] = issue_q[i].orig_instr;
+    assign was_compressed_o[i] = issue_q[i].was_compressed;
   end
 
   if (CVA6Cfg.SuperscalarEn) begin
@@ -376,7 +377,8 @@ module id_stage #(
               decoded_instruction_valid[0],
               decoded_instruction[0],
               orig_instr[0],
-              is_control_flow_instr[0]
+              is_control_flow_instr[0],
+              is_compressed_rvc[0]
           };
         end
       end
@@ -389,7 +391,8 @@ module id_stage #(
                 decoded_instruction_valid[1],
                 decoded_instruction[1],
                 orig_instr[1],
-                is_control_flow_instr[1]
+                is_control_flow_instr[1],
+                is_compressed_rvc[1]
             };
           end
         end else if (fetch_entry_valid_i[0]) begin
@@ -398,7 +401,8 @@ module id_stage #(
               decoded_instruction_valid[0],
               decoded_instruction[0],
               orig_instr[0],
-              is_control_flow_instr[0]
+              is_control_flow_instr[0],
+              is_compressed_rvc[0]
           };
         end
       end
@@ -429,7 +433,8 @@ module id_stage #(
             decoded_instruction_valid[0],
             decoded_instruction[0],
             orig_instr[0],
-            is_control_flow_instr[0]
+            is_control_flow_instr[0],
+            is_compressed_rvc[0]
         };
       end
 
@@ -447,5 +452,7 @@ module id_stage #(
       issue_q <= issue_n;
     end
   end
+
+
 
 endmodule

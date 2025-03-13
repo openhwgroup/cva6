@@ -94,5 +94,6 @@ python3 cva6.py \
         --c_tests "$src0" \
         --sv_seed 1 \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
-        --iss_timeout=2000 \
-        $DV_OPTS
+        --iss_timeout=3000 \
+        $DV_OPTS \
+        --linker ../../config/gen_from_riscv_config/cv32a65x/linker/link.ld

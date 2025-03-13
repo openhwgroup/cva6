@@ -62,8 +62,10 @@ for t in ${riscv_tests_list[@]} ; do
   [[ $? > 0 ]] && ((errors++))
 done
 
+CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -nostdlib -lgcc"
+
 python3 cva6.py --target ${DV_TARGET} --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_tests ../tests/custom/hello_world/hello_world.c \
-  --gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld" $DV_OPTS
+  --gcc_opts="$CC_OPTS -T ../../config/gen_from_riscv_config/linker/link.ld" $DV_OPTS
 [[ $? > 0 ]] && ((errors++))
 
 make -C ../.. clean

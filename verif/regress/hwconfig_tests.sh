@@ -25,10 +25,6 @@ source ./verif/regress/install-spike.sh
 
 source ./verif/sim/setup-env.sh
 
-if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv32a65x
-fi
-
 make clean
 make -C verif/sim clean_all
 
@@ -53,11 +49,12 @@ cflags=(
 )
 
 python3 cva6.py \
-        --target "$DV_TARGET" \
-        --hwconfig_opts="$DV_HWCONFIG_OPTS" \
+        --target "hwconfig" \
+        --hwconfig_opts="cv32a65x" \
         --iss="$DV_SIMULATORS" \
         --iss_yaml=cva6.yaml \
         --c_tests "../tests/custom/return0/return0.c" \
-        --gcc_opts "${srcA[*]} ${cflags[*]}"
+        --gcc_opts "${srcA[*]} ${cflags[*]}" \
+        --linker ../../config/gen_from_riscv_config/cv32a65x/linker/link.ld
 
 cd -
