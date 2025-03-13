@@ -87,7 +87,7 @@ module cva6_rvfi_probes
       instr.tval = ex_commit_i.tval;
     end else begin
       instr.tval = '0;
-   end    
+    end
 
     instr.priv_lvl = priv_lvl_i;
 
