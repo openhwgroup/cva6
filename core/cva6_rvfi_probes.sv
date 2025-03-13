@@ -83,7 +83,11 @@ module cva6_rvfi_probes
 
     instr.ex_commit_cause = ex_commit_i.cause;
     instr.ex_commit_valid = ex_commit_i.valid;
-    instr.tval = ex_commit_i.tval;
+    if (CVA6Cfg.TvalEn) begin
+      instr.tval = ex_commit_i.tval;
+    end else begin 
+      instr.tval = '0;
+   end    
 
     instr.priv_lvl = priv_lvl_i;
 
