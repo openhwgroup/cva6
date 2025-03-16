@@ -899,7 +899,9 @@ module csr_regfile
     instret_d       = instret_q;
     if (!(CVA6Cfg.DebugEn && debug_mode_q)) begin
       // increase instruction retired counter
-      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+      if (commit_ack_i[0] && !(ex_i.valid && CVA6Cfg.SpeculativeSb) && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
+        instret++;
+      for (int i = 1; i < CVA6Cfg.NrCommitPorts; i++) begin
         if (commit_ack_i[i] && !ex_i.valid && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
           instret++;
       end
@@ -2233,7 +2235,7 @@ module csr_regfile
       // interrupts are enabled during single step or we are not stepping
       // No need to check interrupts during single step if we don't support DEBUG mode
       & (~CVA6Cfg.DebugEn | (~dcsr_q.step | dcsr_q.stepie))
-                                    & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
+                                    & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M | !CVA6Cfg.RVU))
                                     | (CVA6Cfg.RVU & priv_lvl_o != riscv::PRIV_LVL_M));
 
   always_comb begin : privilege_check
