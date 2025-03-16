@@ -338,7 +338,7 @@ module instr_queue
       for (int unsigned i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
         // TODO handle fetch_entry_o[1] if superscalar
         if (idx_ds[0][i]) begin
-          if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
+          if (CVA6Cfg.NrPMPEntries != 0 && instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
             fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
           end else if (CVA6Cfg.RVH && instr_data_out[i].ex == ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT) begin
             fetch_entry_o[0].ex.cause = riscv::INSTR_GUEST_PAGE_FAULT;
@@ -346,7 +346,7 @@ module instr_queue
             fetch_entry_o[0].ex.cause = riscv::INSTR_PAGE_FAULT;
           end
           fetch_entry_o[0].instruction = instr_data_out[i].instr;
-          fetch_entry_o[0].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+          fetch_entry_o[0].ex.valid = ((CVA6Cfg.MmuPresent || CVA6Cfg.NrPMPEntries !=0) && instr_data_out[i].ex != ariane_pkg::FE_NONE);
           if (CVA6Cfg.TvalEn)
             fetch_entry_o[0].ex.tval = {
               {(CVA6Cfg.XLEN - CVA6Cfg.VLEN) {1'b0}}, instr_data_out[i].ex_vaddr

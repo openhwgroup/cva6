@@ -715,7 +715,7 @@ module frontend
   logic fetch_valid_d;
 
   // re-align the cache line
-  assign fetch_data = ex_rvalid ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
+  assign fetch_data = ex_rvalid && CVA6Cfg.MmuPresent ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
   assign fetch_valid_d = rvalid;
   assign fetch_vaddr_d = vaddr_rvalid;
 
@@ -756,7 +756,7 @@ module frontend
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
         end else if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT) begin
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-        end else if (arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
+        end else if (CVA6Cfg.NrPMPEntries != 0 && arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
         end else begin
           fetch_ex_valid_q <= ariane_pkg::FE_NONE;
