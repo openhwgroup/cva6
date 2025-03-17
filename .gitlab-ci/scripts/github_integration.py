@@ -4,6 +4,7 @@ This module makes it possible to trigger GitHub workflows.
 
 from os import environ as env
 import requests
+import time
 
 def api_url(owner, repo):
     "Build API url for a given repository"
@@ -52,6 +53,7 @@ class DashboardDone(Workflow):
             'pr_number': str(pr),
             'success': success,
         }
+        time.sleep(120) # wait for dashboard generation
         return self._trigger(inputs)
 
     def send_success(self, pr):
