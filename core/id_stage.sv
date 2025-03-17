@@ -271,11 +271,11 @@ module id_stage #(
     end
   end else begin
     for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-        assign is_illegal_rvc[i] = 1'b0;
-        assign instruction_rvc[i] = fetch_entry_i[i].instruction;
-        assign is_compressed_rvc[i] = 1'b0;
-        assign stall_instr_fetch[i] = 1'b0;
-      end
+      assign is_illegal_rvc[i] = 1'b0;
+      assign instruction_rvc[i] = fetch_entry_i[i].instruction;
+      assign is_compressed_rvc[i] = 1'b0;
+      assign stall_instr_fetch[i] = 1'b0;
+    end
   end
 
   // ---------------------------------------------------------
