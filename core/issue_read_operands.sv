@@ -674,24 +674,6 @@ module issue_read_operands
       end
     end
 
-    if (CVA6Cfg.CvxifEn) begin
-      // Remove unecessary forward and stall in case source register is not needed by coprocessor.
-      if (x_issue_valid_o && x_issue_resp_i.accept) begin
-        if (~x_issue_resp_i.register_read[0]) begin
-          forward_rs1[0] = 1'b0;
-          stall_rs1[0]   = 1'b0;
-        end
-        if (~x_issue_resp_i.register_read[1]) begin
-          forward_rs2[0] = 1'b0;
-          stall_rs2[0]   = 1'b0;
-        end
-        if (OPERANDS_PER_INSTR == 3 && ~x_issue_resp_i.register_read[2]) begin
-          forward_rs3[0] = 1'b0;
-          stall_rs3[0]   = 1'b0;
-        end
-      end
-      stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || (CVA6Cfg.NrRgprPorts == 3 && stall_rs3[0]);
-    end
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
