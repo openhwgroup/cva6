@@ -47,11 +47,12 @@ class DashboardDone(Workflow):
         workflow_id = 'dashboard-done.yml'
         Workflow.__init__(self, owner, repo, workflow_id, ref)
 
-    def send(self, pr, success):
+    def send(self, pr, success, source_branch):
         "Send success or failure message"
         inputs = {
             'pr_number': str(pr),
             'success': success,
+            "source_branch": source_branch
         }
         time.sleep(120) # wait for dashboard generation
         return self._trigger(inputs)

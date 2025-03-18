@@ -154,5 +154,5 @@ pr = find_pr(workflow_commit_ref_name, pulls)
 if pr is not None:
     ref_branch = pr['base']['ref']
     wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
-    response = wf.send(pr['number'], success)
+    response = wf.send(pr['number'], success, source_branch)
     print(response.text)
