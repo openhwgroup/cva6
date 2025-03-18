@@ -2613,7 +2613,7 @@ module csr_regfile
       wfi_q                  <= 1'b0;
       // pmp
       for (int i = 0; i < 64; i++) begin
-        if (i < CVA6Cfg.NrPMPEntries) begin
+        if (CVA6Cfg.NrPMPEntries != 0 && i < CVA6Cfg.NrPMPEntries) begin
           pmpcfg_q[i]  <= riscv::pmpcfg_t'(CVA6Cfg.PMPCfgRstVal[i]);
           pmpaddr_q[i] <= CVA6Cfg.PMPAddrRstVal[i][CVA6Cfg.PLEN-3:0];
         end else begin
