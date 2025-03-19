@@ -15,6 +15,7 @@ import datetime
 import sys
 import subprocess
 import github_integration as gh
+import source_branch_finder as source_branch
 
 # arguments: inputdir outputfile
 
@@ -39,7 +40,7 @@ if workflow_type == 'github':  # (from wrapper)
     
     workflow_uid = os.environ['WORKFLOW_RUN_ID'].strip('\'\"')
     workflow_repo_owner = os.environ['WORKFLOW_REPO_OWNER'].strip('\'\"')
-    workflow_repo = os.environ['WORKFLOW_REPO'].strip('\'\"')  # cvv or cva6
+    workflow_repo = "cva6" if os.environ["CI_COMMIT_REF_NAME"] == "master" else os.environ["CI_COMMIT_REF_NAME"]  # cvv or cva6
     workflow_commit_subject = os.environ['WORKFLOW_COMMIT_MESSAGE'].strip('\'\"')
     workflow_commit_author = os.environ['WORKFLOW_COMMIT_AUTHOR'].strip('\'\"')
     cvv_branch = os.environ['CORE_V_VERIF_BRANCH'].strip('\'\"')
@@ -48,13 +49,15 @@ if workflow_type == 'github':  # (from wrapper)
     cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
 else:  # gitlab
     workflow_uid = os.environ['CI_PIPELINE_ID'].strip('\'\"')
-    workflow_repo = 'cva6'
     cvv_branch = 'none'
     cvv_sha = '0000000'
     cva6_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
+    workflow_repo = 'cva6'
     cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
     workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE'].strip('\'\"')
     workflow_commit_author = os.environ['CI_COMMIT_AUTHOR'].strip('\'\"')
+
+source_branch = source_branch.find(cva6_branch)
 
 if len(workflow_commit_subject) > 60:
     title = workflow_commit_subject[0:60] + '...'
@@ -123,14 +126,14 @@ try:
   print(subprocess.check_output(f'''
 rm -r .gitlab-ci/dashboard_tmp || echo "nothing to do"
 git clone {dashboard_url} .gitlab-ci/dashboard_tmp
-mkdir -p .gitlab-ci/dashboard_tmp/pipelines_{workflow_repo}
+mkdir -p .gitlab-ci/dashboard_tmp/pipelines_{source_branch}
 ls -al {sys.argv[1]}
-cp {sys.argv[1]}/{filename} .gitlab-ci/dashboard_tmp/pipelines_{workflow_repo}/
+cp {sys.argv[1]}/{filename} .gitlab-ci/dashboard_tmp/pipelines_{source_branch}/
 cd .gitlab-ci/dashboard_tmp
 git config user.email {git_email}
 git config user.name {git_name}
-git add pipelines_{workflow_repo}/{filename}
-git commit -m  '{workflow_repo}: '{quoted_title} || echo "commit fail"
+git add pipelines_{source_branch}/{filename}
+git commit -m  '{source_branch}: '{quoted_title} || echo "commit fail"
 git push
 cd -
 ''', shell=True))
@@ -151,5 +154,5 @@ pr = find_pr(workflow_commit_ref_name, pulls)
 if pr is not None:
     ref_branch = pr['base']['ref']
     wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
-    response = wf.send(pr['number'], success)
+    response = wf.send(pr['number'], success, source_branch)
     print(response.text)
