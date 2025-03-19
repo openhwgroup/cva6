@@ -23,7 +23,7 @@ module cvxif_fu
     // Asynchronous reset active low - SUBSYSTEM
     input  logic                                   rst_ni,
     // Virtualization mode state - CSR_REGFILE
-    input logic                                    v_i,
+    input  logic                                   v_i,
     // CVXIF instruction is valid - ISSUE_STAGE
     input  logic                                   x_valid_i,
     // Transaction ID - ISSUE_STAGE
