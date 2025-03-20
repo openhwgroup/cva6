@@ -156,7 +156,7 @@ module pmp_data_if
   // Assert for PMPs
   // ----------------
 
-  // synthesis translate_off
+  // pragma translate_off
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       no_locked_data <= 1'b0;
@@ -188,5 +188,5 @@ module pmp_data_if
       end
     end
   end
-  // synthesis translate_on
+  // pragma translate_on
 endmodule

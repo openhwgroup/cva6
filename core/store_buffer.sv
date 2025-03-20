@@ -87,7 +87,6 @@ module store_buffer
     speculative_status_cnt      = speculative_status_cnt_q;
 
     // default assignments
-    speculative_status_cnt_n    = speculative_status_cnt_q;
     speculative_read_pointer_n  = speculative_read_pointer_q;
     speculative_write_pointer_n = speculative_write_pointer_q;
     speculative_queue_n         = speculative_queue_q;
