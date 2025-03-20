@@ -336,14 +336,12 @@ module cva6_rvfi
     assign rvfi_csr_o.``CSR_NAME``.rmask = CSR_ENABLE_COND ? 1 : 0; \
     assign rvfi_csr_o.``CSR_NAME``.wmask = (rvfi_csr_o.``CSR_NAME``.rdata != {{CVA6Cfg.XLEN - $bits(CSR_SOURCE_NAME)}, CSR_SOURCE_NAME}) && CSR_ENABLE_COND;
 
-  `define COMMA ,
-
   `define CONNECT_RVFI_SAME(CSR_ENABLE_COND, CSR_NAME) \
             `CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, csr.``CSR_NAME``_q)
 
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, fflags, csr.fcsr_q.fflags)
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, frm, csr.fcsr_q.frm)
-  `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, fcsr, { csr.fcsr_q.frm `COMMA csr.fcsr_q.fflags})
+  `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, fcsr, {csr.fcsr_q.frm, csr.fcsr_q.fflags})
 
   `CONNECT_RVFI_FULL(CVA6Cfg.FpPresent, ftran, csr.fcsr_q.fprec)
   `CONNECT_RVFI_SAME(CVA6Cfg.FpPresent, dcsr)
