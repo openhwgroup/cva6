@@ -398,7 +398,7 @@ field is not implemented. The Implementation value should reflect the
 design of the RISC-V processor itself and not any surrounding system.
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 The `mimpid` CSR provides a unique encoding of the version of the
 processor implementation.
 
@@ -508,7 +508,7 @@ For RV32 only, `mstatush` is a 32-bit read/write register formatted as
 shown in <<mstatushreg>>. Bits 30:4 of `mstatush` generally contain the same fields found in bits 62:36 of `mstatus` for RV64. Fields SD, SXL, and UXL do not exist in `mstatush`.
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 [{ohg-config}] `mstatush` is a 32-bit read/write register formatted as
 shown in <<mstatushreg>>.
 endif::[]
@@ -1249,7 +1249,7 @@ different encoding than XS.
 ====
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 [{ohg-config}] The FS[1:0] and VS[1:0] *WARL* fields and the XS[1:0] read-only field are used
 to reduce the cost of context save and restore by setting and tracking
 the current state of the floating-point unit and any other user-mode
@@ -2115,7 +2115,7 @@ ifdef::archi-CVA6[]
 As the Sscofpmf extension is not implemented, `mip`.LCOFIP and `mie`.LCOFIE are read-only zeros.
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 [{ohg-config}]
 Multiple simultaneous interrupts destined for M-mode are handled in the
 following decreasing priority order: MEI, MSI, MTI.
@@ -2218,7 +2218,7 @@ As XLEN=64, `mcycleh`, `minstreth`, and `mhpmcounter__n__h`
 do not exist.
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 As the Sscofpmf extension is not implemented, the `mhpmevent__n__h` CSRs
 are not provided.
 endif::[]
@@ -3509,7 +3509,7 @@ As "{ohg-config}" does not distinguished different reset conditions,
 The `mcause` returns 0 after reset.
 endif::[]
 
-ifeval::["{ohg-config}" == "CV32A65X"]
+ifdef::archi-CV32A60X,archi-CV32A65X[]
 [{ohg-config}] Privilege mode is always M.
 As little-endian memory accesses are supported,
 the `mstatus`/`mstatush` field MBE is reset to 0.
@@ -4068,6 +4068,13 @@ endif::[]
 [[pmp]]
 === Physical Memory Protection
 
+ifeval::[{NrPMPEntries} == 0]
+[{ohg-config}] There is no optional physical memory protection (PMP)
+unit.
+endif::[]
+
+ifeval::[{NrPMPEntries} != 0]
+
 To support secure processing and contain faults, it is desirable to
 limit the physical addresses accessible by software running on a hart.
 An optional physical memory protection (PMP) unit provides per-hart
@@ -4490,4 +4497,6 @@ endif::[]
 ifeval::["{ohg-config}" == "CV32A65X"]
 [{ohg-config}] As page-based virtual memory systems is not implemented, memory accesses
 check the PMP settings synchronously.
+endif::[]
+
 endif::[]

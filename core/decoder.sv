@@ -186,6 +186,7 @@ module decoder
     ecall                                  = 1'b0;
     ebreak                                 = 1'b0;
     check_fprm                             = 1'b0;
+    tinst                                  = 32'h0;
 
     if (~ex_i.valid) begin
       case (instr.rtype.opcode)

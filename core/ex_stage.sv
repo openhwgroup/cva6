@@ -621,6 +621,7 @@ module ex_stage
     ) cvxif_fu_i (
         .clk_i,
         .rst_ni,
+        .v_i,
         .x_valid_i(|x_valid_i),
         .x_trans_id_i(cvxif_data.trans_id),
         .x_illegal_i(x_transaction_rejected_i),
