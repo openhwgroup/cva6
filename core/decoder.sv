@@ -1612,7 +1612,7 @@ module decoder
           instruction_o.ex.cause = (CVA6Cfg.RVH && v_i) ? riscv::ENV_CALL_VSMODE : riscv::ENV_CALL_SMODE;
         end else if (priv_lvl_i == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
           instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
-        // we are in M-mode
+          // we are in M-mode
         end else begin
           instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
         end
