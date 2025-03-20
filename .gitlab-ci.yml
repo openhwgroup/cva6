@@ -315,7 +315,7 @@ pmp_tests:
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "vcs-uvm"
     SPIKE_TANDEM: 1
-  script: source verif/regress/pmp_cv32a60x_tests.sh
+  script: source verif/regress/pmp_cv32a65x_tests.sh
   after_script: *simu_after_script
 
 .regress_test:

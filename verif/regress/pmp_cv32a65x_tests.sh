@@ -28,7 +28,7 @@ fi
 
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
-export DV_TARGET=cv32a60x
+export DV_TARGET=cv32a65x
 
 make clean
 cd verif/sim/
