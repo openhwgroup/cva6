@@ -194,9 +194,11 @@ module store_buffer
         commit_read_pointer_n = commit_read_pointer_q + 1'b1;
         commit_status_cnt--;
       end
-    end else if (commit_i && speculative_queue_q[speculative_read_pointer_q].valid && (commit_write_pointer_q == speculative_read_pointer_q) && !stall_st_pending_i) begin
-      obi_store_req_o.req = 1'b1;
-      direct_req_from_speculative = 1'b1;
+    end else if (speculative_queue_q[speculative_read_pointer_q].valid) begin
+      if (commit_i && (commit_write_pointer_q == speculative_read_pointer_q) && !stall_st_pending_i) begin
+        obi_store_req_o.req = 1'b1;
+        direct_req_from_speculative = 1'b1;
+      end
     end
     // we ignore the rvalid signal for now as we assume that the store
     // happened if we got a grant
