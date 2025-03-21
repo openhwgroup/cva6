@@ -1779,7 +1779,8 @@ module csr_regfile
     end
 
     // reserve PMPCFG bits 5 and 6 (hardwire to 0)
-    for (int i = 0; i < CVA6Cfg.NrPMPEntries; i++) pmpcfg_d[i].reserved = 2'b0;
+    if (CVA6Cfg.NrPMPEntries != 0)
+      for (int i = 0; i < CVA6Cfg.NrPMPEntries; i++) pmpcfg_d[i].reserved = 2'b0;
 
     // write the floating point status register
     if (CVA6Cfg.FpPresent && csr_write_fflags_i) begin
