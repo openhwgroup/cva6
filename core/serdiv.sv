@@ -234,7 +234,8 @@ module serdiv
   assign comp_inv_d = (load_en) ? opcode_i[0] & op_b_sign : comp_inv_q;
   assign op_b_zero_d = (load_en) ? op_b_zero : op_b_zero_q;
   assign op_b_neg_one_d = (load_en) ? op_b_neg_one : op_b_neg_one_q;
-  assign res_inv_d       = (load_en) ? (~op_b_zero | opcode_i[1]) & opcode_i[0] & (op_a_sign ^ op_b_sign ^ op_b_neg_one) : res_inv_q;
+  assign op_b_temp = op_b_sign ^ op_b_neg_one;
+  assign res_inv_d = (load_en) ? (~op_b_zero | opcode_i[1]) & opcode_i[0] & (op_a_sign ^ op_b_temp) : res_inv_q;
 
   // transaction id
   assign id_d = (load_en) ? id_i : id_q;
