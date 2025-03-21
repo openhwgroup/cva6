@@ -901,7 +901,7 @@ module csr_regfile
       // increase instruction retired counter
       if (commit_ack_i[0] && !(ex_i.valid && CVA6Cfg.SpeculativeSb) && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
         instret++;
-      if (CVA6Cfg.NrCommitPorts != 0)
+      if (CVA6Cfg.NrCommitPorts != 1)
         for (int i = 1; i < CVA6Cfg.NrCommitPorts; i++) begin
           if (commit_ack_i[i] && !ex_i.valid && (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[2])))
             instret++;
