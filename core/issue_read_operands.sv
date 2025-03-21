@@ -672,8 +672,11 @@ module issue_read_operands
           stall_rs3[i] = 1'b1;
         end
       end
-    end
 
+      if (CVA6Cfg.CvxifEn) begin
+        stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || (CVA6Cfg.NrRgprPorts == 3 && stall_rs3[0]);
+      end
+    end
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
@@ -1136,27 +1139,17 @@ module issue_read_operands
       x_transaction_rejected_o <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
+      pc_o <= pc_n;
+      is_compressed_instr_o <= is_compressed_instr_n;
+      branch_predict_o <= branch_predict_n;
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
-      if (CVA6Cfg.SuperscalarEn) begin
-        if (issue_instr_i[1].fu == CTRL_FLOW) begin
-          pc_o                  <= issue_instr_i[1].pc;
-          is_compressed_instr_o <= issue_instr_i[1].is_compressed;
-          branch_predict_o      <= issue_instr_i[1].bp;
-        end
-      end
       if (issue_instr_i[0].fu == CTRL_FLOW) begin
-        pc_o                  <= issue_instr_i[0].pc;
-        is_compressed_instr_o <= issue_instr_i[0].is_compressed;
-        branch_predict_o      <= issue_instr_i[0].bp;
         if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
         else is_zcmt_o <= '0;
       end
-      x_transaction_rejected_o <= 1'b0;
-      if (issue_instr_i[0].fu == CVXIF) begin
-        x_transaction_rejected_o <= x_transaction_rejected;
-      end
+      x_transaction_rejected_o <= x_transaction_rejected_n;
     end
   end
 
