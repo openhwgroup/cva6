@@ -1063,7 +1063,7 @@ module cva6_pipeline
       .flush_dcache_i    (dcache_flush_o),
       .exception_o       (ex_commit),
       .dirty_fp_state_o  (dirty_fp_state),
-      .single_step_i     (single_step_csr_commit),         // // Accelerator /*FIXME*/ 
+      .single_step_i     (single_step_csr_commit),         // // Accelerator /*FIXME*/
       .commit_instr_i    (commit_instr_id_commit),
       .commit_drop_i     (commit_drop_id_commit),
       .commit_ack_o      (commit_ack_commit_id),
@@ -1093,7 +1093,7 @@ module cva6_pipeline
       .hfence_gvma_o     (hfence_gvma_commit_controller)
   );
 
-  assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
+  assign commit_ack = commit_macro_ack & ~(commit_drop_id_commit & CVA6Cfg.SpeculativeSb);
 
   // ---------
   // CSR
