@@ -129,6 +129,7 @@
   logic branch_valid; \
   logic is_taken; \
   logic [Cfg.XLEN-1:0] tval; \
+  logic [Cfg.TRANS_ID_BITS-1:0] branch_trans_id; \
 }
 
 `define RVFI_PROBES_CSR_T(Cfg) struct packed { \

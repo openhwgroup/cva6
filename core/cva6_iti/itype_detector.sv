@@ -21,13 +21,16 @@
 it produces the type of the instruction
 */
 
-module itype_detector (
+module itype_detector 
+#(
+  parameter ITYPE_LEN = 3 //Size is itype_width_p in the E-Trace SPEC (3 or 4)
+)(
     input  logic                                            valid_i,
     input  logic                                            exception_i,
     input  logic                                            interrupt_i,
     input  ariane_pkg::fu_op                                op_i,
     input  logic                                            branch_taken_i,
-    output logic             [connector_pkg::ITYPE_LEN-1:0] itype_o
+    output logic             [ITYPE_LEN-1:0] itype_o
 );
 
   // internal signals
@@ -80,7 +83,7 @@ module itype_detector (
       itype_o = 4;
     end else if (taken_branch && valid_i) begin  // taken branch
       itype_o = 5;
-    end else if (connector_pkg::ITYPE_LEN == 3 && updiscon && valid_i) begin // uninferable discontinuity
+    end else if (ITYPE_LEN == 3 && updiscon && valid_i) begin // uninferable discontinuity
       itype_o = 6;
     end
   end

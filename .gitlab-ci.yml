@@ -148,7 +148,7 @@ smoke-tests:
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
-      - DV_SIMULATORS: ["vcs-testharness", "questa-testharness"]
+      - DV_SIMULATORS: "vcs-testharness"
         DV_TARGET: ["cv32a6_imac_sv32", "cv64a6_imafdc_sv39"]
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a65x"

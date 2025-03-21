@@ -54,6 +54,7 @@ module cva6_rvfi_probes
     input rvfi_probes_csr_t csr_i,
     input logic [1:0] irq_i,
     input bp_resolve_t resolved_branch_i,
+    input [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id_i,
 
     output rvfi_probes_t rvfi_probes_o
 );
@@ -83,7 +84,11 @@ module cva6_rvfi_probes
 
     instr.ex_commit_cause = ex_commit_i.cause;
     instr.ex_commit_valid = ex_commit_i.valid;
-    instr.tval = ex_commit_i.tval;
+    if (CVA6Cfg.TvalEn) begin
+      instr.tval = ex_commit_i.tval;
+    end else begin
+      instr.tval = '0;
+    end
 
     instr.priv_lvl = priv_lvl_i;
 
@@ -114,6 +119,7 @@ module cva6_rvfi_probes
 
     instr.branch_valid = resolved_branch_i.valid;
     instr.is_taken = resolved_branch_i.is_taken;
+    instr.branch_trans_id = flu_trans_id_ex_id_i;
 
     csr = csr_i;
     csr.mip_q = csr_i.mip_q | ({{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.RVS && irq_i[1]} << riscv::IRQ_S_EXT);

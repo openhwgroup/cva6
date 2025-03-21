@@ -1804,6 +1804,7 @@ module cva6
       .csr_i(rvfi_csr),
       .irq_i(irq_i),
       .resolved_branch_i(resolved_branch),
+      .flu_trans_id_ex_id_i(flu_trans_id_ex_id),
       .rvfi_probes_o(rvfi_probes_o)
 
   );

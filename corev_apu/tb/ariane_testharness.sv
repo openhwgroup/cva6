@@ -721,42 +721,59 @@ module ariane_testharness #(
     end
   end
 
-  cva6_te_connector #(
+    logic [CVA6Cfg.NrCommitPorts-1:0] valid_tip;
+    logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_tip;
+    ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_tip;
+    logic [CVA6Cfg.NrCommitPorts-1:0] is_compressed_tip;
+    logic [CVA6Cfg.NrCommitPorts-1:0] branch_valid_tip;
+    logic [CVA6Cfg.NrCommitPorts-1:0] is_taken_tip;
+    logic  ex_valid_tip_o;
+    logic [CVA6Cfg.XLEN-1:0] tval_tip;
+    logic [CVA6Cfg.XLEN-1:0] cause_tip;
+    riscv::priv_lvl_t priv_lvl_tip;
+    logic [63:0] time_tip;
+
+   logic [1:0]  valid_test;
+   logic [1:0] [31:0] iretire_test;
+   logic [1:0]  ilastsize_test;
+   logic [1:0]  [2:0] itype_test;
+   logic   [4:0] cause_test;
+   logic  [CVA6Cfg.XLEN-1:0] tval_test;
+   riscv::priv_lvl_t priv_test;
+   logic [1:0] [CVA6Cfg.XLEN-1:0] iaddr_test;
+   logic  [63:0] time_test;
+
+  cva6_iti #(
       .CVA6Cfg   (CVA6Cfg),
-      .N(1),  // max number of special inst in a cycle
-      .FIFO_DEPTH(16)  // number of entries in each FIFO
-  ) i_cva6_te_connector (
+      .CAUSE_LEN  (5), 
+      .ITYPE_LEN (3), 
+      .IRETIRE_LEN (32)
+  ) i_iti (
       .clk_i  (clk_i),
       .rst_ni (ndmreset_n),
-      .valid_i(rvfi_probes.instr.commit_ack), // commit_ack in cva6
 
-      // necessary inputs from scoreboard_entry_t
-      .pc_i(rvfi_probes.instr.commit_instr_pc),     //{cva6_tip_o.pc[1],cva6_tip_o.pc[0]}
-      .op_i(rvfi_probes.instr.commit_instr_op),
-      .is_compressed_i(rvfi_probes.instr.is_compressed),
-
-      // necessary inputs from bp_resolve_t
-      .branch_valid_i(rvfi_probes.instr.branch_valid),
-      .is_taken_i(rvfi_probes.instr.is_taken),
-
-      // necessary inputs from exception_t
-      .ex_valid_i(rvfi_probes.instr.ex_commit_valid),
-      .tval_i(rvfi_probes.instr.tval),
-      .cause_i(rvfi_probes.instr.ex_commit_cause),
-      .priv_lvl_i(rvfi_probes.instr.priv_lvl),
-      .time_i(rvfi_probes.csr.cycle_q),
-
+      .valid_i(valid_tip), // commit_ack in cva6
+      .pc_i(pc_tip), 
+      .op_i(op_tip),
+      .is_compressed_i(is_compressed_tip),
+      .branch_valid_i(branch_valid_tip),
+      .is_taken_i(is_taken_tip),
+      .ex_valid_i(ex_valid_tip),
+      .tval_i(tval_tip),
+      .cause_i(cause_tip),
+      .priv_lvl_i(priv_lvl_tip),
+      .time_i(time_tip),
       // outputs
       /* the output of the module goes directly into the trace_encoder module */
-      .valid_o(),
-      .iretire_o(),
-      .ilastsize_o(),
-      .itype_o(),
-      .cause_o(),
-      .tval_o(),
-      .priv_o(),
-      .iaddr_o(),
-      .time_o()
+      .valid_o(valid_test),
+      .iretire_o(iretire_test),
+      .ilastsize_o(ilastsize_test),
+      .itype_o(itype_test),
+      .cause_o(cause_test),
+      .tval_o(tval_test),
+      .priv_o(priv_test),
+      .iaddr_o(iaddr_test),
+      .time_o(time_test)
 
   );
   
@@ -772,7 +789,19 @@ module ariane_testharness #(
       .rst_ni       (rst_ni),
       .rvfi_probes_i(rvfi_probes),
       .rvfi_instr_o (rvfi_instr),
-      .rvfi_csr_o   (rvfi_csr)
+      .rvfi_csr_o   (rvfi_csr),
+      //TIP_Outputs
+      .valid_tip_o(valid_tip),
+      .pc_tip_o(pc_tip),
+      .op_tip_o(op_tip),
+      .is_compressed_tip_o(is_compressed_tip),
+      .branch_valid_tip_o(branch_valid_tip),
+      .is_taken_tip_o(is_taken_tip),
+      .ex_valid_tip_o(ex_valid_tip),
+      .tval_tip_o(tval_tip),
+      .cause_tip_o(cause_tip),
+      .priv_lvl_tip_o(priv_lvl_tip),
+      .time_tip_o(time_tip)
   );
 
   rvfi_tracer #(
