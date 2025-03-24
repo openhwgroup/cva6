@@ -279,6 +279,8 @@ module csr_regfile
   logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
 
+  logic Vectored;
+
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
@@ -322,6 +324,13 @@ module csr_regfile
     end
   end else begin
     assign vsstatus_extended = '0;
+  end
+
+
+  if (CVA6Cfg.DirectVecOnly) begin
+    assign Vectored = 1'b0;
+  end else begin
+    assign Vectored = csr_wdata[0];
   end
 
   always_comb begin : csr_read_process
@@ -1473,8 +1482,6 @@ module csr_regfile
         end
 
         riscv::CSR_MTVEC: begin
-          logic Vectored;
-          Vectored = CVA6Cfg.DirectVecOnly ? 1'b0 : csr_wdata[0];
           if (!Vectored) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, Vectored};
           // we are in vector mode, this implementation requires the additional
           // alignment constraint of 64 * 4 bytes
