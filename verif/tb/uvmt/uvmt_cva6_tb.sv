@@ -169,7 +169,11 @@ module uvmt_cva6_tb;
 
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
-      uvma_cvxif_assert                             cvxif_assert(.cvxif_assert(cvxif_vif));
+      uvma_cvxif_assert #(
+      CVA6Cfg.X_HARTID_WIDTH,
+      CVA6Cfg.X_ID_WIDTH,
+      CVA6Cfg.X_NUM_RS
+   ) cvxif_assert(.cvxif_assert(cvxif_vif));
 
    // DUT Wrapper Interfaces
    uvmt_rvfi_if #(
