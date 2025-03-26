@@ -39,10 +39,17 @@ module rvfi_tracer #(
   longint unsigned TOHOST_ADDR;
   string binary;
   int f;
+  int f_v2; // New file handle for improved format
   int unsigned SIM_FINISH;
   initial begin
     TOHOST_ADDR = '0;
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
+    f_v2 = $fopen($sformatf("trace_rvfi_hart_%h.dasm.v2", HART_ID), "w");
+    // Write header for improved format
+    $fwrite(f_v2, "%-4s | %-16s | %-10s | %-30s | %-5s | %-12s | %-30s\n", 
+            "MODE", "PC", "BINARY", "INSTRUCTION", "REG", "VALUE", "MEMORY");
+    $fwrite(f_v2, "-----------------------------------------------------------------------------------------------------------------------------------------\n");
+    
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
     if (!$value$plusargs("tohost_addr=%h", TOHOST_ADDR)) TOHOST_ADDR = '0;
     if (TOHOST_ADDR == '0) begin
@@ -56,11 +63,15 @@ module rvfi_tracer #(
         if (TOHOST_ADDR == '0) begin
             $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
             $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
+            $fwrite(f_v2, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
         end
     end
   end
 
-  final $fclose(f);
+  final begin
+    $fclose(f);
+    $fclose(f_v2);
+  end
 
   logic [31:0] cycles;
   // Generate the trace based on RVFI
@@ -68,6 +79,18 @@ module rvfi_tracer #(
   string cause;
   logic[31:0] end_of_test_q;
   logic[31:0] end_of_test_d;
+  
+  // New variables for enhanced trace format
+  string v2_instr_str;
+  string v2_reg_str;
+  string v2_mem_str;
+  logic [3:0] v2_mode;
+  logic [63:0] v2_pc;
+  logic [31:0] v2_insn;
+  logic [31:0] v2_rd_wdata;
+  logic [4:0] v2_rd_addr;
+  logic [63:0] v2_mem_addr;
+  logic [63:0] v2_mem_wdata;
 
   assign end_of_test_o = end_of_test_d;
 
@@ -77,14 +100,28 @@ module rvfi_tracer #(
       pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
+        // Initialize new variables for the enhanced format
+        v2_instr_str = "";
+        v2_reg_str = "-";
+        v2_mem_str = "-";
+        v2_mode = rvfi_i[i].mode;
+        v2_pc = pc64;
+        v2_insn = rvfi_i[i].insn;
+        v2_rd_wdata = rvfi_i[i].rd_wdata;
+        v2_rd_addr = rvfi_i[i].rd_addr;
+        v2_mem_addr = rvfi_i[i].mem_addr;
+        v2_mem_wdata = rvfi_i[i].mem_wdata;
+        
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
            $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
              pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+           v2_instr_str = $sformatf("INTERRUPT DASM(%h)", rvfi_i[i].insn);
         end
         else begin
            $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
              pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+           v2_instr_str = $sformatf("DASM(%h)", rvfi_i[i].insn);
         end
         // Destination register information
         if (rvfi_i[i].insn[1:0] != 2'b11) begin
@@ -107,14 +144,18 @@ module rvfi_tracer #(
             (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.XLEN == 64) ||
                                            (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.XLEN == 32) ))) begin
           $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          v2_reg_str = $sformatf("f%0d", rvfi_i[i].rd_addr);
         end else if (rvfi_i[i].rd_addr != 0) begin
           $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          v2_reg_str = $sformatf("x%0d", rvfi_i[i].rd_addr);
           if (rvfi_i[i].mem_rmask != 0) begin
             $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
+            v2_mem_str = $sformatf("READ 0x%h", rvfi_i[i].mem_addr);
           end
         end else begin
           if (rvfi_i[i].mem_wmask != 0) begin
             $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+            v2_mem_str = $sformatf("WRITE 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
             if (TOHOST_ADDR != '0 &&
                 rvfi_i[i].mem_paddr == TOHOST_ADDR &&
                 rvfi_i[i].mem_wdata[0] == 1'b1) begin
@@ -124,6 +165,15 @@ module rvfi_tracer #(
           end
         end
         $fwrite(f, "\n");
+        
+        // Write to enhanced format trace file - all info on one line, properly formatted
+        if (rvfi_i[i].insn[1:0] != 2'b11) begin
+          $fwrite(f_v2, "%-4d | 0x%016h | 0x%04h     | %-30s | %-5s | 0x%08h   | %s\n",
+                v2_mode, v2_pc, v2_insn[15:0], v2_instr_str, v2_reg_str, v2_rd_wdata, v2_mem_str);
+        end else begin
+          $fwrite(f_v2, "%-4d | 0x%016h | 0x%08h | %-30s | %-5s | 0x%08h   | %s\n",
+                v2_mode, v2_pc, v2_insn, v2_instr_str, v2_reg_str, v2_rd_wdata, v2_mem_str);
+        end
       end else begin
         if (rvfi_i[i].trap) begin
           case (rvfi_i[i].cause)
@@ -139,8 +189,12 @@ module rvfi_tracer #(
           endcase;
           if (rvfi_i[i].insn[1:0] != 2'b11) begin
             $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn[15:0]);
+            $fwrite(f_v2, "TRAP | 0x%016h | 0x%04h     | %-30s | -     | -          | -\n",
+                    pc64, rvfi_i[i].insn[15:0], cause);
           end else begin
             $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn);
+            $fwrite(f_v2, "TRAP | 0x%016h | 0x%08h | %-30s | -     | -          | -\n",
+                    pc64, rvfi_i[i].insn, cause);
           end
         end
       end

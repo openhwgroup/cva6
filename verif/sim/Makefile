@@ -409,6 +409,8 @@ vcs-testharness:
 	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	# Copy improved format log to output directory
+	cp ./trace_rvfi_hart_00.dasm.v2 `dirname $(log)`/`basename $(log) .log`.log.v2
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness:
@@ -421,6 +423,8 @@ veri-testharness:
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	# Copy improved format log to output directory
+	cp ./trace_rvfi_hart_00.dasm.v2 `dirname $(log)`/`basename $(log) .log`.log.v2
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 xrun-testharness:
@@ -434,6 +438,8 @@ xrun-testharness:
 	make -C $(path_var) xrun_sim target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
 	@echo "[XRUN-TESTHARNESS1] $(elf)"
 	$(CVA6_REPO_DIR)/tools/spike/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm > $(log)
+	# Copy improved format log to output directory
+	cp ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm.v2 `dirname $(log)`/`basename $(log) .log`.log.v2
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
@@ -441,6 +447,8 @@ questa-testharness:
 	    report_file=$(log).yaml $(spike-yaml-makearg)
 	# TODO: Add support for waveform collection.
 	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
+	# Copy improved format log to output directory
+	cp $(path_var)/trace_rvfi_hart_00.dasm.v2 `dirname $(log)`/`basename $(log) .log`.log.v2
 	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
 
 ###############################################################################
@@ -450,7 +458,7 @@ questa-testharness:
 clean_all: vcs_clean_all
 	rm -f *.txt
 	rm -f trace*.log
-	rm -f trace*.dasm
+	rm -f trace*.dasm trace*.dasm.v2
 	rm -f *.vpd *.fsdb *.vcd *.fst
 
 help:
