@@ -157,6 +157,22 @@ smoke-tests:
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
     - !reference [.simu_after_script]
 
+iti-test:
+  extends:
+    - .fe_smoke_test
+  variables:
+    DASHBOARD_JOB_TITLE: "ITI test"
+    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instuction Trace Interface"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    SPIKE_TANDEM: 1
+    DV_TARGET: "hwconfig"
+    DV_HWCONFIG_OPTS: ["cv32a65x"]
+  script:
+    - bash verif/regress/iti_test.sh
+    - diff verif/tests/custom/ITI/iti_ref.trace verif/sim/iti.trace
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 smoke-gen:
   extends:
     - .fe_smoke_test

@@ -30,7 +30,7 @@ module itype_detector
     input  logic                                            interrupt_i,
     input  ariane_pkg::fu_op                                op_i,
     input  logic                                            branch_taken_i,
-    output logic             [ITYPE_LEN-1:0] itype_o
+    output iti_pkg::itype_t                                 itype_o
 );
 
   // internal signals
@@ -71,20 +71,20 @@ module itype_detector
   // assigning the itype
   always_comb begin
     // initialization
-    itype_o = '0;
+    itype_o = iti_pkg::STANDARD;
 
     if (exception) begin  // exception
-      itype_o = 1;
+      itype_o = iti_pkg::EXC;
     end else if (interrupt) begin  // interrupt
-      itype_o = 2;
+      itype_o = iti_pkg::INT;
     end else if (eret && valid_i) begin  // exception or interrupt return
-      itype_o = 3;
+      itype_o = iti_pkg::ERET;
     end else if (nontaken_branch && valid_i) begin  // nontaken branch
-      itype_o = 4;
+      itype_o = iti_pkg::NON_TAKEN_BR;
     end else if (taken_branch && valid_i) begin  // taken branch
-      itype_o = 5;
+      itype_o = iti_pkg::TAKEN_BR;
     end else if (ITYPE_LEN == 3 && updiscon && valid_i) begin // uninferable discontinuity
-      itype_o = 6;
+      itype_o = iti_pkg::UNINF_JMP;
     end
   end
 

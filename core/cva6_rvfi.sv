@@ -13,12 +13,12 @@ module cva6_rvfi
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter bit TIP_EN = bit'(0),
     parameter type rvfi_instr_t = logic,
     parameter type rvfi_csr_t = logic,
     parameter type rvfi_probes_instr_t = logic,
     parameter type rvfi_probes_csr_t = logic,
-    parameter type rvfi_probes_t = logic
+    parameter type rvfi_probes_t = logic,
+    parameter type rvfi_to_iti_t = logic
 
 ) (
 
@@ -26,20 +26,10 @@ module cva6_rvfi
     input logic rst_ni,
 
     input rvfi_probes_t rvfi_probes_i,
+    input logic iti_enable_i,
     output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_instr_o,
     output rvfi_csr_t rvfi_csr_o,
-    
-    output logic [CVA6Cfg.NrCommitPorts-1:0] valid_tip_o,
-    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_tip_o,
-    output ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_tip_o,
-    output logic [CVA6Cfg.NrCommitPorts-1:0] is_compressed_tip_o,
-    output logic [CVA6Cfg.NrCommitPorts-1:0] branch_valid_tip_o,
-    output logic [CVA6Cfg.NrCommitPorts-1:0] is_taken_tip_o,
-    output logic  ex_valid_tip_o,
-    output logic [CVA6Cfg.XLEN-1:0] tval_tip_o,
-    output logic [CVA6Cfg.XLEN-1:0] cause_tip_o,
-    output riscv::priv_lvl_t priv_lvl_tip_o,
-    output logic [63:0] time_tip_o
+    output rvfi_to_iti_t rvfi_to_iti_o
 );
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode =
@@ -93,13 +83,13 @@ module cva6_rvfi
   logic [CVA6Cfg.XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
 
-  logic [CVA6Cfg.NrCommitPorts-1:0] valid_tip;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_tip;
-  ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_tip;
-  logic branch_valid_tip;
-  logic is_taken_tip;
-  logic [CVA6Cfg.XLEN-1:0] tval_tip;
-  logic [63:0] time_tip;
+  logic [CVA6Cfg.NrCommitPorts-1:0] valid_iti;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_iti;
+  ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_iti;
+  logic branch_valid_iti;
+  logic is_taken_iti;
+  logic [CVA6Cfg.XLEN-1:0] tval_iti;
+  logic [63:0] time_iti;
 
   riscv::priv_lvl_t priv_lvl;
 
@@ -169,13 +159,13 @@ module cva6_rvfi
   assign ex_commit_cause = instr.ex_commit_cause;
   assign ex_commit_valid = instr.ex_commit_valid;
 
-  assign valid_tip = instr.commit_ack;
-  assign pc_tip = instr.commit_instr_pc;
-  assign op_tip = instr.commit_instr_op;
-  assign branch_valid_tip = instr.branch_valid;
-  assign is_taken_tip = instr.is_taken;
-  assign tval_tip = instr.tval;
-  assign time_tip = rvfi_probes_i.csr.cycle_q;
+  assign valid_iti = instr.commit_ack;
+  assign pc_iti = instr.commit_instr_pc;
+  assign op_iti = instr.commit_instr_op;
+  assign branch_valid_iti = instr.branch_valid;
+  assign is_taken_iti = instr.is_taken;
+  assign tval_iti = instr.tval;
+  assign time_iti = rvfi_probes_i.csr.cycle_q;
 
   assign priv_lvl = instr.priv_lvl;
 
@@ -293,9 +283,9 @@ module cva6_rvfi
       end
     end
 
-    if (branch_valid_tip) begin
-      mem_n[branch_trans_id].branch_valid=branch_valid_tip;
-      mem_n[branch_trans_id].is_taken=is_taken_tip;
+    if (branch_valid_iti && iti_enable_i) begin
+      mem_n[branch_trans_id].branch_valid=branch_valid_iti;
+      mem_n[branch_trans_id].is_taken=is_taken_iti;
     end 
 
     if (lsu_rmask != 0) begin
@@ -364,20 +354,36 @@ module cva6_rvfi
       rvfi_instr_o[i].mem_rdata <= commit_instr_result[i];
       rvfi_instr_o[i].rs1_rdata <= mem_q[commit_pointer[i]].rs1_rdata;
       rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
-
-      branch_valid_tip_o[i] <= mem_q[commit_pointer[i]].branch_valid;
-      is_taken_tip_o[i] <= mem_q[commit_pointer[i]].is_taken;
-      is_compressed_tip_o[i] <= mem_q[commit_pointer[i]].is_compressed;
-      valid_tip_o[i]<=valid_tip[i];
-      pc_tip_o[i]<=pc_tip[i];
-      op_tip_o[i]<=op_tip[i];
+      if (iti_enable_i) begin
+        rvfi_to_iti_o.branch_valid[i] <= mem_q[commit_pointer[i]].branch_valid;
+        rvfi_to_iti_o.is_taken[i] <= mem_q[commit_pointer[i]].is_taken;
+        rvfi_to_iti_o.is_compressed[i] <= mem_q[commit_pointer[i]].is_compressed;
+        rvfi_to_iti_o.valid[i]<=valid_iti[i];
+        rvfi_to_iti_o.pc[i]<=pc_iti[i];
+        rvfi_to_iti_o.op[i]<=op_iti[i];
+      end else begin
+        rvfi_to_iti_o.branch_valid[i] <= 1'b0;
+        rvfi_to_iti_o.is_taken[i] <= 1'b0;
+        rvfi_to_iti_o.is_compressed[i] <= 1'b0;
+        rvfi_to_iti_o.valid[i]<=1'b0;
+        rvfi_to_iti_o.pc[i]<= '0;
+        rvfi_to_iti_o.op[i]<= '0;
+      end
     end
+    if (iti_enable_i) begin
+      rvfi_to_iti_o.ex_valid <= ex_commit_valid;
+      rvfi_to_iti_o.times <= time_iti;
+      rvfi_to_iti_o.cause <= ex_commit_cause;
+      rvfi_to_iti_o.tval <= tval_iti;
+      rvfi_to_iti_o.priv_lvl <= priv_lvl;
+    end else begin
+      rvfi_to_iti_o.ex_valid <= 1'b0;
+      rvfi_to_iti_o.times <= '0;
+      rvfi_to_iti_o.cause <= '0;
+      rvfi_to_iti_o.tval <= '0;
+      rvfi_to_iti_o.priv_lvl <= '0;
 
-    ex_valid_tip_o <= ex_commit_valid;
-    time_tip_o <= time_tip;
-    cause_tip_o <= ex_commit_cause;
-    tval_tip_o <= tval_tip;
-    priv_lvl_tip_o <= priv_lvl;
+    end
   end
 
 

@@ -12,7 +12,7 @@
 // Darshak Sheladiya, SYSGO GmbH
 // Umberto Laghi, UNIBO
 
-/*Recursive module used to determines the iaddr, ilastsize, iretire*/
+//Systollic module used to determines the iaddr, ilastsize, iretire
 
 
 module instr_to_trace
@@ -41,67 +41,63 @@ module instr_to_trace
   logic exception;
   logic interrupt;
 
-  assign special_inst = uop_entry_i.itype > 2 && uop_entry_i.valid;
-  assign exception = uop_entry_i.itype == 1;
-  assign interrupt = uop_entry_i.itype == 2;
+  assign special_inst = (uop_entry_i.itype != iti_pkg::INT && uop_entry_i.itype != iti_pkg::EXC && uop_entry_i.itype != iti_pkg::STANDARD && uop_entry_i.valid )? 1'b1 : 1'b0;
+  assign exception = (uop_entry_i.itype == iti_pkg::EXC) ? 1'b1 : 1'b0;
+  assign interrupt = (uop_entry_i.itype == iti_pkg::INT) ? 1'b1 : 1'b0;
 
   always_comb begin
-
     counter_o = counter_i;
     is_special_o = was_special_i;
     iaddr_o = iaddr_i;
     itt_out_o = '0;
 
     if (uop_entry_i.valid) begin
-
         counter_o = uop_entry_i.compressed ? counter_i + 1 : counter_i + 2;
-        iaddr_o = iaddr_i;
-        
+
         if (was_special_i) begin 
             counter_o = 0;
             iaddr_o = uop_entry_i.pc;
-            is_special_o = '0;
+            is_special_o = 1'b0;
         end
 
         if (special_inst) begin
-            itt_out_o.valid = '1;
+            itt_out_o.valid = 1'b1;
             itt_out_o.iretire = uop_entry_i.compressed ? counter_o + 1 : counter_o + 2;
             itt_out_o.itype = uop_entry_i.itype;
-            itt_out_o.ilastsize = !uop_entry_i.compressed;
+            itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = iaddr_o;
             itt_out_o.priv = uop_entry_i.priv;
+            itt_out_o.times = uop_entry_i.times;
             itt_out_o.cause = '0;
             itt_out_o.tval = '0;
-            is_special_o = '1;
+            is_special_o = 1'b1;
         end 
 
         if (interrupt) begin
-            itt_out_o.valid = '1;
+            itt_out_o.valid = 1'b1;
             itt_out_o.iretire = uop_entry_i.compressed ? 1 : 2;
             itt_out_o.itype = uop_entry_i.itype;
-            itt_out_o.ilastsize = !uop_entry_i.compressed;
+            itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = uop_entry_i.pc;
             itt_out_o.priv = uop_entry_i.priv;
+            itt_out_o.times = uop_entry_i.times;
             itt_out_o.cause = cause_i;
             itt_out_o.tval = '0;
-            is_special_o = '1;
+            is_special_o = 1'b1;
         end
 
         if(exception) begin
-            itt_out_o.valid = '1;
+            itt_out_o.valid = 1'b1;
             itt_out_o.iretire = uop_entry_i.compressed ? 1 : 2;
             itt_out_o.itype = uop_entry_i.itype;
-            itt_out_o.ilastsize = !uop_entry_i.compressed;
+            itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = uop_entry_i.pc;
             itt_out_o.priv = uop_entry_i.priv;
+            itt_out_o.times = uop_entry_i.times;
             itt_out_o.cause = cause_i;
             itt_out_o.tval = tval_i;
-            is_special_o = '1;
+            is_special_o = 1'b1;
         end
-
-
     end
-
-  end 
-
+  end
 endmodule
