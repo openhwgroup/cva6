@@ -17,16 +17,6 @@ import subprocess
 import github_integration as gh
 import source_branch_finder as source_branch
 
-
-def find_pr(branch, prs):
-    match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
-    if match:
-        label = f'{match.group(2)}:{match.group(1)}'
-        for pr in prs:
-            if label == pr['head']['label']:
-                return pr
-    return None
-
 # arguments: inputdir outputfile
 
 cwd = os.getcwd()
@@ -57,7 +47,6 @@ if workflow_type == 'github':  # (from wrapper)
     cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
     cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
     cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
-    source_branch = source_branch.find(cva6_branch)
 else:  # gitlab
     workflow_uid = os.environ['CI_PIPELINE_ID'].strip('\'\"')
     cvv_branch = 'none'
@@ -67,8 +56,8 @@ else:  # gitlab
     cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
     workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE'].strip('\'\"')
     workflow_commit_author = os.environ['CI_COMMIT_AUTHOR'].strip('\'\"')
-    source_branch = "master"
 
+source_branch = source_branch.find(cva6_branch)
 
 if len(workflow_commit_subject) > 60:
     title = workflow_commit_subject[0:60] + '...'
@@ -151,12 +140,17 @@ cd -
 except subprocess.CalledProcessError as e:
     print(f"Error: {e.output}")
 
-if workflow_type == "github":
-    pulls = gh.pulls('openhwgroup', workflow_repo)
-    pr = find_pr(workflow_commit_ref_name, pulls)
-else:
-    pr = None
+def find_pr(branch, prs):
+    match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
+    if match:
+        label = f'{match.group(2)}:{match.group(1)}'
+        for pr in prs:
+            if label == pr['head']['label']:
+                return pr
+    return None
 
+pulls = gh.pulls('openhwgroup', workflow_repo)
+pr = find_pr(workflow_commit_ref_name, pulls)
 if pr is not None:
     ref_branch = pr['base']['ref']
     wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
