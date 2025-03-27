@@ -58,3 +58,4 @@ spike_param_tree:
       mcycleh_implemented: false
       mhpmevent31_implemented: false
       cvxif_x_num_rs: 2
+      allow_unmapped_mem_access: true
