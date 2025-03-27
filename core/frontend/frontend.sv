@@ -542,7 +542,10 @@ module frontend
 
   //default obi state registred
   assign obi_fetch_req_o.reqpar = !obi_fetch_req_o.req;
-  assign obi_fetch_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr : paddr_q;
+  assign obi_fetch_req_o.a.addr = {
+    obi_a_state_q == TRANSPARENT ? paddr[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] : paddr_q[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS],
+    {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
+  };
   assign obi_fetch_req_o.a.we = '0;
   assign obi_fetch_req_o.a.be = '1;
   assign obi_fetch_req_o.a.wdata = '0;
