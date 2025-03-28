@@ -227,6 +227,7 @@ module csr_regfile
   logic v_q, v_d;  // virtualization mode
   // we are in debug
   logic debug_mode_q, debug_mode_d, debug_mode;
+  logic ex_cause_is_not_debug_request;
 
   logic mtvec_rst_load_q;  // used to determine whether we came out of reset
 
@@ -328,8 +329,10 @@ module csr_regfile
 
   if (CVA6Cfg.DebugEn) begin
     assign debug_mode = debug_mode_q;
+    assign ex_cause_is_not_debug_request = ex_i.cause != riscv::DEBUG_REQUEST;
   end else begin
     assign debug_mode = 1'b0;
+    assign ex_cause_is_not_debug_request = 1'b1;
   end
 
   if (CVA6Cfg.RVS) begin
@@ -1863,7 +1866,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if (!debug_mode && (CVA6Cfg.DebugEn && ex_i.cause != riscv::DEBUG_REQUEST) && ex_i.valid) begin
+    if (!debug_mode && ex_cause_is_not_debug_request && ex_i.valid) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
