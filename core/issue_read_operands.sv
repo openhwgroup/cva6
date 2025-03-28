@@ -163,7 +163,7 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_n, branch_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_n, cvxif_valid_q;
   logic [31:0] cvxif_off_instr_n, cvxif_off_instr_q;
-  logic                                              cvxif_instruction_valid;
+  logic                                                            cvxif_instruction_valid;
 
   //RAW detection
   logic [ CVA6Cfg.NrIssuePorts-1:0][    CVA6Cfg.TRANS_ID_BITS-1:0] idx_hzd_rs1;
@@ -765,8 +765,8 @@ module issue_read_operands
                   (CVA6Cfg.RVS && issue_instr_i[i].op == SFENCE_VMA)));
 
       assign rs3_has_raw[i] = ((CVA6Cfg.FpPresent && is_imm_fpr(
-              issue_instr_i[i].op
-          )) ? rd_clobber_fpr[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0);
+          issue_instr_i[i].op
+      )) ? rd_clobber_fpr[issue_instr_i[i].result[REG_ADDR_SIZE-1:0]] != NONE : 0);
 
       assign rs3_valid[i] = rs3_available[i];
     end

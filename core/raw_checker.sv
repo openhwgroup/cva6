@@ -49,9 +49,9 @@ module raw_checker
   logic                             rs_is_gpr0;
 
   for (genvar i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
-    assign same_rd_as_rs[i]  = (rs_fpr_i == rd_fpr_i[i]) && (rs_i == rd_i[i]) && still_issued_i[i];
+    assign same_rd_as_rs[i] = (rs_fpr_i == rd_fpr_i[i]) && (rs_i == rd_i[i]) && still_issued_i[i];
     assign same_rd_as_rs_before[i] = (i < issue_pointer_i) && same_rd_as_rs[i];
-    assign same_rd_as_rs_after[i]  = (i >= issue_pointer_i) && same_rd_as_rs[i];
+    assign same_rd_as_rs_after[i] = (i >= issue_pointer_i) && same_rd_as_rs[i];
   end
 
   //Last finders
