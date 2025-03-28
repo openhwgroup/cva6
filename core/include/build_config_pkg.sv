@@ -101,6 +101,7 @@ package build_config_pkg;
 
     cfg.HaltAddress = CVA6Cfg.HaltAddress;
     cfg.ExceptionAddress = CVA6Cfg.ExceptionAddress;
+    cfg.Renaming = CVA6Cfg.Renaming;
     cfg.RASDepth = CVA6Cfg.RASDepth;
     cfg.BTBEntries = CVA6Cfg.BTBEntries;
     cfg.BPType = CVA6Cfg.BPType;
