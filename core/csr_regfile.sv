@@ -1863,7 +1863,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if (!debug_mode && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) begin
+    if (!debug_mode && (CVA6Cfg.DebugEn && ex_i.cause != riscv::DEBUG_REQUEST) && ex_i.valid) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
