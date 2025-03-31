@@ -1158,7 +1158,8 @@ module issue_read_operands
   initial begin
     assert (OPERANDS_PER_INSTR == 2 || (OPERANDS_PER_INSTR == 3 && CVA6Cfg.CvxifEn))
     else
-      `ASSERT_FATAL("If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
+      `ASSERT_FATAL(
+          "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
   end
 
   // FPU does not declare that it will return a result the subsequent cycle so
