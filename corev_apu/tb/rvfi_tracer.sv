@@ -95,6 +95,9 @@ module rvfi_tracer #(
   assign end_of_test_o = end_of_test_d;
 
   always_ff @(posedge clk_i) begin
+    //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
+    $fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
+
     end_of_test_q <= (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
@@ -111,7 +114,17 @@ module rvfi_tracer #(
         v2_rd_addr = rvfi_i[i].rd_addr;
         v2_mem_addr = rvfi_i[i].mem_addr;
         v2_mem_wdata = rvfi_i[i].mem_wdata;
-        
+
+
+
+        /*
+        Try to write the value of to whatever file is being used:
+        TOP.ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.miss_ack_i
+        */
+        // Commented out to fix Verilator build issue - hierarchical path not defined in Verilator
+
+        // end_attempt
+
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
            $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
