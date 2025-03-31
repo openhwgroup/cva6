@@ -1173,7 +1173,8 @@ module issue_read_operands
   initial begin
     assert (!(CVA6Cfg.SuperscalarEn && CVA6Cfg.FpPresent))
     else
-      `ASSERT_FATAL("FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
+      `ASSERT_FATAL(
+          "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
