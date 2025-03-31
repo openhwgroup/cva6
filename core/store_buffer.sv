@@ -303,7 +303,8 @@ module store_buffer
 
   speculative_buffer_underflow :
   assert property (@(posedge clk_i) rst_ni && (speculative_status_cnt_q == 0) |-> !commit_i)
-  else `ASSERT_ERROR("[Speculative Queue] You are committing although there are no stores to commit");
+  else
+    `ASSERT_ERROR("[Speculative Queue] You are committing although there are no stores to commit");
 
   commit_buffer_overflow :
   assert property (@(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
