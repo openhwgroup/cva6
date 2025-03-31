@@ -47,7 +47,6 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/stream_demux.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/lzc.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/rr_arb_tree.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/shift_reg.sv
-${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/unread.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/popcount.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/exp_backoff.sv
 
