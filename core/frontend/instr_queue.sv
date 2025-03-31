@@ -508,8 +508,6 @@ module instr_queue
       .pop_i     (pop_address)
   );
 
-  unread i_unread_branch_mask (.d_i(|branch_mask_extended));
-  unread i_unread_fifo_pos (.d_i(|fifo_pos_extended));  // we don't care about the lower signals
 
   if (CVA6Cfg.RVC) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin
