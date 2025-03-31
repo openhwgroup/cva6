@@ -86,6 +86,7 @@ module instr_decoder #(
   end
 
   assert property (@(posedge clk_i) $onehot0(sel))
-  else `ASSERT_WARNING("This offloaded instruction is valid for multiple coprocessor instructions !");
+  else
+    `ASSERT_WARNING("This offloaded instruction is valid for multiple coprocessor instructions !");
 
 endmodule
