@@ -43,6 +43,8 @@
 // the replay mechanism gets more complicated as it can be that a 32 bit instruction
 // can not be pushed at once.
 
+`include "utils_macros.svh"
+
 module instr_queue
   import ariane_pkg::*;
 #(
@@ -553,12 +555,12 @@ module instr_queue
   // pragma translate_off
   replay_address_fifo :
   assert property (@(posedge clk_i) disable iff (!rst_ni) replay_o |-> !i_fifo_address.push_i)
-  else $fatal(1, "[instr_queue] Pushing address although replay asserted");
+  else `ASSERT_FATAL("[instr_queue] Pushing address although replay asserted");
 
   output_select_onehot :
   assert property (@(posedge clk_i) $onehot0(idx_ds_q))
   else begin
-    $error("Output select should be one-hot encoded");
+    `ASSERT_ERROR("Output select should be one-hot encoded");
     $stop();
   end
   // pragma translate_on

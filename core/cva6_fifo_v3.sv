@@ -13,6 +13,8 @@
 // Additional contributions by:
 //                 Angela Gonzalez - PlanV Technologies
 
+`include "utils_macros.svh"
+
 module cva6_fifo_v3 #(
     parameter bit FALL_THROUGH = 1'b0,  // fifo is in fall-through mode
     parameter bit FPGA_ALTERA = 1'b0,  // FPGA Altera optimizations enabled
@@ -216,16 +218,16 @@ module cva6_fifo_v3 #(
   // pragma translate_off
   initial begin
     assert (DEPTH > 0)
-    else $error("DEPTH must be greater than 0.");
+    else `ASSERT_ERROR("DEPTH must be greater than 0.");
   end
 
   full_write :
   assert property (@(posedge clk_i) disable iff (~rst_ni) (full_o |-> ~push_i))
-  else $fatal(1, "Trying to push new data although the FIFO is full.");
+  else `ASSERT_FATAL("Trying to push new data although the FIFO is full.");
 
   empty_read :
   assert property (@(posedge clk_i) disable iff (~rst_ni) (empty_o |-> ~pop_i))
-  else $fatal(1, "Trying to pop data although the FIFO is empty.");
+  else `ASSERT_FATAL("Trying to pop data although the FIFO is empty.");
   // pragma translate_on
 
 endmodule  // fifo_v3

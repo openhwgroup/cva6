@@ -12,6 +12,7 @@
 // Date: 05.05.2017
 // Description: CSR Register File as specified by RISC-V
 
+`include "utils_macros.svh"
 
 module csr_regfile
   import ariane_pkg::*;
@@ -2747,7 +2748,7 @@ module csr_regfile
   // check that eret and ex are never valid together
   assert property (@(posedge clk_i) disable iff (!rst_ni !== '0) !(eret_o && ex_i.valid))
   else begin
-    $error("eret and exception should never be valid at the same time");
+    `ASSERT_ERROR("eret and exception should never be valid at the same time");
     $stop();
   end
   //pragma translate_on

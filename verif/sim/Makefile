@@ -185,6 +185,7 @@ export SPIKE_PATH = $(CORE_V_VERIF)/vendor/riscv/riscv-isa-sim/
 COMMON_COMP_UVM_FLAGS = \
 	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
 	  +core_name=$(target) \
+	  +define+UVM\
 	  $(if $(spike-tandem), +define+SPIKE_TANDEM=1)
 
 COMMON_PLUS_ARGS = \
