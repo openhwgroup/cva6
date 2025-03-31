@@ -442,9 +442,12 @@ package config_pkg;
     else `ASSERT_FATAL("[frontend] fetch width != not supported");
     // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
     // Software Interrupt can be disabled when there is only M machine mode in CVA6.
-    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn)) else `ASSERT_FATAL("");
-    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn)) else `ASSERT_FATAL("");
-    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent)) else `ASSERT_FATAL("");
+    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn))
+    else `ASSERT_FATAL("");
+    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
+    else `ASSERT_FATAL("");
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent))
+    else `ASSERT_FATAL("");
     // pragma translate_on
   endfunction
 
