@@ -2571,9 +2571,7 @@ module csr_regfile
                               ? 1'b1
                               : 1'b0;
   end else if (CVA6Cfg.RVS) begin
-    assign en_translation_o = (satp_mode_is_sv && priv_lvl_o != riscv::PRIV_LVL_M)
-                             ? 1'b1
-                             : 1'b0;
+    assign en_translation_o   = (satp_mode_is_sv && priv_lvl_o != riscv::PRIV_LVL_M) ? 1'b1 : 1'b0;
     assign en_g_translation_o = 1'b0;
   end else begin
     assign en_translation_o = 1'b0;
