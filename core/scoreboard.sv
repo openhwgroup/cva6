@@ -348,7 +348,8 @@ module scoreboard #(
       assert property (
         @(posedge clk_i) disable iff (!rst_ni) wt_valid_i[i] && wt_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
       else
-        `ASSERT_FATAL("Two or more functional units are retiring instructions with the same transaction id!");
+        `ASSERT_FATAL(
+            "Two or more functional units are retiring instructions with the same transaction id!");
     end
   end
   //pragma translate_on
