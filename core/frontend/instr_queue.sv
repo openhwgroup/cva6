@@ -39,7 +39,7 @@
 // The instruction front-end will stop issuing instructions as soon as the
 // fifo is full. This will gate the logic if the processor is e.g.: halted
 //
-// TODO(zarubaf): The instruction queues can be reduced to 16 bit. Potentially
+// IMPROVEMENT: The instruction queues can be reduced to 16 bit. Potentially
 // the replay mechanism gets more complicated as it can be that a 32 bit instruction
 // can not be pushed at once.
 
@@ -336,7 +336,6 @@ module instr_queue
 
       // output mux select
       for (int unsigned i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-        // TODO handle fetch_entry_o[1] if superscalar
         if (idx_ds[0][i]) begin
           if (CVA6Cfg.NrPMPEntries != 0 && instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
             fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;

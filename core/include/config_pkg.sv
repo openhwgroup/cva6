@@ -169,7 +169,7 @@ package config_pkg;
     int unsigned                 AxiUserWidth;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
-    // TODO
+    // Transaction ID
     int unsigned                 MemTidWidth;
     // Instruction cache size (in bytes)
     int unsigned                 IcacheByteSize;

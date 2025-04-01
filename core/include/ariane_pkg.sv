@@ -28,7 +28,7 @@
 /// moved out to favour a fully parameterizable core.
 package ariane_pkg;
 
-  // TODO: Slowly move those parameters to the new system.
+  // IMPROVEMENT: Slowly move those parameters to the new system.
   localparam BITS_SATURATION_COUNTER = 2;
 
   // depth of store-buffers, this needs to be a power of two
