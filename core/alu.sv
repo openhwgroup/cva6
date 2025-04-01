@@ -130,7 +130,6 @@ module alu
   // Shifts
   // ---------
 
-  // TODO: this can probably optimized significantly
   logic                    shift_left;  // should we shift left
   logic                    shift_arithmetic;
 

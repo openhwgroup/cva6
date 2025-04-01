@@ -245,7 +245,6 @@ module issue_read_operands
     assign rs = {fu_data_n[0].operand_b, fu_data_n[0].operand_a};
   end
 
-  // TODO check only for 1st instruction ??
   // Allow a cvxif transaction if we WaW condition are ok.
   assign cvxif_req_allowed = (issue_instr_i[0].fu == CVXIF) && !stall_waw[0];
   assign cvxif_instruction_valid = !issue_instr_i[0].ex.valid && issue_instr_valid_i[0] && cvxif_req_allowed;

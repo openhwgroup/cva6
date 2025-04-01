@@ -423,7 +423,6 @@ module id_stage #(
       // Clear the valid flag if issue has acknowledged the instruction
       if (issue_instr_ack_i[0]) issue_n[0].valid = 1'b0;
 
-      // TODO: refaire
       // if we have a space in the register and the fetch is valid, go get it
       // or the issue stage is currently acknowledging an instruction, which means that we will have space
       // for a new instruction

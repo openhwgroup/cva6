@@ -66,8 +66,7 @@ module cvxif_fu
   always_comb begin
     x_exception_o.valid = x_illegal_i;
     x_exception_o.cause = x_illegal_i ? riscv::ILLEGAL_INSTR : '0;
-    if (CVA6Cfg.TvalEn)
-      x_exception_o.tval = x_off_instr_i;  // TODO Optimization : Set exception in IRO.
+    if (CVA6Cfg.TvalEn) x_exception_o.tval = x_off_instr_i;
   end
 
 endmodule
