@@ -29,16 +29,6 @@
 SUMMARY REPORT:
 
 
-############### BuiltIn -> RuleGroup=Blackbox Resolution ###############
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Severity   Rule Name            Count Short Help                               
-===============================================================================
-WARNING    WarnAnalyzeBBox      1     Reports black boxes in the design with 
-                                      Warn severity. 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-
 ############### BuiltIn -> RuleGroup=Command-line read ###############
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Severity   Rule Name            Count Short Help                               
