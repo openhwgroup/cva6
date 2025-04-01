@@ -13,6 +13,7 @@
 // Description: Store queue persists store requests and pushes them to memory
 //              if they are no longer speculative
 
+`include "utils_macros.svh"
 
 module store_buffer
   import ariane_pkg::*;
@@ -292,20 +293,22 @@ module store_buffer
   // as flush and commit is decided in the same stage
   commit_and_flush :
   assert property (@(posedge clk_i) rst_ni && flush_i |-> !commit_i)
-  else $error("[Commit Queue] You are trying to commit and flush in the same cycle");
+  else `ASSERT_ERROR("[Commit Queue] You are trying to commit and flush in the same cycle");
 
   speculative_buffer_overflow :
   assert property (@(posedge clk_i) rst_ni && (speculative_status_cnt_q == DEPTH_SPEC) |-> !valid_i)
   else
-    $error("[Speculative Queue] You are trying to push new data although the buffer is not ready");
+    `ASSERT_ERROR(
+        "[Speculative Queue] You are trying to push new data although the buffer is not ready");
 
   speculative_buffer_underflow :
   assert property (@(posedge clk_i) rst_ni && (speculative_status_cnt_q == 0) |-> !commit_i)
-  else $error("[Speculative Queue] You are committing although there are no stores to commit");
+  else
+    `ASSERT_ERROR("[Speculative Queue] You are committing although there are no stores to commit");
 
   commit_buffer_overflow :
   assert property (@(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
-  else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
+  else `ASSERT_ERROR("[Commit Queue] You are trying to commit a store although the buffer is full");
   //pragma translate_on
 endmodule
 

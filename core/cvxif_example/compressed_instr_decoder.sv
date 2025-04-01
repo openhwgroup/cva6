@@ -7,6 +7,8 @@
 //
 // Original Author: Guillaume Chauvon
 
+`include "utils_macros.svh"
+
 module compressed_instr_decoder #(
     parameter type                    copro_compressed_resp_t          = logic,
     parameter int                     NbInstr                          = 1,
@@ -44,6 +46,7 @@ module compressed_instr_decoder #(
   end
 
   assert property (@(posedge clk_i) $onehot0(sel))
-  else $warning("This offloaded instruction is valid for multiple coprocessor instructions !");
+  else
+    `ASSERT_WARNING("This offloaded instruction is valid for multiple coprocessor instructions !");
 
 endmodule

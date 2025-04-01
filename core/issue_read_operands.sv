@@ -13,6 +13,7 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 
+`include "utils_macros.svh"
 
 module issue_read_operands
   import ariane_pkg::*;
@@ -1157,10 +1158,8 @@ module issue_read_operands
   initial begin
     assert (OPERANDS_PER_INSTR == 2 || (OPERANDS_PER_INSTR == 3 && CVA6Cfg.CvxifEn))
     else
-      $fatal(
-          1,
-          "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports."
-      );
+      `ASSERT_FATAL(
+          "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
   end
 
   // FPU does not declare that it will return a result the subsequent cycle so
@@ -1174,7 +1173,8 @@ module issue_read_operands
   initial begin
     assert (!(CVA6Cfg.SuperscalarEn && CVA6Cfg.FpPresent))
     else
-      $fatal(1, "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
+      `ASSERT_FATAL(
+          "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
@@ -1183,7 +1183,7 @@ module issue_read_operands
     ) && !$isunknown(
         fu_data_q[i].operand_b
     )))
-    else $warning("Got unknown value in one of the operands");
+    else `ASSERT_WARNING("Got unknown value in one of the operands");
   end
   //pragma translate_on
 

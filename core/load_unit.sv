@@ -20,6 +20,8 @@
 // November, 2024 - Yannick Casamatta, Thales
 //          OBI Protocol
 
+`include "utils_macros.svh"
+
 module load_unit
   import ariane_pkg::*;
 #(
@@ -487,20 +489,20 @@ module load_unit
   //pragma translate_off
   initial
     assert (CVA6Cfg.DcacheIdWidth >= REQ_ID_BITS)
-    else $fatal(1, "DcacheIdWidth parameter is not wide enough to encode pending loads");
+    else `ASSERT_FATAL("DcacheIdWidth parameter is not wide enough to encode pending loads");
   // check invalid offsets, but only issue a warning as these conditions actually trigger a load address misaligned exception
   addr_offset0 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 5)
-  else $fatal(1, "invalid address offset used with {LW, LWU}");
+  else `ASSERT_FATAL("invalid address offset used with {LW, LWU}");
   addr_offset1 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 7)
-  else $fatal(1, "invalid address offset used with {LH, LHU}");
+  else `ASSERT_FATAL("invalid address offset used with {LH, LHU}");
   addr_offset2 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 8)
-  else $fatal(1, "invalid address offset used with {LB, LBU}");
+  else `ASSERT_FATAL("invalid address offset used with {LB, LBU}");
   //pragma translate_on
 
 endmodule

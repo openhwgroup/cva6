@@ -7,6 +7,8 @@
 //
 // Original Author: Jean-Roch COULON - Thales
 
+`include "../include/utils_macros.svh"
+
 package config_pkg;
 
   // ---------------
@@ -420,21 +422,32 @@ package config_pkg;
   /// sense for all parameters, here is the place to sanity check them.
   function automatic void check_cfg(cva6_cfg_t Cfg);
     // pragma translate_off
-    assert (Cfg.RASDepth > 0);
-    assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries));
-    assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries));
-    assert (Cfg.NrNonIdempotentRules <= NrMaxRules);
-    assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
-    assert (Cfg.NrCachedRegionRules <= NrMaxRules);
-    assert (Cfg.NrPMPEntries <= 64);
-    assert (!(Cfg.SuperscalarEn && Cfg.RVF));
+    assert (Cfg.RASDepth > 0)
+    else `ASSERT_FATAL("");
+    assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries))
+    else `ASSERT_FATAL("");
+    assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries))
+    else `ASSERT_FATAL("");
+    assert (Cfg.NrNonIdempotentRules <= NrMaxRules)
+    else `ASSERT_FATAL("");
+    assert (Cfg.NrExecuteRegionRules <= NrMaxRules)
+    else `ASSERT_FATAL("");
+    assert (Cfg.NrCachedRegionRules <= NrMaxRules)
+    else `ASSERT_FATAL("");
+    assert (Cfg.NrPMPEntries <= 64)
+    else `ASSERT_FATAL("");
+    assert (!(Cfg.SuperscalarEn && Cfg.RVF))
+    else `ASSERT_FATAL("");
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
-    else $fatal(1, "[frontend] fetch width != not supported");
+    else `ASSERT_FATAL("[frontend] fetch width != not supported");
     // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
     // Software Interrupt can be disabled when there is only M machine mode in CVA6.
-    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn));
-    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn));
-    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
+    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn))
+    else `ASSERT_FATAL("");
+    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
+    else `ASSERT_FATAL("");
+    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent))
+    else `ASSERT_FATAL("");
     // pragma translate_on
   endfunction
 

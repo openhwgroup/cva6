@@ -12,6 +12,8 @@
 // Date: 08.04.2017
 // Description: Scoreboard - keeps track of all decoded, issued and committed instructions
 
+`include "utils_macros.svh"
+
 module scoreboard #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
@@ -321,22 +323,22 @@ module scoreboard #(
   //pragma translate_off
   initial begin
     assert (CVA6Cfg.NR_SB_ENTRIES == 2 ** CVA6Cfg.TRANS_ID_BITS)
-    else $fatal(1, "Scoreboard size needs to be a power of two.");
+    else `ASSERT_FATAL("Scoreboard size needs to be a power of two.");
   end
   // assert that we never acknowledge a commit if the instruction is not valid
   assert property (
     @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[0] |-> commit_instr_o[0].valid)
-  else $fatal(1, "Commit acknowledged but instruction is not valid");
+  else `ASSERT_FATAL("Commit acknowledged but instruction is not valid");
   if (CVA6Cfg.NrCommitPorts == 2) begin : gen_two_commit_ports
     assert property (
         @(posedge clk_i) disable iff (!rst_ni) commit_ack_i[1] |-> commit_instr_o[1].valid)
-    else $fatal(1, "Commit acknowledged but instruction is not valid");
+    else `ASSERT_FATAL("Commit acknowledged but instruction is not valid");
   end
   // assert that we never give an issue ack signal if the instruction is not valid
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     assert property (
       @(posedge clk_i) disable iff (!rst_ni) issue_ack_i[i] |-> issue_instr_valid_o[i])
-    else $fatal(1, "Issue acknowledged but instruction is not valid");
+    else `ASSERT_FATAL("Issue acknowledged but instruction is not valid");
   end
 
   // there should never be more than one instruction writing the same destination register (except x0)
@@ -346,10 +348,8 @@ module scoreboard #(
       assert property (
         @(posedge clk_i) disable iff (!rst_ni) wt_valid_i[i] && wt_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
       else
-        $fatal(
-            1,
-            "Two or more functional units are retiring instructions with the same transaction id!"
-        );
+        `ASSERT_FATAL(
+            "Two or more functional units are retiring instructions with the same transaction id!");
     end
   end
   //pragma translate_on
