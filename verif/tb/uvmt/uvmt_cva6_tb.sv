@@ -125,16 +125,18 @@ module uvmt_cva6_tb;
                           .ACHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.AChkWidth),
                           .RCHK_WIDTH(CVA6Cfg.ObiStorebusCfg.OptionalCfg.RChkWidth),
                           .IS_1P2(1)) obi_store_assert(.obi(obi_store_if));
-      bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-                          .AUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AUserWidth),
-                          .WUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.WUserWidth),
-                          .RUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RUserWidth),
-                          .ADDR_WIDTH(CVA6Cfg.ObiAmobusCfg.AddrWidth),
-                          .DATA_WIDTH(CVA6Cfg.ObiAmobusCfg.DataWidth),
-                          .ID_WIDTH(CVA6Cfg.ObiAmobusCfg.IdWidth),
-                          .ACHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AChkWidth),
-                          .RCHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RChkWidth),
-                          .IS_1P2(1)) obi_amo_assert(.obi(obi_amo_if));
+      if (CVA6Cfg.RVA) begin
+         bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                             .AUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AUserWidth),
+                             .WUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.WUserWidth),
+                             .RUSER_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RUserWidth),
+                             .ADDR_WIDTH(CVA6Cfg.ObiAmobusCfg.AddrWidth),
+                             .DATA_WIDTH(CVA6Cfg.ObiAmobusCfg.DataWidth),
+                             .ID_WIDTH(CVA6Cfg.ObiAmobusCfg.IdWidth),
+                             .ACHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.AChkWidth),
+                             .RCHK_WIDTH(CVA6Cfg.ObiAmobusCfg.OptionalCfg.RChkWidth),
+                             .IS_1P2(1)) obi_amo_assert(.obi(obi_amo_if));
+      end
       bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
                           .AUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AUserWidth),
                           .WUSER_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.WUserWidth),
