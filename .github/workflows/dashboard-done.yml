@@ -26,10 +26,9 @@ jobs:
           script: |
             const inputs = context.payload.inputs
             const pr = inputs.pr_number
-            const dashboardBranch = inputs.source_branch ? inputs.source_branch : cva6
             const success = inputs.success == 'true'
             const status_text = success ? ":heavy_check_mark: successful" : ":x: failed"
-            const url = `https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_${dashboardBranch}_${pr}.html`
+            const url = `https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_${source_branch}_${pr}.html`
             await github.rest.issues.createComment({
               issue_number: pr,
               owner: context.repo.owner,

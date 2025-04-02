@@ -17,6 +17,16 @@ import subprocess
 import github_integration as gh
 import source_branch_finder as source_branch
 
+
+def find_pr(branch, prs):
+    match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
+    if match:
+        label = f'{match.group(2)}:{match.group(1)}'
+        for pr in prs:
+            if label == pr['head']['label']:
+                return pr
+    return None
+
 # arguments: inputdir outputfile
 
 cwd = os.getcwd()
@@ -47,6 +57,7 @@ if workflow_type == 'github':  # (from wrapper)
     cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
     cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
     cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
+    source_branch = source_branch.find(cva6_branch)
 else:  # gitlab
     workflow_uid = os.environ['CI_PIPELINE_ID'].strip('\'\"')
     cvv_branch = 'none'
@@ -56,8 +67,7 @@ else:  # gitlab
     cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
     workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE'].strip('\'\"')
     workflow_commit_author = os.environ['CI_COMMIT_AUTHOR'].strip('\'\"')
-
-source_branch = source_branch.find(cva6_branch)
+    source_branch = "master"
 
 if len(workflow_commit_subject) > 60:
     title = workflow_commit_subject[0:60] + '...'
@@ -118,6 +128,8 @@ pprint.pprint(pipeline)
 filename = re.sub('[^\w\.]', '', sys.argv[2])
 print(filename)
 
+pipeline_report_dir = "cva6" if source_branch == "master" else source_branch
+
 with open(f'{sys.argv[1]}/{filename}', 'w+') as f:
     yaml.dump(pipeline, f)
 
@@ -126,33 +138,28 @@ try:
   print(subprocess.check_output(f'''
 rm -r .gitlab-ci/dashboard_tmp || echo "nothing to do"
 git clone {dashboard_url} .gitlab-ci/dashboard_tmp
-mkdir -p .gitlab-ci/dashboard_tmp/pipelines_{source_branch}
+mkdir -p .gitlab-ci/dashboard_tmp/pipelines_{pipeline_report_dir}
 ls -al {sys.argv[1]}
-cp {sys.argv[1]}/{filename} .gitlab-ci/dashboard_tmp/pipelines_{source_branch}/
+cp {sys.argv[1]}/{filename} .gitlab-ci/dashboard_tmp/pipelines_{pipeline_report_dir}/
 cd .gitlab-ci/dashboard_tmp
 git config user.email {git_email}
 git config user.name {git_name}
-git add pipelines_{source_branch}/{filename}
-git commit -m  '{source_branch}: '{quoted_title} || echo "commit fail"
+git add pipelines_{pipeline_report_dir}/{filename}
+git commit -m  '{pipeline_report_dir}: '{quoted_title} || echo "commit fail"
 git push
 cd -
 ''', shell=True))
 except subprocess.CalledProcessError as e:
     print(f"Error: {e.output}")
 
-def find_pr(branch, prs):
-    match = re.search(r'(.*)_PR_([a-zA-Z0-9](?:[a-zA-Z0-9]|[-_](?=[a-zA-Z0-9])){0,38})', branch)
-    if match:
-        label = f'{match.group(2)}:{match.group(1)}'
-        for pr in prs:
-            if label == pr['head']['label']:
-                return pr
-    return None
+if workflow_type == "github":
+    pulls = gh.pulls('openhwgroup', workflow_repo)
+    pr = find_pr(workflow_commit_ref_name, pulls)
+else:
+    pr = None
 
-pulls = gh.pulls('openhwgroup', workflow_repo)
-pr = find_pr(workflow_commit_ref_name, pulls)
 if pr is not None:
     ref_branch = pr['base']['ref']
     wf = gh.DashboardDone('openhwgroup', workflow_repo, ref_branch)
-    response = wf.send(pr['number'], success, source_branch)
+    response = wf.send(pr['number'], success, pipeline_report_dir)
     print(response.text)
