@@ -96,7 +96,32 @@ module rvfi_tracer #(
 
   always_ff @(posedge clk_i) begin
     //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
-    $fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
+    $fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
+    /*$fwrite(f, "SRAM_BANK[0]: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.gen_data_banks[0].i_data_sram);
+
+    %Error: /home/cai/cache_project/sandbox/cva6/corev_apu/tb/rvfi_tracer.sv:100:150: Found definition of 'ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.gen_data_banks__BRA__??__KET__.i_data_sram' as a CELL but expected a variable
+  100 |     $fwrite(f, "SRAM_BANK[0]: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.gen_data_banks[0].i_data_sram);
+      |                                                                                                                                                      ^~~~~~~~~~~
+
+    $fwrite(f, "F_DCACHE[0]: %h\nF_DCACHE[1]: %h\nF_DCACHE[2]: %h\nF_DCACHE[3]: %h\n",
+            ariane_testharness.i_ariane.i_cva6.dcache_req_from_cache[0].data_rdata,
+            ariane_testharness.i_ariane.i_cva6.dcache_req_from_cache[1].data_rdata,
+            ariane_testharness.i_ariane.i_cva6.dcache_req_from_cache[2].data_rdata,
+            ariane_testharness.i_ariane.i_cva6.dcache_req_from_cache[3].data_rdata);
+
+    for (int i = 0; i < 4; i++) begin
+      $fwrite(f, "T_DCACHE[%d]: a_index: %b\ta_tag: %b\td_be: %b\td_req: %b\td_size: %b\t\n",
+              i,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].address_index,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].address_tag,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].data_be,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].data_id,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].data_req,
+              ariane_testharness.i_ariane.i_cva6.dcache_req_to_cache[i].data_size);
+    end
+    $fwrite(f, "dcache_req_valid: %b\n",
+        ariane_testharness.i_ariane.i_cva6.i_lsu.i_dcache.req_i.valid);
+  */
 
     end_of_test_q <= (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin

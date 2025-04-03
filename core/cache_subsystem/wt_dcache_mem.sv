@@ -50,7 +50,6 @@ module wt_dcache_mem
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_o,
     output logic [CVA6Cfg.XLEN-1:0] rd_data_o,
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] rd_user_o,
-
     // only available on port 0, uses address signals of port 0
     input logic                                      wr_cl_vld_i,
     input logic                                      wr_cl_nc_i,       // noncacheable access
