@@ -167,14 +167,17 @@ module issue_read_operands
 
   //RAW detection
   logic [ CVA6Cfg.NrIssuePorts-1:0][    CVA6Cfg.TRANS_ID_BITS-1:0] idx_hzd_rs1;
+  logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs1_raw_check;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs1_has_raw;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs1_fpr;
 
   logic [ CVA6Cfg.NrIssuePorts-1:0][    CVA6Cfg.TRANS_ID_BITS-1:0] idx_hzd_rs2;
+  logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs2_raw_check;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs2_has_raw;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs2_fpr;
 
   logic [ CVA6Cfg.NrIssuePorts-1:0][    CVA6Cfg.TRANS_ID_BITS-1:0] idx_hzd_rs3;
+  logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_raw_check;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_has_raw;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_fpr;
 
@@ -470,8 +473,9 @@ module issue_read_operands
           .still_issued_i(fwd_i.still_issued),
           .issue_pointer_i(fwd_i.issue_pointer),
           .idx_o(idx_hzd_rs1[i]),
-          .valid_o(rs1_has_raw[i])
+          .valid_o(rs1_raw_check[i])
       );
+      assign rs1_has_raw[i] = rs1_raw_check[i] && !issue_instr_i[i].use_zimm;
 
       raw_checker #(
           .CVA6Cfg(CVA6Cfg)
@@ -485,8 +489,9 @@ module issue_read_operands
           .still_issued_i(fwd_i.still_issued),
           .issue_pointer_i(fwd_i.issue_pointer),
           .idx_o(idx_hzd_rs2[i]),
-          .valid_o(rs2_has_raw[i])
+          .valid_o(rs2_raw_check[i])
       );
+      assign rs2_has_raw[i] = rs2_raw_check[i];
 
       raw_checker #(
           .CVA6Cfg(CVA6Cfg)
@@ -500,8 +505,9 @@ module issue_read_operands
           .still_issued_i(fwd_i.still_issued),
           .issue_pointer_i(fwd_i.issue_pointer),
           .idx_o(idx_hzd_rs3[i]),
-          .valid_o(rs3_has_raw[i])
+          .valid_o(rs3_raw_check[i])
       );
+      assign rs3_has_raw[i] = rs3_raw_check[i] && rs3_fpr[i];
     end
 
     // ----------------------------------
