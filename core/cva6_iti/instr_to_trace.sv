@@ -1,18 +1,12 @@
-// Copyright 2025 Thales DIS France SAS
-//
-// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
-// You may obtain a copy of the License at https://solderpad.org/licenses/
-//
-// Original Author: Maxime Colson - Thales
+// Copyright (c) 2025 Thales DIS design services SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// Author: Maxime Colson - Thales
 // Date: 20/03/2025
-
 // Contributors: 
 // Darshak Sheladiya, SYSGO GmbH
 // Umberto Laghi, UNIBO
 
-//Systollic module used to determines the iaddr, ilastsize, iretire
+//Systollic module used to determines the iaddr, ilastsize, iretire for Encoder Module
 
 
 module instr_to_trace

@@ -32,9 +32,9 @@ if ! [ -n "$UVM_VERBOSITY" ]; then
     export UVM_VERBOSITY=UVM_NONE
 fi
 
-export DV_OPTS="$DV_OPTS --issrun_opts=+iti_enable+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
+export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
-CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S ../tests/custom/ITI/br_asm.S -I../tests/custom/env -I../tests/custom/common -lgcc"
+CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S ../tests/custom/ITI/iti_asm.S -I../tests/custom/env -I../tests/custom/common -lgcc"
 
 
 
@@ -42,8 +42,8 @@ cd verif/sim/
 
 make -C ../.. clean
 make clean_all
-python3 cva6.py --elf_tests ../tests/custom/ITI/test_br_asm.o --target "$DV_TARGET" --hwconfig_opts="$DV_HWCONFIG_OPTS" --iss_yaml cva6.yaml --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld  $DV_OPTS
-#python3 cva6.py --c_tests ../tests/custom/ITI/test_br_asm.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS
+python3 cva6.py --elf_tests ../tests/custom/ITI/test_iti_asm.o --target cv32a65x --iss_yaml cva6.yaml --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --isscomp_opts=ITI_ENABLE=1 $DV_OPTS 
+#python3 cva6.py --c_tests ../tests/custom/ITI/test_iti_asm.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS --isscomp_opts=ITI_ENABLE=1
 make -C ../.. clean
 make clean_all
 

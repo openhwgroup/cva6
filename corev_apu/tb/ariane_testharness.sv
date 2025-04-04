@@ -128,11 +128,8 @@ module ariane_testharness #(
   assign init_done = rst_ni;
 
   logic debug_enable;
-  logic iti_enable;
+  bit iti_enable;
   initial begin
-    if ($test$plusargs("iti_enable")) begin
-      iti_enable = 1;
-    end
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
     if (CVA6Cfg.XLEN != 32 & CVA6Cfg.XLEN != 64) $error("CVA6Cfg.XLEN different from 32 and 64");
@@ -678,37 +675,48 @@ module ariane_testharness #(
     end
   end
 
-  cva6_iti #(
-      .CVA6Cfg   (CVA6Cfg),
-      .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
-      .ITYPE_LEN (iti_pkg::ITYPE_LEN),
-      .IRETIRE_LEN (iti_pkg::IRETIRE_LEN)
-  ) i_iti (
-      .clk_i  (clk_i),
-      .rst_ni (ndmreset_n),
-      // inputs from rvfi
-      .valid_i(rvfi_to_iti.valid), // commit_ack in cva6
-      .pc_i(rvfi_to_iti.pc),
-      .op_i(rvfi_to_iti.op),
-      .is_compressed_i(rvfi_to_iti.is_compressed),
-      .branch_valid_i(rvfi_to_iti.branch_valid),
-      .is_taken_i(rvfi_to_iti.is_taken),
-      .ex_valid_i(rvfi_to_iti.ex_valid),
-      .tval_i(rvfi_to_iti.tval),
-      .cause_i(rvfi_to_iti.cause),
-      .priv_lvl_i(rvfi_to_iti.priv_lvl),
-      .time_i(rvfi_to_iti.times),
-      // outputs for the encoder module TODO
-      .valid_o(),
-      .iretire_o(),
-      .ilastsize_o(),
-      .itype_o(),
-      .cause_o(),
-      .tval_o(),
-      .priv_o(),
-      .iaddr_o(),
-      .time_o()
-  );
+  `ifdef ITI_ENABLE
+    initial begin
+        $display("Adding ITI");
+        iti_enable = 1;
+    end
+    cva6_iti #(
+        .CVA6Cfg   (CVA6Cfg),
+        .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
+        .ITYPE_LEN (iti_pkg::ITYPE_LEN),
+        .IRETIRE_LEN (iti_pkg::IRETIRE_LEN)
+    ) i_iti (
+        .clk_i  (clk_i),
+        .rst_ni (ndmreset_n),
+        // inputs from rvfi
+        .valid_i(rvfi_to_iti.valid), // commit_ack in cva6
+        .pc_i(rvfi_to_iti.pc),
+        .op_i(rvfi_to_iti.op),
+        .is_compressed_i(rvfi_to_iti.is_compressed),
+        .branch_valid_i(rvfi_to_iti.branch_valid),
+        .is_taken_i(rvfi_to_iti.is_taken),
+        .ex_valid_i(rvfi_to_iti.ex_valid),
+        .tval_i(rvfi_to_iti.tval),
+        .cause_i(rvfi_to_iti.cause),
+        .priv_lvl_i(rvfi_to_iti.priv_lvl),
+        .time_i(rvfi_to_iti.times),
+        // outputs for the encoder module TODO
+        .valid_o(),
+        .iretire_o(),
+        .ilastsize_o(),
+        .itype_o(),
+        .cause_o(),
+        .tval_o(),
+        .priv_o(),
+        .iaddr_o(),
+        .time_o()
+    );
+
+  `else
+   initial begin
+        iti_enable = 0;
+    end
+  `endif
 
 
   cva6_rvfi #(
