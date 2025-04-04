@@ -20,6 +20,10 @@
      - ``int unsigned``
      - General Purpose Register Size (in bits)
 
+   * - ``VLEN``
+     - ``int unsigned``
+     - Virtual address Size (in bits)
+
    * - ``RVA``
      - ``bit``
      - Atomic RISC-V extension
@@ -27,6 +31,10 @@
    * - ``RVB``
      - ``bit``
      - Bit manipulation RISC-V extension
+
+   * - ``ZKN``
+     - ``bit``
+     - Scalar Cryptography RISC-V entension
 
    * - ``RVV``
      - ``bit``
@@ -48,6 +56,10 @@
      - ``bit``
      - Zcmp RISC-V extension
 
+   * - ``RVZCMT``
+     - ``bit``
+     - Zcmt RISC-V extension
+
    * - ``RVZiCond``
      - ``bit``
      - Zicond RISC-V extension
@@ -55,6 +67,10 @@
    * - ``RVZicntr``
      - ``bit``
      - Zicntr RISC-V extension
+
+   * - ``RVZifencei``
+     - ``bit``
+     - Zifencei RISC-V extension
 
    * - ``RVZihpm``
      - ``bit``
@@ -100,6 +116,10 @@
      - ``bit``
      - User mode
 
+   * - ``SoftwareInterruptEn``
+     - ``bit``
+     - Software interrupts are enabled
+
    * - ``DebugEn``
      - ``bit``
      - Debug support
@@ -139,6 +159,10 @@
    * - ``PMPEntryReadOnly``
      - ``bit [63:0]``
      - PMP CSR read-only bits
+
+   * - ``PMPNapotEn``
+     - ``bit``
+     - PMP NA4 and NAPOT mode enable
 
    * - ``NrNonIdempotentRules``
      - ``int unsigned``
@@ -180,6 +204,10 @@
      - ``bit``
      - CV-X-IF coprocessor interface enable
 
+   * - ``CoproType``
+     - ``copro_type_t``
+     - Coprocessor type
+
    * - ``NOCType``
      - ``noc_type_e``
      - NOC bus type
@@ -206,7 +234,7 @@
 
    * - ``MemTidWidth``
      - ``int unsigned``
-     - TODO
+     - Transaction ID
 
    * - ``IcacheByteSize``
      - ``int unsigned``
@@ -240,6 +268,14 @@
      - ``int unsigned``
      - Data cache line width
 
+   * - ``DcacheFlushOnFence``
+     - ``bit``
+     - Data cache flush on fence
+
+   * - ``DcacheInvalidateOnFlush``
+     - ``bit``
+     - Data cache invalidate on flush
+
    * - ``DataUserEn``
      - ``int unsigned``
      - User field on data bus enable
@@ -258,7 +294,11 @@
 
    * - ``FpgaEn``
      - ``bit``
-     - Is FPGA optimization of CV32A6
+     - Is FPGA optimization of CV32A6 for Xilinx and Altera
+
+   * - ``FpgaAlteraEn``
+     - ``bit``
+     - Is FPGA optimization for Altera FPGA
 
    * - ``TechnoCut``
      - ``bit``
@@ -319,3 +359,11 @@
    * - ``SharedTlbDepth``
      - ``int unsigned``
      - MMU depth of shared TLB
+
+   * - ``ObiVersion``
+     - ``int unsigned``
+     - OBI version compliance, 0 means not compliant -> best performance
+
+   * - ``PipelineOnly``
+     - ``bit``
+     - Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)

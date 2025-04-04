@@ -15,6 +15,11 @@ current_dir = $(shell pwd)
 # Path of current file, intended to be included by a configuration subfolder
 design_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
+# custom_gen.yaml is optional.  Do not pass it as cmdline arg if absent.
+ifneq ($(wildcard ../riscv-config/$(CONFIG)/generated/custom_gen.yaml),)
+  CUSTOM_CSR_ARG = -c ../riscv-config/$(CONFIG)/generated/custom_gen.yaml
+endif
+
 all: design-pdf design-html
 
 setup:
@@ -27,7 +32,7 @@ setup:
 	cp -rf source/* build/source
 
 	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/$(CONFIG)/isa_updater.yaml -t $(CONFIG) -f adoc
-	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml -c ../riscv-config/$(CONFIG)/generated/custom_gen.yaml -m updaters/$(CONFIG)/csr_updater.yaml -t $(CONFIG) -f adoc
+	cd ../../../config/gen_from_riscv_config && python3 scripts/riscv_config_gen.py -s ../riscv-config/$(CONFIG)/generated/isa_gen.yaml $(CUSTOM_CSR_ARG) -m updaters/$(CONFIG)/csr_updater.yaml -t $(CONFIG) -f adoc
 	cp -r $(design_dir)/../../config/gen_from_riscv_config/$(CONFIG)/* build/source
 
 	cd ../.. && python3 scripts/spec_builder.py --target $(CONFIG) --gen-config $(current_dir)/build/source/config.adoc --gen-parameters $(current_dir)/build/source/parameters.adoc --gen-ports $(current_dir)/build/source
