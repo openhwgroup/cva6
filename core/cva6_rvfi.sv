@@ -26,11 +26,13 @@ module cva6_rvfi
     input logic rst_ni,
 
     input rvfi_probes_t rvfi_probes_i,
-    input logic iti_enable_i,
     output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_instr_o,
-    output rvfi_csr_t rvfi_csr_o,
-    output rvfi_to_iti_t rvfi_to_iti_o
+    `ifdef ITI_ENABLE
+    output rvfi_to_iti_t rvfi_to_iti_o,
+    `endif
+    output rvfi_csr_t rvfi_csr_o
 );
+
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode =
     (CVA6Cfg.XLEN'(CVA6Cfg.RVA) << 0)   // A - Atomic Instructions extension
@@ -282,11 +284,12 @@ module cva6_rvfi
         };
       end
     end
-
-    if (branch_valid_iti && iti_enable_i) begin
+    `ifdef ITI_ENABLE
+    if (branch_valid_iti) begin
       mem_n[branch_trans_id].branch_valid=branch_valid_iti;
       mem_n[branch_trans_id].is_taken=is_taken_iti;
     end 
+    `endif
 
     if (lsu_rmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
@@ -354,36 +357,23 @@ module cva6_rvfi
       rvfi_instr_o[i].mem_rdata <= commit_instr_result[i];
       rvfi_instr_o[i].rs1_rdata <= mem_q[commit_pointer[i]].rs1_rdata;
       rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
-      if (iti_enable_i) begin
+    `ifdef ITI_ENABLE
         rvfi_to_iti_o.branch_valid[i] <= mem_q[commit_pointer[i]].branch_valid;
         rvfi_to_iti_o.is_taken[i] <= mem_q[commit_pointer[i]].is_taken;
         rvfi_to_iti_o.is_compressed[i] <= mem_q[commit_pointer[i]].is_compressed;
         rvfi_to_iti_o.valid[i]<=valid_iti[i];
         rvfi_to_iti_o.pc[i]<=pc_iti[i];
         rvfi_to_iti_o.op[i]<=op_iti[i];
-      end else begin
-        rvfi_to_iti_o.branch_valid[i] <= 1'b0;
-        rvfi_to_iti_o.is_taken[i] <= 1'b0;
-        rvfi_to_iti_o.is_compressed[i] <= 1'b0;
-        rvfi_to_iti_o.valid[i]<=1'b0;
-        rvfi_to_iti_o.pc[i]<= '0;
-        rvfi_to_iti_o.op[i]<= '0;
-      end
+    `endif
     end
-    if (iti_enable_i) begin
+  `ifdef ITI_ENABLE
       rvfi_to_iti_o.ex_valid <= ex_commit_valid;
       rvfi_to_iti_o.times <= time_iti;
       rvfi_to_iti_o.cause <= ex_commit_cause;
       rvfi_to_iti_o.tval <= tval_iti;
       rvfi_to_iti_o.priv_lvl <= priv_lvl;
-    end else begin
-      rvfi_to_iti_o.ex_valid <= 1'b0;
-      rvfi_to_iti_o.times <= '0;
-      rvfi_to_iti_o.cause <= '0;
-      rvfi_to_iti_o.tval <= '0;
-      rvfi_to_iti_o.priv_lvl <= '0;
+  `endif
 
-    end
   end
 
 

@@ -128,7 +128,6 @@ module ariane_testharness #(
   assign init_done = rst_ni;
 
   logic debug_enable;
-  bit iti_enable;
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
@@ -678,7 +677,6 @@ module ariane_testharness #(
   `ifdef ITI_ENABLE
     initial begin
         $display("Adding ITI");
-        iti_enable = 1;
     end
     cva6_iti #(
         .CVA6Cfg   (CVA6Cfg),
@@ -711,11 +709,6 @@ module ariane_testharness #(
         .iaddr_o(),
         .time_o()
     );
-
-  `else
-   initial begin
-        iti_enable = 0;
-    end
   `endif
 
 
@@ -731,10 +724,11 @@ module ariane_testharness #(
       .clk_i        (clk_i),
       .rst_ni       (rst_ni),
       .rvfi_probes_i(rvfi_probes),
-      .iti_enable_i(iti_enable),
       .rvfi_instr_o (rvfi_instr),
-      .rvfi_csr_o   (rvfi_csr),
-      .rvfi_to_iti_o   (rvfi_to_iti)
+      `ifdef ITI_ENABLE
+      .rvfi_to_iti_o   (rvfi_to_iti), // Doing it like this to not change existing wrapper uvm
+      `endif
+      .rvfi_csr_o   (rvfi_csr)
   );
 
   rvfi_tracer  #(
