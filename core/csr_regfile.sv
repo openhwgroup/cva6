@@ -1390,7 +1390,9 @@ module csr_regfile
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
-          mstatus_d.ube   = 1'b0;  // CVA6 is little-endian
+          // Mirror MBE
+          mstatus_d.sbe   = mstatus_d.mbe;
+          mstatus_d.ube   = mstatus_d.mbe;
           // this register has side-effects on other registers, flush the pipeline
           flush_o         = 1'b1;
         end
