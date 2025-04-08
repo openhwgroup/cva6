@@ -138,6 +138,8 @@ module store_unit
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
+  logic [CVA6Cfg.XLEN-1:0] endian_correct_data;
+
   // output assignments
   assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
   assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
@@ -251,9 +253,14 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data});
+    st_data_n = ((CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
+        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data}));
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
+
+
+    // TODO: Non hard coded 64
+    endian_correct_data = byte_swap(st_data_n, st_data_size_n, lsu_ctrl_i.be);
+
     // save AMO op for next cycle
     if (CVA6Cfg.RVA) begin
       case (lsu_ctrl_i.operation)
@@ -356,7 +363,7 @@ module store_unit
     end else begin
       state_q        <= state_d;
       st_be_q        <= st_be_n;
-      st_data_q      <= st_data_n;
+      st_data_q      <= endian_correct_data;
       trans_id_q     <= trans_id_n;
       st_data_size_q <= st_data_size_n;
       amo_op_q       <= amo_op_d;

@@ -468,9 +468,11 @@ module load_unit
   // Sign Extend
   // ---------------
   logic [CVA6Cfg.XLEN-1:0] shifted_data;
+  logic [CVA6Cfg.XLEN-1:0] endian_correct_data;
 
   // realign as needed
   assign shifted_data = req_port_i.data_rdata >> {ldbuf_rdata.address_offset, 3'b000};
+  assign endian_correct_data = byte_swap(shifted_data, req_port_o.data_size, req_port_o.endian);
 
   /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
@@ -512,30 +514,30 @@ module load_unit
   always_comb begin
     unique case (ldbuf_rdata.operation)
       ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::HLV_W, ariane_pkg::HLV_WU, ariane_pkg::HLVX_WU:
-      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, endian_correct_data[31:0]};
       ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::HLV_H, ariane_pkg::HLV_HU, ariane_pkg::HLVX_HU:
-      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, endian_correct_data[15:0]};
       ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::HLV_B, ariane_pkg::HLV_BU:
-      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, endian_correct_data[7:0]};
       default: begin
         // FLW, FLH and FLB have been defined here in default case to improve Code Coverage
         if (CVA6Cfg.FpPresent) begin
           unique case (ldbuf_rdata.operation)
             ariane_pkg::FLW: begin
-              result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+              result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, endian_correct_data[31:0]};
             end
             ariane_pkg::FLH: begin
-              result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, endian_correct_data[15:0]};
             end
             ariane_pkg::FLB: begin
-              result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, endian_correct_data[7:0]};
             end
             default: begin
-              result_o = shifted_data[CVA6Cfg.XLEN-1:0];
+              result_o = endian_correct_data[CVA6Cfg.XLEN-1:0];
             end
           endcase
         end else begin
-          result_o = shifted_data[CVA6Cfg.XLEN-1:0];
+          result_o = endian_correct_data[CVA6Cfg.XLEN-1:0];
         end
       end
     endcase
