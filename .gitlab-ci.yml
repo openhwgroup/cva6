@@ -208,6 +208,19 @@ smoke-hwconfig:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
 
+hello-pk:
+extends:
+  - .fe_smoke_test
+variables:
+  DASHBOARD_JOB_TITLE: "Hello world with riscv-pk on cv64a6_imafdc_sv39"
+  DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
+  DASHBOARD_SORT_INDEX: 1
+  DASHBOARD_JOB_CATEGORY: "Basic"
+  COLLECT_SIMU_LOGS: 1
+script:
+  - bash verif/regress/hello-veri-testharness-pk-cv64a6_imafdc_sv39.sh
+  - !reference [.simu_after_script]
+
 .synthesis_test:
   stage: heavy tests
   timeout: 2 hours

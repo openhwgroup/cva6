@@ -1,6 +1,12 @@
+# This script installs RISCV proxy kernel at ${ROOT_PROJECT}/tools/pk,
+# where ROOT_PROJECT is base of the CVA6 repository.
 #!/bin/bash
 PK_ARCH=$1
 PK_MABI=$2
+PK_REPO="https://github.com/riscv-software-src/riscv-pk.git"
+PK_BRANCH="master"
+PK_COMMIT_HASH="e5563d1044bd6790325c4602c49f89e1182fa91a"
+
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
   return
@@ -14,8 +20,6 @@ if [ -z "$NUM_JOBS" ]; then
     NUM_JOBS=1
 fi
 
-PK_REPO="https://github.com/riscv-software-src/riscv-pk.git"
-PK_BRANCH="master"
 #PK_PATCH="$ROOT_PROJECT/verif/regress/pk.patch"
 
 # Unset historical variable PK_ROOT as it collides with the build process.
@@ -50,7 +54,7 @@ rm -rf $PK_INSTALL_DIR
 
 # Build and install pk only if not already installed at the expected
 # location $PK_INSTALL_DIR.
-if [ ! -f "$PK_INSTALL_DIR/bin/pk" ]; then
+if [ ! -f "$PK_INSTALL_DIR/riscv-none-elf/bin/pk" ]; then
     echo "Building pk in '$PK_BUILD_DIR'..."
     echo "pk will be installed in '$PK_INSTALL_DIR'"
     echo "PK_REPO=$PK_REPO"
@@ -60,13 +64,14 @@ if [ ! -f "$PK_INSTALL_DIR/bin/pk" ]; then
     echo "NUM_JOBS=$NUM_JOBS"
     mkdir -p $PK_BUILD_DIR
     pushd $PK_BUILD_DIR
-    # Clone only if the ".git" directory does not exist.
+    # Fetch repository only if the ".git" directory does not exist.
     # Do not remove the content arbitrarily if ".git" does not exist in order
     # to preserve user content - let git fail instead.
-    [ -d .git ] || git clone $PK_REPO -b $PK_BRANCH .
+    [ -d .git ] || git clone --depth=1 --branch ${PK_BRANCH} ${PK_REPO} . && git checkout ${PK_COMMIT_HASH}
+#    [ -d .git ] || git init && git remote add origin ${PK_REPO} && git fetch --depth=1 origin ${PK_COMMIT_HASH} && git reset --hard FETCH_HEAD 
     mkdir -p build
     pushd build
-    ../configure --prefix=$RISCV --host=riscv-none-elf --with-arch=$PK_ARCH
+    ../configure --prefix="$PK_INSTALL_DIR" --host=riscv-none-elf --with-arch=$PK_ARCH
     make
     make install
     popd

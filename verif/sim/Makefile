@@ -416,9 +416,9 @@ veri-testharness-pk:
 	@echo "Trace compact value $(TRACE_COMPACT)"
 	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) \
-		$(RISCV)/riscv-none-elf/bin/pk $(elf) \
-		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(RISCV)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1)
-#		$(issrun_opts)
+		$(PK_INSTALL_DIR)/riscv-none-elf/bin/pk $(elf) \
+		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1) \
+		$(issrun_opts)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
