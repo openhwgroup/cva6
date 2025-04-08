@@ -242,6 +242,7 @@ module load_unit
     req_port_o.kill_req  = 1'b0;
     req_port_o.tag_valid = 1'b0;
     req_port_o.data_be   = lsu_ctrl_i.be;
+    req_port_o.endian   = lsu_ctrl_i.endian;
     req_port_o.data_size = extract_transfer_size(lsu_ctrl_i.operation);
     pop_ld_o             = 1'b0;
 

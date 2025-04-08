@@ -170,7 +170,9 @@ module csr_regfile
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
-    output jvt_t jvt_o
+    output jvt_t jvt_o,
+    // Data endianness output
+    output bit endian
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -2536,6 +2538,8 @@ module csr_regfile
   assign debug_mode_o = debug_mode_q;
   assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : 1'b0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
+
+  assign endian = mstatus_q.mbe;
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin

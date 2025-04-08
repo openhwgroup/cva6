@@ -164,6 +164,7 @@ module cva6
       fu_t                              fu;
       fu_op                             operation;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                             endian;
     },
 
     localparam type fu_data_t = struct packed {
@@ -207,6 +208,7 @@ module cva6
       logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
       logic                                  kill_req;
       logic                                  tag_valid;
+      logic                                  endian;
     },
 
     localparam type dcache_req_o_t = struct packed {
@@ -1200,7 +1202,8 @@ module cva6
       .mcountinhibit_o         (mcountinhibit_csr_perf),
       .jvt_o                   (jvt),
       //RVFI
-      .rvfi_csr_o              (rvfi_csr)
+      .rvfi_csr_o              (rvfi_csr),
+      .endian                  (rvfi_lsu_ctrl.endian)
   );
 
   // ------------------------
