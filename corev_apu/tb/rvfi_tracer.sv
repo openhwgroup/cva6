@@ -106,12 +106,17 @@ module rvfi_tracer #(
     // Monitor cache data using simple comparison to previous values
     // We'll log the data only when it changes
     if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data != prev_dcache_data) begin
-      $fwrite(f, "ADAPTER_DCACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
+      $fwrite(f, "DDD_WAY: %d\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.rd_hit_oh_o);
+      $fwrite(f, "DDDCACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
       prev_dcache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data;
     end
 
+
+
+
     if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data != prev_icache_data) begin
-      $fwrite(f, "ADAPTER_ICACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
+      $fwrite(f, "III_WAY: %d\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_hit);
+      $fwrite(f, "IIICACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
       prev_icache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data;
     end
 
@@ -190,12 +195,12 @@ module rvfi_tracer #(
 
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
-           $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
+           $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\t###",
              pc64, rvfi_i[i].insn, rvfi_i[i].insn);
            v2_instr_str = $sformatf("INTERRUPT DASM(%h)", rvfi_i[i].insn);
         end
         else begin
-           $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
+           $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\t###",
              pc64, rvfi_i[i].insn, rvfi_i[i].insn);
            v2_instr_str = $sformatf("DASM(%h)", rvfi_i[i].insn);
         end
