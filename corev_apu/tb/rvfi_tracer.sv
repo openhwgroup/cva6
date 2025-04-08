@@ -96,7 +96,38 @@ module rvfi_tracer #(
 
   always_ff @(posedge clk_i) begin
     //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
-    $fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
+    //$fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
+    $fwrite(f, "############\tCYCLE #: %d\t############\n", cycles);
+    @(!posedge ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data[0])
+    begin
+      $fwrite(f, "ADAPTER_DCACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
+    end
+
+    @(!posedge ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data[0])
+    begin
+      $fwrite(f, "ADAPTER_ICACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
+    end
+
+
+    /*
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[0].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[0].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[1].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[1].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[2].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[2].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[3].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[3].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[4].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[4].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[5].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[5].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[6].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[6].wtag);
+    $fwrite(f, "DATA: %b\tTAG: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[7].data,
+                             ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.wbuffer_data_i[7].wtag);
+    */
+
     /*$fwrite(f, "SRAM_BANK[0]: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.gen_data_banks[0].i_data_sram);
 
     %Error: /home/cai/cache_project/sandbox/cva6/corev_apu/tb/rvfi_tracer.sv:100:150: Found definition of 'ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.gen_data_banks__BRA__??__KET__.i_data_sram' as a CELL but expected a variable
