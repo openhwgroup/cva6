@@ -94,19 +94,25 @@ module rvfi_tracer #(
 
   assign end_of_test_o = end_of_test_d;
 
+  // Declare static variables to track previous values of cache data
+  static logic [127:0] prev_dcache_data = '0;
+  static logic [127:0] prev_icache_data = '0;
+  
   always_ff @(posedge clk_i) begin
     //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
     //$fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
     $fwrite(f, "############\tCYCLE #: %d\t############\n", cycles);
     
-    // Monitor cache data without using procedural timing control
-    // We'll log the data every cycle instead
-    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data[0] == 0) begin
+    // Monitor cache data using simple comparison to previous values
+    // We'll log the data only when it changes
+    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data != prev_dcache_data) begin
       $fwrite(f, "ADAPTER_DCACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
+      prev_dcache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data;
     end
 
-    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data[0] == 0) begin
+    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data != prev_icache_data) begin
       $fwrite(f, "ADAPTER_ICACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
+      prev_icache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data;
     end
 
 
