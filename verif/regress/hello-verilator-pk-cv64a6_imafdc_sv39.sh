@@ -9,14 +9,25 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-TIMEOUT_WALLCLOCK="1100"
-TIMEOUT_TICKS="4100000"
-export TRACE_COMPACT=1
+TIMEOUT_WALLCLOCK="600"
+TIMEOUT_TICKS="2100000"
+#export TRACE_COMPACT=1
 export DV_SIMULATORS="veri-testharness-pk"
-export DV_TARGET="cv32a65x"
+export DV_TARGET="cv64a6_imafdc_sv39"
+export PK_ARCH="rv64gc_zba_zbb_zbs_zbc"
+export PK_MABI="ilp64d"
 
 if [[ "$DV_SIMULATORS" == *"veri-testharness"* ]]; then
   source ./verif/regress/install-verilator.sh
+fi
+
+if [[ "$DV_SIMULATORS" == *"veri-testharness-pk"* ]]; then
+
+  echo "[ riscv-pk ] veri-testharness-pk simulation detected. Installing RISC-V proxy kernel..."
+#  source ./verif/regress/install-pk.sh ${PK_ARCH} ${PK_MABI} 2>&1 | tee ./verif/sim/pk-install.log
+  source ./verif/regress/install-pk.sh ${PK_ARCH} ${PK_MABI} > ./verif/sim/pk-install.log 2>&1
+  echo "[ riscv-pk ] RISC-V proxy kernel installation logs at $(pwd)/verif/sim/pk-install.log"
+#  echo "PK_INSTALL_DIR is ${PK_INSTALL_DIR}"
 fi
 
 source ./verif/sim/setup-env.sh

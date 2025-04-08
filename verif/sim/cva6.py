@@ -968,16 +968,6 @@ def load_config(args, cwd):
 
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 
-def install_pk(isa, mabi):
-    curr_dir = os.path.dirname(__file__)
-    repo_home_dir = os.path.join(curr_dir, './../..')
-    logging.info(f"Installing proxy kernel for {isa} and {mabi}")
-    pk_install_log = run_cmd(f"{repo_home_dir}/verif/regress/install-pk.sh {isa} {mabi}")
-    pk_logfile_name = str(repo_home_dir) + "/verif/sim/pk-install.log"
-    logging.info(f"pk installation logs at {pk_logfile_name}")
-    with open(pk_logfile_name, 'w') as file:
-        file.write(f"{pk_install_log}\n")
-
 def incorrect_version_exit(tool, tool_version, required_version):
   if tool == "Spike":
     logging.error(f"Please clean up Spike by executing: rm -r tools/spike verif/core-v-verif/vendor/riscv/riscv-isa-sim/build")
@@ -1167,9 +1157,6 @@ def main():
       for i in isa_extension_list:
         if i!= "":
           args.isa += (f"_{i}")
-
-    if "veri-testharness-pk" in args.iss: # install RISC-V proxy kernel with appropriate ISA and MABI
-        install_pk(args.isa, args.mabi)
 
     if args.verilog_style_check:
       logging.debug("Run style check")
