@@ -726,6 +726,8 @@ package riscv;
   localparam logic [63:0] SSTATUS_MXR = 'h00080000;
   localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
   localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
+  localparam logic [63:0] SSTATUS_SBE = 'h1000000000;
+  localparam logic [63:0] SSTATUS_UBE = 'h40;
   // CSR Bit Implementation Masks
 
   function automatic logic [63:0] sstatus_sd(logic IS_XLEN64);
@@ -762,6 +764,9 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
+  localparam logic [63:0] MSTATUS_MBE = 'h2000000000;
+  localparam logic [63:0] MSTATUS_SBE = 'h1000000000;
+  localparam logic [63:0] MSTATUS_UBE = 'h40;
   function automatic logic [63:0] mstatus_uxl(logic IS_XLEN64);
     return {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
   endfunction

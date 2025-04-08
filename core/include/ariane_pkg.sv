@@ -121,6 +121,7 @@ package ariane_pkg;
     | riscv::SSTATUS_UPIE
     | riscv::SSTATUS_SPIE
     | riscv::SSTATUS_UXL
+    | riscv::SSTATUS_SBE
     | riscv::sstatus_sd(Cfg.IS_XLEN64);
   endfunction
 
