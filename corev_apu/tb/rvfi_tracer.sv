@@ -98,13 +98,14 @@ module rvfi_tracer #(
     //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
     //$fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
     $fwrite(f, "############\tCYCLE #: %d\t############\n", cycles);
-    @(!posedge ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data[0])
-    begin
+    
+    // Monitor cache data without using procedural timing control
+    // We'll log the data every cycle instead
+    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data[0] == 0) begin
       $fwrite(f, "ADAPTER_DCACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
     end
 
-    @(!posedge ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data[0])
-    begin
+    if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data[0] == 0) begin
       $fwrite(f, "ADAPTER_ICACHE_DATA: %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
     end
 
