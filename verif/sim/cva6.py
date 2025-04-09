@@ -358,7 +358,6 @@ def elf2bin(elf, binary, debug_cmd):
   cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
-
 def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
   """Use riscv gcc toolchain to compile the assembly program
 
@@ -508,13 +507,18 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   if test_type != "o":
     # gcc compilation
     logging.info("Compiling test: %s" % test_path)
-    cmd = ("%s %s \
-          -I%s/dv/user_extension \
-            -T%s %s -o %s " % \
-          (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, cwd,
-              linker, gcc_opts, elf))
+    if "veri-testharness-pk" not in iss_list:
+
+        cmd = ("%s %s \
+              -I%s/dv/user_extension \
+                -T%s %s -o %s " % \
+              (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, cwd,
+                  linker, gcc_opts, elf))
+    else: # veri-testharness with proxy kernel enabled.
+        cmd= ("%s %s %s -o %s " % (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, gcc_opts, elf))
     cmd += (" -march=%s" % isa)
     cmd += (" -mabi=%s" % mabi)
+    logging.info("Compilation cmd: %s" % cmd)
     run_cmd(cmd, debug_cmd = debug_cmd)
   log_list = []
   # ISS simulation
@@ -963,7 +967,6 @@ def load_config(args, cwd):
     isa_extension_list.append("zifencei")
 
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
-
 
 def incorrect_version_exit(tool, tool_version, required_version):
   if tool == "Spike":
