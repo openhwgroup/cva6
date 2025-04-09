@@ -472,7 +472,7 @@ module cva6_ptw
                 // Request is a store: perform some additional checks
                 // If the request was a store and the page is not write-able, raise an error
                 // the same applies if the dirty flag is not set
-                if (lsu_is_store_i && (!pte.w || !pte.d)) begin
+                if (lsu_is_store_i && (!pte.w || !pte.d) && (ptw_stage_q != G_INTERMED_STAGE)) begin //FIXME
                   shared_tlb_update_o.valid = 1'b0;
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
