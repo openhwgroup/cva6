@@ -102,13 +102,17 @@ module rvfi_tracer #(
     //$fwrite(f, "MISS_ACK_I: %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.dcache_mem_resp_read_i.mem_resp_r_last);
     //$fwrite(f, "CYCLE #: %d,\tMISS_ACK_I: %b\n", cycles, ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_missunit.miss_o);
     $fwrite(f, "############\tCYCLE #: %d\t############\n", cycles);
-    
+
     // Monitor cache data using simple comparison to previous values
     // We'll log the data only when it changes
     if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data != prev_dcache_data) begin
-      $fwrite(f, "DDD_WAY:                 %d\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.rd_hit_oh_o);
+      $fwrite(f, "DDD_WAY, TAG, INDEX, OFFSET:         #%d %b %b %b\n",
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_mem.rd_hit_oh_o,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_tag_only,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_idx,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_off);
 
-      $fwrite(f, "DIRTY[7-0]_OFF:          %b%b%b%b_%b%b%b%b__%b\n",
+      $fwrite(f, "DIRTY[7-0]_OFF:                         %b%b%b%b %b%b%b%b  %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.bdirty[0],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.bdirty[1],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.bdirty[2],
@@ -119,7 +123,7 @@ module rvfi_tracer #(
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.bdirty[7],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.i_wt_dcache_wbuffer.bdirty_off);
 
-      $fwrite(f, "R_ACK/DATA/HIT/REQ/TAG:  %b_%b_%b_%b_%b\n",
+      $fwrite(f, "R_ACK, DATA, HIT, REQ, TAG:             %b %b %b %b %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_ack,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_data,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_hit_oh,
@@ -127,7 +131,7 @@ module rvfi_tracer #(
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_tag_only);
 
       // Simplifying the rd_idx, rd_off, and rd_tag output to avoid format mismatch issues
-      $fwrite(f, "IDX/OFF/TAG:             Port 0: %b/%b/%b, Port 1: %b/%b/%b\n",
+      $fwrite(f, "IDX, OFF, TAG:                          %b %b %b\nIDX, OFF, TAG:                          %b %b %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_idx[0],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_off[0],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_tag[0],
@@ -135,27 +139,27 @@ module rvfi_tracer #(
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_off[1],
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.rd_tag[1]);
 
-      $fwrite(f, "W_CL_DATA:               %h\n",
+      $fwrite(f, "W_CL_DATA:                              %h\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_data);
-      $fwrite(f, "W_CL_DATA_BE/IDX/NC/OFF: %b %b %b %b\n",
+      $fwrite(f, "W_CL_DATA_BE, IDX, NC, OFF:             %b %b %b %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_data_be,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_idx,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_nc,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_off);
-      $fwrite(f, "W_CL_TAG:                %b\n",
+      $fwrite(f, "W_CL_TAG:                               %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_tag);
-      $fwrite(f, "W_CL_VLD/WE/DATA/BE/IDX/OFF/REQ: %b %b %b %b %b %b %b\n",
+
+      $fwrite(f, "W_CL_DATA, VLD, WE,  BE, IDX, OFF, REQ: %b %b %b %b %b %b %b\n                                        %h\n",
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_data,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_vld,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_cl_we,
-              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_data,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_data_be,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_idx,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_off,
-              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_req);
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_req,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_wt_dcache.wr_data);
 
-
-
-      $fwrite(f, "DDDCACHE_DATA:           %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
+      $fwrite(f, "DDDCACHE_DATA:                          %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data);
       prev_dcache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_dcache.data;
     end
 
@@ -163,12 +167,12 @@ module rvfi_tracer #(
 
 
     if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data != prev_icache_data) begin
-      $fwrite(f, "III_TAG/WAY/INDEX/OFFSET:    %b/%d/%b/%b\n", 
-              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_tag_d,
+      $fwrite(f, "III_WAY, TAG, INDEX, OFFSET: #%d %b %b %b\n",
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_hit,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_tag_d,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_index,
               ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_offset_d);
-      $fwrite(f, "IIICACHE_DATA:               %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
+      $fwrite(f, "IIICACHE_DATA:                  %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
       prev_icache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data;
     end
 
