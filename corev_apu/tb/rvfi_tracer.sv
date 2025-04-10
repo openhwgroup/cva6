@@ -163,11 +163,12 @@ module rvfi_tracer #(
 
 
     if (ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data != prev_icache_data) begin
-      $fwrite(f, "III_WAY:                 %d\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_hit);
-      $fwrite(f, "III_TAG:                 %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_tag_d);
-      $fwrite(f, "III_INDEX:               %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_index);
-      $fwrite(f, "III_OFFSET:              %b\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_offset_d);
-      $fwrite(f, "IIICACHE_DATA:           %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
+      $fwrite(f, "III_TAG/WAY/INDEX/OFFSET:    %b/%d/%b/%b\n", 
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_tag_d,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_hit,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_index,
+              ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.i_cva6_icache.cl_offset_d);
+      $fwrite(f, "IIICACHE_DATA:               %h\n", ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data);
       prev_icache_data = ariane_testharness.i_ariane.i_cva6.gen_cache_wt.i_cache_subsystem.adapter_icache.data;
     end
 
