@@ -556,7 +556,8 @@ module frontend
   assign obi_fetch_req_o.a.a_optional.memtype[0] = '0;
   assign obi_fetch_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
   assign obi_fetch_req_o.a.a_optional.mid = '0;
-  assign obi_fetch_req_o.a.a_optional.prot = '0;
+  assign obi_fetch_req_o.a.a_optional.prot[0] = '0;
+  assign obi_fetch_req_o.a.a_optional.prot[2:1] = 2'b11;
   assign obi_fetch_req_o.a.a_optional.dbg = '0;
   assign obi_fetch_req_o.a.a_optional.achk = '0;
 

@@ -158,13 +158,14 @@ module store_buffer
       }  //TO DO CHECK GRANULARITY
   );
   assign obi_store_req_o.a.a_optional.mid = '0;
-  assign obi_store_req_o.a.a_optional.prot[2:1] = '0;
+  assign obi_store_req_o.a.a_optional.prot[2:1] = 2'b11;
   assign obi_store_req_o.a.a_optional.prot[0] = 1'b1;  //data
   assign obi_store_req_o.a.a_optional.dbg = '0;
   assign obi_store_req_o.a.a_optional.achk = '0;
 
   //TODO check parity : obi_store_rsp_i.gntpar != obi_store_rsp_i.gnt
-
+  assign obi_store_req_o.rready = '1;  //always ready
+  assign obi_store_req_o.rreadypar = '0;
 
   always_comb begin : store_if
     automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
@@ -180,7 +181,7 @@ module store_buffer
     commit_queue_n              = commit_queue_q;
 
     obi_store_req_o.req         = 1'b0;
-    obi_store_req_o.rready      = 1'b1;
+
     direct_req_from_speculative = 1'b0;
 
     // there should be no commit when we are flushing
