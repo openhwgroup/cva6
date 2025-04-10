@@ -115,7 +115,7 @@ module ex_stage
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
-    // TO_BE_COMPLETED - COMMIT_STAGE
+    // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
     // Atomic result is valid - COMMIT_STAGE
     input logic amo_valid_commit_i,
