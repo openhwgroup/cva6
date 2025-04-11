@@ -48,7 +48,7 @@ module itype_detector
 
 
 
-  assign eret = (op_i == ariane_pkg::MRET || op_i == ariane_pkg::SRET || op_i == ariane_pkg::DRET);
+  assign eret = op_i inside {ariane_pkg::MRET , ariane_pkg::SRET , ariane_pkg::DRET};
 
   assign nontaken_branch = (  op_i == ariane_pkg::EQ ||
                                 op_i == ariane_pkg::NE ||
@@ -77,14 +77,16 @@ module itype_detector
       itype_o = iti_pkg::EXC;
     end else if (interrupt) begin  // interrupt
       itype_o = iti_pkg::INT;
-    end else if (eret && valid_i) begin  // exception or interrupt return
-      itype_o = iti_pkg::ERET;
-    end else if (nontaken_branch && valid_i) begin  // nontaken branch
-      itype_o = iti_pkg::NON_TAKEN_BR;
-    end else if (taken_branch && valid_i) begin  // taken branch
-      itype_o = iti_pkg::TAKEN_BR;
-    end else if (ITYPE_LEN == 3 && updiscon && valid_i) begin // uninferable discontinuity
-      itype_o = iti_pkg::UNINF_JMP;
+    end else if (valid_i) begin
+      if (eret) begin  // exception or interrupt return
+        itype_o = iti_pkg::ERET;
+      end else if (nontaken_branch) begin  // nontaken branch
+        itype_o = iti_pkg::NON_TAKEN_BR;
+      end else if (taken_branch) begin  // taken branch
+        itype_o = iti_pkg::TAKEN_BR;
+      end else if (ITYPE_LEN == 3 && updiscon) begin // uninferable discontinuity
+        itype_o = iti_pkg::UNINF_JMP;
+      end
     end
   end
 

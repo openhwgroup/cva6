@@ -34,8 +34,7 @@ module instr_to_trace
   logic special_inst;
   logic exception;
   logic interrupt;
-
-  assign special_inst = (uop_entry_i.itype != iti_pkg::INT && uop_entry_i.itype != iti_pkg::EXC && uop_entry_i.itype != iti_pkg::STANDARD && uop_entry_i.valid )? 1'b1 : 1'b0;
+  assign special_inst = !(uop_entry_i.itype inside {iti_pkg::INT, iti_pkg::EXC, iti_pkg::STANDARD}) && uop_entry_i.valid ;
   assign exception = (uop_entry_i.itype == iti_pkg::EXC) ? 1'b1 : 1'b0;
   assign interrupt = (uop_entry_i.itype == iti_pkg::INT) ? 1'b1 : 1'b0;
 
@@ -61,7 +60,7 @@ module instr_to_trace
             itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = iaddr_o;
             itt_out_o.priv = uop_entry_i.priv;
-            itt_out_o.times = uop_entry_i.times;
+            itt_out_o.cycles = uop_entry_i.cycles;
             itt_out_o.cause = '0;
             itt_out_o.tval = '0;
             is_special_o = 1'b1;
@@ -74,7 +73,7 @@ module instr_to_trace
             itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = uop_entry_i.pc;
             itt_out_o.priv = uop_entry_i.priv;
-            itt_out_o.times = uop_entry_i.times;
+            itt_out_o.cycles = uop_entry_i.cycles;
             itt_out_o.cause = cause_i;
             itt_out_o.tval = '0;
             is_special_o = 1'b1;
@@ -87,7 +86,7 @@ module instr_to_trace
             itt_out_o.ilastsize = ~uop_entry_i.compressed;
             itt_out_o.iaddr = uop_entry_i.pc;
             itt_out_o.priv = uop_entry_i.priv;
-            itt_out_o.times = uop_entry_i.times;
+            itt_out_o.cycles = uop_entry_i.cycles;
             itt_out_o.cause = cause_i;
             itt_out_o.tval = tval_i;
             is_special_o = 1'b1;

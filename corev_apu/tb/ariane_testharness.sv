@@ -674,30 +674,18 @@ module ariane_testharness #(
     end
   end
 
-  `ifdef ITI_ENABLE
-    initial begin
-        $display("Adding ITI");
-    end
     cva6_iti #(
         .CVA6Cfg   (CVA6Cfg),
         .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
         .ITYPE_LEN (iti_pkg::ITYPE_LEN),
-        .IRETIRE_LEN (iti_pkg::IRETIRE_LEN)
+        .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
+        .rvfi_to_iti_t(rvfi_to_iti_t)
     ) i_iti (
         .clk_i  (clk_i),
         .rst_ni (ndmreset_n),
         // inputs from rvfi
-        .valid_i(rvfi_to_iti.valid), // commit_ack in cva6
-        .pc_i(rvfi_to_iti.pc),
-        .op_i(rvfi_to_iti.op),
-        .is_compressed_i(rvfi_to_iti.is_compressed),
-        .branch_valid_i(rvfi_to_iti.branch_valid),
-        .is_taken_i(rvfi_to_iti.is_taken),
-        .ex_valid_i(rvfi_to_iti.ex_valid),
-        .tval_i(rvfi_to_iti.tval),
-        .cause_i(rvfi_to_iti.cause),
-        .priv_lvl_i(rvfi_to_iti.priv_lvl),
-        .time_i(rvfi_to_iti.times),
+        .valid_i(rvfi_to_iti.valid),
+        .rvfi_to_iti_i(rvfi_to_iti),
         // outputs for the encoder module TODO
         .valid_o(),
         .iretire_o(),
@@ -709,7 +697,6 @@ module ariane_testharness #(
         .iaddr_o(),
         .time_o()
     );
-  `endif
 
 
   cva6_rvfi #(
@@ -725,9 +712,7 @@ module ariane_testharness #(
       .rst_ni       (rst_ni),
       .rvfi_probes_i(rvfi_probes),
       .rvfi_instr_o (rvfi_instr),
-      `ifdef ITI_ENABLE
-      .rvfi_to_iti_o   (rvfi_to_iti), // Doing it like this to not change existing wrapper uvm
-      `endif
+      .rvfi_to_iti_o   (rvfi_to_iti),
       .rvfi_csr_o   (rvfi_csr)
   );
 

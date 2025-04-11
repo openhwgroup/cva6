@@ -179,7 +179,7 @@
   logic [Cfg.XLEN-1:0] tval; \
   logic [Cfg.XLEN-1:0] cause; \
   riscv::priv_lvl_t priv_lvl; \
-  logic [63:0] times; \
+  logic [63:0] cycles; \
 }
 
 `endif  // RVFI_TYPES_SVH

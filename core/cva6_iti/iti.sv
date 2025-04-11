@@ -13,22 +13,14 @@ module cva6_iti #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter CAUSE_LEN = 5, //Size is ecause_width_p in the E-Trace SPEC
     parameter ITYPE_LEN = 3, //Size is itype_width_p in the E-Trace SPEC (3 or 4)
-    parameter IRETIRE_LEN = 32 //Size is iretire_width_p in the E-Trace SPEC
+    parameter IRETIRE_LEN = 32, //Size is iretire_width_p in the E-Trace SPEC
+    parameter type rvfi_to_iti_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
 
-    input logic [CVA6Cfg.NrCommitPorts-1:0] valid_i, 
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] pc_i,
-    input ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0] is_compressed_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0] branch_valid_i,
-    input logic [CVA6Cfg.NrCommitPorts-1:0] is_taken_i,
-    input logic ex_valid_i,
-    input logic [CVA6Cfg.XLEN-1:0] tval_i,
-    input logic [CVA6Cfg.XLEN-1:0] cause_i,
-    input riscv::priv_lvl_t priv_lvl_i,
-    input logic [63:0] time_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0] valid_i,
+    input rvfi_to_iti_t rvfi_to_iti_i,
 
     output logic [CVA6Cfg.NrCommitPorts-1:0] valid_o,
     output logic [CVA6Cfg.NrCommitPorts-1:0][IRETIRE_LEN-1:0] iretire_o, // size is overkill
@@ -56,7 +48,7 @@ module cva6_iti #(
     iti_pkg::itype_t         itype;
     logic                    compressed;
     riscv::priv_lvl_t        priv;
-    logic [63:0]             times;
+    logic [63:0]             cycles;
   };
 
   /* Structure used to output trace_signals if special instr */
@@ -69,7 +61,7 @@ module cva6_iti #(
     riscv::priv_lvl_t        priv;
     logic [CAUSE_LEN-1:0]    cause;     
     logic [CVA6Cfg.XLEN-1:0] tval; 
-    logic [63:0]            times;
+    logic [63:0]            cycles;
   };
 
   logic interrupt;
@@ -93,23 +85,23 @@ module cva6_iti #(
   logic [CVA6Cfg.NrCommitPorts-1:0] special;
 
 
-  assign interrupt = cause_i[CVA6Cfg.XLEN-1];  // determinated based on the MSB of cause
+  assign interrupt = rvfi_to_iti_i.cause[CVA6Cfg.XLEN-1];  // determinated based on the MSB of cause
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
     itype_detector #(
         .ITYPE_LEN(ITYPE_LEN)
     ) i_itype_detector (
         .valid_i       (valid_i[i]),
-        .exception_i   (ex_valid_i),
+        .exception_i   (rvfi_to_iti_i.ex_valid),
         .interrupt_i   (interrupt),
-        .op_i          (op_i[i]),
-        .branch_taken_i(is_taken_i[i]),
+        .op_i          (rvfi_to_iti_i.op[i]),
+        .branch_taken_i(rvfi_to_iti_i.is_taken[i]),
         .itype_o       (itype[i])
     );
 
     // Adding this to ensure that interuption/exception happen only in commit port 0 of cva6
-    assign cause_itt[i] = i==0 ? cause_i[CAUSE_LEN-1:0] : '0;
-    assign tval_itt[i] = i==0 ? tval_i : '0;
+    assign cause_itt[i] = i==0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
+    assign tval_itt[i] = i==0 ? rvfi_to_iti_i.tval : '0;
     // Systolic logic (First itt is connected to D Flip-Flop to continue computation if needed)
     assign counter_itt[i] = i==0 ? counter_q : counter[i-1];
     assign addr_itt[i] = i==0 ? addr_q : addr[i-1];
@@ -140,14 +132,13 @@ module cva6_iti #(
   always_comb begin
     cause_o = '0;
     tval_o = '0;
-
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       uop_entry[i].valid = valid_i[i];
-      uop_entry[i].pc = pc_i[i];
+      uop_entry[i].pc = rvfi_to_iti_i.pc[i];
       uop_entry[i].itype = itype[i];
-      uop_entry[i].compressed = is_compressed_i[i];
-      uop_entry[i].priv = priv_lvl_i;
-      uop_entry[i].times = time_i;
+      uop_entry[i].compressed = rvfi_to_iti_i.is_compressed[i];
+      uop_entry[i].priv = rvfi_to_iti_i.priv_lvl;
+      uop_entry[i].cycles = rvfi_to_iti_i.cycles;
 
       valid_o[i] = 1'b0;
       iretire_o[i] = '0;
@@ -161,7 +152,7 @@ module cva6_iti #(
         itype_o[i] = itt_out[i].itype;
         iaddr_o[i] = itt_out[i].iaddr;
         priv_o = itt_out[i].priv; // privilege don't change between 2 instr comitted in the same cycle
-        time_o = itt_out[i].times; // Same here (same time at same cycle)
+        time_o = itt_out[i].cycles; // Same here (same time at same cycle)
       end
     end
     if (itt_out[0].valid) begin // interrupt & exception only in port 0
@@ -188,7 +179,7 @@ module cva6_iti #(
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       if (itt_out[i].valid) begin
         $fwrite(f, "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h, time =%d  \n",
-        i, itt_out[i].valid, itt_out[i].iretire , itt_out[i].ilastsize , itt_out[i].itype , itt_out[i].cause, itt_out[i].tval, itt_out[i].priv , itt_out[i].iaddr , time_i); 
+        i, itt_out[i].valid, itt_out[i].iretire , itt_out[i].ilastsize , itt_out[i].itype , itt_out[i].cause, itt_out[i].tval, itt_out[i].priv , itt_out[i].iaddr , itt_out[i].cycles);
       end
     end
   //pragma translate_on

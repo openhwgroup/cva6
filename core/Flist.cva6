@@ -71,7 +71,6 @@ ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
-${CVA6_REPO_DIR}/core/include/iti_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/cvxif_compressed_if_driver.sv
@@ -199,8 +198,4 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
 
-//Instruction Trace Interface 
-${CVA6_REPO_DIR}/core/cva6_iti/instr_to_trace.sv
-${CVA6_REPO_DIR}/core/cva6_iti/iti.sv
-${CVA6_REPO_DIR}/core/cva6_iti/itype_detector.sv
 // end of manifest
