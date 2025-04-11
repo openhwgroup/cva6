@@ -14,7 +14,7 @@
 // Github:  @ubolakes
 // Contributors: 
 // Darshak Sheladiya, SYSGO GmbH
-// Maxime COLSON, Thales
+// Maxime COLSON, Thales CDI France
 
 /* ITYPE DETECTOR */
 /*
