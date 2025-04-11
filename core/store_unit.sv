@@ -30,21 +30,21 @@ module store_unit
     input logic rst_ni,
     // Flush - CONTROLLER
     input logic flush_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
-    // Store buffer is empty - TO_BE_COMPLETED
+    // Store buffer is empty - LOAD_UNIT
     output logic store_buffer_empty_o,
     // Store instruction is valid - ISSUE_STAGE
     input logic valid_i,
     // Data input - ISSUE_STAGE
     input lsu_ctrl_t lsu_ctrl_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Pop store - LSU_BYPASS
     output logic pop_st_o,
-    // Instruction commit - TO_BE_COMPLETED
+    // Instruction commit - COMMIT_STAGE
     input logic commit_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Commit queue is ready to accept another commit request - COMMIT_STAGE
     output logic commit_ready_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
@@ -54,11 +54,11 @@ module store_unit
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_o,
     // Store result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] result_o,
-    // Store exception output - TO_BE_COMPLETED
+    // Store exception output - ISSUE_STAGE
     output exception_t ex_o,
-    // Address translation request - TO_BE_COMPLETED
+    // Address translation request - MMU/PMP
     output logic translation_req_o,
-    // Virtual address - TO_BE_COMPLETED
+    // Virtual address - MMU/PMP
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
     output logic [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
@@ -68,9 +68,9 @@ module store_unit
     output logic hs_ld_st_inst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic hlvx_inst_o,
-    // Physical address - TO_BE_COMPLETED
+    // Physical address - MMU/PMP
     input logic [CVA6Cfg.PLEN-1:0] paddr_i,
-    // Exception raised before store - TO_BE_COMPLETED
+    // Exception raised before store - MMU/PMP
     input exception_t ex_i,
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
