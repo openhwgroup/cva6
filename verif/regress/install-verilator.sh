@@ -18,7 +18,7 @@ fi
 VERILATOR_REPO="https://github.com/verilator/verilator.git"
 VERILATOR_BRANCH="master"
 # Use the release tag instead of a full SHA1 hash.
-VERILATOR_HASH="v5.008"
+VERILATOR_HASH="v5.028"
 VERILATOR_PATCH="$ROOT_PROJECT/verif/regress/verilator-v5.patch"
 
 # Unset historical variable VERILATOR_ROOT as it collides with the build process.

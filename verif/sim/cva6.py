@@ -1004,7 +1004,7 @@ def check_spike_version():
     logging.info(f"- stderr:\n\n{user_spike_stderr_string}")
     # Run 'ldd' on Spike binary and print contents of stdout and stderr.
     spike_ldd = subprocess.run(
-        "/bin/ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
+        "ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
     )
     spike_ldd_stdout = spike_ldd.stdout.strip()
     spike_ldd_stderr = spike_ldd.stderr.strip()
@@ -1030,7 +1030,7 @@ def check_spike_version():
 
 
 def check_verilator_version():
-  REQUIRED_VERILATOR_VERSION = "5.008"
+  REQUIRED_VERILATOR_VERSION = "5.028"
 
   verilator_version_string = run_cmd("verilator --version")
   logging.info(f"Verilator Version: {verilator_version_string.strip()}")
