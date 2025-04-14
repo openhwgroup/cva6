@@ -236,7 +236,9 @@ iti-test:
     DV_SIMULATORS: "vcs-testharness"
   script:
     - bash verif/regress/iti_test.sh
+    - diff .gitlab-ci/iti_reference.trace .gitlab-ci/iti.trace
     - python3 .gitlab-ci/scripts/report_pass.py
+    - rm .gitlab-ci/iti.trace
 
 spyglass:
   extends:
