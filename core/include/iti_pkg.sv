@@ -10,9 +10,9 @@
 
 package iti_pkg;
 
-  localparam CAUSE_LEN = 5; //Size is ecause_width_p in the E-Trace SPEC
-  localparam ITYPE_LEN = 3; //Size is itype_width_p in the E-Trace SPEC (3 or 4)
-  localparam IRETIRE_LEN = 32; //Size is iretire_width_p in the E-Trace SPEC
+  localparam CAUSE_LEN = 5;  //Size is ecause_width_p in the E-Trace SPEC
+  localparam ITYPE_LEN = 3;  //Size is itype_width_p in the E-Trace SPEC (3 or 4)
+  localparam IRETIRE_LEN = 32;  //Size is iretire_width_p in the E-Trace SPEC
 
   typedef enum logic [ITYPE_LEN-1:0] {
     STANDARD = 0,  // none of the other named itype codes
@@ -30,7 +30,7 @@ package iti_pkg;
     CRS = 12, // co-routine swap
     RET = 13, // return
     OUIJ = 14, // other uninferable jump
-    OIJ = 15*/ // other inferable jump
+    OIJ = 15*/  // other inferable jump
   } itype_t;
 
 endpackage

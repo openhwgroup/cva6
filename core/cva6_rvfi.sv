@@ -258,7 +258,7 @@ module cva6_rvfi
     logic [31:0] instr;
     logic branch_valid;
     logic is_taken;
-    logic is_compressed; 
+    logic is_compressed;
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
@@ -282,9 +282,9 @@ module cva6_rvfi
       end
     end
     if (branch_valid_iti) begin
-      mem_n[branch_trans_id].branch_valid=branch_valid_iti;
-      mem_n[branch_trans_id].is_taken=is_taken_iti;
-    end 
+      mem_n[branch_trans_id].branch_valid = branch_valid_iti;
+      mem_n[branch_trans_id].is_taken = is_taken_iti;
+    end
     if (lsu_rmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
       mem_n[lsu_addr_trans_id].lsu_rmask = lsu_rmask;
@@ -354,9 +354,9 @@ module cva6_rvfi
       rvfi_to_iti_o.branch_valid[i] <= mem_q[commit_pointer[i]].branch_valid;
       rvfi_to_iti_o.is_taken[i] <= mem_q[commit_pointer[i]].is_taken;
       rvfi_to_iti_o.is_compressed[i] <= mem_q[commit_pointer[i]].is_compressed;
-      rvfi_to_iti_o.valid[i]<=valid_iti[i];
-      rvfi_to_iti_o.pc[i]<=pc_iti[i];
-      rvfi_to_iti_o.op[i]<=op_iti[i];
+      rvfi_to_iti_o.valid[i] <= valid_iti[i];
+      rvfi_to_iti_o.pc[i] <= pc_iti[i];
+      rvfi_to_iti_o.op[i] <= op_iti[i];
     end
     rvfi_to_iti_o.ex_valid <= ex_commit_valid;
     rvfi_to_iti_o.cycles <= time_iti;

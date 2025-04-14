@@ -11,9 +11,9 @@
 
 module cva6_iti #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter CAUSE_LEN = 5, //Size is ecause_width_p in the E-Trace SPEC
-    parameter ITYPE_LEN = 3, //Size is itype_width_p in the E-Trace SPEC (3 or 4)
-    parameter IRETIRE_LEN = 32, //Size is iretire_width_p in the E-Trace SPEC
+    parameter CAUSE_LEN = 5,  //Size is ecause_width_p in the E-Trace SPEC
+    parameter ITYPE_LEN = 3,  //Size is itype_width_p in the E-Trace SPEC (3 or 4)
+    parameter IRETIRE_LEN = 32,  //Size is iretire_width_p in the E-Trace SPEC
     parameter type rvfi_to_iti_t = logic,
     parameter type iti_to_encoder_t = logic
 ) (
@@ -30,7 +30,7 @@ module cva6_iti #(
   // pragma translate_off
   int f;
   initial begin
-    f = $fopen("iti.trace","w");
+    f = $fopen("iti.trace", "w");
   end
   final $fclose(f);
   // pragma translate_on
@@ -53,8 +53,8 @@ module cva6_iti #(
     logic                    ilastsize;
     logic [CVA6Cfg.XLEN-1:0] iaddr;
     riscv::priv_lvl_t        priv;
-    logic [CAUSE_LEN-1:0]    cause;     
-    logic [CVA6Cfg.XLEN-1:0] tval; 
+    logic [CAUSE_LEN-1:0]    cause;
+    logic [CVA6Cfg.XLEN-1:0] tval;
     logic [63:0]             cycles;
   };
 
@@ -71,8 +71,8 @@ module cva6_iti #(
   logic [CVA6Cfg.NrCommitPorts-1:0][IRETIRE_LEN-1:0] counter_itt;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] addr_itt;
   logic [CVA6Cfg.NrCommitPorts-1:0] special_itt;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CAUSE_LEN-1:0] cause_itt ;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] tval_itt ;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CAUSE_LEN-1:0] cause_itt;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] tval_itt;
 
   logic [CVA6Cfg.NrCommitPorts-1:0][IRETIRE_LEN-1:0] counter;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] addr;
@@ -94,38 +94,38 @@ module cva6_iti #(
     );
 
     // Adding this to ensure that interuption/exception happen only in commit port 0 of cva6
-    assign cause_itt[i] = i==0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
-    assign tval_itt[i] = i==0 ? rvfi_to_iti_i.tval : '0;
+    assign cause_itt[i] = i == 0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
+    assign tval_itt[i] = i == 0 ? rvfi_to_iti_i.tval : '0;
     // Systolic logic (First itt is connected to D Flip-Flop to continue computation if needed)
-    assign counter_itt[i] = i==0 ? counter_q : counter[i-1];
-    assign addr_itt[i] = i==0 ? addr_q : addr[i-1];
-    assign special_itt[i] = i==0 ? special_q : special[i-1];
+    assign counter_itt[i] = i == 0 ? counter_q : counter[i-1];
+    assign addr_itt[i] = i == 0 ? addr_q : addr[i-1];
+    assign special_itt[i] = i == 0 ? special_q : special[i-1];
 
-    instr_to_trace  #(
-      .CVA6Cfg(CVA6Cfg),
-      .uop_entry_t(uop_entry_t),
-      .itt_out_t(itt_out_t),
-      .CAUSE_LEN(CAUSE_LEN),
-      .ITYPE_LEN(ITYPE_LEN),
-      .IRETIRE_LEN(IRETIRE_LEN)
+    instr_to_trace #(
+        .CVA6Cfg(CVA6Cfg),
+        .uop_entry_t(uop_entry_t),
+        .itt_out_t(itt_out_t),
+        .CAUSE_LEN(CAUSE_LEN),
+        .ITYPE_LEN(ITYPE_LEN),
+        .IRETIRE_LEN(IRETIRE_LEN)
     ) i_instr_to_trace (
-      .uop_entry_i(uop_entry[i]),
-      .cause_i(cause_itt[i]),
-      .tval_i(tval_itt[i]),
-      .counter_i(counter_itt[i]),
-      .iaddr_i(addr_itt[i]),
-      .was_special_i(special_itt[i]),
-      .itt_out_o(itt_out[i]),
-      .counter_o(counter[i]),
-      .iaddr_o(addr[i]),
-      .is_special_o(special[i])
+        .uop_entry_i(uop_entry[i]),
+        .cause_i(cause_itt[i]),
+        .tval_i(tval_itt[i]),
+        .counter_i(counter_itt[i]),
+        .iaddr_i(addr_itt[i]),
+        .was_special_i(special_itt[i]),
+        .itt_out_o(itt_out[i]),
+        .counter_o(counter[i]),
+        .iaddr_o(addr[i]),
+        .is_special_o(special[i])
     );
   end
 
 
   always_comb begin
-    iti_to_encoder_o.cause  = '0;
-    iti_to_encoder_o.tval = '0;
+    iti_to_encoder_o.cause = '0;
+    iti_to_encoder_o.tval  = '0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       uop_entry[i].valid = valid_i[i];
       uop_entry[i].pc = rvfi_to_iti_i.pc[i];
@@ -145,14 +145,14 @@ module cva6_iti #(
         iti_to_encoder_o.iretire[i] = itt_out[i].iretire;
         iti_to_encoder_o.ilastsize[i] = itt_out[i].ilastsize;
         iti_to_encoder_o.itype[i] = itt_out[i].itype;
-        iti_to_encoder_o.iaddr[i]= itt_out[i].iaddr;
+        iti_to_encoder_o.iaddr[i] = itt_out[i].iaddr;
         iti_to_encoder_o.priv = itt_out[i].priv; // privilege don't change between 2 instr comitted in the same cycle
-        iti_to_encoder_o.cycles = itt_out[i].cycles; // Same here (same time at same cycle)
+        iti_to_encoder_o.cycles = itt_out[i].cycles;  // Same here (same time at same cycle)
       end
     end
-    if (itt_out[0].valid) begin // interrupt & exception only in port 0
-        iti_to_encoder_o.cause = itt_out[0].cause;
-        iti_to_encoder_o.tval = itt_out[0].tval;
+    if (itt_out[0].valid) begin  // interrupt & exception only in port 0
+      iti_to_encoder_o.cause = itt_out[0].cause;
+      iti_to_encoder_o.tval  = itt_out[0].tval;
     end
   end
 
@@ -170,15 +170,19 @@ module cva6_iti #(
       addr_q <= addr_d;
       special_q <= special_d;
     end
-  //pragma translate_off
+    //pragma translate_off
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       if (itt_out[i].valid) begin
-        $fwrite(f, "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h, time =%d  \n",
-        i, itt_out[i].valid, itt_out[i].iretire , itt_out[i].ilastsize , itt_out[i].itype , itt_out[i].cause, itt_out[i].tval, itt_out[i].priv , itt_out[i].iaddr , itt_out[i].cycles);
+        $fwrite(
+            f,
+            "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h, time =%d  \n",
+            i, itt_out[i].valid, itt_out[i].iretire, itt_out[i].ilastsize, itt_out[i].itype,
+            itt_out[i].cause, itt_out[i].tval, itt_out[i].priv, itt_out[i].iaddr,
+            itt_out[i].cycles);
       end
     end
-  //pragma translate_on
-  end 
+    //pragma translate_on
+  end
 
 
 endmodule

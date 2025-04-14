@@ -21,16 +21,15 @@
 it produces the type of the instruction
 */
 
-module itype_detector 
-#(
-  parameter ITYPE_LEN = 3 //Size is itype_width_p in the E-Trace SPEC (3 or 4)
-)(
-    input  logic                                            valid_i,
-    input  logic                                            exception_i,
-    input  logic                                            interrupt_i,
-    input  ariane_pkg::fu_op                                op_i,
-    input  logic                                            branch_taken_i,
-    output iti_pkg::itype_t                                 itype_o
+module itype_detector #(
+    parameter ITYPE_LEN = 3  //Size is itype_width_p in the E-Trace SPEC (3 or 4)
+) (
+    input  logic             valid_i,
+    input  logic             exception_i,
+    input  logic             interrupt_i,
+    input  ariane_pkg::fu_op op_i,
+    input  logic             branch_taken_i,
+    output iti_pkg::itype_t  itype_o
 );
 
   // internal signals
@@ -48,7 +47,7 @@ module itype_detector
 
 
 
-  assign eret = op_i inside {ariane_pkg::MRET , ariane_pkg::SRET , ariane_pkg::DRET};
+  assign eret = op_i inside {ariane_pkg::MRET, ariane_pkg::SRET, ariane_pkg::DRET};
 
   assign nontaken_branch = (  op_i == ariane_pkg::EQ ||
                                 op_i == ariane_pkg::NE ||
@@ -84,7 +83,7 @@ module itype_detector
         itype_o = iti_pkg::NON_TAKEN_BR;
       end else if (taken_branch) begin  // taken branch
         itype_o = iti_pkg::TAKEN_BR;
-      end else if (ITYPE_LEN == 3 && updiscon) begin // uninferable discontinuity
+      end else if (ITYPE_LEN == 3 && updiscon) begin  // uninferable discontinuity
         itype_o = iti_pkg::UNINF_JMP;
       end
     end
