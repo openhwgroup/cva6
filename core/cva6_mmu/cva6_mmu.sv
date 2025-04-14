@@ -223,7 +223,7 @@ module cva6_mmu
       .v_i           (ld_st_v_i),
       .update_i      (update_dtlb),
       .lu_access_i   (dtlb_lu_access),
-      .lu_asid_i     (itlb_lu_asid),
+      .lu_asid_i     (dtlb_lu_asid),
       .lu_vmid_i     (vmid_i),
       .lu_vaddr_i    (lsu_vaddr_i),
       .lu_gpaddr_o   (dtlb_gpaddr),
