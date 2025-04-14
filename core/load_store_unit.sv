@@ -37,11 +37,11 @@ module load_store_unit
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Flush - CONTROLLER
     input logic flush_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
@@ -72,20 +72,20 @@ module load_store_unit
     // Store exception - ISSUE_STAGE
     output exception_t store_exception_o,
 
-    // Commit the first pending store - TO_BE_COMPLETED
+    // Commit the first pending store - COMMIT_STAGE
     input logic commit_i,
-    // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
+    // Commit queue is ready to accept another commit request - COMMIT_STAGE
     output logic commit_ready_o,
-    // Commit transaction ID - TO_BE_COMPLETED
+    // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
 
-    // Enable virtual memory translation - TO_BE_COMPLETED
+    // Enable virtual memory translation - CSR_REGFILE
     input logic enable_translation_i,
-    // Enable G-Stage memory translation - TO_BE_COMPLETED
+    // Enable G-Stage memory translation - CSR_REGFILE
     input logic enable_g_translation_i,
-    // Enable virtual memory translation for load/stores - TO_BE_COMPLETED
+    // Enable virtual memory translation for load/stores - CSR_REGFILE
     input logic en_ld_st_translation_i,
-    // Enable G-Stage memory translation for load/stores - TO_BE_COMPLETED
+    // Enable G-Stage memory translation for load/stores - CSR_REGFILE
     input logic en_ld_st_g_translation_i,
 
     // Instruction cache input request - FETCH

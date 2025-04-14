@@ -47,7 +47,7 @@ module branch_unit #(
     output bp_resolve_t resolved_branch_o,
     // Branch is resolved, new entries can be accepted by scoreboard - ID_STAGE
     output logic resolve_branch_o,
-    // Branch exception out - TO_BE_COMPLETED
+    // Branch exception out - PERF_COUNTERS
     output exception_t branch_exception_o
 );
   logic [CVA6Cfg.VLEN-1:0] target_address;

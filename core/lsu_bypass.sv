@@ -33,21 +33,21 @@ module lsu_bypass
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Flush - CONTROLLER
     input logic flush_i,
 
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Load store unit request - LSU_UNIT
     input lsu_ctrl_t lsu_req_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // load store unit valid - LSU_UNIT
     input logic      lsu_req_valid_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Pop load - LOAD_UNIT
     input logic      pop_ld_i,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Pop store - STORE_UNIT
     input logic      pop_st_i,
 
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // RVFI information - RVFI
     output lsu_ctrl_t lsu_ctrl_o,
-    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    // Load Store Unit is ready - ISSUE_STAGE
     output logic      ready_o
 );
 

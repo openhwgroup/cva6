@@ -53,9 +53,9 @@ module load_unit
     output logic          [         CVA6Cfg.XLEN-1:0] result_o,
     // Load exception - ISSUE_STAGE
     output exception_t                                ex_o,
-    // Request address translation - MMU
+    // Request address translation - MMU/PMP
     output logic                                      translation_req_o,
-    // Virtual address - MMU
+    // Virtual address - MMU/PMP
     output logic          [         CVA6Cfg.VLEN-1:0] vaddr_o,
     // Transformed trap instruction out - MMU
     output logic          [                     31:0] tinst_o,
@@ -63,9 +63,9 @@ module load_unit
     output logic                                      hs_ld_st_inst_o,
     // Hyp load store with execute permissions - MMU
     output logic                                      hlvx_inst_o,
-    // Physical address - MMU
+    // Physical address - MMU/PMP
     input  logic          [         CVA6Cfg.PLEN-1:0] paddr_i,
-    // Excepted which appears before load - MMU
+    // Excepted which appears before load - MMU/PMP
     input  exception_t                                ex_i,
     // Data TLB hit - MMU
     input  logic                                      dtlb_hit_i,
@@ -332,7 +332,7 @@ module load_unit
   assign obi_load_req_o.a.a_optional.memtype[0] = '0;
   assign obi_load_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
   assign obi_load_req_o.a.a_optional.mid = '0;
-  assign obi_load_req_o.a.a_optional.prot[2:1] = '0;
+  assign obi_load_req_o.a.a_optional.prot[2:1] = 2'b11;
   assign obi_load_req_o.a.a_optional.prot[0] = 1'b1;  //data
   assign obi_load_req_o.a.a_optional.dbg = '0;
   assign obi_load_req_o.a.a_optional.achk = '0;

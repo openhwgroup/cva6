@@ -39,6 +39,7 @@ module compressed_instr_decoder #(
         compressed_resp_o.accept       = CoproInstr[i].resp.accept;
         compressed_resp_o.instr        = CoproInstr[i].resp.instr;
         // Remap rs1 and rs2
+        compressed_resp_o.instr[11:7]  = compressed_req_i.instr[11:7];
         compressed_resp_o.instr[19:15] = compressed_req_i.instr[11:7];
         compressed_resp_o.instr[24:20] = compressed_req_i.instr[6:2];
       end

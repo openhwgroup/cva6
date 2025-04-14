@@ -29,7 +29,7 @@ module commit_stage
     input logic halt_i,
     // request to flush dcache, also flush the pipeline - CACHE
     input logic flush_dcache_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // Exception raised by all sources - EX_STAGE
     output exception_t exception_o,
     // Mark the F state as dirty - CSR_REGFILE
     output logic dirty_fp_state_o,
@@ -53,7 +53,7 @@ module commit_stage
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
     input obi_amo_rsp_t obi_amo_rsp_i,
-    // TO_BE_COMPLETED - FRONTEND_CSR_REGFILE
+    // Program counter - FRONTEND_CSR_REGFILE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,

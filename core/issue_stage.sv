@@ -104,21 +104,21 @@ module issue_stage
     input logic [CVA6Cfg.XLEN-1:0] hart_id_i,
     // CVXIF Issue interface - EX_STAGE
     input logic x_issue_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF Issue interface response - EX_STAGE
     input x_issue_resp_t x_issue_resp_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF Issue interface valid - EX_STAGE
     output logic x_issue_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF Issue interface request - EX_STAGE
     output x_issue_req_t x_issue_req_o,
     // CVXIF Register interface - EX_STAGE
     input logic x_register_ready_i,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF register interface valid - EX_STAGE
     output logic x_register_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF register interface - EX_STAGE
     output x_register_t x_register_o,
     // CVXIF Commit interface - EX_STAGE
     output logic x_commit_valid_o,
-    // TO_BE_COMPLETED - EX_STAGE
+    // CVXIF Commit interface - EX_STAGE
     output x_commit_t x_commit_o,
     // CVXIF Transaction rejected -> instruction is illegal - EX_STAGE
     output logic x_transaction_rejected_o,
