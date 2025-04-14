@@ -1,5 +1,5 @@
-CV32A60X ISA
-============
+CV32A60X documentation
+======================
 
 .. toctree::
    :maxdepth: 1
