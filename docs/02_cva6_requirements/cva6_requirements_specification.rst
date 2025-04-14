@@ -141,14 +141,16 @@ The full list of parameters for this configuration will be detailed in the users
 Below are the configuration of the first releases of the CVA6.
 
 +--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
-| Release ID         | Target  | ISA             | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
+| Release ID         | Target  | ISA (main ext.) | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
 +====================+=========+=================+======+=======+=========+=========+=========+=========+
-| ``CV32A60X``       | ASIC    | IMC             |  32  | No    | Yes     | None    | 2 kB    | 2 kB    |
+| ``CV32A60X``       | ASIC    | IMC             |  32  | No    | Yes     | None    | (2 kB)  | (2 kB)  |
 +--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
 | ``CV32A60AX``      | ASIC    | IMC             |  32  | No    | Yes     | Sv32    | 16kB    | 16 kB   |
 +--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
-| ``CV64A60AX``      | ASIC    | IMACFDB_Zicount |  64  | Yes   | Yes     | Sv39    | 32kB    | 32 kB   |
+| ``CV64A60AX``      | ASIC    | IMACFDB         |  64  | Yes   | Yes     | Sv39    | 32kB    | 32 kB   |
 +--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
+
+Note for CV32A60X: Its first industrial use is without caches. Therefore its cache size is not representative.
 
 .. Possible Future Releases
 .. ------------------------
