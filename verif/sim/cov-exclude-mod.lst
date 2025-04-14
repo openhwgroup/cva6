@@ -14,3 +14,6 @@
 -tree *.i_frontend.i_instr_queue.i_unread_*
 -tree *.ex_stage_i.lsu_i.i_pmp_data_if*
 -tree *.issue_stage_i.i_issue_read_operands.gen_sel_clobbers[*].i_sel_gpr_clobbers
+-tree *.i_frontend.gen_instr_scan[1].i_instr_scan*
+-tree *.i_frontend.i_instr_queue.gen_instr_fifo[1].i_fifo_instr_data*
+-tree *.i_frontend.i_instr_queue.i_fifo_address*
