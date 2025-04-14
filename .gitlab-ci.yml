@@ -148,7 +148,7 @@ smoke-tests:
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
-      - DV_SIMULATORS: "vcs-testharness"
+      - DV_SIMULATORS: ["vcs-testharness", "questa-testharness"]
         DV_TARGET: ["cv32a6_imac_sv32", "cv64a6_imafdc_sv39"]
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a65x"
@@ -238,7 +238,6 @@ iti-test:
     - bash verif/regress/iti_test.sh
     - diff .gitlab-ci/iti_reference.trace .gitlab-ci/iti.trace
     - python3 .gitlab-ci/scripts/report_pass.py
-    - rm .gitlab-ci/iti.trace
 
 spyglass:
   extends:

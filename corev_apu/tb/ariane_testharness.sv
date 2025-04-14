@@ -15,6 +15,7 @@
 
 `include "axi/assign.svh"
 `include "rvfi_types.svh"
+`include "iti_types.svh"
 
 `ifdef VERILATOR
 `include "custom_uvm_macros.svh"
@@ -47,6 +48,7 @@ module ariane_testharness #(
   localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
   localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
   localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
+  localparam type iti_to_encoder_t = `ITI_TO_ENCODER_T(CVA6Cfg);
 
   // RVFI PROBES
   localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
@@ -627,6 +629,7 @@ module ariane_testharness #(
   rvfi_csr_t rvfi_csr;
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   rvfi_to_iti_t rvfi_to_iti;
+  iti_to_encoder_t iti_to_encoder;
 
   ariane #(
     .CVA6Cfg              ( CVA6Cfg             ),
@@ -679,7 +682,8 @@ module ariane_testharness #(
         .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
         .ITYPE_LEN (iti_pkg::ITYPE_LEN),
         .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
-        .rvfi_to_iti_t(rvfi_to_iti_t)
+        .rvfi_to_iti_t(rvfi_to_iti_t),
+        .iti_to_encoder_t(iti_to_encoder_t)
     ) i_iti (
         .clk_i  (clk_i),
         .rst_ni (ndmreset_n),
@@ -688,14 +692,7 @@ module ariane_testharness #(
         .rvfi_to_iti_i(rvfi_to_iti),
         // outputs for the encoder module TODO
         .valid_o(),
-        .iretire_o(),
-        .ilastsize_o(),
-        .itype_o(),
-        .cause_o(),
-        .tval_o(),
-        .priv_o(),
-        .iaddr_o(),
-        .time_o()
+        .iti_to_encoder_o(iti_to_encoder)
     );
 
 
