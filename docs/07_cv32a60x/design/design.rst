@@ -5,7 +5,7 @@
   Author: Jean-Roch COULON -  Thales
 
 
-CV32A65X DESIGN DOCUMENT
+CV32A60X DESIGN DOCUMENT
 ========================
 
 .. raw:: html
