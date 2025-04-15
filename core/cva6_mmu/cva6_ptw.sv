@@ -48,9 +48,9 @@ module cva6_ptw
     input logic v_i,  // current virtualization mode bit
     input logic ld_st_v_i,  // load/store virtualization mode bit
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
-    input  logic lsu_is_store_i,  // this translation was triggered by a store
+    input logic lsu_is_store_i,  // this translation was triggered by a store
     // PTW memory interface
-    input  dcache_req_o_t req_port_i,
+    input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
 
     // to TLBs, update logic
@@ -194,14 +194,14 @@ module cva6_ptw
       // update the correct page table level
       for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
         for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
-          // VS + G-Translation
           if(((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i)) && CVA6Cfg.RVH) begin
-            shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0:1] == x);
-          // Non-V, S-Translation
+            // VS + G-Translation
+            shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0 : 1] == x);
           end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
+            // Non-V, S-Translation
             shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
-          // G-Translation
           end else begin
+            // G-Translation
             shared_tlb_update_o.is_page[x][y] = y != 0 ? (ptw_lvl_q[0] == x) : 1'b0;
           end
         end
@@ -217,9 +217,9 @@ module cva6_ptw
       end
 
       // output the correct ASIDs
-      shared_tlb_update_o.asid = tlb_update_asid_q;
-      shared_tlb_update_o.vmid = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
-      shared_tlb_update_o.vpn = vaddr_q[12+CVA6Cfg.VpnLen-1:12];
+      shared_tlb_update_o.asid  = tlb_update_asid_q;
+      shared_tlb_update_o.vmid  = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
+      shared_tlb_update_o.vpn   = vaddr_q[12+CVA6Cfg.VpnLen-1:12];
       shared_tlb_update_o.valid = 1'b1;
     end else begin
       shared_tlb_update_o.valid = 1'b0;
@@ -470,11 +470,11 @@ module cva6_ptw
                 // entry into the TLB.
                 if (
                   (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
-                  // Request is a store: perform some additional checks
-                  // If the request was a store and the page is not write-able, raise an error
-                  // the same applies if the dirty flag is not set
-                  // g-intermediate nodes however never need write-permission
-                  && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
+                    // Request is a store: perform some additional checks
+                    // If the request was a store and the page is not write-able, raise an error
+                    // the same applies if the dirty flag is not set
+                    // g-intermediate nodes however never need write-permission
+                    && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
                 ) begin
                   if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH)
                     tlb_update_valid = 1'b1;
@@ -493,7 +493,7 @@ module cva6_ptw
 
               // Check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
@@ -551,7 +551,7 @@ module cva6_ptw
 
               // Check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = ptw_stage_q;
                 end
