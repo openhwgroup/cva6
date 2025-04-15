@@ -6,3 +6,4 @@ CV32A60X documentation
 
    riscv/unpriv.rst
    riscv/priv.rst
+   design/design.rst
