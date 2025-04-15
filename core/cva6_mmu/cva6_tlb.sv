@@ -45,7 +45,7 @@ module cva6_tlb
     input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
     input logic [CVA6Cfg.VMID_WIDTH-1:0] lu_vmid_i,
     input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
-    output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o, // FIXME
+    output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o,
     output pte_cva6_t lu_content_o,
     output pte_cva6_t lu_g_content_o,
     input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
@@ -73,8 +73,8 @@ module cva6_tlb
       tags_q, tags_n;
 
   struct packed {
-    pte_cva6_t pte; // Result of S-translation of the input
-    pte_cva6_t gpte; // Output of G-translation of the (possibly S-translated) input
+    pte_cva6_t pte;   // Result of S-translation of the input
+    pte_cva6_t gpte;  // Output of G-translation of the (possibly S-translated) input
   } [TLB_ENTRIES-1:0]
       content_q, content_n;
 
@@ -115,29 +115,29 @@ module cva6_tlb
         // WARNING: `x` goes in the order {0 = 4K, 1 = 2M, 2 = 1G}.
 
         // Identify page_match for all TLB Entries:
-        // `page_match[i][x] == 1` if the entry `i` represent a page of (non-stricly) bigger length than
+        // `page_match[i][x] == 1` if the entry `i` represents a page of (non-stricly) bigger length than
         // requested.
         // 4K is always a match
         // In case of H-mode, the length of a page in the TLB is the smallest of S-translation and
         // G-translation
-        if (x==0) begin
+        if (x == 0) begin
           assign page_match[i][x] = 1;
         end else begin
-          if (HYP_EXT==0 || x==(CVA6Cfg.PtLevels-1)) begin
+          if (HYP_EXT == 0 || x == (CVA6Cfg.PtLevels - 1)) begin
             // No H-mode or Giga page. Then both condition must be true:
             // - G-stage translation is *not* enabled or G-entry is a matching page (bit 1)
             // - S-translation is *not* enabled or S-entry i is a matching page (bit 0)
             assign page_match[i][x] = &(tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT:0] | (~v_st_enbl[HYP_EXT:0]));
           end else begin
             // Other cases: H-mode and mega page
-            assign page_match[i][x] = (&v_st_enbl[HYP_EXT:0])?
-              // If S-translation and G-translation are active, then either:
-              // - S-translation matchs and G-translation is Mega or Giga
-              // - G-translation matchs and S-translation is Mega or Giga
-              ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]       && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT]))
-            || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0]       || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0])))
+            assign page_match[i][x] = (&v_st_enbl[HYP_EXT:0]) ?
+                // If S-translation and G-translation are active, then either:
+                // - S-translation matchs and G-translation is Mega or Giga
+                // - G-translation matchs and S-translation is Mega or Giga
+                ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]       && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT]))
+            ||   (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0]       || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0])))
             : // Else, either S or G-level must match depending which is active
-              ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && s_st_enbl_i) || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && g_st_enbl_i));
+                ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && s_st_enbl_i) || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && g_st_enbl_i));
           end
         end
 
@@ -167,12 +167,12 @@ module cva6_tlb
 
       // Reorganise the output structure to match `is_page` tag order: [1G, 2M]
       for (w = 0; w < CVA6Cfg.PtLevels - 1; w++) begin
-        assign is_page_o[i][w] = page_match[i][CVA6Cfg.PtLevels - 1 - w];
+        assign is_page_o[i][w] = page_match[i][CVA6Cfg.PtLevels-1-w];
       end
     end
   endgenerate
 
-  always_comb begin: translation
+  always_comb begin : translation
     // default assignment
     lu_hit         = '{default: 0};
     lu_hit_o       = 1'b0;
@@ -243,8 +243,8 @@ module cva6_tlb
     end
   end
 
-  logic [HYP_EXT:0] asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
-  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
+  logic [HYP_EXT:0] asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
+  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
   logic vmid_to_be_flushed_is0;  // indicates that the VMID provided is 0, active high
   logic gpaddr_to_be_flushed_is0;  // indicates that the GPADDR provided is 0, active high
 
@@ -269,9 +269,7 @@ module cva6_tlb
             gppn[i][CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:0] = tags_q[i].vpn[0];
           // Giga Page
           if (tags_q[i].is_page[0][0])
-            gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {
-              tags_q[i].vpn[1], tags_q[i].vpn[0]
-            };
+            gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {tags_q[i].vpn[1], tags_q[i].vpn[0]};
         end else begin
           gppn[i][CVA6Cfg.VpnLen-1:0] = CVA6Cfg.VpnLen'(tags_q[i].vpn);
         end
