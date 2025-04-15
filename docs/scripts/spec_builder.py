@@ -106,7 +106,7 @@ def print_to_rst(pathout, target, module, ports, comments):
         fout.write("\n")
         if len(comments) != 0:
             fout.write(
-                f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
+                f"Due to {target.upper()} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n"
             )
             fout.write("\n")
             for comment in comments:
@@ -138,7 +138,7 @@ def print_to_adoc(pathout, target, module, ports, comments):
 
         if len(comments) != 0:
             fout.write(
-                f"Due to {target} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n\n"
+                f"Due to {target.upper()} configuration, some ports are tied to a static value. These ports do not appear in the above table, they are listed below\n\n"
             )
             for comment in comments:
                 fout.write(f"{comment[0]},::\n*   {comment[1]}\n")
@@ -189,6 +189,7 @@ def main():
     if args.gen_ports_folder is not None:
         file = []
         file.append("../core/cva6.sv")
+        file.append("../core/cva6_pipeline.sv")
         file.append("../core/frontend/frontend.sv")
         file.append("../core/frontend/bht.sv")
         file.append("../core/frontend/btb.sv")

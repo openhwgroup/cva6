@@ -235,7 +235,7 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
-    // OBI version compliance, 0 mean non compliant -> best performance
+    // OBI version compliance, 0 means not compliant -> best performance
     int unsigned                 ObiVersion;
     // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
     bit                          PipelineOnly;

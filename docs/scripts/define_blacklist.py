@@ -29,6 +29,27 @@ def define_blacklist(parameters):
     black_list["dcache_cmo_req_i"] = ["For any HW configuration", "0"]
     black_list["dcache_cmo_resp_o"] = ["For any HW configuration", "open"]
 
+    param = "PipelineOnly"
+    paramvalue = parameters[param].value
+    if paramvalue == True:
+        black_list["icache_enable_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["icache_flush_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["dcache_enable_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["dcache_flush_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["dcache_flush_ack_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fetch_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["fetch_rsp_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["load_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["load_rsp_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["dcache_wbuffer_empty_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["dcache_wbuffer_not_ni_i"] = [f"As {param} = {paramvalue}", "0"]
+
+    param = "RVZCMT"
+    paramvalue = parameters[param].value
+    if paramvalue == False:
+        black_list["obi_zcmt_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["obi_zcmt_rsp_i"] = [f"As {param} = {paramvalue}", "0"]
+
     param = "IsRVFI"
     paramvalue = "0"
     if paramvalue == "0":
@@ -165,6 +186,8 @@ def define_blacklist(parameters):
         black_list["amo_resp_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_valid_commit_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["amo_valid_commit_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["obi_amo_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["obi_amo_rsp_i"] = [f"As {param} = {paramvalue}", "0"]
 
     param = "PRIV"
     paramvalue = "MachineOnly"
@@ -199,5 +222,7 @@ def define_blacklist(parameters):
         black_list["flush_tlb_i"] = [f"As {param} = {paramvalue}", "0"]
         black_list["flush_tlb_o"] = [f"As {param} = {paramvalue}", "0"]
         black_list["dtlb_ppn_i"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["obi_mmu_ptw_req_o"] = [f"As {param} = {paramvalue}", "0"]
+        black_list["obi_mmu_ptw_rsp_i"] = [f"As {param} = {paramvalue}", "0"]
 
     return black_list

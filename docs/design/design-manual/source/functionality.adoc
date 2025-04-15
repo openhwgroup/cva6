@@ -15,5 +15,12 @@ Functionality
 include::instructions.adoc[]
 include::traps.adoc[]
 include::CSRs.adoc[]
+
+ifeval::[{PipelineOnly} == true]
+include::OBI.adoc[]
+endif::[]
+ifeval::[{PipelineOnly} == false]
 include::AXI.adoc[]
+endif::[]
+
 include::CVXIF.adoc[]
