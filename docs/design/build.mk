@@ -16,7 +16,7 @@ current_dir = $(shell pwd)
 design_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 # custom_gen.yaml is optional.  Do not pass it as cmdline arg if absent.
-ifneq ($(wildcard ../riscv-config/$(CONFIG)/generated/custom_gen.yaml),)
+ifneq ($(wildcard ../../../config/riscv-config/$(CONFIG)/generated/custom_gen.yaml),)
   CUSTOM_CSR_ARG = -c ../riscv-config/$(CONFIG)/generated/custom_gen.yaml
 endif
 
