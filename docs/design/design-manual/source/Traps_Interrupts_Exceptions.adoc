@@ -103,7 +103,7 @@ endif::[]
 ** unimplemented CSRs
 ** unsupported extensions
 
-* breakpoint (`EBREAK`)
+* breakpoint (EBREAK)
 
 * load address misaligned:
 ** `LH` at 2n+1 address
@@ -124,14 +124,14 @@ ifeval::[{NrPMPEntries} != 0]
 endif::[]
 
 ifeval::[{RVU} == true]
-* environment call (`ECALL`) from U-mode
+* environment call (ECALL) from U-mode
 endif::[]
 
 ifeval::[{RVS} == true]
-* environment call (`ECALL`) from S-mode
+* environment call (ECALL) from S-mode
 endif::[]
 
-* environment call (`ECALL`) from M-mode
+* environment call (ECALL) from M-mode
 
 ifeval::[{MmuPresent} == true]
 * instruction page fault
@@ -157,7 +157,7 @@ Trap return
 
 Trap handler ends with trap return instruction (`MRET`
 ifeval::[{RVS} == true]
-, `SRET`
+, SRET
 endif::[]
 ). The behaviour of the {ohg-config} core depends on several CSRs.
 
