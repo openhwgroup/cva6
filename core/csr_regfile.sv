@@ -23,7 +23,8 @@ module csr_regfile
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
     parameter int                    VmidWidth          = 1,
-    parameter int unsigned           MHPMCounterNum     = 6
+    parameter int unsigned           MHPMCounterNum     = 6,
+    parameter int unsigned           N_Triggers         = 4
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -279,6 +280,20 @@ module csr_regfile
   logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
 
+  // Trigger Module Helpers
+  // logic [CVA6Cfg.XLEN-1:0] tselect;
+  // logic tselect_valid;
+  // logic [$clog2(N_Triggers)-1:0] tselect_idx;
+  // logic [CVA6Cfg.XLEN-1:0] triggers[N_Triggers-1:0][2:0];   // 2D N trigger array with 3 registers: tdata1, tdata2, tdata3
+
+  logic [CVA6Cfg.XLEN-1:0] tselect_q, tselect_d;
+  logic tselect_valid_q, tselect_valid_d;
+  logic [$clog2(N_Triggers)-1:0] tselect_idx_q, tselect_idx_d;
+  logic [CVA6Cfg.XLEN-1:0] triggers_q[N_Triggers-1:0][2:0], triggers_d[N_Triggers-1:0][2:0];   // 2D N trigger array with 3 registers: tdata1, tdata2, tdata3
+
+  //icount32_tdata1_t icount32_tdata1;
+  //icount64_tdata1_t icount64_tdata1;
+
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
@@ -383,10 +398,36 @@ module csr_regfile
         if (CVA6Cfg.DebugEn) csr_rdata = dscratch1_q;
         else read_access_exception = 1'b1;
         // trigger module registers
-        riscv::CSR_TSELECT: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: read_access_exception = 1'b1;  // not implemented
+        riscv::CSR_TSELECT:
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = tselect_q;
+        end else begin
+          read_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA1:
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = triggers_q[tselect_idx_q][0]; // tdata1
+        end else begin
+          read_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA2:
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = triggers_q[tselect_idx_q][1]; // tdata2
+        end else begin
+          read_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA3:
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = triggers_q[tselect_idx_q][2]; // tdata3
+        end else begin
+          read_access_exception = 1'b1;
+        end
+        riscv::CSR_TINFO:
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = (tselect_valid_q) ? {{CVA6Cfg.XLEN-32{1'b0}}, 8'h1, 8'h0, 16'b0000_0000_0111_1000} : {{CVA6Cfg.XLEN-32{1'b0}}, 8'h1, 8'h0, 16'h1}; // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6
+        end else begin
+          read_access_exception = 1'b1;
+        end
         riscv::CSR_VSSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = vsstatus_extended;
         else read_access_exception = 1'b1;
@@ -1083,11 +1124,38 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
-        // trigger module CSRs
-        riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: update_access_exception = 1'b1;  // not implemented
+        // Trigger module CSRs
+        riscv::CSR_TSELECT:
+        if (CVA6Cfg.SDTRIG) begin
+            tselect_d = csr_wdata;
+            tselect_valid_d = (tselect_idx_q < N_Triggers);
+            tselect_idx_d = tselect_q[$clog2(N_Triggers)-1:0];
+        end else begin
+            update_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA1:
+        if (CVA6Cfg.SDTRIG) begin
+            triggers_d[tselect_idx_d][0] = csr_wdata;  // tdata1
+            //icount32_tdata1 = if (CVA6Cfg.XLEN == 32) icount32_tdata1_t'(triggers[tselect_idx][0]);
+            //icount64_tdata1 = if (CVA6Cfg.XLEN == 64) icount64_tdata1_t'(triggers[tselect_idx][0]);
+        end else begin
+            update_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA2:
+        if (CVA6Cfg.SDTRIG) begin
+            triggers_d[tselect_idx_d][1] = csr_wdata; // tdata2
+        end else begin
+            update_access_exception = 1'b1;
+        end
+        riscv::CSR_TDATA3:
+        if (CVA6Cfg.SDTRIG) begin
+            triggers_d[tselect_idx_d][2] = csr_wdata; // tdata3
+        end else begin
+            update_access_exception = 1'b1;
+        end
+        riscv::CSR_TINFO: begin
+            update_access_exception = 1'b1;
+        end
         // virtual supervisor registers
         riscv::CSR_VSSTATUS: begin
           if (CVA6Cfg.RVH) begin
@@ -2604,6 +2672,16 @@ module csr_regfile
         vsatp_q                  <= {CVA6Cfg.XLEN{1'b0}};
         en_ld_st_g_translation_q <= 1'b0;
       end
+      if (CVA6Cfg.SDTRIG) begin
+        tselect_q <= '0;
+        tselect_valid_q <= 1'b0;
+        tselect_idx_q <= '0;
+        for (int i = 0; i < N_Triggers; ++i) begin
+          for (int j = 0; j < 3; ++j) begin
+            triggers_q[i][j] <= '0;
+          end
+        end
+      end
       // timer and counters
       cycle_q                <= 64'b0;
       instret_q              <= 64'b0;
@@ -2686,6 +2764,12 @@ module csr_regfile
         vstval_q                 <= vstval_d;
         vsatp_q                  <= vsatp_d;
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
+      end
+      if (CVA6Cfg.SDTRIG) begin
+        tselect_q  <= tselect_d;
+        tselect_valid_q <= tselect_valid_d;
+        tselect_idx_q <= tselect_idx_d;
+        triggers_q <= triggers_d;
       end
       // timer and counters
       cycle_q                <= cycle_d;

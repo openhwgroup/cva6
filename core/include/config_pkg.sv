@@ -118,6 +118,8 @@ package config_pkg;
     logic [63:0]                 HaltAddress;
     // Address to jump when exception
     logic [63:0]                 ExceptionAddress;
+    // Trigger Module Sdtrig Extension
+    bit                          SDTRIG;
     // Tval Support Enable
     bit                          TvalEn;
     // MTVEC CSR supports only direct mode
@@ -344,6 +346,7 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
+    bit                          SDTRIG;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
 
