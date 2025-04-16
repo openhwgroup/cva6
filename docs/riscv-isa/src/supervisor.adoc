@@ -320,7 +320,7 @@ taken into M-mode. The `mtval2` register is then set to what would be otherwise
 written into the `mcause` register by the _unexpected trap_. The `mcause`
 register is set to 16, the double-trap exception code.
 
-An `SRET` instruction sets the `SDT` bit to 0.
+An SRET instruction sets the `SDT` bit to 0.
 
 [NOTE]
 ====
@@ -328,7 +328,7 @@ After a trap handler has saved the state, such as `scause`, `sepc`,
 and `stval`, needed for resuming from the trap and is reentrant, it
 should clear the `SDT` bit.
 
-Resetting the `SDT` by an `SRET` enables the trap handler to detect a double
+Resetting the `SDT` by an SRET enables the trap handler to detect a double
 trap that may occur during the tail phase, where it restores critical state
 to return from a trap.
 
@@ -343,7 +343,7 @@ the GPA is considered benign because, if required, it can still be obtained
 
 For a double trap that originates in VS-mode, M-mode should redirect the exception
 to HS-mode by copying the values of M-mode CSRs updated by the trap to HS-mode
-CSRs and should use an `MRET` to resume execution at the address in `stvec`.
+CSRs and should use an MRET to resume execution at the address in `stvec`.
 
 Supervisor Software Events (SSE), an extension to the SBI, provide a
 mechanism for supervisor software to register and service system events
@@ -923,7 +923,7 @@ set to 1, the Zicfilp extension is enabled in VU/U-mode. When the `LPE` field is
 apply to VU/U-mode:
 
 * The hart does not update the `ELP` state; it remains as `NO_LP_EXPECTED`.
-* The `LPAD` instruction operates as a no-op.
+* The LPAD instruction operates as a no-op.
 
 The Zicfiss extension adds the `SSE` field in `senvcfg`. When the `SSE` field is
 set to 1, the Zicfiss extension is activated in VU/U-mode. When the `SSE` field
