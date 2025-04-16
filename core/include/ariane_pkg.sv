@@ -608,13 +608,13 @@ package ariane_pkg;
   endfunction
 
   function automatic logic fd_changes_rd_state(input fu_op op);
-    unique case(op) inside
-      [FSD:FSB],  // stores
-      FCVT_F2I,   // conversion to int
-      FMV_F2X,    // move as-is to int
-      FCLASS:     // classification (writes output to integer register)
-        return 1'b0; // floating-point registers are only read
-      default: return 1'b1; // other ops - floating-point registers are written as well
+    unique case (op) inside
+      [FSD : FSB],  // stores
+      FCVT_F2I,  // conversion to int
+      FMV_F2X,  // move as-is to int
+      FCLASS:  // classification (writes output to integer register)
+      return 1'b0;  // floating-point registers are only read
+      default: return 1'b1;  // other ops - floating-point registers are written as well
     endcase
   endfunction
 
