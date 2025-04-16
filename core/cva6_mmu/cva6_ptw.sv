@@ -285,25 +285,25 @@ module cva6_ptw
     automatic logic [CVA6Cfg.PLEN-1:0] pptr;
     // default assignments
     // PTW memory interface
-    tag_valid_n               = 1'b0;
-    req_port_o.data_req       = 1'b0;
-    req_port_o.data_size      = 2'(CVA6Cfg.PtLevels);
-    req_port_o.data_we        = 1'b0;
-    ptw_error_o               = 1'b0;
-    ptw_error_at_g_st_o       = 1'b0;
-    ptw_err_at_g_int_st_o     = 1'b0;
-    ptw_access_exception_o    = 1'b0;
-    tlb_update_valid          = 1'b0;
-    is_instr_ptw_n            = is_instr_ptw_q;
-    ptw_lvl_n                 = ptw_lvl_q;
-    ptw_pptr_n                = ptw_pptr_q;
-    state_d                   = state_q;
-    ptw_stage_d               = ptw_stage_q;
-    global_mapping_n          = global_mapping_q;
+    tag_valid_n            = 1'b0;
+    req_port_o.data_req    = 1'b0;
+    req_port_o.data_size   = 2'(CVA6Cfg.PtLevels);
+    req_port_o.data_we     = 1'b0;
+    ptw_error_o            = 1'b0;
+    ptw_error_at_g_st_o    = 1'b0;
+    ptw_err_at_g_int_st_o  = 1'b0;
+    ptw_access_exception_o = 1'b0;
+    tlb_update_valid       = 1'b0;
+    is_instr_ptw_n         = is_instr_ptw_q;
+    ptw_lvl_n              = ptw_lvl_q;
+    ptw_pptr_n             = ptw_pptr_q;
+    state_d                = state_q;
+    ptw_stage_d            = ptw_stage_q;
+    global_mapping_n       = global_mapping_q;
     // input registers
-    tlb_update_asid_n         = tlb_update_asid_q;
-    vaddr_n                   = vaddr_q;
-    pptr                      = ptw_pptr_q;
+    tlb_update_asid_n      = tlb_update_asid_q;
+    vaddr_n                = vaddr_q;
+    pptr                   = ptw_pptr_q;
 
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;
