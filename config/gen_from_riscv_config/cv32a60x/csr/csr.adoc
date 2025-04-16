@@ -50,6 +50,8 @@ This allows to clearly represent read-write registers holding a single legal val
 |0x344| `<<_MIP,MIP>>`|MRW|The mip register is an MXLEN-bit read/write register containing information on pending interrupts.
 |0x3a0-0x3af| `<<_PMPCFG0-15,PMPCFG[0-15]>>`|MRW|PMP configuration register
 |0x3b0-0x3ef| `<<_PMPADDR0-63,PMPADDR[0-63]>>`|MRW|Physical memory protection address register
+|0x7c0| `<<_ICACHE,ICACHE>>`|MRW|the register controls the operation of the i-cache unit.
+|0x7c1| `<<_DCACHE,DCACHE>>`|MRW|the register controls the operation of the d-cache unit.
 |0xb00| `<<_MCYCLE,MCYCLE>>`|MRW|Counts the number of clock cycles executed from an arbitrary point in time.
 |0xb02| `<<_MINSTRET,MINSTRET>>`|MRW|Counts the number of instructions completed from an arbitrary point in time.
 |0xb03-0xb1f| `<<_MHPMCOUNTER3-31,MHPMCOUNTER[3-31]>>`|MRW|The mhpmcounter is a 64-bit counter. Returns lower 32 bits in RV32I mode.
@@ -306,6 +308,36 @@ Description:: Physical memory protection address register
 | Bits | Field Name | Reset Value | Type | Legal Values | Description
 
 | [31:0] | PMPADDR[I] | 0x00000000 | ROCST | 0x0 | Physical memory protection address register 
+|===
+
+[[_ICACHE]]
+===== ICACHE
+
+Address:: 0x7c0
+Reset Value:: 0x00000001
+Privilege:: MRW
+Description:: the register controls the operation of the i-cache unit.
+
+|===
+| Bits | Field Name | Reset Value | Type | Legal Values | Description
+
+| 0 | ICACHE | 0x1 | RW | 0x1 | bit for cache-enable of instruction cache 
+| [31:1] | RESERVED_1 | 0x0 | WPRI |  | _Reserved_ 
+|===
+
+[[_DCACHE]]
+===== DCACHE
+
+Address:: 0x7c1
+Reset Value:: 0x00000001
+Privilege:: MRW
+Description:: the register controls the operation of the d-cache unit.
+
+|===
+| Bits | Field Name | Reset Value | Type | Legal Values | Description
+
+| 0 | DCACHE | 0x1 | RW | 0x1 | bit for cache-enable of data cache 
+| [31:1] | RESERVED_1 | 0x0 | WPRI |  | _Reserved_ 
 |===
 
 [[_MCYCLE]]

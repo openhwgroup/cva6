@@ -13,6 +13,7 @@ spike_param_tree:
   core_configs:
     -
       isa: rv32imczicsr_zcb_zba_zbb_zbc_zbs_xcvxif
+      extensions: cv32a60x
       boot_addr: 2147483648
       marchid_override_mask: 0xFFFFFFFF
       marchid_override_value: 0x3
