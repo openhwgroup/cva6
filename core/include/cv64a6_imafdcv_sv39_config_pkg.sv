@@ -118,7 +118,6 @@ package cva6_config_pkg;
       SoftwareInterruptEn: bit'(1),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
-      Renaming: bit'(0),
       RASDepth: unsigned'(CVA6ConfigRASDepth),
       BTBEntries: unsigned'(CVA6ConfigBTBEntries),
       BPType: config_pkg::BHT,

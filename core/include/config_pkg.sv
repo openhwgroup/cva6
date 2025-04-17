@@ -216,8 +216,6 @@ package config_pkg;
     int unsigned                 NrLoadBufEntries;
     // Maximum number of outstanding stores
     int unsigned                 MaxOutstandingStores;
-    // Eliminate WAW hazards
-    bit                          Renaming;
     // Return address stack depth
     int unsigned                 RASDepth;
     // Branch target buffer entries
@@ -309,7 +307,6 @@ package config_pkg;
 
     logic [63:0] HaltAddress;
     logic [63:0] ExceptionAddress;
-    bit          Renaming;
     int unsigned RASDepth;
     int unsigned BTBEntries;
     bp_type_t    BPType;
