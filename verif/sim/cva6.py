@@ -358,6 +358,7 @@ def elf2bin(elf, binary, debug_cmd):
   cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
+
 def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
   """Use riscv gcc toolchain to compile the assembly program
 
@@ -967,6 +968,7 @@ def load_config(args, cwd):
     isa_extension_list.append("zifencei")
 
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
+
 
 def incorrect_version_exit(tool, tool_version, required_version):
   if tool == "Spike":

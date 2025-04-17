@@ -59,8 +59,6 @@ if [ ! -f "$PK_INSTALL_DIR/riscv-none-elf/bin/pk" ]; then
     echo "pk will be installed in '$PK_INSTALL_DIR'"
     echo "PK_REPO=$PK_REPO"
     echo "PK_BRANCH=$PK_BRANCH"
-#    echo "VERILATOR_HASH=$VERILATOR_HASH"
-#    echo "VERILATOR_PATCH='$VERILATOR_PATCH'"
     echo "NUM_JOBS=$NUM_JOBS"
     mkdir -p $PK_BUILD_DIR
     pushd $PK_BUILD_DIR
