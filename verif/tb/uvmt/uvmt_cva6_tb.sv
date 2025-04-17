@@ -41,6 +41,7 @@ module uvmt_cva6_tb;
    localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
    localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
    localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+   localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
 
    // RVFI PROBES
    localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
@@ -120,6 +121,7 @@ module uvmt_cva6_tb;
      .rvfi_probes_instr_t(rvfi_probes_instr_t    ),
      .rvfi_probes_csr_t ( rvfi_probes_csr_t      ),
      .rvfi_probes_t     ( rvfi_probes_t          ),
+     .rvfi_to_iti_t     ( rvfi_to_iti_t          ),
      //
      .AXI_USER_EN       (CVA6Cfg.AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)

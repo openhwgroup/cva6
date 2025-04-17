@@ -48,6 +48,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   parameter type rvfi_probes_instr_t = logic,
   parameter type rvfi_probes_csr_t = logic,
   parameter type rvfi_probes_t = logic,
+  parameter type rvfi_to_iti_t = logic,
   // CVXIF Types
   localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
   localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
@@ -88,6 +89,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   rvfi_probes_t rvfi_probes;
+  rvfi_to_iti_t rvfi_to_iti;
   rvfi_csr_t rvfi_csr;
   assign rvfi_o = rvfi_instr;
   assign rvfi_csr_o = rvfi_csr;
@@ -126,12 +128,14 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
       .rvfi_csr_t(rvfi_csr_t),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
       .rvfi_probes_csr_t(rvfi_probes_csr_t),
-      .rvfi_probes_t(rvfi_probes_t)
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
   ) i_cva6_rvfi (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),
       .rvfi_probes_i(rvfi_probes),
       .rvfi_instr_o(rvfi_instr),
+      .rvfi_to_iti_o   (rvfi_to_iti),
       .rvfi_csr_o(rvfi_csr)
   );
 

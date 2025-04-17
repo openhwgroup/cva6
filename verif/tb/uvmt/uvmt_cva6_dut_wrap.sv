@@ -22,6 +22,7 @@ module uvmt_cva6_dut_wrap # (
   parameter type rvfi_probes_instr_t = logic,
   parameter type rvfi_probes_csr_t = logic,
   parameter type rvfi_probes_t = logic,
+  parameter type rvfi_to_iti_t = logic,
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -52,6 +53,7 @@ module uvmt_cva6_dut_wrap # (
      .rvfi_probes_instr_t(rvfi_probes_instr_t),
      .rvfi_probes_csr_t ( rvfi_probes_csr_t ),
      .rvfi_probes_t     ( rvfi_probes_t     ),
+     .rvfi_to_iti_t     ( rvfi_to_iti_t     ),
      //
      .AXI_USER_EN       (AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)

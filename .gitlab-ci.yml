@@ -225,6 +225,20 @@ smoke-hwconfig:
     - when: manual
       allow_failure: true
 
+iti-test:
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "ITI test"
+    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instuction Trace Interface"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    DV_SIMULATORS: "vcs-testharness"
+  script:
+    - bash verif/regress/iti_test.sh
+    - diff .gitlab-ci/iti_reference.trace .gitlab-ci/iti.trace
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 spyglass:
   extends:
     - .synthesis_test
