@@ -65,7 +65,7 @@ module raw_checker
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
       .flush_i(1'b0),
-      .rr_i   ('1), // Highest index has highest prio.
+      .rr_i   ({$clog2(CVA6Cfg.NR_SB_ENTRIES){1'b1}}), // Highest index has highest prio.
       .req_i  (same_rd_as_rs_before),
       .gnt_o  (),
       .data_i ('0),
@@ -85,7 +85,7 @@ module raw_checker
       .clk_i  (clk_i),
       .rst_ni (rst_ni),
       .flush_i(1'b0),
-      .rr_i   ('1), // Highest index has highest prio.
+      .rr_i   ({$clog2(CVA6Cfg.NR_SB_ENTRIES){1'b1}}), // Highest index has highest prio.
       .req_i  (same_rd_as_rs_after),
       .gnt_o  (),
       .data_i ('0),
