@@ -11,7 +11,6 @@ fi
 
 TIMEOUT_WALLCLOCK="600"
 TIMEOUT_TICKS="2100000"
-#export TRACE_COMPACT=1
 export DV_SIMULATORS="veri-testharness-pk"
 export DV_TARGET="cv64a6_imafdc_sv39"
 export PK_ARCH="rv64gc_zba_zbb_zbs_zbc"
@@ -24,16 +23,14 @@ fi
 if [[ "$DV_SIMULATORS" == *"veri-testharness-pk"* ]]; then
 
   echo "[ riscv-pk ] veri-testharness-pk simulation detected. Installing RISC-V proxy kernel..."
-#  source ./verif/regress/install-pk.sh ${PK_ARCH} ${PK_MABI} 2>&1 | tee ./verif/sim/pk-install.log
   source ./verif/regress/install-pk.sh ${PK_ARCH} ${PK_MABI} > ./verif/sim/pk-install.log 2>&1
   echo "[ riscv-pk ] RISC-V proxy kernel installation logs at $(pwd)/verif/sim/pk-install.log"
-#  echo "PK_INSTALL_DIR is ${PK_INSTALL_DIR}"
+  echo "[ riscv-pk ] PK_INSTALL_DIR is ${PK_INSTALL_DIR}"
 fi
 
 source ./verif/sim/setup-env.sh
 cd ./verif/sim
 
-# CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
 CC_OPTS=""
 
 python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --iss_timeout=$TIMEOUT_WALLCLOCK \
