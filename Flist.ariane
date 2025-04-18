@@ -95,6 +95,7 @@ core/mmu_sv39x4/ptw_sv39x4.sv
 core/ariane_regfile_ff.sv
 core/re_name.sv
 core/scoreboard.sv
+core/raw_checker.sv
 core/store_buffer.sv
 core/amo_buffer.sv
 core/store_unit.sv
