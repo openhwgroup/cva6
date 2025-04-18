@@ -23,9 +23,9 @@ valid_cycles = {
     "dhrystone_single": 22256,
     "coremark_dual": 981777,
     "coremark_single": 1294524,
-    "dhrystone_cv32a65x": 28822,
+    "dhrystone_cv32a65x": 28823,
     "dhrystone_cv32a60x": 36629,
-}
+
 
 for arg in sys.argv[1:]:
     if "--dhrystone" in arg or "--coremark" in arg:
