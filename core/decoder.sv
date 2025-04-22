@@ -1808,6 +1808,9 @@ module decoder
         // set gva bit
         if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
         else instruction_o.ex.gva = 1'b0;
+        //end else if (CVA6Cfg.SDTRIG && breakpoint_from_tigger_module) begin
+        //instruction_o.ex.valid = 1'b1;
+        //instruction_o.ex.cause = riscv::BREAKPOINT;
       end
       // -----------------
       // Interrupt Control

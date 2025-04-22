@@ -281,18 +281,20 @@ module csr_regfile
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
 
   // Trigger Module Helpers
-  // logic [CVA6Cfg.XLEN-1:0] tselect;
-  // logic tselect_valid;
-  // logic [$clog2(N_Triggers)-1:0] tselect_idx;
-  // logic [CVA6Cfg.XLEN-1:0] triggers[N_Triggers-1:0][2:0];   // 2D N trigger array with 3 registers: tdata1, tdata2, tdata3
-
-  logic [CVA6Cfg.XLEN-1:0] tselect_q, tselect_d;
-  logic tselect_valid_q, tselect_valid_d;
-  logic [$clog2(N_Triggers)-1:0] tselect_idx_q, tselect_idx_d;
-  logic [CVA6Cfg.XLEN-1:0] triggers_q[N_Triggers-1:0][2:0], triggers_d[N_Triggers-1:0][2:0];   // 2D N trigger array with 3 registers: tdata1, tdata2, tdata3
-
-  //icount32_tdata1_t icount32_tdata1;
+  logic [N_Triggers-1:0] tselect_q, tselect_d;
+  logic [3:0] trigger_type_q[N_Triggers], trigger_type_d[N_Triggers];
+  logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
+  //logic [CVA6Cfg.XLEN-1:0] mcontext_d, mcontext_q;
+  //logic [CVA6Cfg.XLEN-1:0] hcontext_d, hcontext_q;
+  //logic breakpoint_from_tigger_module, priv_match;
+  // icount trigger
+  icount32_tdata1_t icount32_tdata1_q[N_Triggers], icount32_tdata1_d[N_Triggers];
+  textra32_tdata3_t textra32_tdata3_q[N_Triggers], textra32_tdata3_d[N_Triggers];
+  textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
+  logic [CVA6Cfg.XLEN-1:0] tdata2_q[N_Triggers], tdata2_d[N_Triggers];
   //icount64_tdata1_t icount64_tdata1;
+  //logic [N_Triggers-1:0][13:0] icount_q, icount_d; // because tdata1.count is 14 bits
+
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -399,35 +401,52 @@ module csr_regfile
         else read_access_exception = 1'b1;
         // trigger module registers
         riscv::CSR_TSELECT:
-          if (CVA6Cfg.SDTRIG) begin
-            csr_rdata = tselect_q;
+        if (CVA6Cfg.SDTRIG) begin
+          csr_rdata = {{(CVA6Cfg.XLEN - N_Triggers) {1'b0}}, tselect_q};
         end else begin
           read_access_exception = 1'b1;
         end
         riscv::CSR_TDATA1:
-          if (CVA6Cfg.SDTRIG) begin
-            csr_rdata = triggers_q[tselect_idx_q][0]; // tdata1
+        if (CVA6Cfg.SDTRIG) begin
+          if (trigger_type_q[tselect_q] == 4'd3)
+            csr_rdata = icount32_tdata1_q[tselect_q]; // tdata1 based on type and indexed by tselect
         end else begin
           read_access_exception = 1'b1;
         end
         riscv::CSR_TDATA2:
-          if (CVA6Cfg.SDTRIG) begin
-            csr_rdata = triggers_q[tselect_idx_q][1]; // tdata2
+        if (CVA6Cfg.SDTRIG) begin
+          csr_rdata = tdata2_q[tselect_q];  // tdata2
         end else begin
           read_access_exception = 1'b1;
         end
         riscv::CSR_TDATA3:
-          if (CVA6Cfg.SDTRIG) begin
-            csr_rdata = triggers_q[tselect_idx_q][2]; // tdata3
+        if (CVA6Cfg.SDTRIG) begin
+          csr_rdata = (CVA6Cfg.XLEN == 32) ? textra32_tdata3_q[tselect_q] : textra64_tdata3_q[tselect_q]; // tdata3 is textra32 or textra64
         end else begin
           read_access_exception = 1'b1;
         end
         riscv::CSR_TINFO:
-          if (CVA6Cfg.SDTRIG) begin
-            csr_rdata = (tselect_valid_q) ? {{CVA6Cfg.XLEN-32{1'b0}}, 8'h1, 8'h0, 16'b0000_0000_0111_1000} : {{CVA6Cfg.XLEN-32{1'b0}}, 8'h1, 8'h0, 16'h1}; // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6
+        if (CVA6Cfg.SDTRIG) begin
+          csr_rdata = {
+            {CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000
+          };  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
         end else begin
           read_access_exception = 1'b1;
         end
+        riscv::CSR_SCONTEXT:
+        if (CVA6Cfg.SDTRIG) begin
+          csr_rdata = scontext_q;
+        end else begin
+          read_access_exception = 1'b1;
+        end
+        // riscv::CSR_MCONTEXT:
+        //   if (CVA6Cfg.SDTRIG) begin
+        //   read_access_exception = 1'b1;
+        // end
+        // riscv::CSR_HCONTEXT:
+        //   if (CVA6Cfg.SDTRIG) begin
+        //   read_access_exception = 1'b1;
+        // end
         riscv::CSR_VSSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = vsstatus_extended;
         else read_access_exception = 1'b1;
@@ -1127,35 +1146,69 @@ module csr_regfile
         // Trigger module CSRs
         riscv::CSR_TSELECT:
         if (CVA6Cfg.SDTRIG) begin
-            tselect_d = csr_wdata;
-            tselect_valid_d = (tselect_idx_q < N_Triggers);
-            tselect_idx_d = tselect_q[$clog2(N_Triggers)-1:0];
+          tselect_d = (csr_wdata < N_Triggers) ? csr_wdata[$clog2(N_Triggers)-1:0] : tselect_q;
         end else begin
-            update_access_exception = 1'b1;
+          update_access_exception = 1'b1;
         end
         riscv::CSR_TDATA1:
         if (CVA6Cfg.SDTRIG) begin
-            triggers_d[tselect_idx_d][0] = csr_wdata;  // tdata1
-            //icount32_tdata1 = if (CVA6Cfg.XLEN == 32) icount32_tdata1_t'(triggers[tselect_idx][0]);
-            //icount64_tdata1 = if (CVA6Cfg.XLEN == 64) icount64_tdata1_t'(triggers[tselect_idx][0]);
+          if (csr_wdata[31:28] == 4'd3 && CVA6Cfg.XLEN == 32) begin
+            trigger_type_d[tselect_q] = csr_wdata[31:28];
+            icount32_tdata1_d[tselect_q].t_type  = (csr_wdata[31:28] == 4'd3 || csr_wdata[31:28] == 4'd4 || csr_wdata[31:28] == 4'd5 || csr_wdata[31:28] == 4'd6 || csr_wdata[31:28] == 4'd15) ? csr_wdata[31:28] : trigger_type_q[tselect_q];
+            icount32_tdata1_d[tselect_q].dmode = csr_wdata[27];
+            icount32_tdata1_d[tselect_q].vs = 0;
+            icount32_tdata1_d[tselect_q].vu = 0;
+            icount32_tdata1_d[tselect_q].hit = csr_wdata[24];
+            icount32_tdata1_d[tselect_q].count = csr_wdata[23:10];
+            icount32_tdata1_d[tselect_q].m = csr_wdata[9];
+            icount32_tdata1_d[tselect_q].pending = csr_wdata[8];
+            icount32_tdata1_d[tselect_q].s = csr_wdata[7];
+            icount32_tdata1_d[tselect_q].u = csr_wdata[6];
+            icount32_tdata1_d[tselect_q].action = csr_wdata[5:0];
+          end
         end else begin
-            update_access_exception = 1'b1;
+          update_access_exception = 1'b1;
         end
         riscv::CSR_TDATA2:
         if (CVA6Cfg.SDTRIG) begin
-            triggers_d[tselect_idx_d][1] = csr_wdata; // tdata2
+          tdata2_d[tselect_q] = csr_wdata;
         end else begin
-            update_access_exception = 1'b1;
+          update_access_exception = 1'b1;
         end
         riscv::CSR_TDATA3:
         if (CVA6Cfg.SDTRIG) begin
-            triggers_d[tselect_idx_d][2] = csr_wdata; // tdata3
+          if (CVA6Cfg.XLEN == 32) begin  // textra32
+            textra32_tdata3_d[tselect_q].mhvalue   = csr_wdata[31:26];
+            textra32_tdata3_d[tselect_q].mhselect  = csr_wdata[25:23];
+            textra32_tdata3_d[tselect_q].zeroes    = '0;
+            textra32_tdata3_d[tselect_q].sbytemask = csr_wdata[19:18];
+            textra32_tdata3_d[tselect_q].svalue    = csr_wdata[17:2];
+            textra32_tdata3_d[tselect_q].sselect   = csr_wdata[1:0];
+          end
+          if (CVA6Cfg.XLEN == 64) begin  // textra64
+            textra64_tdata3_d[tselect_q].mhvalue    = csr_wdata[63:51];
+            textra64_tdata3_d[tselect_q].mhselect   = csr_wdata[50:48];
+            textra64_tdata3_d[tselect_q].zeroes     = '0;
+            textra64_tdata3_d[tselect_q].sbytemask  = csr_wdata[39:36];
+            textra64_tdata3_d[tselect_q].zero_field = '0;
+            textra64_tdata3_d[tselect_q].svalue     = csr_wdata[33:2];
+            textra64_tdata3_d[tselect_q].sselect    = csr_wdata[1:0];
+          end
         end else begin
-            update_access_exception = 1'b1;
+          update_access_exception = 1'b1;
         end
-        riscv::CSR_TINFO: begin
-            update_access_exception = 1'b1;
+        riscv::CSR_SCONTEXT:
+        if (CVA6Cfg.SDTRIG) begin
+          scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
+        end else begin
+          update_access_exception = 1'b1;
         end
+        // riscv::CSR_MCONTEXT: begin
+        //     update_access_exception = 1'b1;
+        // end
+        // riscv::CSR_HCONTEXT: begin
+        //     update_access_exception = 1'b1;
+        // end
         // virtual supervisor registers
         riscv::CSR_VSSTATUS: begin
           if (CVA6Cfg.RVH) begin
@@ -2242,6 +2295,32 @@ module csr_regfile
         debug_mode_d = 1'b0;
       end
     end
+
+    // if (CVA6Cfg.SDTRIG) begin
+    //   if (CVA6Cfg.XLEN == 32 && tdata1_32.type == 4'd3) begin
+    //         icount32_tdata1 = icount32_tdata1_t'(triggers[tselect_idx][0]);
+    //         case(priv_lvl_o) // check and match with tdata1 fields
+    //           riscv::PRIV_LVL_M : if (icount32_tdata1.m) priv_match = 1'b1;
+    //           riscv::PRIV_LVL_S : if (icount32_tdata1.s) priv_match = 1'b1;
+    //           riscv::PRIV_LVL_U : if (icount32_tdata1.u) priv_match = 1'b1;
+    //           riscv::PRIV_LVL_HS: if (v_o && icount32_tdata1.vs) priv_match = 1'b1;
+    //           default : ;
+    //         endcase
+    //         if (commit_ack_i) begin
+    //           if (icount32_tdata1.count != icount_d) begin
+    //             icount_d++
+    //           end
+    //         if (icount32_tdata1.count == icount_d && priv_match) begin
+    //           icount32_tdata1.pending = 1'b1;
+    //           //icount32_tdata1.hit = 1'b1;
+    //           case (icount32_tdata1.action) 
+    //             6'd0 : breakpoint_from_tigger_module = 1'b1;
+    //             6'd1 : (debug_req_i && CVA6Cfg.DebugEn) debug_mode_d = 1'b1 //into debug mode;
+    //       endcase
+    //     end
+    //   end
+    //   end
+    //   end
   end
 
   // ---------------------------
@@ -2674,13 +2753,19 @@ module csr_regfile
       end
       if (CVA6Cfg.SDTRIG) begin
         tselect_q <= '0;
-        tselect_valid_q <= 1'b0;
-        tselect_idx_q <= '0;
         for (int i = 0; i < N_Triggers; ++i) begin
-          for (int j = 0; j < 3; ++j) begin
-            triggers_q[i][j] <= '0;
-          end
+          trigger_type_q[i]          <= 0;
+          icount32_tdata1_q[i]       <= '0;
+          icount32_tdata1_q[i].count <= 1;
+          textra32_tdata3_q[i]       <= '0;
+          textra64_tdata3_q[i]       <= '0;
+          tdata2_q[i]                <= '0;
         end
+        // mcontext_q <= '0;
+        // hcontext_q <= '0;
+        scontext_q <= '0;
+        // breakpoint_from_tigger_module <= 0;
+        // priv_match <= 0;
       end
       // timer and counters
       cycle_q                <= 64'b0;
@@ -2766,10 +2851,15 @@ module csr_regfile
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
       end
       if (CVA6Cfg.SDTRIG) begin
-        tselect_q  <= tselect_d;
-        tselect_valid_q <= tselect_valid_d;
-        tselect_idx_q <= tselect_idx_d;
-        triggers_q <= triggers_d;
+        trigger_type_q    <= trigger_type_d;
+        tselect_q         <= tselect_d;
+        tdata2_q          <= tdata2_d;
+        icount32_tdata1_q <= icount32_tdata1_d;
+        textra32_tdata3_q <= textra32_tdata3_d;
+        textra64_tdata3_q <= textra64_tdata3_d;
+        // mcontext_q <= mcontext_d;
+        // hcontext_q <= hcontext_d;
+        scontext_q        <= scontext_d;
       end
       // timer and counters
       cycle_q                <= cycle_d;

@@ -866,19 +866,38 @@ package ariane_pkg;
   endfunction : avoid_neg
 
   // Triggers
-  // typedef struct packed {
-  //   logic [31:28]  type;        // type 3 for icount
-  //   logic dmode;
-  //   logic vs;
-  //   logic vu;
-  //   logic hit;
-  //   logic [23:10] count;
-  //   logic m;
-  //   logic pending;
-  //   logic s;
-  //   logic u;
-  //   logic [5:0] action;
-  // } icount32_tdata1_t;
+  typedef struct packed {
+    logic [31:28] t_type;   // type 3 for icount
+    logic         dmode;
+    logic         vs;
+    logic         vu;
+    logic         hit;
+    logic [23:10] count;
+    logic         m;
+    logic         pending;
+    logic         s;
+    logic         u;
+    logic [5:0]   action;
+  } icount32_tdata1_t;
+
+  typedef struct packed {
+    logic [31:26] mhvalue;
+    logic [25:23] mhselect;
+    logic [22:20] zeroes;
+    logic [19:18] sbytemask;
+    logic [17:2]  svalue;
+    logic [1:0]   sselect;
+  } textra32_tdata3_t;
+
+  typedef struct packed {
+    logic [63:51] mhvalue;
+    logic [50:48] mhselect;
+    logic [47:40] zeroes;
+    logic [39:36] sbytemask;
+    logic [35:34] zero_field;
+    logic [33:2]  svalue;
+    logic [1:0]   sselect;
+  } textra64_tdata3_t;
 
   // typedef struct packed {
   //   logic [63:60] type;        // type 3 for icount
