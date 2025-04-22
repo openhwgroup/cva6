@@ -609,7 +609,7 @@ package ariane_pkg;
 
   function automatic logic fd_changes_rd_state(input fu_op op);
     unique case (op) inside
-      [FSD : FSB],  // stores
+      FSD, FSW, FSH, FSB,  // stores
       FCVT_F2I,  // conversion to int
       FMV_F2X,  // move as-is to int
       FCLASS:  // classification (writes output to integer register)
