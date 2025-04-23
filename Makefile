@@ -39,6 +39,7 @@ torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 # board name for bitstream generation. Currently supported: zcu104, kc705, genesys2, nexys_video
+# pynq_z2
 BOARD          ?= genesys2
 ALTERA_BOARD		 ?= DK-DEV-AGF014E3ES
 ALTERA_FAMILY	 ?= "AGILEX"
@@ -93,6 +94,10 @@ else ifeq ($(BOARD), zcu104)
 	XILINX_PART              := xczu7ev-ffvc1156-2-e
 	XILINX_BOARD             := xilinx.com:zcu104:part0:1.1
 	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), pynq_z2)
+	XILINX_PART              := xc7z020clg400-1
+	XILINX_BOARD             := tul.com.tw:pynq-z2:part0:1.0
+	CLK_PERIOD_NS            := 40
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif

@@ -35,8 +35,10 @@ if {$::env(BOARD) eq "genesys2"} {
 } elseif {$::env(BOARD) eq "nexys_video"} {
     write_cfgmem -format mcs -interface SPIx4 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
 } elseif {$::env(BOARD) eq "zcu104"} {
-    # SPI x4 is not supported on ZCU104
+    # SPI x4 is not supported on Zynq
     # https://adaptivesupport.amd.com/s/question/0D52E00006hpZ06SAE/bitstreamconfigspibuswidth-is-not-available?language=en_US
+    write_cfgmem -format mcs -interface SPIx1 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
+} elseif {$::env(BOARD) eq "pynq_z2"} {
     write_cfgmem -format mcs -interface SPIx1 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
 } else {
       exit 1

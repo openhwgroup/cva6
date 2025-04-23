@@ -13,6 +13,7 @@ ips := xlnx_axi_quad_spi.xci                   \
        xlnx_axi_clock_converter.xci            \
        xlnx_axi_dwidth_converter_dm_master.xci \
        xlnx_axi_dwidth_converter_dm_slave.xci
+bd_boards := zcu104 pynq_z2
 
 ips := $(addprefix $(work-dir)/, $(ips))
 ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)))), $(ips))
@@ -23,7 +24,7 @@ all: $(mcs)
 $(mcs): $(bit)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
-ifeq ($(BOARD), zcu104)
+ifneq ($(filter $(BOARD),$(bd_boards)),)
 .SECONDARY: $(bit)
 $(bit): ../../$(ADD_SRC)
 	mkdir -p $(work-dir)
