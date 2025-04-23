@@ -113,6 +113,7 @@ sources:
       - core/ariane_regfile_ff.sv
       - core/ariane_regfile_fpga.sv
       - core/scoreboard.sv
+      - core/raw_checker.sv
       - core/store_buffer.sv
       - core/amo_buffer.sv
       - core/store_unit.sv
