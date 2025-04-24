@@ -4,6 +4,9 @@ CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V
 
 It has a configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
+A performance model of CVA6 is available in the `perf-model/` folder of this repository.
+It can be used to investigate performance-related micro-architecture changes.
+
 <img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
 
