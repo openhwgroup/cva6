@@ -175,10 +175,9 @@ module cva6_iti #(
       if (itt_out[i].valid) begin
         $fwrite(
             f,
-            "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h, time =%d  \n",
+            "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h \n",
             i, itt_out[i].valid, itt_out[i].iretire, itt_out[i].ilastsize, itt_out[i].itype,
-            itt_out[i].cause, itt_out[i].tval, itt_out[i].priv, itt_out[i].iaddr,
-            itt_out[i].cycles);
+            itt_out[i].cause, itt_out[i].tval, itt_out[i].priv, itt_out[i].iaddr);
       end
     end
     //pragma translate_on
