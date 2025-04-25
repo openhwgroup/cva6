@@ -53,43 +53,32 @@ import "DPI-C" context function void read_section_sv(
 );
 `endif
 
-module cva6_tb_wrapper
-  import uvmt_cva6_pkg::*;
-#(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type rvfi_instr_t = logic,
-    parameter type rvfi_csr_elmt_t = logic,
-    parameter type rvfi_csr_t = logic,
-    parameter type rvfi_probes_instr_t = logic,
-    parameter type rvfi_probes_csr_t = logic,
-    parameter type rvfi_probes_t = logic,
-
-    // CVXIF Types
-    localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
-    localparam type writeregflags_t = `WRITEREGFLAGS_T(CVA6Cfg),
-    localparam type id_t = `ID_T(CVA6Cfg),
-    localparam type hartid_t = `HARTID_T(CVA6Cfg),
-    localparam type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
-    localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
-    localparam type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
-    localparam type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
-    localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
-    localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
-    localparam type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
-    localparam type cvxif_resp_t =
-    `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_store, CVA6Cfg.ObiStorebusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_load, CVA6Cfg.ObiLoadbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_amo, CVA6Cfg.ObiAmobusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg),
-    //
-
-    parameter int unsigned AXI_USER_EN = 0,
-    parameter int unsigned NUM_WORDS   = 2 ** 25
+module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_elmt_t = logic,
+  parameter type rvfi_csr_t = logic,
+  parameter type rvfi_probes_instr_t = logic,
+  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_t = logic,
+  parameter type rvfi_to_iti_t = logic,
+  // CVXIF Types
+  localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
+  localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
+  localparam type id_t                = `ID_T(CVA6Cfg),
+  localparam type hartid_t            = `HARTID_T(CVA6Cfg),
+  localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
+  localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
+  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+  localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
+  localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
+  localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
+  localparam type x_result_t          = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
+  localparam type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+  localparam type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
+  //
+  parameter int unsigned AXI_USER_EN       = 0,
+  parameter int unsigned NUM_WORDS         = 2**25
 ) (
     input  logic                                                clk_i,
     input  logic                                                rst_ni,
@@ -149,6 +138,7 @@ module cva6_tb_wrapper
 
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   rvfi_probes_t rvfi_probes;
+  rvfi_to_iti_t rvfi_to_iti;
   rvfi_csr_t rvfi_csr;
   assign rvfi_o = rvfi_instr;
   assign rvfi_csr_o = rvfi_csr;
@@ -494,13 +484,17 @@ module cva6_tb_wrapper
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
       .rvfi_csr_t(rvfi_csr_t),
-      .rvfi_probes_t(rvfi_probes_t)
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
   ) i_cva6_rvfi (
       .clk_i        (clk_i),
       .rst_ni       (rst_ni),
       .rvfi_probes_i(rvfi_probes),
-      .rvfi_instr_o (rvfi_instr),
-      .rvfi_csr_o   (rvfi_csr)
+      .rvfi_instr_o(rvfi_instr),
+      .rvfi_to_iti_o   (rvfi_to_iti),
+      .rvfi_csr_o(rvfi_csr)
   );
 
   rvfi_tracer #(
