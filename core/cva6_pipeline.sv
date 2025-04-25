@@ -115,7 +115,16 @@ module cva6_pipeline
     localparam type obi_load_r_chan_t =
     `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiLoadbusCfg, obi_load_r_optional_t),
     localparam type obi_load_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_load_r_chan_t),
-
+    /*
+     //OBI Load Types
+    localparam type obi_zcmt_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiZcmtbusCfg),
+    localparam type obi_zcmt_a_chan_t =
+    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiZcmtbusCfg, obi_zcmt_a_optional_t),
+    localparam type obi_zcmt_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_zcmt_a_chan_t),
+    localparam type obi_zcmt_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiZcmtbusCfg),
+    localparam type obi_zcmt_r_chan_t =
+    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiZcmtbusCfg, obi_zcmt_r_optional_t),
+    localparam type obi_zcmt_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_zcmt_r_chan_t),*/
     //FIXME temp
     localparam type obi_mmu_ptw_req_t = dbus_req_t,
     localparam type obi_mmu_ptw_rsp_t = dbus_rsp_t,

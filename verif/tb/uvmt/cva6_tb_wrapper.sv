@@ -90,7 +90,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_load, CVA6Cfg.ObiLoadbusCfg),
   `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_amo, CVA6Cfg.ObiAmobusCfg),
   // `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg),
-  // `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg),
   //
   parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -110,7 +110,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   uvma_obi_memory_if                   obi_amo_slave,
   uvma_obi_memory_if                   obi_load_slave,
   //uvma_obi_memory_if                   obi_mmu_ptw_slave,
-  //uvma_obi_memory_if                   obi_zcmt_slave,
+  uvma_obi_memory_if                   obi_zcmt_slave,
   uvmt_axi_switch_intf                 axi_switch_vif,
   uvmt_default_inputs_intf             default_inputs_vif
 );
@@ -139,8 +139,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   obi_amo_rsp_t    obi_amo_rsp;
   // obi_mmu_ptw_req_t    obi_mmu_ptw_req;
   // obi_mmu_ptw_rsp_t    obi_mmu_ptw_rsp;
-  // obi_zcmt_req_t   obi_zcmt_req;
-  // obi_zcmt_rsp_t   obi_zcmt_rsp;
+  obi_zcmt_req_t   obi_zcmt_req;
+  obi_zcmt_rsp_t   obi_zcmt_rsp;
   fetch_req_t      fetch_req;
   fetch_rsp_t      fetch_rsp;
   load_req_t       load_req;
@@ -370,31 +370,31 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
          //assign obi_mmu_ptw_slave.rvalidpar  = i_cva6.obi_mmu_ptw_rsp.rvalidpar;
          //assign obi_mmu_ptw_slave.rchk       = i_cva6.obi_mmu_ptw_rsp.r.r_optional.rchk;
 
-         //assign obi_zcmt_slave.req        = i_cva6.obi_zcmt_req.req;
-         //assign obi_zcmt_slave.addr       = i_cva6.obi_zcmt_req.a.addr;
-         //assign obi_zcmt_slave.we         = i_cva6.obi_zcmt_req.a.we;
-         //assign obi_zcmt_slave.be         = i_cva6.obi_zcmt_req.a.be;
-         //assign obi_zcmt_slave.wdata      = i_cva6.obi_zcmt_req.a.wdata;
-         //assign obi_zcmt_slave.auser      = i_cva6.obi_zcmt_req.a.a_optional.auser;
-         //assign obi_zcmt_slave.wuser      = i_cva6.obi_zcmt_req.a.a_optional.wuser;
-         //assign obi_zcmt_slave.aid        = i_cva6.obi_zcmt_req.a.aid;
-         //assign obi_zcmt_slave.atop       = i_cva6.obi_zcmt_req.a.a_optional.atop;
-         //assign obi_zcmt_slave.memtype    = i_cva6.obi_zcmt_req.a.a_optional.memtype;
-         //assign obi_zcmt_slave.prot       = i_cva6.obi_zcmt_req.a.a_optional.prot;
-         //assign obi_zcmt_slave.reqpar     = i_cva6.obi_zcmt_req.reqpar;
-         //assign obi_zcmt_slave.achk       = i_cva6.obi_zcmt_req.a.a_optional.achk;
-         //assign obi_zcmt_slave.rready     = i_cva6.obi_zcmt_req.rready;
-         //assign obi_zcmt_slave.rreadypar  = i_cva6.obi_zcmt_req.rreadypar;
-         //assign obi_zcmt_slave.gnt        = i_cva6.obi_zcmt_rsp.gnt;
-         //assign obi_zcmt_slave.gntpar     = i_cva6.obi_zcmt_rsp.gntpar;
-         //assign obi_zcmt_slave.rvalid     = i_cva6.obi_zcmt_rsp.rvalid;
-         //assign obi_zcmt_slave.rdata      = i_cva6.obi_zcmt_rsp.r.rdata;
-         //assign obi_zcmt_slave.err        = i_cva6.obi_zcmt_rsp.r.err;
-         //assign obi_zcmt_slave.ruser      = i_cva6.obi_zcmt_rsp.r.r_optional.ruser;
-         //assign obi_zcmt_slave.rid        = i_cva6.obi_zcmt_rsp.r.rid;
-         //assign obi_zcmt_slave.exokay     = i_cva6.obi_zcmt_rsp.r.r_optional.exokay;
-         //assign obi_zcmt_slave.rvalidpar  = i_cva6.obi_zcmt_rsp.rvalidpar;
-         //assign obi_zcmt_slave.rchk       = i_cva6.obi_zcmt_rsp.r.r_optional.rchk;
+         assign obi_zcmt_slave.req        = i_cva6.obi_zcmt_req.req;
+         assign obi_zcmt_slave.addr       = i_cva6.obi_zcmt_req.a.addr;
+         assign obi_zcmt_slave.we         = i_cva6.obi_zcmt_req.a.we;
+         assign obi_zcmt_slave.be         = i_cva6.obi_zcmt_req.a.be;
+         assign obi_zcmt_slave.wdata      = i_cva6.obi_zcmt_req.a.wdata;
+         assign obi_zcmt_slave.auser      = i_cva6.obi_zcmt_req.a.a_optional.auser;
+         assign obi_zcmt_slave.wuser      = i_cva6.obi_zcmt_req.a.a_optional.wuser;
+         assign obi_zcmt_slave.aid        = i_cva6.obi_zcmt_req.a.aid;
+         assign obi_zcmt_slave.atop       = i_cva6.obi_zcmt_req.a.a_optional.atop;
+         assign obi_zcmt_slave.memtype    = i_cva6.obi_zcmt_req.a.a_optional.memtype;
+         assign obi_zcmt_slave.prot       = i_cva6.obi_zcmt_req.a.a_optional.prot;
+         assign obi_zcmt_slave.reqpar     = i_cva6.obi_zcmt_req.reqpar;
+         assign obi_zcmt_slave.achk       = i_cva6.obi_zcmt_req.a.a_optional.achk;
+         assign obi_zcmt_slave.rready     = i_cva6.obi_zcmt_req.rready;
+         assign obi_zcmt_slave.rreadypar  = i_cva6.obi_zcmt_req.rreadypar;
+         assign obi_zcmt_slave.gnt        = i_cva6.obi_zcmt_rsp.gnt;
+         assign obi_zcmt_slave.gntpar     = i_cva6.obi_zcmt_rsp.gntpar;
+         assign obi_zcmt_slave.rvalid     = i_cva6.obi_zcmt_rsp.rvalid;
+         assign obi_zcmt_slave.rdata      = i_cva6.obi_zcmt_rsp.r.rdata;
+         assign obi_zcmt_slave.err        = i_cva6.obi_zcmt_rsp.r.err;
+         assign obi_zcmt_slave.ruser      = i_cva6.obi_zcmt_rsp.r.r_optional.ruser;
+         assign obi_zcmt_slave.rid        = i_cva6.obi_zcmt_rsp.r.rid;
+         assign obi_zcmt_slave.exokay     = i_cva6.obi_zcmt_rsp.r.r_optional.exokay;
+         assign obi_zcmt_slave.rvalidpar  = i_cva6.obi_zcmt_rsp.rvalidpar;
+         assign obi_zcmt_slave.rchk       = i_cva6.obi_zcmt_rsp.r.r_optional.rchk;
      end
 
   end else begin : cva6_only_pipeline
@@ -449,8 +449,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
        .obi_load_rsp_i       ( obi_load_rsp                 ),
        .obi_mmu_ptw_req_o    ( /* unsupported */            ),
        .obi_mmu_ptw_rsp_i    ( '0                           ),
-       .obi_zcmt_req_o       ( /* unsupported */            ),
-       .obi_zcmt_rsp_i       ( '0                           ),
+       .obi_zcmt_req_o       ( obi_zcmt_req                 ),
+       .obi_zcmt_rsp_i       ( obi_zcmt_rsp                 ),
 
        .dcache_wbuffer_empty_i ( wbuffer_empty              ),
        .dcache_wbuffer_not_ni_i( wbuffer_not_ni             )
@@ -543,6 +543,33 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
          assign obi_amo_rsp.r.r_optional.exokay    = obi_amo_slave.exokay;
          assign obi_amo_rsp.rvalidpar              = obi_amo_slave.rvalidpar;
          assign obi_amo_rsp.r.r_optional.rchk      = obi_amo_slave.rchk;
+      end
+      if (CVA6Cfg.RVZCMT) begin
+         assign obi_zcmt_slave.req                  = obi_zcmt_req.req;
+         assign obi_zcmt_slave.addr                 = obi_zcmt_req.a.addr;
+         assign obi_zcmt_slave.we                   = obi_zcmt_req.a.we;
+         assign obi_zcmt_slave.be                   = obi_zcmt_req.a.be;
+         assign obi_zcmt_slave.wdata                = obi_zcmt_req.a.wdata;
+         assign obi_zcmt_slave.auser                = obi_zcmt_req.a.a_optional.auser;
+         assign obi_zcmt_slave.wuser                = obi_zcmt_req.a.a_optional.wuser;
+         assign obi_zcmt_slave.aid                  = obi_zcmt_req.a.aid;
+         assign obi_zcmt_slave.atop                 = obi_zcmt_req.a.a_optional.atop;
+         assign obi_zcmt_slave.memtype              = obi_zcmt_req.a.a_optional.memtype;
+         assign obi_zcmt_slave.prot                 = obi_zcmt_req.a.a_optional.prot;
+         assign obi_zcmt_slave.reqpar               = obi_zcmt_req.reqpar;
+         assign obi_zcmt_slave.achk                 = obi_zcmt_req.a.a_optional.achk;
+         assign obi_zcmt_slave.rready               = obi_zcmt_req.rready;
+         assign obi_zcmt_slave.rreadypar            = obi_zcmt_req.rreadypar;
+         assign obi_zcmt_rsp.gnt                    = obi_zcmt_slave.gnt;
+         assign obi_zcmt_rsp.gntpar                 = obi_zcmt_slave.gntpar;
+         assign obi_zcmt_rsp.rvalid                 = obi_zcmt_slave.rvalid;
+         assign obi_zcmt_rsp.r.rdata                = obi_zcmt_slave.rdata;
+         assign obi_zcmt_rsp.r.err                  = obi_zcmt_slave.err;
+         assign obi_zcmt_rsp.r.r_optional.ruser     = obi_zcmt_slave.ruser;
+         assign obi_zcmt_rsp.r.rid                  = obi_zcmt_slave.rid;
+         assign obi_zcmt_rsp.r.r_optional.exokay    = obi_zcmt_slave.exokay;
+         assign obi_zcmt_rsp.rvalidpar              = obi_zcmt_slave.rvalidpar;
+         assign obi_zcmt_rsp.r.r_optional.rchk      = obi_zcmt_slave.rchk;
       end
 
       assign obi_load_slave.req                = obi_load_req.req;

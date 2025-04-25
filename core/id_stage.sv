@@ -220,8 +220,8 @@ module id_stage #(
           .is_compressed_o(is_compressed_zcmt),
           .fetch_stall_o  (stall_macro_deco_zcmt),
           .jvt_i          (jvt_i),
-          .req_port_o     (obi_zcmt_req_o),
-          .req_port_i     (obi_zcmt_rsp_i),
+          .obi_zcmt_req_o     (obi_zcmt_req_o),
+          .obi_zcmt_rsp_i     (obi_zcmt_rsp_i),
           .jump_address_o (jump_address)
       );
     end else begin

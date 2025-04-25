@@ -48,6 +48,7 @@ class uvme_cva6_env_c extends uvm_env;
    uvma_obi_memory_agent_c  obi_memory_store_agent;
    uvma_obi_memory_agent_c  obi_memory_amo_agent;
    uvma_obi_memory_agent_c  obi_memory_load_agent;
+   uvma_obi_memory_agent_c  obi_memory_zcmt_agent;
    //uvma_obi_memory_agent_c  obi_memory_mmu_ptw_agent;
 
    uvma_cva6_core_cntrl_agent_c       core_cntrl_agent;
@@ -191,6 +192,9 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          if (RTLCVA6Cfg.RVA) begin
             cntxt.obi_memory_amo_cntxt.mem   = cntxt.mem_obi;
          end
+         if (RTLCVA6Cfg.RVZCMT) begin
+            cntxt.obi_memory_zcmt_cntxt.mem   = cntxt.mem_obi;
+         end
          //cntxt.obi_memory_mmu_ptw_cntxt.mem = cntxt.mem_obi;
          cntxt.interrupt_cntxt.mem_obi    = cntxt.mem_obi;
          `uvm_info("UVMECVA6ENV", "OBI interface is active", UVM_NONE)
@@ -274,6 +278,9 @@ function void uvme_cva6_env_c::assign_cfg();
       if (RTLCVA6Cfg.RVA) begin
          uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_amo_agent", "cfg", cfg.obi_memory_amo_cfg);
       end
+      if (RTLCVA6Cfg.RVZCMT) begin
+         uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_zcmt_agent", "cfg", cfg.obi_memory_zcmt_cfg);
+      end
       //uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_mmu_ptw_agent", "cfg", cfg.obi_memory_mmu_ptw_cfg);
    end
 
@@ -306,6 +313,9 @@ function void uvme_cva6_env_c::assign_cntxt();
      if (RTLCVA6Cfg.RVA) begin
         uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_amo_agent", "cntxt", cntxt.obi_memory_amo_cntxt);
      end
+     if (RTLCVA6Cfg.RVZCMT) begin
+        uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_zcmt_agent", "cntxt", cntxt.obi_memory_zcmt_cntxt);
+     end
      //uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_mmu_ptw_agent", "cntxt", cntxt.obi_memory_mmu_ptw_cntxt);
    end
 
@@ -327,6 +337,9 @@ function void uvme_cva6_env_c::create_agents();
       obi_memory_load_agent       = uvma_obi_memory_agent_c::type_id::create("obi_memory_load_agent", this);
       if (RTLCVA6Cfg.RVA) begin
          obi_memory_amo_agent        = uvma_obi_memory_agent_c::type_id::create("obi_memory_amo_agent", this);
+      end
+      if (RTLCVA6Cfg.RVZCMT) begin
+         obi_memory_zcmt_agent        = uvma_obi_memory_agent_c::type_id::create("obi_memory_zcmt_agent", this);
       end
       //obi_memory_mmu_ptw_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_mmu_ptw_agent", this);
    end
@@ -433,6 +446,9 @@ function void uvme_cva6_env_c::assemble_vsequencer();
      if (RTLCVA6Cfg.RVA) begin
         vsequencer.obi_memory_amo_sequencer       = obi_memory_amo_agent.sequencer;
      end
+     if (RTLCVA6Cfg.RVZCMT) begin
+        vsequencer.obi_memory_zcmt_sequencer       = obi_memory_zcmt_agent.sequencer;
+     end
      //vsequencer.obi_memory_mmu_ptw_sequencer   = obi_memory_mmu_ptw_agent.sequencer;
    end
    vsequencer.interrupt_sequencer  = interrupt_agent.sequencer;
@@ -447,6 +463,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    uvma_obi_memory_slv_seq_c        instr_slv_seq;
    uvma_obi_memory_slv_seq_c        store_slv_seq;
    uvma_obi_memory_slv_seq_c        amo_slv_seq;
+   uvma_obi_memory_slv_seq_c        zcmt_slv_seq;
    uvma_obi_memory_slv_seq_c        load_slv_seq;
    //uvma_obi_memory_slv_seq_c        mmu_ptw_slv_seq;
 
@@ -511,6 +528,15 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
             end
             amo_slv_seq.start(obi_memory_amo_agent.sequencer);
+         end
+      end
+      begin : obi_zcmt_slv_thread
+         if(cfg.obi_memory_zcmt_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.RVZCMT) begin
+            zcmt_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("zcmt_slv_seq");
+            if (!zcmt_slv_seq.randomize()) begin
+               `uvm_fatal("AMOSLVSEQ", "Randomize failed");
+            end
+            zcmt_slv_seq.start(obi_memory_zcmt_agent.sequencer);
          end
       end
       begin : obi_load_slv_thread

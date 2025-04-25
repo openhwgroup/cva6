@@ -206,7 +206,8 @@ module cva6
   };
 
   localparam type load_rsp_t = struct packed {logic gnt;};
-
+   
+   
   //OBI FETCH
   `OBI_LOCALPARAM_TYPE_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg);
   //OBI STORE
@@ -218,13 +219,12 @@ module cva6
   //OBI MMU_PTW
   //`OBI_LOCALPARAM_TYPE_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg);
   //OBI ZCMT
-  //`OBI_LOCALPARAM_TYPE_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg)
+  `OBI_LOCALPARAM_TYPE_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg);
 
   //FIXME temp
   localparam type obi_mmu_ptw_req_t = dbus_req_t;
   localparam type obi_mmu_ptw_rsp_t = dbus_rsp_t;
-  localparam type obi_zcmt_req_t = dbus_req_t;
-  localparam type obi_zcmt_rsp_t = dbus_rsp_t;
+
 
   logic icache_en;
   logic icache_flush;
