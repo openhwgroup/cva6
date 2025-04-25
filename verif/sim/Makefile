@@ -452,6 +452,7 @@ clean_all: vcs_clean_all
 	rm -f trace*.log
 	rm -f trace*.dasm
 	rm -f *.vpd *.fsdb *.vcd *.fst
+	rm -f *.trace
 
 help:
 	@echo "Shell environment:"

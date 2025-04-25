@@ -17,7 +17,8 @@ module cva6_rvfi
     parameter type rvfi_csr_t = logic,
     parameter type rvfi_probes_instr_t = logic,
     parameter type rvfi_probes_csr_t = logic,
-    parameter type rvfi_probes_t = logic
+    parameter type rvfi_probes_t = logic,
+    parameter type rvfi_to_iti_t = logic
 
 ) (
 
@@ -26,8 +27,8 @@ module cva6_rvfi
 
     input rvfi_probes_t rvfi_probes_i,
     output rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_instr_o,
+    output rvfi_to_iti_t rvfi_to_iti_o,
     output rvfi_csr_t rvfi_csr_o
-
 );
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode =
@@ -81,6 +82,14 @@ module cva6_rvfi
   logic [CVA6Cfg.XLEN-1:0] ex_commit_cause;
   logic ex_commit_valid;
 
+  logic [CVA6Cfg.NrCommitPorts-1:0] valid_iti;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.VLEN-1:0] pc_iti;
+  ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_iti;
+  logic branch_valid_iti;
+  logic is_taken_iti;
+  logic [CVA6Cfg.XLEN-1:0] tval_iti;
+  logic [63:0] time_iti;
+
   riscv::priv_lvl_t priv_lvl;
 
   logic [CVA6Cfg.VLEN-1:0] lsu_ctrl_vaddr;
@@ -98,6 +107,8 @@ module cva6_rvfi
   logic [(CVA6Cfg.XLEN/8)-1:0] lsu_rmask;
   logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_addr_trans_id;
+
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] branch_trans_id;
 
   riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d;
 
@@ -147,6 +158,14 @@ module cva6_rvfi
   assign ex_commit_cause = instr.ex_commit_cause;
   assign ex_commit_valid = instr.ex_commit_valid;
 
+  assign valid_iti = instr.commit_ack;
+  assign pc_iti = instr.commit_instr_pc;
+  assign op_iti = instr.commit_instr_op;
+  assign branch_valid_iti = instr.branch_valid;
+  assign is_taken_iti = instr.is_taken;
+  assign tval_iti = instr.tval;
+  assign time_iti = rvfi_probes_i.csr.cycle_q;
+
   assign priv_lvl = instr.priv_lvl;
 
   assign wbdata = instr.wbdata;
@@ -159,6 +178,8 @@ module cva6_rvfi
   assign lsu_rmask = instr.lsu_ctrl_fu == LOAD ? instr.lsu_ctrl_be : '0;
   assign lsu_wmask = instr.lsu_ctrl_fu == STORE ? instr.lsu_ctrl_be : '0;
   assign lsu_addr_trans_id = instr.lsu_ctrl_trans_id;
+  assign branch_trans_id = instr.branch_trans_id;
+
 
 
   //ID STAGE
@@ -170,6 +191,7 @@ module cva6_rvfi
   typedef struct packed {
     logic        valid;
     logic [31:0] instr;
+    logic        is_compressed;
   } issue_struct_t;
   issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
   logic took0;
@@ -187,6 +209,7 @@ module cva6_rvfi
     if (!issue_n[CVA6Cfg.NrIssuePorts-1].valid) begin
       issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[0];
       issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[0];
+      issue_n[CVA6Cfg.NrIssuePorts-1].is_compressed = is_compressed[0];
       took0 = 1'b1;
     end
 
@@ -199,9 +222,11 @@ module cva6_rvfi
       if (took0) begin
         issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[CVA6Cfg.NrIssuePorts-1];
         issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[CVA6Cfg.NrIssuePorts-1];
+        issue_n[CVA6Cfg.NrIssuePorts-1].is_compressed = is_compressed[CVA6Cfg.NrIssuePorts-1];
       end else begin
         issue_n[CVA6Cfg.NrIssuePorts-1].valid = fetch_entry_valid[0];
         issue_n[CVA6Cfg.NrIssuePorts-1].instr = truncated[0];
+        issue_n[CVA6Cfg.NrIssuePorts-1].is_compressed = is_compressed[0];
       end
     end
 
@@ -231,6 +256,9 @@ module cva6_rvfi
     logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;
     logic [CVA6Cfg.XLEN-1:0] lsu_wdata;
     logic [31:0] instr;
+    logic branch_valid;
+    logic is_taken;
+    logic is_compressed;
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
@@ -246,11 +274,17 @@ module cva6_rvfi
             lsu_rmask: '0,
             lsu_wmask: '0,
             lsu_wdata: '0,
-            instr: issue_q[i].instr
+            instr: issue_q[i].instr,
+            branch_valid: 1'b0,
+            is_taken: 1'b0,
+            is_compressed: issue_q[i].is_compressed
         };
       end
     end
-
+    if (branch_valid_iti) begin
+      mem_n[branch_trans_id].branch_valid = branch_valid_iti;
+      mem_n[branch_trans_id].is_taken = is_taken_iti;
+    end
     if (lsu_rmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
       mem_n[lsu_addr_trans_id].lsu_rmask = lsu_rmask;
@@ -317,7 +351,18 @@ module cva6_rvfi
       rvfi_instr_o[i].mem_rdata <= commit_instr_result[i];
       rvfi_instr_o[i].rs1_rdata <= mem_q[commit_pointer[i]].rs1_rdata;
       rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
+      rvfi_to_iti_o.branch_valid[i] <= mem_q[commit_pointer[i]].branch_valid;
+      rvfi_to_iti_o.is_taken[i] <= mem_q[commit_pointer[i]].is_taken;
+      rvfi_to_iti_o.is_compressed[i] <= mem_q[commit_pointer[i]].is_compressed;
+      rvfi_to_iti_o.valid[i] <= valid_iti[i];
+      rvfi_to_iti_o.pc[i] <= pc_iti[i];
+      rvfi_to_iti_o.op[i] <= op_iti[i];
     end
+    rvfi_to_iti_o.ex_valid <= ex_commit_valid;
+    rvfi_to_iti_o.cycles <= time_iti;
+    rvfi_to_iti_o.cause <= ex_commit_cause;
+    rvfi_to_iti_o.tval <= tval_iti;
+    rvfi_to_iti_o.priv_lvl <= priv_lvl;
   end
 
 

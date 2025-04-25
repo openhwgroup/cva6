@@ -126,6 +126,10 @@
   logic [Cfg.PLEN-1:0] mem_paddr; \
   logic debug_mode; \
   logic [Cfg.NrCommitPorts-1:0][Cfg.XLEN-1:0] wdata; \
+  logic branch_valid; \
+  logic is_taken; \
+  logic [Cfg.XLEN-1:0] tval; \
+  logic [Cfg.TRANS_ID_BITS-1:0] branch_trans_id; \
 }
 
 `define RVFI_PROBES_CSR_T(Cfg) struct packed { \
@@ -162,6 +166,20 @@
   logic [Cfg.XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [63:0] pmpcfg_q; \
   logic [63:0][Cfg.PLEN-3:0] pmpaddr_q; \
+}
+
+`define RVFI_TO_ITI_T(Cfg) struct packed { \
+  logic [Cfg.NrCommitPorts-1:0] valid; \
+  logic [Cfg.NrCommitPorts-1:0][Cfg.VLEN-1:0] pc; \
+  ariane_pkg::fu_op [Cfg.NrCommitPorts-1:0] op; \
+  logic [Cfg.NrCommitPorts-1:0] is_compressed; \
+  logic [Cfg.NrCommitPorts-1:0] branch_valid; \
+  logic [Cfg.NrCommitPorts-1:0] is_taken; \
+  logic  ex_valid; \
+  logic [Cfg.XLEN-1:0] tval; \
+  logic [Cfg.XLEN-1:0] cause; \
+  riscv::priv_lvl_t priv_lvl; \
+  logic [63:0] cycles; \
 }
 
 `endif  // RVFI_TYPES_SVH
