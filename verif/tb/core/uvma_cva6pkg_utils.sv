@@ -26,6 +26,7 @@ function st_core_cntrl_cfg cva6pkg_to_core_cntrl_cfg(st_core_cntrl_cfg cfg);
     cfg.ext_zba_supported = CVA6Cfg.RVB;
     cfg.ext_zbb_supported = CVA6Cfg.RVB;
     cfg.ext_zbc_supported = CVA6Cfg.RVB;
+    //cfg.ext_zcmt_supported = CVA6Cfg.RVZCMT;
     cfg.ext_zbe_supported = 0;
     cfg.ext_zbf_supported = 0;
     cfg.ext_zbm_supported = 0;
