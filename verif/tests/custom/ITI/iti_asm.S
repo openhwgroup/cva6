@@ -1,3 +1,11 @@
+// Copyright (c) 2025 Thales DIS design services SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// Author: Maxime Colson - Thales
+// Date: 20/03/2025
+// Contributors: 
+// Darshak Sheladiya, SYSGO GmbH
+// Umberto Laghi, UNIBO
+
 .section .text
 .align 1 
 .align 4 
