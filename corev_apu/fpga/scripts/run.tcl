@@ -24,12 +24,16 @@ if {$::env(BOARD) eq "genesys2"} {
       add_files -fileset constrs_1 -norecurse constraints/vc707.xdc
 } elseif {$::env(BOARD) eq "nexys_video"} {
       add_files -fileset constrs_1 -norecurse constraints/nexys_video.xdc
+} elseif {$::env(BOARD) eq "vcu118"} {
+      add_files -fileset constrs_1 -norecurse constraints/vcu118.xdc
 } else {
       exit 1
 }
 
 read_ip { \
-      "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" \
+      "xilinx/xlnx_axi_dwidth_converter_512_64/xlnx_axi_dwidth_converter_512_64.srcs/sources_1/ip/xlnx_axi_dwidth_converter_512_64/xlnx_axi_dwidth_converter_512_64.xci" \
+      "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" \
+
       "xilinx/xlnx_axi_clock_converter/xlnx_axi_clock_converter.srcs/sources_1/ip/xlnx_axi_clock_converter/xlnx_axi_clock_converter.xci" \
       "xilinx/xlnx_axi_dwidth_converter/xlnx_axi_dwidth_converter.srcs/sources_1/ip/xlnx_axi_dwidth_converter/xlnx_axi_dwidth_converter.xci" \
       "xilinx/xlnx_axi_dwidth_converter_dm_slave/xlnx_axi_dwidth_converter_dm_slave.srcs/sources_1/ip/xlnx_axi_dwidth_converter_dm_slave/xlnx_axi_dwidth_converter_dm_slave.xci" \
@@ -68,6 +72,10 @@ if {$::env(BOARD) eq "genesys2"} {
 } elseif {$::env(BOARD) eq "nexys_video"} {
       read_verilog -sv {src/nexys_video.svh ../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh}
       set file "src/nexys_video.svh"
+      set registers "../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh"
+} elseif {$::env(BOARD) eq "vcu118"} {
+      read_verilog -sv {src/vcu118.svh ../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh}
+      set file "src/vcu118.svh"
       set registers "../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh"
 } else {
     exit 1
