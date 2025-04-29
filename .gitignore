@@ -57,3 +57,4 @@ Bender.lock
 #modif par moi
 .venv
 /corev_apu/fpga/ariane.*
+/corev_apu/fpga/vivado_pid*
