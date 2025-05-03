@@ -60,6 +60,7 @@ vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv
 core/cache_subsystem/axi_adapter.sv
 core/alu.sv
+core/alu_wrapper.sv
 core/fpu_wrap.sv
 corev_apu/src/ariane.sv
 core/cva6.sv
