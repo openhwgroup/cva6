@@ -1,3 +1,10 @@
+.. Licensed under the Solderpad Hardware Licence, Version 2.1 (the "License");
+.. you may not use this file except in compliance with the License.
+.. SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+.. You may obtain a copy of the License at https://solderpad.org/licenses/
+
+.. Author: Munail Waqar, 10xEngineers
+.. Date: 03.05.2025
 ..
    Copyright (c) 2023 OpenHW Group
    Copyright (c) 2023 10xEngineers

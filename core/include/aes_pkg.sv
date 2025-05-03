@@ -1,4 +1,15 @@
-/// This package contains `functions` for AES instructions used in Scalar Cryptography (ZKN).
+// Licensed under the Solderpad Hardware Licence, Version 2.1 (the "License");
+// you may not use this file except in compliance with the License.
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// You may obtain a copy of the License at https://solderpad.org/licenses/
+//
+// Author: Munail Waqar, 10xEngineers
+// Date: 03.05.2025
+// Description: The Zkn extension including its subsets accelerates cryptographic workloads by introducing dedicated
+// scalar instructions compliant with the RISC-V Scalar Cryptography specification. The subsets include:
+// Zknd (AES Decryption and related instructions), Zkne (AES Encryption support, including AES rounds and key expansion steps),
+// Zknh (SHA-256 and SHA-512 hash functions for secure hashing operations).
+//
 package aes_pkg;
 
   // ----------------------
