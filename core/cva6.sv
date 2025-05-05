@@ -1663,10 +1663,15 @@ module cva6
 
 `ifndef VERILATOR
 
-  logic [31:0] fetch_instructions[CVA6Cfg.NrIssuePorts-1:0];
+  logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
+  logic [CVA6Cfg.NrCommitPorts-1:0][63:0] wdata_commit_id_padded;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
     assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id};
   end
 
   instr_tracer #(
@@ -1688,7 +1693,7 @@ module cva6
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
-      .wdata(wdata_commit_id),
+      .wdata(wdata_commit_id_padded),
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
