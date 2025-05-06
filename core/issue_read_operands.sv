@@ -764,7 +764,7 @@ module issue_read_operands
           case (issue_instr_i[i].fu)
             CVXIF: begin
               cvxif_valid_n[i]  = 1'b1;
-              cvxif_off_instr_n = orig_instr[i];
+              cvxif_off_instr_n = orig_instr_i[i];
             end
             default: ;
           endcase
