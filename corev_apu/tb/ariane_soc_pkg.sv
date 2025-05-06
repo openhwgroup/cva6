@@ -33,8 +33,7 @@ package ariane_soc;
     HPS      = 10
   } axi_slaves_t;
 
-  localparam NB_PERIPHERALS = Debug + 2;
-
+  localparam NB_PERIPHERALS = Debug + 1;
 
   localparam logic[63:0] DebugLength    = 64'h1000;
   localparam logic[63:0] ROMLength      = 64'h10000;

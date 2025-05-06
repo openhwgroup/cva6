@@ -149,7 +149,7 @@ AXI_BUS #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
-) master[ariane_soc::NB_PERIPHERALS-1:0]();
+) master[ariane_soc::NB_PERIPHERALS:0]();
 
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN      ),
@@ -220,7 +220,7 @@ assign rst = ~ddr_sync_reset;
 // AXI Xbar
 // ---------------
 
-axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
+axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS:0] addr_map;
 
 assign addr_map = '{
   '{ idx: ariane_soc::Debug,    start_addr: ariane_soc::DebugBase,    end_addr: ariane_soc::DebugBase + ariane_soc::DebugLength       },
@@ -238,7 +238,7 @@ assign addr_map = '{
 
 localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
   NoSlvPorts:         ariane_soc::NrSlaves,
-  NoMstPorts:         ariane_soc::NB_PERIPHERALS,
+  NoMstPorts:         ariane_soc::NB_PERIPHERALS+1,
   MaxMstTrans:        1, // Probably requires update
   MaxSlvTrans:        1, // Probably requires update
   FallThrough:        1'b0,
@@ -248,7 +248,7 @@ localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
   UniqueIds:          1'b0,
   AxiAddrWidth:       AxiAddrWidth,
   AxiDataWidth:       AxiDataWidth,
-  NoAddrRules:        ariane_soc::NB_PERIPHERALS
+  NoAddrRules:        ariane_soc::NB_PERIPHERALS+1
 };
 
 axi_xbar_intf #(
