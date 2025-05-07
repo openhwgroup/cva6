@@ -2286,27 +2286,27 @@ module csr_regfile
       end
     end
 
-  //    if (CVA6Cfg.SDTRIG) begin
-  //      if (trigger_type_d[tselect_q] == 4'd3) begin
-  //        //   case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger wants to fire in
-  //         //    riscv::PRIV_LVL_M : if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-  //         //    riscv::PRIV_LVL_S : if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-  //         //    riscv::PRIV_LVL_U : if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-  //         //  endcase
-  //         //  if (commit_ack_i) begin
-  //         //      icount_d--;
-  //          //   end
-  //          // if ((icache_d == 0) && priv_match) begin
-  //             //icount32_tdata1_q[tselect_q].pending = 1'b1;
-  //             //icount32_tdata1_q[tselect_q].hit = 1'b1;
-  //         //   case (icount32_tdata1_d[tselect_q].action) 
-  //         //breakpoint_from_tigger_module_o = 1'b1;
-  //               //6'd1 : debug_from_trigger_module = 1'b1 //into debug mode;
-  // //              default: ;
-  //   //         endcase
-  //    // end
-  //     end
-  //     end
+    //    if (CVA6Cfg.SDTRIG) begin
+    //      if (trigger_type_d[tselect_q] == 4'd3) begin
+    //        //   case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger wants to fire in
+    //         //    riscv::PRIV_LVL_M : if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
+    //         //    riscv::PRIV_LVL_S : if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
+    //         //    riscv::PRIV_LVL_U : if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
+    //         //  endcase
+    //         //  if (commit_ack_i) begin
+    //         //      icount_d--;
+    //          //   end
+    //          // if ((icache_d == 0) && priv_match) begin
+    //             //icount32_tdata1_q[tselect_q].pending = 1'b1;
+    //             //icount32_tdata1_q[tselect_q].hit = 1'b1;
+    //         //   case (icount32_tdata1_d[tselect_q].action) 
+    //         //breakpoint_from_tigger_module_o = 1'b1;
+    //               //6'd1 : debug_from_trigger_module = 1'b1 //into debug mode;
+    // //              default: ;
+    //   //         endcase
+    //    // end
+    //     end
+    //     end
   end
 
   // ---------------------------
@@ -2739,7 +2739,7 @@ module csr_regfile
       end
       if (CVA6Cfg.SDTRIG) begin
         scontext_q <= '0;
-        tselect_q <= '0;
+        tselect_q  <= '0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
           //icount_q[i]                <= 0;
