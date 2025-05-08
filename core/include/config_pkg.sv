@@ -32,7 +32,8 @@ package config_pkg;
     WT = 1,
     HPDCACHE_WT = 2,
     HPDCACHE_WB = 3,
-    HPDCACHE_WT_WB = 4
+    HPDCACHE_WT_WB = 4,
+    WT_HYB = 5
   } cache_type_t;
 
   /// Data and Address length
