@@ -41,6 +41,13 @@ package wt_hybrid_cache_pkg;
   localparam L15_TLB_CSM_WIDTH = 33;
 `endif
 
+  // Hybrid cache modes
+  typedef enum logic [1:0] {
+    FORCE_MODE_DYNAMIC = 0,    // Allow the associativity to change during program execution
+    FORCE_MODE_SET_ASS = 1,    // Force set associative mode (like standard WT cache)
+    FORCE_MODE_FULL_ASS = 2    // Force fully associative mode
+  } force_mode_e;
+  
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
   localparam ADAPTER_RTRN_FIFO_DEPTH = 2;

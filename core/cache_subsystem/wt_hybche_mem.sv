@@ -33,10 +33,12 @@ module wt_hybche_mem
     parameter config_pkg::cva6_cfg_t CVA6Cfg             = config_pkg::cva6_cfg_empty,
     parameter                        DCACHE_CL_IDX_WIDTH = 0,
     parameter type                   wbuffer_t           = logic,
-    parameter int unsigned           NumPorts            = 3
+    parameter int unsigned           NumPorts            = 3,
+    parameter int unsigned           HYB_SETS            = 4  // Number of sets to use in fully associative mode
 ) (
     input logic clk_i,
     input logic rst_ni,
+    input wt_hybrid_cache_pkg::force_mode_e force_mode_i, // Operating mode for the hybrid cache
 
     // ports
     input logic [NumPorts-1:0][CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag_i,  // tag in - comes one cycle later

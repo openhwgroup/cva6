@@ -55,6 +55,28 @@ module wt_hybche
     output dcache_req_t  mem_data_o
 );
 
+  // Determine operating mode based on cache type
+  wt_hybrid_cache_pkg::force_mode_e force_mode;
+  
+  // Number of sets that will be active during fully associative mode
+  // This is a hardcoded value that is significantly smaller than the total available sets
+  // For fully associative mode, we'll use only these few sets but use all ways
+  // Total available sets = 2^DCACHE_INDEX_WIDTH
+  localparam int unsigned HYB_SETS = 4; // Hardcoded to use only 4 sets in fully associative mode
+  
+  always_comb begin
+    // Default: dynamic mode
+    force_mode = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC;
+    
+    // Set mode based on cache type
+    case (CVA6Cfg.DCacheType)
+      config_pkg::WT_HYB:                force_mode = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC;
+      config_pkg::WT_HYB_FORCE_SET_ASS:  force_mode = wt_hybrid_cache_pkg::FORCE_MODE_SET_ASS;
+      config_pkg::WT_HYB_FORCE_FULL_ASS: force_mode = wt_hybrid_cache_pkg::FORCE_MODE_FULL_ASS;
+      default:                           force_mode = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC;
+    endcase
+  end
+
   localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
 
   localparam type wbuffer_t = struct packed {
@@ -325,10 +347,12 @@ module wt_hybche
       .CVA6Cfg(CVA6Cfg),
       .DCACHE_CL_IDX_WIDTH(DCACHE_CL_IDX_WIDTH),
       .wbuffer_t(wbuffer_t),
-      .NumPorts(NumPorts)
+      .NumPorts(NumPorts),
+      .HYB_SETS(HYB_SETS)  // Pass the number of sets to use in fully associative mode
   ) i_wt_hybche_mem (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
+      .force_mode_i   (force_mode),  // Pass the operating mode
       // read ports
       .rd_prio_i      (rd_prio),
       .rd_tag_i       (rd_tag),
