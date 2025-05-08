@@ -87,7 +87,7 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(2048),
       IcacheSetAssoc: unsigned'(8),
       IcacheLineWidth: unsigned'(128),
-      DCacheType: config_pkg::WT_HYB,
+      DCacheType: config_pkg::WT,
       DcacheByteSize: unsigned'(2028),
       DcacheSetAssoc: unsigned'(8),
       DcacheLineWidth: unsigned'(128),
