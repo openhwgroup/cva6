@@ -1,0 +1,34 @@
+SYNTHETIC Cache Access Pattern Heatmap
+======================================
+
+Cache Type: Standard Write-Through Cache
+Cache Size: 8 ways x 16 sets
+
+Statistics:
+  Total Accesses: 1667
+  Hit Rate: 80.14%
+  Hits: 1336
+  Misses: 331
+  Sets Used: 16 of 16 (100.00%)
+
+Total Cache Accesses by Set
+Sets (0-15):
++----------------+
+|9X6U654Z62U02OS0|
++----------------+
+
+Cache Hits by Set
+Sets (0-15):
++----------------+
+|UOSKVQXRTRIPSCLS|
++----------------+
+
+Cache Misses by Set
+Sets (0-15):
++----------------+
+|oinkkoghmklkjmgh|
++----------------+
+
+
+Intensity Scale: abcdefghijklmnopqrstuvwrxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+(a = lowest, 9 = highest)

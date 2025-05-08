@@ -1,0 +1,42 @@
+Cache Access Pattern Heatmap
+==========================
+
+Cache Type: Hybrid Cache (Fully Associative Mode)
+Cache Size: 8 ways x 16 sets
+
+Statistics:
+  Total Accesses: 1751
+  Hit Rate: 89.09%
+  Hits: 1560
+  Misses: 191
+  Sets Used: 16 of 16 (100.00%)
+
+Total Cache Accesses by Set
+Sets (0-15):
++----------------+
+|1eQY5f 1bcOef9cX|
++----------------+
+
+Cache Hits by Set
+Sets (0-15):
++----------------+
+|TdLQ3e SbbJee5cU|
++----------------+
+
+Cache Misses by Set
+Sets (0-15):
++----------------+
+|iafhba jaafaadad|
++----------------+
+
+Hash Distribution (Hybrid Cache)
+Uniformity: 57.96% (100% is perfectly uniform)
+
+Hash Values (0-15):
++----------------+
+| 0 7  93       Y|
++----------------+
+
+
+Intensity Scale: abcdefghijklmnopqrstuvwrxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+(a = lowest, 9 = highest)
