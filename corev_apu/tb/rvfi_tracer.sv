@@ -94,7 +94,8 @@ module rvfi_tracer #(
 
   assign end_of_test_o = end_of_test_d;
 
-  // NOTE: Cache monitoring has been completely disabled since we're using WT_HYB cache
+  // NOTE: Cache monitoring has been completely disabled since we're using WT_HYB cache types
+  // This includes WT_HYB, WT_HYB_FORCE_SET_ASS, and WT_HYB_FORCE_FULL_ASS
   // All references to gen_cache_wt have been removed to avoid compilation errors
   
   always_ff @(posedge clk_i) begin

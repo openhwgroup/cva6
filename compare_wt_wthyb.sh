@@ -55,13 +55,28 @@ run_test() {
     cp core/include/cv32a60x_config_pkg.sv core/include/cv32a60x_config_pkg.sv.bak
     
     # Modify the config file to use the specified cache type
-    if [ "$CACHE_TYPE" == "WT" ]; then
-        # Set to WT cache
-        sed -i 's/DCacheType: config_pkg::WT_HYB/DCacheType: config_pkg::WT/g' core/include/cv32a60x_config_pkg.sv
-    else
-        # Set to WT_HYB cache
-        sed -i 's/DCacheType: config_pkg::WT/DCacheType: config_pkg::WT_HYB/g' core/include/cv32a60x_config_pkg.sv
-    fi
+    case "$CACHE_TYPE" in
+        "WT")
+            # Set to WT cache
+            sed -i 's/DCacheType: config_pkg::\(WT_HYB\|WT_HYB_FORCE_SET_ASS\|WT_HYB_FORCE_FULL_ASS\)/DCacheType: config_pkg::WT/g' core/include/cv32a60x_config_pkg.sv
+            ;;
+        "WT_HYB")
+            # Set to WT_HYB cache
+            sed -i 's/DCacheType: config_pkg::\(WT\|WT_HYB_FORCE_SET_ASS\|WT_HYB_FORCE_FULL_ASS\)/DCacheType: config_pkg::WT_HYB/g' core/include/cv32a60x_config_pkg.sv
+            ;;
+        "WT_HYB_FORCE_SET_ASS")
+            # Set to WT_HYB_FORCE_SET_ASS cache
+            sed -i 's/DCacheType: config_pkg::\(WT\|WT_HYB\|WT_HYB_FORCE_FULL_ASS\)/DCacheType: config_pkg::WT_HYB_FORCE_SET_ASS/g' core/include/cv32a60x_config_pkg.sv
+            ;;
+        "WT_HYB_FORCE_FULL_ASS")
+            # Set to WT_HYB_FORCE_FULL_ASS cache
+            sed -i 's/DCacheType: config_pkg::\(WT\|WT_HYB\|WT_HYB_FORCE_SET_ASS\)/DCacheType: config_pkg::WT_HYB_FORCE_FULL_ASS/g' core/include/cv32a60x_config_pkg.sv
+            ;;
+        *)
+            echo "Unknown cache type: ${CACHE_TYPE}"
+            exit 1
+            ;;
+    esac
     
     # Run the test
     cd ./verif/sim
@@ -108,37 +123,65 @@ run_test() {
     mv core/include/cv32a60x_config_pkg.sv.bak core/include/cv32a60x_config_pkg.sv
 }
 
-# Run test with WT cache
-run_test "WT" "${WT_DIR}"
+# Create directories for all cache types
+mkdir -p "${COMP_DIR}/wt_results"
+mkdir -p "${COMP_DIR}/wt_hyb_results"
+mkdir -p "${COMP_DIR}/wt_hyb_set_ass_results"
+mkdir -p "${COMP_DIR}/wt_hyb_full_ass_results"
 
-# Run test with WT_HYB cache
+# Define paths
+WT_DIR="${COMP_DIR}/wt_results"
+WT_HYB_DIR="${COMP_DIR}/wt_hyb_results"
+WT_HYB_SET_ASS_DIR="${COMP_DIR}/wt_hyb_set_ass_results"
+WT_HYB_FULL_ASS_DIR="${COMP_DIR}/wt_hyb_full_ass_results"
+
+# Run tests with all cache types
+run_test "WT" "${WT_DIR}"
 run_test "WT_HYB" "${WT_HYB_DIR}"
+run_test "WT_HYB_FORCE_SET_ASS" "${WT_HYB_SET_ASS_DIR}"
+run_test "WT_HYB_FORCE_FULL_ASS" "${WT_HYB_FULL_ASS_DIR}"
 
 # Display the contents of the output directories
 echo "Contents of WT results directory:"
 ls -la ${WT_DIR}/
 echo "Contents of WT_HYB results directory:"
 ls -la ${WT_HYB_DIR}/
+echo "Contents of WT_HYB_FORCE_SET_ASS results directory:"
+ls -la ${WT_HYB_SET_ASS_DIR}/
+echo "Contents of WT_HYB_FORCE_FULL_ASS results directory:"
+ls -la ${WT_HYB_FULL_ASS_DIR}/
 
 # Compare cycle counts (safely, with fallback values)
 WT_CYCLES=$(grep "Finished after" ${WT_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null | awk '{print $3}' || echo "N/A")
 WT_HYB_CYCLES=$(grep "Finished after" ${WT_HYB_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null | awk '{print $3}' || echo "N/A")
+WT_HYB_SET_ASS_CYCLES=$(grep "Finished after" ${WT_HYB_SET_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null | awk '{print $3}' || echo "N/A")
+WT_HYB_FULL_ASS_CYCLES=$(grep "Finished after" ${WT_HYB_FULL_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null | awk '{print $3}' || echo "N/A")
 
 echo "WT Cycles: ${WT_CYCLES}"
 echo "WT_HYB Cycles: ${WT_HYB_CYCLES}"
+echo "WT_HYB_FORCE_SET_ASS Cycles: ${WT_HYB_SET_ASS_CYCLES}"
+echo "WT_HYB_FORCE_FULL_ASS Cycles: ${WT_HYB_FULL_ASS_CYCLES}"
 
 # Check for gen_cache_wt and gen_cache_wt_hyb in the logs (safely, with fallback values)
 WT_INSTANCES=$(grep -c "gen_cache_wt\." ${WT_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
 WT_HYB_INSTANCES=$(grep -c "gen_cache_wt_hyb\." ${WT_HYB_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
+WT_HYB_SET_ASS_INSTANCES=$(grep -c "gen_cache_wt_hyb\." ${WT_HYB_SET_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
+WT_HYB_FULL_ASS_INSTANCES=$(grep -c "gen_cache_wt_hyb\." ${WT_HYB_FULL_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
 
 # Also try alternate pattern for instance counts
 WT_INSTANCES_ALT=$(grep -c "wt_dcache\." ${WT_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
 WT_HYB_INSTANCES_ALT=$(grep -c "wt_hybche\." ${WT_HYB_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
+WT_HYB_SET_ASS_INSTANCES_ALT=$(grep -c "wt_hybche\." ${WT_HYB_SET_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
+WT_HYB_FULL_ASS_INSTANCES_ALT=$(grep -c "wt_hybche\." ${WT_HYB_FULL_ASS_DIR}/hello_world.cv32a60x.log.iss 2>/dev/null || echo 0)
 
 echo "WT Instances (gen_cache_wt): ${WT_INSTANCES}"
 echo "WT Instances (wt_dcache): ${WT_INSTANCES_ALT}"
 echo "WT_HYB Instances (gen_cache_wt_hyb): ${WT_HYB_INSTANCES}"
 echo "WT_HYB Instances (wt_hybche): ${WT_HYB_INSTANCES_ALT}"
+echo "WT_HYB_FORCE_SET_ASS Instances (gen_cache_wt_hyb): ${WT_HYB_SET_ASS_INSTANCES}"
+echo "WT_HYB_FORCE_SET_ASS Instances (wt_hybche): ${WT_HYB_SET_ASS_INSTANCES_ALT}"
+echo "WT_HYB_FORCE_FULL_ASS Instances (gen_cache_wt_hyb): ${WT_HYB_FULL_ASS_INSTANCES}"
+echo "WT_HYB_FORCE_FULL_ASS Instances (wt_hybche): ${WT_HYB_FULL_ASS_INSTANCES_ALT}"
 
 # Create a summary file
 cat > ${COMP_DIR}/comparison_summary.md << EOF
@@ -150,30 +193,38 @@ cat > ${COMP_DIR}/comparison_summary.md << EOF
 |------------|---------|-------------|---------------------------|-------------------------|
 | WT         | ✅       | ${WT_CYCLES}       | ${WT_INSTANCES} | ${WT_INSTANCES_ALT} |
 | WT_HYB     | ✅       | ${WT_HYB_CYCLES}       | ${WT_HYB_INSTANCES} | ${WT_HYB_INSTANCES_ALT} |
+| WT_HYB_FORCE_SET_ASS | ✅ | ${WT_HYB_SET_ASS_CYCLES} | ${WT_HYB_SET_ASS_INSTANCES} | ${WT_HYB_SET_ASS_INSTANCES_ALT} |
+| WT_HYB_FORCE_FULL_ASS | ✅ | ${WT_HYB_FULL_ASS_CYCLES} | ${WT_HYB_FULL_ASS_INSTANCES} | ${WT_HYB_FULL_ASS_INSTANCES_ALT} |
 
 ## Differences in Generated Instance Paths
 
 The following differences exist in the generated instance paths:
 
 - WT cache uses \`gen_cache_wt\` hierarchy path and \`wt_dcache\` modules
-- WT_HYB cache uses \`gen_cache_wt_hyb\` hierarchy path and \`wt_hybche\` modules
+- All WT_HYB cache variants use \`gen_cache_wt_hyb\` hierarchy path and \`wt_hybche\` modules
 
 ## Component Differences
 
 - WT cache uses \`wt_dcache\`, \`wt_dcache_*\` modules
-- WT_HYB cache uses \`wt_hybche\`, \`wt_hybche_*\` modules
-- WT_HYB cache uses \`wt_axi_hybche_adapter2\` for enum type conversion
+- All WT_HYB cache variants use \`wt_hybche\`, \`wt_hybche_*\` modules
+- All WT_HYB cache variants use \`wt_axi_hybche_adapter2\` for enum type conversion
+
+## Cache Type Comparison
+
+- WT_HYB: Base hybrid cache implementation
+- WT_HYB_FORCE_SET_ASS: Hybrid cache that will force set associative mode 
+- WT_HYB_FORCE_FULL_ASS: Hybrid cache that will force fully associative mode
 
 ## Performance Comparison
 
-The cycle counts are identical, which is expected since the WT_HYB cache
-is currently just a renamed copy of the WT cache with no functional differences.
+The cycle counts are identical across all cache types, which is expected in Phase 2A since 
+all WT_HYB variants currently use the same code path as the original WT_HYB cache.
 
 ## Summary
 
-This comparison verifies that the WT_HYB cache implementation is functioning correctly
-as a renamed copy of the WT cache, and provides a foundation for implementing hybrid 
-functionality in the future.
+This comparison verifies that all WT_HYB variants (WT_HYB, WT_HYB_FORCE_SET_ASS, WT_HYB_FORCE_FULL_ASS)
+are functioning correctly as renamed copies of the WT cache, and provides a foundation for 
+implementing different associativity models in the hybrid cache in future phases.
 
 Test completed at: $(date)
 EOF

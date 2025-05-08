@@ -1385,7 +1385,9 @@ module cva6
         .inval_valid_i     (inval_valid),
         .inval_ready_o     (inval_ready)
     );
-  end else if (CVA6Cfg.DCacheType == config_pkg::WT_HYB) begin : gen_cache_wt_hyb
+  end else if (CVA6Cfg.DCacheType == config_pkg::WT_HYB || 
+             CVA6Cfg.DCacheType == config_pkg::WT_HYB_FORCE_SET_ASS ||
+             CVA6Cfg.DCacheType == config_pkg::WT_HYB_FORCE_FULL_ASS) begin : gen_cache_wt_hyb
     // this is a hybrid cache subsystem that is compatible with OpenPiton
     wt_hybche_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
