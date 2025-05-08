@@ -1,0 +1,47 @@
+# Cache signals to trace in VCD
+# One signal per line, wildcards (*) allowed
+
+# Cache top-level signals
+*cache_subsystem*
+*i_wt_dcache*
+*i_wt_hybche*
+
+# Write-Through Cache signals
+*wt_dcache*
+*wt_dcache_mem*
+*wt_dcache_ctrl*
+*wt_dcache_wbuffer*
+*wt_dcache_missunit*
+
+# Hybrid Cache signals
+*wt_hybche*
+*wt_hybche_mem*
+*wt_hybche_ctrl*
+*wt_hybche_wbuffer*
+*wt_hybche_missunit*
+
+# Hash function and mapping signals
+*wt_hybche_mem.wr_hash*
+*wt_hybche_mem.rd_hash*
+*wt_hybche_mem.wr_phys_idx*
+*wt_hybche_mem.rd_phys_idx*
+*wt_hybche_mem.max_set_idx*
+*wt_hybche_mem.fa_wr_idx*
+*wt_hybche_mem.fa_rd_idx*
+
+# Tag comparison signals
+*tag_match*
+*extended_*tag*
+*hit_oh*
+*miss*
+
+# Memory access signals
+*req*
+*gnt*
+*we*
+*wdata*
+*rdata*
+
+# Debug signals
+*_d
+*_q
