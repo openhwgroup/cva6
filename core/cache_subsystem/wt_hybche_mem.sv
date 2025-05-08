@@ -79,6 +79,12 @@ module wt_hybche_mem
 
   localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
   localparam DCACHE_NUM_BANKS_WIDTH = $clog2(DCACHE_NUM_BANKS);
+  
+  // Extended tag width that includes index bits for fully associative mode
+  localparam EXTENDED_TAG_WIDTH = CVA6Cfg.DCACHE_TAG_WIDTH + DCACHE_CL_IDX_WIDTH;
+  
+  // Number of bits needed to address HYB_SETS
+  localparam HYB_SETS_IDX_WIDTH = (HYB_SETS > 1) ? $clog2(HYB_SETS) : 1;
 
   // functions
   function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh(
@@ -96,6 +102,32 @@ module wt_hybche_mem
   ) + 1 : $clog2(
       CVA6Cfg.AxiDataWidth / 8
   );
+  
+  // Functions for hybrid addressing
+  // Create extended tag based on mode: in set associative mode, regular tag; in fully associative mode, tag + index
+  function automatic logic [EXTENDED_TAG_WIDTH-1:0] get_extended_tag(
+    input logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag,
+    input logic [DCACHE_CL_IDX_WIDTH-1:0] idx,
+    input wt_hybrid_cache_pkg::force_mode_e mode
+  );
+    if (mode == wt_hybrid_cache_pkg::FORCE_MODE_FULL_ASS)
+      return {tag, idx}; // Combine tag and index for fully associative mode
+    else
+      return {{DCACHE_CL_IDX_WIDTH{1'b0}}, tag}; // Only tag for set associative mode
+  endfunction : get_extended_tag
+  
+  // Get the appropriate set index based on mode
+  function automatic logic [DCACHE_CL_IDX_WIDTH-1:0] get_set_idx(
+    input logic [DCACHE_CL_IDX_WIDTH-1:0] idx,
+    input wt_hybrid_cache_pkg::force_mode_e mode
+  );
+    if (mode == wt_hybrid_cache_pkg::FORCE_MODE_FULL_ASS)
+      // In fully associative mode, use lower bits to select from limited sets
+      return idx[HYB_SETS_IDX_WIDTH-1:0]; 
+    else
+      // In set associative mode, use full index
+      return idx;
+  endfunction : get_set_idx
 
   logic [DCACHE_NUM_BANKS-1:0]                                                     bank_req;
   logic [DCACHE_NUM_BANKS-1:0]                                                     bank_we;
@@ -112,10 +144,13 @@ module wt_hybche_mem
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_USER_WIDTH-1:0]                      ruser_cl;          // selected word from each cacheline
 
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] rd_tag;
+  logic [DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
+  logic [EXTENDED_TAG_WIDTH-1:0] extended_rd_tag;
+  logic [EXTENDED_TAG_WIDTH-1:0] extended_wr_cl_tag;
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_req;  // bit enable for valid regs
   logic vld_we;  // valid bits write enable
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_wdata;  // valid bits to write
-  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][CVA6Cfg.DCACHE_TAG_WIDTH-1:0]            tag_rdata;                    // these are the tags coming from the tagmem
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0][EXTENDED_TAG_WIDTH-1:0] tag_rdata;  // these are the tags coming from the tagmem
   logic [DCACHE_CL_IDX_WIDTH-1:0] vld_addr;  // valid bit
 
   logic [$clog2(NumPorts)-1:0] vld_sel_d, vld_sel_q;
@@ -155,11 +190,18 @@ module wt_hybche_mem
   end
 
   assign vld_wdata     = wr_vld_bits_i;
-  assign vld_addr      = (wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d];
+  // Use appropriate index based on mode
+  assign vld_addr      = (wr_cl_vld_i) ? get_set_idx(wr_cl_idx_i, force_mode_i) : get_set_idx(rd_idx_i[vld_sel_d], force_mode_i);
   assign rd_tag        = rd_tag_i[vld_sel_q];  //delayed by one cycle
+  assign rd_idx        = rd_idx_i[vld_sel_q];  //delayed by one cycle
   assign bank_off_d    = (wr_cl_vld_i) ? wr_cl_off_i : rd_off_i[vld_sel_d];
-  assign bank_idx_d    = (wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d];
+  // Data memory always uses full index, not limited by mode
+  assign bank_idx_d    = (wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d]; 
   assign vld_req       = (wr_cl_vld_i) ? wr_cl_we_i : (rd_acked) ? '1 : '0;
+  
+  // Create extended tags for both read and write operations
+  assign extended_rd_tag = get_extended_tag(rd_tag, rd_idx, force_mode_i);
+  assign extended_wr_cl_tag = get_extended_tag(wr_cl_tag_i, wr_cl_idx_i, force_mode_i);
 
 
   // priority masking
@@ -240,8 +282,8 @@ module wt_hybche_mem
                                             {rd_tag, bank_idx_q, bank_off_q};
   // hit generation
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
-    // tag comparison of ways >0
-    assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) & rd_vld_bits_o[i] & cmp_en_q;
+    // Tag comparison: compare extended tags based on mode
+    assign rd_hit_oh_o[i] = (extended_rd_tag == tag_rdata[i]) & rd_vld_bits_o[i] & cmp_en_q;
     // byte offset mux of ways >0
     assign rdata_cl[i] = bank_rdata[bank_off_q[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
     assign ruser_cl[i] = bank_ruser[bank_off_q[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
@@ -302,7 +344,7 @@ module wt_hybche_mem
   // memory arrays and regs
   ///////////////////////////////////////////////////////
 
-  logic [CVA6Cfg.DCACHE_TAG_WIDTH:0] vld_tag_rdata[CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  logic [EXTENDED_TAG_WIDTH:0] vld_tag_rdata[CVA6Cfg.DCACHE_SET_ASSOC-1:0];
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
@@ -329,13 +371,13 @@ module wt_hybche_mem
 
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_srams
 
-    assign tag_rdata[i]     = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
-    assign rd_vld_bits_o[i] = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH];
+    assign tag_rdata[i]     = vld_tag_rdata[i][EXTENDED_TAG_WIDTH-1:0];
+    assign rd_vld_bits_o[i] = vld_tag_rdata[i][EXTENDED_TAG_WIDTH];
 
     // Tag RAM
     sram_cache #(
-        // tag + valid bit
-        .DATA_WIDTH (CVA6Cfg.DCACHE_TAG_WIDTH + 1),
+        // extended tag + valid bit
+        .DATA_WIDTH (EXTENDED_TAG_WIDTH + 1),
         .BYTE_ACCESS(0),
         .TECHNO_CUT (CVA6Cfg.TechnoCut),
         .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
@@ -346,7 +388,7 @@ module wt_hybche_mem
         .we_i   (vld_we),
         .addr_i (vld_addr),
         .wuser_i('0),
-        .wdata_i({vld_wdata[i], wr_cl_tag_i}),
+        .wdata_i({vld_wdata[i], extended_wr_cl_tag}),
         .be_i   ('1),
         .ruser_o(),
         .rdata_o(vld_tag_rdata[i])
@@ -409,7 +451,7 @@ module wt_hybche_mem
 
   // this is only used for verification!
   logic vld_mirror[CVA6Cfg.DCACHE_NUM_WORDS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0];
-  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_mirror[CVA6Cfg.DCACHE_NUM_WORDS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  logic [EXTENDED_TAG_WIDTH-1:0] tag_mirror[CVA6Cfg.DCACHE_NUM_WORDS-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0];
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
@@ -420,14 +462,14 @@ module wt_hybche_mem
       for (int i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
         if (vld_req[i] & vld_we) begin
           vld_mirror[vld_addr][i] <= vld_wdata[i];
-          tag_mirror[vld_addr][i] <= wr_cl_tag_i;
+          tag_mirror[vld_addr][i] <= extended_wr_cl_tag;
         end
       end
     end
   end
 
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_dubl_test
-    assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == wr_cl_tag_i) & vld_mirror[vld_addr][i] & (|vld_wdata);
+    assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == extended_wr_cl_tag) & vld_mirror[vld_addr][i] & (|vld_wdata);
   end
 
   tag_write_duplicate :
