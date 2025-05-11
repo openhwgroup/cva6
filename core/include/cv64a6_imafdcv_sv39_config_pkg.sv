@@ -35,7 +35,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = 1; // Just not to raise warnings
+  localparam CVA6ConfigFetchUserWidth = 1;  // Just not to raise warnings
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
