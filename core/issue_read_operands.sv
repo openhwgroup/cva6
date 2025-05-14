@@ -66,6 +66,8 @@ module issue_read_operands
     input logic flu_ready_i,
     // ALU output is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_o,
+    // AES output is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_o,
     // Branch unit is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_o,
     // Transformed trap instruction - EX_STAGE
@@ -128,14 +130,15 @@ module issue_read_operands
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs1_o,
     // Information dedicated to RVFI - RVFI
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o
-
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
+    // Original instruction bits for AES
+    output logic [5:0] orig_instr_aes_bits
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
 
   typedef struct packed {
-    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel;
+    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel, aes;
   } fus_busy_t;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] stall_raw, stall_rs1, stall_rs2, stall_rs3;
@@ -155,6 +158,7 @@ module issue_read_operands
   logic               [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_n, alu_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_n, aes_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_n, mult_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_n, fpu_valid_q;
   logic [1:0] fpu_fmt_n, fpu_fmt_q;
@@ -277,6 +281,7 @@ module issue_read_operands
   assign alu_bypass_o = alu_bypass_q;
   assign fu_data_o = fu_data_q;
   assign alu_valid_o = alu_valid_q;
+  assign aes_valid_o = aes_valid_q;
   assign branch_valid_o = branch_valid_q;
   assign lsu_valid_o = lsu_valid_q;
   assign csr_valid_o = csr_valid_q;
@@ -300,6 +305,7 @@ module issue_read_operands
     // Since we can not have two CVXIF instruction on 1st issue port, CVXIF is always ready for the pending instruction.
     if (!flu_ready_i) begin
       fus_busy[0].alu = 1'b1;
+      fus_busy[0].aes = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
       fus_busy[0].mult = 1'b1;
@@ -309,6 +315,7 @@ module issue_read_operands
     // otherwise we will get contentions on the fixed latency bus
     if (|mult_valid_q) begin
       fus_busy[0].alu = 1'b1;
+      fus_busy[0].aes = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
     end
@@ -420,6 +427,7 @@ module issue_read_operands
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
+        AES: fu_busy[i] = fus_busy[i].aes;
         default:
         if (CVA6Cfg.FpPresent) begin
           unique case (issue_instr_i[i].fu)
@@ -711,6 +719,7 @@ module issue_read_operands
 
   always_comb begin
     alu_valid_n    = '0;
+    aes_valid_n    = '0;
     lsu_valid_n    = '0;
     mult_valid_n   = '0;
     fpu_valid_n    = '0;
@@ -741,6 +750,9 @@ module issue_read_operands
           CSR: begin
             csr_valid_n[i] = 1'b1;
           end
+          AES: begin
+            aes_valid_n[i] = 1'b1;
+          end
           default: begin
             if (issue_instr_i[i].fu == FPU && CVA6Cfg.FpPresent) begin
               fpu_valid_n[i] = 1'b1;
@@ -759,6 +771,7 @@ module issue_read_operands
     // functional unit with the wrong inputs
     if (flush_i) begin
       alu_valid_n    = '0;
+      aes_valid_n    = '0;
       lsu_valid_n    = '0;
       mult_valid_n   = '0;
       fpu_valid_n    = '0;
@@ -772,6 +785,7 @@ module issue_read_operands
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       alu_valid_q    <= '0;
+      aes_valid_q    <= '0;
       lsu_valid_q    <= '0;
       mult_valid_q   <= '0;
       fpu_valid_q    <= '0;
@@ -782,6 +796,7 @@ module issue_read_operands
       branch_valid_q <= '0;
     end else begin
       alu_valid_q    <= alu_valid_n;
+      aes_valid_q    <= aes_valid_n;
       lsu_valid_q    <= lsu_valid_n;
       mult_valid_q   <= mult_valid_n;
       fpu_valid_q    <= fpu_valid_n;
@@ -1053,6 +1068,9 @@ module issue_read_operands
     end else begin
       fu_data_q <= fu_data_n;
       alu_bypass_q <= alu_bypass_n;
+      if (CVA6Cfg.ZKN) begin
+        orig_instr_aes_bits <= {orig_instr_i[0][31:30], orig_instr_i[0][23:20]};
+      end
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end

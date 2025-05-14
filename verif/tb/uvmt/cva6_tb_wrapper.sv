@@ -34,10 +34,13 @@ import uvm_pkg::*;
 
 `ifndef DPI_FESVR_SPIKE_UTILS
 `define DPI_FESVR_SPIKE_UTILS
+`ifndef READ_ELF_T
+`define READ_ELF_T
 import "DPI-C" function void read_elf(input string filename);
 import "DPI-C" function byte read_symbol(input string symbol_name, inout longint unsigned address);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+`endif
 `endif
 
 module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
