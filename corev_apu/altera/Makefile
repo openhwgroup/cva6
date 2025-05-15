@@ -72,9 +72,13 @@ create_project:
 	@touch "$(PROJECT).qsf"
 	$(QSYS_PATH)qsys-script --script=ip/interconnect.tcl
 	$(QSYS_PATH)qsys-generate interconnect.qsys --quartus_project=ip/interconnect --synthesis
+	$(QSYS_PATH)qsys-script --script=ip/hps_cva6_altera.tcl
+	$(QSYS_PATH)qsys-generate system.qsys --quartus_project=ip/hps_cva6_altera --synthesis
 	rm -f interconnect/*.v
 	rm -f interconnect/*.vhd
 	rm -f interconnect/synth/*.v
+	rm -f system/*.v
+	rm -f system/*.vhd
 
 write_settings:
 	@echo "Reading from settings.csv and writing to $(PROJECT).qsf with modifications"
@@ -108,6 +112,7 @@ write_search_paths:
 
 write_source_files:
 	@find ./interconnect -type f -name "*.v" -o -name "*.sv" -o -name "*.svh" >> $(SOURCES_FILE)
+	@find ./system -type f -name "*.v" -o -name "*.sv" -o -name "*.svh" >> $(SOURCES_FILE)
 	@echo $(var)
 	@echo >> $(SOURCES_FILE)
 	@echo "Reading from $(SOURCES_FILE) and writing to $(PROJECT).qsf with modifications"
@@ -191,6 +196,7 @@ clean:
 	rm -rf interconnect
 	rm -rf io_pll
 	rm -rf iobuf
+	rm -rf system
 
 	$(QUARTUS_PATH)quartus_ipgenerate --clean $(PROJECT) 
 
