@@ -620,7 +620,7 @@ module issue_read_operands
           stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
         end else begin
           // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
-          alu_bypass.rs1_into_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+          alu_bypass.rs1_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
         end
       end
 
@@ -636,7 +636,7 @@ module issue_read_operands
           stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
         end else begin
           // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
-          alu_bypass.rs2_into_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+          alu_bypass.rs2_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
         end
       end
 
@@ -854,7 +854,7 @@ module issue_read_operands
           // For now keep this as is, we cannot do inter dual-issue forwarding
           if (i > 0) begin
             if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
-              if (!(alu_bypass.rs1_into_rd || alu_bypass.rs2_into_rd)) begin
+              if (!(alu_bypass.rs1_from_rd || alu_bypass.rs2_from_rd)) begin
                 issue_ack[i] = 1'b0;
               end
             end

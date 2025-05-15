@@ -47,10 +47,10 @@ module alu_wrapper
     always_comb begin
       fu_data = fu_data_i[1];
 
-      if (alu_bypass_i.rs1_into_rd) begin
+      if (alu_bypass_i.rs1_from_rd) begin
         fu_data.operand_a = result[0];
       end
-      if (alu_bypass_i.rs2_into_rd) begin
+      if (alu_bypass_i.rs2_from_rd) begin
         fu_data.operand_b = result[0];
       end
     end

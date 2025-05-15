@@ -533,8 +533,8 @@ package ariane_pkg;
   } fu_op;
 
   typedef struct packed {
-    logic rs1_into_rd;
-    logic rs2_into_rd;
+    logic rs1_from_rd;
+    logic rs2_from_rd;
   } alu_bypass_t;
 
   function automatic logic op_is_branch(input fu_op op);
