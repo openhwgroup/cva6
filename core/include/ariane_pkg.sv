@@ -607,6 +607,17 @@ package ariane_pkg;
     endcase
   endfunction
 
+  function automatic logic fd_changes_rd_state(input fu_op op);
+    unique case (op) inside
+      FSD, FSW, FSH, FSB,  // stores
+      FCVT_F2I,  // conversion to int
+      FMV_F2X,  // move as-is to int
+      FCLASS:  // classification (writes output to integer register)
+      return 1'b0;  // floating-point registers are only read
+      default: return 1'b1;  // other ops - floating-point registers are written as well
+    endcase
+  endfunction
+
   function automatic logic is_amo(fu_op op);
     case (op) inside
       [AMO_LRW : AMO_MINDU]: begin
