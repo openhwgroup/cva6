@@ -619,8 +619,7 @@ module issue_read_operands
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd && issue_instr_i[1].rs1 != '0) begin
         if (is_alu_bypass) begin
-          // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
-          alu_bypass.rs1_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+          alu_bypass.rs1_from_rd = 1'b1;
         end else begin
           stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
         end
@@ -632,8 +631,7 @@ module issue_read_operands
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd && issue_instr_i[1].rs2 != '0) begin
         if (is_alu_bypass) begin
-          // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
-          alu_bypass.rs2_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+          alu_bypass.rs2_from_rd = 1'b1;
         end else begin
           stall_raw[1] = 1'b1;  // RS2[1] NEEDS RD[0]
         end
