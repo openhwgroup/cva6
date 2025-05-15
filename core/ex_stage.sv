@@ -277,13 +277,14 @@ module ex_stage
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
-  logic [CVA6Cfg.XLEN-1:0] alu_result, alu2_result, csr_result, mult_result, aes_result;
+  logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] alu_result;
+  logic [CVA6Cfg.XLEN-1:0] csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
-  fu_data_t alu2_data;
+  fu_data_t [CVA6Cfg.NrALUs-1:0] alu_data;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
   assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i | aes_valid_i;
@@ -308,18 +309,19 @@ module ex_stage
 
   if (CVA6Cfg.SuperscalarEn) begin : gen_alu2_data_sel
     always_comb begin
-      alu2_data = '0;
+      alu_data[1] = '0;
       if (alu2_valid_i[1]) begin
-        alu2_data = fu_data_i[1];
+        alu_data[1] = fu_data_i[1];
       end else if (alu2_valid_i[0]) begin
-        alu2_data = fu_data_i[0];
+        alu_data[1] = fu_data_i[0];
       end
     end
-  end else begin : gen_alu2_data_tieoff
-    assign alu2_data = '0;
   end
 
   // 1. ALU(s) (combinatorial)
+
+  assign alu_data[0] = one_cycle_data;
+
   alu_wrapper #(
       .CVA6Cfg  (CVA6Cfg),
       .fu_data_t(fu_data_t)
@@ -327,8 +329,8 @@ module ex_stage
       .clk_i,
       .rst_ni,
       .alu_bypass_i    (alu_bypass_i),
-      .fu_data_i       ({alu2_data, one_cycle_data}),
-      .result_o        ({alu2_result, alu_result}),
+      .fu_data_i       (alu_data),
+      .result_o        (alu_result),
       .alu_branch_res_o(alu_branch_res)
   );
 
@@ -384,7 +386,7 @@ module ex_stage
     flu_trans_id_o = one_cycle_data.trans_id;
     // ALU result
     if (|alu_valid_i) begin
-      flu_result_o = alu_result;
+      flu_result_o = alu_result[0];
       // CSR result
     end else if (|csr_valid_i) begin
       flu_result_o = csr_result;
@@ -482,12 +484,12 @@ module ex_stage
   if (CVA6Cfg.SuperscalarEn) begin
     if (CVA6Cfg.FpPresent) begin
       assign fpu_valid_o    = fpu_valid || |alu2_valid_i;
-      assign fpu_result_o   = fpu_valid ? fpu_result   : alu2_result;
-      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu2_data.trans_id;
+      assign fpu_result_o   = fpu_valid ? fpu_result   : alu_result[1];
+      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu_data[1].trans_id;
     end else begin
       assign fpu_valid_o    = |alu2_valid_i;
-      assign fpu_result_o   = alu2_result;
-      assign fpu_trans_id_o = alu2_data.trans_id;
+      assign fpu_result_o   = alu_result[1];
+      assign fpu_trans_id_o = alu_data[1].trans_id;
     end
   end else begin
     if (CVA6Cfg.FpPresent) begin

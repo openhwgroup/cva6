@@ -256,6 +256,8 @@ package config_pkg;
     int unsigned NrIssuePorts;
     bit          SpeculativeSb;
 
+    int unsigned NrALUs;
+
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;
     /// AXI parameters.

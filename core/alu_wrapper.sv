@@ -18,15 +18,15 @@ module alu_wrapper
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type fu_data_t = logic
 ) (
-    input  logic                                clk_i,
-    input  logic                                rst_ni,
-    input  alu_bypass_t                         alu_bypass_i,
-    input  fu_data_t    [1:0]                   fu_data_i,
-    output logic        [1:0][CVA6Cfg.XLEN-1:0] result_o,
-    output logic                                alu_branch_res_o
+    input  logic                                               clk_i,
+    input  logic                                               rst_ni,
+    input  alu_bypass_t                                        alu_bypass_i,
+    input  fu_data_t    [CVA6Cfg.NrALUs-1:0]                   fu_data_i,
+    output logic        [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] result_o,
+    output logic                                               alu_branch_res_o
 );
 
-  logic [1:0][CVA6Cfg.XLEN-1:0] result;
+  logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] result;
 
   alu #(
       .CVA6Cfg  (CVA6Cfg),
@@ -66,8 +66,6 @@ module alu_wrapper
         .result_o        (result[1]),
         .alu_branch_res_o(  /* Unconnected */)
     );
-  end else begin : gen_no_alu2
-    assign result[1] = '0;
   end
 
   if (CVA6Cfg.SuperscalarEn && CVA6Cfg.RVZCB) begin : gen_standalone_bitman_cpop
