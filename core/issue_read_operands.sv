@@ -607,20 +607,22 @@ module issue_read_operands
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
+
+      automatic logic is_alu_bypass;
+
+      // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
+      is_alu_bypass = (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) && !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) );
+
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
               issue_instr_i[1].op
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd && issue_instr_i[1].rs1 != '0) begin
-        // Check if the operations are ALU -> ALU, if not, stall.
-        if (!(issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU)) begin
-          stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
-          // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore).
-        end else if ( ((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) )) begin
-          stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
-        end else begin
+        if (is_alu_bypass) begin
           // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
           alu_bypass.rs1_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+        end else begin
+          stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
         end
       end
 
@@ -629,14 +631,11 @@ module issue_read_operands
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd && issue_instr_i[1].rs2 != '0) begin
-        if (!(issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU)) begin
-          stall_raw[1] = 1'b1;  // RS2[1] NEEDS RD[0]
-          // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore).
-        end else if ( ((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) )) begin
-          stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
-        end else begin
+        if (is_alu_bypass) begin
           // We cannot fuse if we have the same destination register, it will create a forwarding inconsistency.
           alu_bypass.rs2_from_rd = issue_instr_i[0].rd != issue_instr_i[1].rd;
+        end else begin
+          stall_raw[1] = 1'b1;  // RS2[1] NEEDS RD[0]
         end
       end
 
