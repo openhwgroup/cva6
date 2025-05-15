@@ -1,5 +1,6 @@
 VIVADO ?= vivado
-VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode batch
+VIVADO_NEWPROJECT ?= -source scripts/prologue.tcl
 
 work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
@@ -25,16 +26,15 @@ $(mcs): $(bit)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 ifneq ($(filter $(BOARD),$(bd_boards)),)
-.SECONDARY: $(bit)
 $(bit): ../../$(ADD_SRC)
 	mkdir -p $(work-dir)
-	$(VIVADO) $(VIVADOFLAGS) -source scripts/create_bd_project.tcl
+	$(VIVADO) $(VIVADOFLAGS) $(VIVADO_NEWPROJECT) -source scripts/create_bd_project.tcl
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
 
 else
 $(bit): $(ips)
 	mkdir -p $(work-dir)
-	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
+	$(VIVADO) $(VIVADOFLAGS) $(VIVADO_NEWPROJECT) -source scripts/run.tcl
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
 
 $(ips): %.xci :
