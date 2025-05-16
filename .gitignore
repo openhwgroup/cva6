@@ -34,6 +34,9 @@ corev_apu/fpga/scripts/add_sources.tcl
 corev_apu/fpga/ariane.xpr
 corev_apu/fpga/ariane.cache/
 corev_apu/fpga/ariane.hw/
+corev_apu/fpga/ariane.gen/
+corev_apu/fpga/ariane.runs/
+corev_apu/fpga/ariane.srcs/
 corev_apu/fpga/.Xil/
 corev_apu/fpga/mode*
 stdout/
