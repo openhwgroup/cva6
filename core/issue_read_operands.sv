@@ -219,6 +219,7 @@ module issue_read_operands
 
   // ALU-ALU bypass signals
   alu_bypass_t alu_bypass, alu_bypass_n, alu_bypass_q;
+  logic is_alu_bypass;
 
   // CVXIF Signals
   logic cvxif_req_allowed;
@@ -546,6 +547,16 @@ module issue_read_operands
   // ---------------
   // check that all operands are available, otherwise stall
   // forward corresponding register
+
+  if (CVA6Cfg.ALUBypass) begin
+    // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
+    assign is_alu_bypass =
+      (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) &&
+      !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}));
+  end else begin
+    assign is_alu_bypass = 1'b0;
+  end
+
   always_comb begin : operands_available
     alu_bypass  = '0;
 
@@ -607,12 +618,6 @@ module issue_read_operands
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
-
-      automatic logic is_alu_bypass;
-
-      // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
-      is_alu_bypass = CVA6Cfg.ALUBypass && (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) && !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) );
-
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
               issue_instr_i[1].op
           ) == is_rd_fpr(
