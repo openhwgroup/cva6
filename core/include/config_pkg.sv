@@ -204,6 +204,8 @@ package config_pkg;
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;
+    // Enable ALU-ALU bypass (superscalar mode only)
+    bit                          ALUBypass;
     // Number of commit ports. Forced to 2 if SuperscalarEn.
     int unsigned                 NrCommitPorts;
     // Load cycle latency number
@@ -257,6 +259,7 @@ package config_pkg;
     bit          SpeculativeSb;
 
     int unsigned NrALUs;
+    bit          ALUBypass;
 
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;

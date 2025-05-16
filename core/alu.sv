@@ -204,9 +204,9 @@ module alu
 
   if (CVA6Cfg.RVB) begin : gen_bitmanip
     // Count Population + Count population Word
-    if (CVA6Cfg.SuperscalarEn) begin
+    if (CVA6Cfg.ALUBypass) begin : gen_standalone_bitman_cpop
       assign cpop = '0;
-    end else begin
+    end else begin : gen_no_standalone_bitman_cpop
       // Count Population + Count population Word
       popcount #(
           .INPUT_WIDTH(CVA6Cfg.XLEN)
@@ -369,7 +369,7 @@ module alu
 
         // Count population
         CPOP, CPOPW:
-        result_o = (CVA6Cfg.SuperscalarEn) ?
+        result_o = (CVA6Cfg.ALUBypass) ?
             '0 : {{(CVA6Cfg.XLEN - ($clog2(CVA6Cfg.XLEN) + 1)) {1'b0}}, cpop};
 
         // Sign and Zero Extend

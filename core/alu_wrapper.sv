@@ -68,7 +68,7 @@ module alu_wrapper
     );
   end
 
-  if (CVA6Cfg.SuperscalarEn && CVA6Cfg.RVZCB) begin : gen_standalone_bitman_cpop
+  if (CVA6Cfg.ALUBypass && CVA6Cfg.RVZCB) begin : gen_standalone_bitman_cpop
 
     logic [1:0][$clog2(CVA6Cfg.XLEN):0] cpop;
     logic [1:0][CVA6Cfg.XLEN-1:0] operand_a_bitmanip;

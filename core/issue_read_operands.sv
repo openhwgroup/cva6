@@ -374,7 +374,7 @@ module issue_read_operands
               // Port 1 is going to use `alu`
               // Port 0 can use `alu2` for any other ALU operation
               fus_busy[0].alu = 1'b1;
-            end else if (issue_instr_i[1].fu == ALU && issue_instr_valid_i[1] && !fus_busy[0].alu) begin
+            end else if (CVA6Cfg.ALUBypass && issue_instr_i[1].fu == ALU && issue_instr_valid_i[1] && !fus_busy[0].alu) begin
               // Port 1 is going to use `alu2`
               // This situation allows `alu` -> `alu2` bypass
               fus_busy[0].alu2 = 1'b1;
@@ -611,7 +611,7 @@ module issue_read_operands
       automatic logic is_alu_bypass;
 
       // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
-      is_alu_bypass = (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) && !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) );
+      is_alu_bypass = CVA6Cfg.ALUBypass && (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) && !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}) );
 
       if (!issue_instr_i[1].use_zimm && (!CVA6Cfg.FpPresent || (is_rs1_fpr(
               issue_instr_i[1].op
@@ -850,7 +850,7 @@ module issue_read_operands
           issue_ack[i] = 1'b1;
           // We can do inter dual-issue forwarding only in the case of ALU-ALU operations with a RAW dependency
           if (i > 0) begin
-            if ((issue_instr_i[i].rd[4:0] == issue_instr_i[i-1].rd[4:0]) && (issue_instr_i[i].rd[4:0] != '0)) begin
+            if ((issue_instr_i[i].rd == issue_instr_i[i-1].rd) && (issue_instr_i[i].rd != '0)) begin
               if (!(alu_bypass.rs1_from_rd || alu_bypass.rs2_from_rd)) begin
                 issue_ack[i] = 1'b0;
               end
