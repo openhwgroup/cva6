@@ -85,13 +85,6 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    NrNonIdempotentRules: unsigned'(2),
    NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
    NonIdempotentLength: 1024'({64'b0, 64'b0}),
-   // FIXME
-//   NrExecuteRegionRules: unsigned'(3),
-//   ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
-//   ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
-//   NrCachedRegionRules: unsigned'(1),
-//   CachedRegionAddrBase: 1024'({64'h8000_0000}),
-//   CachedRegionLength: 1024'({64'h40000000}),
    NrExecuteRegionRules: unsigned'(0),
    ExecuteRegionAddrBase: 64'h0,
    ExecuteRegionLength: 64'h0,
