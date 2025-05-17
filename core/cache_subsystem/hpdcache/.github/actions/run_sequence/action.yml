@@ -1,0 +1,114 @@
+##
+#  Copyright 2023,2024 Cesar Fuguet
+#
+#  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+#  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
+#  may not use this file except in compliance with the License, or, at your
+#  option, the Apache License version 2.0. You may obtain a copy of the
+#  License at
+#
+#  https://solderpad.org/licenses/SHL-2.1/
+#
+#  Unless required by applicable law or agreed to in writing, any work
+#  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
+##
+##
+#  Author     : Cesar Fuguet
+#  Date       : October, 2024
+#  Description: GitHub Action to run a given test sequence on the Verilator TB
+##
+name: 'Run sequence'
+inputs:
+  seqname:
+    description: 'Name of the test sequence'
+    required: true
+    default: 'random'
+
+  ntrans:
+    description: 'Number of transactions in the sequence'
+    required: true
+    default: '5000'
+
+  ntests:
+    description: 'Number of separate tests'
+    required: true
+    default: '32'
+
+runs:
+  using: "composite"
+  steps:
+    #  Install Dependencies
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        ./.github/scripts/install_deps_ubuntu.sh
+
+    - name: Cache SystemC
+      id: cache-systemc
+      uses: actions/cache@v4
+      with:
+        path: build/systemc-3.0.1
+        fail-on-cache-miss: true
+        key: ${{ runner.os }}-build-systemc-${{ hashFiles('.github/scripts/install_systemc.sh') }}
+
+    - name: Cache Verilator
+      id: cache-verilator
+      uses: actions/cache@v4
+      with:
+        path: build/verilator-v5.028
+        fail-on-cache-miss: true
+        key: ${{ runner.os }}-build-verilator-${{ hashFiles('.github/scripts/install_verilator.sh') }}
+
+    #  Verilate the HPDcache RTL sources and build the testbench
+    - name: Verilate the HPDcache RTL
+      id: verilate
+      shell: bash
+      run: |
+        . .github/scripts/env.sh
+        cd rtl/tb
+        make verilate
+
+    - name: Archive Verilate log
+      if: ${{ failure () && steps.verilate.conclusion == 'failure' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: verilate-${{ inputs.seqname }}_${{ inputs.ntrans }}_${{ inputs.ntests }}-log
+        path: rtl/tb/build/verilate.log
+
+    - name: Build SystemC testbench
+      id: build-tb
+      shell: bash
+      run: |
+        . .github/scripts/env.sh
+        cd rtl/tb
+        make build -j${PARALLEL_JOBS}
+
+    - name: Archive SystemC build log
+      if: ${{ failure () && steps.build-tb.conclusion == 'failure' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{ inputs.seqname }}_${{ inputs.ntrans }}_${{ inputs.ntests }}-log
+        path: rtl/tb/build/build.log
+
+    #  Run the test sequence
+    - name: Run the random test sequence (short)
+      id: run-tb
+      shell: bash
+      run: |
+        . .github/scripts/env.sh
+        cd rtl/tb
+        make nonregression \
+            SEQUENCE=${{ inputs.seqname }} \
+            NTESTS=${{ inputs.ntests }} \
+            NTRANSACTIONS=${{ inputs.ntrans }}
+
+    - name: Archive nonregression logs
+      if: ${{ failure () && steps.run-tb.conclusion == 'failure' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: run-${{ inputs.seqname }}_${{ inputs.ntrans }}_${{ inputs.ntests }}-log
+        path: rtl/tb/logs

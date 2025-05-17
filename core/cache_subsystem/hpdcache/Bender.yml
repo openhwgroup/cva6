@@ -1,0 +1,49 @@
+package:
+  name: hpdcache
+  authors:
+    - "César Fuguet <cesar.fuguettortolero@cea.fr>"
+
+export_include_dirs:
+  - rtl/include
+
+sources:
+  - rtl/src/hpdcache_pkg.sv
+  - rtl/src/utils/hpdcache_mem_req_read_arbiter.sv
+  - rtl/src/utils/hpdcache_mem_req_write_arbiter.sv
+  - rtl/src/common/hpdcache_demux.sv
+  - rtl/src/common/hpdcache_lfsr.sv
+  - rtl/src/common/hpdcache_sync_buffer.sv
+  - rtl/src/common/hpdcache_fifo_reg.sv
+  - rtl/src/common/hpdcache_fifo_reg_initialized.sv
+  - rtl/src/common/hpdcache_fxarb.sv
+  - rtl/src/common/hpdcache_rrarb.sv
+  - rtl/src/common/hpdcache_mux.sv
+  - rtl/src/common/hpdcache_decoder.sv
+  - rtl/src/common/hpdcache_1hot_to_binary.sv
+  - rtl/src/common/hpdcache_prio_1hot_encoder.sv
+  - rtl/src/common/hpdcache_sram.sv
+  - rtl/src/common/hpdcache_sram_wbyteenable.sv
+  - rtl/src/common/hpdcache_sram_wmask.sv
+  - rtl/src/common/hpdcache_regbank_wbyteenable_1rw.sv
+  - rtl/src/common/hpdcache_regbank_wmask_1rw.sv
+  - rtl/src/common/hpdcache_data_downsize.sv
+  - rtl/src/common/hpdcache_data_upsize.sv
+  - rtl/src/hwpf_stride/hwpf_stride_pkg.sv
+  - rtl/src/hwpf_stride/hwpf_stride.sv
+  - rtl/src/hwpf_stride/hwpf_stride_arb.sv
+  - rtl/src/hwpf_stride/hwpf_stride_wrapper.sv
+  - rtl/src/hpdcache.sv
+  - rtl/src/hpdcache_amo.sv
+  - rtl/src/hpdcache_cmo.sv
+  - rtl/src/hpdcache_core_arbiter.sv
+  - rtl/src/hpdcache_ctrl.sv
+  - rtl/src/hpdcache_ctrl_pe.sv
+  - rtl/src/hpdcache_memctrl.sv
+  - rtl/src/hpdcache_miss_handler.sv
+  - rtl/src/hpdcache_mshr.sv
+  - rtl/src/hpdcache_rtab.sv
+  - rtl/src/hpdcache_uncached.sv
+  - rtl/src/hpdcache_victim_plru.sv
+  - rtl/src/hpdcache_victim_random.sv
+  - rtl/src/hpdcache_victim_sel.sv
+  - rtl/src/hpdcache_wbuf.sv

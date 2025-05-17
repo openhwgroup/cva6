@@ -1,0 +1,10 @@
+{signal: [
+  {name: 'CLK', wave: 'p....'},
+  {name: 'PAYLOAD', wave: 'xx22x', data: ['dat0', 'dat1']},
+  {name: 'VALID', wave: '0.1.0'},
+  {name: 'READY', wave: '01..0'}
+],
+ head:{
+   tick:0
+ }
+}

@@ -1,0 +1,305 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Tue Oct  8 14:22:54 2024
+[*]
+[timestart] 0
+[size] 1920 1006
+[pos] -64 -64
+*-25.433819 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] i_top.
+[treeopen] i_top.hpdcache_wrapper.
+[treeopen] i_top.hpdcache_wrapper.i_hpdcache.
+[treeopen] i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.
+[treeopen] i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.
+[treeopen] i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.pop_try_req_o.
+[treeopen] i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.req_q[0].
+[sst_width] 348
+[signals_width] 398
+[sst_expanded] 1
+[sst_vpaned_height] 524
+@28
+i_top.hpdcache_wrapper.i_hpdcache.clk_i
+i_top.hpdcache_wrapper.i_hpdcache.rst_ni
+@200
+-
+@c00200
+-Config
+@28
+i_top.hpdcache_wrapper.i_hpdcache.cfg_default_wb_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_enable_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_error_on_cacheable_amo_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_prefetch_updt_plru_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_rtab_single_entry_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_wbuf_inhibit_write_coalescing_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_wbuf_reset_timecnt_on_write_i
+i_top.hpdcache_wrapper.i_hpdcache.cfg_wbuf_sequential_waw_i
+@22
+i_top.hpdcache_wrapper.i_hpdcache.cfg_wbuf_threshold_i[7:0]
+@1401200
+-Config
+@200
+-
+@c00200
+-Core Interface
+@200
+-Request
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_valid_i
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_ready_o
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.addr_offset[11:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.addr_tag[43:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.be[0][7:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.need_rsp
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.op[4:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.phys_indexed
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.sid[2:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.size[2:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.tid[5:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_i.wdata[0][63:0]
+@200
+-
+-Tag
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_tag_i[43:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_pma_i.io
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_pma_i.uncacheable
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_req_pma_i.wr_policy_hint[2:0]
+@200
+-
+-Response
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_valid_o
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_o.aborted
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_o.error
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_o.rdata[0][63:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_o.sid[2:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.core_rsp_o.tid[5:0]
+@1401200
+-Core Interface
+@200
+-
+@c00200
+-Memory Interface
+@200
+-Memory Read Request
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_valid_o
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_ready_i
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_addr[63:0]
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_atomic[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_cacheable
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_command[1:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_id[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_len[7:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_read_o.mem_req_size[2:0]
+@200
+-
+-Memory Read Response
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_valid_i
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_ready_o
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_i.mem_resp_r_data[511:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_i.mem_resp_r_error[1:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_i.mem_resp_r_id[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_read_i.mem_resp_r_last
+@200
+-
+-Memory Write Request
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_valid_o
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_ready_i
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_addr[63:0]
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_atomic[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_cacheable
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_command[1:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_id[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_len[7:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_o.mem_req_size[2:0]
+@200
+-
+-Memory Write Data Request
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_valid_o
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_ready_i
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_o.mem_req_w_be[63:0]
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_o.mem_req_w_data[511:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_req_write_data_o.mem_req_w_last
+@200
+-
+-Memory Write Response
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_write_valid_i
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_write_ready_o
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_write_i.mem_resp_w_error[1:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_write_i.mem_resp_w_id[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.mem_resp_write_i.mem_resp_w_is_atomic
+@1401200
+-Memory Interface
+@200
+-
+@c00200
+-Stage 1
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_dirty
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_fetch
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_tag[43:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_way[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_way_index[1:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_hit_wback
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_dirty
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_tag[43:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_unavailable
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_valid
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_way[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_dir_victim_wback
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_valid_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_rtab_q
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_nline[49:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_set[5:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_tag[43:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_abort
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_add
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_and
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_lr
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_max
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_maxu
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_min
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_minu
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_or
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_sc
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_swap
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_amo_xor
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_cmo_fence
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_cmo_flush
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_cmo_inval
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_cmo_prefetch
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_load
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_store
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_uncacheable
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_is_error_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_wr_auto
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_wr_wb
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_req_wr_wt
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rsp_valid
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rsp_error
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rsp_aborted
+@200
+-
+-RTAB
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_alloc
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_alloc_and_link
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_check
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_check_hit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_dir_fetch
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_dir_unavailable
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_flush_hit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_flush_not_ready
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_mshr_full
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_mshr_hit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_mshr_ready
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_pop_try_commit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_pop_try_ptr_q[1:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_pop_try_rback
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_wbuf_hit
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st1_rtab_wbuf_not_ready
+@1401200
+-Stage 1
+@200
+-
+@c00200
+-Stage 2
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_dirty_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_fetch_q
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_set_q[5:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_tag_q[43:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_valid_q
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_way_q[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_dir_updt_wback_q
+@200
+-
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_flush_alloc_q
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_flush_alloc_nline_q[49:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_flush_alloc_way_q[3:0]
+@200
+-
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_q
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_addr_q[55:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_is_prefetch_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_need_rsp_q
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_sid_q[2:0]
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_tid_q[5:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_victim_way_q[3:0]
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.st2_mshr_alloc_wback_q
+@1401200
+-Stage 2
+@200
+-
+@c00201
+-RTAB
+@28
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.clk_i
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.fence_o
+@22
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.valid_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_dir_fetch_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_dir_unavailable_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_flush_hit_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_flush_not_ready_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_mshr_full_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_mshr_hit_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_mshr_ready_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_wbuf_hit_q[3:0]
+i_top.hpdcache_wrapper.i_hpdcache.hpdcache_ctrl_i.hpdcache_rtab_i.deps_wbuf_not_ready_q[3:0]
+@1401201
+-RTAB
+[pattern_trace] 1
+[pattern_trace] 0
