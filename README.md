@@ -447,6 +447,24 @@ The corresponding integration patches will be released on [OpenPiton GitHub repo
 
 To activate the different cache system, compile your code with the macro `DCACHE_TYPE`.
 
+## Hybrid Cache Implementation
+
+The CVA6 now supports a hybrid cache implementation that dynamically switches between set associative and fully associative cache organizations based on the processor's privilege level:
+
+- **Machine Mode (M-mode)**: Uses set associative organization for better performance
+- **Supervisor/User Mode (S/U-mode)**: Uses fully associative organization for better isolation
+
+This provides better security isolation while maintaining performance for trusted code. Four configurations are available:
+
+1. **WT**: Standard Write-Through cache (baseline)
+2. **WT_HYB**: Hybrid cache with dynamic privilege-based mode switching
+3. **WT_HYB_FORCE_SET_ASS**: Hybrid cache forced to set associative mode
+4. **WT_HYB_FORCE_FULL_ASS**: Hybrid cache forced to fully associative mode
+
+To compare these configurations, use the provided `compare_hybrid_cache_configs.sh` script. For detailed analysis, use the `analyze_hybrid_cache.py` script which generates visualizations and reports.
+
+For more details, see the [hybrid_cache_validation.md](hybrid_cache_validation.md) document.
+
 
 ## Re-generating the Bootcode (ZSBL)
 
