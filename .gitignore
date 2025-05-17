@@ -70,4 +70,5 @@ test_comparison_cai/
 test_set_mode/
 *.bak
 cai_cai_cai_cai/
-EOF < /dev/null
+hybrid_cache_comparison_*/
+*cache_analysis_report/
