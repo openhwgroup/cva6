@@ -52,3 +52,22 @@ Bender.lock
 # Both following lines are needed to list contents of ISA manual build dir.
 !/vendor/riscv/riscv-isa-manual/build/
 !/vendor/riscv/riscv-isa-manual/build/*
+
+# Cache testing artifacts
+*cache_configs_*/
+*wt_results*/
+*wt_hyb_results*/
+*_WT_*/
+*_HYB_*/
+*test_all_modes*/
+*simulation_artifacts*/
+*hello_world_wt_hyb_results*/
+*vm_pmp_wt_hyb_results*/
+obj_dir/
+quick_test_results*/
+single_mode_test*/
+test_comparison_cai/
+test_set_mode/
+*.bak
+cai_cai_cai_cai/
+EOF < /dev/null
