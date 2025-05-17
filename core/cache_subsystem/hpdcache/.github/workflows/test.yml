@@ -1,0 +1,123 @@
+##
+#  Copyright 2023,2024 Cesar Fuguet
+#
+#  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+#  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
+#  may not use this file except in compliance with the License, or, at your
+#  option, the Apache License version 2.0. You may obtain a copy of the
+#  License at
+#
+#  https://solderpad.org/licenses/SHL-2.1/
+#
+#  Unless required by applicable law or agreed to in writing, any work
+#  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
+#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#  License for the specific language governing permissions and limitations
+#  under the License.
+##
+##
+#  Author     : Cesar Fuguet
+#  Date       : October, 2024
+#  Description: GitHub Action to run tests on pull requests and pushes
+##
+name: HPDcache Test CI
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'CODEOWNERS'
+      - 'LICENSE'
+
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'CODEOWNERS'
+      - 'LICENSE'
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      #  Install Dependencies
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          ./.github/scripts/install_deps_ubuntu.sh
+
+      #  Install SystemC
+      - name: Cache SystemC
+        id: cache-systemc
+        uses: actions/cache@v4
+        with:
+          path: build/systemc-3.0.1
+          key: ${{ runner.os }}-build-systemc-${{ hashFiles('.github/scripts/install_systemc.sh') }}
+
+      - name: Install SystemC
+        shell: bash
+        run: |
+          . .github/scripts/env.sh
+          ./.github/scripts/install_systemc.sh
+
+      #  Install Verilator
+      - name: Cache Verilator
+        id: cache-verilator
+        uses: actions/cache@v4
+        with:
+          path: build/verilator-v5.028
+          key: ${{ runner.os }}-build-verilator-${{ hashFiles('.github/scripts/install_verilator.sh') }}
+
+      - name: Install Verilator
+        shell: bash
+        run: |
+          . .github/scripts/env.sh
+          ./.github/scripts/install_verilator.sh
+
+
+  #  Run the tests
+  run_random_short:
+    runs-on: ubuntu-latest
+    name: run_random_short
+    needs: build
+    steps:
+      - uses: actions/checkout@master
+
+      - id: run_random_short_sequence
+        uses: ./.github/actions/run_sequence
+        with:
+          seqname: 'random'
+          ntrans: '5000'
+          ntests: '64'
+
+  run_random_long:
+    runs-on: ubuntu-latest
+    name: run_random_long
+    needs: build
+    steps:
+      - uses: actions/checkout@master
+
+      - id: run_random_long_sequence
+        uses: ./.github/actions/run_sequence
+        with:
+          seqname: 'random'
+          ntrans: '50000'
+          ntests: '16'
+
+  run_single_addr:
+    runs-on: ubuntu-latest
+    name: run_single_addr
+    needs: build
+    steps:
+      - uses: actions/checkout@master
+
+      - id: run_single_addr_sequence
+        uses: ./.github/actions/run_sequence
+        with:
+          seqname: 'single_addr'
+          ntrans: '20000'
+          ntests: '16'

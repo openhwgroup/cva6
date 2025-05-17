@@ -1,0 +1,68 @@
+//
+//  Copyright 2023 CEA*
+//  *Commissariat a l'Energie Atomique et aux Energies Alternatives (CEA)
+//
+//  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+//
+//  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
+//  may not use this file except in compliance with the License, or, at your
+//  option, the Apache License version 2.0. You may obtain a copy of the
+//  License at
+//
+//  https://solderpad.org/licenses/SHL-2.1/
+//
+//  Unless required by applicable law or agreed to in writing, any work
+//  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
+//  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//  License for the specific language governing permissions and limitations
+//  under the License.
+//
+//
+//  Authors       : Cesar Fuguet
+//  Creation Date : January, 2023
+//  Description   : File list for the HPDcache
+//  History       :
+//
++incdir+${HPDCACHE_DIR}/rtl/include
+${HPDCACHE_DIR}/rtl/src/hpdcache_pkg.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_req_read_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_req_write_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_demux.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_lfsr.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sync_buffer.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_fifo_reg.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_fifo_reg_initialized.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_fxarb.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_rrarb.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_mux.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_decoder.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_1hot_to_binary.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_prio_1hot_encoder.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram_wbyteenable.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_sram_wmask.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_regbank_wbyteenable_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_regbank_wmask_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_data_downsize.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_data_upsize.sv
+${HPDCACHE_DIR}/rtl/src/common/hpdcache_data_resize.sv
+${HPDCACHE_DIR}/rtl/src/hwpf_stride/hwpf_stride_pkg.sv
+${HPDCACHE_DIR}/rtl/src/hwpf_stride/hwpf_stride.sv
+${HPDCACHE_DIR}/rtl/src/hwpf_stride/hwpf_stride_arb.sv
+${HPDCACHE_DIR}/rtl/src/hwpf_stride/hwpf_stride_wrapper.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_amo.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_cmo.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_core_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_ctrl.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_ctrl_pe.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_memctrl.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_miss_handler.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_mshr.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_rtab.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_uncached.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_victim_plru.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_victim_random.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_victim_sel.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_wbuf.sv
+${HPDCACHE_DIR}/rtl/src/hpdcache_flush.sv

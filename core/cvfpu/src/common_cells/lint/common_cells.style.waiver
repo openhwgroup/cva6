@@ -1,0 +1,6 @@
+# That is essentially a struct definition but Verible doesn't know about it.
+waive --rule=typedef-structs-unions --line=36 --location="src/ecc_decode.sv"
+waive --rule=typedef-structs-unions --line=29 --location="src/ecc_encode.sv"
+# That is a known issue with string parameter in Synopsys DC
+waive --rule=explicit-parameter-storage-type --line=19 --location="src/stream_arbiter.sv"
+waive --rule=explicit-parameter-storage-type --line=19 --location="src/stream_arbiter_flushable.sv"
