@@ -225,6 +225,20 @@ smoke-hwconfig:
     - when: manual
       allow_failure: true
 
+iti-test:
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "ITI test"
+    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instuction Trace Interface"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    DV_SIMULATORS: "vcs-testharness"
+  script:
+    - bash verif/regress/iti_test.sh
+    - diff .gitlab-ci/iti_reference.trace .gitlab-ci/iti.trace
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 spyglass:
   extends:
     - .synthesis_test
@@ -303,6 +317,20 @@ fpga-build:
     - mkdir -p artifacts/reports
     - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
     - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
+
+pmp_tests:
+  timeout : 2 hours
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "PMP $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Physical Memory Protection tests"
+    DASHBOARD_SORT_INDEX: 2
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+    DV_SIMULATORS: "vcs-uvm"
+    SPIKE_TANDEM: 1
+  script: source verif/regress/pmp_cv32a65x_tests.sh
+  after_script: *simu_after_script
 
 .regress_test:
   stage: heavy tests

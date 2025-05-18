@@ -7,6 +7,6 @@ endif::[]
 
 === "Zcmop" Compressed May-Be-Operations Extension, Version 1.0
 
-ifeval::[{RVZimop} == false]
+ifeval::[{RVZcmop} == false]
 {ohg-config}: This extension is not supported.
 endif::[]
