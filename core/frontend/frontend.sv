@@ -309,8 +309,8 @@ module frontend
 
   // Cache interface
   // Gate ICache requests and NPC updates during fence.i
-  assign icache_dreq_o.req = instr_queue_ready & !halt_frontend_i;
-  assign if_ready = icache_dreq_i.ready & instr_queue_ready & !halt_frontend_i;
+  assign icache_dreq_o.req = instr_queue_ready & ~halt_frontend_i;
+  assign if_ready = icache_dreq_i.ready & instr_queue_ready & ~halt_frontend_i;
   // We need to flush the cache pipeline if:
   // 1. We mispredicted
   // 2. Want to flush the whole processor front-end
