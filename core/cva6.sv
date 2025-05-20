@@ -622,6 +622,7 @@ module cva6
   logic hfence_vvma_commit_controller;
   logic hfence_gvma_commit_controller;
   logic halt_ctrl;
+  logic halt_frontend;
   logic halt_csr_ctrl;
   logic dcache_flush_ctrl_cache;
   logic dcache_flush_ack_cache_ctrl;
@@ -677,6 +678,7 @@ module cva6
       .flush_bp_i         (1'b0),
       .flush_i            (flush_ctrl_if),                  // not entirely correct
       .halt_i             (halt_ctrl),
+      .halt_frontend_i    (halt_frontend),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
       .pc_commit_i        (pc_commit),
       .ex_valid_i         (ex_commit.valid),
@@ -1283,6 +1285,7 @@ module cva6
       .flush_tlb_gvma_o      (flush_tlb_gvma_ctrl_ex),
       .halt_csr_i            (halt_csr_ctrl),
       .halt_acc_i            (halt_acc_ctrl),
+      .halt_frontend_o       (halt_frontend),
       .halt_o                (halt_ctrl),
       // control ports
       .eret_i                (eret),
