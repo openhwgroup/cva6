@@ -44,7 +44,57 @@ module cva6_altera (
  input  logic [ 0:0]  ddr4_alert_n,
  input  logic         oct_rzqin   ,
  
- output logic [ 3:0]  led         
+ output logic [ 3:0]  led ,
+ //HPS
+// HPS EMIF
+output   wire [0:0]    emif_hps_mem_mem_ck,
+output   wire [0:0]    emif_hps_mem_mem_ck_n,
+output   wire [16:0]   emif_hps_mem_mem_a,
+output   wire [0:0]    emif_hps_mem_mem_act_n,
+output   wire [1:0]    emif_hps_mem_mem_ba,
+output   wire [1:0]    emif_hps_mem_mem_bg,
+output   wire [0:0]    emif_hps_mem_mem_cke,
+output   wire [0:0]    emif_hps_mem_mem_cs_n,
+output   wire [0:0]    emif_hps_mem_mem_odt,
+output   wire [0:0]    emif_hps_mem_mem_reset_n,
+output   wire [0:0]    emif_hps_mem_mem_par,
+input    wire [0:0]    emif_hps_mem_mem_alert_n,
+input    wire          emif_hps_oct_oct_rzqin,
+input    wire          emif_hps_pll_ref_clk_p,
+inout    wire [8-1:0]  emif_hps_mem_mem_dbi_n,
+inout    wire [64-1:0] emif_hps_mem_mem_dq,
+inout    wire [8-1:0]  emif_hps_mem_mem_dqs,
+inout    wire [8-1:0]  emif_hps_mem_mem_dqs_n,
+input    wire          hps_jtag_tck,
+input    wire          hps_jtag_tms,
+output   wire          hps_jtag_tdo,
+input    wire          hps_jtag_tdi,
+output   wire          hps_sdmmc_CCLK, 
+inout    wire          hps_sdmmc_CMD,          
+inout    wire          hps_sdmmc_D0,          
+inout    wire          hps_sdmmc_D1,          
+inout    wire          hps_sdmmc_D2,        
+inout    wire          hps_sdmmc_D3,        
+output   wire          hps_emac0_TX_CLK,       
+input    wire          hps_emac0_RX_CLK,      
+output   wire          hps_emac0_TX_CTL,
+input    wire          hps_emac0_RX_CTL,      
+output   wire          hps_emac0_TXD0,       
+output   wire          hps_emac0_TXD1,
+input    wire          hps_emac0_RXD0,     
+input    wire          hps_emac0_RXD1,                
+output   wire          hps_emac0_TXD2,        
+output   wire          hps_emac0_TXD3,
+input    wire          hps_emac0_RXD2,        
+input    wire          hps_emac0_RXD3, 
+inout    wire          hps_emac0_MDIO,         
+output   wire          hps_emac0_MDC,
+input    wire          hps_uart0_RX,       
+output   wire          hps_uart0_TX, 
+inout    wire          hps_i2c1_SDA,        
+inout    wire          hps_i2c1_SCL,
+inout    wire          hps_gpio1_io0,
+input    wire          hps_ref_clk        
 );
 
 // CVA6 Intel configuration
@@ -99,7 +149,7 @@ AXI_BUS #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
-) master[ariane_soc::NB_PERIPHERALS-1:0]();
+) master[ariane_soc::NB_PERIPHERALS:0]();
 
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN      ),
@@ -170,7 +220,7 @@ assign rst = ~ddr_sync_reset;
 // AXI Xbar
 // ---------------
 
-axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
+axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS:0] addr_map;
 
 assign addr_map = '{
   '{ idx: ariane_soc::Debug,    start_addr: ariane_soc::DebugBase,    end_addr: ariane_soc::DebugBase + ariane_soc::DebugLength       },
@@ -182,12 +232,13 @@ assign addr_map = '{
   '{ idx: ariane_soc::SPI,      start_addr: ariane_soc::SPIBase,      end_addr: ariane_soc::SPIBase + ariane_soc::SPILength           },
   '{ idx: ariane_soc::Ethernet, start_addr: ariane_soc::EthernetBase, end_addr: ariane_soc::EthernetBase + ariane_soc::EthernetLength },
   '{ idx: ariane_soc::GPIO,     start_addr: ariane_soc::GPIOBase,     end_addr: ariane_soc::GPIOBase + ariane_soc::GPIOLength         },
-  '{ idx: ariane_soc::DRAM,     start_addr: ariane_soc::DRAMBase,     end_addr: ariane_soc::DRAMBase + ariane_soc::DRAMLength         }
+  '{ idx: ariane_soc::DRAM,     start_addr: ariane_soc::DRAMBase,     end_addr: ariane_soc::DRAMBase + ariane_soc::DRAMLength         },
+  '{ idx: ariane_soc::HPS,      start_addr: ariane_soc::HPSBase,      end_addr: ariane_soc::HPSBase + ariane_soc::HPSLength           }
 };
 
 localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
   NoSlvPorts:         ariane_soc::NrSlaves,
-  NoMstPorts:         ariane_soc::NB_PERIPHERALS,
+  NoMstPorts:         ariane_soc::NB_PERIPHERALS+1,
   MaxMstTrans:        1, // Probably requires update
   MaxSlvTrans:        1, // Probably requires update
   FallThrough:        1'b0,
@@ -197,7 +248,7 @@ localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
   UniqueIds:          1'b0,
   AxiAddrWidth:       AxiAddrWidth,
   AxiDataWidth:       AxiDataWidth,
-  NoAddrRules:        ariane_soc::NB_PERIPHERALS
+  NoAddrRules:        ariane_soc::NB_PERIPHERALS+1
 };
 
 axi_xbar_intf #(
@@ -818,11 +869,11 @@ logic [6:0]   ddr_sc_amm_burstcount;
 logic [63:0]  ddr_sc_amm_byteenable;
 logic ddr_sc_amm_readdatavalid;
 
-logic calbus_read, calbus_write, calbus_clk, ddr_pll_locked, ddr_rst_req, ddr_rst_done;
-logic [19:0] calbus_addr;
-logic [31:0] calbus_wdata;
-logic [31:0] calbus_rdata;
-logic [4095:0] calbus_seq_param_tbl;
+logic calbus_read, calbus_write, calbus_clk, calbus_read1, calbus_write1, calbus_clk1, ddr_pll_locked, ddr_rst_req, ddr_rst_done;
+logic [19:0] calbus_addr,calbus_addr1;
+logic [31:0] calbus_wdata, calbus_wdata1;
+logic [31:0] calbus_rdata, calbus_rdata1;
+logic [4095:0] calbus_seq_param_tbl, calbus_seq_param_tbl1;
 logic cal_success;
 logic ddr_amm_wait_request;
 
@@ -1040,9 +1091,214 @@ emif_cal ddr_calibration (
     .calbus_wdata_0          (calbus_wdata),          //  output,    width = 32,                  .calbus_wdata
     .calbus_rdata_0          (calbus_rdata),          //   input,    width = 32,                  .calbus_rdata
     .calbus_seq_param_tbl_0  (calbus_seq_param_tbl),  //   input,  width = 4096,                  .calbus_seq_param_tbl
-    .calbus_clk              (calbus_clk)              //  output,     width = 1,   emif_calbus_clk.clk
-);
+    
+    .calbus_read_1          (calbus_read1),          //  output,     width = 1,   emif_calbus_1.calbus_read
+    .calbus_write_1         (calbus_write1),         //  output,     width = 1,                .calbus_write
+    .calbus_address_1       (calbus_addr1),       //  output,    width = 20,                .calbus_address
+    .calbus_wdata_1         (calbus_wdata1),         //  output,    width = 32,                .calbus_wdata
+    .calbus_rdata_1         (calbus_rdata1),         //   input,    width = 32,                .calbus_rdata
+    .calbus_seq_param_tbl_1 (calbus_seq_param_tbl1), //   input,  width = 4096,                .calbus_seq_param_tbl
+	.calbus_clk              (calbus_clk)              //  output,     width = 1,   emif_calbus_clk.clk
+	);
 
+wire h2f_reset; 
+wire ninit_done; 
+
+assign system_reset_n            = ~h2f_reset & ~ninit_done;
+
+AXI_BUS #(
+    .AXI_ADDR_WIDTH ( CVA6Cfg.XLEN     ),
+    .AXI_DATA_WIDTH ( 128              ),
+    .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
+    .AXI_USER_WIDTH ( AxiUserWidth     )
+) master_to_hps[0:0]();
+
+axi_dw_adapter  #(
+    .ADDR_WIDTH            (CVA6Cfg.XLEN),
+    .S_DATA_WIDTH          (AxiAddrWidth),
+    .M_DATA_WIDTH          (128),
+    .ID_WIDTH              (AxiIdWidthSlaves)
+)i_axi_dwidth_converter_hps(
+       .clk(clk),
+       .rst(~ndmreset_n),
+       .s_axi_awid(master[ariane_soc::HPS].aw_id),
+       .s_axi_awaddr(master[ariane_soc::HPS].aw_addr[31:0]),
+       .s_axi_awlen(master[ariane_soc::HPS].aw_len),
+       .s_axi_awsize(master[ariane_soc::HPS].aw_size),
+       .s_axi_awburst(master[ariane_soc::HPS].aw_burst),
+       .s_axi_awlock(master[ariane_soc::HPS].aw_lock),
+       .s_axi_awcache(master[ariane_soc::HPS].aw_cache),
+       .s_axi_awprot(master[ariane_soc::HPS].aw_prot),
+       .s_axi_awregion(master[ariane_soc::HPS].aw_region),
+       .s_axi_awqos(master[ariane_soc::HPS].aw_qos),
+       .s_axi_awvalid(master[ariane_soc::HPS].aw_valid),
+       .s_axi_awready(master[ariane_soc::HPS].aw_ready),
+       .s_axi_wdata(master[ariane_soc::HPS].w_data),
+       .s_axi_wstrb(master[ariane_soc::HPS].w_strb),
+       .s_axi_wlast(master[ariane_soc::HPS].w_last),
+       .s_axi_wvalid(master[ariane_soc::HPS].w_valid),
+       .s_axi_wready(master[ariane_soc::HPS].w_ready),
+       .s_axi_bid(master[ariane_soc::HPS].b_id),
+       .s_axi_bresp(master[ariane_soc::HPS].b_resp),
+       .s_axi_bvalid(master[ariane_soc::HPS].b_valid),
+       .s_axi_bready(master[ariane_soc::HPS].b_ready),
+       .s_axi_arid(master[ariane_soc::HPS].ar_id),
+       .s_axi_araddr(master[ariane_soc::HPS].ar_addr[31:0]),
+       .s_axi_arlen(master[ariane_soc::HPS].ar_len),
+       .s_axi_arsize(master[ariane_soc::HPS].ar_size),
+       .s_axi_arburst(master[ariane_soc::HPS].ar_burst),
+       .s_axi_arlock(master[ariane_soc::HPS].ar_lock),
+       .s_axi_arcache(master[ariane_soc::HPS].ar_cache),
+       .s_axi_arprot(master[ariane_soc::HPS].ar_prot),
+       .s_axi_arregion(master[ariane_soc::HPS].ar_region),
+       .s_axi_arqos(master[ariane_soc::HPS].ar_qos),
+       .s_axi_arvalid(master[ariane_soc::HPS].ar_valid),
+       .s_axi_arready(master[ariane_soc::HPS].ar_ready),
+       .s_axi_rid(master[ariane_soc::HPS].r_id),
+       .s_axi_rdata(master[ariane_soc::HPS].r_data),
+       .s_axi_rresp(master[ariane_soc::HPS].r_resp),
+       .s_axi_rlast(master[ariane_soc::HPS].r_last),
+       .s_axi_rvalid(master[ariane_soc::HPS].r_valid),
+       .s_axi_rready(master[ariane_soc::HPS].r_ready),
+       .m_axi_awaddr(master_to_hps[0].aw_addr),
+       .m_axi_awlen(master_to_hps[0].aw_len),
+       .m_axi_awsize(master_to_hps[0].aw_size),
+       .m_axi_awburst(master_to_hps[0].aw_burst),
+       .m_axi_awlock(master_to_hps[0].aw_lock),
+       .m_axi_awcache(master_to_hps[0].aw_cache),
+       .m_axi_awprot(master_to_hps[0].aw_prot),
+       .m_axi_awregion(master_to_hps[0].aw_region),
+       .m_axi_awqos(master_to_hps[0].aw_qos),
+       .m_axi_awvalid(master_to_hps[0].aw_valid),
+       .m_axi_awready(master_to_hps[0].aw_ready),
+       .m_axi_wdata(master_to_hps[0].w_data ),
+       .m_axi_wstrb(master_to_hps[0].w_strb),
+       .m_axi_wlast(master_to_hps[0].w_last),
+       .m_axi_wvalid(master_to_hps[0].w_valid),
+       .m_axi_wready(master_to_hps[0].w_ready),
+       .m_axi_bresp(master_to_hps[0].b_resp),
+       .m_axi_bvalid(master_to_hps[0].b_valid),
+       .m_axi_bready(master_to_hps[0].b_ready),
+       .m_axi_araddr(master_to_hps[0].ar_addr),
+       .m_axi_arlen(master_to_hps[0].ar_len),
+       .m_axi_arsize(master_to_hps[0].ar_size),
+       .m_axi_arburst(master_to_hps[0].ar_burst),
+       .m_axi_arlock(master_to_hps[0].ar_lock),
+       .m_axi_arcache(master_to_hps[0].ar_cache),
+       .m_axi_arprot(master_to_hps[0].ar_prot),
+       .m_axi_arregion(master_to_hps[0].ar_region),
+       .m_axi_arqos(master_to_hps[0].ar_qos),
+       .m_axi_arvalid(master_to_hps[0].ar_valid),
+       .m_axi_arready(master_to_hps[0].ar_ready),
+       .m_axi_rdata(master_to_hps[0].r_data),
+       .m_axi_rresp(master_to_hps[0].r_resp),
+       .m_axi_rlast(master_to_hps[0].r_last),
+       .m_axi_rvalid(master_to_hps[0].r_valid),
+       .m_axi_rready(master_to_hps[0].r_ready)
+   );
+
+system hps_minimal (
+        .hps_hps_io_EMAC0_TX_CLK  (hps_emac0_TX_CLK),  								//  output,   width = 1,           hps_hps_io.EMAC0_TX_CLK
+        .hps_hps_io_EMAC0_TXD0    (hps_emac0_TXD0),    								//  output,   width = 1,                     .EMAC0_TXD0
+        .hps_hps_io_EMAC0_TXD1    (hps_emac0_TXD1),    								//  output,   width = 1,                     .EMAC0_TXD1
+        .hps_hps_io_EMAC0_TXD2    (hps_emac0_TXD2),    								//  output,   width = 1,                     .EMAC0_TXD2
+        .hps_hps_io_EMAC0_TXD3    (hps_emac0_TXD3),    								//  output,   width = 1,                     .EMAC0_TXD3
+        .hps_hps_io_EMAC0_RX_CTL  (hps_emac0_RX_CTL),  								//   input,   width = 1,                     .EMAC0_RX_CTL
+        .hps_hps_io_EMAC0_TX_CTL  (hps_emac0_TX_CTL),  								//  output,   width = 1,                     .EMAC0_TX_CTL
+        .hps_hps_io_EMAC0_RX_CLK  (hps_emac0_RX_CLK),  								//   input,   width = 1,                     .EMAC0_RX_CLK
+        .hps_hps_io_EMAC0_RXD0    (hps_emac0_RXD0),    								//   input,   width = 1,                     .EMAC0_RXD0
+        .hps_hps_io_EMAC0_RXD1    (hps_emac0_RXD1),    								//   input,   width = 1,                     .EMAC0_RXD1
+        .hps_hps_io_EMAC0_RXD2    (hps_emac0_RXD2),    								//   input,   width = 1,                     .EMAC0_RXD2
+        .hps_hps_io_EMAC0_RXD3    (hps_emac0_RXD3),    								//   input,   width = 1,                     .EMAC0_RXD3
+        .hps_hps_io_EMAC0_MDIO    (hps_emac0_MDIO),    								//   inout,   width = 1,                     .EMAC0_MDIO
+        .hps_hps_io_EMAC0_MDC     (hps_emac0_MDC),     								//  output,   width = 1,                     .EMAC0_MDC
+        .hps_hps_io_SDMMC_CMD     (hps_sdmmc_CMD),     								//   inout,   width = 1,                     .SDMMC_CMD
+        .hps_hps_io_SDMMC_D0      (hps_sdmmc_D0),      								//   inout,   width = 1,                     .SDMMC_D0
+        .hps_hps_io_SDMMC_D1      (hps_sdmmc_D1),      								//   inout,   width = 1,                     .SDMMC_D1
+        .hps_hps_io_SDMMC_D2      (hps_sdmmc_D2),      								//   inout,   width = 1,                     .SDMMC_D2
+        .hps_hps_io_SDMMC_D3      (hps_sdmmc_D3),      								//   inout,   width = 1,                     .SDMMC_D3
+        .hps_hps_io_SDMMC_CCLK    (hps_sdmmc_CCLK),    								//  output,   width = 1,                     .SDMMC_CCLK
+        .hps_hps_io_UART0_RX      (hps_uart0_RX),      								//   input,   width = 1,                     .UART0_RX
+        .hps_hps_io_UART0_TX      (hps_uart0_TX),      								//  output,   width = 1,                     .UART0_TX
+        .hps_hps_io_I2C1_SDA      (hps_i2c1_SDA),      								//   inout,   width = 1,                     .I2C1_SDA
+        .hps_hps_io_I2C1_SCL      (hps_i2c1_SCL),      								//   inout,   width = 1,                     .I2C1_SCL
+        .hps_hps_io_gpio1_io0     (hps_gpio1_io0),      								//   inout,   width = 1,                     .gpio1_io0
+        .hps_hps_io_jtag_tck      (hps_jtag_tck),      								//   input,   width = 1,                     .jtag_tck
+        .hps_hps_io_jtag_tms      (hps_jtag_tms),      								//   input,   width = 1,                     .jtag_tms
+        .hps_hps_io_jtag_tdo      (hps_jtag_tdo),      								//  output,   width = 1,                     .jtag_tdo
+        .hps_hps_io_jtag_tdi      (hps_jtag_tdi),      								//   input,   width = 1,                     .jtag_tdi
+		.hps_hps_io_hps_osc_clk   (hps_ref_clk),                              //   input,    width = 1,                                              .hps_osc_clk
+		.h2f_reset_reset          (h2f_reset),                                     //  output,    width = 1,                                     h2f_reset.reset
+		
+		.hps_f2h_axi_clock_clk    (clk),                               //   input,    width = 1,                             hps_f2h_axi_clock.clk
+		.hps_f2h_axi_reset_reset_n(ndmreset_n),                           //   input,    width = 1,                             hps_f2h_axi_reset.reset_n
+		.hps_emif_pll_ref_clk_clk (emif_hps_pll_ref_clk_p), 							//   input,   width = 1, hps_emif_pll_ref_clk.clk
+        .hps_emif_oct_oct_rzqin   (emif_hps_oct_oct_rzqin),   						//   input,   width = 1,         hps_emif_oct.oct_rzqin
+        .hps_emif_mem_mem_ck      (emif_hps_mem_mem_ck),      						//  output,   width = 1,         hps_emif_mem.mem_ck
+        .hps_emif_mem_mem_ck_n    (emif_hps_mem_mem_ck_n),    						//  output,   width = 1,                     .mem_ck_n
+        .hps_emif_mem_mem_a       (emif_hps_mem_mem_a),       						//  output,  width = 17,                     .mem_a
+        .hps_emif_mem_mem_act_n   (emif_hps_mem_mem_act_n),   						//  output,   width = 1,                     .mem_act_n
+        .hps_emif_mem_mem_ba      (emif_hps_mem_mem_ba),      						//  output,   width = 2,                     .mem_ba
+        .hps_emif_mem_mem_bg      (emif_hps_mem_mem_bg),      						//  output,   width = 2,                     .mem_bg
+        .hps_emif_mem_mem_cke     (emif_hps_mem_mem_cke),     						//  output,   width = 1,                     .mem_cke
+        .hps_emif_mem_mem_cs_n    (emif_hps_mem_mem_cs_n),    						//  output,   width = 1,                     .mem_cs_n
+        .hps_emif_mem_mem_odt     (emif_hps_mem_mem_odt),     						//  output,   width = 1,                     .mem_odt
+        .hps_emif_mem_mem_reset_n (emif_hps_mem_mem_reset_n), 						//  output,   width = 1,                     .mem_reset_n
+        .hps_emif_mem_mem_par     (emif_hps_mem_mem_par),     						//  output,   width = 1,                     .mem_par
+        .hps_emif_mem_mem_alert_n (emif_hps_mem_mem_alert_n), 						//   input,   width = 1,                     .mem_alert_n
+        .hps_emif_mem_mem_dqs     (emif_hps_mem_mem_dqs),     						//   inout,   width = 8,                     .mem_dqs
+        .hps_emif_mem_mem_dqs_n   (emif_hps_mem_mem_dqs_n),   						//   inout,   width = 8,                     .mem_dqs_n
+        .hps_emif_mem_mem_dq      (emif_hps_mem_mem_dq),      						//   inout,  width = 64,                     .mem_dq
+        .hps_emif_mem_mem_dbi_n   (emif_hps_mem_mem_dbi_n),   						//   inout,   width = 8,                     .mem_dbi_n
+
+        .hps_emif_emif_calbus_calbus_read                    (calbus_read1),                    //   input,     width = 1,                          hps_emif_emif_calbus.calbus_read
+		.hps_emif_emif_calbus_calbus_write                   (calbus_write1),                   //   input,     width = 1,                                              .calbus_write
+		.hps_emif_emif_calbus_calbus_address                 (calbus_address1),                 //   input,    width = 20,                                              .calbus_address
+		.hps_emif_emif_calbus_calbus_wdata                   (calbus_wdata1),                   //   input,    width = 32,                                              .calbus_wdata
+		.hps_emif_emif_calbus_calbus_rdata                   (calbus_rdata1),                   //  output,    width = 32,                                              .calbus_rdata
+		.hps_emif_emif_calbus_calbus_seq_param_tbl           (calbus_seq_param_tbl1),           //  output,  width = 4096,                                              .calbus_seq_param_tbl
+		.hps_emif_emif_calbus_clk_clk                        (calbus_clk),                        //   input,     width = 1,                      hps_emif_emif_calbus_clk.clk
+
+		.ninit_done_ninit_done    (ninit_done),                               //  output,    width = 1,                                    ninit_done.ninit_done
+
+		.system_intel_cache_coherency_translator_clock_clk   (clk),   //   input,    width = 1, system_intel_cache_coherency_translator_clock.clk
+		.system_intel_cache_coherency_translator_reset_reset (~ndmreset_n), //   input,    width = 1, system_intel_cache_coherency_translator_reset.reset
+		.system_intel_cache_coherency_translator_s0_araddr   (master_to_hps[0].ar_addr),   //   input,   width = 32,    system_intel_cache_coherency_translator_s0.araddr
+		.system_intel_cache_coherency_translator_s0_arburst  (master_to_hps[0].ar_burst),  //   input,    width = 2,                                              .arburst
+		.system_intel_cache_coherency_translator_s0_arcache  (master_to_hps[0].ar_cache),  //   input,    width = 4,                                              .arcache
+		.system_intel_cache_coherency_translator_s0_arid     (master_to_hps[0].ar_id),     //   input,    width = 5,                                              .arid
+		.system_intel_cache_coherency_translator_s0_arlen    (master_to_hps[0].ar_len),    //   input,    width = 8,                                              .arlen
+		.system_intel_cache_coherency_translator_s0_arlock   (master_to_hps[0].ar_lock),   //   input,    width = 1,                                              .arlock
+		.system_intel_cache_coherency_translator_s0_arprot   (master_to_hps[0].ar_prot),   //   input,    width = 3,                                              .arprot
+		.system_intel_cache_coherency_translator_s0_arready  (master_to_hps[0].ar_ready),  //  output,    width = 1,                                              .arready
+		.system_intel_cache_coherency_translator_s0_arsize   (master_to_hps[0].ar_size),   //   input,    width = 3,                                              .arsize
+		.system_intel_cache_coherency_translator_s0_arvalid  (master_to_hps[0].ar_valid),  //   input,    width = 1,                                              .arvalid
+		.system_intel_cache_coherency_translator_s0_awaddr   (master_to_hps[0].aw_addr),   //   input,   width = 32,                                              .awaddr
+		.system_intel_cache_coherency_translator_s0_awburst  (master_to_hps[0].aw_burst),  //   input,    width = 2,                                              .awburst
+		.system_intel_cache_coherency_translator_s0_awcache  (master_to_hps[0].aw_cache),  //   input,    width = 4,                                              .awcache
+		.system_intel_cache_coherency_translator_s0_awid     (master_to_hps[0].aw_id),     //   input,    width = 5,                                              .awid
+		.system_intel_cache_coherency_translator_s0_awlen    (master_to_hps[0].aw_len),    //   input,    width = 8,                                              .awlen
+		.system_intel_cache_coherency_translator_s0_awlock   (master_to_hps[0].aw_lock),   //   input,    width = 1,                                              .awlock
+		.system_intel_cache_coherency_translator_s0_awprot   (master_to_hps[0].aw_prot),   //   input,    width = 3,                                              .awprot
+		.system_intel_cache_coherency_translator_s0_awready  (master_to_hps[0].aw_ready),  //  output,    width = 1,                                              .awready
+		.system_intel_cache_coherency_translator_s0_awsize   (master_to_hps[0].aw_size),   //   input,    width = 3,                                              .awsize
+		.system_intel_cache_coherency_translator_s0_awvalid  (master_to_hps[0].aw_valid),  //   input,    width = 1,                                              .awvalid
+		.system_intel_cache_coherency_translator_s0_bid      (master_to_hps[0].b_id),      //  output,    width = 5,                                              .bid
+		.system_intel_cache_coherency_translator_s0_bready   (master_to_hps[0].b_ready),   //   input,    width = 1,                                              .bready
+		.system_intel_cache_coherency_translator_s0_bresp    (master_to_hps[0].b_resp),    //  output,    width = 2,                                              .bresp
+		.system_intel_cache_coherency_translator_s0_bvalid   (master_to_hps[0].b_valid),   //  output,    width = 1,                                              .bvalid
+		.system_intel_cache_coherency_translator_s0_rdata    (master_to_hps[0].r_data),    //  output,  width = 128,                                              .rdata
+		.system_intel_cache_coherency_translator_s0_rid      (master_to_hps[0].r_id),      //  output,    width = 5,                                              .rid
+		.system_intel_cache_coherency_translator_s0_rlast    (master_to_hps[0].r_last),    //  output,    width = 1,                                              .rlast
+		.system_intel_cache_coherency_translator_s0_rready   (master_to_hps[0].r_ready),   //   input,    width = 1,                                              .rready
+		.system_intel_cache_coherency_translator_s0_rresp    (master_to_hps[0].r_resp),    //  output,    width = 2,                                              .rresp
+		.system_intel_cache_coherency_translator_s0_rvalid   (master_to_hps[0].r_valid),   //  output,    width = 1,                                              .rvalid
+		.system_intel_cache_coherency_translator_s0_wdata    (master_to_hps[0].w_data),    //   input,  width = 128,                                              .wdata
+		.system_intel_cache_coherency_translator_s0_wlast    (master_to_hps[0].w_last),    //   input,    width = 1,                                              .wlast
+		.system_intel_cache_coherency_translator_s0_wready   (master_to_hps[0].w_ready),   //  output,    width = 1,                                              .wready
+		.system_intel_cache_coherency_translator_s0_wstrb    (master_to_hps[0].w_strb),    //   input,   width = 16,                                              .wstrb
+		.system_intel_cache_coherency_translator_s0_wvalid   (master_to_hps[0].w_valid)    //   input,    width = 1,                                              .wvalid
+	);
 
 //
 //clocks
