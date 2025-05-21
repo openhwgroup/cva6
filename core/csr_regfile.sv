@@ -171,9 +171,9 @@ module csr_regfile
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
-    output jvt_t jvt_o
+    output jvt_t jvt_o,
     // action 0 request from trigger module
-    //output breakpoint_from_tigger_module_o
+    output logic breakpoint_from_tigger_module_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -286,16 +286,16 @@ module csr_regfile
   logic [N_Triggers-1:0] tselect_q, tselect_d;
   logic [3:0] trigger_type_q[N_Triggers], trigger_type_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
-  //logic trigger_breakpoint_fire;
-  //logic breakpoint_from_tigger_module, 
-  //logic priv_match;
+  logic priv_match;
   // icount trigger
   icount32_tdata1_t icount32_tdata1_q[N_Triggers], icount32_tdata1_d[N_Triggers];
   textra32_tdata3_t textra32_tdata3_q[N_Triggers], textra32_tdata3_d[N_Triggers];
   textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] tdata2_q[N_Triggers], tdata2_d[N_Triggers];
+  logic breakpoint_from_tigger_module;
+  logic in_trap_handler;
+  logic prev_csr_write;
   //icount64_tdata1_t icount64_tdata1;
-  //logic [13:0] icount_q[N_Triggers], icount_d[N_Triggers]; // because tdata1.count is 14 bits
 
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
@@ -1148,7 +1148,6 @@ module csr_regfile
         if (CVA6Cfg.SDTRIG) begin
           if (csr_wdata[31:28] == 4'd3 && CVA6Cfg.XLEN == 32) begin
             trigger_type_d[tselect_q] = csr_wdata[31:28];
-            //icount_d[tselect_q] = csr_wdata[23:10];
             icount32_tdata1_d[tselect_q].t_type  = (csr_wdata[31:28] == 4'd3 || csr_wdata[31:28] == 4'd4 || csr_wdata[31:28] == 4'd5 || csr_wdata[31:28] == 4'd6 || csr_wdata[31:28] == 4'd15) ? csr_wdata[31:28] : trigger_type_q[tselect_q];
             icount32_tdata1_d[tselect_q].dmode = csr_wdata[27];
             icount32_tdata1_d[tselect_q].vs = 0;
@@ -1160,7 +1159,7 @@ module csr_regfile
             icount32_tdata1_d[tselect_q].s = csr_wdata[7];
             icount32_tdata1_d[tselect_q].u = csr_wdata[6];
             icount32_tdata1_d[tselect_q].action = csr_wdata[5:0];
-            //flush_o = 1'b1;
+            flush_o = 1'b1;
           end
         end else begin
           update_access_exception = 1'b1;
@@ -2286,27 +2285,35 @@ module csr_regfile
       end
     end
 
-    //    if (CVA6Cfg.SDTRIG) begin
-    //      if (trigger_type_d[tselect_q] == 4'd3) begin
-    //        //   case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger wants to fire in
-    //         //    riscv::PRIV_LVL_M : if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-    //         //    riscv::PRIV_LVL_S : if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-    //         //    riscv::PRIV_LVL_U : if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-    //         //  endcase
-    //         //  if (commit_ack_i) begin
-    //         //      icount_d--;
-    //          //   end
-    //          // if ((icache_d == 0) && priv_match) begin
-    //             //icount32_tdata1_q[tselect_q].pending = 1'b1;
-    //             //icount32_tdata1_q[tselect_q].hit = 1'b1;
-    //         //   case (icount32_tdata1_d[tselect_q].action) 
-    //         //breakpoint_from_tigger_module_o = 1'b1;
-    //               //6'd1 : debug_from_trigger_module = 1'b1 //into debug mode;
-    // //              default: ;
-    //   //         endcase
-    //    // end
-    //     end
-    //     end
+  // Triggers Match Logic
+    if (CVA6Cfg.SDTRIG) begin
+        if (trigger_type_d[tselect_q] == 4'd3) begin  // icount match logic
+              case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger wants to fire in
+                riscv::PRIV_LVL_M : if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
+                riscv::PRIV_LVL_S : if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
+                riscv::PRIV_LVL_U : if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
+                default: priv_match = 1'b0;
+              endcase
+              if (ex_i.valid) begin
+                in_trap_handler = 1'b1;
+                icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
+              end
+              if (commit_ack_i && mret) in_trap_handler = 1'b0;
+              if (|commit_ack_i && !in_trap_handler && icount32_tdata1_q[tselect_q].count != 0) begin
+                icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
+              end
+              if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match) begin
+                icount32_tdata1_d[tselect_q].pending = 1'b1;
+                //icount32_tdata1_d[tselect_q].hit = 1'b1;
+                case (icount32_tdata1_d[tselect_q].action) 
+                  6'd0 : breakpoint_from_tigger_module = 1'b1;
+                  6'd1 : breakpoint_from_tigger_module = 1'b1; //into debug mode;
+                  default: ;
+                endcase
+              end
+        end
+    end
+
   end
 
   // ---------------------------
@@ -2740,17 +2747,17 @@ module csr_regfile
       if (CVA6Cfg.SDTRIG) begin
         scontext_q <= '0;
         tselect_q  <= '0;
+        prev_csr_write <= 1'b0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
-          //icount_q[i]                <= 0;
           icount32_tdata1_q[i]       <= '0;
           icount32_tdata1_q[i].count <= 1;
           textra32_tdata3_q[i]       <= '0;
           textra64_tdata3_q[i]       <= '0;
           tdata2_q[i]                <= '0;
         end
-        //trigger_breakpoint_fire <= 0;
-        // priv_match <= 0;
+        priv_match <= 0;
+        in_trap_handler <= 0;
       end
       // timer and counters
       cycle_q                <= 64'b0;
@@ -2837,13 +2844,13 @@ module csr_regfile
       end
       if (CVA6Cfg.SDTRIG) begin
         trigger_type_q    <= trigger_type_d;
-        //icount_q          <= icount_d;
         tselect_q         <= tselect_d;
         tdata2_q          <= tdata2_d;
         icount32_tdata1_q <= icount32_tdata1_d;
         textra32_tdata3_q <= textra32_tdata3_d;
         textra64_tdata3_q <= textra64_tdata3_d;
         scontext_q        <= scontext_d;
+        prev_csr_write    <= breakpoint_from_tigger_module;
       end
       // timer and counters
       cycle_q                <= cycle_d;
@@ -2857,6 +2864,8 @@ module csr_regfile
       pmpaddr_q              <= pmpaddr_next;
     end
   end
+
+  assign breakpoint_from_tigger_module_o = breakpoint_from_tigger_module & ~prev_csr_write;
 
   // write logic pmp
   always_comb begin : write
