@@ -1,0 +1,11 @@
+div_sqrt_top_mvp:
+  files: [
+        hdl/defs_div_sqrt_mvp.sv,
+        hdl/control_mvp.sv,
+        hdl/div_sqrt_mvp_wrapper.sv,
+        hdl/div_sqrt_top_mvp.sv,
+        hdl/iteration_div_sqrt_mvp.sv,
+        hdl/norm_div_sqrt_mvp.sv,
+        hdl/nrbd_nrsc_mvp.sv,
+        hdl/preprocess_mvp.sv,
+]

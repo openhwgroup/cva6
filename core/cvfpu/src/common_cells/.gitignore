@@ -1,0 +1,14 @@
+.*
+!.travis.yml
+!.git*
+*.out
+*~
+/Bender.lock
+/Bender.local
+build
+formal/fifo_v3
+formal/counter
+formal/fall_through_register
+*.check
+*.vcd
+obj_dir/
