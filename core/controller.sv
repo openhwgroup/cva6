@@ -149,7 +149,7 @@ module controller
       // have a write-through cache in this case
       // When handling fence.i, flush both caches and activate fence_i state
       if (CVA6Cfg.DcacheFlushOnFence) begin
-        flush_dcache   = 1'b1;
+        flush_dcache = 1'b1;
         fence_active_d = 1'b1;
         fence_i_active_d = 1'b1;
       end
@@ -263,14 +263,14 @@ module controller
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      fence_active_q <= 1'b0;
+      fence_active_q   <= 1'b0;
       fence_i_active_q <= 1'b0;
-      flush_dcache_o <= 1'b0;
+      flush_dcache_o   <= 1'b0;
     end else begin
-      fence_active_q <= fence_active_d;
+      fence_active_q   <= fence_active_d;
       fence_i_active_q <= fence_i_active_d;
       // register on the flush signal, this signal might be critical
-      flush_dcache_o <= flush_dcache;
+      flush_dcache_o   <= flush_dcache;
     end
   end
 endmodule
