@@ -743,19 +743,19 @@ module cva6_mmu
       hs_ld_st_inst_q <= '0;
       misaligned_ex_q <= '0;
     end else begin
-      lsu_vaddr_q    <= lsu_vaddr_n;
-      lsu_req_q      <= lsu_req_n;
-      dtlb_pte_q     <= dtlb_pte_n;
-      dtlb_hit_q     <= dtlb_hit_n;
-      lsu_is_store_q <= lsu_is_store_n;
-      dtlb_is_page_q <= dtlb_is_page_n;
+      lsu_vaddr_q     <= lsu_vaddr_n;
+      lsu_req_q       <= lsu_req_n;
+      dtlb_pte_q      <= dtlb_pte_n;
+      dtlb_hit_q      <= dtlb_hit_n;
+      lsu_is_store_q  <= lsu_is_store_n;
+      dtlb_is_page_q  <= dtlb_is_page_n;
+      misaligned_ex_q <= misaligned_ex_n;
 
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
         hs_ld_st_inst_q <= hs_ld_st_inst_n;
         dtlb_gpte_q     <= dtlb_gpte_n;
         lsu_gpaddr_q    <= lsu_gpaddr_n;
-        misaligned_ex_q <= misaligned_ex_n;
       end
     end
   end
