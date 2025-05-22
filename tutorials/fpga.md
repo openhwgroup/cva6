@@ -3,7 +3,7 @@
 We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual) and the [Agilex 7 Development Kit](https://www.intel.la/content/www/xl/es/products/details/fpga/development-kits/agilex/agf014.html).
 
 - **Genesys 2**
-    
+
     We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
     Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
@@ -19,23 +19,23 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
 - **Agilex 7**
-  
+
    Tested on Quartus Prime Version 24.1.0 Pro Edition. The FPGA currently contains the following peripherals:
-  
+
    - DDR4 memory controller
    - JTAG port (see debugging section below)
    - Bootrom containing zero stage bootloader
    - UART
    - GPIOs connected to LEDs
 
-> The ethernet controller and the corresponding network connection, as well as the SD Card connection and the capability to boot linux are still work in progress and not functional at the moment. Expect some updates soon-ish. 
+> The ethernet controller and the corresponding network connection, as well as the SD Card connection and the capability to boot linux are still work in progress and not functional at the moment. Expect some updates soon-ish.
 
 
 ## Programming the Memory Configuration File or bitstream
 
 - **Genesys 2**
 
-   - Open Vivado
+   - Open Vivado 2018.2
    - Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
    - Tools - Add Configuration Memory Device
    - Select the following Spansion SPI flash `s25fl256xxxxxx0`
@@ -54,7 +54,7 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
    - For this you need to use the JTAG UART provided with Quartus installation
 
 ```
-.$quartus_installation_path/qprogrammer/quartus/bin/juart-terminal 
+.$quartus_installation_path/qprogrammer/quartus/bin/juart-terminal
 juart-terminal: connected to hardware target using JTAG UART on cable
 juart-terminal: "AGF FPGA Development Kit [1-3]", device 1, instance 0
 juart-terminal: (Use the IDE stop button or Ctrl-C to terminate)
@@ -100,7 +100,7 @@ We recommend to set the parameter FpgaAlteraEn (and also FpgaEn) to benefit from
 
 This will produce a bitstream file (in `altera/output_files`) which you can program following the previous instructions. **Note: Bear in mind that you need a Quartus Pro Licence to be able to generate this bitstream**
 
-To clean the project after generating the bitstream, use 
+To clean the project after generating the bitstream, use
 
 ```
 make clean-altera
@@ -111,7 +111,7 @@ make clean-altera
 - **Genesys 2**
 You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD below.
 
-To get started, connect the micro USB port that is labeled with JTAG to your machine. This port is attached to the FTDI 2232 USB-to-serial chip on the Genesys 2 board, and is usually used to access the native JTAG interface of the Kintex-7 FPGA (e.g. to program the device using Vivado). However, the FTDI chip also exposes a second serial link that is routed to GPIO pins on the FPGA, and we leverage this to wire up the JTAG from the RISC-V debug module.
+To get started, connect the micro USB port that is labeled with JTAG to your machine. This port is attached to the FTDI 2232 USB-to-serial chip on the Genesys 2 board, and is usually used to access the native JTAG interface of the Kintex-7 FPGA (e.g. to program the device using Vivado 2018.2). However, the FTDI chip also exposes a second serial link that is routed to GPIO pins on the FPGA, and we leverage this to wire up the JTAG from the RISC-V debug module.
 
 >If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/99-ftdi.rules`
 >```
@@ -148,14 +148,14 @@ Info : accepting 'gdb' connection on tcp/3333
 ```
 - **Agilex 7**
 
-You can debug (and program) the FPGA using a modified version of OpenOCD included with Quartus installation ($quartus_installation_path/qprogrammer/quartus/bin/openocd). 
+You can debug (and program) the FPGA using a modified version of OpenOCD included with Quartus installation ($quartus_installation_path/qprogrammer/quartus/bin/openocd).
 
 To get started, connect the micro USB port that is labeled with J13 to your machine. It is the same port that is used for the UART. Both use the JTAG interface and connect to the System Level Debugging (SLD) Hub instantiated inside the FPGA. Then the debugger connection goes to the virtual JTAG IP (vJTAG) which can be accessed with the modified version of OpenOCD.
 
 You can start openocd with the `altera/cva6.cfg` configuration file:
 
 ```
-./$quartus_installation_path/qprogrammer/quartus/bin/openocd -f altera/cva6.cfg 
+./$quartus_installation_path/qprogrammer/quartus/bin/openocd -f altera/cva6.cfg
 Open On-Chip Debugger 0.11.0-R22.4
 Licensed under GNU GPL v2
 For bug reports, read
