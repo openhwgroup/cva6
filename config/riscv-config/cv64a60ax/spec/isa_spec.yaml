@@ -23,7 +23,7 @@ hart0: &hart0
   physical_addr_sz: 39
   pmp_granularity: 10 # FIXME: To verify
   misa:
-    # reset-val: 0xC00000000214312F # B: bit 1, C: bit 2, I = bit 8, M = bit 12, Z = bit 25
+   reset-val: 0x800000000014312D # B: bit 1, C: bit 2, I = bit 8, M = bit 12, Z = bit 25
    rv64:
      accessible: true
      mxl:

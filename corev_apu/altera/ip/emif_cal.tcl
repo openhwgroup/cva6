@@ -24,7 +24,7 @@ proc do_create_emif_cal {} {
 	set_instance_parameter_value emif_cal_0 {DIAG_SIM_VERBOSE} {0}
 	set_instance_parameter_value emif_cal_0 {DIAG_SYNTH_FOR_SIM} {0}
 	set_instance_parameter_value emif_cal_0 {ENABLE_DDRT} {0}
-	set_instance_parameter_value emif_cal_0 {NUM_CALBUS_INTERFACE} {1}
+	set_instance_parameter_value emif_cal_0 {NUM_CALBUS_INTERFACE} {2}
 	set_instance_parameter_value emif_cal_0 {PHY_DDRT_EXPORT_CLK_STP_IF} {0}
 	set_instance_parameter_value emif_cal_0 {SHORT_QSYS_INTERFACE_NAMES} {1}
 	set_instance_property emif_cal_0 AUTO_EXPORT true
