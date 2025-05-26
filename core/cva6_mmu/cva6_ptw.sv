@@ -48,10 +48,12 @@ module cva6_ptw
     input logic v_i,  // current virtualization mode bit
     input logic ld_st_v_i,  // load/store virtualization mode bit
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
+
     input logic lsu_is_store_i,  // this translation was triggered by a store
     // PTW memory interface
     input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
+
 
     // to TLBs, update logic
     output tlb_update_cva6_t shared_tlb_update_o,
@@ -167,12 +169,12 @@ module cva6_ptw
   generate
     for (z = 0; z < CVA6Cfg.PtLevels - 1; z++) begin
 
-      // Check if the ppn is correctly aligned:
+      // check if the ppn is correctly aligned:
       // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
       // exception.
       assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-1-z)-1:0] != '0);
 
-      // Record the vaddr corresponding to each level
+      // record the vaddr corresponding to each level
       for (w = 0; w < HYP_EXT * 2 + 1; w++) begin
         assign vaddr_lvl[w][z] = w==0 ?      vaddr_q[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-2))]:
                                  w==1 ?  gptw_pptr_q[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-z-2))]:
@@ -198,7 +200,7 @@ module cva6_ptw
             // VS + G-Translation
             shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0 : 1] == x);
           end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
-            // Non-V, S-Translation
+            // non-V, S-Translation
             shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
           end else begin
             // G-Translation
@@ -413,7 +415,7 @@ module cva6_ptw
           // -----------
           else begin
             state_d = LATENCY;
-            // It is a valid PTE if pte.r = 1 or pte.x = 1
+            // it is a valid PTE if pte.r = 1 or pte.x = 1
             if (pte.r || pte.x) begin
               if (CVA6Cfg.RVH) begin
                 case (ptw_stage_q)
@@ -484,29 +486,31 @@ module cva6_ptw
                 end
               end
 
-              // If there is a misaligned page, propagate error
+              // if there is a misaligned page, propagate error
               if (|misaligned_page) begin
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 tlb_update_valid = 1'b0;
               end
 
-              // Check if 63:41 are all zeros
+              // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
                 if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
               end
-              // This is a pointer to the next TLB level
+              // this is a pointer to the next TLB level
             end else begin
-              // Pointer to next level of page table
+              // pointer to next level of page table
 
               if (ptw_lvl_q[0] == CVA6Cfg.PtLevels - 1) begin
                 // Should already be the last level page table => Error
                 ptw_lvl_n[0] = ptw_lvl_q[0];
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+
+
               end else begin
                 ptw_lvl_n[0] = ptw_lvl_q[0] + 1'b1;
                 state_d = WAIT_GRANT;
@@ -549,7 +553,7 @@ module cva6_ptw
 
               end
 
-              // Check if 63:41 are all zeros
+              // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
                 if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
@@ -559,7 +563,7 @@ module cva6_ptw
             end
           end
 
-          // Check if this access was actually allowed from a PMP perspective
+          // check if this access was actually allowed from a PMP perspective
           if (!allow_access) begin
             tlb_update_valid = 1'b0;
             // we have to return the failed address in bad_addr
@@ -568,7 +572,7 @@ module cva6_ptw
             state_d = PROPAGATE_ACCESS_ERROR;
           end
         end
-        // We've got a data WAIT_GRANT so tell the cache that the tag is valid
+        // we've got a data WAIT_GRANT so tell the cache that the tag is valid
       end
       // Propagate error to MMU/LSU
       PROPAGATE_ERROR: begin
@@ -583,7 +587,7 @@ module cva6_ptw
         state_d = LATENCY;
         ptw_access_exception_o = 1'b1;
       end
-      // Wait for the rvalid before going back to IDLE
+      // wait for the rvalid before going back to IDLE
       WAIT_RVALID: begin
         if (data_rvalid_q) state_d = IDLE;
       end
