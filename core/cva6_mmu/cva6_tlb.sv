@@ -95,10 +95,10 @@ module cva6_tlb
   logic [HYP_EXT*2:0] v_st_enbl;
 
   assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
-
   //-------------
   // Translation
   //-------------
+
   genvar i, x, z, w;
   generate
     for (i = 0; i < TLB_ENTRIES; i++) begin
@@ -173,6 +173,7 @@ module cva6_tlb
   endgenerate
 
   always_comb begin : translation
+
     // default assignment
     lu_hit         = '{default: 0};
     lu_hit_o       = 1'b0;
@@ -261,7 +262,10 @@ module cva6_tlb
     content_n = content_q;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
+
+
       if (CVA6Cfg.RVH) begin
+
         if (tags_q[i].v_st_enbl[0]) begin
           gppn[i] = content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0];
           // Mega Page
@@ -434,11 +438,12 @@ module cva6_tlb
       plru_tree_q <= plru_tree_n;
     end
   end
-
   //--------------
   // Sanity checks
   //--------------
+
   //pragma translate_off
+
   initial begin : p_assertions
     assert ((TLB_ENTRIES % 2 == 0) && (TLB_ENTRIES > 1))
     else begin
