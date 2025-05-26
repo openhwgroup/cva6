@@ -164,7 +164,7 @@ module cva6_rvfi
   assign branch_valid_iti = instr.branch_valid;
   assign is_taken_iti = instr.is_taken;
   assign tval_iti = instr.tval;
-  assign time_iti = rvfi_probes_i.csr.cycle_q;
+  assign time_iti = csr.cycle_q;
 
   assign priv_lvl = instr.priv_lvl;
 

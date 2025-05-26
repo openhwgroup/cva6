@@ -124,8 +124,10 @@ module cva6_iti #(
 
 
   always_comb begin
-    iti_to_encoder_o.cause = '0;
-    iti_to_encoder_o.tval  = '0;
+    iti_to_encoder_o.cause  = '0;
+    iti_to_encoder_o.tval   = '0;
+    iti_to_encoder_o.priv   = riscv::PRIV_LVL_U;
+    iti_to_encoder_o.cycles = '0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       uop_entry[i].valid = valid_i[i];
       uop_entry[i].pc = rvfi_to_iti_i.pc[i];
@@ -137,8 +139,9 @@ module cva6_iti #(
       iti_to_encoder_o.valid[i] = 1'b0;
       iti_to_encoder_o.iretire[i] = '0;
       iti_to_encoder_o.ilastsize[i] = '0;
-      iti_to_encoder_o.itype[i] = '0;
+      iti_to_encoder_o.itype[i] = iti_pkg::STANDARD;
       iti_to_encoder_o.iaddr[i] = '0;
+      valid_o[i] = '0;
       if (itt_out[i].valid) begin
         valid_o[i] = itt_out[i].valid;
         iti_to_encoder_o.valid[i] = itt_out[i].valid;
