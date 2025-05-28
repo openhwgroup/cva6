@@ -339,10 +339,10 @@ module id_stage #(
         .vtw_i,
         .tsr_i,
         .hu_i,
-        .instruction_o             (decoded_instruction[i]),
-        .orig_instr_o              (orig_instr[i]),
-        .is_control_flow_instr_o   (is_control_flow_instr[i]),
-        .breakpoint_from_tigger_module_i (breakpoint_from_tigger_module_i)
+        .instruction_o                  (decoded_instruction[i]),
+        .orig_instr_o                   (orig_instr[i]),
+        .is_control_flow_instr_o        (is_control_flow_instr[i]),
+        .breakpoint_from_tigger_module_i(breakpoint_from_tigger_module_i)
     );
   end
 
@@ -442,7 +442,7 @@ module id_stage #(
             is_control_flow_instr[0]
         };
       end
-      
+
       // if (flush_i && !(breakpoint_from_tigger_module_i && !issue_n[0].valid)) begin
       //   issue_n[0].valid = 1'b0;
       // end

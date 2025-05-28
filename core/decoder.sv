@@ -1901,7 +1901,7 @@ module decoder
       end
     end
 
-    // breakpoint on trigger match (TM)
+    // // //breakpoint on trigger match (TM)
     // if (CVA6Cfg.SDTRIG && breakpoint_from_tigger_module_i) begin
     //     instruction_o.ex.valid = 1'b1;
     //     instruction_o.ex.cause = riscv::BREAKPOINT;

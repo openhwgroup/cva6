@@ -172,8 +172,10 @@ module csr_regfile
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
     output jvt_t jvt_o,
-    // action 0 request from trigger module
-    output logic breakpoint_from_tigger_module_o
+    // trigger request from trigger module
+    output logic breakpoint_from_tigger_module_o,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_from_lsu_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -295,8 +297,9 @@ module csr_regfile
   logic breakpoint_from_tigger_module;
   logic in_trap_handler;
   logic prev_csr_write;
+  logic matched;
   //icount64_tdata1_t icount64_tdata1;
-
+  mcontrol6_32_tdata1_t mcontrol6_32_tdata1_q[N_Triggers], mcontrol6_32_tdata1_d[N_Triggers];
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -412,6 +415,8 @@ module csr_regfile
         if (CVA6Cfg.SDTRIG) begin
           if (trigger_type_q[tselect_q] == 4'd3)
             csr_rdata = icount32_tdata1_q[tselect_q]; // tdata1 based on type and indexed by tselect
+        end else if (trigger_type_q[tselect_q] == 4'd6) begin
+          csr_rdata = mcontrol6_32_tdata1_q[tselect_q]; // tdata1 based on type and indexed by tselect
         end else begin
           read_access_exception = 1'b1;
         end
@@ -1160,6 +1165,29 @@ module csr_regfile
             icount32_tdata1_d[tselect_q].u = csr_wdata[6];
             icount32_tdata1_d[tselect_q].action = csr_wdata[5:0];
             flush_o = 1'b1;
+          end else if (csr_wdata[31:28] == 4'd6 && CVA6Cfg.XLEN == 32) begin
+            trigger_type_d[tselect_q] = csr_wdata[31:28];
+            mcontrol6_32_tdata1_d[tselect_q].t_type  = (csr_wdata[31:28] == 4'd3 || csr_wdata[31:28] == 4'd4 || csr_wdata[31:28] == 4'd5 || csr_wdata[31:28] == 4'd6 || csr_wdata[31:28] == 4'd15) ? csr_wdata[31:28] : trigger_type_q[tselect_q];
+            mcontrol6_32_tdata1_d[tselect_q].dmode = csr_wdata[27];
+            mcontrol6_32_tdata1_d[tselect_q].uncertain = 0;
+            mcontrol6_32_tdata1_d[tselect_q].hit1 = csr_wdata[25];
+            mcontrol6_32_tdata1_d[tselect_q].vs = 0;
+            mcontrol6_32_tdata1_d[tselect_q].vu = 0;
+            mcontrol6_32_tdata1_d[tselect_q].hit0 = csr_wdata[22];
+            mcontrol6_32_tdata1_d[tselect_q].select = csr_wdata[21];
+            mcontrol6_32_tdata1_d[tselect_q].zeroes = '0;
+            mcontrol6_32_tdata1_d[tselect_q].size = csr_wdata[18:16];
+            mcontrol6_32_tdata1_d[tselect_q].action = csr_wdata[15:12];
+            mcontrol6_32_tdata1_d[tselect_q].chain = 0;
+            mcontrol6_32_tdata1_d[tselect_q].match = csr_wdata[10:7];
+            mcontrol6_32_tdata1_d[tselect_q].m = csr_wdata[6];
+            mcontrol6_32_tdata1_d[tselect_q].uncertainen = 0;
+            mcontrol6_32_tdata1_d[tselect_q].s = csr_wdata[4];
+            mcontrol6_32_tdata1_d[tselect_q].u = csr_wdata[3];
+            mcontrol6_32_tdata1_d[tselect_q].execute = csr_wdata[2];
+            mcontrol6_32_tdata1_d[tselect_q].store = csr_wdata[1];
+            mcontrol6_32_tdata1_d[tselect_q].load = csr_wdata[0];
+            flush_o = 1'b1;
           end
         end else begin
           update_access_exception = 1'b1;
@@ -1173,16 +1201,16 @@ module csr_regfile
         riscv::CSR_TDATA3:
         if (CVA6Cfg.SDTRIG) begin
           if (CVA6Cfg.XLEN == 32) begin  // textra32
-            textra32_tdata3_d[tselect_q].mhvalue   = csr_wdata[31:26];
-            textra32_tdata3_d[tselect_q].mhselect  = csr_wdata[25:23];
+            textra32_tdata3_d[tselect_q].mhvalue   = '0;
+            textra32_tdata3_d[tselect_q].mhselect  = '0;
             textra32_tdata3_d[tselect_q].zeroes    = '0;
             textra32_tdata3_d[tselect_q].sbytemask = csr_wdata[19:18];
             textra32_tdata3_d[tselect_q].svalue    = csr_wdata[17:2];
             textra32_tdata3_d[tselect_q].sselect   = csr_wdata[1:0];
           end
           if (CVA6Cfg.XLEN == 64) begin  // textra64
-            textra64_tdata3_d[tselect_q].mhvalue    = csr_wdata[63:51];
-            textra64_tdata3_d[tselect_q].mhselect   = csr_wdata[50:48];
+            textra64_tdata3_d[tselect_q].mhvalue    = '0;
+            textra64_tdata3_d[tselect_q].mhselect   = '0;
             textra64_tdata3_d[tselect_q].zeroes     = '0;
             textra64_tdata3_d[tselect_q].sbytemask  = csr_wdata[39:36];
             textra64_tdata3_d[tselect_q].zero_field = '0;
@@ -2285,35 +2313,73 @@ module csr_regfile
       end
     end
 
-  // Triggers Match Logic
+    // Triggers Match Logic
     if (CVA6Cfg.SDTRIG) begin
-        if (trigger_type_d[tselect_q] == 4'd3) begin  // icount match logic
-              case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger wants to fire in
-                riscv::PRIV_LVL_M : if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-                riscv::PRIV_LVL_S : if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-                riscv::PRIV_LVL_U : if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-                default: priv_match = 1'b0;
-              endcase
-              if (ex_i.valid) begin
-                in_trap_handler = 1'b1;
-                icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
-              end
-              if (commit_ack_i && mret) in_trap_handler = 1'b0;
-              if (|commit_ack_i && !in_trap_handler && icount32_tdata1_q[tselect_q].count != 0) begin
-                icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
-              end
-              if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match) begin
-                icount32_tdata1_d[tselect_q].pending = 1'b1;
-                //icount32_tdata1_d[tselect_q].hit = 1'b1;
-                case (icount32_tdata1_d[tselect_q].action) 
-                  6'd0 : breakpoint_from_tigger_module = 1'b1;
-                  6'd1 : breakpoint_from_tigger_module = 1'b1; //into debug mode;
-                  default: ;
-                endcase
-              end
+      // icount match logic
+      if (trigger_type_d[tselect_q] == 4'd3) begin
+        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+          riscv::PRIV_LVL_M: if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
+          riscv::PRIV_LVL_S: if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
+          riscv::PRIV_LVL_U: if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
+          default: priv_match = 1'b0;
+        endcase
+        if (ex_i.valid) begin
+          in_trap_handler = 1'b1;
+          icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
         end
+        if (commit_ack_i && mret) in_trap_handler = 1'b0;
+        if (|commit_ack_i && !in_trap_handler && icount32_tdata1_q[tselect_q].count != 0) begin
+          icount32_tdata1_d[tselect_q].count = icount32_tdata1_d[tselect_q].count - 1;
+        end
+        if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match) begin
+          icount32_tdata1_d[tselect_q].pending = 1'b1;
+          case (icount32_tdata1_d[tselect_q].action)
+            //6'd0 : breakpoint_from_tigger_module = 1'b1; //breakpoint
+            6'd1: breakpoint_from_tigger_module = 1'b1;  //into debug mode;
+            default: breakpoint_from_tigger_module = 1'b0;
+          endcase
+        end
+        if (debug_mode_d && icount32_tdata1_d[tselect_q].pending) begin
+          icount32_tdata1_d[tselect_q].pending = 1'b0;
+          icount32_tdata1_d[tselect_q].hit = 1'b1;
+          breakpoint_from_tigger_module = 1'b0;
+        end
+      end
+      // mcontrol6 match logic
+      if (trigger_type_d[tselect_q] == 4'd6) begin
+        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+          riscv::PRIV_LVL_M: if (mcontrol6_32_tdata1_d[tselect_q].m) priv_match = 1'b1;
+          riscv::PRIV_LVL_S: if (mcontrol6_32_tdata1_d[tselect_q].s) priv_match = 1'b1;
+          riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[tselect_q].u) priv_match = 1'b1;
+          default: priv_match = 1'b0;
+        endcase
+        // execute with address
+        if (mcontrol6_32_tdata1_d[tselect_q].execute && tdata2_d[tselect_q] == commit_instr_i.pc && commit_ack_i && !mcontrol6_32_tdata1_d[tselect_q].select) matched = 1'b1;
+        // execute with instruction
+        if (mcontrol6_32_tdata1_d[tselect_q].execute && mcontrol6_32_tdata1_d[tselect_q].select && (tdata2_d[tselect_q] == orig_instr_i)) matched = 1'b1;
+        // store with data
+        if (mcontrol6_32_tdata1_d[tselect_q].store && mcontrol6_32_tdata1_d[tselect_q].select && (tdata2_d[tselect_q] == commit_instr_i.result)) matched = 1'b1;
+        // store with address
+        if (mcontrol6_32_tdata1_d[tselect_q].store && !mcontrol6_32_tdata1_d[tselect_q].select && (tdata2_d[tselect_q] == vaddr_from_lsu_i)) matched = 1'b1;
+        // load with data
+        if (mcontrol6_32_tdata1_d[tselect_q].load && mcontrol6_32_tdata1_d[tselect_q].select && (tdata2_d[tselect_q] == commit_instr_i.result && commit_instr_i.op == 8'h27)) matched = 1'b1;
+        // load with address
+        if (mcontrol6_32_tdata1_d[tselect_q].load && !mcontrol6_32_tdata1_d[tselect_q].select && (tdata2_d[tselect_q] == vaddr_from_lsu_i)) matched = 1'b1;
+        if (priv_match && matched) begin
+          case (mcontrol6_32_tdata1_d[tselect_q].action)
+            //6'd0 : breakpoint_from_tigger_module = 1'b1; //breakpoint
+            6'd1: breakpoint_from_tigger_module = 1'b1;  //into debug mode;
+            default: breakpoint_from_tigger_module = 1'b0;
+          endcase
+        end
+        if (debug_mode_d && matched) begin
+          matched = 1'b0;
+          mcontrol6_32_tdata1_d[tselect_q].hit0 = 1'b0;
+          mcontrol6_32_tdata1_d[tselect_q].hit1 = 1'b1;
+          breakpoint_from_tigger_module = 1'b0;
+        end
+      end
     end
-
   end
 
   // ---------------------------
@@ -2748,10 +2814,12 @@ module csr_regfile
         scontext_q <= '0;
         tselect_q  <= '0;
         prev_csr_write <= 1'b0;
+        matched    <=  1'b0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
           icount32_tdata1_q[i]       <= '0;
           icount32_tdata1_q[i].count <= 1;
+          mcontrol6_32_tdata1_q[i]   <= '0;
           textra32_tdata3_q[i]       <= '0;
           textra64_tdata3_q[i]       <= '0;
           tdata2_q[i]                <= '0;
@@ -2843,14 +2911,15 @@ module csr_regfile
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
       end
       if (CVA6Cfg.SDTRIG) begin
-        trigger_type_q    <= trigger_type_d;
-        tselect_q         <= tselect_d;
-        tdata2_q          <= tdata2_d;
-        icount32_tdata1_q <= icount32_tdata1_d;
-        textra32_tdata3_q <= textra32_tdata3_d;
-        textra64_tdata3_q <= textra64_tdata3_d;
-        scontext_q        <= scontext_d;
-        prev_csr_write    <= breakpoint_from_tigger_module;
+        trigger_type_q        <= trigger_type_d;
+        tselect_q             <= tselect_d;
+        tdata2_q              <= tdata2_d;
+        icount32_tdata1_q     <= icount32_tdata1_d;
+        mcontrol6_32_tdata1_q <= mcontrol6_32_tdata1_d;
+        textra32_tdata3_q     <= textra32_tdata3_d;
+        textra64_tdata3_q     <= textra64_tdata3_d;
+        scontext_q            <= scontext_d;
+        prev_csr_write        <= breakpoint_from_tigger_module;
       end
       // timer and counters
       cycle_q                <= cycle_d;

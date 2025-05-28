@@ -85,7 +85,7 @@ package cva6_config_pkg;
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
-      DebugEn: bit'(0),
+      DebugEn: bit'(1),
       SDTRIG: bit'(1),
       AxiBurstWriteEn: bit'(0),
       IcacheByteSize: unsigned'(2048),
