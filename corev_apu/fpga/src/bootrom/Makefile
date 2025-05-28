@@ -17,8 +17,8 @@ UART_BITRATE ?= 115200
 HAS_ETHERNET ?= 1
 endif
 
-CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
-OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
+CC ?= $(RISCV)/bin/${CROSSCOMPILE}gcc
+OBJCOPY ?= $(RISCV)/bin/$(CROSSCOMPILE)objcopy
 SED = sed
 PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)
 
@@ -65,12 +65,12 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	$(OBJCOPY) -O binary $< $@
 
 %.o: %.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 	@echo "CC    <= $<"
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 %.o: %.S
-	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 	@echo "CC    <= $<"
+	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 
 %.dts: %.dts.in
 	$(SED) -e "s/DRAM_SIZE_64/$(DRAM_SIZE_64)/g" \
@@ -85,8 +85,8 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	dtc -I dts $< -O dtb -o $@
 
 %.sv: %.img
-	./gen_rom.py $<
 	@echo "PYTHON >= $(MAIN_SV)"
+	./gen_rom.py $<
 
 clean:
 	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) *.dtb *.dts *.sv
