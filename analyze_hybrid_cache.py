@@ -6,10 +6,10 @@ import argparse
 from pathlib import Path
 from typing import Dict
 
+
 from hybrid_cache.config import load_config
 from hybrid_cache.runner import collect_stats
 from hybrid_cache.visualization import generate_comparison_chart
-
 
 def write_report(results: Dict[str, Dict[str, Dict[str, int | float]]], tests: list[str], configs: list[str], out_dir: Path) -> None:
     report_md = out_dir / "cache_analysis_report.md"
