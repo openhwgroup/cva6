@@ -71,6 +71,12 @@ package wt_hybrid_cache_pkg;
     REPL_ALGO_RANDOM = 2'b01, // pseudo random using an LFSR
     REPL_ALGO_PLRU   = 2'b10  // tree-based pseudo-LRU
   } replacement_algo_e;
+
+  // Default seed used by the fully associative hash function. The seed can be
+  // overridden at module instantiation to randomize the index mapping.  The
+  // width of the seed equals the tag width of the data cache, excess bits are
+  // truncated.
+  localparam logic [63:0] DEFAULT_HASH_SEED = 64'h0123_4567_89ab_cdef;
   
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
