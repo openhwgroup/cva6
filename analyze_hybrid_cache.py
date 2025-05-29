@@ -49,7 +49,15 @@ def write_report(results: Dict[str, Dict[str, Dict[str, int | float]]], tests: l
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Analyze hybrid cache performance")
+    parser = argparse.ArgumentParser(
+        description="Analyze hybrid cache performance",
+        epilog=(
+            "Example:\n"
+            "  python3 analyze_hybrid_cache.py results_dir --config config/hybrid_cache_analysis.yml\n"
+            "  python3 analyze_hybrid_cache.py results_dir -o report -j 4 --verbose"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("comparison_dir", help="Directory containing comparison results")
     parser.add_argument("--config", help="YAML configuration file")
     parser.add_argument("--output", "-o", default="cache_analysis_report", help="Output directory")
@@ -59,6 +67,11 @@ def main() -> None:
         type=int,
         default=os.cpu_count(),
         help="Number of parallel workers (default: number of CPUs)",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output during parsing",
     )
     args = parser.parse_args()
 
@@ -73,8 +86,16 @@ def main() -> None:
         cfg = load_config(args.config)
     except FileNotFoundError as e:
         parser.error(str(e))
+    except Exception as e:
+        parser.error(f"Failed to load configuration: {e}")
 
-    results = collect_stats(cfg["tests"], cfg["configs"], base, jobs=args.jobs)
+    results = collect_stats(
+        cfg["tests"],
+        cfg["configs"],
+        base,
+        jobs=args.jobs,
+        verbose=args.verbose,
+    )
     write_report(results, cfg["tests"], cfg["configs"], out_dir)
     print(f"Analysis report generated in {out_dir}")
 
