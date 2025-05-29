@@ -10,13 +10,14 @@ import sys
 import re
 import glob
 import argparse
+import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
 def parse_cache_stats(log_file):
-    """Parse cache statistics from simulation log file"""
+    """Parse cache statistics from simulation log file or accompanying JSON"""
     stats = {
         'hits': 0,
         'misses': 0,
@@ -32,6 +33,18 @@ def parse_cache_stats(log_file):
     if not os.path.exists(log_file):
         print(f"Warning: Log file {log_file} not found")
         return stats
+
+    json_file = os.path.splitext(log_file)[0] + '.json'
+    if os.path.exists(json_file):
+        with open(json_file, 'r') as jf:
+            try:
+                stats.update(json.load(jf))
+                total = stats['hits'] + stats['misses']
+                if total:
+                    stats['hit_ratio'] = stats['hits'] / total * 100
+                return stats
+            except Exception as e:
+                print(f"Warning: Failed to parse {json_file}: {e}")
     
     with open(log_file, 'r') as f:
         content = f.read()
@@ -170,12 +183,19 @@ def main():
             # Extract cache statistics
             stats = parse_cache_stats(log_file)
             test_results[config] = stats
+            # Dump structured stats next to log
+            with open(os.path.splitext(log_file)[0] + '.json', 'w') as jf:
+                json.dump(stats, jf, indent=2)
         
         all_results[test] = test_results
         
         # Generate comparison charts for this test
         if test_results:
             generate_comparison_chart(test_results, test, args.output)
+
+        # Dump CSV summary for this test
+        csv_path = os.path.join(args.output, f"{test}_summary.csv")
+        pd.DataFrame.from_dict(test_results, orient='index').to_csv(csv_path)
     
     # Generate overall comparison report
     report_md = os.path.join(args.output, 'cache_analysis_report.md')
