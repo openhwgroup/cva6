@@ -10,6 +10,21 @@ DEFAULT_CONFIG = {
 }
 
 
+def validate_config(cfg: Dict[str, Any]) -> None:
+    """Validate configuration dictionary.
+
+    Raises ``ValueError`` if required keys are missing or invalid.
+    """
+    if not cfg.get("tests"):
+        raise ValueError("Configuration is missing 'tests' list")
+    if not cfg.get("configs"):
+        raise ValueError("Configuration is missing 'configs' list")
+    if not isinstance(cfg["tests"], list) or not all(isinstance(t, str) for t in cfg["tests"]):
+        raise ValueError("'tests' must be a list of strings")
+    if not isinstance(cfg["configs"], list) or not all(isinstance(c, str) for c in cfg["configs"]):
+        raise ValueError("'configs' must be a list of strings")
+
+
 def load_config(path: str | Path | None) -> Dict[str, Any]:
     """Load YAML configuration from *path*.
 
@@ -28,4 +43,5 @@ def load_config(path: str | Path | None) -> Dict[str, Any]:
     # merge with defaults
     cfg = DEFAULT_CONFIG.copy()
     cfg.update(data)
+    validate_config(cfg)
     return cfg
