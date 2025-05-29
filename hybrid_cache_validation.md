@@ -24,6 +24,13 @@ Two replacement policies are supported during mode transitions:
 - `REPL_POLICY_RETAIN`: Only flush the sets used in fully associative mode, preserving other entries
 - `REPL_POLICY_FLUSH`: Completely flush the cache during any mode transition
 
+### Replacement Algorithms
+
+The victim way selection strategy can also be configured:
+
+- `REPL_ALGO_RR`: Round-robin pointer, evenly distributing replacements across ways
+- `REPL_ALGO_RANDOM`: Pseudo-random victim selection using a small LFSR
+
 ## Implementation Files
 
 ### Primary Components

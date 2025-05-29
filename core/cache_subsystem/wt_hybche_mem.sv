@@ -23,7 +23,8 @@ module wt_hybche_mem #(
   parameter logic [DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
-  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN
+  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
+  parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -68,6 +69,11 @@ module wt_hybche_mem #(
   
   // Flattened signals for memory operations
   logic [DCACHE_TAG_WIDTH*DCACHE_SET_ASSOC-1:0] tags_flattened;
+
+  // Round-robin replacement pointer used when all ways are valid.
+  logic [$clog2(DCACHE_SET_ASSOC)-1:0] rr_ptr_d, rr_ptr_q;
+  // Simple LFSR for pseudo-random replacement if requested.
+  logic [$clog2(DCACHE_SET_ASSOC)-1:0] lfsr_d, lfsr_q;
   
   // Fully associative lookup table - tracks which ways store which addresses in fully associative mode
   typedef struct packed {
@@ -109,31 +115,66 @@ module wt_hybche_mem #(
   end
   
   // Replacement policy implementation
-  // For set associative mode: use random or LRU
-  // For fully associative mode: use first free way or random
+  // For both modes we first try to find an invalid way. When none is
+  // available we either use a round-robin pointer or a pseudo-random
+  // victim based on the REPL_ALGO parameter.
   always_comb begin
     repl_way = '0;
-    
+    rr_ptr_d = rr_ptr_q;
+    lfsr_d   = {lfsr_q[$bits(lfsr_q)-2:0],
+                lfsr_q[$bits(lfsr_q)-1] ^ lfsr_q[$bits(lfsr_q)-2]};
+
     if (use_set_assoc_mode_i) begin
-      // Standard replacement policy for set associative cache
-      // For simplicity in this example, using a fixed priority encoder
-      if (!way_valid[0]) repl_way[0] = 1'b1;
-      else if (!way_valid[1]) repl_way[1] = 1'b1;
-      else repl_way[0] = 1'b1; // If all ways are valid, replace first way
-    end else begin
-      // Policy for fully associative cache
-      // First find any invalid entry
+      // Search for invalid way first
       for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
-        if (!fa_lookup_table[i].valid) begin
+        if (!way_valid[i]) begin
           repl_way[i] = 1'b1;
+          rr_ptr_d   = i + 1;
           break;
         end
       end
-      
-      // If all entries are valid, use a simple replacement scheme
+
       if (repl_way == '0) begin
-        repl_way[0] = 1'b1; // Fixed replacement for simplicity
+        // All ways valid - choose victim according to algorithm
+        if (REPL_ALGO == wt_hybrid_cache_pkg::REPL_ALGO_RANDOM) begin
+          repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
+        end else begin
+          repl_way[rr_ptr_q] = 1'b1;
+        end
+        rr_ptr_d = rr_ptr_q + 1;
       end
+    end else begin
+      // Fully associative mode
+      for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
+        if (!fa_lookup_table[i].valid) begin
+          repl_way[i] = 1'b1;
+          rr_ptr_d   = i + 1;
+          break;
+        end
+      end
+
+      if (repl_way == '0) begin
+        if (REPL_ALGO == wt_hybrid_cache_pkg::REPL_ALGO_RANDOM) begin
+          repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
+        end else begin
+          repl_way[rr_ptr_q] = 1'b1;
+        end
+        rr_ptr_d = rr_ptr_q + 1;
+      end
+    end
+
+    if (rr_ptr_d >= DCACHE_SET_ASSOC)
+      rr_ptr_d = '0;
+  end
+
+  // Update replacement pointers
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rr_ptr_q <= '0;
+      lfsr_q   <= '1;
+    end else begin
+      rr_ptr_q <= rr_ptr_d;
+      lfsr_q   <= lfsr_d;
     end
   end
   
