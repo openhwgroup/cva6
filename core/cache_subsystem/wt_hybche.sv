@@ -137,7 +137,7 @@ module wt_hybche #(
     .rst_ni,
     .use_set_assoc_mode_i ( use_set_assoc_mode ),
     .flush_i              ( flush_cache        ),
-    .flush_ack_o,
+    .flush_ack_o          ( mem_flush_ack ),
     .enable_translation_i,
     .sram_en_o,
     .sram_we_o,
@@ -155,12 +155,8 @@ module wt_hybche #(
   logic mode_flush_req, mode_flush_ack;
   logic wbuffer_empty;
   logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id;
-  // signals for core interface arbitration
-  logic                        wbuf_valid, wbuf_ready;
-  logic [riscv::PLEN-1:0]      wbuf_addr;
-  logic [CVA6Cfg.XLEN-1:0]     wbuf_wdata;
-  logic [CVA6Cfg.XLEN/8-1:0]   wbuf_be;
-  axi_req_t                    axi_req_wbuf, axi_req_miss;
+  logic mem_flush_ack;
+  logic ctrl_flush_ack;
   
   // Cache controller
   wt_hybche_ctrl #(
@@ -173,7 +169,7 @@ module wt_hybche #(
     .clk_i,
     .rst_ni,
     .flush_i              ( flush_cache        ),
-    .flush_ack_o          ( flush_ack_o        ),
+    .flush_ack_o          ( ctrl_flush_ack     ),
     .cache_en_i           ( cache_en_i         ),
     .cache_flush_i        ( cache_flush_i      ),
     .cache_flush_ack_o    ( cache_flush_ack_o  ),
@@ -259,68 +255,17 @@ module wt_hybche #(
     .mem_priority_i       ( miss_busy          )
   );
 
-  // simple ready/valid handshake stubs for controller
-  assign mem_ready = 1'b1;
-  assign mem_valid = 1'b1;
-
-  ///////////////////////////////////////////////////////
-  // Core interface handling and arbitration
-  ///////////////////////////////////////////////////////
-
-  localparam int unsigned NumPorts = CVA6Cfg.NrLoadPipeRegs + CVA6Cfg.NrStorePipeRegs;
-
-  // request selection
-  logic [$clog2(NumPorts)-1:0] sel_port;
-  logic                                sel_valid;
-
-  // selected request fields
-  logic [riscv::PLEN-1:0]              req_paddr;
-  logic                                req_we;
-  logic [CVA6Cfg.XLEN-1:0]             req_wdata;
-  logic [CVA6Cfg.XLEN/8-1:0]           req_be;
-  logic [CVA6Cfg.DcacheIdWidth-1:0]    req_id;
-
-  // arbitration: fixed priority on port order
-  always_comb begin
-    sel_valid = 1'b0;
-    sel_port  = '0;
-    for (int i = 0; i < NumPorts; i++) begin
-      if (!sel_valid && dcache_req_ports_i[i].data_req) begin
-        sel_valid = 1'b1;
-        sel_port  = i[$clog2(NumPorts)-1:0];
-      end
-    end
-  end
-
-  assign req_paddr = { dcache_req_ports_i[sel_port].address_tag,
-                        dcache_req_ports_i[sel_port].address_index };
-  assign req_we    = dcache_req_ports_i[sel_port].data_we;
-  assign req_wdata = dcache_req_ports_i[sel_port].data_wdata;
-  assign req_be    = dcache_req_ports_i[sel_port].data_be;
-  assign req_id    = dcache_req_ports_i[sel_port].data_id;
-
-  // drive write buffer
-  assign wbuf_valid = sel_valid && req_we;
-  assign wbuf_addr  = req_paddr;
-  assign wbuf_wdata = req_wdata;
-  assign wbuf_be    = req_be;
-
-  // drive miss unit for loads
-  assign miss_req  = sel_valid && !req_we;
-  assign miss_addr = req_paddr;
-  assign miss_nc   = 1'b0;
-
-  // simple response logic
-  for (genvar i = 0; i < NumPorts; i++) begin : gen_resp
-    assign dcache_req_ports_o[i].data_gnt    = sel_valid && (sel_port == i) &&
-                                              (req_we ? wbuf_ready : miss_ack);
-    assign dcache_req_ports_o[i].data_rvalid = dcache_req_ports_o[i].data_gnt;
-    assign dcache_req_ports_o[i].data_rid    = req_id;
-    assign dcache_req_ports_o[i].data_rdata  = '0;
-    assign dcache_req_ports_o[i].data_ruser  = '0;
-  end
-
-  // AXI arbitration between miss unit and write buffer
-  assign axi_req_o = miss_busy ? axi_req_miss : axi_req_wbuf;
-
+  // Combine flush acknowledge from the controller and memory module
+  assign flush_ack_o = ctrl_flush_ack | mem_flush_ack;
+  
+  // NOTE: Core interface connections (dcache_req_ports_i/o) need to be 
+  // connected to appropriate controllers that handle the request/response
+  // protocol. This would typically involve instantiating read controllers
+  // similar to the standard wt_dcache implementation.
+  
+  // TODO: Complete core interface implementation
+  // - Connect dcache_req_ports_i/o to appropriate controllers
+  // - Implement proper request arbitration and response handling
+  // - Add miss request generation logic
+  // - Connect memory interfaces between components
 endmodule

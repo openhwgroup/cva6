@@ -33,7 +33,13 @@ module wt_hybche_mem #(
   input  logic                           rst_ni,
 
   input  logic                           flush_i,      // flush the dcache, flush and kill have to be asserted together
-  output logic                           flush_ack_o,  // acknowledge successful flush
+  //
+  // Signal asserted for a single cycle when the internal flush operation
+  // completes.  This mirrors the behaviour of the standard write-through
+  // cache implementation and allows external logic to reliably wait for the
+  // cache to be cleared.
+  //
+  output logic                           flush_ack_o,
   
   // Operational mode
   input  logic                           use_set_assoc_mode_i, // Set associative or fully associative mode
@@ -46,6 +52,9 @@ module wt_hybche_mem #(
   output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]    sram_we_o,
   output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]  sram_idx_o,
   output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]    sram_tag_o,
+  // Read/write data bus of the optional external SRAM interface.  During a
+  // flush this bus carries the invalidation value, otherwise it forwards the
+  // data returned by the memory arrays.
   output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   sram_data_o,
   input  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   sram_data_i
 );
@@ -59,6 +68,13 @@ module wt_hybche_mem #(
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] way_hit;           // Hit per way
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] repl_way;          // Way to replace
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] tag_rdata [CVA6Cfg.DCACHE_SET_ASSOC-1:0]; // Tag read data
+  
+  // Flush state
+  localparam int unsigned DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
+  logic flushing_q, flushing_d;
+  logic [DCACHE_CL_IDX_WIDTH-1:0] flush_cnt_q, flush_cnt_d;
+  logic flush_ack_d, flush_ack_q;
+  logic flush_done;
   
   // Operation mode specific signals
   logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] set_assoc_index; // Index for set associative mode
@@ -228,20 +244,67 @@ module wt_hybche_mem #(
       rr_ptr_q <= '0;
       lfsr_q   <= '1;
       plru_tree_q <= '0;
+      flushing_q   <= 1'b0;
+      flush_cnt_q  <= '0;
+      flush_ack_q  <= 1'b0;
     end else begin
       rr_ptr_q <= rr_ptr_d;
       lfsr_q   <= lfsr_d;
       plru_tree_q <= plru_tree_d;
+      flushing_q  <= flushing_d;
+      flush_cnt_q <= flush_cnt_d;
+      flush_ack_q <= flush_ack_d;
     end
   end
+
+  ///////////////////////////////
+  // Flush control
+  ///////////////////////////////
+  assign flush_done = (flush_cnt_q == CVA6Cfg.DCACHE_NUM_WORDS - 1) && flushing_q;
+
+  always_comb begin
+    // default assignments
+    flushing_d  = flushing_q;
+    flush_cnt_d = flush_cnt_q;
+    flush_ack_d = 1'b0;
+
+    // default SRAM signals
+    sram_en_o   = 1'b1;
+    sram_we_o   = '0;
+    sram_idx_o  = cache_index;
+    sram_tag_o  = cache_tag;
+    sram_data_o = sram_data_i; // forward input data by default
+
+    // start flush when requested and not already flushing
+    if (flush_i && !flushing_q) begin
+      flushing_d  = 1'b1;
+      flush_cnt_d = '0;
+    end
+
+    // handle ongoing flush
+    if (flushing_q) begin
+      sram_idx_o  = flush_cnt_q;
+      sram_we_o   = SET_MASK;
+      sram_tag_o  = '0;
+      sram_data_o = '0;
+      flush_cnt_d = flush_cnt_q + 1'b1;
+
+      if (flush_done) begin
+        flushing_d  = 1'b0;
+        flush_cnt_d = '0;
+        flush_ack_d = 1'b1;
+      end
+    end
+  end
+
+  // output registered acknowledge
+  assign flush_ack_o = flush_ack_q;
   
   // Implementation of mode transition handling
   // If policy is REPL_POLICY_FLUSH, the entire cache is flushed on mode change
   // If policy is REPL_POLICY_RETAIN, entries are kept but reorganized based on new mode
   
-  // SRAM interface assignments
-  assign sram_en_o = 1'b1; // Enable SRAM
-  assign sram_idx_o = cache_index;
-  assign sram_tag_o = cache_tag;
-  
+  // No additional assignments required here as the SRAM interface is driven
+  // in the flush control logic above.
+
 endmodule
