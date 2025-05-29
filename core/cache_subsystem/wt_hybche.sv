@@ -19,6 +19,7 @@
 import ariane_pkg::*;
 import wt_cache_pkg::*;
 import wt_hybrid_cache_pkg::*;
+import riscv::*;
 
 module wt_hybche #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
@@ -214,7 +215,7 @@ module wt_hybche #(
     .miss_busy_o          ( miss_busy          ),
     .mode_flush_req_i     ( mode_flush_req     ),
     .mode_flush_ack_o     ( mode_flush_ack     ),
-    .axi_req_o            ( axi_req_o          ),
+    .axi_req_o            ( axi_req_miss       ),
     .axi_resp_i           ( axi_resp_i         ),
     .mem_req_o            ( /* connected to mem */ ),
     .mem_addr_o           ( /* connected to mem */ ),
@@ -235,12 +236,12 @@ module wt_hybche #(
   ) i_wt_hybche_wbuffer (
     .clk_i,
     .rst_ni,
-    .valid_i              ( /* from core interface */ ),
-    .addr_i               ( /* from core interface */ ),
-    .we_i                 ( /* from core interface */ ),
-    .be_i                 ( /* from core interface */ ),
-    .data_i               ( /* from core interface */ ),
-    .ready_o              ( /* to core interface */ ),
+    .valid_i              ( wbuf_valid        ),
+    .addr_i               ( wbuf_addr         ),
+    .we_i                 ( 1'b1              ),
+    .be_i                 ( wbuf_be           ),
+    .data_i               ( wbuf_wdata        ),
+    .ready_o              ( wbuf_ready        ),
     .use_set_assoc_mode_i ( use_set_assoc_mode ),
     .mode_change_i        ( mode_change        ),
     .empty_o              ( wbuffer_empty      ),
@@ -249,7 +250,7 @@ module wt_hybche #(
     .cache_en_i           ( cache_en_i         ),
     .inval_i              ( 1'b0               ),
     .inval_addr_i         ( '0                 ),
-    .axi_req_o            ( /* mux with miss unit */ ),
+    .axi_req_o            ( axi_req_wbuf       ),
     .axi_resp_i           ( axi_resp_i         ),
     .mem_priority_i       ( miss_busy          )
   );
@@ -267,5 +268,4 @@ module wt_hybche #(
   // - Implement proper request arbitration and response handling
   // - Add miss request generation logic
   // - Connect memory interfaces between components
-
 endmodule
