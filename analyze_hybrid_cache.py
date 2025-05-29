@@ -10,7 +10,12 @@ from typing import Dict
 
 from hybrid_cache.config import load_config
 from hybrid_cache.runner import collect_stats
-from hybrid_cache.visualization import generate_comparison_chart
+from hybrid_cache.visualization import (
+    generate_comparison_chart,
+    generate_timeline_view,
+    generate_interactive_chart,
+)
+from hybrid_cache.parser import stream_vcd_signals
 
 def write_report(results: Dict[str, Dict[str, Dict[str, int | float]]], tests: list[str], configs: list[str], out_dir: Path) -> None:
     report_md = out_dir / "cache_analysis_report.md"
@@ -54,9 +59,10 @@ def main() -> None:
         epilog=(
             "Example:\n"
             "  python3 analyze_hybrid_cache.py results_dir --config config/hybrid_cache_analysis.yml\n"
-            "  python3 analyze_hybrid_cache.py results_dir -o report -j 4 --verbose"
+            "  python3 analyze_hybrid_cache.py results_dir -o report -j 4 --verbose\n"
+            "  python3 analyze_hybrid_cache.py results_dir --timeline-vcd path/to.vcd --signal hit"
         ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("comparison_dir", help="Directory containing comparison results")
     parser.add_argument("--config", help="YAML configuration file")
@@ -72,6 +78,20 @@ def main() -> None:
         "--verbose",
         action="store_true",
         help="Enable verbose output during parsing",
+    )
+    parser.add_argument(
+        "--timeline-vcd",
+        help="VCD file containing hit signal to plot",
+    )
+    parser.add_argument(
+        "--signal",
+        default="hit",
+        help="Signal name to extract from VCD",
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Generate interactive timeline HTML if plotly is available",
     )
     args = parser.parse_args()
 
@@ -96,6 +116,11 @@ def main() -> None:
         jobs=args.jobs,
         verbose=args.verbose,
     )
+    if args.timeline_vcd:
+        values = list(stream_vcd_signals(args.timeline_vcd, args.signal))
+        generate_timeline_view(values, args.signal, out_dir)
+        if args.interactive:
+            generate_interactive_chart(values, args.signal, out_dir)
     write_report(results, cfg["tests"], cfg["configs"], out_dir)
     print(f"Analysis report generated in {out_dir}")
 

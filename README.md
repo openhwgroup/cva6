@@ -466,6 +466,7 @@ The fully associative mode uses a hash function seeded by the `HASH_SEED` parame
 To compare these configurations, use the provided `compare_hybrid_cache_configs.sh` script. For detailed analysis, use the `analyze_hybrid_cache.py` script which generates visualizations and reports. Pass `-j` to adjust the number of worker threads and `--verbose` to print progress while parsing logs.
 
 For more details, see the [hybrid_cache_validation.md](hybrid_cache_validation.md) document.
+See `docs/hybrid_cache/advanced_visualization.md` for instructions on generating timeline views and interactive charts.
 
 
 ## Re-generating the Bootcode (ZSBL)

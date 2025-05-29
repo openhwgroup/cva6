@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Iterable
 
 import matplotlib.pyplot as plt
+
+try:  # optional interactive support
+    import plotly.graph_objects as go
+except Exception:  # pragma: no cover - plotly may not be installed
+    go = None
 
 
 def generate_comparison_chart(results: Dict[str, Dict[str, int | float]], test_name: str, output_dir: str | Path) -> None:
@@ -48,3 +53,28 @@ def generate_comparison_chart(results: Dict[str, Dict[str, int | float]], test_n
         plt.title(f"{test_name} - WT_HYB Hit Distribution")
         plt.savefig(output_dir / "charts" / f"{test_name}_hybrid_hit_distribution.png")
         plt.close()
+
+
+def generate_timeline_view(values: Iterable[int], name: str, output_dir: str | Path) -> None:
+    """Generate a simple timeline plot for a hit/miss signal."""
+    output_dir = Path(output_dir)
+    (output_dir / "charts").mkdir(parents=True, exist_ok=True)
+    plt.figure(figsize=(12, 4))
+    plt.plot(list(values))
+    plt.xlabel("Cycle")
+    plt.ylabel("Hit")
+    plt.title(f"{name} Hit Timeline")
+    plt.tight_layout()
+    plt.savefig(output_dir / "charts" / f"{name}_timeline.png")
+    plt.close()
+
+
+def generate_interactive_chart(values: Iterable[int], name: str, output_dir: str | Path) -> None:
+    """Generate an interactive timeline if plotly is available."""
+    if go is None:
+        return
+    output_dir = Path(output_dir)
+    (output_dir / "charts").mkdir(parents=True, exist_ok=True)
+    fig = go.Figure(go.Scatter(y=list(values), mode="lines"))
+    fig.update_layout(title=f"{name} Hit Timeline", xaxis_title="Cycle", yaxis_title="Hit")
+    fig.write_html(output_dir / "charts" / f"{name}_timeline.html")
