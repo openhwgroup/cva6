@@ -21,15 +21,15 @@ import wt_cache_pkg::*;
 import wt_hybrid_cache_pkg::*;
 
 module wt_hybche #(
-  parameter config_pkg::cva6_user_cfg_t CVA6Cfg     = '0,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
   parameter int unsigned                DREQ_DEPTH  = 2,
-  parameter logic [DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
+  parameter logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
   parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR,
   // Seed value for the hash function when operating in fully associative mode
-  parameter logic [DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[DCACHE_TAG_WIDTH-1:0],
+  parameter logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[CVA6Cfg.DCACHE_TAG_WIDTH-1:0],
   parameter type axi_req_t = logic,
   parameter type axi_resp_t = logic,
   parameter type dcache_req_i_t = logic,
@@ -39,7 +39,7 @@ module wt_hybche #(
   input  logic                           rst_ni,
 
   input  logic                           flush_i,      // flush the dcache, flush and kill have to be asserted together
-  input  logic                           flush_ack_o,  // acknowledge successful flush
+  output logic                           flush_ack_o,  // acknowledge successful flush
   
   // Privilege mode input
   input  logic [1:0]                     priv_lvl_i,   // From CSR, used for hybrid mode (2'b00=U, 2'b01=S, 2'b11=M)
@@ -49,11 +49,11 @@ module wt_hybche #(
   
   // SRAM interface
   output logic                           sram_en_o,
-  output logic [DCACHE_SET_ASSOC-1:0]    sram_we_o,
-  output logic [DCACHE_INDEX_WIDTH-1:0]  sram_idx_o,
-  output logic [DCACHE_TAG_WIDTH-1:0]    sram_tag_o,
-  output logic [DCACHE_LINE_WIDTH-1:0]   sram_data_o,
-  input  logic [DCACHE_LINE_WIDTH-1:0]   sram_data_i,
+  output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]    sram_we_o,
+  output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]  sram_idx_o,
+  output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]    sram_tag_o,
+  output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   sram_data_o,
+  input  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   sram_data_i,
   
   // Cache management
   input  logic                           cache_en_i,   // from CSR
@@ -144,7 +144,6 @@ module wt_hybche #(
     .sram_tag_o,
     .sram_data_o,
     .sram_data_i
-    // More connections as needed
   );
   
   // Wire up the rest of the components (controllers, miss handling, etc.)

@@ -162,7 +162,7 @@ module wt_hybche_subsystem
       .clk_i              (clk_i),
       .rst_ni             (rst_ni),
       .flush_i            (dcache_flush_i),
-      .flush_ack_o        (1'b0),
+      .flush_ack_o        (),
       .priv_lvl_i         (priv_lvl_i),
       .enable_translation_i(enable_translation_i),
       .sram_en_o          (sram_en_o),

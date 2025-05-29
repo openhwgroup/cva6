@@ -1,0 +1,61 @@
+Cache Implementation Comparison Run: 2025-05-28 22:19:28.215941
+================================================================================
+
+Command Line Options:
+  Generate VCD: True
+  VCD Signals File: cache_signals.txt
+  Mode: All
+  Output Directory: matrix_cache_comparison_20250528_221928
+  Force Rebuild: False
+  Custom Test: /home/cai/cache_project/sandbox/cva6/verif/tests/custom/hybrid_cache_test/matrix_cache_test.c
+
+[2025-05-28 22:19:28] Starting cache implementation comparison...
+[2025-05-28 22:19:28] Creating backup of configuration files...
+[2025-05-28 22:19:28] Configuration backups created at matrix_cache_comparison_20250528_221928/config_backups
+[2025-05-28 22:19:28] Will run the following cache modes: WT, WT_HYB, WT_HYB_FORCE_SET_ASS, WT_HYB_FORCE_FULL_ASS
+[2025-05-28 22:19:28] 
+Running simulation with WT mode...
+[2025-05-28 22:19:28] 
+Updating config to use WT mode...
+[2025-05-28 22:19:28] Config updated to use WT mode
+[2025-05-28 22:19:28] Config saved to matrix_cache_comparison_20250528_221928/wt_results/cv32a60x_config_pkg.sv.WT
+[2025-05-28 22:19:28] Configuration changed or force rebuild enabled. Cleaning simulation...
+[2025-05-28 22:19:28] Cleaning previous simulation artifacts...
+[2025-05-28 22:19:28] Warning: Failed to clean simulation artifacts: Command 'cd /home/cai/cache_project/sandbox/cva6/verif/sim && make clean' returned non-zero exit status 2.
+[2025-05-28 22:19:28] STDERR: basename: missing operand
+Try 'basename --help' for more information.
+make: *** No rule to make target 'clean'.  Stop.
+
+[2025-05-28 22:19:28] Will generate VCD using signal list from: /home/cai/cache_project/sandbox/cva6/cache_signals.txt
+[2025-05-28 22:19:28] Using custom test: /home/cai/cache_project/sandbox/cva6/verif/tests/custom/hybrid_cache_test/matrix_cache_test.c
+[2025-05-28 22:19:28] Executing script: matrix_cache_comparison_20250528_221928/run_WT.sh
+[2025-05-28 22:26:15] Simulation with WT mode completed successfully
+[2025-05-28 22:26:15] Copying simulation logs and artifacts for WT...
+[2025-05-28 22:26:15] Checking for outputs in /home/cai/cache_project/sandbox/cva6/verif/sim/out_2025-05-28
+[2025-05-28 22:26:15] Found 1 log files and 0 VCD files in /home/cai/cache_project/sandbox/cva6/verif/sim/out_2025-05-28
+[2025-05-28 22:26:15] Copied /home/cai/cache_project/sandbox/cva6/verif/sim/out_2025-05-28/veri-testharness_sim/matrix_cache_test.cv32a60x.log.iss to matrix_cache_comparison_20250528_221928/wt_results/simulation_artifacts/out_2025-05-28/matrix_cache_test.cv32a60x.log.iss
+[2025-05-28 22:26:15] Checking for outputs in /home/cai/cache_project/sandbox/cva6/verif/sim/out_fixed_state_b_test.log
+[2025-05-28 22:26:15] Checking for outputs in /home/cai/cache_project/sandbox/cva6/verif/sim/out_state_b_test.log
+[2025-05-28 22:26:53] Copied Verilator VCD to matrix_cache_comparison_20250528_221928/wt_results/hello_world.cv32a60x.vcd
+[2025-05-28 22:26:53] 
+Extracting results for WT mode...
+[2025-05-28 22:26:53] Found 2 log files to analyze for WT mode
+[2025-05-28 22:26:53] 
+Running simulation with WT_HYB mode...
+[2025-05-28 22:26:53] 
+Updating config to use WT_HYB mode...
+[2025-05-28 22:26:53] Config updated to use WT_HYB mode
+[2025-05-28 22:26:53] Config saved to matrix_cache_comparison_20250528_221928/wt_hyb_results/cv32a60x_config_pkg.sv.WT_HYB
+[2025-05-28 22:26:53] Configuration changed or force rebuild enabled. Cleaning simulation...
+[2025-05-28 22:26:53] Cleaning previous simulation artifacts...
+[2025-05-28 22:26:53] Warning: Failed to clean simulation artifacts: Command 'cd /home/cai/cache_project/sandbox/cva6/verif/sim && make clean' returned non-zero exit status 2.
+[2025-05-28 22:26:53] STDERR: basename: missing operand
+Try 'basename --help' for more information.
+make: *** No rule to make target 'clean'.  Stop.
+
+[2025-05-28 22:26:53] Will generate VCD using signal list from: /home/cai/cache_project/sandbox/cva6/cache_signals.txt
+[2025-05-28 22:26:53] Using custom test: /home/cai/cache_project/sandbox/cva6/verif/tests/custom/hybrid_cache_test/matrix_cache_test.c
+[2025-05-28 22:26:53] Executing script: matrix_cache_comparison_20250528_221928/run_WT_HYB.sh
+[2025-05-28 22:27:56] Restoring configuration files from backup...
+[2025-05-28 22:27:56] Configuration files restored
+[2025-05-28 22:27:56] Original configuration restored

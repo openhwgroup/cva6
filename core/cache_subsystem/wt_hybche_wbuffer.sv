@@ -19,7 +19,7 @@ import wt_cache_pkg::*;
 import wt_hybrid_cache_pkg::*;
 
 module wt_hybche_wbuffer #(
-  parameter config_pkg::cva6_user_cfg_t CVA6Cfg     = '0,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
   parameter int unsigned                DEPTH       = 8,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,

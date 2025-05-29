@@ -98,14 +98,14 @@ module wt_l15_hybche_adapter
     logic [39:0] l15_address;  // physical address
     logic [63:0] l15_data;  // word to write
     logic [63:0] l15_data_next_entry;  // unused in Ariane (only used for CAS atomic requests)
-    logic [L15_TLB_CSM_WIDTH-1:0] l15_csm_data;  // unused in Ariane
+    logic [wt_hybrid_cache_pkg::L15_TLB_CSM_WIDTH-1:0] l15_csm_data;  // unused in Ariane
     logic [3:0] l15_amo_op;  // atomic operation type
   };
   localparam type l15_rtrn_t = struct packed {
     logic l15_ack;  // ack for request struct
     logic l15_header_ack;  // ack for request struct
     logic l15_val;  // valid signal for return struct
-    wt_l15_hybche_adapter::l15_rtrntypes_t l15_returntype;  // see below for encoding
+    wt_hybrid_cache_pkg::l15_rtrntypes_t l15_returntype;  // see below for encoding
     logic l15_l2miss;  // unused in Ariane
     logic [1:0] l15_error;  // unused in openpiton
     logic l15_noncacheable;  // non-cacheable bit

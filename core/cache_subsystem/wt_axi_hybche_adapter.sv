@@ -19,7 +19,7 @@ import wt_cache_pkg::*;
 import wt_hybrid_cache_pkg::*;
 
 module wt_axi_hybche_adapter #(
-  parameter config_pkg::cva6_user_cfg_t CVA6Cfg     = '0,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
@@ -36,13 +36,13 @@ module wt_axi_hybche_adapter #(
   input  logic                           req_i,
   input  logic [riscv::PLEN-1:0]         addr_i,
   input  logic                           we_i,
-  input  logic [DCACHE_SET_ASSOC-1:0]    way_i,
-  input  logic [DCACHE_LINE_WIDTH-1:0]   data_i,
-  input  logic [DCACHE_LINE_WIDTH/8-1:0] be_i,
+  input  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]    way_i,
+  input  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   data_i,
+  input  logic [CVA6Cfg.DCACHE_LINE_WIDTH/8-1:0] be_i,
   output logic                           gnt_o,
   
   output logic                           we_o,
-  output logic [DCACHE_LINE_WIDTH-1:0]   data_o,
+  output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]   data_o,
   
   // AXI interface
   output axi_req_t                       axi_req_o,

@@ -19,8 +19,8 @@ import wt_cache_pkg::*;
 import wt_hybrid_cache_pkg::*;
 
 module wt_hybche_missunit #(
-  parameter config_pkg::cva6_user_cfg_t CVA6Cfg     = '0,
-  parameter logic [DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
+  parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
+  parameter logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
