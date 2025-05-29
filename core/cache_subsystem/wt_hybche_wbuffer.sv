@@ -23,7 +23,9 @@ module wt_hybche_wbuffer #(
   parameter int unsigned                DEPTH       = 8,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
-  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN
+  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
+  parameter type axi_req_t = logic,
+  parameter type axi_resp_t = logic
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -51,8 +53,8 @@ module wt_hybche_wbuffer #(
   input  logic [riscv::PLEN-1:0]         inval_addr_i,
  
   // AXI interface
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i,
+  output axi_req_t                       axi_req_o,
+  input  axi_resp_t                      axi_resp_i,
 
   // Memory priority
   input  logic                           mem_priority_i  // Higher priority for memory transactions

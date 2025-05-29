@@ -23,7 +23,9 @@ module wt_hybche_missunit #(
   parameter logic [DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
-  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN
+  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
+  parameter type axi_req_t = logic,
+  parameter type axi_resp_t = logic
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -47,8 +49,8 @@ module wt_hybche_missunit #(
   output logic                           mode_flush_ack_o,   // Mode change flush acknowledged
   
   // AXI interface
-  output ariane_axi::req_t               axi_req_o,          // AXI request
-  input  ariane_axi::resp_t              axi_resp_i,         // AXI response
+  output axi_req_t                       axi_req_o,          // AXI request
+  input  axi_resp_t                      axi_resp_i,         // AXI response
   
   // Memory interface
   output logic                           mem_req_o,          // Memory request

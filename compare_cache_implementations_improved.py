@@ -613,6 +613,9 @@ def manual_log_check(results):
     for mode, data in results.items():
         log_message(f"Checking log files for {mode}...")
         
+        # Track what we've already found to avoid duplicate messages
+        already_reported = set()
+        
         for log_file in data.get('log_files', []):
             try:
                 with open(log_file, 'r') as f:
@@ -620,39 +623,53 @@ def manual_log_check(results):
                     
                     # Look for specific markers of successful hello_world.c execution
                     if "Hello World" in content or "hello, world" in content:
-                        data['hello_world_found'] = True
-                        log_message(f"  ✓ Found 'Hello World' output in {mode} log")
+                        if 'hello_world_found' not in already_reported:
+                            data['hello_world_found'] = True
+                            log_message(f"  ✓ Found 'Hello World' output in {mode} log")
+                            already_reported.add('hello_world_found')
                     
                     # Look for program completion markers
                     if "Test completed successfully" in content or "test passed" in content:
-                        data['success_marker_found'] = True
-                        log_message(f"  ✓ Found success marker in {mode} log")
+                        if 'success_marker_found' not in already_reported:
+                            data['success_marker_found'] = True
+                            log_message(f"  ✓ Found success marker in {mode} log")
+                            already_reported.add('success_marker_found')
                     
                     # Check for absence of error indicators
                     if "Error" not in content and "Failed" not in content and "FAILED" not in content:
-                        data['no_errors_found'] = True
-                        log_message(f"  ✓ No error indicators found in {mode} log")
+                        if 'no_errors_found' not in already_reported:
+                            data['no_errors_found'] = True
+                            log_message(f"  ✓ No error indicators found in {mode} log")
+                            already_reported.add('no_errors_found')
                         
                     # Check for cache mode indicators
                     if "WT_HYB_FORCE_FULL_ASS" in content or "force_mode = 2" in content:
-                        data['force_full_ass_confirmed'] = True
-                        log_message(f"  ✓ Found fully associative mode confirmation in {mode} log")
+                        if 'force_full_ass_confirmed' not in already_reported:
+                            data['force_full_ass_confirmed'] = True
+                            log_message(f"  ✓ Found fully associative mode confirmation in {mode} log")
+                            already_reported.add('force_full_ass_confirmed')
                     elif "WT_HYB_FORCE_SET_ASS" in content or "force_mode = 1" in content:
-                        data['force_set_ass_confirmed'] = True
-                        log_message(f"  ✓ Found set associative mode confirmation in {mode} log")
+                        if 'force_set_ass_confirmed' not in already_reported:
+                            data['force_set_ass_confirmed'] = True
+                            log_message(f"  ✓ Found set associative mode confirmation in {mode} log")
+                            already_reported.add('force_set_ass_confirmed')
                     elif "DYNAMIC" in content or "force_mode = 0" in content:
-                        data['dynamic_mode_confirmed'] = True
-                        log_message(f"  ✓ Found dynamic mode confirmation in {mode} log")
+                        if 'dynamic_mode_confirmed' not in already_reported:
+                            data['dynamic_mode_confirmed'] = True
+                            log_message(f"  ✓ Found dynamic mode confirmation in {mode} log")
+                            already_reported.add('dynamic_mode_confirmed')
                     
                     # Look for tag comparisons
                     tag_match_full = re.findall(r'tag_match_full_ass\s*=\s*(\d+)', content)
                     tag_match_set = re.findall(r'tag_match_set_ass\s*=\s*(\d+)', content)
-                    if tag_match_full:
+                    if tag_match_full and 'tag_match_full_found' not in already_reported:
                         data['tag_match_full_found'] = True
                         log_message(f"  ✓ Found full associative tag matches in {mode} log")
-                    if tag_match_set:
+                        already_reported.add('tag_match_full_found')
+                    if tag_match_set and 'tag_match_set_found' not in already_reported:
                         data['tag_match_set_found'] = True
                         log_message(f"  ✓ Found set associative tag matches in {mode} log")
+                        already_reported.add('tag_match_set_found')
                         
             except Exception as e:
                 log_message(f"  ✗ Error reading log file {log_file}: {e}")

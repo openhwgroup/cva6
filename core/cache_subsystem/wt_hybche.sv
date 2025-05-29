@@ -29,7 +29,11 @@ module wt_hybche #(
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
   parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR,
   // Seed value for the hash function when operating in fully associative mode
-  parameter logic [DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[DCACHE_TAG_WIDTH-1:0]
+  parameter logic [DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[DCACHE_TAG_WIDTH-1:0],
+  parameter type axi_req_t = logic,
+  parameter type axi_resp_t = logic,
+  parameter type dcache_req_i_t = logic,
+  parameter type dcache_req_o_t = logic
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -38,7 +42,7 @@ module wt_hybche #(
   input  logic                           flush_ack_o,  // acknowledge successful flush
   
   // Privilege mode input
-  input  ariane_pkg::priv_lvl_t          priv_lvl_i,   // From CSR, used for hybrid mode
+  input  logic [1:0]                     priv_lvl_i,   // From CSR, used for hybrid mode (2'b00=U, 2'b01=S, 2'b11=M)
   
   // From PTW
   input  logic                           enable_translation_i, // CSR from PTW, determines if MMU is enabled
@@ -61,8 +65,8 @@ module wt_hybche #(
   output dcache_req_o_t [CVA6Cfg.NrLoadPipeRegs+CVA6Cfg.NrStorePipeRegs-1:0] dcache_req_ports_o,
   
   // AXI port
-  output ariane_axi::req_t  axi_req_o,
-  input  ariane_axi::resp_t axi_resp_i
+  output axi_req_t  axi_req_o,
+  input  axi_resp_t axi_resp_i
 );
 
   // Determine cache operation mode
@@ -78,7 +82,7 @@ module wt_hybche #(
         wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC: begin
           // Dynamic mode - switch based on privilege level
           // M-mode (3) uses set associative, S-mode (1) and U-mode (0) use fully associative
-          use_set_assoc_mode = (priv_lvl_i == ariane_pkg::PRIV_LVL_M);
+          use_set_assoc_mode = (priv_lvl_i == 2'b11); // Machine mode
         end
         wt_hybrid_cache_pkg::FORCE_MODE_SET_ASS: begin
           // Force set associative mode (like standard WT cache)

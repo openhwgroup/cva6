@@ -22,7 +22,9 @@ module wt_axi_hybche_adapter #(
   parameter config_pkg::cva6_user_cfg_t CVA6Cfg     = '0,
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
-  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN
+  parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
+  parameter type axi_req_t = logic,
+  parameter type axi_resp_t = logic
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -43,8 +45,8 @@ module wt_axi_hybche_adapter #(
   output logic [DCACHE_LINE_WIDTH-1:0]   data_o,
   
   // AXI interface
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i
+  output axi_req_t                       axi_req_o,
+  input  axi_resp_t                      axi_resp_i
 );
 
   ///////////////////////////
