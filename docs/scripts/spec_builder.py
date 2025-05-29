@@ -51,14 +51,24 @@ DEFAULT_PARAMS = {
     'RVZabha': False,
     'RVZacas': False,
     'RVZawrs': False,
+    'RVZcmop': False,
     'RVZfa': False,
     'RVZfbf-RZvfbf': False,
     'RVZfh': False,
     'RVZfinx': False,
     'RVZicbo': False,
     'RVZicfilp': False,
+    'RVZifencei': False,
+    'RVZihintntl': False,
+    'RVZihintpause': False,
+    'RVZimop': False,
+    'RVZk': False,
     'RVZpm': False,
+    'RVZsmcdeleg': False,
+    'RVZsmcntrpmf': False,
+    'RVZsmcsrind-RVZsscsrind': False,
     'RVZsmctr': False,
+    'RVZsmdbltrp': False,
     'RVZsmepmp': False,
     'RVZsmmpm': False,
     'RVZsmrnmi': False,
@@ -181,6 +191,7 @@ def main():
         file.append("../core/cva6.sv")
         file.append("../core/frontend/frontend.sv")
         file.append("../core/frontend/bht.sv")
+        file.append("../core/frontend/bht2lvl.sv")
         file.append("../core/frontend/btb.sv")
         file.append("../core/frontend/ras.sv")
         file.append("../core/frontend/instr_queue.sv")

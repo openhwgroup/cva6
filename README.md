@@ -1,8 +1,11 @@
-# CVA6 RISC-V CPU [![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml) [![CVA6 dashboard](https://riscv-ci.pages.thales-invia.fr/dashboard/badge.svg)](https://riscv-ci.pages.thales-invia.fr/dashboard/) [![Documentation Status](https://readthedocs.com/projects/openhw-group-cva6-user-manual/badge/?version=latest)](https://docs.openhwgroup.org/projects/cva6-user-manual/?badge=latest) [![GitHub release](https://img.shields.io/github/release/openhwgroup/cva6?include_prereleases=&sort=semver&color=blue)](https://github.com/openhwgroup/cva6/releases/)
+# CVA6 RISC-V CPU [![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml) [![CVA6 dashboard](https://riscv-ci.pages.thales-invia.fr/dashboard/badge_master.svg)](https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_cva6.html) [![Documentation Status](https://readthedocs.com/projects/openhw-group-cva6-user-manual/badge/?version=latest)](https://docs.openhwgroup.org/projects/cva6-user-manual/?badge=latest) [![GitHub release](https://img.shields.io/github/release/openhwgroup/cva6?include_prereleases=&sort=semver&color=blue)](https://github.com/openhwgroup/cva6/releases/)
 
 CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore, it is compliant to the draft external debug spec 0.13.
 
 It has a configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
+
+A performance model of CVA6 is available in the `perf-model/` folder of this repository.
+It can be used to investigate performance-related micro-architecture changes.
 
 <img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
@@ -443,6 +446,27 @@ CVA6 has preliminary support for the OpenPiton distributed cache system from Pri
 The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use CVA6 in the OpenPiton setting.
 
 To activate the different cache system, compile your code with the macro `DCACHE_TYPE`.
+
+## Hybrid Cache Implementation
+
+The CVA6 now supports a hybrid cache implementation that dynamically switches between set associative and fully associative cache organizations based on the processor's privilege level:
+
+- **Machine Mode (M-mode)**: Uses set associative organization for better performance
+- **Supervisor/User Mode (S/U-mode)**: Uses fully associative organization for better isolation
+
+This provides better security isolation while maintaining performance for trusted code. Four configurations are available:
+
+1. **WT**: Standard Write-Through cache (baseline)
+2. **WT_HYB**: Hybrid cache with dynamic privilege-based mode switching
+3. **WT_HYB_FORCE_SET_ASS**: Hybrid cache forced to set associative mode
+4. **WT_HYB_FORCE_FULL_ASS**: Hybrid cache forced to fully associative mode
+
+The fully associative mode uses a hash function seeded by the `HASH_SEED` parameter to randomize lookup table indices and reduce deterministic collisions.
+
+To compare these configurations, use the provided `compare_hybrid_cache_configs.sh` script. For detailed analysis, use the `analyze_hybrid_cache.py` script which generates visualizations and reports. Pass `-j` to adjust the number of worker threads and `--verbose` to print progress while parsing logs.
+
+For more details, see the [hybrid_cache_validation.md](hybrid_cache_validation.md) document.
+See `docs/hybrid_cache/advanced_visualization.md` for instructions on generating timeline views and interactive charts.
 
 
 ## Re-generating the Bootcode (ZSBL)

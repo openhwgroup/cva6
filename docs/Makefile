@@ -6,6 +6,8 @@ prepare:
 
 	make -C 06_cv64a6_mmu/riscv priv-html unpriv-html
 
+	make -C 07_cv32a60x/riscv priv-html unpriv-html
+
 sphinx:
 	sphinx-build . _build
 

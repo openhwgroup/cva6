@@ -3,6 +3,7 @@ This module makes it possible to trigger GitHub workflows.
 """
 
 from os import environ as env
+import time
 import requests
 
 def api_url(owner, repo):
@@ -52,6 +53,7 @@ class DashboardDone(Workflow):
             'pr_number': str(pr),
             'success': success,
         }
+        time.sleep(120)
         return self._trigger(inputs)
 
     def send_success(self, pr):

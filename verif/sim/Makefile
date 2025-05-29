@@ -460,6 +460,7 @@ clean_all: vcs_clean_all
 	rm -f trace*.log
 	rm -f trace*.dasm trace*.dasm.v2
 	rm -f *.vpd *.fsdb *.vcd *.fst
+	rm -f *.trace
 
 help:
 	@echo "Shell environment:"

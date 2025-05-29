@@ -1,12 +1,21 @@
 
+ifeval::["{ohg-config}"=="CV32A60X"]
+:archi-CVA6:
+:archi-CV32A60X:
+// specify that it is a custom architecture
+:archi-not-default:
+endif::[]
+
 ifeval::["{ohg-config}"=="CV32A65X"]
 :archi-CVA6:
+:archi-CV32A65X:
 // specify that it is a custom architecture
 :archi-not-default:
 endif::[]
 
 ifeval::["{ohg-config}"=="CV64A6_MMU"]
 :archi-CVA6:
+:archi-CV64A6_MMU:
 // specify that it is a custom architecture
 :archi-not-default:
 endif::[]

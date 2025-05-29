@@ -35,7 +35,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
-  localparam CVA6ConfigFetchUserWidth = 1; // Just not to raise warnings
+  localparam CVA6ConfigFetchUserWidth = 1;  // Just not to raise warnings
   localparam CVA6ConfigDataUserEn = 0;
   localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
@@ -120,7 +120,9 @@ package cva6_config_pkg;
       ExceptionAddress: 64'h808,
       RASDepth: unsigned'(CVA6ConfigRASDepth),
       BTBEntries: unsigned'(CVA6ConfigBTBEntries),
+      BPType: config_pkg::BHT,
       BHTEntries: unsigned'(CVA6ConfigBHTEntries),
+      BHTHist: unsigned'(3),
       DmBaseAddress: 64'h0,
       TvalEn: bit'(CVA6ConfigTvalEn),
       DirectVecOnly: bit'(0),

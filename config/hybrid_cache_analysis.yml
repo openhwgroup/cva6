@@ -1,0 +1,12 @@
+# Configuration for analyze_hybrid_cache.py
+# List of benchmark tests to analyze
+tests:
+  - hello_world
+  - cache_test
+  - cache_thrash
+# Cache configurations to compare
+configs:
+  - WT
+  - WT_HYB
+  - WT_HYB_FORCE_SET_ASS
+  - WT_HYB_FORCE_FULL_ASS

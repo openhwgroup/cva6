@@ -1,0 +1,64 @@
+language: cpp
+cache:
+  apt: true
+  directories:
+    $VERILATOR_ROOT
+  timeout: 1000
+
+env:
+  global:
+    - VERILATOR_ROOT="/home/travis/verilator-4.014/"
+
+    # required packages to install
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+      - g++-7
+      - gperf
+      - autoconf
+      - automake
+      - autotools-dev
+      - libmpc-dev
+      - libmpfr-dev
+      - libgmp-dev
+      - gawk
+      - build-essential
+      - bison
+      - flex
+      - texinfo
+      - python-pexpect
+      - libusb-1.0-0-dev
+      - default-jdk
+      - zlib1g-dev
+      - valgrind
+
+before_install:
+  # setup dependent paths
+  - export PATH=$VERILATOR_ROOT/bin:$PATH
+  - export C_INCLUDE_PATH=$VERILATOR_ROOT/include
+  - export CPLUS_INCLUDE_PATH=$VERILATOR_ROOT/include
+  - mkdir -p tmp
+
+stages:
+  - compile
+  - test
+
+jobs:
+  include:
+    - stage: compile
+      name: compile verilator
+      script:
+        - ci/install-verilator.sh
+    - stage: test
+      name: test encode
+      script:
+        - make
+        - ./obj_dir/Vecc_encode > /dev/zero
+    - stage: test
+      name: test decode
+      script:
+        - make
+        - ./obj_dir/Vecc_decode > /dev/zero

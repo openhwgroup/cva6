@@ -11,7 +11,19 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
 // Description: Package for OpenPiton compatible L1 cache subsystem
-// Modified for Hybrid Cache implementation
+// Modified for Hybrid Cache implementation with privilege mode-based switching
+//
+// This hybrid cache implementation supports:
+// 1. Dynamic switching between set associative and fully associative modes
+// 2. Privilege level-based mode selection:
+//    - Machine Mode (M-mode): Set associative organization
+//    - Supervisor/User Mode (S/U-mode): Fully associative organization
+// 3. Force modes for testing and validation:
+//    - FORCE_MODE_SET_ASS: Force set associative mode
+//    - FORCE_MODE_FULL_ASS: Force fully associative mode
+// 4. Two replacement policies for mode transitions:
+//    - REPL_POLICY_RETAIN: Preserve cache entries during transitions (only flush specific sets)
+//    - REPL_POLICY_FLUSH: Completely flush cache on any transition
 
 // this is needed to propagate the
 // configuration in case Ariane is
@@ -48,6 +60,26 @@ package wt_hybrid_cache_pkg;
     FORCE_MODE_FULL_ASS = 2    // Force fully associative mode
   } force_mode_e;
   
+  // Replacement policy for mode switching
+  typedef enum logic {
+    REPL_POLICY_RETAIN = 1'b0, // Retain cache entries when switching modes (only flush specific sets)
+    REPL_POLICY_FLUSH = 1'b1   // Flush entire cache on mode switch
+  } replacement_policy_e;
+
+  // Replacement algorithm used to select a victim way when inserting a new
+  // cache line.  These algorithms are orthogonal to the mode switching
+  // policies above and purely control the victim selection strategy.
+  typedef enum logic [1:0] {
+    REPL_ALGO_RR     = 2'b00, // simple round-robin pointer
+    REPL_ALGO_RANDOM = 2'b01, // pseudo random using an LFSR
+    REPL_ALGO_PLRU   = 2'b10  // tree-based pseudo-LRU
+  } replacement_algo_e;
+
+  // Default seed used by the fully associative hash function. The seed can be
+  // overridden at module instantiation to randomize the index mapping.  The
+  // width of the seed equals the tag width of the data cache, excess bits are
+  // truncated.
+  localparam logic [63:0] DEFAULT_HASH_SEED = 64'h0123_4567_89ab_cdef;
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
   localparam ADAPTER_RTRN_FIFO_DEPTH = 2;
@@ -84,9 +116,6 @@ package wt_hybrid_cache_pkg;
     L15_IMISS_RQ   = 5'b10000,  // instruction fill request
     L15_STORE_RQ   = 5'b00001,  // store request
     L15_ATOMIC_RQ  = 5'b00110,  // atomic op
-    //L15_CAS1_RQ     = 5'b00010, // compare and swap1 packet (OpenSparc atomics)
-    //L15_CAS2_RQ     = 5'b00011, // compare and swap2 packet (OpenSparc atomics)
-    //L15_SWAP_RQ     = 5'b00110, // swap packet (OpenSparc atomics)
     L15_STRLOAD_RQ = 5'b00100,  // unused
     L15_STRST_RQ   = 5'b00101,  // unused
     L15_STQ_RQ     = 5'b00111,  // unused
@@ -99,9 +128,7 @@ package wt_hybrid_cache_pkg;
   // from l1.5 (only marked subset is used)
   typedef enum logic [3:0] {
     L15_LOAD_RET               = 4'b0000,  // load packet
-    // L15_INV_RET                = 4'b0011, // invalidate packet, not unique...
     L15_ST_ACK                 = 4'b0100,  // store ack packet
-    //L15_AT_ACK                 = 4'b0011, // unused, not unique...
     L15_INT_RET                = 4'b0111,  // interrupt packet
     L15_TEST_RET               = 4'b0101,  // unused
     L15_FP_RET                 = 4'b1000,  // unused

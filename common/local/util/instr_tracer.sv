@@ -29,11 +29,11 @@ module instr_tracer #(
   input logic                                          rstn,
   input logic                                          flush_unissued,
   input logic                                          flush_all,
-  input logic [31:0]                                   instruction,
-  input logic                                          fetch_valid,
-  input logic                                          fetch_ack,
-  input logic                                          issue_ack, // issue acknowledged
-  input scoreboard_entry_t                             issue_sbe, // issue scoreboard entry
+  input logic [31:0]                                   instruction [CVA6Cfg.NrIssuePorts-1:0],
+  input logic [CVA6Cfg.NrIssuePorts-1:0]               fetch_valid,
+  input logic [CVA6Cfg.NrIssuePorts-1:0]               fetch_ack,
+  input logic [CVA6Cfg.NrIssuePorts-1:0]               issue_ack, // issue acknowledged
+  input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0]  issue_sbe, // issue scoreboard entry
   input logic [CVA6Cfg.NrCommitPorts-1:0][4:0]         waddr, // WB stage
   input logic [CVA6Cfg.NrCommitPorts-1:0][63:0]        wdata,
   input logic [CVA6Cfg.NrCommitPorts-1:0]              we_gpr,
@@ -106,20 +106,24 @@ module instr_tracer #(
       // Instruction Decode
       // -------------------
       // we are decoding an instruction
-      if (fetch_valid && fetch_ack) begin
-        decode_instruction = instruction;
-        decode_queue.push_back(decode_instruction);
+      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
+        if (fetch_valid[i] && fetch_ack[i]) begin
+          decode_instruction = instruction[i];
+          decode_queue.push_back(decode_instruction);
+        end
       end
       // -------------------
       // Instruction Issue
       // -------------------
       // we got a new issue ack, so put the element from the decode queue to
       // the issue queue
-      if (issue_ack && !flush_unissued) begin
-        issue_instruction = decode_queue.pop_front();
-        issue_queue.push_back(issue_instruction);
-        // also save the scoreboard entry to a separate issue queue
-        issue_sbe_queue.push_back(scoreboard_entry_t'(issue_sbe));
+      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
+        if (issue_ack[i] && !flush_unissued) begin
+          issue_instruction = decode_queue.pop_front();
+          issue_queue.push_back(issue_instruction);
+          // also save the scoreboard entry to a separate issue queue
+          issue_sbe_queue.push_back(scoreboard_entry_t'(issue_sbe[i]));
+        end
       end
 
       // --------------------

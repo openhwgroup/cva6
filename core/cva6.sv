@@ -442,6 +442,8 @@ module cva6
   exception_t flu_exception_ex_id;
   // ALU
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_id_ex;
+  logic [5:0] orig_instr_aes;
+  logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_id_ex;
   // Branches and Jumps
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_id_ex;
 
@@ -858,6 +860,7 @@ module cva6
       .flu_ready_i             (flu_ready_ex_id),
       // ALU
       .alu_valid_o             (alu_valid_id_ex),
+      .aes_valid_o             (aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_o          (branch_valid_id_ex),            // branch is valid
       .branch_predict_o        (branch_predict_id_ex),          // branch predict to ex
@@ -916,7 +919,8 @@ module cva6
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
       .rvfi_commit_pointer_o(rvfi_commit_pointer),
       .rvfi_rs1_o           (rvfi_rs1),
-      .rvfi_rs2_o           (rvfi_rs2)
+      .rvfi_rs2_o           (rvfi_rs2),
+      .orig_instr_aes_bits  (orig_instr_aes)
   );
 
   // ---------
@@ -958,6 +962,8 @@ module cva6
       .flu_ready_o(flu_ready_ex_id),
       // ALU
       .alu_valid_i(alu_valid_id_ex),
+      .orig_instr_aes_i(orig_instr_aes),
+      .aes_valid_i(aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_i(branch_valid_id_ex),
       .branch_predict_i(branch_predict_id_ex),  // branch predict to ex
@@ -1713,6 +1719,18 @@ module cva6
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
+
+  logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
+  logic [CVA6Cfg.NrCommitPorts-1:0][63:0] wdata_commit_id_padded;
+
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
+    assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id};
+  end
+
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
@@ -1726,13 +1744,13 @@ module cva6
       .rstn(rst_ni),
       .flush_unissued(flush_unissued_instr_ctrl_id),
       .flush_all(flush_ctrl_ex),
-      .instruction(id_stage_i.fetch_entry_i[0].instruction),
-      .fetch_valid(id_stage_i.fetch_entry_valid_i[0]),
-      .fetch_ack(id_stage_i.fetch_entry_ready_o[0]),
+      .instruction(fetch_instructions),
+      .fetch_valid(id_stage_i.fetch_entry_valid_i),
+      .fetch_ack(id_stage_i.fetch_entry_ready_o),
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
-      .wdata(wdata_commit_id),
+      .wdata(wdata_commit_id_padded),
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
@@ -1818,6 +1836,7 @@ module cva6
       .exception_t        (exception_t),
       .scoreboard_entry_t (scoreboard_entry_t),
       .lsu_ctrl_t         (lsu_ctrl_t),
+      .bp_resolve_t       (bp_resolve_t),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
       .rvfi_probes_csr_t  (rvfi_probes_csr_t),
       .rvfi_probes_t      (rvfi_probes_t)
@@ -1853,7 +1872,8 @@ module cva6
 
       .csr_i(rvfi_csr),
       .irq_i(irq_i),
-
+      .resolved_branch_i(resolved_branch),
+      .flu_trans_id_ex_id_i(flu_trans_id_ex_id),
       .rvfi_probes_o(rvfi_probes_o)
 
   );
