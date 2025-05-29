@@ -1,6 +1,6 @@
 # Hybrid Cache Implementation for CVA6
 
-This document describes the hybrid cache implementation that switches between set associative and fully associative organizations based on privilege level.
+This document describes the hybrid cache implementation that switches between set associative and fully associative organizations based on privilege level. A concise design summary is available in [docs/hybrid_cache/design.md](docs/hybrid_cache/design.md).
 
 ## Overview
 
