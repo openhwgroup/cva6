@@ -74,6 +74,11 @@ module wt_hybche_mem #(
   logic [$clog2(DCACHE_SET_ASSOC)-1:0] rr_ptr_d, rr_ptr_q;
   // Simple LFSR for pseudo-random replacement if requested.
   logic [$clog2(DCACHE_SET_ASSOC)-1:0] lfsr_d, lfsr_q;
+  // Tree-based pseudo-LRU state when REPL_ALGO_PLRU is selected.
+  logic [DCACHE_SET_ASSOC-2:0]        plru_tree_d, plru_tree_q;
+
+  // Hashed index for CAM-like lookup in fully associative mode
+  logic [$clog2(DCACHE_SET_ASSOC)-1:0] fa_hash_idx;
   
   // Fully associative lookup table - tracks which ways store which addresses in fully associative mode
   typedef struct packed {
@@ -83,6 +88,36 @@ module wt_hybche_mem #(
   } fa_lookup_entry_t;
   
   fa_lookup_entry_t fa_lookup_table [DCACHE_SET_ASSOC-1:0];
+
+  // Helper function: convert one-hot way to index
+  function automatic logic [$clog2(DCACHE_SET_ASSOC)-1:0] oh_to_idx(input logic [DCACHE_SET_ASSOC-1:0] oh);
+    for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
+      if (oh[i]) return i[$clog2(DCACHE_SET_ASSOC)-1:0];
+    end
+    return '0;
+  endfunction
+
+  // Tree-based pseudo-LRU helper functions
+  function automatic logic [DCACHE_SET_ASSOC-1:0] plru_pick_oh(input logic [DCACHE_SET_ASSOC-2:0] tree);
+    logic [$clog2(DCACHE_SET_ASSOC)-1:0] idx;
+    int node = 0;
+    for (int level = 0; level < $clog2(DCACHE_SET_ASSOC); level++) begin
+      idx[level] = tree[node];
+      node = node*2 + 1 + tree[node];
+    end
+    return 1 << idx;
+  endfunction
+
+  function automatic logic [DCACHE_SET_ASSOC-2:0] plru_access(input logic [DCACHE_SET_ASSOC-2:0] tree,
+                                                              input logic [$clog2(DCACHE_SET_ASSOC)-1:0] way);
+    int node = 0;
+    for (int level = $clog2(DCACHE_SET_ASSOC)-1; level >= 0; level--) begin
+      logic dir = way[level];
+      tree[node] = ~dir;
+      node = node*2 + 1 + dir;
+    end
+    return tree;
+  endfunction
   
   // Operation mode muxing
   always_comb begin
@@ -100,16 +135,23 @@ module wt_hybche_mem #(
   // Hit generation based on mode
   always_comb begin
     way_hit = '0;
-    
+
     if (use_set_assoc_mode_i) begin
       // Set associative hit generation - compare tags from the selected index
       for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
         way_hit[i] = way_valid[i] && (tag_rdata[i] == cache_tag);
       end
     end else begin
-      // Fully associative hit generation - check each entry in lookup table
-      for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
-        way_hit[i] = fa_lookup_table[i].valid && (fa_lookup_table[i].tag == cache_tag);
+      // Compute hashed index to speed up lookup
+      fa_hash_idx = (cache_tag ^ (cache_tag >> $clog2(DCACHE_SET_ASSOC))) % DCACHE_SET_ASSOC;
+
+      if (fa_lookup_table[fa_hash_idx].valid && fa_lookup_table[fa_hash_idx].tag == cache_tag) begin
+        way_hit[fa_hash_idx] = 1'b1;
+      end else begin
+        // Fallback to full search in case of hash collision
+        for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
+          way_hit[i] = fa_lookup_table[i].valid && (fa_lookup_table[i].tag == cache_tag);
+        end
       end
     end
   end
@@ -119,10 +161,11 @@ module wt_hybche_mem #(
   // available we either use a round-robin pointer or a pseudo-random
   // victim based on the REPL_ALGO parameter.
   always_comb begin
-    repl_way = '0;
-    rr_ptr_d = rr_ptr_q;
-    lfsr_d   = {lfsr_q[$bits(lfsr_q)-2:0],
-                lfsr_q[$bits(lfsr_q)-1] ^ lfsr_q[$bits(lfsr_q)-2]};
+    repl_way     = '0;
+    rr_ptr_d     = rr_ptr_q;
+    lfsr_d       = {lfsr_q[$bits(lfsr_q)-2:0],
+                    lfsr_q[$bits(lfsr_q)-1] ^ lfsr_q[$bits(lfsr_q)-2]};
+    plru_tree_d  = plru_tree_q;
 
     if (use_set_assoc_mode_i) begin
       // Search for invalid way first
@@ -136,12 +179,12 @@ module wt_hybche_mem #(
 
       if (repl_way == '0) begin
         // All ways valid - choose victim according to algorithm
-        if (REPL_ALGO == wt_hybrid_cache_pkg::REPL_ALGO_RANDOM) begin
-          repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
-        end else begin
-          repl_way[rr_ptr_q] = 1'b1;
-        end
-        rr_ptr_d = rr_ptr_q + 1;
+        unique case (REPL_ALGO)
+          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
+          wt_hybrid_cache_pkg::REPL_ALGO_PLRU:   repl_way = plru_pick_oh(plru_tree_q);
+          default:                               repl_way[rr_ptr_q] = 1'b1;
+        endcase
+        rr_ptr_d    = rr_ptr_q + 1;
       end
     end else begin
       // Fully associative mode
@@ -154,17 +197,25 @@ module wt_hybche_mem #(
       end
 
       if (repl_way == '0) begin
-        if (REPL_ALGO == wt_hybrid_cache_pkg::REPL_ALGO_RANDOM) begin
-          repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
-        end else begin
-          repl_way[rr_ptr_q] = 1'b1;
-        end
-        rr_ptr_d = rr_ptr_q + 1;
+        unique case (REPL_ALGO)
+          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q % DCACHE_SET_ASSOC] = 1'b1;
+          wt_hybrid_cache_pkg::REPL_ALGO_PLRU:   repl_way = plru_pick_oh(plru_tree_q);
+          default:                               repl_way[rr_ptr_q] = 1'b1;
+        endcase
+        rr_ptr_d    = rr_ptr_q + 1;
       end
     end
 
     if (rr_ptr_d >= DCACHE_SET_ASSOC)
       rr_ptr_d = '0;
+
+    // Update PLRU tree on hit or chosen replacement
+    if (REPL_ALGO == wt_hybrid_cache_pkg::REPL_ALGO_PLRU) begin
+      if (|way_hit)
+        plru_tree_d = plru_access(plru_tree_q, oh_to_idx(way_hit));
+      else if (|repl_way)
+        plru_tree_d = plru_access(plru_tree_q, oh_to_idx(repl_way));
+    end
   end
 
   // Update replacement pointers
@@ -172,9 +223,11 @@ module wt_hybche_mem #(
     if (!rst_ni) begin
       rr_ptr_q <= '0;
       lfsr_q   <= '1;
+      plru_tree_q <= '0;
     end else begin
       rr_ptr_q <= rr_ptr_d;
       lfsr_q   <= lfsr_d;
+      plru_tree_q <= plru_tree_d;
     end
   end
   

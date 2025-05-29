@@ -137,8 +137,9 @@ fully associative mode for Supervisor/User modes. The following aspects were ana
 EOF
 
 echo "Cache configuration comparison completed. Results are in: ${RESULT_DIR}"
-echo "To analyze results, examine the logs in each configuration's simulation_artifacts directory"
-echo "and update the comparison report in ${RESULT_DIR}/cache_comparison_report.md"
+echo "Running automated analysis..."
+python3 analyze_hybrid_cache.py "${RESULT_DIR}" --output "${RESULT_DIR}/analysis"
+echo "Analysis completed. Report available in ${RESULT_DIR}/analysis"
 
 # Restore original configuration
 cp ${RESULT_DIR}/config_backups/cv32a60x_config_pkg.sv.original core/include/cv32a60x_config_pkg.sv

@@ -68,7 +68,8 @@ package wt_hybrid_cache_pkg;
   // policies above and purely control the victim selection strategy.
   typedef enum logic [1:0] {
     REPL_ALGO_RR     = 2'b00, // simple round-robin pointer
-    REPL_ALGO_RANDOM = 2'b01  // pseudo random using an LFSR
+    REPL_ALGO_RANDOM = 2'b01, // pseudo random using an LFSR
+    REPL_ALGO_PLRU   = 2'b10  // tree-based pseudo-LRU
   } replacement_algo_e;
   
   // FIFO depths of L15 adapter
