@@ -146,7 +146,121 @@ module wt_hybche #(
     .sram_data_i
   );
   
-  // Wire up the rest of the components (controllers, miss handling, etc.)
-  // These would be implemented in their respective modules
+  // Additional internal signals needed for component interconnection
+  logic miss_req, miss_ack, miss_busy;
+  logic miss_nc;
+  logic [riscv::PLEN-1:0] miss_addr;
+  logic mem_ready, mem_valid;
+  logic mode_flush_req, mode_flush_ack;
+  logic wbuffer_empty;
+  logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id;
   
+  // Cache controller
+  wt_hybche_ctrl #(
+    .CVA6Cfg       ( CVA6Cfg            ),
+    .SET_MASK      ( SET_MASK           ),
+    .HYBRID_MODE   ( HYBRID_MODE        ),
+    .FORCE_MODE    ( FORCE_MODE         ),
+    .REPL_POLICY   ( REPL_POLICY        )
+  ) i_wt_hybche_ctrl (
+    .clk_i,
+    .rst_ni,
+    .flush_i              ( flush_cache        ),
+    .flush_ack_o          ( flush_ack_o        ),
+    .cache_en_i           ( cache_en_i         ),
+    .cache_flush_i        ( cache_flush_i      ),
+    .cache_flush_ack_o    ( cache_flush_ack_o  ),
+    .use_set_assoc_mode_i ( use_set_assoc_mode ),
+    .mode_change_i        ( mode_change        ),
+    .miss_req_i           ( miss_req           ),
+    .miss_ack_o           ( miss_ack           ),
+    .miss_dirty_i         ( 1'b0               ), // Write-through, no dirty data
+    .miss_addr_i          ( miss_addr          ),
+    .miss_busy_o          ( miss_busy          ),
+    .mode_flush_req_o     ( mode_flush_req     ),
+    .mode_flush_ack_i     ( mode_flush_ack     ),
+    .sram_en_o            ( /* connected through mem */ ),
+    .sram_we_o            ( /* connected through mem */ ),
+    .mem_ready_i          ( mem_ready          ),
+    .mem_valid_o          ( mem_valid          ),
+    .trans_cnt_o          ( /* unused for now */ ),
+    .set_hit_cnt_o        ( /* unused for now */ ),
+    .full_hit_cnt_o       ( /* unused for now */ )
+  );
+  
+  // Miss handling unit
+  wt_hybche_missunit #(
+    .CVA6Cfg       ( CVA6Cfg            ),
+    .SET_MASK      ( SET_MASK           ),
+    .HYBRID_MODE   ( HYBRID_MODE        ),
+    .FORCE_MODE    ( FORCE_MODE         ),
+    .REPL_POLICY   ( REPL_POLICY        ),
+    .axi_req_t     ( axi_req_t          ),
+    .axi_resp_t    ( axi_resp_t         )
+  ) i_wt_hybche_missunit (
+    .clk_i,
+    .rst_ni,
+    .use_set_assoc_mode_i ( use_set_assoc_mode ),
+    .mode_change_i        ( mode_change        ),
+    .cache_en_i           ( cache_en_i         ),
+    .flush_i              ( flush_cache        ),
+    .flush_ack_o          ( /* handled by ctrl */ ),
+    .miss_req_i           ( miss_req           ),
+    .miss_ack_o           ( miss_ack           ),
+    .miss_nc_i            ( miss_nc            ),
+    .miss_addr_i          ( miss_addr          ),
+    .miss_busy_o          ( miss_busy          ),
+    .mode_flush_req_i     ( mode_flush_req     ),
+    .mode_flush_ack_o     ( mode_flush_ack     ),
+    .axi_req_o            ( axi_req_o          ),
+    .axi_resp_i           ( axi_resp_i         ),
+    .mem_req_o            ( /* connected to mem */ ),
+    .mem_addr_o           ( /* connected to mem */ ),
+    .mem_we_o             ( /* connected to mem */ ),
+    .mem_way_o            ( /* connected to mem */ ),
+    .mem_busy_o           ( /* connected to mem */ )
+  );
+  
+  // Write buffer
+  wt_hybche_wbuffer #(
+    .CVA6Cfg       ( CVA6Cfg            ),
+    .DEPTH         ( CVA6Cfg.WtDcacheWbufDepth ),
+    .HYBRID_MODE   ( HYBRID_MODE        ),
+    .FORCE_MODE    ( FORCE_MODE         ),
+    .REPL_POLICY   ( REPL_POLICY        ),
+    .axi_req_t     ( axi_req_t          ),
+    .axi_resp_t    ( axi_resp_t         )
+  ) i_wt_hybche_wbuffer (
+    .clk_i,
+    .rst_ni,
+    .valid_i              ( /* from core interface */ ),
+    .addr_i               ( /* from core interface */ ),
+    .we_i                 ( /* from core interface */ ),
+    .be_i                 ( /* from core interface */ ),
+    .data_i               ( /* from core interface */ ),
+    .ready_o              ( /* to core interface */ ),
+    .use_set_assoc_mode_i ( use_set_assoc_mode ),
+    .mode_change_i        ( mode_change        ),
+    .empty_o              ( wbuffer_empty      ),
+    .flush_i              ( flush_cache        ),
+    .flush_ack_o          ( /* connected to ctrl */ ),
+    .cache_en_i           ( cache_en_i         ),
+    .inval_i              ( 1'b0               ),
+    .inval_addr_i         ( '0                 ),
+    .axi_req_o            ( /* mux with miss unit */ ),
+    .axi_resp_i           ( axi_resp_i         ),
+    .mem_priority_i       ( miss_busy          )
+  );
+  
+  // NOTE: Core interface connections (dcache_req_ports_i/o) need to be 
+  // connected to appropriate controllers that handle the request/response
+  // protocol. This would typically involve instantiating read controllers
+  // similar to the standard wt_dcache implementation.
+  
+  // TODO: Complete core interface implementation
+  // - Connect dcache_req_ports_i/o to appropriate controllers
+  // - Implement proper request arbitration and response handling
+  // - Add miss request generation logic
+  // - Connect memory interfaces between components
+
 endmodule

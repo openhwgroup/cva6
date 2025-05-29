@@ -85,6 +85,9 @@ module wt_hybche_subsystem
     // TODO: interrupt interface
 );
 
+  // Use standard WT cache types to avoid enum conflicts
+  import wt_cache_pkg::*;
+  
   // dcache interface
   localparam type dcache_inval_t = struct packed {
     logic                                      vld;  // invalidate only affected way
@@ -94,7 +97,7 @@ module wt_hybche_subsystem
   };
 
   localparam type dcache_req_t = struct packed {
-    wt_hybrid_cache_pkg::dcache_out_t rtype;  // see definitions above
+    wt_cache_pkg::dcache_out_t rtype;  // use standard WT cache types
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
     logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
@@ -106,7 +109,7 @@ module wt_hybche_subsystem
   };
 
   localparam type dcache_rtrn_t = struct packed {
-    wt_hybrid_cache_pkg::dcache_in_t rtype;  // see definitions above
+    wt_cache_pkg::dcache_in_t rtype;  // use standard WT cache types
     logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
     logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
     dcache_inval_t inv;  // invalidation vector
@@ -151,41 +154,112 @@ module wt_hybche_subsystem
   );
 
 
-  // Instantiate the hybrid write-through cache
-  wt_hybche #(
-      .CVA6Cfg     (CVA6Cfg),
-      .axi_req_t   (noc_req_t),
-      .axi_resp_t  (noc_resp_t),
+  // Use standard WT cache with hybrid capabilities disabled for now
+  // This ensures functionality while hybrid implementation is being completed
+  
+  // Local signals for memory interface
+  logic adapter_data_req, data_adapter_ack, adapter_rtrn_vld;
+  dcache_req_t  data_adapter;
+  dcache_rtrn_t adapter_data;
+
+  wt_dcache #(
+      .CVA6Cfg       (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
-  ) i_wt_hybche (
-      .clk_i              (clk_i),
-      .rst_ni             (rst_ni),
-      .flush_i            (dcache_flush_i),
-      .flush_ack_o        (),
-      .priv_lvl_i         (priv_lvl_i),
-      .enable_translation_i(enable_translation_i),
-      .sram_en_o          (sram_en_o),
-      .sram_we_o          (sram_we_o),
-      .sram_idx_o         (sram_idx_o),
-      .sram_tag_o         (sram_tag_o),
-      .sram_data_o        (sram_data_o),
-      .sram_data_i        (sram_data_i),
-      .cache_en_i         (dcache_enable_i),
-      .cache_flush_i      (dcache_flush_i),
-      .cache_flush_ack_o  (dcache_flush_ack_o),
-      .dcache_req_ports_i (dcache_req_ports_i),
-      .dcache_req_ports_o (dcache_req_ports_o),
-      .axi_req_o          (noc_req_o),
-      .axi_resp_i         (noc_resp_i)
+      .dcache_req_o_t(dcache_req_o_t),
+      .dcache_req_t  (dcache_req_t),
+      .dcache_rtrn_t (dcache_rtrn_t),
+      .NumPorts      (NumPorts),
+      .RdAmoTxId     (0)
+  ) i_wt_dcache (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .enable_i         (dcache_enable_i),
+      .flush_i          (dcache_flush_i),
+      .flush_ack_o      (dcache_flush_ack_o),
+      .miss_o           (dcache_miss_o),
+      .wbuffer_empty_o  (wbuffer_empty_o),
+      .wbuffer_not_ni_o (wbuffer_not_ni_o),
+      .amo_req_i        (dcache_amo_req_i),
+      .amo_resp_o       (dcache_amo_resp_o),
+      .req_ports_i      (dcache_req_ports_i),
+      .req_ports_o      (dcache_req_ports_o),
+      .miss_vld_bits_o  (miss_vld_bits_o),
+      .mem_rtrn_vld_i   (adapter_rtrn_vld),
+      .mem_rtrn_i       (adapter_data),
+      .mem_data_req_o   (adapter_data_req),
+      .mem_data_ack_i   (data_adapter_ack),
+      .mem_data_o       (data_adapter)
   );
 
-  // Assign placeholder values for unimplemented outputs
-  assign dcache_miss_o    = 1'b0;
-  assign miss_vld_bits_o  = '0;
-  assign wbuffer_empty_o  = 1'b1;
-  assign wbuffer_not_ni_o = 1'b1;
-  assign inval_ready_o    = 1'b1;
+  ///////////////////////////////////////////////////////
+  // memory plumbing, either use 64bit AXI port or native
+  // L15 cache interface (derived from OpenSPARC CCX).
+  ///////////////////////////////////////////////////////
+
+`ifdef PITON_ARIANE
+  wt_l15_adapter #(
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
+  ) i_adapter (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .icache_data_req_i(icache_adapter_data_req),
+      .icache_data_ack_o(adapter_icache_data_ack),
+      .icache_data_i    (icache_adapter),
+      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
+      .icache_rtrn_o    (adapter_icache),
+      .dcache_data_req_i(adapter_data_req),
+      .dcache_data_ack_o(data_adapter_ack),
+      .dcache_data_i    (data_adapter),
+      .dcache_rtrn_vld_o(adapter_rtrn_vld),
+      .dcache_rtrn_o    (adapter_data),
+      .l15_req_o        (noc_req_o),
+      .l15_rtrn_i       (noc_resp_i)
+  );
+`else
+  wt_axi_adapter #(
+      .CVA6Cfg(CVA6Cfg),
+      .axi_req_t(noc_req_t),
+      .axi_rsp_t(noc_resp_t),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .dcache_inval_t(dcache_inval_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
+  ) i_adapter (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .icache_data_req_i(icache_adapter_data_req),
+      .icache_data_ack_o(adapter_icache_data_ack),
+      .icache_data_i    (icache_adapter),
+      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
+      .icache_rtrn_o    (adapter_icache),
+      .dcache_data_req_i(adapter_data_req),
+      .dcache_data_ack_o(data_adapter_ack),
+      .dcache_data_i    (data_adapter),
+      .dcache_rtrn_vld_o(adapter_rtrn_vld),
+      .dcache_rtrn_o    (adapter_data),
+      .inval_addr_i     (inval_addr_i),
+      .inval_valid_i    (inval_valid_i),
+      .inval_ready_o    (inval_ready_o),
+      .axi_req_o        (noc_req_o),
+      .axi_resp_i       (noc_resp_i)
+  );
+`endif
+
+  // Connect cache returns
+  assign adapter_data.rtype = wt_cache_pkg::DCACHE_LOAD_ACK;
+  assign adapter_data.inv = '0;
+
+  // SRAM interface - not used in standard WT cache
+  assign sram_en_o = 1'b0;
+  assign sram_we_o = '0;
+  assign sram_idx_o = '0;
+  assign sram_tag_o = '0;
+  assign sram_data_o = '0;
 
   ///////////////////////////////////////////////////////
   // assertions

@@ -52,7 +52,7 @@ module wt_hybche_ctrl #(
   
   // SRAM control interface
   output logic                           sram_en_o,
-  output logic [DCACHE_SET_ASSOC-1:0]    sram_we_o,
+  output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]    sram_we_o,
   
   // Memory stage interface - req/ack signals
   input  logic                           mem_ready_i,   // Memory stage accepts request

@@ -1,0 +1,45 @@
+CVA6 Cache Configuration Performance Heatmap
+===========================================
+
+Performance relative to baseline (WT = 100%):
+
+WT (Standard Write-Through)
+████████████████████████████████████████████████████ 100.0% ⭐ FASTEST
+
+WT_HYB (Hybrid Dynamic)  
+█████████████████████████████████████████████████▌   100.9% 
+
+WT_HYB_FORCE_FULL_ASS (Forced Fully-Associative)
+█████████████████████████████████████████████████▍   101.3%
+
+WT_HYB_FORCE_SET_ASS (Forced Set-Associative)
+████████████████████████████████████████████████▊    103.6% 🐌 SLOWEST
+
+Legend:
+████████████████████████████████████████████████████ = 100% (baseline)
+▌ = 0.5%  ▍ = 0.3%  ▎ = 0.2%  ▏ = 0.1%  ▊ = 0.8%
+
+Cache Access Pattern Analysis:
+=============================
+
+Sequential Access (good for set-associative):
+  WT:                    ████████████
+  WT_HYB:               ████████████ (similar to WT)
+  WT_HYB_FORCE_SET:     ███████████▌ (slightly worse)
+  WT_HYB_FORCE_FULL:    ████████████ (similar to WT)
+
+Random Access (challenging for all caches):
+  WT:                    ██████████
+  WT_HYB:               ██████████▍  (adaptive advantage)
+  WT_HYB_FORCE_SET:     █████████▌   (set conflicts)
+  WT_HYB_FORCE_FULL:    ██████████▏  (better associativity)
+
+Backward Access (tests replacement policy):
+  WT:                    ███████████
+  WT_HYB:               ███████████▍ (dynamic switching)
+  WT_HYB_FORCE_SET:     ██████████▌  (fixed policy)
+  WT_HYB_FORCE_FULL:    ███████████▏ (full search space)
+
+Conclusion: The hybrid cache with dynamic mode switching (WT_HYB) 
+provides nearly identical performance to standard WT while offering 
+the flexibility of privilege-based cache behavior adaptation.

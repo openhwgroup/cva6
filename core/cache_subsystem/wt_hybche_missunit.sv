@@ -56,7 +56,7 @@ module wt_hybche_missunit #(
   output logic                           mem_req_o,          // Memory request
   output logic [riscv::PLEN-1:0]         mem_addr_o,         // Memory address
   output logic                           mem_we_o,           // Memory write enable
-  output logic [DCACHE_SET_ASSOC-1:0]    mem_way_o,          // Memory way select
+  output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]    mem_way_o,          // Memory way select
   output logic                           mem_busy_o          // Memory interface busy
 );
 
@@ -80,12 +80,12 @@ module wt_hybche_missunit #(
   logic                   axi_rd_req, axi_rd_gnt;
   logic                   axi_wr_req, axi_wr_gnt;
   logic                   axi_rd_valid;
-  logic [DCACHE_LINE_WIDTH-1:0] axi_rd_data;
+  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] axi_rd_data;
   
   // Mode change handling signals
   logic                   in_mode_transition;
-  logic [DCACHE_SET_ASSOC-1:0] flush_ways;
-  logic [DCACHE_INDEX_WIDTH-1:0] flush_index;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] flush_ways;
+  logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] flush_index;
   logic                   flush_done;
   
   // Set in_mode_transition flag during mode transitions
