@@ -110,7 +110,7 @@ module cva6_ptw
       state_q, state_d;
 
   logic [CVA6Cfg.PtLevels-2:0] misaligned_page;
-  logic tlb_update_valid;
+  logic shared_tlb_update_valid;
   logic [HYP_EXT:0][CVA6Cfg.PtLevels-2:0] ptw_lvl_n, ptw_lvl_q;
 
   // define 3 PTW stages to be used in sv39x4. sv32 and sv39 are always in S_STAGE
@@ -192,40 +192,37 @@ module cva6_ptw
   endgenerate
 
   always_comb begin : tlb_update
-    if (tlb_update_valid) begin
-      // update the correct page table level
-      for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
-        for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
-          if(((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i)) && CVA6Cfg.RVH) begin
-            // VS + G-Translation
-            shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0 : 1] == x);
-          end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
-            // non-V, S-Translation
-            shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
-          end else begin
-            // G-Translation
-            shared_tlb_update_o.is_page[x][y] = y != 0 ? (ptw_lvl_q[0] == x) : 1'b0;
-          end
+    shared_tlb_update_o.valid = shared_tlb_update_valid;
+
+    // update the correct page table level
+    for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
+      for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
+        if(((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i)) && CVA6Cfg.RVH) begin
+          // VS + G-Translation
+          shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0 : 1] == x);
+        end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
+          // non-V, S-Translation
+          shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
+        end else begin
+          // G-Translation
+          shared_tlb_update_o.is_page[x][y] = y != 0 ? (ptw_lvl_q[0] == x) : 1'b0;
         end
       end
-
-      // set the global mapping bit
-      if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
-        shared_tlb_update_o.content   = (gpte_q | (global_mapping_q << 5));
-        shared_tlb_update_o.g_content = pte;
-      end else begin
-        shared_tlb_update_o.content   = (pte | (global_mapping_q << 5));
-        shared_tlb_update_o.g_content = '0;
-      end
-
-      // output the correct ASIDs
-      shared_tlb_update_o.asid  = tlb_update_asid_q;
-      shared_tlb_update_o.vmid  = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
-      shared_tlb_update_o.vpn   = vaddr_q[12+CVA6Cfg.VpnLen-1:12];
-      shared_tlb_update_o.valid = 1'b1;
-    end else begin
-      shared_tlb_update_o.valid = 1'b0;
     end
+
+    // set the global mapping bit
+    if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
+      shared_tlb_update_o.content   = (gpte_q | (global_mapping_q << 5));
+      shared_tlb_update_o.g_content = pte;
+    end else begin
+      shared_tlb_update_o.content   = (pte | (global_mapping_q << 5));
+      shared_tlb_update_o.g_content = '0;
+    end
+
+    // output the correct ASIDs
+    shared_tlb_update_o.asid = tlb_update_asid_q;
+    shared_tlb_update_o.vmid = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
+    shared_tlb_update_o.vpn = vaddr_q[12+CVA6Cfg.VpnLen-1:12];
 
     bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
@@ -287,25 +284,25 @@ module cva6_ptw
     automatic logic [CVA6Cfg.PLEN-1:0] pptr;
     // default assignments
     // PTW memory interface
-    tag_valid_n            = 1'b0;
-    req_port_o.data_req    = 1'b0;
-    req_port_o.data_size   = 2'(CVA6Cfg.PtLevels);
-    req_port_o.data_we     = 1'b0;
-    ptw_error_o            = 1'b0;
-    ptw_error_at_g_st_o    = 1'b0;
-    ptw_err_at_g_int_st_o  = 1'b0;
-    ptw_access_exception_o = 1'b0;
-    tlb_update_valid       = 1'b0;
-    is_instr_ptw_n         = is_instr_ptw_q;
-    ptw_lvl_n              = ptw_lvl_q;
-    ptw_pptr_n             = ptw_pptr_q;
-    state_d                = state_q;
-    ptw_stage_d            = ptw_stage_q;
-    global_mapping_n       = global_mapping_q;
+    tag_valid_n             = 1'b0;
+    req_port_o.data_req     = 1'b0;
+    req_port_o.data_size    = 2'(CVA6Cfg.PtLevels);
+    req_port_o.data_we      = 1'b0;
+    ptw_error_o             = 1'b0;
+    ptw_error_at_g_st_o     = 1'b0;
+    ptw_err_at_g_int_st_o   = 1'b0;
+    ptw_access_exception_o  = 1'b0;
+    shared_tlb_update_valid = 1'b0;
+    is_instr_ptw_n          = is_instr_ptw_q;
+    ptw_lvl_n               = ptw_lvl_q;
+    ptw_pptr_n              = ptw_pptr_q;
+    state_d                 = state_q;
+    ptw_stage_d             = ptw_stage_q;
+    global_mapping_n        = global_mapping_q;
     // input registers
-    tlb_update_asid_n      = tlb_update_asid_q;
-    vaddr_n                = vaddr_q;
-    pptr                   = ptw_pptr_q;
+    tlb_update_asid_n       = tlb_update_asid_q;
+    vaddr_n                 = vaddr_q;
+    pptr                    = ptw_pptr_q;
 
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;
@@ -459,7 +456,7 @@ module cva6_ptw
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end else if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH)
-                  tlb_update_valid = 1'b1;
+                  shared_tlb_update_valid = 1'b1;
 
               end else begin
                 // ------------
@@ -479,7 +476,7 @@ module cva6_ptw
                     && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
                 ) begin
                   if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH)
-                    tlb_update_valid = 1'b1;
+                    shared_tlb_update_valid = 1'b1;
                 end else begin
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
@@ -490,7 +487,7 @@ module cva6_ptw
               if (|misaligned_page) begin
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                tlb_update_valid = 1'b0;
+                shared_tlb_update_valid = 1'b0;
               end
 
               // check if 63:41 are all zeros
@@ -565,7 +562,7 @@ module cva6_ptw
 
           // check if this access was actually allowed from a PMP perspective
           if (!allow_access) begin
-            tlb_update_valid = 1'b0;
+            shared_tlb_update_valid = 1'b0;
             // we have to return the failed address in bad_addr
             ptw_pptr_n = ptw_pptr_q;
             if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
