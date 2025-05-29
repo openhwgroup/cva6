@@ -68,6 +68,16 @@ module wt_hybche_subsystem
     // memory side
     output noc_req_t noc_req_o,
     input noc_resp_t noc_resp_i,
+    // privilege level and MMU interface
+    input logic [1:0] priv_lvl_i,
+    input logic       enable_translation_i,
+    // optional SRAM interface (pass-through from cache)
+    output logic                          sram_en_o,
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]   sram_we_o,
+    output logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] sram_idx_o,
+    output logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   sram_tag_o,
+    output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]  sram_data_o,
+    input  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]  sram_data_i,
     // Invalidations
     input logic [63:0] inval_addr_i,
     input logic inval_valid_i,
@@ -108,6 +118,7 @@ module wt_hybche_subsystem
   icache_rtrn_t adapter_icache;
 
 
+  // Local signals kept for compatibility with the original subsystem
   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
   dcache_req_t  dcache_adapter;
   dcache_rtrn_t adapter_dcache;
@@ -140,99 +151,41 @@ module wt_hybche_subsystem
   );
 
 
-  // Note:
-  // Ports 0/1 for PTW and LD unit are read only.
-  // they have equal prio and are RR arbited
-  // Port 2 is write only and goes into the merging write buffer
+  // Instantiate the hybrid write-through cache
   wt_hybche #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg     (CVA6Cfg),
+      .axi_req_t   (noc_req_t),
+      .axi_resp_t  (noc_resp_t),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t),
-      .dcache_req_t(dcache_req_t),
-      .dcache_rtrn_t(dcache_rtrn_t),
-      // use ID 1 for dcache reads and amos. note that the writebuffer
-      // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
-      .RdAmoTxId(1)
+      .dcache_req_o_t(dcache_req_o_t)
   ) i_wt_hybche (
-      .clk_i           (clk_i),
-      .rst_ni          (rst_ni),
-      .enable_i        (dcache_enable_i),
-      .flush_i         (dcache_flush_i),
-      .flush_ack_o     (dcache_flush_ack_o),
-      .miss_o          (dcache_miss_o),
-      .wbuffer_empty_o (wbuffer_empty_o),
-      .wbuffer_not_ni_o(wbuffer_not_ni_o),
-      .amo_req_i       (dcache_amo_req_i),
-      .amo_resp_o      (dcache_amo_resp_o),
-      .req_ports_i     (dcache_req_ports_i),
-      .req_ports_o     (dcache_req_ports_o),
-      .miss_vld_bits_o (miss_vld_bits_o),
-      .mem_rtrn_vld_i  (adapter_dcache_rtrn_vld),
-      .mem_rtrn_i      (adapter_dcache),
-      .mem_data_req_o  (dcache_adapter_data_req),
-      .mem_data_ack_i  (adapter_dcache_data_ack),
-      .mem_data_o      (dcache_adapter)
+      .clk_i              (clk_i),
+      .rst_ni             (rst_ni),
+      .flush_i            (dcache_flush_i),
+      .flush_ack_o        (1'b0),
+      .priv_lvl_i         (priv_lvl_i),
+      .enable_translation_i(enable_translation_i),
+      .sram_en_o          (sram_en_o),
+      .sram_we_o          (sram_we_o),
+      .sram_idx_o         (sram_idx_o),
+      .sram_tag_o         (sram_tag_o),
+      .sram_data_o        (sram_data_o),
+      .sram_data_i        (sram_data_i),
+      .cache_en_i         (dcache_enable_i),
+      .cache_flush_i      (dcache_flush_i),
+      .cache_flush_ack_o  (dcache_flush_ack_o),
+      .dcache_req_ports_i (dcache_req_ports_i),
+      .dcache_req_ports_o (dcache_req_ports_o),
+      .axi_req_o          (noc_req_o),
+      .axi_resp_i         (noc_resp_i)
   );
 
-
-  ///////////////////////////////////////////////////////
-  // memory plumbing, either use 64bit AXI port or native
-  // L15 cache interface (derived from OpenSPARC CCX).
-  ///////////////////////////////////////////////////////
-
-`ifdef PITON_ARIANE
-  wt_l15_hybche_adapter #(
-      .CVA6Cfg(CVA6Cfg),
-      .dcache_req_t(dcache_req_t),
-      .dcache_rtrn_t(dcache_rtrn_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t)
-  ) i_adapter (
-      .clk_i            (clk_i),
-      .rst_ni           (rst_ni),
-      .icache_data_req_i(icache_adapter_data_req),
-      .icache_data_ack_o(adapter_icache_data_ack),
-      .icache_data_i    (icache_adapter),
-      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
-      .icache_rtrn_o    (adapter_icache),
-      .dcache_data_req_i(dcache_adapter_data_req),
-      .dcache_data_ack_o(adapter_dcache_data_ack),
-      .dcache_data_i    (dcache_adapter),
-      .dcache_rtrn_vld_o(adapter_dcache_rtrn_vld),
-      .dcache_rtrn_o    (adapter_dcache),
-      .l15_req_o        (noc_req_o),
-      .l15_rtrn_i       (noc_resp_i)
-  );
-`else
-  wt_axi_hybche_adapter2 #(
-      .CVA6Cfg(CVA6Cfg),
-      .axi_req_t(noc_req_t),
-      .axi_rsp_t(noc_resp_t),
-      .dcache_req_t(dcache_req_t),
-      .dcache_rtrn_t(dcache_rtrn_t),
-      .dcache_inval_t(dcache_inval_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t)
-  ) i_adapter (
-      .clk_i            (clk_i),
-      .rst_ni           (rst_ni),
-      .icache_data_req_i(icache_adapter_data_req),
-      .icache_data_ack_o(adapter_icache_data_ack),
-      .icache_data_i    (icache_adapter),
-      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
-      .icache_rtrn_o    (adapter_icache),
-      .dcache_data_req_i(dcache_adapter_data_req),
-      .dcache_data_ack_o(adapter_dcache_data_ack),
-      .dcache_data_i    (dcache_adapter),
-      .dcache_rtrn_vld_o(adapter_dcache_rtrn_vld),
-      .dcache_rtrn_o    (adapter_dcache),
-      .axi_req_o        (noc_req_o),
-      .axi_resp_i       (noc_resp_i),
-      .inval_addr_i     (inval_addr_i),
-      .inval_valid_i    (inval_valid_i),
-      .inval_ready_o    (inval_ready_o)
-  );
-`endif
+  // Assign placeholder values for unimplemented outputs
+  assign dcache_miss_o    = 1'b0;
+  assign miss_vld_bits_o  = '0;
+  assign wbuffer_empty_o  = 1'b1;
+  assign wbuffer_not_ni_o = 1'b1;
+  assign inval_ready_o    = 1'b1;
 
   ///////////////////////////////////////////////////////
   // assertions
