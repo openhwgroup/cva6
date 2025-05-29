@@ -4,8 +4,9 @@ Improved Cache Implementation Comparison Script
 
 This script compares the execution of the hello_world.c test across different cache implementations:
 1. Write-Through Cache (WT) - Standard implementation
-2. Hybrid Cache in Set Associative Mode (WT_HYB_FORCE_SET_ASS)
-3. Hybrid Cache in Fully Associative Mode (WT_HYB_FORCE_FULL_ASS)
+2. Hybrid Cache with Dynamic Mode Switching (WT_HYB) - Dynamic privilege-based switching
+3. Hybrid Cache in Set Associative Mode (WT_HYB_FORCE_SET_ASS) - Forced set associative
+4. Hybrid Cache in Fully Associative Mode (WT_HYB_FORCE_FULL_ASS) - Forced fully associative
 
 It validates correct execution by examining the log files for:
 - Memory address increments (0 to 9)
@@ -29,6 +30,7 @@ from datetime import datetime
 # Configuration
 CACHE_MODES = {
     "WT": "Standard Write-Through Cache",
+    "WT_HYB": "Hybrid Cache with Dynamic Mode Switching",
     "WT_HYB_FORCE_SET_ASS": "Hybrid Cache in Set Associative Mode",
     "WT_HYB_FORCE_FULL_ASS": "Hybrid Cache in Fully Associative Mode"
 }
@@ -41,8 +43,8 @@ def parse_args():
     parser.add_argument("--vcd-signals", type=str, default="cache_signals.txt",
                         help="File containing list of signals to trace (default: cache_signals.txt)")
     parser.add_argument("--run-all", action="store_true",
-                        help="Run all three cache modes (default behavior)")
-    parser.add_argument("--mode", type=str, choices=["WT", "WT_HYB_FORCE_SET_ASS", "WT_HYB_FORCE_FULL_ASS"],
+                        help="Run all four cache modes (default behavior)")
+    parser.add_argument("--mode", type=str, choices=["WT", "WT_HYB", "WT_HYB_FORCE_SET_ASS", "WT_HYB_FORCE_FULL_ASS"],
                         help="Run only the specified cache mode")
     parser.add_argument("--output-dir", type=str, 
                         help="Custom output directory (default: timestamped directory)")
@@ -148,6 +150,9 @@ def update_config_file(cache_mode):
     if cache_mode == "WT":
         pattern = r'DCacheType: config_pkg::[^,]+,'
         replacement = 'DCacheType: config_pkg::WT,'
+    elif cache_mode == "WT_HYB":
+        pattern = r'DCacheType: config_pkg::[^,]+,'
+        replacement = 'DCacheType: config_pkg::WT_HYB,'
     elif cache_mode == "WT_HYB_FORCE_SET_ASS":
         pattern = r'DCacheType: config_pkg::[^,]+,'
         replacement = 'DCacheType: config_pkg::WT_HYB_FORCE_SET_ASS,'
