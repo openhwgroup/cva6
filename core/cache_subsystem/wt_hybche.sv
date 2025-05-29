@@ -136,7 +136,7 @@ module wt_hybche #(
     .rst_ni,
     .use_set_assoc_mode_i ( use_set_assoc_mode ),
     .flush_i              ( flush_cache        ),
-    .flush_ack_o,
+    .flush_ack_o          ( mem_flush_ack ),
     .enable_translation_i,
     .sram_en_o,
     .sram_we_o,
@@ -154,6 +154,8 @@ module wt_hybche #(
   logic mode_flush_req, mode_flush_ack;
   logic wbuffer_empty;
   logic [CVA6Cfg.MEM_TID_WIDTH-1:0] miss_id;
+  logic mem_flush_ack;
+  logic ctrl_flush_ack;
   
   // Cache controller
   wt_hybche_ctrl #(
@@ -166,7 +168,7 @@ module wt_hybche #(
     .clk_i,
     .rst_ni,
     .flush_i              ( flush_cache        ),
-    .flush_ack_o          ( flush_ack_o        ),
+    .flush_ack_o          ( ctrl_flush_ack     ),
     .cache_en_i           ( cache_en_i         ),
     .cache_flush_i        ( cache_flush_i      ),
     .cache_flush_ack_o    ( cache_flush_ack_o  ),
@@ -251,6 +253,9 @@ module wt_hybche #(
     .axi_resp_i           ( axi_resp_i         ),
     .mem_priority_i       ( miss_busy          )
   );
+
+  // Combine flush acknowledge from the controller and memory module
+  assign flush_ack_o = ctrl_flush_ack | mem_flush_ack;
   
   // NOTE: Core interface connections (dcache_req_ports_i/o) need to be 
   // connected to appropriate controllers that handle the request/response
