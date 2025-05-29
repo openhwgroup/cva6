@@ -141,6 +141,11 @@ echo "Running automated analysis..."
 python3 analyze_hybrid_cache.py "${RESULT_DIR}" --output "${RESULT_DIR}/analysis"
 echo "Analysis completed. Report available in ${RESULT_DIR}/analysis"
 
+# Automatically generate the detailed analysis report
+python3 analyze_hybrid_cache.py "${RESULT_DIR}" --output "${RESULT_DIR}/analysis"
+
+echo "Detailed analysis generated under ${RESULT_DIR}/analysis"
+
 # Restore original configuration
 cp ${RESULT_DIR}/config_backups/cv32a60x_config_pkg.sv.original core/include/cv32a60x_config_pkg.sv
 
