@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 from typing import Dict
 
@@ -52,6 +53,13 @@ def main() -> None:
     parser.add_argument("comparison_dir", help="Directory containing comparison results")
     parser.add_argument("--config", help="YAML configuration file")
     parser.add_argument("--output", "-o", default="cache_analysis_report", help="Output directory")
+    parser.add_argument(
+        "--jobs",
+        "-j",
+        type=int,
+        default=os.cpu_count(),
+        help="Number of parallel workers (default: number of CPUs)",
+    )
     args = parser.parse_args()
 
     base = Path(args.comparison_dir)
@@ -61,8 +69,12 @@ def main() -> None:
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    cfg = load_config(args.config)
-    results = collect_stats(cfg["tests"], cfg["configs"], base)
+    try:
+        cfg = load_config(args.config)
+    except FileNotFoundError as e:
+        parser.error(str(e))
+
+    results = collect_stats(cfg["tests"], cfg["configs"], base, jobs=args.jobs)
     write_report(results, cfg["tests"], cfg["configs"], out_dir)
     print(f"Analysis report generated in {out_dir}")
 

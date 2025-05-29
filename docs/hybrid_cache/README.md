@@ -18,6 +18,8 @@ python3 analyze_hybrid_cache.py <comparison_dir> --config config/hybrid_cache_an
 - `--config` specifies a YAML file listing the workloads and cache
   configurations to analyse.
 - `-o` selects the output directory for the generated report.
+- `-j/--jobs` sets the number of parallel workers used when parsing logs
+  (defaults to the number of CPUs).
 
 ## Configuration File
 

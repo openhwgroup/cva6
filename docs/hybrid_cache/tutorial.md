@@ -11,7 +11,7 @@ This short tutorial demonstrates how to compare cache configurations.
 2. **Analyse results**
    ```bash
    python3 analyze_hybrid_cache.py hybrid_cache_comparison_<timestamp> \
-          --config config/hybrid_cache_analysis.yml -o report
+          --config config/hybrid_cache_analysis.yml -o report -j 4
    ```
    Replace `<timestamp>` with the directory printed at the end of the comparison
    script.

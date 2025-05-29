@@ -29,7 +29,10 @@ def parse_cache_stats(log_file: str | Path) -> Dict[str, int | float]:
     if not log_path.exists():
         raise FileNotFoundError(f"Log file {log_file} not found")
 
-    content = log_path.read_text(encoding="utf-8", errors="ignore")
+    try:
+        content = log_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError as e:
+        raise RuntimeError(f"Failed to read {log_file}: {e}") from e
 
     match = re.search(r"Finished after (\d+) cycles", content)
     if match:
