@@ -1390,6 +1390,14 @@ module cva6
         // memory side
         .noc_req_o         (noc_req_o),
         .noc_resp_i        (noc_resp_i),
+        .priv_lvl_i        (priv_lvl),
+        .enable_translation_i(enable_translation_csr_ex),
+        .sram_en_o         (),
+        .sram_we_o         (),
+        .sram_idx_o        (),
+        .sram_tag_o        (),
+        .sram_data_o       (),
+        .sram_data_i       ('0),
         .inval_addr_i      (inval_addr),
         .inval_valid_i     (inval_valid),
         .inval_ready_o     (inval_ready)
