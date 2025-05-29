@@ -21,6 +21,7 @@ import wt_hybrid_cache_pkg::*;
 module wt_hybche_mem #(
   parameter config_pkg::cva6_cfg_t CVA6Cfg     = '0,
   parameter logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]SET_MASK    = '1,
+  // DCACHE_SET_ASSOC is assumed to be a power of two
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
@@ -147,7 +148,7 @@ module wt_hybche_mem #(
     end else begin
       // Compute hashed index to speed up lookup.  A seed value is included to
       // randomize the distribution of cache lines across the lookup table.
-      fa_hash_idx = (cache_tag ^ HASH_SEED ^ (cache_tag >> $clog2(CVA6Cfg.DCACHE_SET_ASSOC))) % CVA6Cfg.DCACHE_SET_ASSOC;
+      fa_hash_idx = (cache_tag ^ HASH_SEED ^ (cache_tag >> $clog2(CVA6Cfg.DCACHE_SET_ASSOC))) & (CVA6Cfg.DCACHE_SET_ASSOC-1);
 
       if (fa_lookup_table[fa_hash_idx].valid && fa_lookup_table[fa_hash_idx].tag == cache_tag) begin
         way_hit[fa_hash_idx] = 1'b1;
@@ -184,7 +185,7 @@ module wt_hybche_mem #(
       if (repl_way == '0) begin
         // All ways valid - choose victim according to algorithm
         unique case (REPL_ALGO)
-          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q % CVA6Cfg.DCACHE_SET_ASSOC] = 1'b1;
+          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q & (CVA6Cfg.DCACHE_SET_ASSOC-1)] = 1'b1;
           wt_hybrid_cache_pkg::REPL_ALGO_PLRU:   repl_way = plru_pick_oh(plru_tree_q);
           default:                               repl_way[rr_ptr_q] = 1'b1;
         endcase
@@ -202,7 +203,7 @@ module wt_hybche_mem #(
 
       if (repl_way == '0) begin
         unique case (REPL_ALGO)
-          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q % CVA6Cfg.DCACHE_SET_ASSOC] = 1'b1;
+          wt_hybrid_cache_pkg::REPL_ALGO_RANDOM: repl_way[lfsr_q & (CVA6Cfg.DCACHE_SET_ASSOC-1)] = 1'b1;
           wt_hybrid_cache_pkg::REPL_ALGO_PLRU:   repl_way = plru_pick_oh(plru_tree_q);
           default:                               repl_way[rr_ptr_q] = 1'b1;
         endcase
