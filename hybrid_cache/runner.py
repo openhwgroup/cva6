@@ -14,10 +14,12 @@ def collect_stats(
     configs: Iterable[str],
     base_dir: str | Path,
     jobs: int | None = None,
+    verbose: bool = False,
 ) -> Dict[str, Dict[str, Dict[str, int | float]]]:
     """Collect cache statistics for *tests* and *configs* in *base_dir*.
 
     Each configuration is assumed to have its own directory under *base_dir*.
+    Set *verbose* to ``True`` to print progress information and warnings.
     """
 
     base_dir = Path(base_dir)
@@ -28,7 +30,11 @@ def collect_stats(
         cfg_dir = base_dir / cfg
         log_glob = list(cfg_dir.glob(f"simulation_artifacts/out_*/veri-testharness_sim/{test}.cv32a60x.log.*"))
         if not log_glob:
+            if verbose:
+                print(f"Warning: no log file found for {test} / {cfg}")
             raise FileNotFoundError(f"No log file for {test} / {cfg}")
+        if verbose:
+            print(f"Parsing log for {test} / {cfg}")
         log_file = sorted(log_glob)[-1]
         stats = parse_cache_stats(log_file)
         return test, cfg, stats

@@ -14,12 +14,19 @@ results, computes cache statistics and generates a markdown report with charts.
 python3 analyze_hybrid_cache.py <comparison_dir> --config config/hybrid_cache_analysis.yml -o report
 ```
 
+For more detailed output, pass `--verbose`:
+
+```bash
+python3 analyze_hybrid_cache.py <comparison_dir> -o report --verbose
+```
+
 - `<comparison_dir>` is the directory produced by the comparison script.
 - `--config` specifies a YAML file listing the workloads and cache
   configurations to analyse.
 - `-o` selects the output directory for the generated report.
 - `-j/--jobs` sets the number of parallel workers used when parsing logs
   (defaults to the number of CPUs).
+- `--verbose` prints progress information and warnings.
 
 ## Configuration File
 
