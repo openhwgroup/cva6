@@ -461,6 +461,8 @@ This provides better security isolation while maintaining performance for truste
 3. **WT_HYB_FORCE_SET_ASS**: Hybrid cache forced to set associative mode
 4. **WT_HYB_FORCE_FULL_ASS**: Hybrid cache forced to fully associative mode
 
+The fully associative mode uses a hash function seeded by the `HASH_SEED` parameter to randomize lookup table indices and reduce deterministic collisions.
+
 To compare these configurations, use the provided `compare_hybrid_cache_configs.sh` script. For detailed analysis, use the `analyze_hybrid_cache.py` script which generates visualizations and reports.
 
 For more details, see the [hybrid_cache_validation.md](hybrid_cache_validation.md) document.

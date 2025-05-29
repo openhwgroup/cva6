@@ -30,6 +30,8 @@ The victim way selection strategy can also be configured:
 
 - `REPL_ALGO_RR`: Round-robin pointer, evenly distributing replacements across ways
 - `REPL_ALGO_RANDOM`: Pseudo-random victim selection using a small LFSR
+- `REPL_ALGO_PLRU`: Tree-based pseudo-LRU replacement
+- `HASH_SEED` parameter: seed value used by the fully associative hash function to randomize lookup indices
 
 ## Implementation Files
 

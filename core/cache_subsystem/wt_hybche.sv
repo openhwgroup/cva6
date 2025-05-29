@@ -27,7 +27,9 @@ module wt_hybche #(
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
-  parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR
+  parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR,
+  // Seed value for the hash function when operating in fully associative mode
+  parameter logic [DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[DCACHE_TAG_WIDTH-1:0]
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -123,7 +125,8 @@ module wt_hybche #(
     .HYBRID_MODE   ( HYBRID_MODE        ),
     .FORCE_MODE    ( FORCE_MODE         ),
     .REPL_POLICY   ( REPL_POLICY        ),
-    .REPL_ALGO     ( REPL_ALGO          )
+    .REPL_ALGO     ( REPL_ALGO          ),
+    .HASH_SEED     ( HASH_SEED          )
   ) i_wt_hybche_mem (
     .clk_i,
     .rst_ni,

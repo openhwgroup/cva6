@@ -24,7 +24,10 @@ module wt_hybche_mem #(
   parameter logic                       HYBRID_MODE = 1'b1, // Enable hybrid mode
   parameter wt_hybrid_cache_pkg::force_mode_e FORCE_MODE   = wt_hybrid_cache_pkg::FORCE_MODE_DYNAMIC,
   parameter wt_hybrid_cache_pkg::replacement_policy_e REPL_POLICY = wt_hybrid_cache_pkg::REPL_POLICY_RETAIN,
-  parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR
+  parameter wt_hybrid_cache_pkg::replacement_algo_e   REPL_ALGO   = wt_hybrid_cache_pkg::REPL_ALGO_RR,
+  // Seed for the hash function used in fully associative mode.  Different seeds
+  // reduce deterministic collisions and can be overridden per instance.
+  parameter logic [DCACHE_TAG_WIDTH-1:0] HASH_SEED = wt_hybrid_cache_pkg::DEFAULT_HASH_SEED[DCACHE_TAG_WIDTH-1:0]
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -142,8 +145,9 @@ module wt_hybche_mem #(
         way_hit[i] = way_valid[i] && (tag_rdata[i] == cache_tag);
       end
     end else begin
-      // Compute hashed index to speed up lookup
-      fa_hash_idx = (cache_tag ^ (cache_tag >> $clog2(DCACHE_SET_ASSOC))) % DCACHE_SET_ASSOC;
+      // Compute hashed index to speed up lookup.  A seed value is included to
+      // randomize the distribution of cache lines across the lookup table.
+      fa_hash_idx = (cache_tag ^ HASH_SEED ^ (cache_tag >> $clog2(DCACHE_SET_ASSOC))) % DCACHE_SET_ASSOC;
 
       if (fa_lookup_table[fa_hash_idx].valid && fa_lookup_table[fa_hash_idx].tag == cache_tag) begin
         way_hit[fa_hash_idx] = 1'b1;
