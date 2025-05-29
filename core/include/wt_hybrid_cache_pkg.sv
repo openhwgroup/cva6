@@ -62,6 +62,14 @@ package wt_hybrid_cache_pkg;
     REPL_POLICY_RETAIN = 1'b0, // Retain cache entries when switching modes (only flush specific sets)
     REPL_POLICY_FLUSH = 1'b1   // Flush entire cache on mode switch
   } replacement_policy_e;
+
+  // Replacement algorithm used to select a victim way when inserting a new
+  // cache line.  These algorithms are orthogonal to the mode switching
+  // policies above and purely control the victim selection strategy.
+  typedef enum logic [1:0] {
+    REPL_ALGO_RR     = 2'b00, // simple round-robin pointer
+    REPL_ALGO_RANDOM = 2'b01  // pseudo random using an LFSR
+  } replacement_algo_e;
   
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH = 2;
