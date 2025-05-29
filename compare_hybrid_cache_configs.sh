@@ -140,6 +140,11 @@ echo "Cache configuration comparison completed. Results are in: ${RESULT_DIR}"
 echo "To analyze results, examine the logs in each configuration's simulation_artifacts directory"
 echo "and update the comparison report in ${RESULT_DIR}/cache_comparison_report.md"
 
+# Automatically generate the detailed analysis report
+python3 analyze_hybrid_cache.py "${RESULT_DIR}" --output "${RESULT_DIR}/analysis"
+
+echo "Detailed analysis generated under ${RESULT_DIR}/analysis"
+
 # Restore original configuration
 cp ${RESULT_DIR}/config_backups/cv32a60x_config_pkg.sv.original core/include/cv32a60x_config_pkg.sv
 
