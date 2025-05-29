@@ -59,9 +59,9 @@ module wt_hybche_ctrl #(
   output logic                           mem_valid_o,   // Memory stage request valid
   
   // Performance counters
-  output logic                           trans_cnt_o,    // Number of mode transitions
-  output logic                           set_hit_cnt_o,  // Hit in set associative mode
-  output logic                           full_hit_cnt_o  // Hit in fully associative mode
+  output logic [31:0]                    trans_cnt_o,    // Number of mode transitions
+  output logic [31:0]                    set_hit_cnt_o,  // Hit in set associative mode
+  output logic [31:0]                    full_hit_cnt_o  // Hit in fully associative mode
 );
 
   ////////////////////
@@ -125,9 +125,9 @@ module wt_hybche_ctrl #(
   end
   
   // Export counter values
-  assign trans_cnt_o = (trans_cnt_q > 0);
-  assign set_hit_cnt_o = (set_hit_cnt_q > 0);
-  assign full_hit_cnt_o = (full_hit_cnt_q > 0);
+  assign trans_cnt_o = trans_cnt_q;
+  assign set_hit_cnt_o = set_hit_cnt_q;
+  assign full_hit_cnt_o = full_hit_cnt_q;
   
   // FSM for cache control
   always_comb begin
