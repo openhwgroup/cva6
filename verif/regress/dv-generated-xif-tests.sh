@@ -7,6 +7,8 @@
 #
 # Original Author: Ayoub JALALI (ayoub.jalali@external.thalesgroup.com)
 
+set -exo pipefail
+
 if [ -n "$RISCV_ZCB" ]; then
   echo "Using RISCV_ZCB to support Zcb extension"
   RISCV=$RISCV_ZCB
@@ -58,7 +60,7 @@ if [[ ${#TEST_NAME[@]} != ${#I[@]} ]];then
   echo "***********ERROR***************"
   echo "The length of TEST_NAME and Iteration should be equal !!!!"
   echo "Fix the length of one of the arrays"
-  exit 
+  exit
 fi
 printf "+====================================================================================+"
 header="\n %-50s %-20s %s\n"
@@ -73,9 +75,10 @@ while [[ $j -lt ${#TEST_NAME[@]} ]];do
 done
 printf "+====================================================================================+\n"
 j=0
+error=0
 while [[ $j -lt ${#TEST_NAME[@]} ]];do
   cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike --priv=m -i ${I[j]} -bz 1 --iss_timeout 300
+  python3 cva6.py --testlist=$TESTLIST_FILE --test ${TEST_NAME[j]} --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=vcs-uvm,spike --priv=m -i ${I[j]} -bz 1 --iss_timeout 300 || error=$?
   n=0
   echo "Generate the test: ${TEST_NAME[j]}"
 #this while loop detects the failed tests from the log file and remove them
@@ -98,6 +101,8 @@ done
 j=0
 elif [[ "$list_num" = 0 ]];then
    printf "==== Execute Directed tests to improve functional coverage of isa, by hitting corners !!! ====\n\n"
-   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike --priv=m --linker=../../config/gen_from_riscv_config/$DV_TARGET/linker/link.ld
+   python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike --priv=m --linker=../../config/gen_from_riscv_config/$DV_TARGET/linker/link.ld || error=$?
 fi
 cd -
+
+exit $error

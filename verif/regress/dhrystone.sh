@@ -7,6 +7,8 @@
 #
 # Original Author: Zbigniew CHAMSKI (zbigniew.chamski@thalesgroup.fr)
 
+set -exo pipefail
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -63,6 +65,7 @@ cflags=(
         -DNOPRINT
 )
 
+error=0
 python3 cva6.py \
         --target hwconfig \
         --hwconfig_opts="$DV_HWCONFIG_OPTS" \
@@ -71,4 +74,8 @@ python3 cva6.py \
         --c_tests "$src0" \
         --sv_seed 1 \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
-        $DV_OPTS
+        $DV_OPTS || error=$?
+
+cd -
+
+exit $error

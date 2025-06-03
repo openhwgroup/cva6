@@ -7,6 +7,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -29,6 +31,9 @@ fi
 
 cd verif/sim
 cp $BBL_ROOT/bbl bbl.o
+error=0
 python3 cva6.py --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --elf_tests bbl.o\
-  --issrun_opts="+time_out=40000000 +debug_disable=1" --isspostrun_opts="ffffffe0005e5cd4"
+  --issrun_opts="+time_out=40000000 +debug_disable=1" --isspostrun_opts="ffffffe0005e5cd4" || error=$?
 cd -
+
+exit $error
