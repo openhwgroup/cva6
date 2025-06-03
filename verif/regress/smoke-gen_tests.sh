@@ -7,6 +7,8 @@
 #
 # Original Author: Ayoub JALALI - Thales
 
+set -exo pipefail
+
 if [ -n "$RISCV_ZCB" ]; then
   echo "Using RISCV_ZCB to support Zcb extension"
   RISCV=$RISCV_ZCB
@@ -41,9 +43,12 @@ export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBO
 
 cd verif/sim/
 cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_arithmetic_basic_test_comp --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300
-python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_load_store_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300
-python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_unaligned_load_store_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300
+error=0
+python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_arithmetic_basic_test_comp --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300 || error=$?
+python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_load_store_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300 || error=$?
+python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_unaligned_load_store_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS $DV_OPTS --priv=m -i 1 --iss_timeout 300 || error=$?
 make clean_all
 
 cd -
+
+exit $error

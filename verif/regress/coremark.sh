@@ -7,6 +7,8 @@
 #
 # Original Author: Zbigniew CHAMSKI (zbigniew.chamski@thalesgroup.fr)
 
+set -exo pipefail
+
 noprint=""
 if [ "$1" == "--no-print" ]; then
         noprint="-DHAS_PRINTF=0"
@@ -86,6 +88,7 @@ cflags=(
 
 isa="rv32imc_zba_zbb_zbc_zbs"
 
+error=0
 python3 cva6.py \
         --target hwconfig \
         --hwconfig_opts="$DV_HWCONFIG_OPTS" \
@@ -95,4 +98,8 @@ python3 cva6.py \
         --sv_seed 1 \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
         --iss_timeout=2000 \
-        $DV_OPTS
+        $DV_OPTS || error=$?
+
+cd -
+
+exit $error

@@ -7,6 +7,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -eox pipefail
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -41,8 +43,11 @@ cd verif/sim/
 
 make -C ../.. clean
 make clean_all
-python3 cva6.py --c_tests ../tests/custom/hello_world/hello_world.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS
+error=0
+python3 cva6.py --c_tests ../tests/custom/hello_world/hello_world.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS || error=$?
 make -C ../.. clean
 make clean_all
 
 cd -
+
+exit $error

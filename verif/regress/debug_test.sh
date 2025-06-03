@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 
+set -exo pipefail
+
 noprint=""
 if [ "$1" == "--no-print" ]; then
         noprint="-DHAS_PRINTF=0"
@@ -65,6 +67,7 @@ default_target="cv32a6_imac_sv0"
 link_ld="../tests/custom/debug_test/bsp/link.ld"
 
 set -x
+error=0
 python3 cva6.py \
         --target "$default_target" \
         --iss="$DV_SIMULATORS" \
@@ -72,4 +75,8 @@ python3 cva6.py \
         --c_tests "$src0" \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
         --linker "$link_ld" \
-        $DV_OPTS -v
+        $DV_OPTS -v || error=$?
+
+cd -
+
+exit $error

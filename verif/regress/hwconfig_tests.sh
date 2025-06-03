@@ -7,6 +7,8 @@
 #
 # Original Author: Guillaume Chauvon (guillaume.chauvon@thalesgroup.com)
 
+set -exo pipefail
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"

@@ -6,6 +6,8 @@
 ## Original Author: Konstantinos Leventos - Robert Bosch France SAS
 ##-----------------------------------------------------------------------------
 
+set -exo pipefail
+
 # Where the tools are
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -34,8 +36,11 @@ make clean
 cd verif/sim/
 make clean_all
 
-python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld
+error=0
+python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld || error=$?
 
 make clean_all
 cd -
 make clean
+
+exit $error

@@ -7,6 +7,8 @@
 #
 # Original Author: Guillaume CHAUVON (guillaume.chauvon@thalesgroup.fr)
 
+set -exo pipefail
+
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -28,8 +30,11 @@ if ! [ -n "$DV_TARGET" ]; then
 fi
 
 cd verif/sim/
-python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --test rv32ui-addi
+error=0
+python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --testlist=../tests/testlist_riscv-compliance-$DV_TARGET.yaml --test rv32ui-addi || error=$?
 make clean
 make -C verif/sim clean_all
 
 cd -
+
+exit $error

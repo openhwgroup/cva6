@@ -7,6 +7,8 @@
 #
 # Original Author: Ayoub JALALI - Thales
 
+set -exo pipefail
+
 if [ -n "$RISCV_ZCB" ]; then
   echo "Using RISCV_ZCB to support Zcb extension"
   RISCV=$RISCV_ZCB
@@ -35,8 +37,10 @@ fi
 
 cd verif/sim/
 cp ../env/corev-dv/custom/riscv_custom_instr_enum.sv ./dv/src/isa/custom/
-
-python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_interrupt_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS --priv=m --issrun_opts="+enable_interrupt" -i 5 -bz 1 --iss_timeout 300
-python3 cva6.py --testlist=../tests/testlist_interrupt.yaml --test jump_to_zero --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS --priv=m --issrun_opts="+enable_interrupt"
+error=0
+python3 cva6.py --testlist=cva6_base_testlist.yaml --test riscv_interrupt_test --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS --priv=m --issrun_opts="+enable_interrupt" -i 5 -bz 1 --iss_timeout 300 || error=$?
+python3 cva6.py --testlist=../tests/testlist_interrupt.yaml --test jump_to_zero --iss_yaml cva6.yaml --target $DV_TARGET -cs ../env/corev-dv/target/rv32imcb/ --mabi ilp32 --isa rv32imc --isa_extension="zba,zbb,zbc,zbs,zcb" --simulator_yaml ../env/corev-dv/simulator.yaml --iss=$DV_SIMULATORS --priv=m --issrun_opts="+enable_interrupt" || error=$?
 
 cd -
+
+exit $error
