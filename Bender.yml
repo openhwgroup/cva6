@@ -138,6 +138,7 @@ sources:
       - core/cache_subsystem/wt_new_dcache_mem.sv
       - core/cache_subsystem/wt_new_cache_subsystem.sv
       - core/cache_subsystem/wt_cache_subsystem.sv
+      - core/cache_subsystem/wt_cache_priv_adapter.sv
       - core/cache_subsystem/wt_axi_adapter.sv
       - core/cache_subsystem/cva6_icache.sv
       - core/cache_subsystem/tag_cmp.sv
@@ -147,6 +148,7 @@ sources:
       - core/cache_subsystem/cache_ctrl.sv
       - core/cache_subsystem/std_nbdcache.sv
       - core/cache_subsystem/std_cache_subsystem.sv
+      - core/cache_subsystem/hpdcache_priv_adapter.sv
 
       # Physical Memory Protection
       - core/pmp/src/pmp.sv

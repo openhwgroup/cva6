@@ -27,7 +27,7 @@ package config_pkg;
   } noc_type_e;
 
   /// Cache type parameter
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     WB = 0,
     WT = 1,
     HPDCACHE_WT = 2,
@@ -35,7 +35,8 @@ package config_pkg;
     HPDCACHE_WT_WB = 4,
     WT_HYB = 5,
     WT_HYB_FORCE_SET_ASS = 6,
-    WT_HYB_FORCE_FULL_ASS = 7
+    WT_HYB_FORCE_FULL_ASS = 7,
+    WT_NEW = 8
   } cache_type_t;
 
   /// Branch predictor parameter
