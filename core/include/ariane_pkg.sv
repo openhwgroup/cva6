@@ -899,21 +899,6 @@ package ariane_pkg;
     logic [1:0]   sselect;
   } textra64_tdata3_t;
 
-  // typedef struct packed {
-  //   logic [63:60] type;        // type 3 for icount
-  //   logic dmode;
-  //   logic [58:27] reserved0;
-  //   logic vs;
-  //   logic vu;
-  //   logic hit;
-  //   logic [23:10] count;
-  //   logic m;
-  //   logic pending;
-  //   logic s;
-  //   logic u;
-  //   logic [5:0] action;
-  // } icount64_tdata1_t;
-
   typedef struct packed {
     logic [31:28] t_type;  // type 6 for mcontrol6
     logic dmode;
@@ -951,8 +936,10 @@ package ariane_pkg;
   // } itrigger_tdata1_t;
 
   // typedef struct packed {
+  //   logic [31:28] t_type;  // type 5 for etrigger
+  //   logic dmode;
   //   logic hit;
-  //   logic [XLEN-7:13] zeroed;
+  //   logic [25:13] zeroes;
   //   logic vs;
   //   logic vu;
   //   logic zeroed;
@@ -961,5 +948,5 @@ package ariane_pkg;
   //   logic s;
   //   logic u;
   //   logic [5:0] action;
-  // } etrigger_tdata1_t;
+  // } etrigger32_tdata1_t;
 endpackage

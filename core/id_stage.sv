@@ -92,7 +92,7 @@ module id_stage #(
     output logic compressed_valid_o,
     output x_compressed_req_t compressed_req_o,
     // breakpoint request from trigger module
-    input breakpoint_from_tigger_module_i,
+    input debug_from_trigger_i,
     // Data cache request ouput - CACHE
     input dcache_req_o_t dcache_req_ports_i,
     // Data cache request input - CACHE
@@ -287,7 +287,7 @@ module id_stage #(
   always_comb begin
     // No CVXIF, No ZCMP, No ZCMT => Connect directly compressed decoder to decoder
     is_illegal_deco    = is_illegal_rvc;
-    instruction_deco   = instruction_rvc; //breakpoint_from_tigger_module_i ? 32'h00100073 : 
+    instruction_deco   = instruction_rvc;
     is_compressed_deco = is_compressed_rvc;
     if (CVA6Cfg.CvxifEn) begin
       is_illegal_deco[0]    = is_illegal_cvxif_o;
@@ -339,10 +339,10 @@ module id_stage #(
         .vtw_i,
         .tsr_i,
         .hu_i,
-        .instruction_o                  (decoded_instruction[i]),
-        .orig_instr_o                   (orig_instr[i]),
-        .is_control_flow_instr_o        (is_control_flow_instr[i]),
-        .breakpoint_from_tigger_module_i(breakpoint_from_tigger_module_i)
+        .instruction_o             (decoded_instruction[i]),
+        .orig_instr_o              (orig_instr[i]),
+        .is_control_flow_instr_o   (is_control_flow_instr[i]),
+        .debug_from_trigger_i      (debug_from_trigger_i)
     );
   end
 
@@ -442,10 +442,6 @@ module id_stage #(
             is_control_flow_instr[0]
         };
       end
-
-      // if (flush_i && !(breakpoint_from_tigger_module_i && !issue_n[0].valid)) begin
-      //   issue_n[0].valid = 1'b0;
-      // end
 
       // invalidate the pipeline register on a flush
       if (flush_i) issue_n[0].valid = 1'b0;

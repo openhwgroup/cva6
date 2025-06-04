@@ -90,7 +90,7 @@ module decoder
     output logic [31:0] orig_instr_o,
     // Is a control flow instruction - ISSUE_STAGE
     output logic is_control_flow_instr_o,
-    input breakpoint_from_tigger_module_i
+    input debug_from_trigger_i
 );
   logic illegal_instr;
   logic illegal_instr_bm;
@@ -1908,7 +1908,7 @@ module decoder
     // end
 
     // a debug request has precendece over everything else
-    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i) || (CVA6Cfg.SDTRIG && CVA6Cfg.DebugEn && !debug_mode_i && breakpoint_from_tigger_module_i)) begin
+    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i) || (CVA6Cfg.SDTRIG && CVA6Cfg.DebugEn && !debug_mode_i && debug_from_trigger_i)) begin
       instruction_o.ex.valid = 1'b1;
       instruction_o.ex.cause = riscv::DEBUG_REQUEST;
     end
