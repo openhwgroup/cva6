@@ -1344,7 +1344,7 @@ module cva6
 
   if (CVA6Cfg.DCacheType == config_pkg::WT) begin : gen_cache_wt
     // this is a cache subsystem that is compatible with OpenPiton
-    wt_cache_subsystem #(
+    wt_cache_priv_adapter #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
@@ -1361,6 +1361,7 @@ module cva6
         // to D$
         .clk_i             (clk_i),
         .rst_ni            (rst_ni),
+        .priv_lvl_i        (priv_lvl),
         // I$
         .icache_en_i       (icache_en_csr),
         .icache_flush_i    (icache_flush_ctrl_cache),
@@ -1397,7 +1398,7 @@ module cva6
         CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB
   )
   begin : gen_cache_hpd
-    cva6_hpdcache_subsystem #(
+    hpdcache_priv_adapter #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
@@ -1420,6 +1421,7 @@ module cva6
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
+        .priv_lvl_i(priv_lvl),
 
         .icache_en_i   (icache_en_csr),
         .icache_flush_i(icache_flush_ctrl_cache),
