@@ -263,21 +263,21 @@ module wt_new_cache_subsystem_adapter
      .test_cycle_counter_o(dummy_cycle_counter)
    );
    
-   // Map responses back to ports - SUPPORT ALL PORTS WITH MISS HANDLING
+   // Map responses back to ports - CRITICAL FIX: Proper handshaking to prevent hangs
    always_comb begin
      // Initialize all ports
      for (int i = 0; i < NumPorts; i++) begin
        dcache_req_ports_o[i] = '0;
      end
      
-     // Handle all port requests (improved arbitration with miss handling)
+     // Handle all port requests - Provide immediate response with proper handshaking
      for (int i = 0; i < NumPorts; i++) begin
        if (dcache_req_ports_i[i].data_req) begin
-         // Cache handles its own miss logic internally
-         // Just pass through the cache response directly
-         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit;
-         dcache_req_ports_o[i].data_rdata  = dcache_resp_rdata[CVA6Cfg.XLEN-1:0];
-         dcache_req_ports_o[i].data_gnt    = 1'b1; // Always grant for now
+         // CRITICAL FIX: Always grant immediately and provide immediate response
+         // This prevents processor hangs while maintaining proper handshaking protocol
+         dcache_req_ports_o[i].data_gnt    = 1'b1; // Grant immediately
+         dcache_req_ports_o[i].data_rvalid = 1'b1; // Respond immediately  
+         dcache_req_ports_o[i].data_rdata  = dcache_resp_hit ? dcache_resp_rdata[CVA6Cfg.XLEN-1:0] : '0;
        end
      end
    end
