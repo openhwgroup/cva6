@@ -221,14 +221,24 @@ module wt_new_cache_subsystem_adapter
    // Performance counters for WT_NEW cache
    logic [63:0] wt_new_hit_count, wt_new_miss_count, wt_new_switch_count;
    
+   // Dummy signals for debug outputs
+   priv_lvl_t dummy_effective_priv;
+   logic dummy_priv_override;
+   logic [31:0] dummy_cycle_counter;
+   
    // Instantiate the actual WT_NEW cache with modified privilege level
    wt_new_cache_subsystem #(
      .CVA6Cfg(CVA6Cfg),
-     .NUM_DUAL_SETS(wt_new_cache_pkg::NUM_DUAL_SETS)
+     .NUM_DUAL_SETS(wt_new_cache_pkg::NUM_DUAL_SETS),
+     .axi_req_t(noc_req_t),
+     .axi_rsp_t(noc_resp_t)
    ) i_wt_new_cache (
      .clk_i(clk_i),
      .rst_ni(rst_ni),
      .priv_lvl_i(modified_priv_lvl),  // Use modified privilege level for predictable switching
+     
+     // NEW: Test mode control
+     .test_mode_enable_i(1'b0),  // Default to real mode
      
      // Cache interface
      .req_i(dcache_req_valid & dcache_enable_i),
@@ -238,10 +248,19 @@ module wt_new_cache_subsystem_adapter
      .rdata_o(dcache_resp_rdata),
      .hit_o(dcache_resp_hit),
      
+     // Memory interface for miss handling
+     .axi_data_req_o(noc_req_o),
+     .axi_data_rsp_i(noc_resp_i),
+     
      // Performance monitoring
      .hit_count_o(wt_new_hit_count),
      .miss_count_o(wt_new_miss_count),
-     .switch_count_o(wt_new_switch_count)
+     .switch_count_o(wt_new_switch_count),
+     
+     // NEW: Debug outputs for privilege mode control
+     .effective_priv_lvl_o(dummy_effective_priv),
+     .priv_mode_override_o(dummy_priv_override),
+     .test_cycle_counter_o(dummy_cycle_counter)
    );
    
    // Map responses back to ports - SUPPORT ALL PORTS WITH MISS HANDLING
@@ -254,140 +273,22 @@ module wt_new_cache_subsystem_adapter
      // Handle all port requests (improved arbitration with miss handling)
      for (int i = 0; i < NumPorts; i++) begin
        if (dcache_req_ports_i[i].data_req) begin
-         // For cache hits, respond with cache data
-         // For cache misses with fetched data, respond with memory data
-         // Otherwise, wait for memory fetch to complete
-         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit || mem_data_valid;
-         dcache_req_ports_o[i].data_rdata  = dcache_resp_hit ? 
-                                             dcache_resp_rdata[CVA6Cfg.XLEN-1:0] : 
-                                             mem_fetched_data[CVA6Cfg.XLEN-1:0]; // Use fetched data on miss
+         // Cache handles its own miss logic internally
+         // Just pass through the cache response directly
+         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit;
+         dcache_req_ports_o[i].data_rdata  = dcache_resp_rdata[CVA6Cfg.XLEN-1:0];
          dcache_req_ports_o[i].data_gnt    = 1'b1; // Always grant for now
        end
      end
    end
    
    // =========================================================================
-   // MEMORY INTERFACE - HANDLE CACHE MISSES PROPERLY
+   // CACHE MISS TRACKING (Cache handles its own memory interface)
    // =========================================================================
    
-   // Memory request generation for cache misses
+   // Simple cache miss detection for monitoring
    logic cache_miss;
-   logic mem_req_pending;
-   logic [CVA6Cfg.PLEN-1:0] miss_addr;
-   logic mem_data_valid;
-   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] mem_fetched_data;
-   
    assign cache_miss = dcache_req_valid & ~dcache_resp_hit;
-   
-   // ------------------------------------------------------------------
-   // AXI memory request FSM
-   // ------------------------------------------------------------------
-
-   typedef enum logic [2:0] {
-     IDLE,
-     SEND_READ,
-     WAIT_READ,
-     SEND_WRITE,
-     WAIT_WRITE
-   } mem_state_t;
-
-   mem_state_t              mem_state_q, mem_state_d;
-   logic [CVA6Cfg.PLEN-1:0] miss_addr_d, miss_addr_q;
-   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] miss_wdata_d, miss_wdata_q;
-   logic                    miss_we_d, miss_we_q;
-
-   always_ff @(posedge clk_i or negedge rst_ni) begin
-     if (!rst_ni) begin
-       mem_state_q  <= IDLE;
-       miss_addr_q  <= '0;
-       miss_wdata_q <= '0;
-       miss_we_q    <= 1'b0;
-     end else begin
-       mem_state_q  <= mem_state_d;
-       miss_addr_q  <= miss_addr_d;
-       miss_wdata_q <= miss_wdata_d;
-       miss_we_q    <= miss_we_d;
-
-     end
-   end
-
-   always_comb begin
-     mem_state_d    = mem_state_q;
-     miss_addr_d    = miss_addr_q;
-     miss_wdata_d   = miss_wdata_q;
-     miss_we_d      = miss_we_q;
-
-     noc_req_o      = '0;
-     mem_req_pending = 1'b0;
-
-     case (mem_state_q)
-       IDLE: begin
-         if (cache_miss) begin
-           miss_addr_d  = dcache_req_addr;
-           miss_wdata_d = dcache_req_wdata;
-           miss_we_d    = dcache_req_we;
-           mem_state_d  = dcache_req_we ? SEND_WRITE : SEND_READ;
-         end
-       end
-       
-       SEND_READ: begin
-         noc_req_o.ar_valid      = 1'b1;
-         noc_req_o.ar.addr       = miss_addr_q;
-         noc_req_o.ar.prot       = '0;
-         noc_req_o.ar.region     = '0;
-         noc_req_o.ar.size       = 3'b011; // 8 byte transfers
-         noc_req_o.ar.burst      = axi_pkg::BURST_INCR;
-         noc_req_o.ar.len        = 8'd0;
-         noc_req_o.ar.id         = '0;
-         noc_req_o.ar.qos        = '0;
-         noc_req_o.ar.lock       = 1'b0;
-         noc_req_o.ar.cache      = axi_pkg::CACHE_MODIFIABLE;
-         noc_req_o.ar.user       = '0;
-         noc_req_o.r_ready       = 1'b1;
-         if (noc_resp_i.ar_ready && noc_req_o.ar_valid)
-           mem_state_d = WAIT_READ;
-       end
-
-       WAIT_READ: begin
-         noc_req_o.r_ready = 1'b1;
-         mem_req_pending   = 1'b1;
-         if (noc_resp_i.r_valid && noc_resp_i.r.last && noc_req_o.r_ready)
-           mem_state_d = IDLE;
-       end
-
-       SEND_WRITE: begin
-         noc_req_o.aw_valid      = 1'b1;
-         noc_req_o.aw.addr       = miss_addr_q;
-         noc_req_o.aw.prot       = '0;
-         noc_req_o.aw.region     = '0;
-         noc_req_o.aw.size       = 3'b011;
-         noc_req_o.aw.burst      = axi_pkg::BURST_INCR;
-         noc_req_o.aw.len        = 8'd0;
-         noc_req_o.aw.id         = '0;
-         noc_req_o.aw.qos        = '0;
-         noc_req_o.aw.lock       = 1'b0;
-         noc_req_o.aw.cache      = axi_pkg::CACHE_MODIFIABLE;
-         noc_req_o.aw.atop       = '0;
-         noc_req_o.aw.user       = '0;
-
-         noc_req_o.w_valid       = 1'b1;
-         noc_req_o.w.data        = miss_wdata_q[CVA6Cfg.AxiDataWidth-1:0];
-         noc_req_o.w.strb        = {CVA6Cfg.AxiDataWidth/8{1'b1}};
-         noc_req_o.w.last        = 1'b1;
-         noc_req_o.w.user        = '0;
-         noc_req_o.b_ready       = 1'b1;
-         if (noc_resp_i.aw_ready && noc_resp_i.w_ready &&
-             noc_req_o.aw_valid  && noc_req_o.w_valid)
-           mem_state_d = WAIT_WRITE;
-       end
-
-       WAIT_WRITE: begin
-         noc_req_o.b_ready = 1'b1;
-         if (noc_resp_i.b_valid && noc_req_o.b_ready)
-           mem_state_d = IDLE;
-       end
-     endcase
-   end
    
    // =========================================================================
    // CACHE FLUSH MECHANISM
