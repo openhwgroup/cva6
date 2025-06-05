@@ -109,12 +109,15 @@ module wt_new_cache_subsystem_adapter
    // PRIVILEGE LEVEL MODIFIER FOR TESTING
    // =========================================================================
    
-   // Modified privilege level for WT_NEW cache testing
+   // Modified privilege level for WT_NEW cache testing with performance optimization
    riscv::priv_lvl_t modified_priv_lvl;
+   riscv::priv_lvl_t prev_priv_lvl;
    logic [31:0] priv_modifier_cycle_counter;
    logic priv_modifier_switch_event;
    logic priv_modifier_in_machine_mode;
    logic priv_modifier_in_user_mode;
+   logic privilege_switch_detected;
+   logic [3:0] switch_debounce_counter;
    
    // Instantiate privilege level modifier
    priv_lvl_modifier #(
@@ -130,9 +133,37 @@ module wt_new_cache_subsystem_adapter
      .in_user_mode_o(priv_modifier_in_user_mode)
    );
    
-   // Privilege level tracking for debugging
+   // =========================================================================
+   // PRIVILEGE LEVEL SWITCHING PERFORMANCE OPTIMIZATION
+   // =========================================================================
+   
+   // Track privilege level changes with debouncing for performance optimization
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+       prev_priv_lvl <= riscv::PRIV_LVL_M;
+       privilege_switch_detected <= 1'b0;
+       switch_debounce_counter <= '0;
+     end else begin
+       prev_priv_lvl <= modified_priv_lvl;
+       
+       // Detect privilege level switches with debouncing
+       if (prev_priv_lvl != modified_priv_lvl) begin
+         privilege_switch_detected <= 1'b1;
+         switch_debounce_counter <= 4'd8; // 8-cycle debounce period
+       end else if (switch_debounce_counter > 0) begin
+         switch_debounce_counter <= switch_debounce_counter - 1;
+       end else begin
+         privilege_switch_detected <= 1'b0;
+       end
+     end
+   end
+   
+   // Privilege level tracking for debugging with optimization hints
    riscv::priv_lvl_t current_priv_lvl;
+   logic privilege_stable;
+   
    assign current_priv_lvl = modified_priv_lvl; // Use modified privilege level
+   assign privilege_stable = (switch_debounce_counter == 0) && !privilege_switch_detected;
    
    // Port arbitration - PROPER MULTI-PORT SUPPORT
    logic dcache_req_valid;
