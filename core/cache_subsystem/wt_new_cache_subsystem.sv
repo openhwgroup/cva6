@@ -58,6 +58,15 @@ module wt_new_cache_subsystem
   logic                                b_hit;
 
   // Instantiate memory with two controller ports
+  logic flush_dual_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      flush_dual_q <= 1'b0;
+    end else begin
+      flush_dual_q <= switch_ctrl;
+    end
+  end
+
   wt_new_dcache_mem #(
     .CVA6Cfg      (CVA6Cfg),
     .NUM_DUAL_SETS(NUM_DUAL_SETS),
@@ -67,7 +76,7 @@ module wt_new_cache_subsystem
   ) i_mem (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
-    .flush_dual_i (switch_ctrl),
+    .flush_dual_i (flush_dual_q),
 
     // Controller A
     .a_req_i    (priv_lvl_i == PRIV_LVL_M ? req_i : 1'b0),  // Machine mode

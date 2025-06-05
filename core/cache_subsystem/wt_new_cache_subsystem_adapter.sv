@@ -208,53 +208,114 @@ module wt_new_cache_subsystem_adapter
    
    assign cache_miss = dcache_req_valid & ~dcache_resp_hit;
    
-   // Simple memory request FSM for cache misses
-   typedef enum logic [1:0] {
+   // ------------------------------------------------------------------
+   // AXI memory request FSM
+   // ------------------------------------------------------------------
+
+   typedef enum logic [2:0] {
      IDLE,
-     REQ_PENDING,
-     RESP_WAIT
+     SEND_READ,
+     WAIT_READ,
+     SEND_WRITE,
+     WAIT_WRITE
    } mem_state_t;
-   
-   mem_state_t mem_state_q, mem_state_d;
-   
+
+   mem_state_t              mem_state_q, mem_state_d;
+   logic [CVA6Cfg.PLEN-1:0] miss_addr_d, miss_addr_q;
+   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] miss_wdata_d, miss_wdata_q;
+   logic                    miss_we_d, miss_we_q;
+
    always_ff @(posedge clk_i or negedge rst_ni) begin
      if (!rst_ni) begin
-       mem_state_q <= IDLE;
-       miss_addr <= '0;
+       mem_state_q  <= IDLE;
+       miss_addr_q  <= '0;
+       miss_wdata_q <= '0;
+       miss_we_q    <= 1'b0;
      end else begin
-       mem_state_q <= mem_state_d;
-       if (cache_miss && mem_state_q == IDLE) begin
-         miss_addr <= dcache_req_addr;
-       end
+       mem_state_q  <= mem_state_d;
+       miss_addr_q  <= miss_addr_d;
+       miss_wdata_q <= miss_wdata_d;
+       miss_we_q    <= miss_we_d;
      end
    end
-   
+
    always_comb begin
-     mem_state_d = mem_state_q;
+     mem_state_d    = mem_state_q;
+     miss_addr_d    = miss_addr_q;
+     miss_wdata_d   = miss_wdata_q;
+     miss_we_d      = miss_we_q;
+
+     noc_req_o      = '0;
      mem_req_pending = 1'b0;
-     
+
      case (mem_state_q)
        IDLE: begin
          if (cache_miss) begin
-           mem_state_d = REQ_PENDING;
+           miss_addr_d  = dcache_req_addr;
+           miss_wdata_d = dcache_req_wdata;
+           miss_we_d    = dcache_req_we;
+           mem_state_d  = dcache_req_we ? SEND_WRITE : SEND_READ;
          end
        end
-       REQ_PENDING: begin
-         mem_req_pending = 1'b1;
-         // For now, just pretend memory responded immediately
-         // This prevents hang but allows functionality testing
-         mem_state_d = IDLE;
+
+       SEND_READ: begin
+         noc_req_o.ar_valid      = 1'b1;
+         noc_req_o.ar.addr       = miss_addr_q;
+         noc_req_o.ar.prot       = '0;
+         noc_req_o.ar.region     = '0;
+         noc_req_o.ar.size       = 3'b011; // 8 byte transfers
+         noc_req_o.ar.burst      = axi_pkg::BURST_INCR;
+         noc_req_o.ar.len        = 8'd0;
+         noc_req_o.ar.id         = '0;
+         noc_req_o.ar.qos        = '0;
+         noc_req_o.ar.lock       = 1'b0;
+         noc_req_o.ar.cache      = axi_pkg::CACHE_MODIFIABLE;
+         noc_req_o.ar.user       = '0;
+         noc_req_o.r_ready       = 1'b1;
+         if (noc_resp_i.ar_ready && noc_req_o.ar_valid)
+           mem_state_d = WAIT_READ;
        end
-       RESP_WAIT: begin
-         // Wait for memory response
-         mem_state_d = IDLE;
+
+       WAIT_READ: begin
+         noc_req_o.r_ready = 1'b1;
+         mem_req_pending   = 1'b1;
+         if (noc_resp_i.r_valid && noc_resp_i.r.last && noc_req_o.r_ready)
+           mem_state_d = IDLE;
+       end
+
+       SEND_WRITE: begin
+         noc_req_o.aw_valid      = 1'b1;
+         noc_req_o.aw.addr       = miss_addr_q;
+         noc_req_o.aw.prot       = '0;
+         noc_req_o.aw.region     = '0;
+         noc_req_o.aw.size       = 3'b011;
+         noc_req_o.aw.burst      = axi_pkg::BURST_INCR;
+         noc_req_o.aw.len        = 8'd0;
+         noc_req_o.aw.id         = '0;
+         noc_req_o.aw.qos        = '0;
+         noc_req_o.aw.lock       = 1'b0;
+         noc_req_o.aw.cache      = axi_pkg::CACHE_MODIFIABLE;
+         noc_req_o.aw.atop       = '0;
+         noc_req_o.aw.user       = '0;
+
+         noc_req_o.w_valid       = 1'b1;
+         noc_req_o.w.data        = miss_wdata_q[CVA6Cfg.AxiDataWidth-1:0];
+         noc_req_o.w.strb        = {CVA6Cfg.AxiDataWidth/8{1'b1}};
+         noc_req_o.w.last        = 1'b1;
+         noc_req_o.w.user        = '0;
+         noc_req_o.b_ready       = 1'b1;
+         if (noc_resp_i.aw_ready && noc_resp_i.w_ready &&
+             noc_req_o.aw_valid  && noc_req_o.w_valid)
+           mem_state_d = WAIT_WRITE;
+       end
+
+       WAIT_WRITE: begin
+         noc_req_o.b_ready = 1'b1;
+         if (noc_resp_i.b_valid && noc_req_o.b_ready)
+           mem_state_d = IDLE;
        end
      endcase
    end
-   
-   // Generate basic memory requests (simplified for now)
-   // TODO: Implement full AXI protocol when needed
-   assign noc_req_o = '0;  // Keep disabled but add proper FSM above
    
    // Cache control signals
    assign dcache_flush_ack_o = dcache_flush_i; // Immediate ack for now
