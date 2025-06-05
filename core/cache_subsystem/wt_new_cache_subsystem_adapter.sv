@@ -263,21 +263,42 @@ module wt_new_cache_subsystem_adapter
      .test_cycle_counter_o(dummy_cycle_counter)
    );
    
-   // Map responses back to ports - CRITICAL FIX: Proper handshaking to prevent hangs
+   // Map responses back to ports - PROPER CACHE BEHAVIOR with blocking on misses!
    always_comb begin
      // Initialize all ports
      for (int i = 0; i < NumPorts; i++) begin
        dcache_req_ports_o[i] = '0;
      end
      
-     // Handle all port requests - Provide immediate response with proper handshaking
+     // Handle all port requests with proper cache blocking behavior
      for (int i = 0; i < NumPorts; i++) begin
        if (dcache_req_ports_i[i].data_req) begin
-         // CRITICAL FIX: Always grant immediately and provide immediate response
-         // This prevents processor hangs while maintaining proper handshaking protocol
-         dcache_req_ports_o[i].data_gnt    = 1'b1; // Grant immediately
-         dcache_req_ports_o[i].data_rvalid = 1'b1; // Respond immediately  
-         dcache_req_ports_o[i].data_rdata  = dcache_resp_hit ? dcache_resp_rdata[CVA6Cfg.XLEN-1:0] : '0;
+         // Grant immediately for all requests
+         dcache_req_ports_o[i].data_gnt = 1'b1;
+         
+         // Handle kill requests immediately - this is critical for load unit
+         if (dcache_req_ports_i[i].kill_req) begin
+           dcache_req_ports_o[i].data_rvalid = 1'b1; // Acknowledge kill immediately
+           dcache_req_ports_o[i].data_rdata  = '0;   // No data for killed requests
+           dcache_req_ports_o[i].data_ruser  = '0;   // No user data for killed requests
+           dcache_req_ports_o[i].data_rid    = dcache_req_ports_i[i].data_id; // Echo back ID
+         end else begin
+           // PROPER CACHE BEHAVIOR: Only respond when cache has valid data
+           if (dcache_resp_hit) begin
+             // Cache hit - respond immediately with valid data
+             dcache_req_ports_o[i].data_rvalid = 1'b1;
+             dcache_req_ports_o[i].data_rdata  = dcache_resp_rdata[CVA6Cfg.XLEN-1:0];
+             dcache_req_ports_o[i].data_ruser  = '0;
+             dcache_req_ports_o[i].data_rid    = dcache_req_ports_i[i].data_id;
+           end else begin
+             // Cache miss - DO NOT respond until cache completes memory fetch
+             // This allows the cache miss handling FSM to work properly
+             dcache_req_ports_o[i].data_rvalid = 1'b0; // Block until cache ready
+             dcache_req_ports_o[i].data_rdata  = '0;
+             dcache_req_ports_o[i].data_ruser  = '0;
+             dcache_req_ports_o[i].data_rid    = dcache_req_ports_i[i].data_id;
+           end
+         end
        end
      end
    end
@@ -342,6 +363,10 @@ module wt_new_cache_subsystem_adapter
          if (!dcache_flush_i) begin
            flush_state_d = FLUSH_IDLE;
          end
+       end
+       default: begin
+         flush_state_d = FLUSH_IDLE;
+         flush_complete = 1'b0;
        end
      endcase
    end
