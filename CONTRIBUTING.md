@@ -16,6 +16,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
 
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
     * The CVA6 team wants to assess the potential of your contribution.
+    * The CVA6 team plans the next evolutions, and your contributions could be incompatible with them.
     * The CVA6 team can provide you recommendations to ease the upcoming contribution.
     * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
@@ -50,6 +51,10 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
         - At this point, we do not request a 100%-coverage verification suite.
+    * Be kind to the people who process your pull request(s)
+        - Explain your contribution in the pull request.
+        - If your contribution solves an issue, fill in an issue and cross link it in the pull-request.
+        - The reviewer(s) prefer to review several small pull requests rather one large pull request. Synchronize with the team to identify the right breakdown.
 
 If you encounter difficulties with these guidelines, get in touch with the team!
 
