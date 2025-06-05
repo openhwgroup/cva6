@@ -39,7 +39,7 @@ module wt_new_cache_subsystem
   logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] a_tag;
 
   assign a_index = addr_i[OFFSET_WIDTH + INDEX_WIDTH - 1: OFFSET_WIDTH];
-  assign a_tag   = addr_i[CVA6Cfg.PLEN-1: OFFSET_WIDTH + INDEX_WIDTH];
+  assign a_tag   = addr_i[CVA6Cfg.PLEN-1: CVA6Cfg.DCACHE_OFFSET_WIDTH + CVA6Cfg.DCACHE_INDEX_WIDTH];
 
   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] a_rdata;
   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] b_rdata;

@@ -58,28 +58,47 @@ module wt_new_dcache_mem
   always_ff @(posedge clk_i) begin
     if (a_req_i) begin
       if (a_we_i) begin
-        data_mem[a_index_i][0] <= a_wdata_i; // simplified: way 0 only
-        tag_mem[a_index_i][0]  <= a_tag_i;
-        valid_mem[a_index_i][0] <= 1'b1;
+        data_mem[a_index_i % NUM_SETS][0] <= a_wdata_i; // simplified: way 0 only
+        tag_mem[a_index_i % NUM_SETS][0]  <= a_tag_i;
+        valid_mem[a_index_i % NUM_SETS][0] <= 1'b1;
       end else begin
-        a_rdata_o <= data_mem[a_index_i][0];
+        a_rdata_o <= data_mem[a_index_i % NUM_SETS][0];
       end
     end
   end
 
-  // Controller B - linear search over dual sets
+  // Controller B - linear search over dual sets with miss handling
   always_ff @(posedge clk_i) begin
     b_hit_o   <= 1'b0;
     b_rdata_o <= '0;
     if (b_req_i) begin
+      logic found;
+      found = 1'b0;
       for (int s = 0; s < NUM_DUAL_SETS; s++) begin
         int idx = NUM_REG_SETS + s;
         if (valid_mem[idx][0] && tag_mem[idx][0] == b_addr_i[CVA6Cfg.DCACHE_TAG_WIDTH-1:0]) begin
+          found = 1'b1;
           b_hit_o   <= 1'b1;
           if (b_we_i)
             data_mem[idx][0] <= b_wdata_i;
           else
             b_rdata_o <= data_mem[idx][0];
+        end
+      end
+      // For cache misses on reads, provide dummy data to prevent hang
+      // For writes, install the data in the first available dual set
+      if (!found) begin
+        if (b_we_i) begin
+          // Write miss - install in first dual set (simplified allocation)
+          int install_idx = NUM_REG_SETS;
+          data_mem[install_idx][0] <= b_wdata_i;
+          tag_mem[install_idx][0]  <= b_addr_i[CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
+          valid_mem[install_idx][0] <= 1'b1;
+          b_hit_o <= 1'b1; // Treat write miss as hit after installation
+        end else begin
+          // Read miss - provide dummy data
+          b_rdata_o <= {CVA6Cfg.DCACHE_LINE_WIDTH{1'b0}}; // Return zeros
+          b_hit_o <= 1'b0; // Signal miss for memory subsystem
         end
       end
     end
