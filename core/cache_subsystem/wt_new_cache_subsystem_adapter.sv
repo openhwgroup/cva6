@@ -279,149 +279,112 @@ module wt_new_cache_subsystem_adapter
    
    assign cache_miss = dcache_req_valid & ~dcache_resp_hit;
    
-   // Simple memory request FSM for cache misses
-   typedef enum logic [1:0] {
+   // ------------------------------------------------------------------
+   // AXI memory request FSM
+   // ------------------------------------------------------------------
+
+   typedef enum logic [2:0] {
      IDLE,
-     REQ_PENDING,
-     RESP_WAIT
+     SEND_READ,
+     WAIT_READ,
+     SEND_WRITE,
+     WAIT_WRITE
    } mem_state_t;
-   
-   mem_state_t mem_state_q, mem_state_d;
-   
+
+   mem_state_t              mem_state_q, mem_state_d;
+   logic [CVA6Cfg.PLEN-1:0] miss_addr_d, miss_addr_q;
+   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] miss_wdata_d, miss_wdata_q;
+   logic                    miss_we_d, miss_we_q;
+
    always_ff @(posedge clk_i or negedge rst_ni) begin
      if (!rst_ni) begin
-       mem_state_q <= IDLE;
-       miss_addr <= '0;
-       mem_data_valid <= 1'b0;
-       mem_fetched_data <= '0;
+       mem_state_q  <= IDLE;
+       miss_addr_q  <= '0;
+       miss_wdata_q <= '0;
+       miss_we_q    <= 1'b0;
      end else begin
-       mem_state_q <= mem_state_d;
-       if (cache_miss && mem_state_q == IDLE) begin
-         miss_addr <= dcache_req_addr;
-       end
-       
-       // Capture fetched data when AXI read completes
-       if (axi_r_valid && axi_r_ready && axi_r_last) begin
-         mem_data_valid <= 1'b1;
-         mem_fetched_data <= cache_line_data;
-       end else if (mem_state_q == IDLE) begin
-         mem_data_valid <= 1'b0;
-       end
+       mem_state_q  <= mem_state_d;
+       miss_addr_q  <= miss_addr_d;
+       miss_wdata_q <= miss_wdata_d;
+       miss_we_q    <= miss_we_d;
+
      end
    end
-   
+
    always_comb begin
-     mem_state_d = mem_state_q;
+     mem_state_d    = mem_state_q;
+     miss_addr_d    = miss_addr_q;
+     miss_wdata_d   = miss_wdata_q;
+     miss_we_d      = miss_we_q;
+
+     noc_req_o      = '0;
      mem_req_pending = 1'b0;
-     
+
      case (mem_state_q)
        IDLE: begin
          if (cache_miss) begin
-           mem_state_d = REQ_PENDING;
+           miss_addr_d  = dcache_req_addr;
+           miss_wdata_d = dcache_req_wdata;
+           miss_we_d    = dcache_req_we;
+           mem_state_d  = dcache_req_we ? SEND_WRITE : SEND_READ;
          end
        end
-       REQ_PENDING: begin
-         mem_req_pending = 1'b1;
-         // Wait for AXI AR transaction to be accepted
-         if (axi_ar_valid && axi_ar_ready) begin
-           mem_state_d = RESP_WAIT;
-         end
-       end
-       RESP_WAIT: begin
-         // Wait for AXI R transaction to complete
-         if (axi_r_valid && axi_r_ready && axi_r_last) begin
-           mem_state_d = IDLE;
-         end
-       end
-     endcase
-   end
-   
-   // Simple AXI read interface for cache line fetches
-   logic axi_ar_valid, axi_ar_ready;
-   logic axi_r_valid, axi_r_ready, axi_r_last;
-   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] cache_line_data;
-   logic axi_read_pending;
-   
-   // Generate AXI read requests for cache misses
-   always_comb begin
-     // Initialize AXI request
-     noc_req_o = '0;
-     axi_ar_valid = 1'b0;
-     axi_r_ready = 1'b1;  // Always ready to receive data
-     
-     if (mem_state_q == REQ_PENDING && cache_miss) begin
-       // Generate AXI AR (Address Read) transaction
-       axi_ar_valid = 1'b1;
-       noc_req_o.ar_valid = axi_ar_valid;
-       noc_req_o.ar.addr = {miss_addr[CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH], {CVA6Cfg.DCACHE_OFFSET_WIDTH{1'b0}}}; // Cache line aligned
-       noc_req_o.ar.len = CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth - 1; // Burst length for cache line
-       noc_req_o.ar.size = 3'b011; // 64-bit transfers (8 bytes)
-       noc_req_o.ar.burst = 2'b01; // INCR burst
-       noc_req_o.ar.id = '0; // Simple ID
-       noc_req_o.ar.cache = 4'b0010; // Normal memory, non-cacheable
-       noc_req_o.ar.prot = 3'b000; // Unprivileged, secure, data access
-       noc_req_o.r_ready = axi_r_ready;
-     end
-   end
-   
-   // Handle AXI read responses
-   assign axi_ar_ready = noc_resp_i.ar_ready;
-   assign axi_r_valid = noc_resp_i.r_valid;
-   assign axi_r_last = noc_resp_i.r.last;
-   assign cache_line_data = noc_resp_i.r.data[CVA6Cfg.DCACHE_LINE_WIDTH-1:0];
-   
-   // =========================================================================
-   // CACHE FLUSH MECHANISM
-   // =========================================================================
-   
-   // Flush state machine for proper cache invalidation
-   typedef enum logic [1:0] {
-     FLUSH_IDLE,
-     FLUSH_ACTIVE,
-     FLUSH_WAIT_COMPLETE
-   } flush_state_t;
-   
-   flush_state_t flush_state_q, flush_state_d;
-   logic [31:0] flush_counter;
-   logic flush_complete;
-   
-   always_ff @(posedge clk_i or negedge rst_ni) begin
-     if (!rst_ni) begin
-       flush_state_q <= FLUSH_IDLE;
-       flush_counter <= '0;
-     end else begin
-       flush_state_q <= flush_state_d;
        
-       if (flush_state_q == FLUSH_ACTIVE) begin
-         flush_counter <= flush_counter + 1;
-       end else begin
-         flush_counter <= '0;
+       SEND_READ: begin
+         noc_req_o.ar_valid      = 1'b1;
+         noc_req_o.ar.addr       = miss_addr_q;
+         noc_req_o.ar.prot       = '0;
+         noc_req_o.ar.region     = '0;
+         noc_req_o.ar.size       = 3'b011; // 8 byte transfers
+         noc_req_o.ar.burst      = axi_pkg::BURST_INCR;
+         noc_req_o.ar.len        = 8'd0;
+         noc_req_o.ar.id         = '0;
+         noc_req_o.ar.qos        = '0;
+         noc_req_o.ar.lock       = 1'b0;
+         noc_req_o.ar.cache      = axi_pkg::CACHE_MODIFIABLE;
+         noc_req_o.ar.user       = '0;
+         noc_req_o.r_ready       = 1'b1;
+         if (noc_resp_i.ar_ready && noc_req_o.ar_valid)
+           mem_state_d = WAIT_READ;
        end
-     end
-   end
-   
-   always_comb begin
-     flush_state_d = flush_state_q;
-     flush_complete = 1'b0;
-     
-     case (flush_state_q)
-       FLUSH_IDLE: begin
-         if (dcache_flush_i) begin
-           flush_state_d = FLUSH_ACTIVE;
-         end
+
+       WAIT_READ: begin
+         noc_req_o.r_ready = 1'b1;
+         mem_req_pending   = 1'b1;
+         if (noc_resp_i.r_valid && noc_resp_i.r.last && noc_req_o.r_ready)
+           mem_state_d = IDLE;
        end
-       FLUSH_ACTIVE: begin
-         // Allow time for cache flush operations
-         if (flush_counter >= 16) begin // Give enough cycles for cache invalidation
-           flush_state_d = FLUSH_WAIT_COMPLETE;
-           flush_complete = 1'b1;
-         end
+
+       SEND_WRITE: begin
+         noc_req_o.aw_valid      = 1'b1;
+         noc_req_o.aw.addr       = miss_addr_q;
+         noc_req_o.aw.prot       = '0;
+         noc_req_o.aw.region     = '0;
+         noc_req_o.aw.size       = 3'b011;
+         noc_req_o.aw.burst      = axi_pkg::BURST_INCR;
+         noc_req_o.aw.len        = 8'd0;
+         noc_req_o.aw.id         = '0;
+         noc_req_o.aw.qos        = '0;
+         noc_req_o.aw.lock       = 1'b0;
+         noc_req_o.aw.cache      = axi_pkg::CACHE_MODIFIABLE;
+         noc_req_o.aw.atop       = '0;
+         noc_req_o.aw.user       = '0;
+
+         noc_req_o.w_valid       = 1'b1;
+         noc_req_o.w.data        = miss_wdata_q[CVA6Cfg.AxiDataWidth-1:0];
+         noc_req_o.w.strb        = {CVA6Cfg.AxiDataWidth/8{1'b1}};
+         noc_req_o.w.last        = 1'b1;
+         noc_req_o.w.user        = '0;
+         noc_req_o.b_ready       = 1'b1;
+         if (noc_resp_i.aw_ready && noc_resp_i.w_ready &&
+             noc_req_o.aw_valid  && noc_req_o.w_valid)
+           mem_state_d = WAIT_WRITE;
        end
-       FLUSH_WAIT_COMPLETE: begin
-         flush_complete = 1'b1;
-         if (!dcache_flush_i) begin
-           flush_state_d = FLUSH_IDLE;
-         end
+
+       WAIT_WRITE: begin
+         noc_req_o.b_ready = 1'b1;
+         if (noc_resp_i.b_valid && noc_req_o.b_ready)
+           mem_state_d = IDLE;
        end
      endcase
    end
