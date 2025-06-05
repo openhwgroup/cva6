@@ -218,6 +218,9 @@ module wt_new_cache_subsystem_adapter
      end
    end
    
+   // Performance counters for WT_NEW cache
+   logic [63:0] wt_new_hit_count, wt_new_miss_count, wt_new_switch_count;
+   
    // Instantiate the actual WT_NEW cache with modified privilege level
    wt_new_cache_subsystem #(
      .CVA6Cfg(CVA6Cfg),
@@ -233,7 +236,12 @@ module wt_new_cache_subsystem_adapter
      .we_i(dcache_req_we),
      .wdata_i(dcache_req_wdata),
      .rdata_o(dcache_resp_rdata),
-     .hit_o(dcache_resp_hit)
+     .hit_o(dcache_resp_hit),
+     
+     // Performance monitoring
+     .hit_count_o(wt_new_hit_count),
+     .miss_count_o(wt_new_miss_count),
+     .switch_count_o(wt_new_switch_count)
    );
    
    // Map responses back to ports - SUPPORT ALL PORTS WITH MISS HANDLING
