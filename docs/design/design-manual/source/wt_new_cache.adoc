@@ -29,3 +29,18 @@ Additional parameters provide further flexibility:
 * `B_CTRL` enables or disables the secondary controller entirely.
 * The cache exposes performance counters (`hit_count_o`, `miss_count_o`
   and `switch_count_o`) to aid analysis.
+
+Further Refinements
+-------------------
+
+The implementation has been refined to make the design easier to integrate
+and analyse.  Key cleanups include:
+
+* ``priv_lvl_i`` and related signals now use the explicit
+  ``riscv::priv_lvl_t`` type.
+* Debug-only signals are wrapped in ``ifndef SYNTHESIS`` guards so that they
+  do not appear in synthesis netlists.
+* Privilege switching detection has been moved into a helper module to keep
+  the cache logic focused on data movement.
+* Performance counters ``hit_count_o`` and ``miss_count_o`` have been widened
+  to 64 bits to avoid overflow in longer simulations.

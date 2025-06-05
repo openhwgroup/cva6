@@ -35,8 +35,8 @@ module wt_new_dcache_mem
   output logic                        b_hit_o,
 
   // Monitoring counters
-  output logic [31:0]                 hit_count_o,
-  output logic [31:0]                 miss_count_o
+  output logic [63:0]                 hit_count_o,
+  output logic [63:0]                 miss_count_o
 );
 
   localparam int unsigned NUM_SETS = CVA6Cfg.DCACHE_NUM_WORDS;
@@ -65,8 +65,8 @@ module wt_new_dcache_mem
   end
 
   // Statistics counters
-  logic [31:0] hit_count;
-  logic [31:0] miss_count;
+  logic [63:0] hit_count;
+  logic [63:0] miss_count;
 
   // Flush dual sets on controller switch
   always_ff @(posedge clk_i or negedge rst_ni) begin
