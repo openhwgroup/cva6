@@ -389,6 +389,62 @@ module wt_new_cache_subsystem_adapter
      endcase
    end
    
+   // =========================================================================
+   // CACHE FLUSH MECHANISM
+   // =========================================================================
+   
+   // Flush state machine for proper cache invalidation
+   typedef enum logic [1:0] {
+     FLUSH_IDLE,
+     FLUSH_ACTIVE,
+     FLUSH_WAIT_COMPLETE
+   } flush_state_t;
+   
+   flush_state_t flush_state_q, flush_state_d;
+   logic [31:0] flush_counter;
+   logic flush_complete;
+   
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+       flush_state_q <= FLUSH_IDLE;
+       flush_counter <= '0;
+     end else begin
+       flush_state_q <= flush_state_d;
+       
+       if (flush_state_q == FLUSH_ACTIVE) begin
+         flush_counter <= flush_counter + 1;
+       end else begin
+         flush_counter <= '0;
+       end
+     end
+   end
+   
+   always_comb begin
+     flush_state_d = flush_state_q;
+     flush_complete = 1'b0;
+     
+     case (flush_state_q)
+       FLUSH_IDLE: begin
+         if (dcache_flush_i) begin
+           flush_state_d = FLUSH_ACTIVE;
+         end
+       end
+       FLUSH_ACTIVE: begin
+         // Allow time for cache flush operations
+         if (flush_counter >= 16) begin // Give enough cycles for cache invalidation
+           flush_state_d = FLUSH_WAIT_COMPLETE;
+           flush_complete = 1'b1;
+         end
+       end
+       FLUSH_WAIT_COMPLETE: begin
+         flush_complete = 1'b1;
+         if (!dcache_flush_i) begin
+           flush_state_d = FLUSH_IDLE;
+         end
+       end
+     endcase
+   end
+
    // Cache control signals
    assign dcache_flush_ack_o = flush_complete;
    assign dcache_miss_o = cache_miss;
