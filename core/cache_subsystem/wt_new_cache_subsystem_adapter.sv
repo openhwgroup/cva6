@@ -109,12 +109,15 @@ module wt_new_cache_subsystem_adapter
    // PRIVILEGE LEVEL MODIFIER FOR TESTING
    // =========================================================================
    
-   // Modified privilege level for WT_NEW cache testing
+   // Modified privilege level for WT_NEW cache testing with performance optimization
    riscv::priv_lvl_t modified_priv_lvl;
+   riscv::priv_lvl_t prev_priv_lvl;
    logic [31:0] priv_modifier_cycle_counter;
    logic priv_modifier_switch_event;
    logic priv_modifier_in_machine_mode;
    logic priv_modifier_in_user_mode;
+   logic privilege_switch_detected;
+   logic [3:0] switch_debounce_counter;
    
    // Instantiate privilege level modifier
    priv_lvl_modifier #(
@@ -130,9 +133,37 @@ module wt_new_cache_subsystem_adapter
      .in_user_mode_o(priv_modifier_in_user_mode)
    );
    
-   // Privilege level tracking for debugging
+   // =========================================================================
+   // PRIVILEGE LEVEL SWITCHING PERFORMANCE OPTIMIZATION
+   // =========================================================================
+   
+   // Track privilege level changes with debouncing for performance optimization
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+       prev_priv_lvl <= riscv::PRIV_LVL_M;
+       privilege_switch_detected <= 1'b0;
+       switch_debounce_counter <= '0;
+     end else begin
+       prev_priv_lvl <= modified_priv_lvl;
+       
+       // Detect privilege level switches with debouncing
+       if (prev_priv_lvl != modified_priv_lvl) begin
+         privilege_switch_detected <= 1'b1;
+         switch_debounce_counter <= 4'd8; // 8-cycle debounce period
+       end else if (switch_debounce_counter > 0) begin
+         switch_debounce_counter <= switch_debounce_counter - 1;
+       end else begin
+         privilege_switch_detected <= 1'b0;
+       end
+     end
+   end
+   
+   // Privilege level tracking for debugging with optimization hints
    riscv::priv_lvl_t current_priv_lvl;
+   logic privilege_stable;
+   
    assign current_priv_lvl = modified_priv_lvl; // Use modified privilege level
+   assign privilege_stable = (switch_debounce_counter == 0) && !privilege_switch_detected;
    
    // Port arbitration - PROPER MULTI-PORT SUPPORT
    logic dcache_req_valid;
@@ -142,23 +173,53 @@ module wt_new_cache_subsystem_adapter
    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] dcache_resp_rdata;
    logic dcache_resp_hit;
    
-   // Priority arbitration across all ports
+   // AMO state machine type definition
+   typedef enum logic [1:0] {
+     AMO_IDLE,
+     AMO_READ,
+     AMO_MODIFY,
+     AMO_WRITE
+   } amo_state_t;
+   
+   // Forward declarations for AMO signals
+   logic amo_req_valid;
+   logic [63:0] amo_operand_a_q, amo_operand_b_q;
+   logic [63:0] amo_result;
+   amo_state_t amo_state_q;
+   
+   // Priority arbitration across all ports and AMO requests
    always_comb begin
      dcache_req_valid = 1'b0;
      dcache_req_addr  = '0;
      dcache_req_we    = 1'b0;
      dcache_req_wdata = '0;
      
-     // Priority arbitration - port 0 has highest priority
-     for (int i = NumPorts-1; i >= 0; i--) begin
-       if (dcache_req_ports_i[i].data_req) begin
-         dcache_req_valid = 1'b1;
-         dcache_req_addr  = {{CVA6Cfg.PLEN-CVA6Cfg.XLEN{1'b0}}, dcache_req_ports_i[i].address_tag, dcache_req_ports_i[i].address_index};
-         dcache_req_we    = dcache_req_ports_i[i].data_we;
-         dcache_req_wdata = {{CVA6Cfg.DCACHE_LINE_WIDTH-CVA6Cfg.XLEN{1'b0}}, dcache_req_ports_i[i].data_wdata};
+     // AMO requests have highest priority
+     if (amo_req_valid) begin
+       dcache_req_valid = 1'b1;
+       dcache_req_addr  = amo_operand_a_q[CVA6Cfg.PLEN-1:0];
+       if (amo_state_q == AMO_WRITE) begin
+         dcache_req_we = 1'b1;
+         dcache_req_wdata = {{CVA6Cfg.DCACHE_LINE_WIDTH-64{1'b0}}, amo_result};
+       end else begin
+         dcache_req_we = 1'b0;
+         dcache_req_wdata = '0;
+       end
+     end else begin
+       // Regular port arbitration - port 0 has highest priority
+       for (int i = NumPorts-1; i >= 0; i--) begin
+         if (dcache_req_ports_i[i].data_req) begin
+           dcache_req_valid = 1'b1;
+           dcache_req_addr  = {{CVA6Cfg.PLEN-CVA6Cfg.XLEN{1'b0}}, dcache_req_ports_i[i].address_tag, dcache_req_ports_i[i].address_index};
+           dcache_req_we    = dcache_req_ports_i[i].data_we;
+           dcache_req_wdata = {{CVA6Cfg.DCACHE_LINE_WIDTH-CVA6Cfg.XLEN{1'b0}}, dcache_req_ports_i[i].data_wdata};
+         end
        end
      end
    end
+   
+   // Performance counters for WT_NEW cache
+   logic [63:0] wt_new_hit_count, wt_new_miss_count, wt_new_switch_count;
    
    // Instantiate the actual WT_NEW cache with modified privilege level
    wt_new_cache_subsystem #(
@@ -175,7 +236,12 @@ module wt_new_cache_subsystem_adapter
      .we_i(dcache_req_we),
      .wdata_i(dcache_req_wdata),
      .rdata_o(dcache_resp_rdata),
-     .hit_o(dcache_resp_hit)
+     .hit_o(dcache_resp_hit),
+     
+     // Performance monitoring
+     .hit_count_o(wt_new_hit_count),
+     .miss_count_o(wt_new_miss_count),
+     .switch_count_o(wt_new_switch_count)
    );
    
    // Map responses back to ports - SUPPORT ALL PORTS WITH MISS HANDLING
@@ -188,10 +254,13 @@ module wt_new_cache_subsystem_adapter
      // Handle all port requests (improved arbitration with miss handling)
      for (int i = 0; i < NumPorts; i++) begin
        if (dcache_req_ports_i[i].data_req) begin
-         // For cache hits, respond immediately
-         // For cache misses, simulate immediate response for now (prevents hang)
-         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit || mem_req_pending;
-         dcache_req_ports_o[i].data_rdata  = dcache_resp_rdata[CVA6Cfg.XLEN-1:0]; // Extract correct width
+         // For cache hits, respond with cache data
+         // For cache misses with fetched data, respond with memory data
+         // Otherwise, wait for memory fetch to complete
+         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit || mem_data_valid;
+         dcache_req_ports_o[i].data_rdata  = dcache_resp_hit ? 
+                                             dcache_resp_rdata[CVA6Cfg.XLEN-1:0] : 
+                                             mem_fetched_data[CVA6Cfg.XLEN-1:0]; // Use fetched data on miss
          dcache_req_ports_o[i].data_gnt    = 1'b1; // Always grant for now
        end
      end
@@ -205,6 +274,8 @@ module wt_new_cache_subsystem_adapter
    logic cache_miss;
    logic mem_req_pending;
    logic [CVA6Cfg.PLEN-1:0] miss_addr;
+   logic mem_data_valid;
+   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] mem_fetched_data;
    
    assign cache_miss = dcache_req_valid & ~dcache_resp_hit;
    
@@ -236,6 +307,7 @@ module wt_new_cache_subsystem_adapter
        miss_addr_q  <= miss_addr_d;
        miss_wdata_q <= miss_wdata_d;
        miss_we_q    <= miss_we_d;
+
      end
    end
 
@@ -257,7 +329,7 @@ module wt_new_cache_subsystem_adapter
            mem_state_d  = dcache_req_we ? SEND_WRITE : SEND_READ;
          end
        end
-
+       
        SEND_READ: begin
          noc_req_o.ar_valid      = 1'b1;
          noc_req_o.ar.addr       = miss_addr_q;
@@ -318,12 +390,127 @@ module wt_new_cache_subsystem_adapter
    end
    
    // Cache control signals
-   assign dcache_flush_ack_o = dcache_flush_i; // Immediate ack for now
+   assign dcache_flush_ack_o = flush_complete;
    assign dcache_miss_o = cache_miss;
-   assign miss_vld_bits_o = '0; // Not implemented yet
    
-   // AMO operations (not implemented in WT_NEW yet)
-   assign dcache_amo_resp_o = '0;
+   // =========================================================================
+   // PERFORMANCE COUNTER SUPPORT - miss_vld_bits tracking
+   // =========================================================================
+   
+   // Track cache misses for performance counters
+   logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits;
+   
+   always_comb begin
+     miss_vld_bits = '0;
+     
+     // Track misses per port
+     for (int i = 0; i < NumPorts; i++) begin
+       if (dcache_req_ports_i[i].data_req && ~dcache_resp_hit) begin
+         // For WT_NEW cache, we can track misses in way 0 for simplicity
+         // This gives visibility into cache miss patterns per port
+         miss_vld_bits[i][0] = 1'b1;
+       end
+     end
+   end
+   
+   assign miss_vld_bits_o = miss_vld_bits;
+   
+   // =========================================================================
+   // AMO (Atomic Memory Operations) SUPPORT
+   // =========================================================================
+   
+   // AMO state machine for atomic operations
+   amo_state_t amo_state_d;
+   logic [1:0] amo_size_q;
+   amo_t amo_op_q;
+   logic [63:0] amo_read_data;
+   
+   // Register AMO request
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+       amo_state_q <= AMO_IDLE;
+       amo_operand_a_q <= '0;
+       amo_operand_b_q <= '0;
+       amo_size_q <= '0;
+       amo_op_q <= AMO_NONE;
+       amo_read_data <= '0;
+     end else begin
+       amo_state_q <= amo_state_d;
+       
+       // Capture AMO request
+       if (dcache_amo_req_i.req && amo_state_q == AMO_IDLE) begin
+         amo_operand_a_q <= dcache_amo_req_i.operand_a;
+         amo_operand_b_q <= dcache_amo_req_i.operand_b;
+         amo_size_q <= dcache_amo_req_i.size;
+         amo_op_q <= dcache_amo_req_i.amo_op;
+       end
+       
+       // Capture read data during AMO_READ state
+       if (amo_state_q == AMO_READ && dcache_resp_hit) begin
+         amo_read_data <= dcache_resp_rdata;
+       end
+     end
+   end
+   
+   // AMO operation logic
+   always_comb begin
+     amo_result = amo_read_data; // Default to read data
+     
+     case (amo_op_q)
+       AMO_SWAP: amo_result = amo_operand_b_q;
+       AMO_ADD:  amo_result = amo_read_data + amo_operand_b_q;
+       AMO_AND:  amo_result = amo_read_data & amo_operand_b_q;
+       AMO_OR:   amo_result = amo_read_data | amo_operand_b_q;
+       AMO_XOR:  amo_result = amo_read_data ^ amo_operand_b_q;
+       AMO_MAX:  amo_result = ($signed(amo_read_data) > $signed(amo_operand_b_q)) ? amo_read_data : amo_operand_b_q;
+       AMO_MIN:  amo_result = ($signed(amo_read_data) < $signed(amo_operand_b_q)) ? amo_read_data : amo_operand_b_q;
+       AMO_MAXU: amo_result = (amo_read_data > amo_operand_b_q) ? amo_read_data : amo_operand_b_q;
+       AMO_MINU: amo_result = (amo_read_data < amo_operand_b_q) ? amo_read_data : amo_operand_b_q;
+       default:  amo_result = amo_read_data;
+     endcase
+   end
+   
+   // AMO state machine
+   always_comb begin
+     amo_state_d = amo_state_q;
+     amo_req_valid = 1'b0;
+     
+     case (amo_state_q)
+       AMO_IDLE: begin
+         if (dcache_amo_req_i.req) begin
+           amo_state_d = AMO_READ;
+         end
+       end
+       AMO_READ: begin
+         amo_req_valid = 1'b1; // Generate read request
+         if (dcache_resp_hit) begin
+           amo_state_d = AMO_MODIFY;
+         end
+       end
+       AMO_MODIFY: begin
+         // Computation happens combinatorially
+         amo_state_d = AMO_WRITE;
+       end
+       AMO_WRITE: begin
+         amo_req_valid = 1'b1; // Generate write request
+         if (dcache_resp_hit) begin
+           amo_state_d = AMO_IDLE;
+         end
+       end
+     endcase
+   end
+   
+   // AMO response generation
+   always_comb begin
+     dcache_amo_resp_o.ack = 1'b0;
+     dcache_amo_resp_o.result = '0;
+     
+     if (amo_state_q == AMO_WRITE && dcache_resp_hit) begin
+       dcache_amo_resp_o.ack = 1'b1;
+       // Return original read data for most AMOs, result for SWAP
+       dcache_amo_resp_o.result = (amo_op_q == AMO_SWAP) ? amo_result : amo_read_data;
+     end
+   end
    
    // Write buffer (WT_NEW is write-through, so always empty)
    assign wbuffer_empty_o = 1'b1;
