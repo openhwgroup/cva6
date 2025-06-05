@@ -9,7 +9,7 @@ module wt_new_cache_subsystem
 ) (
   input  logic                 clk_i,
   input  logic                 rst_ni,
-  input  ariane_pkg::priv_lvl_t priv_lvl_i,
+  input  logic [1:0]           priv_lvl_i,
 
   // Unified cache request interface
   input  logic                 req_i,
@@ -21,9 +21,9 @@ module wt_new_cache_subsystem
 );
 
   // Track privilege level to detect mode switches
-  ariane_pkg::priv_lvl_t priv_lvl_q;
+  logic [1:0] priv_lvl_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) priv_lvl_q <= ariane_pkg::PRIV_LVL_M;
+    if (!rst_ni) priv_lvl_q <= 2'b11;  // PRIV_LVL_M equivalent
     else priv_lvl_q <= priv_lvl_i;
   end
 
@@ -55,7 +55,7 @@ module wt_new_cache_subsystem
     .flush_dual_i (switch_ctrl),
 
     // Controller A
-    .a_req_i    (priv_lvl_i == ariane_pkg::PRIV_LVL_M ? req_i : 1'b0),
+    .a_req_i    (priv_lvl_i == 2'b11 ? req_i : 1'b0),  // Machine mode
     .a_index_i  (a_index),
     .a_tag_i    (a_tag),
     .a_we_i     (we_i),
@@ -63,7 +63,7 @@ module wt_new_cache_subsystem
     .a_rdata_o  (a_rdata),
 
     // Controller B
-    .b_req_i    (priv_lvl_i != ariane_pkg::PRIV_LVL_M ? req_i : 1'b0),
+    .b_req_i    (priv_lvl_i != 2'b11 ? req_i : 1'b0),  // Non-machine mode
     .b_addr_i   (addr_i),
     .b_we_i     (we_i),
     .b_wdata_i  (wdata_i),
@@ -71,6 +71,6 @@ module wt_new_cache_subsystem
     .b_hit_o    (b_hit)
   );
 
-  assign rdata_o = (priv_lvl_i == ariane_pkg::PRIV_LVL_M) ? a_rdata : b_rdata;
-  assign hit_o   = (priv_lvl_i == ariane_pkg::PRIV_LVL_M) ? 1'b1 : b_hit;
+  assign rdata_o = (priv_lvl_i == 2'b11) ? a_rdata : b_rdata;  // Machine mode uses controller A
+  assign hit_o   = (priv_lvl_i == 2'b11) ? 1'b1 : b_hit;  // Machine mode always hits
 endmodule
