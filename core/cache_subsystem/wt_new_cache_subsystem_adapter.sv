@@ -188,10 +188,13 @@ module wt_new_cache_subsystem_adapter
      // Handle all port requests (improved arbitration with miss handling)
      for (int i = 0; i < NumPorts; i++) begin
        if (dcache_req_ports_i[i].data_req) begin
-         // For cache hits, respond immediately
-         // For cache misses, simulate immediate response for now (prevents hang)
-         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit || mem_req_pending;
-         dcache_req_ports_o[i].data_rdata  = dcache_resp_rdata[CVA6Cfg.XLEN-1:0]; // Extract correct width
+         // For cache hits, respond with cache data
+         // For cache misses with fetched data, respond with memory data
+         // Otherwise, wait for memory fetch to complete
+         dcache_req_ports_o[i].data_rvalid = dcache_resp_hit || mem_data_valid;
+         dcache_req_ports_o[i].data_rdata  = dcache_resp_hit ? 
+                                             dcache_resp_rdata[CVA6Cfg.XLEN-1:0] : 
+                                             mem_fetched_data[CVA6Cfg.XLEN-1:0]; // Use fetched data on miss
          dcache_req_ports_o[i].data_gnt    = 1'b1; // Always grant for now
        end
      end
@@ -205,6 +208,8 @@ module wt_new_cache_subsystem_adapter
    logic cache_miss;
    logic mem_req_pending;
    logic [CVA6Cfg.PLEN-1:0] miss_addr;
+   logic mem_data_valid;
+   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] mem_fetched_data;
    
    assign cache_miss = dcache_req_valid & ~dcache_resp_hit;
    
@@ -221,10 +226,20 @@ module wt_new_cache_subsystem_adapter
      if (!rst_ni) begin
        mem_state_q <= IDLE;
        miss_addr <= '0;
+       mem_data_valid <= 1'b0;
+       mem_fetched_data <= '0;
      end else begin
        mem_state_q <= mem_state_d;
        if (cache_miss && mem_state_q == IDLE) begin
          miss_addr <= dcache_req_addr;
+       end
+       
+       // Capture fetched data when AXI read completes
+       if (axi_r_valid && axi_r_ready && axi_r_last) begin
+         mem_data_valid <= 1'b1;
+         mem_fetched_data <= cache_line_data;
+       end else if (mem_state_q == IDLE) begin
+         mem_data_valid <= 1'b0;
        end
      end
    end
@@ -241,20 +256,53 @@ module wt_new_cache_subsystem_adapter
        end
        REQ_PENDING: begin
          mem_req_pending = 1'b1;
-         // For now, just pretend memory responded immediately
-         // This prevents hang but allows functionality testing
-         mem_state_d = IDLE;
+         // Wait for AXI AR transaction to be accepted
+         if (axi_ar_valid && axi_ar_ready) begin
+           mem_state_d = RESP_WAIT;
+         end
        end
        RESP_WAIT: begin
-         // Wait for memory response
-         mem_state_d = IDLE;
+         // Wait for AXI R transaction to complete
+         if (axi_r_valid && axi_r_ready && axi_r_last) begin
+           mem_state_d = IDLE;
+         end
        end
      endcase
    end
    
-   // Generate basic memory requests (simplified for now)
-   // TODO: Implement full AXI protocol when needed
-   assign noc_req_o = '0;  // Keep disabled but add proper FSM above
+   // Simple AXI read interface for cache line fetches
+   logic axi_ar_valid, axi_ar_ready;
+   logic axi_r_valid, axi_r_ready, axi_r_last;
+   logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] cache_line_data;
+   logic axi_read_pending;
+   
+   // Generate AXI read requests for cache misses
+   always_comb begin
+     // Initialize AXI request
+     noc_req_o = '0;
+     axi_ar_valid = 1'b0;
+     axi_r_ready = 1'b1;  // Always ready to receive data
+     
+     if (mem_state_q == REQ_PENDING && cache_miss) begin
+       // Generate AXI AR (Address Read) transaction
+       axi_ar_valid = 1'b1;
+       noc_req_o.ar_valid = axi_ar_valid;
+       noc_req_o.ar.addr = {miss_addr[CVA6Cfg.PLEN-1:CVA6Cfg.DCACHE_OFFSET_WIDTH], {CVA6Cfg.DCACHE_OFFSET_WIDTH{1'b0}}}; // Cache line aligned
+       noc_req_o.ar.len = CVA6Cfg.DCACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth - 1; // Burst length for cache line
+       noc_req_o.ar.size = 3'b011; // 64-bit transfers (8 bytes)
+       noc_req_o.ar.burst = 2'b01; // INCR burst
+       noc_req_o.ar.id = '0; // Simple ID
+       noc_req_o.ar.cache = 4'b0010; // Normal memory, non-cacheable
+       noc_req_o.ar.prot = 3'b000; // Unprivileged, secure, data access
+       noc_req_o.r_ready = axi_r_ready;
+     end
+   end
+   
+   // Handle AXI read responses
+   assign axi_ar_ready = noc_resp_i.ar_ready;
+   assign axi_r_valid = noc_resp_i.r_valid;
+   assign axi_r_last = noc_resp_i.r.last;
+   assign cache_line_data = noc_resp_i.r.data[CVA6Cfg.DCACHE_LINE_WIDTH-1:0];
    
    // Cache control signals
    assign dcache_flush_ack_o = dcache_flush_i; // Immediate ack for now
