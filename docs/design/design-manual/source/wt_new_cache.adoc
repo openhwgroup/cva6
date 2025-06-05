@@ -19,3 +19,13 @@ machine mode.
 
 The number of dual‑addressable sets is parameterised through
 `NUM_DUAL_SETS` and can be set to 2, 4, 8 or 16.
+
+Additional parameters provide further flexibility:
+
+* `REPLACEMENT_POLICY` selects the victim algorithm for the dual sets
+  (round‑robin, random or pseudo‑LRU).
+* `FLUSH_POLICY` controls whether the dual sets are flushed or retained
+  when the privilege level changes.
+* `B_CTRL` enables or disables the secondary controller entirely.
+* The cache exposes performance counters (`hit_count_o`, `miss_count_o`
+  and `switch_count_o`) to aid analysis.
