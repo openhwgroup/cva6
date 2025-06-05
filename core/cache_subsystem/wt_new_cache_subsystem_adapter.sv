@@ -13,6 +13,7 @@ module wt_new_cache_subsystem_adapter
   import ariane_pkg::*;
   import wt_cache_pkg::*;
   import wt_new_cache_pkg::*;
+  import riscv::*;
   #(parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_areq_t = logic,
     parameter type icache_arsp_t = logic,
@@ -28,7 +29,7 @@ module wt_new_cache_subsystem_adapter
    (
     input logic clk_i,
     input logic rst_ni,
-    input logic [1:0] priv_lvl_i,  // KEY: Privilege level for WT_NEW dual controllers
+    input riscv::priv_lvl_t priv_lvl_i,  // KEY: Privilege level for WT_NEW dual controllers
     
     // I$ interface (passthrough - WT_NEW only affects dcache)
     input logic icache_en_i,
@@ -94,13 +95,15 @@ module wt_new_cache_subsystem_adapter
    // WT_NEW DCACHE INTEGRATION
    // =========================================================================
    
+`ifndef SYNTHESIS
    // Signal to indicate WT_NEW is active (visible in VCD)
    logic wt_new_cache_active;
    assign wt_new_cache_active = 1'b1;
-   
+
    // Cache type override for VCD visibility
    logic [3:0] effective_dcache_type;
    assign effective_dcache_type = 4'd8; // WT_NEW value
+`endif
    
    // =========================================================================
    // PRIVILEGE LEVEL MODIFIER FOR TESTING
