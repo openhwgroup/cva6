@@ -211,11 +211,10 @@ module wt_new_cache_subsystem
       .dcache_rtrn_vld_o(adapter_dcache_rtrn_vld),
       .dcache_rtrn_o    (adapter_dcache),
       .l15_req_o        (noc_req_o),
-      .l15_rtrn_i       (noc_resp_i),
-      .inval_addr_i     (inval_addr_i),
-      .inval_valid_i    (inval_valid_i),
-      .inval_ready_o    (inval_ready_o)
+      .l15_rtrn_i       (noc_resp_i)
   );
+  // L15 adapter does not support invalidation, assign ready signal
+  assign inval_ready_o = 1'b1;
 `else
   wt_axi_adapter #(
       .CVA6Cfg(CVA6Cfg),
