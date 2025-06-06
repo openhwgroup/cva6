@@ -1,179 +1,250 @@
-// Enhanced write-through cache with dual-addressable sets (WT_NEW)
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// Author: Enhanced for WT_NEW dual-controller cache
+// Date: 2024
+// Description: WT_NEW cache subsystem with dual privilege-level controllers
+//              Follows standard WT cache pattern with innovative dcache design
+//              
+//              Icache: Standard CVA6 instruction cache (unchanged)
+//              Dcache: Innovative dual-controller design for WT_NEW
+
 module wt_new_cache_subsystem
   import ariane_pkg::*;
   import wt_cache_pkg::*;
-  import wt_new_cache_pkg::*;
-  import riscv::*;
 #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter int unsigned NUM_DUAL_SETS = wt_new_cache_pkg::NUM_DUAL_SETS,
-  parameter wt_new_replacement_e REPLACEMENT_POLICY = wt_new_replacement_e'(
-    REPL_ROUND_ROBIN),
-  parameter wt_new_flush_policy_e FLUSH_POLICY = wt_new_flush_policy_e'(
-    FLUSH_ON_SWITCH),
-  parameter wt_new_b_ctrl_e B_CTRL = wt_new_b_ctrl_e'(B_CTRL_ENABLE),
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic,
-  // NEW: Configurable privilege mode control - CONFIGURED FOR REAL MODE
-  parameter bit ENABLE_PRIV_MODIFIER = 1'b0,  // 0=real mode (simulation control), 1=test mode  
-  parameter int unsigned PRIV_SWITCH_PERIOD = 0   // Disabled for real mode
+    parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   icache_areq_t  = logic,
+    parameter type                   icache_arsp_t  = logic,
+    parameter type                   icache_dreq_t  = logic,
+    parameter type                   icache_drsp_t  = logic,
+    parameter type                   dcache_req_i_t = logic,
+    parameter type                   dcache_req_o_t = logic,
+    parameter type                   icache_req_t   = logic,
+    parameter type                   icache_rtrn_t  = logic,
+    parameter int unsigned           NumPorts       = 4,
+    parameter type                   noc_req_t      = logic,
+    parameter type                   noc_resp_t     = logic
 ) (
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
-  input  priv_lvl_t            priv_lvl_i,
-
-  // NEW: Test mode control
-  input  logic                 test_mode_enable_i,  // Runtime override for test mode
-
-  // Unified cache request interface
-  input  logic                 req_i,
-  input  logic [CVA6Cfg.PLEN-1:0] addr_i,
-  input  logic                 we_i,
-  input  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]  wdata_i,
-  output logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0]  rdata_o,
-  output logic                 hit_o,
-
-  // Memory interface for miss handling
-  output axi_req_t             axi_data_req_o,
-  input  axi_rsp_t             axi_data_rsp_i,
-
-  // Monitoring counters
-  output logic [63:0]          hit_count_o,
-  output logic [63:0]          miss_count_o,
-  output logic [63:0]          switch_count_o,
-  
-  // NEW: Debug outputs for privilege mode control
-  output priv_lvl_t            effective_priv_lvl_o,  // Which privilege level is actually used
-  output logic                 priv_mode_override_o,  // 1=test mode active, 0=real mode
-  output logic [31:0]          test_cycle_counter_o   // Test mode cycle counter
+    input logic clk_i,
+    input logic rst_ni,
+    // I$ - Standard instruction cache interface (identical to WT cache)
+    input logic icache_en_i,  // enable icache (or bypass e.g: in debug mode)
+    input logic icache_flush_i,  // flush the icache, flush and kill have to be asserted together
+    output logic icache_miss_o,  // to performance counter
+    // address translation requests
+    input icache_areq_t icache_areq_i,  // to/from frontend
+    output icache_arsp_t icache_areq_o,
+    // data requests
+    input icache_dreq_t icache_dreq_i,  // to/from frontend
+    output icache_drsp_t icache_dreq_o,
+    // D$ - Enhanced dual-controller data cache interface
+    // Cache management
+    input logic dcache_enable_i,  // from CSR
+    input logic dcache_flush_i,  // high until acknowledged
+    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
+    output logic dcache_miss_o,  // we missed on a ld/st
+    // For Performance Counter
+    output logic [NumPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,
+    // AMO interface
+    input amo_req_t dcache_amo_req_i,
+    output amo_resp_t dcache_amo_resp_o,
+    // Request ports
+    input dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
+    output dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
+    // writebuffer status
+    output logic wbuffer_empty_o,
+    output logic wbuffer_not_ni_o,
+    // privilege level for dual-controller dcache
+    input riscv::priv_lvl_t priv_lvl_i,
+    // memory side
+    output noc_req_t noc_req_o,
+    input noc_resp_t noc_resp_i,
+    // Invalidations
+    input logic [63:0] inval_addr_i,
+    input logic inval_valid_i,
+    output logic inval_ready_o
+    // TODO: interrupt interface
 );
 
-  // NEW: Configurable privilege mode control
-  priv_lvl_t effective_priv_lvl;
-  logic priv_mode_override;
-  logic [31:0] test_cycle_counter;
-  
-  // Test mode privilege modifier (100-cycle switching)
-  priv_lvl_t test_mode_priv_lvl;
-  logic test_mode_switch_event;
-  
-  generate
-    if (ENABLE_PRIV_MODIFIER) begin : gen_priv_modifier
-      priv_lvl_modifier #(
-        .SWITCH_PERIOD(PRIV_SWITCH_PERIOD)
-      ) i_priv_modifier (
-        .clk_i                  (clk_i),
-        .rst_ni                 (rst_ni),
-        .actual_priv_lvl_i      (priv_lvl_i),
-        .modified_priv_lvl_o    (test_mode_priv_lvl),
-        .cycle_counter_o        (test_cycle_counter),
-        .privilege_switch_event_o(test_mode_switch_event),
-        .in_machine_mode_o      (),
-        .in_user_mode_o         ()
-      );
-    end else begin : gen_no_priv_modifier
-      assign test_mode_priv_lvl = priv_lvl_i;
-      assign test_cycle_counter = '0;
-      assign test_mode_switch_event = 1'b0;
-    end
-  endgenerate
-  
-  // Runtime selection between test mode and real mode
-  always_comb begin
-    if ((ENABLE_PRIV_MODIFIER && test_mode_enable_i) || 
-        (ENABLE_PRIV_MODIFIER && !test_mode_enable_i && PRIV_SWITCH_PERIOD > 0)) begin
-      // Test mode: Use 100-cycle artificial switching
-      effective_priv_lvl = test_mode_priv_lvl;
-      priv_mode_override = 1'b1;
-    end else begin
-      // Real mode: Use actual simulation privilege level
-      effective_priv_lvl = priv_lvl_i;
-      priv_mode_override = 1'b0;
-    end
-  end
-  
-  // Assign debug outputs
-  assign effective_priv_lvl_o = effective_priv_lvl;
-  assign priv_mode_override_o = priv_mode_override;
-  assign test_cycle_counter_o = test_cycle_counter;
+  // dcache interface types (same as WT cache)
+  localparam type dcache_inval_t = struct packed {
+    logic                                      vld;  // invalidate only affected way
+    logic                                      all;  // invalidate all ways
+    logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
+  };
 
-  // Detect privilege level switches using helper module
-  logic switch_ctrl;
-  logic [63:0] switch_counter;
+  localparam type dcache_req_t = struct packed {
+    wt_cache_pkg::dcache_out_t rtype;  // see definitions above
+    logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
+    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
+    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
+    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
+    logic nc;  // noncacheable
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+    ariane_pkg::amo_t amo_op;  // amo opcode
+  };
 
-  priv_lvl_switch_detector i_priv_switch (
-    .clk_i         (clk_i),
-    .rst_ni        (rst_ni),
-    .priv_lvl_i    (effective_priv_lvl),  // Use effective privilege level
-    .switch_o      (switch_ctrl),
-    .switch_count_o(switch_counter)
+  localparam type dcache_rtrn_t = struct packed {
+    wt_cache_pkg::dcache_in_t rtype;  // see definitions above
+    logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.DCACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    dcache_inval_t inv;  // invalidation vector
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+  };
+
+  // =========================================================================
+  // STANDARD INSTRUCTION CACHE (unchanged from WT cache)
+  // =========================================================================
+
+  logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
+  icache_req_t  icache_adapter;
+  icache_rtrn_t adapter_icache;
+
+  cva6_icache #(
+      // use ID 0 for icache reads
+      .CVA6Cfg(CVA6Cfg),
+      .icache_areq_t(icache_areq_t),
+      .icache_arsp_t(icache_arsp_t),
+      .icache_dreq_t(icache_dreq_t),
+      .icache_drsp_t(icache_drsp_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t),
+      .RdTxId(0)
+  ) i_cva6_icache (
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .flush_i       (icache_flush_i),
+      .en_i          (icache_en_i),
+      .miss_o        (icache_miss_o),
+      .areq_i        (icache_areq_i),
+      .areq_o        (icache_areq_o),
+      .dreq_i        (icache_dreq_i),
+      .dreq_o        (icache_dreq_o),
+      .mem_rtrn_vld_i(adapter_icache_rtrn_vld),
+      .mem_rtrn_i    (adapter_icache),
+      .mem_data_req_o(icache_adapter_data_req),
+      .mem_data_ack_i(adapter_icache_data_ack),
+      .mem_data_o    (icache_adapter)
   );
 
-  // Address decode for controller A
-  localparam int unsigned OFFSET_WIDTH = CVA6Cfg.DCACHE_OFFSET_WIDTH;
-  localparam int unsigned INDEX_WIDTH  = CVA6Cfg.DCACHE_INDEX_WIDTH;
+  // =========================================================================
+  // INNOVATIVE DUAL-CONTROLLER DATA CACHE (WT_NEW)
+  // =========================================================================
 
-  logic [INDEX_WIDTH-1:0]              a_index;
-  logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] a_tag;
+  logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
+  dcache_req_t  dcache_adapter;
+  dcache_rtrn_t adapter_dcache;
 
-  assign a_index = addr_i[OFFSET_WIDTH + INDEX_WIDTH - 1: OFFSET_WIDTH];
-  assign a_tag   = addr_i[CVA6Cfg.PLEN-1: CVA6Cfg.DCACHE_OFFSET_WIDTH + CVA6Cfg.DCACHE_INDEX_WIDTH];
-
-  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] a_rdata;
-  logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] b_rdata;
-  logic                                a_hit;
-  logic                                b_hit;
-
-  // Instantiate enhanced memory with two controller ports
-  logic flush_dual_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      flush_dual_q <= 1'b0;
-    end else begin
-      flush_dual_q <= switch_ctrl;
-    end
-  end
-
-  wt_new_dcache_mem #(
-    .CVA6Cfg      (CVA6Cfg),
-    .NUM_DUAL_SETS(NUM_DUAL_SETS),
-    .REPLACEMENT_POLICY(REPLACEMENT_POLICY),
-    .FLUSH_POLICY (FLUSH_POLICY),
-    .B_CTRL       (B_CTRL),
-    .axi_req_t    (axi_req_t),
-    .axi_rsp_t    (axi_rsp_t)
-  ) i_mem (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .flush_dual_i (flush_dual_q),
-
-    // Controller A
-    .a_req_i    (effective_priv_lvl == PRIV_LVL_M ? req_i : 1'b0),  // Machine mode
-    .a_index_i  (a_index),
-    .a_tag_i    (a_tag),
-    .a_we_i     (we_i),
-    .a_wdata_i  (wdata_i),
-    .a_rdata_o  (a_rdata),
-    .a_hit_o    (a_hit),
-
-    // Controller B
-    .b_req_i    (effective_priv_lvl != PRIV_LVL_M ? req_i : 1'b0),  // Non-machine mode
-    .b_addr_i   (addr_i),
-    .b_we_i     (we_i),
-    .b_wdata_i  (wdata_i),
-    .b_rdata_o  (b_rdata),
-    .b_hit_o    (b_hit),
-
-    // Memory interface
-    .axi_data_req_o (axi_data_req_o),
-    .axi_data_rsp_i (axi_data_rsp_i),
-
-    // Monitoring
-    .hit_count_o(hit_count_o),
-    .miss_count_o(miss_count_o)
+  // Note:
+  // Ports 0/1 for PTW and LD unit are read only.
+  // they have equal prio and are RR arbited
+  // Port 2 is write only and goes into the merging write buffer
+  wt_new_dcache #(
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      // use ID 1 for dcache reads and amos. note that the writebuffer
+      // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
+      .RdAmoTxId(1)
+  ) i_wt_new_dcache (
+      .clk_i           (clk_i),
+      .rst_ni          (rst_ni),
+      .enable_i        (dcache_enable_i),
+      .flush_i         (dcache_flush_i),
+      .flush_ack_o     (dcache_flush_ack_o),
+      .miss_o          (dcache_miss_o),
+      .wbuffer_empty_o (wbuffer_empty_o),
+      .wbuffer_not_ni_o(wbuffer_not_ni_o),
+      .amo_req_i       (dcache_amo_req_i),
+      .amo_resp_o      (dcache_amo_resp_o),
+      .req_ports_i     (dcache_req_ports_i),
+      .req_ports_o     (dcache_req_ports_o),
+      .miss_vld_bits_o (miss_vld_bits_o),
+      .mem_rtrn_vld_i  (adapter_dcache_rtrn_vld),
+      .mem_rtrn_i      (adapter_dcache),
+      .mem_data_req_o  (dcache_adapter_data_req),
+      .mem_data_ack_i  (adapter_dcache_data_ack),
+      .mem_data_o      (dcache_adapter),
+      // WT_NEW specific: privilege level for dual controllers
+      .priv_lvl_i      (priv_lvl_i)
   );
 
-  assign rdata_o = (effective_priv_lvl == PRIV_LVL_M) ? a_rdata : b_rdata;  // Machine mode uses controller A
-  assign hit_o   = (effective_priv_lvl == PRIV_LVL_M) ? a_hit : b_hit;  // Both controllers now properly report hits
-  assign switch_count_o = switch_counter;
+  // =========================================================================
+  // MEMORY INTERFACE ADAPTER (identical to WT cache pattern)
+  // =========================================================================
+
+  ///////////////////////////////////////////////////////
+  // memory plumbing, either use 64bit AXI port or native
+  // L15 cache interface (derived from OpenSPARC CCX).
+  ///////////////////////////////////////////////////////
+
+`ifdef PITON_ARIANE
+  wt_l15_adapter #(
+      .CVA6Cfg(CVA6Cfg),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
+  ) i_adapter (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .icache_data_req_i(icache_adapter_data_req),
+      .icache_data_ack_o(adapter_icache_data_ack),
+      .icache_data_i    (icache_adapter),
+      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
+      .icache_rtrn_o    (adapter_icache),
+      .dcache_data_req_i(dcache_adapter_data_req),
+      .dcache_data_ack_o(adapter_dcache_data_ack),
+      .dcache_data_i    (dcache_adapter),
+      .dcache_rtrn_vld_o(adapter_dcache_rtrn_vld),
+      .dcache_rtrn_o    (adapter_dcache),
+      .l15_req_o        (noc_req_o),
+      .l15_rtrn_i       (noc_resp_i),
+      .inval_addr_i     (inval_addr_i),
+      .inval_valid_i    (inval_valid_i),
+      .inval_ready_o    (inval_ready_o)
+  );
+`else
+  wt_axi_adapter #(
+      .CVA6Cfg(CVA6Cfg),
+      .axi_req_t(noc_req_t),
+      .axi_rsp_t(noc_resp_t),
+      .dcache_req_t(dcache_req_t),
+      .dcache_rtrn_t(dcache_rtrn_t),
+      .dcache_inval_t(dcache_inval_t),
+      .icache_req_t(icache_req_t),
+      .icache_rtrn_t(icache_rtrn_t)
+  ) i_adapter (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .icache_data_req_i(icache_adapter_data_req),
+      .icache_data_ack_o(adapter_icache_data_ack),
+      .icache_data_i    (icache_adapter),
+      .icache_rtrn_vld_o(adapter_icache_rtrn_vld),
+      .icache_rtrn_o    (adapter_icache),
+      .dcache_data_req_i(dcache_adapter_data_req),
+      .dcache_data_ack_o(adapter_dcache_data_ack),
+      .dcache_data_i    (dcache_adapter),
+      .dcache_rtrn_vld_o(adapter_dcache_rtrn_vld),
+      .dcache_rtrn_o    (adapter_dcache),
+      .axi_req_o        (noc_req_o),
+      .axi_resp_i       (noc_resp_i),
+      .inval_addr_i     (inval_addr_i),
+      .inval_valid_i    (inval_valid_i),
+      .inval_ready_o    (inval_ready_o)
+  );
+`endif
+
 endmodule

@@ -1469,7 +1469,7 @@ module cva6
   end else if (CVA6Cfg.DCacheType == config_pkg::WT_NEW) begin : gen_cache_wt_new
     // WT_NEW cache with dual addressable sets for privilege-level isolation
     // Uses the new adapter that properly forwards privilege level to WT_NEW cache
-    wt_new_cache_subsystem_adapter #(
+    wt_new_cache_subsystem #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
