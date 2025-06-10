@@ -46,6 +46,8 @@ module store_unit
     output logic commit_ready_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
+    // Data Endian mode - CSR_REGFILE
+    input logic mbe_i,
     // Store result is valid - ISSUE_STAGE
     output logic valid_o,
     // Transaction ID - ISSUE_STAGE
