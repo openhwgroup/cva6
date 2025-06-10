@@ -84,14 +84,14 @@ module uvmt_cva6_tb;
                                         .clk(clknrst_if.clk),
                                         .reset_n(clknrst_if.reset_n)
                                 );
+   uvma_obi_memory_if         obi_mmu_ptw_if  (
+                                        .clk(clknrst_if.clk),
+                                        .reset_n(clknrst_if.reset_n)
+                                );
    uvma_obi_memory_if         obi_zcmt_if  (
                                         .clk(clknrst_if.clk),
                                         .reset_n(clknrst_if.reset_n)
                                 );
-   //uvma_obi_memory_if         obi_mmu_ptw_if  (
-   //                                     .clk(clknrst_if.clk),
-   //                                     .reset_n(clknrst_if.reset_n)
-   //                             );
 
    uvma_interrupt_if            interrupt_vif(
                                          .clk(clknrst_if.clk),
@@ -230,8 +230,8 @@ module uvmt_cva6_tb;
                     .obi_store_if    (obi_store_if),
                     .obi_amo_if      (obi_amo_if),
                     .obi_load_if     (obi_load_if),
-                    .obi_zcmt_if     (obi_zcmt_if),
-                    //.obi_mmu_ptw_if    (obi_mmu_ptw_if),
+                    .obi_mmu_ptw_if    (obi_mmu_ptw_if),
+                    .obi_zcmt_if    (obi_zcmt_if),
                     .axi_switch_vif    (axi_switch_vif),
                     .default_inputs_vif    (default_inputs_vif),
                     .core_cntrl_if(core_cntrl_if),

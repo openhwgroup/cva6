@@ -11,8 +11,8 @@
 //
 module zcmt_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type obi_zcmt_req_t = logic,
-    parameter type obi_zcmt_rsp_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
+    parameter type ypb_zcmt_rsp_t = logic,
     parameter type jvt_t = logic,
     parameter type branchpredict_sbe_t = logic
 ) (
@@ -33,9 +33,9 @@ module zcmt_decoder #(
     // JVT struct input - CSR
     input  jvt_t                             jvt_i,
     // Data cache request request
-    output obi_zcmt_req_t                    obi_zcmt_req_o,
+    output ypb_zcmt_req_t                    ypb_zcmt_req_o,
     // Data cache request response
-    input  obi_zcmt_rsp_t                    obi_zcmt_rsp_i,
+    input  ypb_zcmt_rsp_t                    ypb_zcmt_rsp_i,
     // Instruction out - cvxif_compressed_if_driver
     output logic          [            31:0] instr_o,
     // Instruction is illegal out - cvxif_compressed_if_driver     
@@ -46,7 +46,7 @@ module zcmt_decoder #(
     output logic                             fetch_stall_o,
     // jump_address
     output logic          [CVA6Cfg.XLEN-1:0] jump_address_o
-   
+
 );
 
   // FSM States
@@ -62,30 +62,41 @@ module zcmt_decoder #(
   logic [CVA6Cfg.VLEN-1:0] table_address;
   logic [CVA6Cfg.VLEN-1:0] req_addr_q, req_addr_d;
 
+  assign ypb_zcmt_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_zcmt_req_o.paddr}  //TO DO CHECK GRANULARITY
+  );
+
   always_comb begin
-    state_d                = state_q;
-    illegal_instr_o        = 1'b0;
-    is_compressed_o        = is_zcmt_instr_i || is_compressed_i;
-    fetch_stall_o          = '0;
-    jump_address_o         = '0;  // cache request port
-    obi_zcmt_req_o.req     = 1'b0;
-    obi_zcmt_req_o.a.we    = 1'b0;
-    obi_zcmt_req_o.a.be    = 4'b1111;
-    obi_zcmt_req_o.a.wdata = '0;
-    obi_zcmt_req_o.rready  = '1;
-    obi_zcmt_req_o.a.aid   = '0;  // No MMU support
+    state_d                 = state_q;
+    illegal_instr_o         = 1'b0;
+    instr_o                 = instr_i;
+    is_compressed_o         = is_zcmt_instr_i || is_compressed_i;
+    fetch_stall_o           = '0;
+    jump_address_o          = '0;  // cache request port
+    req_addr_d              = req_addr_q;
+    ypb_zcmt_req_o.paddr    = req_addr_q;
+    ypb_zcmt_req_o.preq     = 1'b0;
+    ypb_zcmt_req_o.we       = 1'b0;
+    ypb_zcmt_req_o.be       = 4'b1111;
+    ypb_zcmt_req_o.size     = 2'b10;
+    ypb_zcmt_req_o.wdata    = '0;
+    ypb_zcmt_req_o.rready   = '1;
+    ypb_zcmt_req_o.aid      = 1'b1;
+    ypb_zcmt_req_o.kill_req = 1'b0;
+    ypb_zcmt_req_o.vreq     = 1'b0;
+    ypb_zcmt_req_o.atop     = ariane_pkg::AMO_NONE;
     unique case (state_q)
       IDLE: begin
         fetch_stall_o = 1'b0;
-        obi_zcmt_req_o.req = 1'b0;  // par défaut pas de requête
+        ypb_zcmt_req_o.preq = 1'b0;
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.XLEN == 32) begin
-            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};     
-            obi_zcmt_req_o.a.addr = req_addr_d;
-            obi_zcmt_req_o.req = 1'b1;  // Always assert req
+            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
+            ypb_zcmt_req_o.paddr = req_addr_d;
+            ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
             fetch_stall_o = 1'b1;
-          end else  illegal_instr_o = 1'b1;
-          if (!obi_zcmt_rsp_i.gnt) begin
+          end else illegal_instr_o = 1'b1;
+          if (!ypb_zcmt_rsp_i.pgnt) begin
             state_d = TABLE_WAIT_GNT;
           end
         end else begin
@@ -97,17 +108,17 @@ module zcmt_decoder #(
 
       TABLE_WAIT_GNT: begin
         fetch_stall_o = 1'b1;
-        obi_zcmt_req_o.req = 1'b1;  // Deassert req once gnt is asserted1
-        if (obi_zcmt_rsp_i.gnt) begin
+        ypb_zcmt_req_o.preq = 1'b1;  // Deassert req once gnt is asserted1
+        if (ypb_zcmt_rsp_i.pgnt) begin
           state_d = TABLE_WAIT_RVALID;
         end
       end
 
       TABLE_WAIT_RVALID: begin
-        obi_zcmt_req_o.req = 1'b0;
-        if (obi_zcmt_rsp_i.rvalid) begin
+        ypb_zcmt_req_o.preq = 1'b0;
+        if (ypb_zcmt_rsp_i.rvalid) begin
           // save the PC relative XLEN table jump address
-          jump_address_o = $unsigned($signed(obi_zcmt_rsp_i.r.rdata) - $signed(pc_i));
+          jump_address_o = $unsigned($signed(ypb_zcmt_rsp_i.rdata) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin
             // jal pc_offset, x0 for no return stack
             instr_o = {20'h0, 5'h0, riscv::OpcodeJal};
@@ -120,11 +131,11 @@ module zcmt_decoder #(
           end
           fetch_stall_o = 1'b0;
           state_d = IDLE;
-        end else begin 
+        end else begin
           fetch_stall_o = 1'b1;
           state_d = TABLE_WAIT_RVALID;
-        end 
-        
+        end
+
       end
 
       default: begin

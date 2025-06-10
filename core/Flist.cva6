@@ -163,6 +163,7 @@ ${CVA6_REPO_DIR}/core/frontend/instr_queue.sv
 ${CVA6_REPO_DIR}/core/frontend/frontend.sv
 
 // Cache subsystem
+${CVA6_REPO_DIR}/core/cache_subsystem/cva6_obi_adapter_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/axi_adapter.sv
 -F ${HPDCACHE_DIR}/rtl/hpdcache.Flist

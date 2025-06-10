@@ -19,7 +19,7 @@ module commit_stage
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type exception_t = logic,
     parameter type scoreboard_entry_t = logic,
-    parameter type obi_amo_rsp_t = logic
+    parameter type ypb_amo_rsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -52,7 +52,7 @@ module commit_stage
     // Floating point register enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
-    input obi_amo_rsp_t obi_amo_rsp_i,
+    input ypb_amo_rsp_t ypb_amo_rsp_i,
     // Program counter - FRONTEND_CSR_REGFILE
     output logic [CVA6Cfg.VLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
@@ -128,7 +128,7 @@ module commit_stage
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
 
   logic amo_resp_ack;
-  assign amo_resp_ack = obi_amo_rsp_i.rvalid;  // && amo_obi_req_o.rready;
+  assign amo_resp_ack = ypb_amo_rsp_i.rvalid;  // && amo_ypb_req_o.rready;
 
 
   // -------------------
@@ -147,7 +147,7 @@ module commit_stage
     commit_lsu_o = 1'b0;
     commit_csr_o = 1'b0;
     // amos will commit on port 0
-    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_ack) ? obi_amo_rsp_i.r.rdata : commit_instr_i[0].result;
+    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_ack) ? ypb_amo_rsp_i.rdata : commit_instr_i[0].result;
     csr_op_o = ADD;  // this corresponds to a CSR NOP
     csr_wdata_o = {CVA6Cfg.XLEN{1'b0}};
     fence_i_o = 1'b0;

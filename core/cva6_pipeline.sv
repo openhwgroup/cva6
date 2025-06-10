@@ -12,8 +12,7 @@
 // Date: 19.03.2017
 // Description: CVA6 Core module
 
-`include "obi/typedef.svh"
-`include "obi/assign.svh"
+`include "ypb_types.svh"
 `include "rvfi_types.svh"
 `include "cvxif_types.svh"
 
@@ -21,132 +20,41 @@ module cva6_pipeline
   import ariane_pkg::*;
 #(
     // CVA6 config
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(
-        cva6_config_pkg::cva6_cfg
-    ),
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
 
     // RVFI PROBES
-    localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
-    parameter type rvfi_probes_t = struct packed {
-      rvfi_probes_csr_t   csr;
-      rvfi_probes_instr_t instr;
-    },
+    parameter type rvfi_probes_instr_t = logic,
+    parameter type rvfi_probes_csr_t = logic,
+    parameter type rvfi_probes_t = logic,
 
-    // Fetch data requests
-    localparam type fetch_req_t = struct packed {
-      logic                    req;       // we request a new word
-      logic                    kill_req;  // kill the last request
-      logic [CVA6Cfg.VLEN-1:0] vaddr;     // 1st cycle: 12 bit index is taken for lookup
-    },
-    localparam type fetch_rsp_t = struct packed {
-      logic ready;  // fetch is ready
-      logic invalid_data;  // obi data is invalid caused by aborted request kill_req, use for debug
-    },
-
-    // OLD data requests TO BE REMOVED
-    localparam type dbus_req_t = struct packed {
-      logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
-      logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0]   address_tag;
-      logic [CVA6Cfg.XLEN-1:0]               data_wdata;
-      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]  data_wuser;
-      logic                                  data_req;
-      logic                                  data_we;
-      logic [(CVA6Cfg.XLEN/8)-1:0]           data_be;
-      logic [1:0]                            data_size;
-      logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
-      logic                                  kill_req;
-      logic                                  tag_valid;
-    },
-    localparam type dbus_rsp_t = struct packed {
-      logic                                 data_gnt;
-      logic                                 data_rvalid;
-      logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
-      logic [CVA6Cfg.XLEN-1:0]              data_rdata;
-      logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
-    },
-
-    // Load requests
-    localparam type load_req_t = struct packed {
-      logic [CVA6Cfg.DCACHE_INDEX_WIDTH-1:0] address_index;
-      logic                                  req;
-      logic [(CVA6Cfg.XLEN/8)-1:0]           be;
-      logic [CVA6Cfg.IdWidth-1:0]            aid;
-      logic                                  kill_req;
-    },
-    localparam type load_rsp_t = struct packed {logic gnt;},
-
-    //OBI Fetch Types
-    localparam type obi_fetch_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiFetchbusCfg),
-    localparam type obi_fetch_a_chan_t =
-    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiFetchbusCfg, obi_fetch_a_optional_t),
-    localparam type obi_fetch_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_fetch_a_chan_t),
-    localparam type obi_fetch_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiFetchbusCfg),
-    localparam type obi_fetch_r_chan_t =
-    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiFetchbusCfg, obi_fetch_r_optional_t),
-    localparam type obi_fetch_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_fetch_r_chan_t),
-
-    //OBI Store Types
-    localparam type obi_store_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiStorebusCfg),
-    localparam type obi_store_a_chan_t =
-    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiStorebusCfg, obi_store_a_optional_t),
-    localparam type obi_store_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_store_a_chan_t),
-    localparam type obi_store_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiStorebusCfg),
-    localparam type obi_store_r_chan_t =
-    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiStorebusCfg, obi_store_r_optional_t),
-    localparam type obi_store_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_store_r_chan_t),
-
-    //OBI Amo Types
-    localparam type obi_amo_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiAmobusCfg),
-    localparam type obi_amo_a_chan_t =
-    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiAmobusCfg, obi_amo_a_optional_t),
-    localparam type obi_amo_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_amo_a_chan_t),
-    localparam type obi_amo_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiAmobusCfg),
-    localparam type obi_amo_r_chan_t =
-    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiAmobusCfg, obi_amo_r_optional_t),
-    localparam type obi_amo_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_amo_r_chan_t),
-
-    //OBI Load Types
-    localparam type obi_load_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiLoadbusCfg),
-    localparam type obi_load_a_chan_t =
-    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiLoadbusCfg, obi_load_a_optional_t),
-    localparam type obi_load_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_load_a_chan_t),
-    localparam type obi_load_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiLoadbusCfg),
-    localparam type obi_load_r_chan_t =
-    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiLoadbusCfg, obi_load_r_optional_t),
-    localparam type obi_load_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_load_r_chan_t),
-
-     //OBI zcmt Types
-    localparam type obi_zcmt_a_optional_t = `OBI_CFG_ALL_A_OPTIONAL_T(CVA6Cfg.ObiZcmtbusCfg),
-    localparam type obi_zcmt_a_chan_t =
-    `OBI_CFG_A_CHAN_T(CVA6Cfg.ObiZcmtbusCfg, obi_zcmt_a_optional_t),
-    localparam type obi_zcmt_req_t = `OBI_CFG_INTEGRITY_REQ_T(obi_zcmt_a_chan_t),
-    localparam type obi_zcmt_r_optional_t = `OBI_CFG_ALL_R_OPTIONAL_T(CVA6Cfg.ObiZcmtbusCfg),
-    localparam type obi_zcmt_r_chan_t =
-    `OBI_CFG_R_CHAN_T(CVA6Cfg.ObiZcmtbusCfg, obi_zcmt_r_optional_t),
-    localparam type obi_zcmt_rsp_t = `OBI_CFG_INTEGRITY_RSP_T(obi_zcmt_r_chan_t),
-    //FIXME temp
-    localparam type obi_mmu_ptw_req_t = dbus_req_t,
-    localparam type obi_mmu_ptw_rsp_t = dbus_rsp_t,
-    //localparam type obi_zcmt_req_t = dbus_req_t,
-    //localparam type obi_zcmt_rsp_t = dbus_rsp_t,
+    // YPB Types
+    parameter type ypb_fetch_req_t =  logic,         
+    parameter type ypb_fetch_rsp_t =  logic,         
+    parameter type ypb_store_req_t = logic,         
+    parameter type ypb_store_rsp_t = logic,         
+    parameter type ypb_amo_req_t = logic,         
+    parameter type ypb_amo_rsp_t = logic,         
+    parameter type ypb_load_req_t = logic,         
+    parameter type ypb_load_rsp_t = logic,         
+    parameter type ypb_mmu_ptw_req_t = logic,         
+    parameter type ypb_mmu_ptw_rsp_t = logic,         
+    parameter type ypb_zcmt_req_t = logic,         
+    parameter type ypb_zcmt_rsp_t = logic,         
 
     // CVXIF Types
-    localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
-    localparam type writeregflags_t = `WRITEREGFLAGS_T(CVA6Cfg),
-    localparam type id_t = `ID_T(CVA6Cfg),
-    localparam type hartid_t = `HARTID_T(CVA6Cfg),
-    localparam type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
-    localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
-    localparam type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
-    localparam type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
-    localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
-    localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
-    localparam type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
-    localparam type cvxif_resp_t =
-    `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t)
+    parameter type readregflags_t = logic,         
+    parameter type writeregflags_t = logic,         
+    parameter type id_t = logic,         
+    parameter type hartid_t = logic,         
+    parameter type x_compressed_req_t = logic,         
+    parameter type x_compressed_resp_t = logic,         
+    parameter type x_issue_req_t = logic,         
+    parameter type x_issue_resp_t = logic,         
+    parameter type x_register_t = logic,         
+    parameter type x_commit_t = logic,         
+    parameter type x_result_t = logic,         
+    parameter type cvxif_req_t = logic,         
+    parameter type cvxif_resp_t = logic         
 
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -190,44 +98,36 @@ module cva6_pipeline
     // Load or store miss - PERF_COUNTERS
     input  logic dcache_miss_i,
 
-    // OBI
-    // Fetch request ports - FRONTEND
-    output fetch_req_t fetch_req_o,
-    // Fetch response ports - FRONTEND
-    input fetch_rsp_t fetch_rsp_i,
-    // Fetch OBI request ports - FRONTEND
-    output obi_fetch_req_t obi_fetch_req_o,
-    // Fetch OBI response ports - FRONTEND
-    input obi_fetch_rsp_t obi_fetch_rsp_i,
+    // Memory interfaces
+    // Fetch YPB request ports - FRONTEND
+    output ypb_fetch_req_t ypb_fetch_req_o,
+    // Fetch YPB response ports - FRONTEND
+    input ypb_fetch_rsp_t ypb_fetch_rsp_i,
 
-    // Store OBI request ports - EX_STAGE
-    output obi_store_req_t obi_store_req_o,
-    // Store OBI response ports - EX_STAGE
-    input  obi_store_rsp_t obi_store_rsp_i,
+    // Store YPB request ports - EX_STAGE
+    output ypb_store_req_t ypb_store_req_o,
+    // Store YPB response ports - EX_STAGE
+    input  ypb_store_rsp_t ypb_store_rsp_i,
 
-    // AMO OBI request - EX_STAGE
-    output obi_amo_req_t obi_amo_req_o,
-    // AMO OBI response - EX_STAGE
-    input  obi_amo_rsp_t obi_amo_rsp_i,
+    // AMO YPB request - EX_STAGE
+    output ypb_amo_req_t ypb_amo_req_o,
+    // AMO YPB response - EX_STAGE
+    input  ypb_amo_rsp_t ypb_amo_rsp_i,
 
-    // Load request ports - EX_STAGE
-    output load_req_t load_req_o,
-    // Load response ports - EX_STAGE
-    input load_rsp_t load_rsp_i,
-    // Load OBI request ports - EX_STAGE
-    output obi_load_req_t obi_load_req_o,
-    // Load OBI response ports - EX_STAGE
-    input obi_load_rsp_t obi_load_rsp_i,
+    // Load YPB request ports - EX_STAGE
+    output ypb_load_req_t ypb_load_req_o,
+    // Load YPB response ports - EX_STAGE
+    input  ypb_load_rsp_t ypb_load_rsp_i,
 
-    // MMU Page table walker OBI request ports - EX_STAGE
-    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
-    // MMU Page table walker OBI response ports - EX_STAGE
-    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
+    // MMU Page table walker YPB request ports - EX_STAGE
+    output ypb_mmu_ptw_req_t ypb_mmu_ptw_req_o,
+    // MMU Page table walker YPB response ports - EX_STAGE
+    input  ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
 
-    // Zcmt OBI request ports - ID_STAGE
-    output obi_zcmt_req_t obi_zcmt_req_o,
-    // Zcmt OBI response ports - ID_STAGE
-    input  obi_zcmt_rsp_t obi_zcmt_rsp_i,
+    // Zcmt YPB request ports - ID_STAGE
+    output ypb_zcmt_req_t ypb_zcmt_req_o,
+    // Zcmt YPB response ports - ID_STAGE
+    input  ypb_zcmt_rsp_t ypb_zcmt_rsp_i,
 
     // Write buffer status to know if empty - EX_STAGE
     input logic dcache_wbuffer_empty_i,
@@ -648,10 +548,8 @@ module cva6_pipeline
       .fetch_entry_t(fetch_entry_t),
       .fetch_areq_t(fetch_areq_t),
       .fetch_arsp_t(fetch_arsp_t),
-      .fetch_req_t(fetch_req_t),
-      .fetch_rsp_t(fetch_rsp_t),
-      .obi_fetch_req_t(obi_fetch_req_t),
-      .obi_fetch_rsp_t(obi_fetch_rsp_t)
+      .ypb_fetch_req_t(ypb_fetch_req_t),
+      .ypb_fetch_rsp_t(ypb_fetch_rsp_t)
   ) i_frontend (
       .clk_i,
       .rst_ni,
@@ -670,10 +568,8 @@ module cva6_pipeline
       .debug_mode_i       (debug_mode),
       .areq_o             (fetch_areq_frontend_ex),
       .arsp_i             (fetch_arsp_ex_frontend),
-      .fetch_req_o        (fetch_req_o),
-      .fetch_rsp_i        (fetch_rsp_i),
-      .obi_fetch_req_o    (obi_fetch_req_o),                //OBI
-      .obi_fetch_rsp_i    (obi_fetch_rsp_i),                //OBI
+      .ypb_fetch_req_o    (ypb_fetch_req_o),
+      .ypb_fetch_rsp_i    (ypb_fetch_rsp_i),
       .fetch_entry_o      (fetch_entry_if_id),
       .fetch_entry_valid_o(fetch_valid_if_id),
       .fetch_entry_ready_i(fetch_ready_id_if)
@@ -685,8 +581,8 @@ module cva6_pipeline
   id_stage #(
       .CVA6Cfg(CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .obi_zcmt_req_t(obi_zcmt_req_t),
-      .obi_zcmt_rsp_t(obi_zcmt_rsp_t),
+      .ypb_zcmt_req_t(ypb_zcmt_req_t),
+      .ypb_zcmt_rsp_t(ypb_zcmt_rsp_t),
       .exception_t(exception_t),
       .fetch_entry_t(fetch_entry_t),
       .jvt_t(jvt_t),
@@ -735,8 +631,8 @@ module cva6_pipeline
       .compressed_valid_o(x_compressed_valid),
       .compressed_req_o  (x_compressed_req),
       // ZCMT interfaces
-      .obi_zcmt_req_o    (obi_zcmt_req_o),
-      .obi_zcmt_rsp_i    (obi_zcmt_rsp_i)
+      .ypb_zcmt_req_o    (ypb_zcmt_req_o),
+      .ypb_zcmt_rsp_i    (ypb_zcmt_rsp_i)
 
   );
 
@@ -905,16 +801,14 @@ module cva6_pipeline
       .CVA6Cfg            (CVA6Cfg),
       .bp_resolve_t       (bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .load_req_t         (load_req_t),
-      .load_rsp_t         (load_rsp_t),
-      .obi_store_req_t    (obi_store_req_t),
-      .obi_store_rsp_t    (obi_store_rsp_t),
-      .obi_amo_req_t      (obi_amo_req_t),
-      .obi_amo_rsp_t      (obi_amo_rsp_t),
-      .obi_load_req_t     (obi_load_req_t),
-      .obi_load_rsp_t     (obi_load_rsp_t),
-      .obi_mmu_ptw_req_t  (obi_mmu_ptw_req_t),
-      .obi_mmu_ptw_rsp_t  (obi_mmu_ptw_rsp_t),
+      .ypb_store_req_t    (ypb_store_req_t),
+      .ypb_store_rsp_t    (ypb_store_rsp_t),
+      .ypb_amo_req_t      (ypb_amo_req_t),
+      .ypb_amo_rsp_t      (ypb_amo_rsp_t),
+      .ypb_load_req_t     (ypb_load_req_t),
+      .ypb_load_rsp_t     (ypb_load_rsp_t),
+      .ypb_mmu_ptw_req_t  (ypb_mmu_ptw_req_t),
+      .ypb_mmu_ptw_rsp_t  (ypb_mmu_ptw_rsp_t),
       .exception_t        (exception_t),
       .fu_data_t          (fu_data_t),
       .fetch_areq_t       (fetch_areq_t),
@@ -1031,16 +925,14 @@ module cva6_pipeline
       .fetch_areq_i            (fetch_areq_frontend_ex),
       .fetch_arsp_o            (fetch_arsp_ex_frontend),
       // DCACHE interfaces
-      .obi_store_req_o         (obi_store_req_o),
-      .obi_store_rsp_i         (obi_store_rsp_i),
-      .obi_amo_req_o           (obi_amo_req_o),
-      .obi_amo_rsp_i           (obi_amo_rsp_i),
-      .load_req_o              (load_req_o),
-      .load_rsp_i              (load_rsp_i),
-      .obi_load_req_o          (obi_load_req_o),
-      .obi_load_rsp_i          (obi_load_rsp_i),
-      .obi_mmu_ptw_req_o       (obi_mmu_ptw_req_o),
-      .obi_mmu_ptw_rsp_i       (obi_mmu_ptw_rsp_i),
+      .ypb_store_req_o         (ypb_store_req_o),
+      .ypb_store_rsp_i         (ypb_store_rsp_i),
+      .ypb_amo_req_o           (ypb_amo_req_o),
+      .ypb_amo_rsp_i           (ypb_amo_rsp_i),
+      .ypb_load_req_o          (ypb_load_req_o),
+      .ypb_load_rsp_i          (ypb_load_rsp_i),
+      .ypb_mmu_ptw_req_o       (ypb_mmu_ptw_req_o),
+      .ypb_mmu_ptw_rsp_i       (ypb_mmu_ptw_rsp_i),
 
       .dcache_wbuffer_empty_i (dcache_wbuffer_empty_i),
       .dcache_wbuffer_not_ni_i(dcache_wbuffer_not_ni_i),
@@ -1064,7 +956,7 @@ module cva6_pipeline
       .CVA6Cfg(CVA6Cfg),
       .exception_t(exception_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .obi_amo_rsp_t(obi_amo_rsp_t)
+      .ypb_amo_rsp_t(ypb_amo_rsp_t)
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
@@ -1081,7 +973,7 @@ module cva6_pipeline
       .wdata_o           (wdata_commit_id),
       .we_gpr_o          (we_gpr_commit_id),
       .we_fpr_o          (we_fpr_commit_id),
-      .obi_amo_rsp_i     (obi_amo_rsp_i),
+      .ypb_amo_rsp_i     (ypb_amo_rsp_i),
       .pc_o              (pc_commit),
       .csr_op_o          (csr_op_commit_csr),
       .csr_wdata_o       (csr_wdata_commit_csr),
@@ -1204,13 +1096,12 @@ module cva6_pipeline
         .bp_resolve_t      (bp_resolve_t),
         .exception_t       (exception_t),
         .scoreboard_entry_t(scoreboard_entry_t),
-        .fetch_req_t       (fetch_req_t),
-        .obi_fetch_req_t   (fetch_req_t),
-        .obi_store_req_t   (obi_store_req_t),
-        .obi_amo_req_t     (obi_amo_req_t),
-        .load_req_t        (load_req_t),
-        .obi_load_req_t    (obi_load_req_t),
-        .obi_mmu_ptw_req_t (obi_mmu_ptw_req_t),
+        .ypb_fetch_req_t   (ypb_fetch_req_t),
+        .ypb_store_req_t   (ypb_store_req_t),
+        .ypb_amo_req_t     (ypb_amo_req_t),
+        .ypb_load_req_t    (ypb_load_req_t),
+        .ypb_mmu_ptw_req_t (ypb_mmu_ptw_req_t),
+        .ypb_zcmt_req_t    (ypb_zcmt_req_t),
         .NumMissPorts      (1  /*FIXME*/)         //WT cache only ??
     ) perf_counters_i (
         .clk_i         (clk_i),
@@ -1236,14 +1127,12 @@ module cva6_pipeline
         .resolved_branch_i  (resolved_branch),
         .branch_exceptions_i(flu_exception_ex_id),
 
-        .fetch_req_i      (fetch_req_o),
-        .fetch_obi_req_i  (obi_fetch_req_o),
-        .obi_store_req_i  (obi_store_req_o),
-        .obi_amo_req_i    (obi_amo_req_o),
-        .load_req_i       (load_req_o),
-        .obi_load_req_i   (obi_load_req_o),
-        .obi_mmu_ptw_req_i(obi_mmu_ptw_req_o),
-
+        .ypb_fetch_req_i  (ypb_fetch_req_o),
+        .ypb_store_req_i  (ypb_store_req_o),
+        .ypb_amo_req_i    (ypb_amo_req_o),
+        .ypb_load_req_i   (ypb_load_req_o),
+        .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req_o),
+        .ypb_zcmt_req_i   (ypb_zcmt_req_o),
         .miss_vld_bits_i('0  /*FIXME*/),          //WT cache only ??
         .i_tlb_flush_i  (flush_tlb_ctrl_ex),
         .stall_issue_i  (stall_issue),
@@ -1383,9 +1272,9 @@ module cva6_pipeline
       .commit_ack(commit_ack),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
-      .ld_valid(ex_stage_i.lsu_i.i_load_unit.obi_load_req_o.req),
-      .ld_kill(ex_stage_i.lsu_i.i_load_unit.load_req_o.kill_req),
-      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.obi_load_req_o.a.addr),
+      .ld_valid(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.preq),
+      .ld_kill(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.kill_req),
+      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.paddr),
       .resolve_branch(resolved_branch),
       .commit_exception(commit_stage_i.exception_o),
       .priv_lvl(priv_lvl),
