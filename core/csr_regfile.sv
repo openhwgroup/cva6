@@ -71,6 +71,8 @@ module csr_regfile
     output logic [CVA6Cfg.VLEN-1:0] trap_vector_base_o,
     // Current privilege level the CPU is in - EX_STAGE
     output riscv::priv_lvl_t priv_lvl_o,
+    // Data Endian mode
+    output logic mbe_o,
     // Current virtualization mode state the CPU is in - EX_STAGE
     output logic v_o,
     // Imprecise FP exception from the accelerator (fcsr.fflags format) - ACC_DISPATCHER
@@ -2549,6 +2551,8 @@ module csr_regfile
   assign debug_mode_o = debug_mode_q;
   assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : 1'b0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
+
+  assign mbe_o = mstatus_q.mbe;
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
