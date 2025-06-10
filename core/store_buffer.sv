@@ -19,8 +19,8 @@ module store_buffer
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type obi_store_req_t = logic,
-    parameter type obi_store_rsp_t = logic
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_store_rsp_t = logic
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -49,9 +49,9 @@ module store_buffer
 
     // D$ interface
     // Store cache response - DCACHE
-    output obi_store_req_t obi_store_req_o,
+    output ypb_store_req_t ypb_store_req_o,
     // Store cache request - DCACHE
-    input  obi_store_rsp_t obi_store_rsp_i
+    input  ypb_store_rsp_t ypb_store_rsp_i
 );
 
   // the store queue has two parts:
@@ -140,32 +140,25 @@ module store_buffer
 
   assign rvfi_mem_paddr_o = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_n[commit_read_pointer_n].address;
 
-  assign obi_store_req_o.reqpar = !obi_store_req_o.req;
-  assign obi_store_req_o.a.addr = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address;
-  assign obi_store_req_o.a.we = 1'b1;
-  assign obi_store_req_o.a.be = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].be : commit_queue_q[commit_read_pointer_q].be;
-  assign obi_store_req_o.a.wdata = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data : commit_queue_q[commit_read_pointer_q].data;
-  assign obi_store_req_o.a.aid = '0;
-  assign obi_store_req_o.a.a_optional.auser = '0;
-  assign obi_store_req_o.a.a_optional.wuser = '0;
-  assign obi_store_req_o.a.a_optional.atop = '0;
-  assign obi_store_req_o.a.a_optional.memtype[0] = '0;
-  assign obi_store_req_o.a.a_optional.memtype[1] = config_pkg::is_inside_cacheable_regions(
+  assign ypb_store_req_o.vreq = '0;
+  assign ypb_store_req_o.vaddr = '0;
+  assign ypb_store_req_o.paddr = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address;
+  assign ypb_store_req_o.we = 1'b1;
+  assign ypb_store_req_o.be = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].be : commit_queue_q[commit_read_pointer_q].be;
+  assign ypb_store_req_o.size = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].size : commit_queue_q[commit_read_pointer_q].size;
+  assign ypb_store_req_o.wdata = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data : commit_queue_q[commit_read_pointer_q].data;
+  assign ypb_store_req_o.aid = '0;
+  assign ypb_store_req_o.atop = '0;
+  assign ypb_store_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
         {64 - CVA6Cfg.PLEN{1'b0}},
         direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
       }  //TO DO CHECK GRANULARITY
   );
-  assign obi_store_req_o.a.a_optional.mid = '0;
-  assign obi_store_req_o.a.a_optional.prot[2:1] = 2'b11;
-  assign obi_store_req_o.a.a_optional.prot[0] = 1'b1;  //data
-  assign obi_store_req_o.a.a_optional.dbg = '0;
-  assign obi_store_req_o.a.a_optional.achk = '0;
+  assign ypb_store_req_o.access_type = 1'b1;  //1 = data
 
-  //TODO check parity : obi_store_rsp_i.gntpar != obi_store_rsp_i.gnt
-  assign obi_store_req_o.rready = '1;  //always ready
-  assign obi_store_req_o.rreadypar = '0;
+  assign ypb_store_req_o.rready = '1;  //always ready
 
   always_comb begin : store_if
     automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
@@ -180,15 +173,15 @@ module store_buffer
 
     commit_queue_n              = commit_queue_q;
 
-    obi_store_req_o.req         = 1'b0;
+    ypb_store_req_o.preq         = 1'b0;
 
     direct_req_from_speculative = 1'b0;
 
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
-      obi_store_req_o.req = 1'b1;
-      if (obi_store_rsp_i.gnt) begin
+      ypb_store_req_o.preq = 1'b1;
+      if (ypb_store_rsp_i.pgnt) begin
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
         // advance the read_pointer
@@ -197,7 +190,7 @@ module store_buffer
       end
     end else if (speculative_queue_q[speculative_read_pointer_q].valid) begin
       if (commit_i && (commit_write_pointer_q == speculative_read_pointer_q) && !stall_st_pending_i) begin
-        obi_store_req_o.req = 1'b1;
+        ypb_store_req_o.preq = 1'b1;
         direct_req_from_speculative = 1'b1;
       end
     end
@@ -205,7 +198,7 @@ module store_buffer
     // happened if we got a grant
 
     // shift the store request from the speculative buffer to the non-speculative
-    if (commit_i && !(obi_store_rsp_i.gnt && direct_req_from_speculative)) begin
+    if (commit_i && !(ypb_store_rsp_i.pgnt && direct_req_from_speculative)) begin
       commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
       commit_write_pointer_n = commit_write_pointer_n + 1'b1;
       commit_status_cnt++;

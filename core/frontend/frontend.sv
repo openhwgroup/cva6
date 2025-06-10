@@ -16,8 +16,10 @@
 // change request from the back-end and does branch prediction.
 
 // Additional contributions by:
-// 06.06.2024 - Yannick Casamatta, Thales
+// June 2024 - Yannick Casamatta, Thales
 //              OBI Protocol
+// June 2025 - Yannick Casamatta, Thales
+//              YPB Protocol
 
 module frontend
   import ariane_pkg::*;
@@ -25,12 +27,10 @@ module frontend
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type fetch_entry_t = logic,
-    parameter type fetch_req_t = logic,
-    parameter type fetch_rsp_t = logic,
     parameter type fetch_areq_t = logic,
     parameter type fetch_arsp_t = logic,
-    parameter type obi_fetch_req_t = logic,
-    parameter type obi_fetch_rsp_t = logic
+    parameter type ypb_fetch_req_t = logic,
+    parameter type ypb_fetch_rsp_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -66,14 +66,10 @@ module frontend
     input fetch_arsp_t arsp_i,
     // address translation response chanel - EXECUTE
     output fetch_areq_t areq_o,
-    // Handshake between CACHE and FRONTEND (fetch) - CACHES
-    output fetch_req_t fetch_req_o,
-    // Handshake between CACHE and FRONTEND (fetch) - CACHES
-    input fetch_rsp_t fetch_rsp_i,
-    // OBI Fetch Request channel - CACHES
-    output obi_fetch_req_t obi_fetch_req_o,
-    // OBI Fetch Response channel - CACHES
-    input obi_fetch_rsp_t obi_fetch_rsp_i,
+    // YPB Fetch Request channel - CACHES
+    output ypb_fetch_req_t ypb_fetch_req_o,
+    // YPB Fetch Response channel - CACHES
+    input ypb_fetch_rsp_t ypb_fetch_rsp_i,
     // Handshake's data between fetch and decode - ID_STAGE
     output fetch_entry_t [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_o,
     // Handshake's valid between fetch and decode - ID_STAGE
@@ -128,7 +124,7 @@ module frontend
   logic [CVA6Cfg.VLEN-1:0] replay_addr;
 
   logic [CVA6Cfg.VLEN-1:0]
-      npc_fetch_address, vaddr_d, obi_vaddr_q, obi_vaddr_d, vaddr_q, fetch_vaddr_d;
+      npc_fetch_address, vaddr_d, ypb_vaddr_q, ypb_vaddr_d, vaddr_q, fetch_vaddr_d;
   logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
@@ -334,12 +330,12 @@ module frontend
 
   logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
   assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, obi_fetch_req_o.a.addr}  //TO DO CHECK GRANULARITY
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_fetch_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
 
   logic paddr_nonidempotent;
   assign paddr_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, obi_fetch_req_o.a.addr}  //TO DO CHECK GRANULARITY
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_fetch_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
 
   // Caches optimisation signals
@@ -457,17 +453,17 @@ module frontend
   typedef enum logic [1:0] {
     TRANSPARENT,
     REGISTRED
-  } obi_a_state_e;
-  obi_a_state_e obi_a_state_d, obi_a_state_q;
+  } ypb_a_state_e;
+  ypb_a_state_e ypb_a_state_d, ypb_a_state_q;
 
 
-  logic stall_obi, stall_translation;
+  logic stall_ni, stall_ypb, stall_translation, stall_instr_queue;
   logic data_req, data_rvalid;
 
   assign stall_ni = spec_req_non_idempot;
-  assign stall_obi = (obi_a_state_q == REGISTRED);  //&& !obi_load_rsp_i.gnt;
+  assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
   assign stall_translation = CVA6Cfg.MmuPresent ? areq_o.fetch_req && (!arsp_i.fetch_valid) : 1'b0;
-  assign stall_instr_queue = instr_queue_ready;
+  assign stall_instr_queue = !instr_queue_ready;
 
   assign ex_s1 = (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.valid);
 
@@ -480,13 +476,13 @@ module frontend
   // also if we killed the first stage we also need to kill the second stage (inclusive flush)
   assign kill_s2 = kill_s1 | bp_valid;
 
-  assign fetch_req_o.kill_req = kill_req_q || kill_s2 || ex_s1;
+  assign ypb_fetch_req_o.kill_req = kill_req_q || kill_s2 || ex_s1;
 
   assign data_rvalid = fetchbuf_r && !fetchbuf_flushed_q[fetchbuf_rindex] && !kill_s2;
 
-  //assign obi_vaddr_d = pop_fetch ?  : obi_vaddr_qvaddr_d;
+  //assign ypb_vaddr_d = pop_fetch ?  : ypb_vaddr_qvaddr_d;
   assign vaddr_d = (pop_fetch || kill_s2) ? npc_fetch_address : vaddr_q;
-  assign fetch_req_o.vaddr = npc_fetch_address;
+  assign ypb_fetch_req_o.vaddr = npc_fetch_address;
   assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
 
   assign data_req = (CVA6Cfg.MmuPresent ? fetchbuf_w_q && !ex_s1 && !bp_valid : fetchbuf_w);
@@ -504,12 +500,12 @@ module frontend
     // REQUEST
     //if (instr_queue_ready) begin
     areq_o.fetch_req = 1'b1;
-    fetch_req_o.req = 1'b1;
-    if (!CVA6Cfg.MmuPresent || fetch_rsp_i.ready) begin
-      if (stall_ni || stall_obi || !instr_queue_ready || fetchbuf_full) begin
+    ypb_fetch_req_o.vreq = 1'b1;
+    if (!CVA6Cfg.MmuPresent || ypb_fetch_rsp_i.vgnt) begin
+      if (stall_ni || stall_ypb || stall_instr_queue || fetchbuf_full) begin
         kill_req_d = CVA6Cfg.MmuPresent ? 1'b1 :  1'b0; // MmuPresent only : next cycle is s2 but we need to kill because not ready to sent tag
       end else begin
-        fetchbuf_w  = !kill_s1 && !flush_i; // record request into outstanding fetch fifo and trigger OBI request
+        fetchbuf_w  = !kill_s1 && !flush_i; // record request into outstanding fetch fifo and trigger YPB physical request
         pop_fetch = 1'b1;  // release lsu_bypass fifo
       end
     end
@@ -533,65 +529,54 @@ module frontend
   // ---------------
   // Retire Load
   // ---------------
-  assign fetchbuf_rindex = (CVA6Cfg.NrFetchBufEntries > 1) ? fetchbuf_id_t'(obi_fetch_rsp_i.r.rid) : 1'b0;
+  assign fetchbuf_rindex = (CVA6Cfg.NrFetchBufEntries > 1) ? fetchbuf_id_t'(ypb_fetch_rsp_i.rid) : 1'b0;
   assign fetchbuf_rdata = fetchbuf_q[fetchbuf_rindex];
 
   //  read the pending fetch buffer
-  assign fetchbuf_r = obi_fetch_rsp_i.rvalid;
+  assign fetchbuf_r = ypb_fetch_rsp_i.rvalid;
 
 
-  //default obi state registred
-  assign obi_fetch_req_o.reqpar = !obi_fetch_req_o.req;
-  assign obi_fetch_req_o.a.addr = {
-    obi_a_state_q == TRANSPARENT ? paddr[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] : paddr_q[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS],
+  //default YPB state registred
+  assign ypb_fetch_req_o.paddr = {
+    ypb_a_state_q == TRANSPARENT ? paddr[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] : paddr_q[CVA6Cfg.PLEN-1:CVA6Cfg.FETCH_ALIGN_BITS],
     {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
   };
-  assign obi_fetch_req_o.a.we = '0;
-  assign obi_fetch_req_o.a.be = '1;
-  assign obi_fetch_req_o.a.wdata = '0;
-  assign obi_fetch_req_o.a.aid = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
-  assign obi_fetch_req_o.a.a_optional.auser = '0;
-  assign obi_fetch_req_o.a.a_optional.wuser = '0;
-  assign obi_fetch_req_o.a.a_optional.atop = '0;
-  assign obi_fetch_req_o.a.a_optional.memtype[0] = '0;
-  assign obi_fetch_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
-  assign obi_fetch_req_o.a.a_optional.mid = '0;
-  assign obi_fetch_req_o.a.a_optional.prot[0] = '0;
-  assign obi_fetch_req_o.a.a_optional.prot[2:1] = 2'b11;
-  assign obi_fetch_req_o.a.a_optional.dbg = '0;
-  assign obi_fetch_req_o.a.a_optional.achk = '0;
-
-  assign obi_fetch_req_o.rready = '1;  //always ready
-  assign obi_fetch_req_o.rreadypar = '0;
+  assign ypb_fetch_req_o.we = '0;
+  assign ypb_fetch_req_o.be = '1;
+  assign ypb_fetch_req_o.wdata = '0;
+  assign ypb_fetch_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
+  assign ypb_fetch_req_o.atop = '0;
+  assign ypb_fetch_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
+  assign ypb_fetch_req_o.access_type = '0; //  0 = fetch
+  assign ypb_fetch_req_o.rready = '1;  //always ready  TODO maybe manage instr_queue_ready & replay with this signal
 
 
 
-
-  always_comb begin : p_fsm_obi_a
+  always_comb begin : p_fsm_ypb_a
     // default assignment
-    obi_a_state_d = obi_a_state_q;
-    obi_fetch_req_o.req    = 1'b0;
+    ypb_a_state_d = ypb_a_state_q;
+    ypb_fetch_req_o.preq    = 1'b0;
 
-    unique case (obi_a_state_q)
+    unique case (ypb_a_state_q)
       TRANSPARENT: begin
         if (data_req) begin
-          obi_fetch_req_o.req = 1'b1;
-          if (!obi_fetch_rsp_i.gnt) begin
-            obi_a_state_d = REGISTRED;
+          ypb_fetch_req_o.preq = 1'b1;
+          if (!ypb_fetch_rsp_i.pgnt) begin
+            ypb_a_state_d = REGISTRED;
           end
         end
       end
 
       REGISTRED: begin
-        obi_fetch_req_o.req = 1'b1;
-        if (obi_fetch_rsp_i.gnt) begin
-          obi_a_state_d = TRANSPARENT;
+        ypb_fetch_req_o.preq = 1'b1;
+        if (ypb_fetch_rsp_i.pgnt) begin
+          ypb_a_state_d = TRANSPARENT;
         end
       end
 
       default: begin
         // we should never get here
-        obi_a_state_d = TRANSPARENT;
+        ypb_a_state_d = TRANSPARENT;
       end
     endcase
   end
@@ -599,7 +584,7 @@ module frontend
   // latch physical address for the tag cycle (one cycle after applying the index)
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      obi_a_state_q <= TRANSPARENT;
+      ypb_a_state_q <= TRANSPARENT;
       paddr_q <= '0;
       paddr_is_cacheable_q <= '0;
       kill_req_q <= '0;
@@ -607,11 +592,11 @@ module frontend
       fetchbuf_w_q <= '0;
       vaddr_q <= '0;
     end else begin
-      if (obi_a_state_q == TRANSPARENT) begin
+      if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
         paddr_is_cacheable_q <= paddr_is_cacheable;
       end
-      obi_a_state_q <= obi_a_state_d;
+      ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
       //if (!ex_s1) begin
       fetchbuf_windex_q <= fetchbuf_windex;
@@ -719,7 +704,7 @@ module frontend
   logic fetch_valid_d;
 
   // re-align the cache line
-  assign fetch_data = ex_rvalid && CVA6Cfg.MmuPresent ? '0 : obi_fetch_rsp_i.r.rdata >> {shamt, 4'b0};
+  assign fetch_data = ex_rvalid && CVA6Cfg.MmuPresent ? '0 : ypb_fetch_rsp_i.rdata >> {shamt, 4'b0};
   assign fetch_valid_d = rvalid;
   assign fetch_vaddr_d = vaddr_rvalid;
 

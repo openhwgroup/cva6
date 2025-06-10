@@ -16,8 +16,8 @@
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
-    parameter type obi_zcmt_req_t = logic,
-    parameter type obi_zcmt_rsp_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
+    parameter type ypb_zcmt_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fetch_entry_t = logic,
     parameter type jvt_t = logic,
@@ -91,8 +91,8 @@ module id_stage #(
     input x_compressed_resp_t compressed_resp_i,
     output logic compressed_valid_o,
     output x_compressed_req_t compressed_req_o,
-    output obi_zcmt_req_t obi_zcmt_req_o,
-    input obi_zcmt_rsp_t obi_zcmt_rsp_i
+    output ypb_zcmt_req_t ypb_zcmt_req_o,
+    input ypb_zcmt_rsp_t ypb_zcmt_rsp_i
 
 
 );
@@ -203,8 +203,8 @@ module id_stage #(
     if (CVA6Cfg.RVZCMT) begin
       zcmt_decoder #(
           .CVA6Cfg(CVA6Cfg),
-          .obi_zcmt_req_t(obi_zcmt_req_t),
-          .obi_zcmt_rsp_t(obi_zcmt_rsp_t),
+          .ypb_zcmt_req_t(ypb_zcmt_req_t),
+          .ypb_zcmt_rsp_t(ypb_zcmt_rsp_t),
           .jvt_t(jvt_t),
           .branchpredict_sbe_t(branchpredict_sbe_t)
       ) zcmt_decoder_i (
@@ -220,8 +220,8 @@ module id_stage #(
           .is_compressed_o(is_compressed_zcmt),
           .fetch_stall_o  (stall_macro_deco_zcmt),
           .jvt_i          (jvt_i),
-          .obi_zcmt_req_o     (obi_zcmt_req_o),
-          .obi_zcmt_rsp_i     (obi_zcmt_rsp_i),
+          .ypb_zcmt_req_o (ypb_zcmt_req_o),
+          .ypb_zcmt_rsp_i (ypb_zcmt_rsp_i),
           .jump_address_o (jump_address)
       );
     end else begin

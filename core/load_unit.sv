@@ -19,6 +19,8 @@
 //          to the data cache
 // November, 2024 - Yannick Casamatta, Thales
 //          OBI Protocol
+// June, 2025 - Yannick Casamatta, Thales
+//          YPB Protocol
 
 `include "utils_macros.svh"
 
@@ -26,10 +28,8 @@ module load_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type load_req_t = logic,
-    parameter type load_rsp_t = logic,
-    parameter type obi_load_req_t = logic,
-    parameter type obi_load_rsp_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_load_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type lsu_ctrl_t = logic
 ) (
@@ -79,14 +79,10 @@ module load_unit
     input  logic                                      store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
     input  logic          [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // Load cache input request ports - DCACHE
-    output load_req_t                                 load_req_o,
-    // Load cache output request ports - DCACHE
-    input  load_rsp_t                                 load_rsp_i,
     // Load cache response - DCACHE
-    output obi_load_req_t                             obi_load_req_o,
+    output ypb_load_req_t                             ypb_load_req_o,
     // Load cache request - DCACHE
-    input  obi_load_rsp_t                             obi_load_rsp_i,
+    input  ypb_load_rsp_t                             ypb_load_rsp_i,
 
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i
@@ -207,11 +203,8 @@ module load_unit
 
   // output address
   // we can now output the lower 12 bit as the index to the cache
-  assign load_req_o.address_index = lsu_ctrl_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-  assign load_req_o.be = lsu_ctrl_i.be;
+  assign ypb_load_req_o.vaddr = lsu_ctrl_i.vaddr;
 
-  // request id = index of the load buffer's entry
-  assign load_req_o.aid = ldbuf_windex;
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
@@ -245,33 +238,33 @@ module load_unit
   typedef enum logic [1:0] {
     TRANSPARENT,
     REGISTRED
-  } obi_a_state_e;
-  obi_a_state_e obi_a_state_d, obi_a_state_q;
+  } ypb_a_state_e;
+  ypb_a_state_e ypb_a_state_d, ypb_a_state_q;
 
   // ---------------
   // Load Control
   // ---------------
   logic ex_s0, ex_s1, kill_s1;
 
-  logic stall_obi, stall_translation;
+  logic stall_ypb, stall_translation;
   logic data_req, data_rvalid;
 
-  assign load_req_o.kill_req = kill_req_q || kill_s1;
+  assign ypb_load_req_o.kill_req = kill_req_q || kill_s1;
 
   assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
-  assign stall_obi = (obi_a_state_q == REGISTRED);  //&& !obi_load_rsp_i.gnt;
+  assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
   assign ex_s1 = ((CVA6Cfg.MmuPresent ? ldbuf_w_q : valid_i) && ex_i.valid);
   assign kill_s1 = CVA6Cfg.MmuPresent ? ex_s1 : 1'b0;
 
-  assign data_rvalid = obi_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
+  assign data_rvalid = ypb_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
   assign data_req = (CVA6Cfg.MmuPresent ? ldbuf_w_q && !ex_s1 : ldbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignment
-    load_req_o.req = '0;
+    ypb_load_req_o.vreq = '0;
     kill_req_d = 1'b0;
     ldbuf_w = 1'b0;
     translation_req_o = 1'b0;
@@ -285,12 +278,12 @@ module load_unit
     if (valid_i) begin
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
-        load_req_o.req = 1'b1;
-        if (!CVA6Cfg.MmuPresent || load_rsp_i.gnt) begin
-          if (stall_translation || stall_ni || stall_obi || ldbuf_full || flush_i) begin
+        ypb_load_req_o.vreq = 1'b1;
+        if (!CVA6Cfg.MmuPresent || ypb_load_rsp_i.vgnt) begin
+          if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i) begin
             kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
           end else begin
-            ldbuf_w  = CVA6Cfg.MmuPresent ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger OBI request
+            ldbuf_w  = CVA6Cfg.MmuPresent ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger physical request
             pop_ld_o = !ex_s1;  // release lsu_bypass fifo
           end
         end
@@ -319,52 +312,45 @@ module load_unit
   end
 
 
-  //default obi state registred
-  assign obi_load_req_o.reqpar = !obi_load_req_o.req;
-  assign obi_load_req_o.a.addr = obi_a_state_q == TRANSPARENT ? paddr : paddr_q;
-  assign obi_load_req_o.a.we = '0;
-  assign obi_load_req_o.a.be = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
-  assign obi_load_req_o.a.wdata = '0;
-  assign obi_load_req_o.a.aid = (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
-  assign obi_load_req_o.a.a_optional.auser = '0;
-  assign obi_load_req_o.a.a_optional.wuser = '0;
-  assign obi_load_req_o.a.a_optional.atop = '0;
-  assign obi_load_req_o.a.a_optional.memtype[0] = '0;
-  assign obi_load_req_o.a.a_optional.memtype[1]= (!CVA6Cfg.MmuPresent && (obi_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
-  assign obi_load_req_o.a.a_optional.mid = '0;
-  assign obi_load_req_o.a.a_optional.prot[2:1] = 2'b11;
-  assign obi_load_req_o.a.a_optional.prot[0] = 1'b1;  //data
-  assign obi_load_req_o.a.a_optional.dbg = '0;
-  assign obi_load_req_o.a.a_optional.achk = '0;
+  //default ypb state registred
+  assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
+  assign ypb_load_req_o.we = '0;
+  assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
+  assign ypb_load_req_o.size = '0; // TODO
+  assign ypb_load_req_o.wdata = '0;
+  assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
+  assign ypb_load_req_o.atop = '0;
+  assign ypb_load_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
+  assign ypb_load_req_o.access_type = 1'b1;  //data
 
-  assign obi_load_req_o.rready = '1;  //always ready
-  assign obi_load_req_o.rreadypar = '0;
 
-  always_comb begin : p_fsm_obi_a
+  assign ypb_load_req_o.rready = '1;  //always ready
+
+  always_comb begin : p_fsm_ypb_a
     // default assignment
-    obi_a_state_d = obi_a_state_q;
-    obi_load_req_o.req    = 1'b0;
+    ypb_a_state_d = ypb_a_state_q;
+    ypb_load_req_o.preq    = 1'b0;
 
-    unique case (obi_a_state_q)
+    unique case (ypb_a_state_q)
       TRANSPARENT: begin
         if (data_req) begin
-          obi_load_req_o.req = 1'b1;
-          if (!obi_load_rsp_i.gnt) begin
-            obi_a_state_d = REGISTRED;
+          ypb_load_req_o.preq = 1'b1;
+          if (!ypb_load_rsp_i.pgnt) begin
+            ypb_a_state_d = REGISTRED;
           end
         end
       end
 
       REGISTRED: begin
-        obi_load_req_o.req = 1'b1;
-        if (obi_load_rsp_i.gnt) begin
-          obi_a_state_d = TRANSPARENT;
+        ypb_load_req_o.preq = 1'b1;
+        if (ypb_load_rsp_i.pgnt) begin
+          ypb_a_state_d = TRANSPARENT;
         end
       end
 
       default: begin
         // we should never get here
-        obi_a_state_d = TRANSPARENT;
+        ypb_a_state_d = TRANSPARENT;
       end
     endcase
   end
@@ -372,7 +358,7 @@ module load_unit
   // latch physical address for the tag cycle (one cycle after applying the index)
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      obi_a_state_q <= TRANSPARENT;
+      ypb_a_state_q <= TRANSPARENT;
       paddr_q <= '0;
       be_q <= '0;
       paddr_is_cacheable_q <= '0;
@@ -380,12 +366,12 @@ module load_unit
       ldbuf_windex_q <= '0;
       ldbuf_w_q <= '0;
     end else begin
-      if (obi_a_state_q == TRANSPARENT) begin
+      if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
         be_q <= lsu_ctrl_i.be;
         paddr_is_cacheable_q <= paddr_is_cacheable;
       end
-      obi_a_state_q <= obi_a_state_d;
+      ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
       //if (!ex_s1) begin
       ldbuf_windex_q <= ldbuf_windex;
@@ -398,11 +384,11 @@ module load_unit
   // ---------------
   // Retire Load
   // ---------------
-  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(obi_load_rsp_i.r.rid) : 1'b0;
+  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(ypb_load_rsp_i.rid) : 1'b0;
   assign ldbuf_rdata = ldbuf_q[ldbuf_rindex];
 
   //  read the pending load buffer
-  assign ldbuf_r    = obi_load_rsp_i.rvalid;
+  assign ldbuf_r    = ypb_load_rsp_i.rvalid;
 
   // ---------------
   // Sign Extend
@@ -410,7 +396,7 @@ module load_unit
   logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
-  assign shifted_data = obi_load_rsp_i.r.rdata >> {ldbuf_rdata.address_offset, 3'b000};
+  assign shifted_data = ypb_load_rsp_i.rdata >> {ldbuf_rdata.address_offset, 3'b000};
 
   /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
@@ -440,7 +426,7 @@ module load_unit
                                                                                                                          ldbuf_rdata.address_offset;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
-    assign rdata_sign_bits[i] = obi_load_rsp_i.r.rdata[(i+1)*8-1];
+    assign rdata_sign_bits[i] = ypb_load_rsp_i.rdata[(i+1)*8-1];
   end
 
 

@@ -17,26 +17,19 @@ module cva6_hpdcache_subsystem
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type fetch_req_t = logic,
-    parameter type fetch_rsp_t = logic,
-    parameter type load_req_t = logic,
-    parameter type load_rsp_t = logic,
-    parameter type obi_fetch_req_t = logic,
-    parameter type obi_fetch_rsp_t = logic,
-    parameter type obi_store_req_t = logic,
-    parameter type obi_store_rsp_t = logic,
-    parameter type obi_amo_req_t = logic,
-    parameter type obi_amo_rsp_t = logic,
-    parameter type obi_load_req_t = logic,
-    parameter type obi_load_rsp_t = logic,
-    parameter type obi_mmu_ptw_req_t = logic,
-    parameter type obi_mmu_ptw_rsp_t = logic,
-    parameter type obi_zcmt_req_t = logic,
-    parameter type obi_zcmt_rsp_t = logic,
-
-    parameter type icache_req_t  = logic,
-    parameter type icache_rtrn_t = logic,
-
+    parameter type ypb_fetch_req_t = logic,
+    parameter type ypb_fetch_rsp_t = logic,
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_store_rsp_t = logic,
+    parameter type ypb_amo_req_t = logic,
+    parameter type ypb_amo_rsp_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_load_rsp_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_mmu_ptw_rsp_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
+    parameter type ypb_zcmt_rsp_t = logic,
+    
     parameter int NrHwPrefetchers = 4,
     // AXI types
     parameter type axi_ar_chan_t = logic,
@@ -76,16 +69,10 @@ module cva6_hpdcache_subsystem
     input logic icache_flush_i,
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
-    // Access request - FRONTEND
-    input fetch_req_t fetch_req_i,
-    // Output Access request - FRONTEND
-    output fetch_rsp_t fetch_rsp_o,
-
-    // OBI Fetch Request channel - FRONTEND
-    input  obi_fetch_req_t obi_fetch_req_i,
-    // OBI Fetch Response channel - FRONTEND
-    output obi_fetch_rsp_t obi_fetch_rsp_o,
-
+    // Fetch Request channel - FRONTEND
+    input  ypb_fetch_req_t ypb_fetch_req_i,
+    // Fetch Response channel - FRONTEND
+    output ypb_fetch_rsp_t ypb_fetch_rsp_o,
     //   }}}
 
     //  D$
@@ -105,31 +92,26 @@ module cva6_hpdcache_subsystem
     // CMO interface response - TO_BE_COMPLETED
     output cmo_rsp_t dcache_cmo_rsp_o,
 
-    // Load cache input request ports - EX_STAGE
-    input  load_req_t load_req_i,
-    // Load cache output request ports - EX_STAGE
-    output load_rsp_t load_rsp_o,
-
     // Store cache response - CACHES
-    input obi_store_req_t obi_store_req_i,
+    input ypb_store_req_t ypb_store_req_i,
     // Store cache request - CACHES
-    output obi_store_rsp_t obi_store_rsp_o,
+    output ypb_store_rsp_t ypb_store_rsp_o,
     // AMO cache request - CACHES
-    input obi_amo_req_t obi_amo_req_i,
+    input ypb_amo_req_t ypb_amo_req_i,
     // AMO cache response - CACHES
-    output obi_amo_rsp_t obi_amo_rsp_o,
+    output ypb_amo_rsp_t ypb_amo_rsp_o,
     // Load cache request - CACHES
-    input obi_load_req_t obi_load_req_i,
+    input ypb_load_req_t ypb_load_req_i,
     // Load cache response - CACHES
-    output obi_load_rsp_t obi_load_rsp_o,
+    output ypb_load_rsp_t ypb_load_rsp_o,
     // MMU Ptw cache request - CACHES
-    input obi_mmu_ptw_req_t obi_mmu_ptw_req_i,
+    input ypb_mmu_ptw_req_t ypb_mmu_ptw_req_i,
     // MMU Ptw cache response - CACHES
-    output obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_o,
+    output ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_o,
     // Zcmt cache response - CACHES
-    input obi_zcmt_req_t obi_zcmt_req_i,
+    input ypb_zcmt_req_t ypb_zcmt_req_i,
     // Zcmt cache response - CACHES
-    output obi_zcmt_rsp_t obi_zcmt_rsp_o,
+    output ypb_zcmt_rsp_t ypb_zcmt_rsp_o,
 
     // Write buffer status to know if empty - EX_STAGE
     output logic wbuffer_empty_o,
@@ -161,6 +143,25 @@ module cva6_hpdcache_subsystem
 );
   //  }}}
 
+  localparam type icache_req_t = struct packed {
+    logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
+    logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
+    logic nc;  // noncacheable
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+  };
+  localparam type icache_rtrn_t = struct packed {
+    wt_cache_pkg::icache_in_t rtype;  // see definitions above
+    logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
+    logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
+    struct packed {
+      logic                                      vld;  // invalidate only affected way
+      logic                                      all;  // invalidate all ways
+      logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
+      logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
+    } inv;  // invalidation vector
+    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+  };
+
   function int unsigned __minu(int unsigned x, int unsigned y);
     return x < y ? x : y;
   endfunction
@@ -181,10 +182,8 @@ module cva6_hpdcache_subsystem
 
   cva6_icache #(
       .CVA6Cfg(CVA6Cfg),
-      .fetch_req_t(fetch_req_t),
-      .fetch_rsp_t(fetch_rsp_t),
-      .obi_fetch_req_t(obi_fetch_req_t),
-      .obi_fetch_rsp_t(obi_fetch_rsp_t),
+      .ypb_fetch_req_t(ypb_fetch_req_t),
+      .ypb_fetch_rsp_t(ypb_fetch_rsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
       .RdTxId(ICACHE_RDTXID)
@@ -194,10 +193,8 @@ module cva6_hpdcache_subsystem
       .flush_i        (icache_flush_i),
       .en_i           (icache_en_i),
       .miss_o         (icache_miss_o),
-      .fetch_req_i    (fetch_req_i),
-      .fetch_rsp_o    (fetch_rsp_o),
-      .obi_fetch_req_i(obi_fetch_req_i),
-      .obi_fetch_rsp_o(obi_fetch_rsp_o),
+      .ypb_fetch_req_i(ypb_fetch_req_i),
+      .ypb_fetch_rsp_o(ypb_fetch_rsp_o),
       .mem_rtrn_vld_i (icache_miss_resp_valid),
       .mem_rtrn_i     (icache_miss_resp),
       .mem_data_req_o (icache_miss_valid),
@@ -321,18 +318,16 @@ module cva6_hpdcache_subsystem
   cva6_hpdcache_wrapper #(
       .CVA6Cfg          (CVA6Cfg),
       .HPDcacheCfg      (HPDcacheCfg),
-      .load_req_t       (load_req_t),
-      .load_rsp_t       (load_rsp_t),
-      .obi_store_req_t  (obi_store_req_t),
-      .obi_store_rsp_t  (obi_store_rsp_t),
-      .obi_amo_req_t    (obi_amo_req_t),
-      .obi_amo_rsp_t    (obi_amo_rsp_t),
-      .obi_load_req_t   (obi_load_req_t),
-      .obi_load_rsp_t   (obi_load_rsp_t),
-      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
-      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
-      .obi_zcmt_req_t   (obi_zcmt_req_t),
-      .obi_zcmt_rsp_t   (obi_zcmt_rsp_t),
+      .ypb_store_req_t  (ypb_store_req_t),
+      .ypb_store_rsp_t  (ypb_store_rsp_t),
+      .ypb_amo_req_t    (ypb_amo_req_t),
+      .ypb_amo_rsp_t    (ypb_amo_rsp_t),
+      .ypb_load_req_t   (ypb_load_req_t),
+      .ypb_load_rsp_t   (ypb_load_rsp_t),
+      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
+      .ypb_zcmt_req_t   (ypb_zcmt_req_t),
+      .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
 
       .HPDCACHE_ENABLE_CMO (HPDCACHE_ENABLE_CMO),
       .HPDCACHE_NREQUESTERS(HPDCACHE_NREQUESTERS),
@@ -375,18 +370,16 @@ module cva6_hpdcache_subsystem
       .dcache_miss_o(dcache_miss_o),
       .dcache_cmo_req_i(dcache_cmo_req_i),
       .dcache_cmo_rsp_o(dcache_cmo_rsp_o),
-      .obi_store_req_i(obi_store_req_i),
-      .obi_store_rsp_o(obi_store_rsp_o),
-      .obi_amo_req_i(obi_amo_req_i),
-      .obi_amo_rsp_o(obi_amo_rsp_o),
-      .obi_load_req_i(obi_load_req_i),
-      .obi_load_rsp_o(obi_load_rsp_o),
-      .obi_mmu_ptw_req_i(obi_mmu_ptw_req_i),
-      .obi_mmu_ptw_rsp_o(obi_mmu_ptw_rsp_o),
-      .obi_zcmt_req_i(obi_zcmt_req_i),
-      .obi_zcmt_rsp_o(obi_zcmt_rsp_o),
-      .load_req_i(load_req_i),
-      .load_rsp_o(load_rsp_o),
+      .ypb_store_req_i(ypb_store_req_i),
+      .ypb_store_rsp_o(ypb_store_rsp_o),
+      .ypb_amo_req_i(ypb_amo_req_i),
+      .ypb_amo_rsp_o(ypb_amo_rsp_o),
+      .ypb_load_req_i(ypb_load_req_i),
+      .ypb_load_rsp_o(ypb_load_rsp_o),
+      .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req_i),
+      .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp_o),
+      .ypb_zcmt_req_i(ypb_zcmt_req_i),
+      .ypb_zcmt_rsp_o(ypb_zcmt_rsp_o),
       .wbuffer_empty_o(wbuffer_empty_o),
       .wbuffer_not_ni_o(wbuffer_not_ni_o),
       .hwpf_base_set_i(hwpf_base_set_i),
@@ -497,64 +490,62 @@ module cva6_hpdcache_subsystem
 
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_fetch_rsp_o.rvalid && obi_fetch_req_i.rready && !fetch_rsp_o.invalid_data) |-> (|obi_fetch_rsp_o.r.rdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_fetch_rsp_o.rvalid && ypb_fetch_req_i.rready) |-> (|ypb_fetch_rsp_o.rdata) !== 1'hX)
   else
-    $warning(
-        1, "[l1 icache] FETCH reading invalid instructions: data=%08X", obi_fetch_rsp_o.r.rdata
-    );
+    $warning(1, "[l1 icache] FETCH reading invalid instructions: data=%08X", ypb_fetch_rsp_o.rdata);
 
   a_invalid_read_amo :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_rsp_o.rvalid && obi_amo_req_i.rready) |-> (|obi_amo_rsp_o.r.rdata) !== 1'hX)
-  else $warning(1, "[l1 dcache] AMO reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_amo_rsp_o.rvalid && ypb_amo_req_i.rready) |-> (|ypb_amo_rsp_o.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] AMO reading invalid data: data=%08X", ypb_amo_rsp_o.rdata);
 
   a_invalid_read_load :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_load_rsp_o.rvalid && obi_load_req_i.rready) |-> (|obi_load_rsp_o.r.rdata) !== 1'hX)
-  else $warning(1, "[l1 dcache] LOAD reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_load_rsp_o.rvalid && ypb_load_req_i.rready) |-> (|ypb_load_rsp_o.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] LOAD reading invalid data: data=%08X", ypb_amo_rsp_o.rdata);
 
   //  a_invalid_read_mmu_ptw :
   //  assert property (
-  //    @(posedge clk_i) disable iff (~rst_ni) (obi_mmu_ptw_rsp_o.rvalid && !obi_mmu_ptw_rsp_o.invalid_data) |-> (|obi_mmu_ptw_rsp_o.r.rdata) !== 1'hX)
+  //    @(posedge clk_i) disable iff (~rst_ni) (ypb_mmu_ptw_rsp_o.rvalid && !ypb_mmu_ptw_rsp_o.invalid_data) |-> (|ypb_mmu_ptw_rsp_o.rdata) !== 1'hX)
   //  else
   //    $warning(
   //        1,
   //        "[l1 dcache] MMU PTW reading invalid data: data=%08X",
-  //        obi_mmu_ptw_rsp_o.r.rdata
+  //        ypb_mmu_ptw_rsp_o.rdata
   //    );
 
   //  a_invalid_read_zcmt :
   //  assert property (
-  //    @(posedge clk_i) disable iff (~rst_ni) (obi_zcmt_rsp_o.rvalid && !obi_zcmt_rsp_o.invalid_data) |-> (|obi_zcmt_rsp_o.r.rdata) !== 1'hX)
+  //    @(posedge clk_i) disable iff (~rst_ni) (ypb_zcmt_rsp_o.rvalid && !ypb_zcmt_rsp_o.invalid_data) |-> (|ypb_zcmt_rsp_o.rdata) !== 1'hX)
   //  else
   //    $warning(
   //        1,
   //        "[l1 dcache] ZCMT reading invalid data: data=%08X",
-  //        obi_zcmt_rsp_o.r.rdata
+  //        ypb_zcmt_rsp_o.rdata
   //    );
 
   a_invalid_write_store :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_store_req_i.req && obi_store_rsp_o.gnt) |-> (|obi_store_req_i.a.wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_store_req_i.preq && ypb_store_rsp_o.pgnt) |-> (|ypb_store_req_i.wdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] STORE writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        obi_store_req_i.a.addr,
-        obi_store_req_i.a.be,
-        obi_store_req_i.a.wdata
+        ypb_store_req_i.paddr,
+        ypb_store_req_i.be,
+        ypb_store_req_i.wdata
     );
 
   a_invalid_write_amo :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_req_i.req && obi_amo_rsp_o.gnt) |-> (|obi_amo_req_i.a.wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_amo_req_i.preq && ypb_amo_rsp_o.pgnt) |-> (|ypb_amo_req_i.wdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] AMO writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        obi_amo_req_i.a.addr,
-        obi_amo_req_i.a.be,
-        obi_amo_req_i.a.wdata
+        ypb_amo_req_i.paddr,
+        ypb_amo_req_i.be,
+        ypb_amo_req_i.wdata
     );
 
   //  pragma translate_on

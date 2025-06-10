@@ -26,8 +26,8 @@ module cva6_ptw
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
     parameter type tlb_update_cva6_t = logic,
-    parameter type obi_mmu_ptw_req_t = logic,
-    parameter type obi_mmu_ptw_rsp_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_mmu_ptw_rsp_t = logic,
     parameter int unsigned HYP_EXT = 0
 ) (
     input logic clk_i,  // Clock
@@ -51,8 +51,8 @@ module cva6_ptw
 
     input  logic             lsu_is_store_i,     // this translation was triggered by a store
     // PTW memory interface
-    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
-    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
+    output ypb_mmu_ptw_req_t ypb_mmu_ptw_req_o,
+    input  ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
 
 
     // to TLBs, update logic
@@ -148,15 +148,17 @@ module cva6_ptw
   assign ptw_active_o = (state_q != IDLE);
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign obi_mmu_ptw_req_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-  assign obi_mmu_ptw_req_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
+  assign ypb_mmu_ptw_req_o.vaddr = ptw_pptr_q; // TODO chech why vaddr is needed
+  assign ypb_mmu_ptw_req_o.paddr = ptw_pptr_q;
   // we are never going to kill this request
-  assign obi_mmu_ptw_req_o.kill_req = '0;
+  assign ypb_mmu_ptw_req_o.kill_req = '0;
   // we are never going to write with the HPTW
-  assign obi_mmu_ptw_req_o.data_wdata = '0;
+  assign ypb_mmu_ptw_req_o.wdata = '0;
   // we only issue one single request at a time
-  assign obi_mmu_ptw_req_o.data_id = '0;
-
+  assign ypb_mmu_ptw_req_o.aid = '0;
+  assign ypb_mmu_ptw_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_mmu_ptw_req_o.paddr}  //TO DO CHECK GRANULARITY
+  );
   // -----------
   // TLB Update
   // -----------
@@ -223,7 +225,7 @@ module cva6_ptw
       bad_gpaddr_o[CVA6Cfg.GPLEN-1:0] = ptw_error_at_g_st_o ? ((ptw_stage_q == G_INTERMED_STAGE) ? gptw_pptr_q[CVA6Cfg.GPLEN-1:0] : gpaddr_q) : 'b0;
   end
 
-  assign obi_mmu_ptw_req_o.tag_valid = tag_valid_q;
+  assign ypb_mmu_ptw_req_o.preq = tag_valid_q;
 
   logic allow_access;
 
@@ -244,10 +246,9 @@ module cva6_ptw
   );
 
 
-  assign obi_mmu_ptw_req_o.data_be = CVA6Cfg.XLEN == 32 ? be_gen_32(
-      obi_mmu_ptw_req_o.address_index[1:0], obi_mmu_ptw_req_o.data_size
+  assign ypb_mmu_ptw_req_o.be = CVA6Cfg.XLEN == 32 ? be_gen_32(
+      ypb_mmu_ptw_req_o.vaddr[1:0], ypb_mmu_ptw_req_o.size
   ) : '1;
-
 
 
   //-------------------
@@ -280,9 +281,9 @@ module cva6_ptw
     // default assignments
     // PTW memory interface
     tag_valid_n                 = 1'b0;
-    obi_mmu_ptw_req_o.data_req  = 1'b0;
-    obi_mmu_ptw_req_o.data_size = 2'(CVA6Cfg.PtLevels);
-    obi_mmu_ptw_req_o.data_we   = 1'b0;
+    ypb_mmu_ptw_req_o.vreq      = 1'b0;
+    ypb_mmu_ptw_req_o.size      = 2'(CVA6Cfg.PtLevels);
+    ypb_mmu_ptw_req_o.we        = 1'b0;
     ptw_error_o                 = 1'b0;
     ptw_error_at_g_st_o         = 1'b0;
     ptw_err_at_g_int_st_o       = 1'b0;
@@ -380,9 +381,9 @@ module cva6_ptw
 
       WAIT_GRANT: begin
         // send a request out
-        obi_mmu_ptw_req_o.data_req = 1'b1;
+        ypb_mmu_ptw_req_o.vreq = 1'b1;
         // wait for the WAIT_GRANT
-        if (obi_mmu_ptw_rsp_i.data_gnt) begin
+        if (ypb_mmu_ptw_rsp_i.vgnt) begin
           // send the tag valid signal one cycle later
           tag_valid_n = 1'b1;
           state_d     = PTE_LOOKUP;
@@ -602,7 +603,7 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && obi_mmu_ptw_rsp_i.data_gnt))
+      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && ypb_mmu_ptw_rsp_i.rvalid))
         state_d = WAIT_RVALID;
       else state_d = LATENCY;
     end
@@ -637,8 +638,8 @@ module cva6_ptw
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= obi_mmu_ptw_rsp_i.data_rdata;
-      data_rvalid_q     <= obi_mmu_ptw_rsp_i.data_rvalid;
+      data_rdata_q      <= ypb_mmu_ptw_rsp_i.rdata;
+      data_rvalid_q     <= ypb_mmu_ptw_rsp_i.rvalid;
 
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= gpaddr_n;

@@ -19,13 +19,12 @@ module perf_counters
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type bp_resolve_t = logic,
     parameter type exception_t = logic,
-    parameter type fetch_req_t = logic,
-    parameter type obi_fetch_req_t = logic,
-    parameter type obi_store_req_t = logic,
-    parameter type obi_amo_req_t = logic,
-    parameter type load_req_t = logic,
-    parameter type obi_load_req_t = logic,
-    parameter type obi_mmu_ptw_req_t = logic,
+    parameter type ypb_fetch_req_t = logic,
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_amo_req_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter int unsigned NumMissPorts = 3  // number of miss ports
 ) (
@@ -58,15 +57,14 @@ module perf_counters
     // for newly added events
     input exception_t branch_exceptions_i,  //Branch exceptions->execute unit-> branch_exception_o
 
-    input fetch_req_t       fetch_req_i,
-    input obi_fetch_req_t   fetch_obi_req_i,
-    input obi_store_req_t   obi_store_req_i,
-    input obi_amo_req_t     obi_amo_req_i,
-    input load_req_t        load_req_i,
-    input obi_load_req_t    obi_load_req_i,
-    input obi_mmu_ptw_req_t obi_mmu_ptw_req_i,
+    input ypb_fetch_req_t   ypb_fetch_req_i,
+    input ypb_store_req_t   ypb_store_req_i,
+    input ypb_amo_req_t     ypb_amo_req_i,
+    input ypb_load_req_t    ypb_load_req_i,
+    input ypb_mmu_ptw_req_t ypb_mmu_ptw_req_i,
+    input ypb_zcmt_req_t    ypb_zcmt_req_i,
 
-    input  logic [NumMissPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
+    input logic [NumMissPorts-1:0][CVA6Cfg.DCACHE_SET_ASSOC-1:0]miss_vld_bits_i,  //For Cache eviction (3ports-LOAD,STORE,PTW)
     input logic i_tlb_flush_i,
     input logic stall_issue_i,  //stall-read operands
     input logic [31:0] mcountinhibit_i
@@ -134,9 +132,10 @@ module perf_counters
         5'b01101: events[i] = |return_event;  //Return
         5'b01110: events[i] = sb_full_i;  //MSB Full
         5'b01111: events[i] = if_empty_i;  //Instruction fetch Empty
-        5'b10000: events[i] = fetch_obi_req_i.req;  //L1 I-Cache accesses
+        5'b10000:
+        events[i] = ypb_fetch_req_i.vreq;  //L1 I-Cache accesses TODO maybe preq should be used depending on config
         5'b10001:
-        events[i] = obi_mmu_ptw_req_i.data_req || obi_load_req_i.req || obi_store_req_i.req || obi_amo_req_i.req;//L1 D-Cache accesses
+        events[i] = ypb_mmu_ptw_req_i.vreq || ypb_load_req_i.vreq || ypb_store_req_i.vreq || ypb_amo_req_i.vreq  || ypb_zcmt_req_i.vreq; //L1 D-Cache accesses TODO maybe preq should be used depending on config
         5'b10010: begin
           events[i] = 0;
           if (l1_dcache_miss_i) begin
