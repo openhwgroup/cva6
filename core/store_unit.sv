@@ -246,6 +246,27 @@ module store_unit
     if (flush_i) state_d = IDLE;
   end
 
+  // -------------
+  // Byte-Swapper
+  // -------------
+  // We need to reverse the byte order of what we intend to Store in Data Memory if we are in Big Endian Mode (mbe defines endianness and comes from CSRregfile).
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+
+  always_comb begin
+    if (mbe_i) begin
+      case (lsu_ctrl_i.operation)
+        SB, HSV_B, FSB: endian_data[7:0] = {lsu_ctrl_i.data[7:0]};
+        SH, HSV_H, FSH: endian_data[15:0] = {<<8{lsu_ctrl_i.data[15:0]}};
+        SW, HSV_W, FSW, AMO_LRW, AMO_SCW, AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW,
+        AMO_MINW, AMO_MAXWU, AMO_MINWU:
+        endian_data[31:0] = {<<8{lsu_ctrl_i.data[31:0]}};
+        default: endian_data[CVA6Cfg.XLEN-1:0] = {<<8{lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]}};
+      endcase
+    end else begin
+      endian_data = lsu_ctrl_i.data;
+    end
+  end
+
   // -----------
   // Re-aligner
   // -----------
@@ -253,8 +274,8 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data});
+    st_data_n = ((CVA6Cfg.RVA && instr_is_amo) ? endian_data[CVA6Cfg.XLEN-1:0] :
+                 data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, endian_data}));
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if (CVA6Cfg.RVA) begin
