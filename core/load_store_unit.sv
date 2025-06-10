@@ -96,6 +96,8 @@ module load_store_unit
 
     // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                          priv_lvl_i,
+    // Data Endian mode - CSR_REGFILE
+    input  logic                                      mbe_i,
     // Current virtualization mode - CSR_REGFILE
     input  logic                                      v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
@@ -523,6 +525,7 @@ module load_store_unit
       .commit_i,
       .commit_ready_o,
       .amo_valid_commit_i,
+      .mbe_i     (mbe_i),
 
       .valid_o              (st_valid),
       .trans_id_o           (st_trans_id),
@@ -570,6 +573,7 @@ module load_store_unit
       .trans_id_o           (ld_trans_id),
       .result_o             (ld_result),
       .ex_o                 (ld_ex),
+      .mbe_i                (mbe_i),
       // MMU port
       .translation_req_o    (ld_translation_req),
       .vaddr_o              (ld_vaddr),

@@ -47,6 +47,8 @@ module load_unit
     output logic [CVA6Cfg.XLEN-1:0] result_o,
     // Load exception - ISSUE_STAGE
     output exception_t ex_o,
+    // Data Endian mode - CSR_REGFILE
+    input logic mbe_i,
     // Request address translation - MMU
     output logic translation_req_o,
     // Virtual address - MMU

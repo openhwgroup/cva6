@@ -380,6 +380,7 @@ module cva6
   logic                                         eret;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
+  logic                                         mbe; // determines the data endian-ness of the processor
 
   localparam NumPorts = 4;
 
@@ -1074,6 +1075,7 @@ module cva6
       .flush_tlb_vvma_i        (flush_tlb_vvma_ctrl_ex),
       .flush_tlb_gvma_i        (flush_tlb_gvma_ctrl_ex),
       .priv_lvl_i              (priv_lvl),                       // from CSR
+      .mbe_i                   (mbe),                            // from CSR
       .v_i                     (v),                              // from CSR
       .ld_st_priv_lvl_i        (ld_st_priv_lvl_csr_ex),          // from CSR
       .ld_st_v_i               (ld_st_v_csr_ex),                 // from CSR
@@ -1189,6 +1191,7 @@ module cva6
       .eret_o                  (eret),
       .trap_vector_base_o      (trap_vector_base_commit_pcgen),
       .priv_lvl_o              (priv_lvl),
+      .mbe_o                   (mbe),
       .v_o                     (v),
       .acc_fflags_ex_i         (acc_resp_fflags),
       .acc_fflags_ex_valid_i   (acc_resp_fflags_valid),
