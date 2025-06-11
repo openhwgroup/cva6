@@ -20,83 +20,14 @@ module cva6
   import ariane_pkg::*;
 #(
     // CVA6 config
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = build_config_pkg::build_config(
-        cva6_config_pkg::cva6_cfg
-    ),
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
 
     // RVFI PROBES
-    localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
-    localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
-    parameter type rvfi_probes_t = struct packed {
-      rvfi_probes_csr_t   csr;
-      rvfi_probes_instr_t instr;
-    },
+    parameter type rvfi_probes_t = logic,
 
-    // AXI types
-    localparam type axi_ar_chan_t = struct packed {
-      logic [CVA6Cfg.AxiIdWidth-1:0]   id;
-      logic [CVA6Cfg.AxiAddrWidth-1:0] addr;
-      axi_pkg::len_t                   len;
-      axi_pkg::size_t                  size;
-      axi_pkg::burst_t                 burst;
-      logic                            lock;
-      axi_pkg::cache_t                 cache;
-      axi_pkg::prot_t                  prot;
-      axi_pkg::qos_t                   qos;
-      axi_pkg::region_t                region;
-      logic [CVA6Cfg.AxiUserWidth-1:0] user;
-    },
-    localparam type axi_aw_chan_t = struct packed {
-      logic [CVA6Cfg.AxiIdWidth-1:0]   id;
-      logic [CVA6Cfg.AxiAddrWidth-1:0] addr;
-      axi_pkg::len_t                   len;
-      axi_pkg::size_t                  size;
-      axi_pkg::burst_t                 burst;
-      logic                            lock;
-      axi_pkg::cache_t                 cache;
-      axi_pkg::prot_t                  prot;
-      axi_pkg::qos_t                   qos;
-      axi_pkg::region_t                region;
-      axi_pkg::atop_t                  atop;
-      logic [CVA6Cfg.AxiUserWidth-1:0] user;
-    },
-    localparam type axi_w_chan_t = struct packed {
-      logic [CVA6Cfg.AxiDataWidth-1:0]     data;
-      logic [(CVA6Cfg.AxiDataWidth/8)-1:0] strb;
-      logic                                last;
-      logic [CVA6Cfg.AxiUserWidth-1:0]     user;
-    },
-    localparam type b_chan_t = struct packed {
-      logic [CVA6Cfg.AxiIdWidth-1:0]   id;
-      axi_pkg::resp_t                  resp;
-      logic [CVA6Cfg.AxiUserWidth-1:0] user;
-    },
-    localparam type r_chan_t = struct packed {
-      logic [CVA6Cfg.AxiIdWidth-1:0]   id;
-      logic [CVA6Cfg.AxiDataWidth-1:0] data;
-      axi_pkg::resp_t                  resp;
-      logic                            last;
-      logic [CVA6Cfg.AxiUserWidth-1:0] user;
-    },
-    parameter type noc_req_t = struct packed {
-      axi_aw_chan_t aw;
-      logic         aw_valid;
-      axi_w_chan_t  w;
-      logic         w_valid;
-      logic         b_ready;
-      axi_ar_chan_t ar;
-      logic         ar_valid;
-      logic         r_ready;
-    },
-    parameter type noc_resp_t = struct packed {
-      logic    aw_ready;
-      logic    ar_ready;
-      logic    w_ready;
-      logic    b_valid;
-      b_chan_t b;
-      logic    r_valid;
-      r_chan_t r;
-    },
+    // NOC Types AXI bus or several OBI bus
+    parameter type noc_req_t  = logic,
+    parameter type noc_resp_t = logic,
 
     // CVXIF Types
     localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
@@ -144,18 +75,18 @@ module cva6
 );
 
 
-  localparam type ypb_fetch_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.FETCH_WIDTH);
-  localparam type ypb_fetch_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.FETCH_WIDTH);
-  localparam type ypb_store_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_store_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_amo_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_amo_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_load_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_load_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_mmu_ptw_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_mmu_ptw_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_zcmt_req_t =  `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
-  localparam type ypb_zcmt_rsp_t =  `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_fetch_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.FETCH_WIDTH);
+  localparam type ypb_fetch_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.FETCH_WIDTH);
+  localparam type ypb_store_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_store_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_amo_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_amo_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_load_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_load_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_mmu_ptw_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_mmu_ptw_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_zcmt_req_t = `YPB_REQ_T(CVA6Cfg, CVA6Cfg.XLEN);
+  localparam type ypb_zcmt_rsp_t = `YPB_RSP_T(CVA6Cfg, CVA6Cfg.XLEN);
 
 
   logic icache_enable;
@@ -170,15 +101,15 @@ module cva6
   logic wbuffer_empty;
   logic wbuffer_not_ni;
 
-  
+
   ypb_fetch_req_t ypb_fetch_req;
   ypb_fetch_rsp_t ypb_fetch_rsp;
 
   ypb_store_req_t ypb_store_req;
   ypb_store_rsp_t ypb_store_rsp;
 
-  ypb_amo_req_t ypb_amo_req; 
-  ypb_amo_rsp_t ypb_amo_rsp; 
+  ypb_amo_req_t ypb_amo_req;
+  ypb_amo_rsp_t ypb_amo_rsp;
 
   ypb_load_req_t ypb_load_req;
   ypb_load_rsp_t ypb_load_rsp;
@@ -195,38 +126,36 @@ module cva6
 
   cva6_pipeline #(
       // CVA6 config
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg            (CVA6Cfg),
       // RVFI PROBES
-      .rvfi_probes_instr_t       ( rvfi_probes_instr_t                ),
-      .rvfi_probes_csr_t       ( rvfi_probes_csr_t                ),
-      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_probes_t      (rvfi_probes_t),
       // YPB 
-      .ypb_fetch_req_t(ypb_fetch_req_t),    
-      .ypb_fetch_rsp_t(ypb_fetch_rsp_t),
-      .ypb_store_req_t(ypb_store_req_t),
-      .ypb_store_rsp_t(ypb_store_rsp_t),
-      .ypb_amo_req_t  (ypb_amo_req_t),   
-      .ypb_amo_rsp_t  (ypb_amo_rsp_t),   
-      .ypb_load_req_t (ypb_load_req_t),  
-      .ypb_load_rsp_t (ypb_load_rsp_t),  
-      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t), 
-      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t), 
-      .ypb_zcmt_req_t (ypb_zcmt_req_t),  
-      .ypb_zcmt_rsp_t (ypb_zcmt_rsp_t),  
+      .ypb_fetch_req_t    (ypb_fetch_req_t),
+      .ypb_fetch_rsp_t    (ypb_fetch_rsp_t),
+      .ypb_store_req_t    (ypb_store_req_t),
+      .ypb_store_rsp_t    (ypb_store_rsp_t),
+      .ypb_amo_req_t      (ypb_amo_req_t),
+      .ypb_amo_rsp_t      (ypb_amo_rsp_t),
+      .ypb_load_req_t     (ypb_load_req_t),
+      .ypb_load_rsp_t     (ypb_load_rsp_t),
+      .ypb_mmu_ptw_req_t  (ypb_mmu_ptw_req_t),
+      .ypb_mmu_ptw_rsp_t  (ypb_mmu_ptw_rsp_t),
+      .ypb_zcmt_req_t     (ypb_zcmt_req_t),
+      .ypb_zcmt_rsp_t     (ypb_zcmt_rsp_t),
       // CVXIF
-      .readregflags_t       (readregflags_t     ),
-      .writeregflags_t      (writeregflags_t    ),
-      .id_t                 (id_t               ),
-      .hartid_t             (hartid_t           ),
-      .x_compressed_req_t   (x_compressed_req_t ),
-      .x_compressed_resp_t  (x_compressed_resp_t),
-      .x_issue_req_t        (x_issue_req_t      ),
-      .x_issue_resp_t       (x_issue_resp_t     ),
-      .x_register_t         (x_register_t       ),
-      .x_commit_t           (x_commit_t         ),
-      .x_result_t           (x_result_t         ),
-      .cvxif_req_t          (cvxif_req_t        ),
-      .cvxif_resp_t         (cvxif_resp_t       )
+      .readregflags_t     (readregflags_t),
+      .writeregflags_t    (writeregflags_t),
+      .id_t               (id_t),
+      .hartid_t           (hartid_t),
+      .x_compressed_req_t (x_compressed_req_t),
+      .x_compressed_resp_t(x_compressed_resp_t),
+      .x_issue_req_t      (x_issue_req_t),
+      .x_issue_resp_t     (x_issue_resp_t),
+      .x_register_t       (x_register_t),
+      .x_commit_t         (x_commit_t),
+      .x_result_t         (x_result_t),
+      .cvxif_req_t        (cvxif_req_t),
+      .cvxif_resp_t       (cvxif_resp_t)
       //
   ) i_cva6_pipeline (
       .clk_i(clk_i),
@@ -247,8 +176,8 @@ module cva6
       .icache_flush_o (icache_flush),
       .icache_miss_i  (icache_miss),
 
-      .ypb_fetch_req_o   (ypb_fetch_req),
-      .ypb_fetch_rsp_i   (ypb_fetch_rsp),
+      .ypb_fetch_req_o(ypb_fetch_req),
+      .ypb_fetch_rsp_i(ypb_fetch_rsp),
 
       // FROM/TO DCACHE SUBSYSTEM
 
@@ -275,154 +204,149 @@ module cva6
 
   if (CVA6Cfg.PipelineOnly) begin : gen_obi_adapter
 
-  // -------------------
-  // OBI Adapter
-  // -------------------
+    // -------------------
+    // OBI Adapter
+    // -------------------
 
-  cva6_obi_adapter_subsystem #(
-      .CVA6Cfg          (CVA6Cfg),
-      .ypb_fetch_req_t  (ypb_fetch_req_t),
-      .ypb_fetch_rsp_t  (ypb_fetch_rsp_t),
-      .ypb_store_req_t  (ypb_store_req_t),
-      .ypb_store_rsp_t  (ypb_store_rsp_t),
-      .ypb_amo_req_t    (ypb_amo_req_t),
-      .ypb_amo_rsp_t    (ypb_amo_rsp_t),
-      .ypb_load_req_t   (ypb_load_req_t),
-      .ypb_load_rsp_t   (ypb_load_rsp_t),
-      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
-      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
-      .ypb_zcmt_req_t   (ypb_zcmt_req_t),
-      .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
-      .noc_req_t        (noc_req_t),
-      .noc_resp_t       (noc_resp_t)
+    cva6_obi_adapter_subsystem #(
+        .CVA6Cfg          (CVA6Cfg),
+        .ypb_fetch_req_t  (ypb_fetch_req_t),
+        .ypb_fetch_rsp_t  (ypb_fetch_rsp_t),
+        .ypb_store_req_t  (ypb_store_req_t),
+        .ypb_store_rsp_t  (ypb_store_rsp_t),
+        .ypb_amo_req_t    (ypb_amo_req_t),
+        .ypb_amo_rsp_t    (ypb_amo_rsp_t),
+        .ypb_load_req_t   (ypb_load_req_t),
+        .ypb_load_rsp_t   (ypb_load_rsp_t),
+        .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+        .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
+        .ypb_zcmt_req_t   (ypb_zcmt_req_t),
+        .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
+        .noc_req_t        (noc_req_t),
+        .noc_resp_t       (noc_resp_t)
 
-  ) i_cva6_obi_adapter_subsystem (
-      .clk_i (clk_i),
-      .rst_ni(rst_ni),
+    ) i_cva6_obi_adapter_subsystem (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
 
-      // FROM/TO PIPELINE (YPB)
+        // FROM/TO PIPELINE (YPB)
 
-      .ypb_fetch_req_i   (ypb_fetch_req),
-      .ypb_fetch_rsp_o   (ypb_fetch_rsp),
-      .ypb_store_req_i  (ypb_store_req),
-      .ypb_store_rsp_o  (ypb_store_rsp),
-      .ypb_amo_req_i    (ypb_amo_req),
-      .ypb_amo_rsp_o    (ypb_amo_rsp),
-      .ypb_load_req_i   (ypb_load_req),
-      .ypb_load_rsp_o   (ypb_load_rsp),
-      .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req),
-      .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp),
-      .ypb_zcmt_req_i   (ypb_zcmt_req),
-      .ypb_zcmt_rsp_o   (ypb_zcmt_rsp),
+        .ypb_fetch_req_i  (ypb_fetch_req),
+        .ypb_fetch_rsp_o  (ypb_fetch_rsp),
+        .ypb_store_req_i  (ypb_store_req),
+        .ypb_store_rsp_o  (ypb_store_rsp),
+        .ypb_amo_req_i    (ypb_amo_req),
+        .ypb_amo_rsp_o    (ypb_amo_rsp),
+        .ypb_load_req_i   (ypb_load_req),
+        .ypb_load_rsp_o   (ypb_load_rsp),
+        .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req),
+        .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp),
+        .ypb_zcmt_req_i   (ypb_zcmt_req),
+        .ypb_zcmt_rsp_o   (ypb_zcmt_rsp),
 
-      // CACHE CONTROL (NO USED)
+        // CACHE CONTROL (NO USED)
 
-      .icache_en_i   (icache_enable),
-      .icache_flush_i(icache_flush),
-      .icache_miss_o (icache_miss),
-      .dcache_enable_i   (dcache_enable),
-      .dcache_flush_i    (dcache_flush),
-      .dcache_flush_ack_o(dcache_flush_ack),
-      .dcache_miss_o     (dcache_miss),
-      .wbuffer_empty_o (wbuffer_empty),
-      .wbuffer_not_ni_o(wbuffer_not_ni),
+        .icache_en_i       (icache_enable),
+        .icache_flush_i    (icache_flush),
+        .icache_miss_o     (icache_miss),
+        .dcache_enable_i   (dcache_enable),
+        .dcache_flush_i    (dcache_flush),
+        .dcache_flush_ack_o(dcache_flush_ack),
+        .dcache_miss_o     (dcache_miss),
+        .wbuffer_empty_o   (wbuffer_empty),
+        .wbuffer_not_ni_o  (wbuffer_not_ni),
 
-      // FROM/TO NOC (OBI)
+        // FROM/TO NOC (OBI)
 
-      .noc_req_o (noc_req_o),
-      .noc_resp_i(noc_resp_i)
-  );
-  
+        .noc_req_o (noc_req_o),
+        .noc_resp_i(noc_resp_i)
+    );
+
   end else begin : gen_cache_subsystem
 
-  // -------------------
-  // Cache Subsystem
-  // -------------------
+    // -------------------
+    // Cache Subsystem
+    // -------------------
 
-  cva6_hpdcache_subsystem #(
-      .CVA6Cfg          (CVA6Cfg),
-      .ypb_fetch_req_t  (ypb_fetch_req_t),
-      .ypb_fetch_rsp_t  (ypb_fetch_rsp_t),
-      .ypb_store_req_t  (ypb_store_req_t),
-      .ypb_store_rsp_t  (ypb_store_rsp_t),
-      .ypb_amo_req_t    (ypb_amo_req_t),
-      .ypb_amo_rsp_t    (ypb_amo_rsp_t),
-      .ypb_load_req_t   (ypb_load_req_t),
-      .ypb_load_rsp_t   (ypb_load_rsp_t),
-      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
-      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
-      .ypb_zcmt_req_t   (ypb_zcmt_req_t),
-      .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
-      .axi_ar_chan_t    (axi_ar_chan_t),
-      .axi_aw_chan_t    (axi_aw_chan_t),
-      .axi_w_chan_t     (axi_w_chan_t),
-      .axi_b_chan_t     (b_chan_t),
-      .axi_r_chan_t     (r_chan_t),
-      .noc_req_t        (noc_req_t),
-      .noc_resp_t       (noc_resp_t),
-      .cmo_req_t        (logic  /*FIXME*/),
-      .cmo_rsp_t        (logic  /*FIXME*/)
-  ) i_cache_subsystem (
-      .clk_i (clk_i),
-      .rst_ni(rst_ni),
+    cva6_hpdcache_subsystem #(
+        .CVA6Cfg          (CVA6Cfg),
+        .ypb_fetch_req_t  (ypb_fetch_req_t),
+        .ypb_fetch_rsp_t  (ypb_fetch_rsp_t),
+        .ypb_store_req_t  (ypb_store_req_t),
+        .ypb_store_rsp_t  (ypb_store_rsp_t),
+        .ypb_amo_req_t    (ypb_amo_req_t),
+        .ypb_amo_rsp_t    (ypb_amo_rsp_t),
+        .ypb_load_req_t   (ypb_load_req_t),
+        .ypb_load_rsp_t   (ypb_load_rsp_t),
+        .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+        .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
+        .ypb_zcmt_req_t   (ypb_zcmt_req_t),
+        .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
+        .noc_req_t        (noc_req_t),
+        .noc_resp_t       (noc_resp_t),
+        .cmo_req_t        (logic  /*FIXME*/),
+        .cmo_rsp_t        (logic  /*FIXME*/)
+    ) i_cache_subsystem (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
 
-      // FROM/TO FETCH
+        // FROM/TO FETCH
 
-      .icache_en_i   (icache_enable),
-      .icache_flush_i(icache_flush),
-      .icache_miss_o (icache_miss),
+        .icache_en_i   (icache_enable),
+        .icache_flush_i(icache_flush),
+        .icache_miss_o (icache_miss),
 
-      // FETCH FROM/TO PIPELINE (YPB)
- 
-      .ypb_fetch_req_i   (ypb_fetch_req),
-      .ypb_fetch_rsp_o   (ypb_fetch_rsp),
+        // FETCH FROM/TO PIPELINE (YPB)
 
-      // FROM/TO LSU
+        .ypb_fetch_req_i(ypb_fetch_req),
+        .ypb_fetch_rsp_o(ypb_fetch_rsp),
 
-      .dcache_enable_i   (dcache_enable),
-      .dcache_flush_i    (dcache_flush),
-      .dcache_flush_ack_o(dcache_flush_ack),
-      .dcache_miss_o     (dcache_miss),
+        // FROM/TO LSU
 
-      // DATA FROM/TO PIPELINE (YPB)
+        .dcache_enable_i   (dcache_enable),
+        .dcache_flush_i    (dcache_flush),
+        .dcache_flush_ack_o(dcache_flush_ack),
+        .dcache_miss_o     (dcache_miss),
 
-      .ypb_store_req_i  (ypb_store_req),
-      .ypb_store_rsp_o  (ypb_store_rsp),
-      .ypb_amo_req_i    (ypb_amo_req),
-      .ypb_amo_rsp_o    (ypb_amo_rsp),
-      .ypb_load_req_i   (ypb_load_req),
-      .ypb_load_rsp_o   (ypb_load_rsp),
-      .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req),
-      .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp),
-      .ypb_zcmt_req_i   (ypb_zcmt_req),
-      .ypb_zcmt_rsp_o   (ypb_zcmt_rsp),
+        // DATA FROM/TO PIPELINE (YPB)
 
-      .wbuffer_empty_o (wbuffer_empty),
-      .wbuffer_not_ni_o(wbuffer_not_ni),
+        .ypb_store_req_i  (ypb_store_req),
+        .ypb_store_rsp_o  (ypb_store_rsp),
+        .ypb_amo_req_i    (ypb_amo_req),
+        .ypb_amo_rsp_o    (ypb_amo_rsp),
+        .ypb_load_req_i   (ypb_load_req),
+        .ypb_load_rsp_o   (ypb_load_rsp),
+        .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req),
+        .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp),
+        .ypb_zcmt_req_i   (ypb_zcmt_req),
+        .ypb_zcmt_rsp_o   (ypb_zcmt_rsp),
 
-      // FROM/TO CMO
+        .wbuffer_empty_o (wbuffer_empty),
+        .wbuffer_not_ni_o(wbuffer_not_ni),
 
-      .dcache_cmo_req_i('0  /*FIXME*/),
-      .dcache_cmo_rsp_o(  /*FIXME*/),
+        // FROM/TO CMO
 
-      // FROM/TO HW PREFETCHER
+        .dcache_cmo_req_i('0  /*FIXME*/),
+        .dcache_cmo_rsp_o(  /*FIXME*/),
 
-      .hwpf_base_set_i    ('0  /*FIXME*/),
-      .hwpf_base_i        ('0  /*FIXME*/),
-      .hwpf_base_o        (  /*FIXME*/),
-      .hwpf_param_set_i   ('0  /*FIXME*/),
-      .hwpf_param_i       ('0  /*FIXME*/),
-      .hwpf_param_o       (  /*FIXME*/),
-      .hwpf_throttle_set_i('0  /*FIXME*/),
-      .hwpf_throttle_i    ('0  /*FIXME*/),
-      .hwpf_throttle_o    (  /*FIXME*/),
-      .hwpf_status_o      (  /*FIXME*/),
+        // FROM/TO HW PREFETCHER
 
-      // FROM/TO NOC (AXI)
+        .hwpf_base_set_i    ('0  /*FIXME*/),
+        .hwpf_base_i        ('0  /*FIXME*/),
+        .hwpf_base_o        (  /*FIXME*/),
+        .hwpf_param_set_i   ('0  /*FIXME*/),
+        .hwpf_param_i       ('0  /*FIXME*/),
+        .hwpf_param_o       (  /*FIXME*/),
+        .hwpf_throttle_set_i('0  /*FIXME*/),
+        .hwpf_throttle_i    ('0  /*FIXME*/),
+        .hwpf_throttle_o    (  /*FIXME*/),
+        .hwpf_status_o      (  /*FIXME*/),
 
-      .noc_req_o (noc_req_o),
-      .noc_resp_i(noc_resp_i)
-  );
+        // FROM/TO NOC (AXI)
+
+        .noc_req_o (noc_req_o),
+        .noc_resp_i(noc_resp_i)
+    );
 
   end
 

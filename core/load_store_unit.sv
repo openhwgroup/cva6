@@ -92,67 +92,67 @@ module load_store_unit
     output fetch_arsp_t fetch_arsp_o,
 
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                          priv_lvl_i,
+    input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
-    input  logic                                      v_i,
+    input logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
-    input  riscv::priv_lvl_t                          ld_st_priv_lvl_i,
+    input riscv::priv_lvl_t ld_st_priv_lvl_i,
     // Virtualization mode at which load and stores should happen - CSR_REGFILE
-    input  logic                                      ld_st_v_i,
+    input logic ld_st_v_i,
     // Instruction is a hyp load/store - CSR_REGFILE
-    output logic                                      csr_hs_ld_st_inst_o,
+    output logic csr_hs_ld_st_inst_o,
     // Supervisor User Memory - CSR_REGFILE
-    input  logic                                      sum_i,
+    input logic sum_i,
     // Virtual Supervisor User Memory - CSR_REGFILE
-    input  logic                                      vs_sum_i,
+    input logic vs_sum_i,
     // Make Executable Readable - CSR_REGFILE
-    input  logic                                      mxr_i,
+    input logic mxr_i,
     // Make Executable Readable Virtual Supervisor - CSR_REGFILE
-    input  logic                                      vmxr_i,
+    input logic vmxr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [     CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                                      flush_tlb_i,
-    input  logic                                      flush_tlb_vvma_i,
-    input  logic                                      flush_tlb_gvma_i,
+    input logic flush_tlb_i,
+    input logic flush_tlb_vvma_i,
+    input logic flush_tlb_gvma_i,
     // Instruction TLB miss - PERF_COUNTERS
-    output logic                                      itlb_miss_o,
+    output logic itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
-    output logic                                      dtlb_miss_o,
+    output logic dtlb_miss_o,
     // Store cache response - DCACHE
-    output ypb_store_req_t   ypb_store_req_o,
+    output ypb_store_req_t ypb_store_req_o,
     // Store cache request - DCACHE
-    input  ypb_store_rsp_t   ypb_store_rsp_i,
+    input ypb_store_rsp_t ypb_store_rsp_i,
     // AMO request - DCACHE
-    output ypb_amo_req_t     ypb_amo_req_o,
+    output ypb_amo_req_t ypb_amo_req_o,
     // AMO response - DCACHE
-    input  ypb_amo_rsp_t     ypb_amo_rsp_i,
+    input ypb_amo_rsp_t ypb_amo_rsp_i,
     // Load cache response - DCACHE
-    output ypb_load_req_t    ypb_load_req_o,
+    output ypb_load_req_t ypb_load_req_o,
     // Load cache request - DCACHE
-    input  ypb_load_rsp_t    ypb_load_rsp_i,
+    input ypb_load_rsp_t ypb_load_rsp_i,
     // MMU PTW cache response - DCACHE
     output ypb_mmu_ptw_req_t ypb_mmu_ptw_req_o,
     // MMU PTW cache request - DCACHE
-    input  ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
+    input ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED

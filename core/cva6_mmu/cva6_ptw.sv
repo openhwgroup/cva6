@@ -148,7 +148,7 @@ module cva6_ptw
   assign ptw_active_o = (state_q != IDLE);
   assign walking_instr_o = is_instr_ptw_q;
   // directly output the correct physical address
-  assign ypb_mmu_ptw_req_o.vaddr = ptw_pptr_q; // TODO chech why vaddr is needed
+  assign ypb_mmu_ptw_req_o.vaddr = ptw_pptr_q;  // TODO chech why vaddr is needed
   assign ypb_mmu_ptw_req_o.paddr = ptw_pptr_q;
   // we are never going to kill this request
   assign ypb_mmu_ptw_req_o.kill_req = '0;
@@ -280,26 +280,26 @@ module cva6_ptw
     // automatic logic [CVA6Cfg.GPLEN-1:0] gpaddr;
     // default assignments
     // PTW memory interface
-    tag_valid_n                 = 1'b0;
-    ypb_mmu_ptw_req_o.vreq      = 1'b0;
-    ypb_mmu_ptw_req_o.size      = 2'(CVA6Cfg.PtLevels);
-    ypb_mmu_ptw_req_o.we        = 1'b0;
-    ptw_error_o                 = 1'b0;
-    ptw_error_at_g_st_o         = 1'b0;
-    ptw_err_at_g_int_st_o       = 1'b0;
-    ptw_access_exception_o      = 1'b0;
-    shared_tlb_update_o.valid   = 1'b0;
-    is_instr_ptw_n              = is_instr_ptw_q;
-    ptw_lvl_n                   = ptw_lvl_q;
-    ptw_pptr_n                  = ptw_pptr_q;
-    state_d                     = state_q;
-    ptw_stage_d                 = ptw_stage_q;
-    global_mapping_n            = global_mapping_q;
+    tag_valid_n               = 1'b0;
+    ypb_mmu_ptw_req_o.vreq    = 1'b0;
+    ypb_mmu_ptw_req_o.size    = 2'(CVA6Cfg.PtLevels);
+    ypb_mmu_ptw_req_o.we      = 1'b0;
+    ptw_error_o               = 1'b0;
+    ptw_error_at_g_st_o       = 1'b0;
+    ptw_err_at_g_int_st_o     = 1'b0;
+    ptw_access_exception_o    = 1'b0;
+    shared_tlb_update_o.valid = 1'b0;
+    is_instr_ptw_n            = is_instr_ptw_q;
+    ptw_lvl_n                 = ptw_lvl_q;
+    ptw_pptr_n                = ptw_pptr_q;
+    state_d                   = state_q;
+    ptw_stage_d               = ptw_stage_q;
+    global_mapping_n          = global_mapping_q;
     // input registers
-    tlb_update_asid_n           = tlb_update_asid_q;
-    tlb_update_vmid_n           = tlb_update_vmid_q;
-    vaddr_n                     = vaddr_q;
-    pptr                        = ptw_pptr_q;
+    tlb_update_asid_n         = tlb_update_asid_q;
+    tlb_update_vmid_n         = tlb_update_vmid_q;
+    vaddr_n                   = vaddr_q;
+    pptr                      = ptw_pptr_q;
 
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;

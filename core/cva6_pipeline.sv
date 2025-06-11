@@ -23,38 +23,36 @@ module cva6_pipeline
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
 
     // RVFI PROBES
-    parameter type rvfi_probes_instr_t = logic,
-    parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic,
 
     // YPB Types
-    parameter type ypb_fetch_req_t =  logic,         
-    parameter type ypb_fetch_rsp_t =  logic,         
-    parameter type ypb_store_req_t = logic,         
-    parameter type ypb_store_rsp_t = logic,         
-    parameter type ypb_amo_req_t = logic,         
-    parameter type ypb_amo_rsp_t = logic,         
-    parameter type ypb_load_req_t = logic,         
-    parameter type ypb_load_rsp_t = logic,         
-    parameter type ypb_mmu_ptw_req_t = logic,         
-    parameter type ypb_mmu_ptw_rsp_t = logic,         
-    parameter type ypb_zcmt_req_t = logic,         
-    parameter type ypb_zcmt_rsp_t = logic,         
+    parameter type ypb_fetch_req_t = logic,
+    parameter type ypb_fetch_rsp_t = logic,
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_store_rsp_t = logic,
+    parameter type ypb_amo_req_t = logic,
+    parameter type ypb_amo_rsp_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_load_rsp_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_mmu_ptw_rsp_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
+    parameter type ypb_zcmt_rsp_t = logic,
 
     // CVXIF Types
-    parameter type readregflags_t = logic,         
-    parameter type writeregflags_t = logic,         
-    parameter type id_t = logic,         
-    parameter type hartid_t = logic,         
-    parameter type x_compressed_req_t = logic,         
-    parameter type x_compressed_resp_t = logic,         
-    parameter type x_issue_req_t = logic,         
-    parameter type x_issue_resp_t = logic,         
-    parameter type x_register_t = logic,         
-    parameter type x_commit_t = logic,         
-    parameter type x_result_t = logic,         
-    parameter type cvxif_req_t = logic,         
-    parameter type cvxif_resp_t = logic         
+    parameter type readregflags_t = logic,
+    parameter type writeregflags_t = logic,
+    parameter type id_t = logic,
+    parameter type hartid_t = logic,
+    parameter type x_compressed_req_t = logic,
+    parameter type x_compressed_resp_t = logic,
+    parameter type x_issue_req_t = logic,
+    parameter type x_issue_resp_t = logic,
+    parameter type x_register_t = logic,
+    parameter type x_commit_t = logic,
+    parameter type x_result_t = logic,
+    parameter type cvxif_req_t = logic,
+    parameter type cvxif_resp_t = logic
 
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -102,7 +100,7 @@ module cva6_pipeline
     // Fetch YPB request ports - FRONTEND
     output ypb_fetch_req_t ypb_fetch_req_o,
     // Fetch YPB response ports - FRONTEND
-    input ypb_fetch_rsp_t ypb_fetch_rsp_i,
+    input  ypb_fetch_rsp_t ypb_fetch_rsp_i,
 
     // Store YPB request ports - EX_STAGE
     output ypb_store_req_t ypb_store_req_o,
@@ -135,6 +133,8 @@ module cva6_pipeline
     input logic dcache_wbuffer_not_ni_i
 );
 
+  localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
+  localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
 
   localparam type exception_t = struct packed {
     logic [CVA6Cfg.XLEN-1:0] cause;  // cause of exception
@@ -1133,10 +1133,10 @@ module cva6_pipeline
         .ypb_load_req_i   (ypb_load_req_o),
         .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req_o),
         .ypb_zcmt_req_i   (ypb_zcmt_req_o),
-        .miss_vld_bits_i('0  /*FIXME*/),          //WT cache only ??
-        .i_tlb_flush_i  (flush_tlb_ctrl_ex),
-        .stall_issue_i  (stall_issue),
-        .mcountinhibit_i(mcountinhibit_csr_perf)
+        .miss_vld_bits_i  ('0  /*FIXME*/),          //WT cache only ??
+        .i_tlb_flush_i    (flush_tlb_ctrl_ex),
+        .stall_issue_i    (stall_issue),
+        .mcountinhibit_i  (mcountinhibit_csr_perf)
     );
   end : gen_perf_counter
   else begin : gen_no_perf_counter

@@ -143,7 +143,7 @@ module cva6_hpdcache_if_adapter
                                                                                     CVA6Cfg.DCACHE_INDEX_WIDTH];
         assign ypb_load_rsp_o.vgnt = hpdcache_req_ready_i;
         assign ypb_load_rsp_o.pgnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
- 
+
       end else begin
         // When MMu is not present request is done in 1 phases, s0: index+tag
         assign hpdcache_req.phys_indexed = 1'b1;
@@ -162,7 +162,7 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req_pma_o.io = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
         ;  // unused on physically indexed request
-        assign hpdcache_req_tag_o = '0;  // unused on physically indexed request
+        assign hpdcache_req_tag_o  = '0;  // unused on physically indexed request
 
         assign ypb_load_rsp_o.vgnt = 1'b0;
         assign ypb_load_rsp_o.pgnt = ypb_load_req_i.preq && hpdcache_req_ready_i;
@@ -395,9 +395,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               phys_indexed: 1'b1,
               addr_tag: amo_tag,
               pma: '{
-                  uncacheable:
-                  !
-                  ypb_amo_req_i.cacheable,
+                  uncacheable: !ypb_amo_req_i.cacheable,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }
@@ -420,9 +418,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               CVA6Cfg.DCACHE_INDEX_WIDTH
               ],
               pma: '{
-                  uncacheable:
-                  !
-                  ypb_store_req_i.cacheable,
+                  uncacheable: !ypb_store_req_i.cacheable,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }

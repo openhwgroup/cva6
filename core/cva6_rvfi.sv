@@ -15,10 +15,7 @@ module cva6_rvfi
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type rvfi_instr_t = logic,
     parameter type rvfi_csr_t = logic,
-    parameter type rvfi_probes_instr_t = logic,
-    parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic
-
 ) (
 
     input logic clk_i,
@@ -29,6 +26,9 @@ module cva6_rvfi
     output rvfi_csr_t rvfi_csr_o
 
 );
+
+  localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
+  localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode =
     (CVA6Cfg.XLEN'(CVA6Cfg.RVA) << 0)   // A - Atomic Instructions extension
