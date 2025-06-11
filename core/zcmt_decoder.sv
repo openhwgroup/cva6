@@ -46,88 +46,99 @@ module zcmt_decoder #(
     output logic                             fetch_stall_o,
     // jump_address
     output logic          [CVA6Cfg.XLEN-1:0] jump_address_o
+   
 );
 
   // FSM States
-  enum logic {
+  enum logic [1:0] {
     IDLE,  // if ZCMT instruction then request sent to fetch the entry from jump table
-    TABLE_JUMP  // Check the valid data from jump table and Calculate the offset for jump and create jal instruction
+    TABLE_WAIT_GNT,
+    TABLE_WAIT_RVALID // Check the valid data from jump table and Calculate the offset for jump and create jal instruction
+
   }
       state_d, state_q;
   // Temporary registers
   // Physical address: jvt + (index <<2)
   logic [CVA6Cfg.VLEN-1:0] table_address;
+  logic [CVA6Cfg.VLEN-1:0] req_addr_q, req_addr_d;
 
   always_comb begin
-    state_d                   = state_q;
-    illegal_instr_o           = 1'b0;
-    is_compressed_o           = is_zcmt_instr_i || is_compressed_i;
-    fetch_stall_o             = '0;
-    jump_address_o            = '0;
-
-    // cache request port
-    obi_zcmt_req_o.data_wdata = '0;
-    obi_zcmt_req_o.data_wuser = '0;
-    obi_zcmt_req_o.data_req   = 1'b0;
-    obi_zcmt_req_o.data_we    = 1'b0;
-    obi_zcmt_req_o.data_be    = '0;
-    obi_zcmt_req_o.data_size  = 2'b10;
-    obi_zcmt_req_o.data_id    = 1'b1;
-    obi_zcmt_req_o.kill_req   = 1'b0;
-    obi_zcmt_req_o.tag_valid  = 1'b1;
-
+    state_d                = state_q;
+    illegal_instr_o        = 1'b0;
+    is_compressed_o        = is_zcmt_instr_i || is_compressed_i;
+    fetch_stall_o          = '0;
+    jump_address_o         = '0;  // cache request port
+    obi_zcmt_req_o.req     = 1'b0;
+    obi_zcmt_req_o.a.we    = 1'b0;
+    obi_zcmt_req_o.a.be    = 4'b1111;
+    obi_zcmt_req_o.a.wdata = '0;
+    obi_zcmt_req_o.rready  = '1;
+    obi_zcmt_req_o.a.aid   = '0;  // No MMU support
     unique case (state_q)
       IDLE: begin
         fetch_stall_o = 1'b0;
+        obi_zcmt_req_o.req = 1'b0;  // par défaut pas de requête
         if (is_zcmt_instr_i) begin
-          if (CVA6Cfg.XLEN == 32) begin  //It is only target for 32 bit targets in cva6 with No MMU
-            table_address = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
-            obi_zcmt_req_o.address_index = table_address[9:0];
-            obi_zcmt_req_o.address_tag = table_address[CVA6Cfg.VLEN-1:10];  // No MMU support
-            state_d = TABLE_JUMP;
-            obi_zcmt_req_o.data_req = 1'b1;
+          if (CVA6Cfg.XLEN == 32) begin
+            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};     
+            obi_zcmt_req_o.a.addr = req_addr_d;
+            obi_zcmt_req_o.req = 1'b1;  // Always assert req
             fetch_stall_o = 1'b1;
-          end else illegal_instr_o = 1'b1;
-          // Condition may be extented for 64 bits embedded targets with No MMU
+          end else  illegal_instr_o = 1'b1;
+          if (!obi_zcmt_rsp_i.gnt) begin
+            state_d = TABLE_WAIT_GNT;
+          end
         end else begin
           illegal_instr_o = illegal_instr_i;
-          instr_o         = instr_i;
-          state_d         = IDLE;
+          instr_o = instr_i;
+          state_d = IDLE;
         end
       end
-      TABLE_JUMP: begin
-        if (obi_zcmt_rsp_i.data_rvalid) begin
-          // save the PC relative Xlen table jump address 
-          jump_address_o = $unsigned($signed(obi_zcmt_rsp_i.data_rdata) - $signed(pc_i));
-          if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
-            instr_o = {
-              20'h0, 5'h0, riscv::OpcodeJal
-            };  // immidiate assigned here (0) will be overwrite in decode stage with jump_address_o
-          end else if ((instr_i[9:2] >= 32) & (instr_i[9:2] <= 255))  begin  //- jal pc_offset, x1 for return stack
-            instr_o = {
-              20'h0, 5'h1, riscv::OpcodeJal
-            };  // immidiate assigned here (0) will be overwrite in decode stage with jump_address_o
+
+      TABLE_WAIT_GNT: begin
+        fetch_stall_o = 1'b1;
+        obi_zcmt_req_o.req = 1'b1;  // Deassert req once gnt is asserted1
+        if (obi_zcmt_rsp_i.gnt) begin
+          state_d = TABLE_WAIT_RVALID;
+        end
+      end
+
+      TABLE_WAIT_RVALID: begin
+        obi_zcmt_req_o.req = 1'b0;
+        if (obi_zcmt_rsp_i.rvalid) begin
+          // save the PC relative XLEN table jump address
+          jump_address_o = $unsigned($signed(obi_zcmt_rsp_i.r.rdata) - $signed(pc_i));
+          if (instr_i[9:2] < 32) begin
+            // jal pc_offset, x0 for no return stack
+            instr_o = {20'h0, 5'h0, riscv::OpcodeJal};
+          end else if ((instr_i[9:2] >= 32) && (instr_i[9:2] <= 255)) begin
+            // jal pc_offset, x1 for return stack
+            instr_o = {20'h0, 5'h1, riscv::OpcodeJal};
           end else begin
             illegal_instr_o = 1'b1;
-            instr_o         = instr_i;
+            instr_o = instr_i;
           end
+          fetch_stall_o = 1'b0;
           state_d = IDLE;
-        end else begin
-          state_d = TABLE_JUMP;
-        end
+        end else begin 
+          fetch_stall_o = 1'b1;
+          state_d = TABLE_WAIT_RVALID;
+        end 
+        
       end
+
       default: begin
         state_d = IDLE;
       end
     endcase
   end
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       state_q <= IDLE;
-
+      req_addr_q <= '0;
     end else begin
       state_q <= state_d;
+      req_addr_q <= req_addr_d;
     end
   end
 endmodule
