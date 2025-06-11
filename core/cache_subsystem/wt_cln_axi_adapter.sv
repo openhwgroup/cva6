@@ -458,7 +458,7 @@ module wt_cln_axi_adapter
   always_comb begin : p_axi_rtrn_shift
     // output directly from regs
     icache_rtrn_o          = '0;
-    icache_rtrn_o.rtype    = icache_rtrn_o.rtype'(1); // ICACHE_IFILL_ACK = 1
+    icache_rtrn_o.rtype    = 1'b1; // ICACHE_IFILL_ACK
     icache_rtrn_o.tid      = icache_rtrn_tid_q;
     icache_rtrn_o.data     = icache_rd_shift_q;
     icache_rtrn_o.user     = icache_rd_shift_user_q;
