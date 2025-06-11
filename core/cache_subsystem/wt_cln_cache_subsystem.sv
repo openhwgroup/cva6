@@ -144,7 +144,7 @@ module wt_cln_cache_subsystem
   // Ports 0/1 for PTW and LD unit are read only.
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
-  wt_dcache #(
+  wt_cln_dcache #(
       .CVA6Cfg(CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
@@ -204,7 +204,7 @@ module wt_cln_cache_subsystem
       .l15_rtrn_i       (noc_resp_i)
   );
 `else
-  wt_axi_adapter #(
+  wt_cln_axi_adapter #(
       .CVA6Cfg(CVA6Cfg),
       .axi_req_t(noc_req_t),
       .axi_rsp_t(noc_resp_t),
