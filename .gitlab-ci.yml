@@ -235,9 +235,9 @@ spyglass:
     - mkdir -p artifacts/lint_reports
     - make -C spyglass design_read
     - make -C spyglass lint_check
-    - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
+    - mv spyglass/sg_run_results/cva6_example_obi_sg_reports/cva6_example_obi_lint_lint_rtl artifacts/lint_reports
     - cp spyglass/reference_summary.rpt artifacts/lint_reports
-    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
+    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_example_obi_lint_lint_rtl/summary.rpt
 
 cvxif-regression:
   extends:
