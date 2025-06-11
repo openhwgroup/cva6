@@ -92,6 +92,33 @@ module cva6_hpdcache_if_adapter
     FLUSH_PEND
   } flush_fsm_t;
 
+  // ----------------------
+  // Addr split Functions
+  // ----------------------
+  // extract tag from vlen addr
+  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_vaddr_tag(
+      logic [CVA6Cfg.VLEN-1:0] addr);
+    return addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1 : CVA6Cfg.DCACHE_INDEX_WIDTH];
+  endfunction
+
+  // extract tag from plen addr
+  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_paddr_tag(
+      logic [CVA6Cfg.PLEN-1:0] addr);
+    return addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1 : CVA6Cfg.DCACHE_INDEX_WIDTH];
+  endfunction
+
+  // extract index/offset from vlen addr
+  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_vaddr_index(
+      logic [CVA6Cfg.VLEN-1:0] addr);
+    return addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  endfunction
+
+  // extract index/offset from plen addr
+  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_paddr_index(
+      logic [CVA6Cfg.PLEN-1:0] addr);
+    return addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  endfunction
+
   logic forward_store, forward_amo;
   logic hpdcache_req_is_uncacheable;
   hpdcache_req_t hpdcache_req;
@@ -106,17 +133,11 @@ module cva6_hpdcache_if_adapter
 
       logic [1:0] load_data_size;
 
-      if (CVA6Cfg.XLEN == 64) begin
-        assign load_data_size = ariane_pkg::size_gen(hpdcache_req.be);
-      end else begin
-        assign load_data_size = ariane_pkg::size_gen_32(hpdcache_req.be);
-      end
-
       //    Request forwarding YPB channel A
 
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
-      assign hpdcache_req.size = load_data_size;
+      assign hpdcache_req.size = ypb_load_req_i.size;
       assign hpdcache_req.sid = hpdcache_req_sid_i;
 
       assign hpdcache_req.need_rsp = 1'b1;
@@ -127,7 +148,7 @@ module cva6_hpdcache_if_adapter
         // When MMu is present request is done in 2 phases, s0: index, s1:tag
         assign hpdcache_req.phys_indexed = 1'b0;
         assign hpdcache_req_valid_o = ypb_load_req_i.vreq;
-        assign hpdcache_req.addr_offset = ypb_load_req_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+        assign hpdcache_req.addr_offset = get_vaddr_index(ypb_load_req_i.vaddr);
         assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
@@ -138,9 +159,7 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req_pma_o.uncacheable = !ypb_load_req_i.cacheable;
         assign hpdcache_req_pma_o.io = 1'b0;
         assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
-        assign hpdcache_req_tag_o = ypb_load_req_i.paddr[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+        assign hpdcache_req_tag_o = get_paddr_tag(ypb_load_req_i.paddr);
         assign ypb_load_rsp_o.vgnt = hpdcache_req_ready_i;
         assign ypb_load_rsp_o.pgnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
 
@@ -148,10 +167,8 @@ module cva6_hpdcache_if_adapter
         // When MMu is not present request is done in 1 phases, s0: index+tag
         assign hpdcache_req.phys_indexed = 1'b1;
         assign hpdcache_req_valid_o = ypb_load_req_i.preq;
-        assign hpdcache_req.addr_offset = ypb_load_req_i.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
-        assign hpdcache_req.addr_tag = ypb_load_req_i.paddr[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+        assign hpdcache_req.addr_offset = get_paddr_index(ypb_load_req_i.paddr);
+        assign hpdcache_req.addr_tag = get_paddr_tag(ypb_load_req_i.paddr);
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
         assign hpdcache_req.pma.uncacheable = !ypb_load_req_i.cacheable;
@@ -193,7 +210,7 @@ module cva6_hpdcache_if_adapter
       // TODO Check why it's not physically indexed
       //    Request forwarding
       assign hpdcache_req_valid_o = ypb_mmu_ptw_req_i.vreq;
-      assign hpdcache_req.addr_offset = ypb_mmu_ptw_req_i.vaddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+      assign hpdcache_req.addr_offset = get_vaddr_index(ypb_mmu_ptw_req_i.vaddr);
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
       assign hpdcache_req.be = ypb_mmu_ptw_req_i.be;
@@ -208,9 +225,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
       assign hpdcache_req_abort_o = ypb_mmu_ptw_req_i.kill_req;
-      assign hpdcache_req_tag_o = ypb_mmu_ptw_req_i.paddr[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+      assign hpdcache_req_tag_o = get_paddr_tag(ypb_mmu_ptw_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_mmu_ptw_req_i.cacheable;
       assign hpdcache_req_pma_o.io = 1'b0;
@@ -238,7 +253,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
       //    Request forwarding
       assign hpdcache_req_valid_o = ypb_zcmt_req_i.preq;
-      assign hpdcache_req.addr_offset = ypb_zcmt_req_i.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+      assign hpdcache_req.addr_offset = get_paddr_index(ypb_zcmt_req_i.paddr);
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
       assign hpdcache_req.be = ypb_zcmt_req_i.be;
@@ -253,9 +268,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
       assign hpdcache_req_abort_o = ypb_zcmt_req_i.kill_req;
-      assign hpdcache_req_tag_o = ypb_zcmt_req_i.paddr[CVA6Cfg.DCACHE_TAG_WIDTH     +
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH-1 :
-                                                                                    CVA6Cfg.DCACHE_INDEX_WIDTH];
+      assign hpdcache_req_tag_o = get_paddr_tag(ypb_zcmt_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_zcmt_req_i.cacheable;
       assign hpdcache_req_pma_o.io = 1'b0;
@@ -280,9 +293,6 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
          //  {{{
     else begin : store_amo_gen
       //  STORE/AMO request
-      logic                 [63:0] amo_addr;
-      hpdcache_req_offset_t        amo_addr_offset;
-      hpdcache_tag_t               amo_tag;
       logic amo_is_word, amo_is_word_hi;
       logic                           [63:0] amo_data;
       logic                           [ 7:0] amo_data_be;
@@ -340,33 +350,23 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       end
       //  }}}
 
-      if (CVA6Cfg.XLEN == 64) begin
-        assign amo_data_size   = ariane_pkg::size_gen(ypb_amo_req_i.be);
-        assign store_data_size = ariane_pkg::size_gen(ypb_store_req_i.be);
-      end else begin
-        assign amo_data_size   = ariane_pkg::size_gen_32(ypb_amo_req_i.be);
-        assign store_data_size = ariane_pkg::size_gen_32(ypb_store_req_i.be);
-      end
-
       //  AMO logic
       //  {{{
+
       always_comb begin : amo_op_comb
-        amo_addr = ypb_amo_req_i.paddr;
-        amo_addr_offset = amo_addr[0+:HPDcacheCfg.reqOffsetWidth];
-        amo_tag = amo_addr[HPDcacheCfg.reqOffsetWidth+:HPDcacheCfg.tagWidth];
         unique case (ypb_amo_req_i.atop)
-          obi_pkg::ATOPLR:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_LR;
-          obi_pkg::ATOPSC:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SC;
-          obi_pkg::AMOSWAP: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SWAP;
-          obi_pkg::AMOADD:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_ADD;
-          obi_pkg::AMOAND:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_AND;
-          obi_pkg::AMOOR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_OR;
-          obi_pkg::AMOXOR:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_XOR;
-          obi_pkg::AMOMAX:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAX;
-          obi_pkg::AMOMAXU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAXU;
-          obi_pkg::AMOMIN:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MIN;
-          obi_pkg::AMOMINU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MINU;
-          default:          amo_op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
+          ariane_pkg::AMO_LR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_LR;
+          ariane_pkg::AMO_SC:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SC;
+          ariane_pkg::AMO_SWAP: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SWAP;
+          ariane_pkg::AMO_ADD:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_ADD;
+          ariane_pkg::AMO_AND:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_AND;
+          ariane_pkg::AMO_OR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_OR;
+          ariane_pkg::AMO_XOR:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_XOR;
+          ariane_pkg::AMO_MAX:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAX;
+          ariane_pkg::AMO_MAXU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MAXU;
+          ariane_pkg::AMO_MIN:  amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MIN;
+          ariane_pkg::AMO_MINU: amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_MINU;
+          default:              amo_op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
         endcase
       end
       //  }}}
@@ -384,16 +384,16 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       end
 
       assign hpdcache_req_amo = '{
-              addr_offset: amo_addr_offset,
+              addr_offset: get_paddr_index(ypb_amo_req_i.paddr),
               wdata: amo_data,
               op: amo_op,
               be: amo_data_be,
-              size: amo_data_size,
+              size: ypb_amo_req_i.size,
               sid: hpdcache_req_sid_i,
               tid: '1,
               need_rsp: 1'b1,
               phys_indexed: 1'b1,
-              addr_tag: amo_tag,
+              addr_tag: get_paddr_tag(ypb_amo_req_i.paddr),
               pma: '{
                   uncacheable: !ypb_amo_req_i.cacheable,
                   io: 1'b0,
@@ -402,21 +402,16 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
           };
 
       assign hpdcache_req_store = '{
-              addr_offset: ypb_store_req_i.paddr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0],
+              addr_offset: get_paddr_index(ypb_store_req_i.paddr),
               wdata: ypb_store_req_i.wdata,
               op: hpdcache_pkg::HPDCACHE_REQ_STORE,
               be: ypb_store_req_i.be,
-              size: store_data_size,
+              size: ypb_store_req_i.size,
               sid: hpdcache_req_sid_i,
               tid: '0,
               need_rsp: 1'b0,
               phys_indexed: 1'b1,
-              addr_tag:
-              ypb_store_req_i.paddr[
-              CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1
-              :
-              CVA6Cfg.DCACHE_INDEX_WIDTH
-              ],
+              addr_tag: get_paddr_tag(ypb_store_req_i.paddr),
               pma: '{
                   uncacheable: !ypb_store_req_i.cacheable,
                   io: 1'b0,

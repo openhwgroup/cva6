@@ -316,10 +316,14 @@ module load_unit
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
   assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
-  assign ypb_load_req_o.size = '0;  // TODO
+  assign ypb_load_req_o.size = (CVA6Cfg.XLEN == 64) ? ariane_pkg::size_gen(
+      lsu_ctrl_i.be
+  ) : ariane_pkg::size_gen_32(
+      lsu_ctrl_i.be
+  );
   assign ypb_load_req_o.wdata = '0;
   assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
-  assign ypb_load_req_o.atop = '0;
+  assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_load_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
   assign ypb_load_req_o.access_type = 1'b1;  //data
 
