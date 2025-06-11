@@ -638,49 +638,6 @@ package ariane_pkg;
   endfunction
 
   // ----------------------
-  // AMO Functions
-  // ----------------------
-  function automatic logic [5:0] amo_cva6_to_obi(logic [3:0] cva6_amo);
-    case (cva6_amo)
-      AMO_NONE: return obi_pkg::ATOPNONE;
-      AMO_LR:   return obi_pkg::ATOPLR;
-      AMO_SC:   return obi_pkg::ATOPSC;
-      AMO_SWAP: return obi_pkg::AMOSWAP;
-      AMO_ADD:  return obi_pkg::AMOADD;
-      AMO_AND:  return obi_pkg::AMOAND;
-      AMO_OR:   return obi_pkg::AMOOR;
-      AMO_XOR:  return obi_pkg::AMOXOR;
-      AMO_MAX:  return obi_pkg::AMOMAX;
-      AMO_MAXU: return obi_pkg::AMOMAXU;
-      AMO_MIN:  return obi_pkg::AMOMIN;
-      AMO_MINU: return obi_pkg::AMOMINU;
-      AMO_CAS1: return 6'h0C;  // unused, not part of riscv spec, but provided in OpenPiton
-      AMO_CAS2: return 6'h0D;  // unused, not part of riscv spec, but provided in OpenPiton
-    endcase
-    return 8'b0;
-  endfunction
-
-  function automatic logic [3:0] amo_obi_to_cva6(logic [5:0] obi_amo);
-    case (obi_amo)
-      obi_pkg::ATOPNONE: return AMO_NONE;
-      obi_pkg::ATOPLR: return AMO_LR;
-      obi_pkg::ATOPSC: return AMO_SC;
-      obi_pkg::AMOSWAP: return AMO_SWAP;
-      obi_pkg::AMOADD: return AMO_ADD;
-      obi_pkg::AMOAND: return AMO_AND;
-      obi_pkg::AMOOR: return AMO_OR;
-      obi_pkg::AMOXOR: return AMO_XOR;
-      obi_pkg::AMOMAX: return AMO_MAX;
-      obi_pkg::AMOMAXU: return AMO_MAXU;
-      obi_pkg::AMOMIN: return AMO_MIN;
-      obi_pkg::AMOMINU: return AMO_MINU;
-      6'h0C: return AMO_CAS1;  // unused, not part of riscv spec, but provided in OpenPiton
-      6'h0D: return AMO_CAS2;  // unused, not part of riscv spec, but provided in OpenPiton
-    endcase
-    return 8'b0;
-  endfunction
-
-  // ----------------------
   // LSU Functions
   // ----------------------
   // generate byte enable mask

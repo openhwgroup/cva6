@@ -145,10 +145,10 @@ module store_buffer
   assign ypb_store_req_o.paddr = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address;
   assign ypb_store_req_o.we = 1'b1;
   assign ypb_store_req_o.be = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].be : commit_queue_q[commit_read_pointer_q].be;
-  assign ypb_store_req_o.size = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].size : commit_queue_q[commit_read_pointer_q].size;
+  assign ypb_store_req_o.size = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data_size : commit_queue_q[commit_read_pointer_q].data_size;
   assign ypb_store_req_o.wdata = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data : commit_queue_q[commit_read_pointer_q].data;
   assign ypb_store_req_o.aid = '0;
-  assign ypb_store_req_o.atop = '0;
+  assign ypb_store_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_store_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
