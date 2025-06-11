@@ -1347,7 +1347,7 @@ module cva6
 
   if (CVA6Cfg.DCacheType == config_pkg::WT) begin : gen_cache_wt
     // this is a cache subsystem that is compatible with OpenPiton
-    wt_cache_subsystem #(
+    wt_cache_priv_adapter #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
@@ -1364,6 +1364,57 @@ module cva6
         // to D$
         .clk_i             (clk_i),
         .rst_ni            (rst_ni),
+        .priv_lvl_i        (priv_lvl),
+        // I$
+        .icache_en_i       (icache_en_csr),
+        .icache_flush_i    (icache_flush_ctrl_cache),
+        .icache_miss_o     (icache_miss_cache_perf),
+        .icache_areq_i     (icache_areq_ex_cache),
+        .icache_areq_o     (icache_areq_cache_ex),
+        .icache_dreq_i     (icache_dreq_if_cache),
+        .icache_dreq_o     (icache_dreq_cache_if),
+        // D$
+        .dcache_enable_i   (dcache_en_csr_nbdcache),
+        .dcache_flush_i    (dcache_flush_ctrl_cache),
+        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
+        // to commit stage
+        .dcache_amo_req_i  (amo_req),
+        .dcache_amo_resp_o (amo_resp),
+        // from PTW, Load Unit  and Store Unit
+        .dcache_miss_o     (dcache_miss_cache_perf),
+        .miss_vld_bits_o   (miss_vld_bits),
+        .dcache_req_ports_i(dcache_req_to_cache),
+        .dcache_req_ports_o(dcache_req_from_cache),
+        // write buffer status
+        .wbuffer_empty_o   (dcache_commit_wbuffer_empty),
+        .wbuffer_not_ni_o  (dcache_commit_wbuffer_not_ni),
+        // memory side
+        .noc_req_o         (noc_req_o),
+        .noc_resp_i        (noc_resp_i),
+        .inval_addr_i      (inval_addr),
+        .inval_valid_i     (inval_valid),
+        .inval_ready_o     (inval_ready)
+  );
+  end else if (CVA6Cfg.DCacheType == config_pkg::WT_CLN) begin : gen_cache_wt_cln
+    // Clean version of WT cache subsystem
+    wt_cln_cache_priv_adapter #(
+        .CVA6Cfg   (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
+        .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
+        .icache_req_t(icache_req_t),
+        .icache_rtrn_t(icache_rtrn_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
+        .NumPorts  (NumPorts),
+        .noc_req_t (noc_req_t),
+        .noc_resp_t(noc_resp_t)
+    ) i_cache_subsystem (
+        // to D$
+        .clk_i             (clk_i),
+        .rst_ni            (rst_ni),
+        .priv_lvl_i        (priv_lvl),
         // I$
         .icache_en_i       (icache_en_csr),
         .icache_flush_i    (icache_flush_ctrl_cache),
@@ -1400,7 +1451,7 @@ module cva6
         CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB
   )
   begin : gen_cache_hpd
-    cva6_hpdcache_subsystem #(
+    hpdcache_priv_adapter #(
         .CVA6Cfg   (CVA6Cfg),
         .icache_areq_t(icache_areq_t),
         .icache_arsp_t(icache_arsp_t),
@@ -1423,6 +1474,7 @@ module cva6
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
+        .priv_lvl_i(priv_lvl),
 
         .icache_en_i   (icache_en_csr),
         .icache_flush_i(icache_flush_ctrl_cache),
@@ -1464,6 +1516,57 @@ module cva6
         .noc_resp_i(noc_resp_i)
     );
     assign inval_ready = 1'b1;
+  end else if (CVA6Cfg.DCacheType == config_pkg::WT_NEW) begin : gen_cache_wt_new
+    // WT_NEW cache with dual addressable sets for privilege-level isolation
+    // Uses the new adapter that properly forwards privilege level to WT_NEW cache
+    wt_new_cache_subsystem #(
+        .CVA6Cfg   (CVA6Cfg),
+        .icache_areq_t(icache_areq_t),
+        .icache_arsp_t(icache_arsp_t),
+        .icache_dreq_t(icache_dreq_t),
+        .icache_drsp_t(icache_drsp_t),
+        .icache_req_t(icache_req_t),
+        .icache_rtrn_t(icache_rtrn_t),
+        .dcache_req_i_t(dcache_req_i_t),
+        .dcache_req_o_t(dcache_req_o_t),
+        .NumPorts  (NumPorts),
+        .noc_req_t (noc_req_t),
+        .noc_resp_t(noc_resp_t)
+    ) i_cache_subsystem (
+        // to D$
+        .clk_i             (clk_i),
+        .rst_ni            (rst_ni),
+        .priv_lvl_i        (priv_lvl),  // KEY: Privilege level forwarded to WT_NEW!
+        // I$
+        .icache_en_i       (icache_en_csr),
+        .icache_flush_i    (icache_flush_ctrl_cache),
+        .icache_miss_o     (icache_miss_cache_perf),
+        .icache_areq_i     (icache_areq_ex_cache),
+        .icache_areq_o     (icache_areq_cache_ex),
+        .icache_dreq_i     (icache_dreq_if_cache),
+        .icache_dreq_o     (icache_dreq_cache_if),
+        // D$
+        .dcache_enable_i   (dcache_en_csr_nbdcache),
+        .dcache_flush_i    (dcache_flush_ctrl_cache),
+        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
+        // to commit stage
+        .dcache_amo_req_i  (amo_req),
+        .dcache_amo_resp_o (amo_resp),
+        // from PTW, Load Unit  and Store Unit
+        .dcache_miss_o     (dcache_miss_cache_perf),
+        .miss_vld_bits_o   (miss_vld_bits),
+        .dcache_req_ports_i(dcache_req_to_cache),
+        .dcache_req_ports_o(dcache_req_from_cache),
+        // write buffer status
+        .wbuffer_empty_o   (dcache_commit_wbuffer_empty),
+        .wbuffer_not_ni_o  (dcache_commit_wbuffer_not_ni),
+        // memory side
+        .noc_req_o         (noc_req_o),
+        .noc_resp_i        (noc_resp_i),
+        .inval_addr_i      (inval_addr),
+        .inval_valid_i     (inval_valid),
+        .inval_ready_o     (inval_ready)
+    );
   end else begin : gen_cache_wb
     std_cache_subsystem #(
         // note: this only works with one cacheable region

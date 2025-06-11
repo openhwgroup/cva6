@@ -74,6 +74,8 @@ sources:
 
       # Packages
       - core/include/wt_cache_pkg.sv
+      - core/include/wt_new_cache_pkg.sv
+      - core/include/wt_cln_cache_pkg.sv
       - core/include/std_cache_pkg.sv
 
       # Extension Interface
@@ -134,8 +136,19 @@ sources:
       - core/cache_subsystem/wt_dcache_missunit.sv
       - core/cache_subsystem/wt_dcache_wbuffer.sv
       - core/cache_subsystem/wt_dcache.sv
+      - core/cache_subsystem/wt_new_dcache_mem.sv
+      - core/cache_subsystem/wt_new_cache_subsystem.sv
       - core/cache_subsystem/wt_cache_subsystem.sv
+      - core/cache_subsystem/wt_cache_priv_adapter.sv
       - core/cache_subsystem/wt_axi_adapter.sv
+      - core/cache_subsystem/wt_cln_dcache_ctrl.sv
+      - core/cache_subsystem/wt_cln_dcache_mem.sv
+      - core/cache_subsystem/wt_cln_dcache_missunit.sv
+      - core/cache_subsystem/wt_cln_dcache_wbuffer.sv
+      - core/cache_subsystem/wt_cln_dcache.sv
+      - core/cache_subsystem/wt_cln_cache_subsystem.sv
+      - core/cache_subsystem/wt_cln_cache_priv_adapter.sv
+      - core/cache_subsystem/wt_cln_axi_adapter.sv
       - core/cache_subsystem/cva6_icache.sv
       - core/cache_subsystem/tag_cmp.sv
       - core/cache_subsystem/cva6_icache_axi_wrapper.sv
@@ -144,6 +157,7 @@ sources:
       - core/cache_subsystem/cache_ctrl.sv
       - core/cache_subsystem/std_nbdcache.sv
       - core/cache_subsystem/std_cache_subsystem.sv
+      - core/cache_subsystem/hpdcache_priv_adapter.sv
 
       # Physical Memory Protection
       - core/pmp/src/pmp.sv

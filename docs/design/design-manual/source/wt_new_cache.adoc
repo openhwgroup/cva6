@@ -1,0 +1,46 @@
+[[wt-new-cache]]
+WT_NEW Cache
+~~~~~~~~~~~~
+
+The `WT_NEW` cache builds on the original write–through (WT) data cache
+architecture.  A portion of the cache sets is marked as *dual addressable*.
+These sets can be accessed by either of two controllers.
+
+* Controller A behaves exactly like the standard WT cache controller and
+  addresses all sets of the cache.
+* Controller B only sees the dual addressable sets.  These sets are organised
+  in a fully‑associative fashion from the perspective of controller B.
+
+Switching between the controllers is bound to the processor privilege level.
+When the privilege level changes the dual‑addressable sets are flushed while
+all other sets remain untouched.  This allows supervisor or user mode software
+to use the private portion of the cache without disturbing the contents used by
+machine mode.
+
+The number of dual‑addressable sets is parameterised through
+`NUM_DUAL_SETS` and can be set to 2, 4, 8 or 16.
+
+Additional parameters provide further flexibility:
+
+* `REPLACEMENT_POLICY` selects the victim algorithm for the dual sets
+  (round‑robin, random or pseudo‑LRU).
+* `FLUSH_POLICY` controls whether the dual sets are flushed or retained
+  when the privilege level changes.
+* `B_CTRL` enables or disables the secondary controller entirely.
+* The cache exposes performance counters (`hit_count_o`, `miss_count_o`
+  and `switch_count_o`) to aid analysis.
+
+Further Refinements
+-------------------
+
+The implementation has been refined to make the design easier to integrate
+and analyse.  Key cleanups include:
+
+* ``priv_lvl_i`` and related signals now use the explicit
+  ``riscv::priv_lvl_t`` type.
+* Debug-only signals are wrapped in ``ifndef SYNTHESIS`` guards so that they
+  do not appear in synthesis netlists.
+* Privilege switching detection has been moved into a helper module to keep
+  the cache logic focused on data movement.
+* Performance counters ``hit_count_o`` and ``miss_count_o`` have been widened
+  to 64 bits to avoid overflow in longer simulations.

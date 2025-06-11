@@ -93,7 +93,7 @@ module cva6_iti #(
         .itype_o       (itype[i])
     );
 
-    // Adding this to ensure that interuption/exception happen only in commit port 0 of cva6
+    // Adding this to ensure that interrupt/exception happens only in commit port 0 of cva6
     assign cause_itt[i] = i == 0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
     assign tval_itt[i] = i == 0 ? rvfi_to_iti_i.tval : '0;
     // Systolic logic (First itt is connected to D Flip-Flop to continue computation if needed)

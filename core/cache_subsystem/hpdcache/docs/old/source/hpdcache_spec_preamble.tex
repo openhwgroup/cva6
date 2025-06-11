@@ -1,0 +1,351 @@
+%%
+%%  Copyright 2023 CEA*
+%%  *Commissariat a l'Energie Atomique et aux Energies Alternatives (CEA)
+%%
+%%  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+%%
+%%  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
+%%  may not use this file except in compliance with the License, or, at your
+%%  option, the Apache License version 2.0. You may obtain a copy of the
+%%  License at
+%%
+%%  https://solderpad.org/licenses/SHL-2.1/
+%%
+%%  Unless required by applicable law or agreed to in writing, any work
+%%  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
+%%  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+%%  License for the specific language governing permissions and limitations
+%%  under the License.
+%%
+%%  Author(s):          Cesar Fuguet
+%%  Date:               February, 2023
+%%  Description:        Specification document of the HPDcache hardware IP
+%%
+
+%%%
+%%  Font packages
+%%%
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{fourier}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+%\usepackage{lmodern}
+\usepackage{xcolor}
+
+\definecolor{lightgray}{gray}{0.8}
+
+% use Helvetica Adobe sans serif fonts
+\renewcommand{\sfdefault}{phv}
+
+%%%
+%%  Language packages
+%%%
+\usepackage{csquotes}
+\usepackage[english]{babel}
+
+%%%
+%%  Page margins configuration
+%%%
+\usepackage{geometry}
+\geometry{top=3cm, bottom=3cm}
+
+%%%
+%%  Figures' configuration packages and command
+%%%
+\usepackage{ifpdf}
+
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\DeclareGraphicsExtensions{.jpg,.png,.pdf}
+\else
+\usepackage[dvips]{graphicx}
+\DeclareGraphicsExtensions{{.eps}}
+\fi
+
+\usepackage[font=footnotesize,position=top,skip=0pt]{caption}
+\usepackage[font=footnotesize,position=top,skip=0pt]{subcaption}
+
+%%%
+%%  Tables' configuration packages
+%%%
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+\newcolumntype{L}[1]{>{\hsize=#1\hsize\raggedright\arraybackslash}X}%
+\newcolumntype{C}[1]{>{\hsize=#1\hsize\centering\arraybackslash}X}%
+
+%%%
+%%  Misc configuration
+%%%
+\usepackage{minitoc}
+\usepackage{emptypage} % prevent headings in empty pages
+\usepackage{xspace}
+\usepackage{enumitem}
+\usepackage[printonlyused]{acronym}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{%
+    \node[shape=circle,draw=black,inner sep=1pt] (char){\textsf{\bfseries #1}};%
+  }%
+}
+\usetikzlibrary{shapes,arrows,chains}
+
+% Color boxing
+\usepackage[many]{tcolorbox}
+
+%%%
+%%  Math environments
+%%%
+\theoremstyle{plain}
+\newtheorem{property}{Property}[section]
+\newtheorem{lemma}{Lemma}[property]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\newcommand{\eqvar}[1]{$\mathit{#1}$}
+\renewcommand\qedsymbol{$\blacksquare$}
+
+%%%
+%%  Table of Contents (TOC), and chapters and section titles format
+%%%
+\usepackage{titletoc}
+\usepackage{titlesec}
+
+%%%
+%%  To Do notes
+%%%
+\usepackage[%
+  colorinlistoftodos,
+  prependcaption
+]{todonotes}
+
+\ifdefined\isdraft
+  \newcommand{\TodoSide}[1]{\todo[color=red!20]{\textbf{To do}: #1}}
+  \newcommand{\NoteSide}[1]{\todo[color=green!20]{\textbf{Note}: #1}}
+  \newcommand{\Todo}[1]{\todo[inline, color=red!20]{\textbf{To do}: #1}}
+  \newcommand{\Note}[1]{\todo[inline, color=green!20]{\textbf{Note}: #1}}
+\else
+  \newcommand{\TodoSide}[1]{}
+  \newcommand{\NoteSide}[1]{}
+  \newcommand{\Todo}[1]{}
+  \newcommand{\Note}[1]{}
+\fi
+
+
+% maximum depth of the table of contents (2: subsection)
+
+\setcounter{tocdepth}{2}
+
+% format for general table of contents
+\titlecontents{chapter}%
+[1.5em]%
+{\addvspace{1em plus 0pt minus 0pt}\bfseries}%
+{\contentslabel{1.3em}}%
+{\hspace{-1.3em}}%
+{\hfill\contentspage}%
+[\addvspace{0pt}]
+
+\titlecontents{section}%
+[3.8em]%
+{\addvspace{.4em plus 0pt minus 0pt}\bfseries}%
+{\contentslabel{2.3em}}%
+{}%
+{\titlerule*[0.75em]{\normalfont.}\contentspage}
+
+\titlecontents{subsection}%
+[7.0em]%
+{\addvspace{.2em plus 0pt minus 0pt}}%
+{\contentslabel{3.2em}}%
+{}%
+{\titlerule*[.75em]{.}\contentspage}
+
+% format for partial table of contents (at each chapter)
+
+\titlecontents{psection}%
+[2.3em]%
+{\addvspace{.4em plus 0pt minus 0pt}\bfseries}%
+{\contentslabel{2.3em}}%
+{}%
+{\titlerule*[.75em]{\normalfont.}\contentspage}
+
+\titlecontents{psubsection}%
+[5.5em]%
+{\addvspace{.2em plus 0pt minus 0pt}}%
+{\contentslabel{3.2em}}%
+{}%
+{\titlerule*[.75em]{.}\contentspage}
+
+\titlecontents{figure}%
+[3.8em]%
+{\addvspace{.4em plus 0pt minus 0pt}\normalfont}%
+{\contentslabel{2.3em}}%
+{}%
+{\titlerule*[0.75em]{\normalfont.}\contentspage}
+
+\titlecontents{table}%
+[3.8em]%
+{\addvspace{.4em plus 0pt minus 0pt}\normalfont}%
+{\contentslabel{2.3em}}%
+{}%
+{\titlerule*[0.75em]{\normalfont.}\contentspage}
+
+% insert this command at each chapter's beginning to add a partial TOC
+
+\newcommand{\chaptertoc}{%
+  \vspace*{1.25ex}%
+  \vbox{\bfseries\Large Contents}%
+  \vspace*{1ex}\titlerule%
+  \normalfont\normalsize%
+  \startcontents[sections]%
+  \printcontents[sections]{p}{1}{}%
+  \vspace*{1ex}\titlerule\vspace*{1ex}%
+  \newpage}
+
+\titleformat{\chapter}[display]{\bfseries\huge}%
+{\chaptertitlename~\thechapter}{.75ex}%
+{\titlerule[2pt]\vspace*{.75ex}\filright}%
+[]%[\vspace*{.75ex}\titlerule]
+\titlespacing*{\chapter}{0pt}{30pt}{20pt}[0pt]
+
+\titleformat{\section}[hang]{\normalfont\Large\bfseries}{%
+  \thesection}{1em}{}
+\titlespacing*{\section}{0pt}{%
+  3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}[0pt]
+
+\titleformat{\subsection}[hang]{\normalfont\large\bfseries}{%
+  \thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{%
+  3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}[0pt]
+
+\titleformat{\subsubsection}[hang]{\normalfont\normalsize\bfseries}{%
+  \thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{%
+  3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}[0pt]
+
+\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{%
+  \theparagraph}{1em}{}[]
+\titlespacing*{\paragraph}{0pt}{%
+  3.25ex plus 1ex minus .2ex}{1em}
+
+\titleformat{\subparagraph}[runin]{\normalfont\normalsize\bfseries}{%
+  \thesubparagraph}{1em}{}[]
+\titlespacing*{\subparagraph}{\parindent}{%
+  3.25ex plus 1ex minus .2ex}{1em}
+
+%%%
+%%  Header / footer configuration
+%%%
+\usepackage{fancyhdr}
+
+\fancypagestyle{fancystyle}{%
+  \fancyhf{}% clear header and footer fields
+  \fancyhead[RO,LE]{\footnotesize\sffamily\nouppercase{\rightmark}}%
+  \fancyhead[RE,LO]{\footnotesize\sffamily\mbox{}Version~\docversion}%
+  \fancyfoot[LO,RE]{\footnotesize\sffamily\mbox{}\docauthor}%
+  \fancyfoot[CE,CO]{\footnotesize\sffamily\mbox{}Copyright~\textcopyright~2023~Commissariat à l'Energie Atomique et aux Energies Alternatives (CEA)}%
+  \fancyfoot[RO,LE]{\footnotesize\sffamily\mbox{}\thepage}%
+  \renewcommand{\headrulewidth}{.6pt}%
+  \renewcommand{\footrulewidth}{.6pt}%
+}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}% clear header and footer fields
+  \fancyfoot[C]{\normalfont\sffamily\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+
+\renewcommand{\sectionmark}{\markright}
+
+\addtolength{\headheight}{\baselineskip}
+
+%%%
+%%  Bibliography configuration
+%%%
+\usepackage[
+    backend=biber,
+    bibencoding=utf8,
+    citestyle=ieee,
+    style=ieee
+]{biblatex}
+
+%%%
+%%  Hyperref package (must be declared at last to avoid conflicts)
+%%%
+\usepackage[pdfusetitle]{hyperref}
+\usepackage{url}
+\hypersetup{%
+colorlinks,%
+linkcolor=blue%
+}
+
+%%  Plot drawing package
+\usepackage{pgfplots}
+
+%%  Programming code formatting
+\usepackage{listings}
+
+%%  Algorithm formatting
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%%  Formatting of network protocol specification
+\usepackage{bytefield}
+
+
+%%%
+%%  Definition of command aliases
+%%%
+%%%
+%%  Add vertical space between paragraphs and remove indentation
+%%%
+\usepackage{parskip}
+
+% keep the parskip for theorems (AMS packages).
+\makeatletter
+\def\thm@space@setup{%
+  \thm@preskip=\parskip \thm@postskip=0pt
+}
+\makeatother
+
+%%%
+%%  Label and reference commands
+%%%
+\newcommand{\figfont}[1]{\textsf{\bfseries #1}}
+
+\newcommand{\figlabel}[1]{\label{fig:#1}}
+\newcommand{\Figref}[1]{\hyperref[fig:#1]{\mbox{Figure~\ref{fig:#1}}}}
+\newcommand{\figref}[1]{\hyperref[fig:#1]{\mbox{figure~\ref{fig:#1}}}}
+\newcommand{\fighypref}[2]{\hyperref[fig:#1]{#2}}
+\newcommand{\chalabel}[1]{\label{cha:#1}}
+\newcommand{\Charef}[1]{\hyperref[cha:#1]{\mbox{Chapter~\ref{cha:#1}}}}
+\newcommand{\charef}[1]{\hyperref[cha:#1]{\mbox{chapter~\ref{cha:#1}}}}
+\newcommand{\chafullref}[1]{Chapter~\ref{cha:#1}-\nameref{cha:#1}}
+\newcommand{\chahypref}[2]{\hyperref[cha:#1]{#2}}
+\newcommand{\seclabel}[1]{\label{sec:#1}}
+\newcommand{\Secref}[1]{\hyperref[sec:#1]{\mbox{Section~\ref{sec:#1}}}}
+\newcommand{\secref}[1]{\hyperref[sec:#1]{\mbox{section~\ref{sec:#1}}}}
+\newcommand{\sechypref}[2]{\hyperref[sec:#1]{#2}}
+\newcommand{\apxlabel}[1]{\label{apx:#1}}
+\newcommand{\Apxref}[1]{\hyperref[apx:#1]{\mbox{Appendix~\ref{apx:#1}}}}
+\newcommand{\apxref}[1]{\hyperref[apx:#1]{\mbox{appendix~\ref{apx:#1}}}}
+\newcommand{\apxhypref}[2]{\hyperref[apx:#1]{#2}}
+\newcommand{\tablabel}[1]{\label{tab:#1}}
+\newcommand{\Tabref}[1]{\hyperref[tab:#1]{\mbox{Table~\ref{tab:#1}}}}
+\newcommand{\tabref}[1]{\hyperref[tab:#1]{\mbox{table~\ref{tab:#1}}}}
+\newcommand{\tabhypref}[2]{\hyperref[tab:#1]{#2}}
+\newcommand{\alglabel}[1]{\label{alg:#1}}
+\newcommand{\Algref}[1]{\hyperref[alg:#1]{\mbox{Algorithm~\ref{alg:#1}}}}
+\newcommand{\algref}[1]{\hyperref[alg:#1]{\mbox{algorithm~\ref{alg:#1}}}}
+\newcommand{\alghypref}[2]{\hyperref[alg:#1]{#2}}
+\newcommand{\prplabel}[1]{\label{prp:#1}}
+\newcommand{\prpref}[1]{\hyperref[prp:#1]{\mbox{Property~\ref{prp:#1}}}}
+\newcommand{\lemlabel}[1]{\label{lem:#1}}
+\newcommand{\lemref}[1]{\hyperref[lem:#1]{\mbox{Lemma~\ref{lem:#1}}}}
+\newcommand{\deflabel}[1]{\label{def:#1}}
+\newcommand{\defref}[1]{\hyperref[def:#1]{\mbox{Definition~\ref{def:#1}}}}
+
