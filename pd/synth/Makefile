@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON - Thales
 #
 
-DESIGN_NAME          ?= cva6
+DESIGN_NAME          ?= cva6_example_obi
 PERIOD               ?= 17
 FOUNDRY_PATH         ?=
 LOCAL_LIB_PATH       ?=/shares/common/tools/RAMs/
