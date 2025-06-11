@@ -12,7 +12,7 @@
 ## Define variables
 
 # Top design
-TOP= cva6
+TOP= cva6_example_obi
 
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
