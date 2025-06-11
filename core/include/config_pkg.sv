@@ -36,7 +36,8 @@ package config_pkg;
     WT_HYB = 5,
     WT_HYB_FORCE_SET_ASS = 6,
     WT_HYB_FORCE_FULL_ASS = 7,
-    WT_NEW = 8
+    WT_NEW = 8,
+    WT_CLN = 9
   } cache_type_t;
 
   /// Branch predictor parameter
