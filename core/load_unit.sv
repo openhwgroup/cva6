@@ -316,7 +316,7 @@ module load_unit
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
   assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
-  assign ypb_load_req_o.size = '0; // TODO
+  assign ypb_load_req_o.size = '0;  // TODO
   assign ypb_load_req_o.wdata = '0;
   assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
   assign ypb_load_req_o.atop = '0;

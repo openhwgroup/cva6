@@ -92,7 +92,7 @@ module amo_buffer #(
       .testmode_i(1'b0),
       .full_o    (amo_valid),
       .empty_o   (ready_o),
-      .usage_o   (),                  // left open
+      .usage_o   (),                   // left open
       .data_i    (amo_data_in),
       .push_i    (valid_i),
       .data_o    (amo_data_out),

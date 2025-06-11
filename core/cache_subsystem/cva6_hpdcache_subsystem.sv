@@ -12,6 +12,9 @@
 //              instruction cache and the Core-V High-Performance L1
 //              data cache (CV-HPDcache).
 
+`include "axi_types.svh"
+
+
 module cva6_hpdcache_subsystem
 //  Parameters
 //  {{{
@@ -29,16 +32,12 @@ module cva6_hpdcache_subsystem
     parameter type ypb_mmu_ptw_rsp_t = logic,
     parameter type ypb_zcmt_req_t = logic,
     parameter type ypb_zcmt_rsp_t = logic,
-    
+
     parameter int NrHwPrefetchers = 4,
-    // AXI types
-    parameter type axi_ar_chan_t = logic,
-    parameter type axi_aw_chan_t = logic,
-    parameter type axi_w_chan_t = logic,
-    parameter type axi_b_chan_t = logic,
-    parameter type axi_r_chan_t = logic,
-    parameter type noc_req_t = logic,
+
+    parameter type noc_req_t  = logic,
     parameter type noc_resp_t = logic,
+
     parameter type cmo_req_t = logic,
     parameter type cmo_rsp_t = logic
 )
@@ -70,7 +69,7 @@ module cva6_hpdcache_subsystem
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
     // Fetch Request channel - FRONTEND
-    input  ypb_fetch_req_t ypb_fetch_req_i,
+    input ypb_fetch_req_t ypb_fetch_req_i,
     // Fetch Response channel - FRONTEND
     output ypb_fetch_rsp_t ypb_fetch_rsp_o,
     //   }}}
@@ -142,6 +141,12 @@ module cva6_hpdcache_subsystem
     //  }}}
 );
   //  }}}
+
+  localparam type axi_ar_chan_t = `AXI_AR_CHAN_T(CVA6Cfg);
+  localparam type axi_aw_chan_t = `AXI_AW_CHAN_T(CVA6Cfg);
+  localparam type axi_w_chan_t = `AXI_W_CHAN_T(CVA6Cfg);
+  localparam type axi_b_chan_t = `AXI_B_CHAN_T(CVA6Cfg);
+  localparam type axi_r_chan_t = `AXI_R_CHAN_T(CVA6Cfg);
 
   localparam type icache_req_t = struct packed {
     logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace

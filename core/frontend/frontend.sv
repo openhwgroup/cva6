@@ -547,7 +547,7 @@ module frontend
   assign ypb_fetch_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
   assign ypb_fetch_req_o.atop = '0;
   assign ypb_fetch_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
-  assign ypb_fetch_req_o.access_type = '0; //  0 = fetch
+  assign ypb_fetch_req_o.access_type = '0;  //  0 = fetch
   assign ypb_fetch_req_o.rready = '1;  //always ready  TODO maybe manage instr_queue_ready & replay with this signal
 
 

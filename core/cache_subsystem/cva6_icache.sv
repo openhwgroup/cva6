@@ -43,11 +43,11 @@ module cva6_icache
     input logic rst_ni,
 
     /// flush the icache, flush and kill have to be asserted together
-    input  logic       flush_i,
+    input  logic flush_i,
     /// enable icache
-    input  logic       en_i,
+    input  logic en_i,
     /// to performance counter
-    output logic       miss_o,
+    output logic miss_o,
 
     // Fetch Request channel - FRONTEND
     input  ypb_fetch_req_t ypb_fetch_req_i,

@@ -173,7 +173,7 @@ module store_buffer
 
     commit_queue_n              = commit_queue_q;
 
-    ypb_store_req_o.preq         = 1'b0;
+    ypb_store_req_o.preq        = 1'b0;
 
     direct_req_from_speculative = 1'b0;
 
