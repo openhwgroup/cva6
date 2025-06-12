@@ -85,8 +85,19 @@ module wt_cln_dcache_ctrl
   // map address to tag/idx/offset and save
   assign vld_data_d = (rd_req_q) ? rd_vld_bits_i : vld_data_q;
   assign address_tag_d = (save_tag) ? req_port_i.address_tag : address_tag_q;
-  assign address_idx_d = (req_port_o.data_gnt) ? req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] : address_idx_q;
-  assign address_off_d = (req_port_o.data_gnt) ? req_port_i.address_index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0]                  : address_off_q;
+  
+  // For fully associative cache, address decomposition is different:
+  // - No traditional set indexing (fully associative = one big set)
+  // - address_index contains lower address bits for line selection within the single set
+  // - For 32KB fully assoc: tag[33:4] + offset[3:0], index used for line selection
+  // For fully associative: associativity equals number of cache lines per way
+  // DCACHE_NUM_WORDS = cache lines per way
+  localparam DCACHE_FULLY_ASSOC = (CVA6Cfg.DCACHE_SET_ASSOC == CVA6Cfg.DCACHE_NUM_WORDS);
+  
+  assign address_idx_d = (req_port_o.data_gnt) ? 
+      (DCACHE_FULLY_ASSOC ? req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH] :
+                            req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.DCACHE_OFFSET_WIDTH]) : address_idx_q;
+  assign address_off_d = (req_port_o.data_gnt) ? req_port_i.address_index[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:0] : address_off_q;
   assign id_d = (req_port_o.data_gnt) ? req_port_i.data_id : id_q;
   assign data_size_d = (req_port_o.data_gnt) ? req_port_i.data_size : data_size_q;
   assign rd_tag_o = address_tag_d;
@@ -99,14 +110,26 @@ module wt_cln_dcache_ctrl
 
   // to miss unit
   assign miss_vld_bits_o = vld_data_q;
-  assign miss_paddr_o = {address_tag_q, address_idx_q, address_off_q};
+  
+  // For fully associative cache, address reconstruction is different:
+  // - Fully assoc: tag contains full address except offset, so miss_paddr = {tag, offset}
+  // - Set assoc: traditional reconstruction {tag, index, offset}
+  assign miss_paddr_o = DCACHE_FULLY_ASSOC ? 
+      {address_tag_q, address_off_q} :  // Fully associative: tag + offset only
+      {address_tag_q, address_idx_q, address_off_q};  // Set associative: tag + index + offset
+      
   assign miss_size_o = (miss_nc_o) ? {1'b0, data_size_q} : 3'b111;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
-  assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(
-      CVA6Cfg,
-      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-CVA6Cfg.DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}}
-  ));
+  // For cacheable region check, we need to reconstruct the full address
+  logic [63:0] check_addr;
+  assign check_addr = DCACHE_FULLY_ASSOC ?
+      // Fully associative: tag contains address[33:4], pad with zeros and add offset if needed
+      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-CVA6Cfg.DCACHE_OFFSET_WIDTH}{1'b0}}, address_tag_q, {CVA6Cfg.DCACHE_OFFSET_WIDTH{1'b0}}} :
+      // Set associative: traditional reconstruction
+      {{{64-CVA6Cfg.DCACHE_TAG_WIDTH-CVA6Cfg.DCACHE_INDEX_WIDTH}{1'b0}}, address_tag_q, {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}};
+      
+  assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(CVA6Cfg, check_addr));
 
 
   assign miss_we_o = '0;

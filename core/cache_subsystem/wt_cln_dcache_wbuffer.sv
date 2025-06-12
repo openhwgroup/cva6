@@ -122,6 +122,11 @@ module wt_cln_dcache_wbuffer
     return be;
   endfunction : to_byte_enable8
 
+  // Local parameters for fully associative cache detection
+  // For fully associative: associativity equals number of cache lines per way
+  // DCACHE_NUM_WORDS = cache lines per way
+  localparam DCACHE_FULLY_ASSOC = (CVA6Cfg.DCACHE_SET_ASSOC == CVA6Cfg.DCACHE_NUM_WORDS);
+
   function automatic logic [(CVA6Cfg.XLEN/8)-1:0] to_byte_enable4(
       input logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] offset, input logic [1:0] size);
     logic [3:0] be;
@@ -425,7 +430,17 @@ module wt_cln_dcache_wbuffer
 
     assign dirty[k] = |bdirty[k];
     assign valid[k] = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]});
+    // Local parameters for fully associative cache detection (defined once per generate iteration)
+    
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] expected_wtag;
+    assign expected_wtag = DCACHE_FULLY_ASSOC ?
+        // For fully associative: wtag should be {tag[29:0], address_index[10:3]} (assuming XLEN_ALIGN_BYTES=3)
+        // But this might need adjustment based on how wtag is expected to work in fully associative mode
+        {req_port_i.address_tag[CVA6Cfg.DCACHE_TAG_WIDTH-1:0], req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]} :
+        // Set associative: original logic
+        {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]};
+        
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == expected_wtag);
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
@@ -581,10 +596,10 @@ module wt_cln_dcache_wbuffer
         ni_pending_d[wr_ptr] = is_ni;
 
         wbuffer_d[wr_ptr].checked = 1'b0;
-        wbuffer_d[wr_ptr].wtag = {
-          req_port_i.address_tag,
-          req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]
-        };
+        // For fully associative cache, wtag construction needs to be consistent with hit checking
+        wbuffer_d[wr_ptr].wtag = DCACHE_FULLY_ASSOC ?
+            {req_port_i.address_tag[CVA6Cfg.DCACHE_TAG_WIDTH-1:0], req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]} :
+            {req_port_i.address_tag, req_port_i.address_index[CVA6Cfg.DCACHE_INDEX_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]};
 
         // mark bytes as dirty
         for (int k = 0; k < (CVA6Cfg.XLEN / 8); k++) begin

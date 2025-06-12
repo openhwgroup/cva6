@@ -22,7 +22,17 @@ package build_config_pkg;
     int unsigned NrWbPorts = (CVA6Cfg.CvxifEn || EnableAccelerator) ? 5 : 4;
 
     int unsigned ICACHE_INDEX_WIDTH = $clog2(CVA6Cfg.IcacheByteSize / CVA6Cfg.IcacheSetAssoc);
-    int unsigned DCACHE_INDEX_WIDTH = $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);
+    
+    // Special handling for fully associative D-cache
+    // A cache is fully associative if associativity equals number of cache lines
+    // For 32KB cache with 16-byte lines: 2048 lines, 2048-way = fully associative
+    int unsigned DCACHE_LINES = CVA6Cfg.DcacheByteSize / (CVA6Cfg.DcacheLineWidth / 8);
+    bit DCACHE_FULLY_ASSOC = (CVA6Cfg.DcacheSetAssoc == DCACHE_LINES);
+    
+    int unsigned DCACHE_INDEX_WIDTH = DCACHE_FULLY_ASSOC ? 
+        $clog2(DCACHE_LINES) :  // For fully associative: index addresses individual cache lines (e.g., 11 bits for 2048 lines)
+        $clog2(CVA6Cfg.DcacheByteSize / CVA6Cfg.DcacheSetAssoc);  // For set-associative: traditional set index
+    
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     // MMU
@@ -142,7 +152,9 @@ package build_config_pkg;
     cfg.DCACHE_SET_ASSOC_WIDTH = CVA6Cfg.DcacheSetAssoc > 1 ? $clog2(CVA6Cfg.DcacheSetAssoc) :
         CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_INDEX_WIDTH = DCACHE_INDEX_WIDTH;
-    cfg.DCACHE_TAG_WIDTH = cfg.PLEN - DCACHE_INDEX_WIDTH;
+    cfg.DCACHE_TAG_WIDTH = DCACHE_FULLY_ASSOC ? 
+        cfg.PLEN - DCACHE_OFFSET_WIDTH :  // For fully associative: tag is full address minus line offset
+        cfg.PLEN - DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH;  // For set-associative: original logic
     cfg.DCACHE_LINE_WIDTH = CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;

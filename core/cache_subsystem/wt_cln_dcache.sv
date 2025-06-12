@@ -55,7 +55,7 @@ module wt_cln_dcache
     output dcache_req_t  mem_data_o
 );
 
-  localparam DCACHE_CL_IDX_WIDTH = $clog2(CVA6Cfg.DCACHE_NUM_WORDS);
+  localparam DCACHE_CL_IDX_WIDTH = CVA6Cfg.DCACHE_NUM_WORDS > 1 ? $clog2(CVA6Cfg.DCACHE_NUM_WORDS) : 1;
 
   localparam type wbuffer_t = struct packed {
     logic [CVA6Cfg.DCACHE_TAG_WIDTH+(CVA6Cfg.DCACHE_INDEX_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES)-1:0] wtag;
@@ -246,7 +246,7 @@ module wt_cln_dcache
       assign miss_size[k] = 3'b0;
       assign miss_id[k] = {{CVA6Cfg.MEM_TID_WIDTH} {1'b0}};
       assign rd_tag[k] = {{CVA6Cfg.DCACHE_TAG_WIDTH} {1'b0}};
-      assign rd_idx[k] = {{DCACHE_CL_IDX_WIDTH} {1'b0}};
+      assign rd_idx[k] = '0;
       assign rd_off[k] = {{CVA6Cfg.DCACHE_OFFSET_WIDTH} {1'b0}};
       assign rd_req[k] = 1'b0;
       assign rd_tag_only[k] = 1'b0;
