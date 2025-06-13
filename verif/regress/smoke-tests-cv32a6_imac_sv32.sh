@@ -14,7 +14,7 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
+  DV_SIMULATORS=veri-testharness,spike
 fi
 
 # install the required tools
@@ -33,11 +33,7 @@ source ./verif/sim/setup-env.sh
 
 echo "$SPIKE_INSTALL_DIR$"
 
-if ! [ -n "$UVM_VERBOSITY" ]; then
-    export UVM_VERBOSITY=UVM_NONE
-fi
 
-export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=$UVM_VERBOSITY"
 
 CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
 

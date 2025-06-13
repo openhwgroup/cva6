@@ -182,7 +182,7 @@ module cva6
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
     },
     localparam type icache_rtrn_t = struct packed {
-      wt_cache_pkg::icache_in_t rtype;  // see definitions above
+      logic [0:0] rtype;  // icache_in_t - compatible with both wt_cache_pkg and wt_cln_cache_pkg
       logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] data;  // full cache line width
       logic [CVA6Cfg.ICACHE_USER_LINE_WIDTH-1:0] user;  // user bits
       struct packed {

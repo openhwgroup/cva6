@@ -6,18 +6,6 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Jean-Roch COULON - Thales
-// Modified for fully associative WT_CLN cache implementation
-//
-// FULLY ASSOCIATIVE CACHE CONFIGURATION:
-// - Cache Size: 2KB (2048 bytes)
-// - Associativity: 128-way fully associative
-// - Line Size: 128 bits (16 bytes)
-// - Cache Lines: 128 total (2048/16 = 128)
-// - Architecture: Single set with all lines as ways
-// - Performance: All tags compared simultaneously on every access
-//
-// This configuration provides maximum hit rate for the given cache size
-// while maintaining compatibility with Verilator simulation.
 
 package cva6_config_pkg;
 
@@ -102,14 +90,9 @@ package cva6_config_pkg;
       IcacheSetAssoc: unsigned'(2),
       IcacheLineWidth: unsigned'(128),
       DCacheType: config_pkg::WT_CLN,
-      // Original configuration (commented for reference):
-      // DcacheByteSize: unsigned'(2028),     // Original 2028 bytes cache
-      // DcacheSetAssoc: unsigned'(2),        // 2-way set associative
-      
-      // Fully associative configuration:
-      DcacheByteSize: unsigned'(2048),       // 2KB cache for Verilator compatibility
-      DcacheSetAssoc: unsigned'(128),        // 128-way fully associative (2048/16=128)
-      DcacheLineWidth: unsigned'(128),       // 128-bit lines (16 bytes)
+      DcacheByteSize: unsigned'(2028),
+      DcacheSetAssoc: unsigned'(2),
+      DcacheLineWidth: unsigned'(128),
       DcacheFlushOnFence: bit'(0),
       DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: unsigned'(1),
