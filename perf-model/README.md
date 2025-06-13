@@ -33,7 +33,8 @@ The `display_scores` function is meant to print a 3D plot if you have `matplotli
 `issue_commit_graph` prints the scores so that you can store it and display the figure without re-running the model.
 
 
-<!--
+## Comparing the model and the RTL
+
 ### Adapt RVFI trace generation
 
 The regular expression expects the cycle number to be in the RVFI trace.
@@ -47,7 +48,28 @@ To emit cycle number in RVFI trace, modify `corev_apu/tb/rvfi_tracer.sv` in CVA6
 +        $fwrite(f, "core   0: 0x%h (0x%h) @%d DASM(%h)\n",
 +          pc64, rvfi_i[i].insn, cycles, rvfi_i[i].insn);
 ```
--->
+
+
+### Calculate instruction duration
+
+Run `cycle_diff.py` for each script.
+
+```bash
+python3 perf-model/cycle_diff.py annotated.log
+mv traceout.log model.log
+python3 perf-model/cycle_diff.py verif/sim/out_<date>/<simulator>/<test-name>.log
+```
+
+Note: the `cycles_diff.py` script filters the "timed" part of the program.
+To do this, it tries to find `csrr minstret` instructions.
+Feel free to modify the script to suit your needs.
+
+
+### List the differences
+
+```bash
+diff -y traceout.log model.log | less
+```
 
 
 ## Files
