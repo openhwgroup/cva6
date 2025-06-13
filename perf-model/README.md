@@ -9,21 +9,6 @@ To cite this model, please head to the end of this document.
 
 ## Getting started
 
-### Adapt RVFI trace generation
-
-The regular expression expects the cycle number to be in the RVFI trace.
-The value is not used by the model but it is used to compare the model and CVA6.
-
-To emit cycle number in RVFI trace, modify `corev_apu/tb/rvfi_tracer.sv` in CVA6 repository as below.
-
-```diff
--        $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
--          pc64, rvfi_i[i].insn, rvfi_i[i].insn);
-+        $fwrite(f, "core   0: 0x%h (0x%h) @%d DASM(%h)\n",
-+          pc64, rvfi_i[i].insn, cycles, rvfi_i[i].insn);
-```
-
-
 ### Generate an RVFI trace
 
 To generate an RVFI trace, follow the instructions in the CVA6 repository to run a simulation.
@@ -46,6 +31,23 @@ You can add new parameters to explore here.
 To perform exploration, run the model in a loop, like `issue_commit_graph` does.
 The `display_scores` function is meant to print a 3D plot if you have `matplotlib`.
 `issue_commit_graph` prints the scores so that you can store it and display the figure without re-running the model.
+
+
+<!--
+### Adapt RVFI trace generation
+
+The regular expression expects the cycle number to be in the RVFI trace.
+The value is not used by the model but it is used to compare the model and CVA6.
+
+To emit cycle number in RVFI trace, modify `corev_apu/tb/rvfi_tracer.sv` in CVA6 repository as below.
+
+```diff
+-        $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
+-          pc64, rvfi_i[i].insn, rvfi_i[i].insn);
++        $fwrite(f, "core   0: 0x%h (0x%h) @%d DASM(%h)\n",
++          pc64, rvfi_i[i].insn, cycles, rvfi_i[i].insn);
+```
+-->
 
 
 ## Files
