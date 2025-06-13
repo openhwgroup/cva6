@@ -9,6 +9,41 @@ To cite this model, please head to the end of this document.
 
 ## Getting started
 
+### Generate an RVFI trace
+
+To generate an RVFI trace, follow the instructions in the CVA6 repository to run a simulation.
+The RVFI trace will be in `verif/sim/out_<date>/<simulator>/<test-name>.log`.
+
+
+### Running the model
+
+```bash
+python3 model.py verif/sim/out_<date>/<simulator>/<test-name>.log
+```
+
+The annotated trace is generated in an `annotated.log` file in the current directory.
+
+It prints a lot of debug information so that you can see all the events (note: it slows down model execution).
+To disable these prints, modify the instantiation with `Model(debug=False)` in the `main` function.
+
+At the end of the simulation, the model prints statistics with the `print_stats` call in the `main` function.
+These statistics can be performed on the timed part, which is filtered with the `filter_timed_part` function.
+Feel free to modify the `filter_timed_part` function to suit your needs.
+
+
+### Exploring design space
+
+In `model.py`, the `main` function runs the model with arguments which override default values.
+Generic parameters are available in `Model.__init__`.
+You can add new parameters to explore here.
+
+To perform exploration, run the model in a loop, like `issue_commit_graph` does.
+The `display_scores` function is meant to print a 3D plot if you have `matplotlib`.
+`issue_commit_graph` prints the scores so that you can store it and display the figure without re-running the model.
+
+
+## Comparing the model and the RTL
+
 ### Adapt RVFI trace generation
 
 The regular expression expects the cycle number to be in the RVFI trace.
@@ -24,28 +59,26 @@ To emit cycle number in RVFI trace, modify `corev_apu/tb/rvfi_tracer.sv` in CVA6
 ```
 
 
-### Generate an RVFI trace
+### Calculate instruction duration
 
-To generate an RVFI trace, follow the instructions in the CVA6 repository to run a simulation.
-The RVFI trace will be in `verif/sim/out_<date>/<simulator>/<test-name>.log`.
-
-
-### Running the model
+Run `cycle_diff.py` for each script.
 
 ```bash
-python3 model.py verif/sim/out_<date>/<simulator>/<test-name>.log
+python3 perf-model/cycle_diff.py annotated.log
+mv traceout.log model.log
+python3 perf-model/cycle_diff.py verif/sim/out_<date>/<simulator>/<test-name>.log
 ```
 
+Note: the `cycles_diff.py` script filters the "timed" part of the program.
+To do this, it tries to find `csrr minstret` instructions.
+Feel free to modify the script to suit your needs.
 
-### Exploring design space
 
-In `model.py`, the `main` function runs the model with arguments which override default values.
-Generic parameters are available in `Model.__init__`.
-You can add new parameters to explore here.
+### List the differences
 
-To perform exploration, run the model in a loop, like `issue_commit_graph` does.
-The `display_scores` function is meant to print a 3D plot if you have `matplotlib`.
-`issue_commit_graph` prints the scores so that you can store it and display the figure without re-running the model.
+```bash
+diff -y traceout.log model.log | less
+```
 
 
 ## Files
