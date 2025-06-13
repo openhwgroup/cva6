@@ -8,6 +8,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 # Customise this to a fast local disk
 ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../../)
 

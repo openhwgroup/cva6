@@ -7,6 +7,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 # riscv-arch-tests uses definition of RVMODEL_HALT provided by Spike.
 . verif/regress/install-spike.sh
 if [ ! -d $SPIKE_SRC_DIR/arch_test_target ]; then
@@ -32,4 +34,3 @@ if ! [ -d verif/tests/riscv-arch-test ]; then
   cp -rpa $SPIKE_SRC_DIR/arch_test_target riscv-target
   cd -
 fi
-

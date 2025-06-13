@@ -7,6 +7,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 if ! [ -n "$COMPLIANCE_REPO" ]; then
   COMPLIANCE_REPO="https://github.com/riscv-non-isa/riscv-arch-test.git"
   COMPLIANCE_BRANCH="main"
