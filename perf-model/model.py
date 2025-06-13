@@ -660,7 +660,9 @@ def main(input_file: str):
     model.run()
 
     write_trace('annotated.log', model.retired)
-    print_stats(filter_timed_part(model.retired))
+
+    #print_stats(filter_timed_part(model.retired))
+    print_stats(model.retired)
 
 if __name__ == "__main__":
     main(sys.argv[1])
