@@ -61,5 +61,3 @@ python3 cva6.py \
         --iss_yaml=cva6.yaml \
         --c_tests "../tests/custom/return0/return0.c" \
         --gcc_opts "${srcA[*]} ${cflags[*]}"
-
-cd -

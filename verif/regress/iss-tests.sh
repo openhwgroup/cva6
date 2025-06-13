@@ -35,6 +35,4 @@ python3 cva6.py --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --
 make clean
 make -C verif/sim clean_all
 
-cd -
-
 exit $error

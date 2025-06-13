@@ -49,6 +49,5 @@ for TESTLIST in $DV_TESTLISTS
 do
   python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml $DV_OPTS || error=$?
 done
-cd -
 
 exit $error

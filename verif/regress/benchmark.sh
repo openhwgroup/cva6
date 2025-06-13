@@ -74,6 +74,4 @@ python3 cva6.py $CVA6_FLAGS --c_tests $BDIR/vvadd/vvadd_main.c         --sv_seed
 make clean
 make -C verif/sim clean_all
 
-cd -
-
 exit $error

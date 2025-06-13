@@ -103,6 +103,5 @@ elif [[ "$list_num" = 0 ]];then
    printf "==== Execute Directed tests to improve functional coverage of isa, by hitting corners !!! ====\n\n"
    python3 cva6.py --testlist=$DIRECTED_TESTLIST --iss_yaml cva6.yaml --target $DV_TARGET --iss=vcs-uvm,spike --priv=m --linker=../../config/gen_from_riscv_config/$DV_TARGET/linker/link.ld || error=$?
 fi
-cd -
 
 exit $error

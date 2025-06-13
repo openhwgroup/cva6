@@ -68,6 +68,4 @@ python3 cva6.py \
         --sv_seed 1 \
         --gcc_opts "${srcA[*]} ${cflags[*]}" || error=$?
 
-cd -
-
 exit $error
