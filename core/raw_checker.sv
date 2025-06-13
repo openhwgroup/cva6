@@ -53,7 +53,7 @@ module raw_checker
 
   always_comb begin
     last_before_idx = '0;
-    last_after_idx = '0;
+    last_after_idx  = '0;
 
     for (int unsigned i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
       if (same_rd_as_rs_before[i]) begin
