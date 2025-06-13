@@ -22,13 +22,13 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigAxiIdWidth = 4;
   localparam CVA6ConfigAxiAddrWidth = 64;
-  localparam CVA6ConfigAxiDataWidth = 64;
+  localparam CVA6ConfigAxiDataWidth = 128;
   localparam CVA6ConfigDataUserWidth = 32;
 
 
 localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    XLEN: unsigned'(CVA6ConfigXlen),
-   VLEN: unsigned'(64),
+   VLEN: unsigned'(39),
    FpgaEn: bit'(0),  // for Xilinx and Altera
    FpgaAlteraEn: bit'(0),  // for Altera (only)
    TechnoCut: bit'(0),
@@ -56,6 +56,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    RVZCMP: bit'(0),
    XFVec: bit'(0),
    CvxifEn: bit'(1),
+   CoproType: config_pkg::COPRO_EXAMPLE,
    RVZiCond: bit'(1),
    RVZicntr: bit'(1),
    RVZihpm: bit'(1),
@@ -84,12 +85,13 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    NrNonIdempotentRules: unsigned'(2),
    NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
    NonIdempotentLength: 1024'({64'b0, 64'b0}),
-   NrExecuteRegionRules: unsigned'(3),
-   ExecuteRegionAddrBase: 1024'({64'h8000_0000, 64'h1_0000, 64'h0}),
-   ExecuteRegionLength: 1024'({64'h40000000, 64'h10000, 64'h1000}),
-   NrCachedRegionRules: unsigned'(1),
-   CachedRegionAddrBase: 1024'({64'h8000_0000}),
-   CachedRegionLength: 1024'({64'h40000000}),
+   NrExecuteRegionRules: unsigned'(0),
+   ExecuteRegionAddrBase: 64'h0,
+   ExecuteRegionLength: 64'h0,
+   NrCachedRegionRules: unsigned'(0),
+   CachedRegionAddrBase: 64'h0,
+   CachedRegionLength: 64'h0,
+   // FIXME
    MaxOutstandingStores: unsigned'(7),
    DebugEn: bit'(1),
    AxiBurstWriteEn: bit'(0),
@@ -108,7 +110,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    FetchUserEn: unsigned'(0),
    InstrTlbEntries: int'(16),
    DataTlbEntries: int'(16),
-   UseSharedTlb: bit'(0),
+   UseSharedTlb: bit'(1),
    SharedTlbDepth: int'(64),
    NrLoadPipeRegs: int'(0),
    NrStorePipeRegs: int'(0),
