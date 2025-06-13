@@ -21,6 +21,15 @@ The RVFI trace will be in `verif/sim/out_<date>/<simulator>/<test-name>.log`.
 python3 model.py verif/sim/out_<date>/<simulator>/<test-name>.log
 ```
 
+The annotated trace is generated in an `annotated.log` file in the current directory.
+
+It prints a lot of debug information so that you can see all the events (note: it slows down model execution).
+To disable these prints, modify the instantiation with `Model(debug=False)` in the `main` function.
+
+At the end of the simulation, the model prints statistics with the `print_stats` call in the `main` function.
+These statistics can be performed on the timed part, which is filtered with the `filter_timed_part` function.
+Feel free to modify the `filter_timed_part` function to suit your needs.
+
 
 ### Exploring design space
 
