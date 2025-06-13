@@ -36,6 +36,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
    uvma_obi_memory_cntxt_c        obi_memory_instr_cntxt;
    uvma_obi_memory_cntxt_c        obi_memory_store_cntxt;
    uvma_obi_memory_cntxt_c        obi_memory_amo_cntxt;
+   uvma_obi_memory_cntxt_c        obi_memory_zcmt_cntxt;
    uvma_obi_memory_cntxt_c        obi_memory_load_cntxt;
    //uvma_obi_memory_cntxt_c        obi_memory_mmu_ptw_cntxt;
 
@@ -64,6 +65,7 @@ class uvme_cva6_cntxt_c extends uvm_object;
       `uvm_field_object(obi_memory_store_cntxt,     UVM_DEFAULT)
       `uvm_field_object(obi_memory_amo_cntxt,     UVM_DEFAULT)
       `uvm_field_object(obi_memory_load_cntxt,     UVM_DEFAULT)
+      `uvm_field_object(obi_memory_zcmt_cntxt,     UVM_DEFAULT)
       //`uvm_field_object(obi_memory_mmu_ptw_cntxt,     UVM_DEFAULT)
 
       `uvm_field_object(core_cntrl_cntxt,   UVM_DEFAULT)
@@ -103,6 +105,9 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
       obi_memory_load_cntxt        = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_load_cntxt");
       if (RTLCVA6Cfg.RVA) begin
          obi_memory_amo_cntxt         = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_amo_cntxt");
+      end
+      if (RTLCVA6Cfg.RVZCMT) begin
+         obi_memory_zcmt_cntxt         = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_zcmt_cntxt");
       end
       //obi_memory_mmu_ptw_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_mmu_ptw_cntxt");
    end

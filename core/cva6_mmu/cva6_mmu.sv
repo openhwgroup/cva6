@@ -28,8 +28,8 @@ module cva6_mmu
     parameter config_pkg::cva6_cfg_t CVA6Cfg           = config_pkg::cva6_cfg_empty,
     parameter type                   fetch_areq_t      = logic,
     parameter type                   fetch_arsp_t      = logic,
-    parameter type                   obi_mmu_ptw_req_t = logic,
-    parameter type                   obi_mmu_ptw_rsp_t = logic,
+    parameter type                   ypb_mmu_ptw_req_t = logic,
+    parameter type                   ypb_mmu_ptw_rsp_t = logic,
     parameter type                   exception_t       = logic,
     parameter int unsigned           HYP_EXT           = 0
 
@@ -93,8 +93,8 @@ module cva6_mmu
     output logic             itlb_miss_o,
     output logic             dtlb_miss_o,
     // PTW memory interface
-    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
-    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
+    output ypb_mmu_ptw_req_t ypb_mmu_ptw_req_o,
+    input  ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
     // PMP
 
     input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
@@ -289,8 +289,8 @@ module cva6_mmu
       .CVA6Cfg          (CVA6Cfg),
       .pte_cva6_t       (pte_cva6_t),
       .tlb_update_cva6_t(tlb_update_cva6_t),
-      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
-      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
       .clk_i (clk_i),
@@ -313,8 +313,8 @@ module cva6_mmu
 
       .lsu_is_store_i   (lsu_is_store_i),
       // PTW memory interface
-      .obi_mmu_ptw_req_o(obi_mmu_ptw_req_o),
-      .obi_mmu_ptw_rsp_i(obi_mmu_ptw_rsp_i),
+      .ypb_mmu_ptw_req_o(ypb_mmu_ptw_req_o),
+      .ypb_mmu_ptw_rsp_i(ypb_mmu_ptw_rsp_i),
 
       // to Shared TLB, update logic
       .shared_tlb_update_o(update_shared_tlb),

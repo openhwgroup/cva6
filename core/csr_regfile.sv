@@ -974,11 +974,11 @@ module csr_regfile
     if (CVA6Cfg.RVZCMT) begin
       jvt_d = jvt_q;
     end
-    fcsr_d       = fcsr_q;
+    fcsr_d     = fcsr_q;
 
-    priv_lvl_d   = priv_lvl_q;
+    priv_lvl_d = priv_lvl_q;
     if (CVA6Cfg.RVH) begin
-      v_d        = v_q;
+      v_d = v_q;
     end
     if (CVA6Cfg.DebugEn) begin
       debug_mode_d = debug_mode_q;
@@ -2434,8 +2434,8 @@ module csr_regfile
 
     if (CVA6Cfg.RVH) begin
       if (virtual_update_access_exception || virtual_read_access_exception || virtual_privilege_violation) begin
-      csr_exception_o.cause = riscv::VIRTUAL_INSTRUCTION;
-      csr_exception_o.valid = 1'b1;
+        csr_exception_o.cause = riscv::VIRTUAL_INSTRUCTION;
+        csr_exception_o.valid = 1'b1;
       end
     end
   end
@@ -2598,7 +2598,7 @@ module csr_regfile
 `else
   assign icache_en_o = icache_q[0] & ~debug_mode;
 `endif
-  assign dcache_en_o = dcache_q[0];
+  assign dcache_en_o   = dcache_q[0];
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
   // determine if mprv needs to be considered if in debug mode
