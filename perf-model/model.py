@@ -347,7 +347,7 @@ class Model:
     """Models the scheduling of CVA6"""
 
     re_instr = re.compile(
-        r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*@\s*([0-9]+)\s*(.*)"
+        r"([a-z]+)\s+0:\s*0x0*([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*(@\s*[0-9]+)?\s*(.*)"
     )
 
     def __init__(
@@ -549,14 +549,14 @@ class Model:
 
 def write_trace(output_file, instructions):
     """Write cycle-annotated trace"""
-    pattern = re.compile(r"@\s*[0-9]+")
+    pattern = re.compile(r"\)\s*(@\s*[0-9]+)? ")
 
     lines = []
     for instr in instructions:
         commit_event = instr.events[-1]
         assert commit_event.kind == EventKind.commit
         cycle = commit_event.cycle
-        annotated = re.sub(pattern, f"@ {cycle}", instr.line)
+        annotated = re.sub(pattern, f") @ {cycle} ", instr.line)
         #if EventKind.STRUCT in [e.kind for e in instr.events]:
         #    annotated += " #STRUCT"
         #if EventKind.RAW in [e.kind for e in instr.events]:
@@ -660,7 +660,9 @@ def main(input_file: str):
     model.run()
 
     write_trace('annotated.log', model.retired)
-    print_stats(filter_timed_part(model.retired))
+
+    #print_stats(filter_timed_part(model.retired))
+    print_stats(model.retired)
 
 if __name__ == "__main__":
     main(sys.argv[1])
