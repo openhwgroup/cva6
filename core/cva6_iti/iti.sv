@@ -124,9 +124,9 @@ module cva6_iti #(
 
 
   always_comb begin
-    iti_to_encoder_o.cause = '0;
-    iti_to_encoder_o.tval  = '0;
-    iti_to_encoder_o.priv = '0;
+    iti_to_encoder_o.cause  = '0;
+    iti_to_encoder_o.tval   = '0;
+    iti_to_encoder_o.priv   = '0;
     iti_to_encoder_o.cycles = '0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       uop_entry[i].valid = valid_i[i];
