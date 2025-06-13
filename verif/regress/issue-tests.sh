@@ -36,6 +36,4 @@ python3 cva6.py --testlist=../tests/testlist_issues.yaml --test compressed-fpreg
 make clean
 make -C verif/sim clean_all
 
-cd -
-
 exit $error

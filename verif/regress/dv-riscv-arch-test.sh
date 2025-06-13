@@ -47,6 +47,4 @@ cd verif/sim
 error=0
 python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld || error=$?
 
-cd -
-
 exit $error

@@ -49,6 +49,4 @@ python3 cva6.py --testlist=../tests/testlist_cvxif.yaml --test cvxif_add_nop --i
 make -C ../.. clean
 make clean_all
 
-cd -
-
 exit $error

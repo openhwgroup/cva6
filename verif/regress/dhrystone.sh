@@ -76,6 +76,4 @@ python3 cva6.py \
         --gcc_opts "${srcA[*]} ${cflags[*]}" \
         $DV_OPTS || error=$?
 
-cd -
-
 exit $error

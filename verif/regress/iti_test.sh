@@ -49,6 +49,4 @@ cp iti.trace ../../.gitlab-ci
 make -C ../.. clean
 make clean_all
 
-cd -
-
 exit $error

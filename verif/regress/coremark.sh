@@ -100,6 +100,4 @@ python3 cva6.py \
         --iss_timeout=2000 \
         $DV_OPTS || error=$?
 
-cd -
-
 exit $error

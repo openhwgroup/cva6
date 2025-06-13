@@ -77,6 +77,4 @@ python3 cva6.py \
         --linker "$link_ld" \
         $DV_OPTS -v || error=$?
 
-cd -
-
 exit $error

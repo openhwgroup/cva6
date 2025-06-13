@@ -34,6 +34,4 @@ cd verif/sim
 error=0
 python3 cva6.py --testlist=../tests/testlist_riscv-csr-access-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../sim/link.ld || error=$?
 
-cd -
-
 exit $error

@@ -48,6 +48,4 @@ python3 cva6.py --c_tests ../tests/custom/hello_world/hello_world.c --iss_yaml c
 make -C ../.. clean
 make clean_all
 
-cd -
-
 exit $error
