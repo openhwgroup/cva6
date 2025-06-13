@@ -67,6 +67,8 @@ module ex_stage
     output logic flu_valid_o,
     // ALU instruction is valid - ISSUE_STAGE
     input logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_i,
+    // AES instruction is valid - ISSUE_STAGE
+    input logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_i,
     // Branch unit instruction is valid - ISSUE_STAGE
     input logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_i,
     // Information of branch prediction - ISSUE_STAGE
@@ -235,7 +237,9 @@ module ex_stage
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
-    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    // Original instruction AES bits
+    input logic [5:0] orig_instr_aes_i
 );
 
   // -------------------------
@@ -271,14 +275,14 @@ module ex_stage
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
-  logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result;
+  logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
-  assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i;
+  assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i | aes_valid_i;
 
   fu_data_t one_cycle_data;
   logic [CVA6Cfg.VLEN-1:0] rs1_forwarding;
@@ -370,6 +374,8 @@ module ex_stage
     end else if (mult_valid) begin
       flu_result_o   = mult_result;
       flu_trans_id_o = mult_trans_id;
+    end else if (|aes_valid_i) begin
+      flu_result_o = aes_result;
     end
   end
 
@@ -722,5 +728,25 @@ module ex_stage
     assign vmid_to_be_flushed                 = '0;
     assign gpaddr_to_be_flushed               = '0;
   end
+
+  // ----------------
+  // Scalar Cryptography Unit
+  // ----------------
+  generate
+    if (CVA6Cfg.ZKN) begin : aes_gen
+      aes #(
+          .CVA6Cfg  (CVA6Cfg),
+          .fu_data_t(fu_data_t)
+      ) aes_i (
+          .clk_i,
+          .rst_ni,
+          .fu_data_i     (one_cycle_data),
+          .result_o      (aes_result),
+          .orig_instr_aes(orig_instr_aes_i)
+      );
+    end else begin : no_aes_gen
+      assign aes_result = '0;
+    end
+  endgenerate
 
 endmodule
