@@ -176,6 +176,8 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_if_adapter.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_wrapper.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpicache_if_adapter.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpicache_wrapper.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv

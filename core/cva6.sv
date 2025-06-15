@@ -292,9 +292,9 @@ module cva6
 
         // FROM/TO FETCH
 
-        .icache_en_i   (icache_enable),
-        .icache_flush_i(icache_flush),
-        .icache_miss_o (icache_miss),
+        .icache_enable_i(icache_enable),
+        .icache_flush_i (icache_flush),
+        .icache_miss_o  (icache_miss),
 
         // FETCH FROM/TO PIPELINE (YPB)
 

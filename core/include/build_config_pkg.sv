@@ -56,7 +56,6 @@ package build_config_pkg;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
-    cfg.MEM_TID_WIDTH = CVA6Cfg.AxiIdWidth;  //CVA6Cfg.MemTidWidth; FIXME HPDCACHE related
     cfg.NrLoadBufEntries = cfg.ObiVersion == config_pkg::OBI_NOT_COMPLIANT ? CVA6Cfg.NrLoadBufEntries : 1;  //FIXME: To fix in order response 
     cfg.NrFetchBufEntries = 1;  //cfg.ObiVersion == 0 ? CVA6Cfg.NrFetchBufEntries : 1;
     cfg.RVF = CVA6Cfg.RVF;
