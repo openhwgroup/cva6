@@ -268,7 +268,6 @@ package config_pkg;
     int unsigned AxiDataWidth;
     int unsigned AxiIdWidth;
     int unsigned AxiUserWidth;
-    int unsigned MEM_TID_WIDTH;
     int unsigned NrFetchBufEntries;
     int unsigned NrLoadBufEntries;
     bit          RVF;

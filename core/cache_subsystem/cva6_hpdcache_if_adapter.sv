@@ -479,7 +479,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign ypb_store_rsp_o.rid = '0;
       assign ypb_store_rsp_o.err = '0;
       assign ypb_store_rsp_o.rdata = '0;
-      assign ypb_store_rsp_o.pgnt = '0;
+      assign ypb_store_rsp_o.vgnt = '0;
 
 
       assign ypb_amo_rsp_o.pgnt = hpdcache_req_ready_i & forward_amo;
@@ -488,7 +488,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign ypb_amo_rsp_o.err = '0;
       assign ypb_amo_rsp_o.rdata = amo_is_word ? {{32{amo_resp_word[31]}}, amo_resp_word}
                                                         : hpdcache_rsp_i.rdata[0];
-      assign ypb_amo_rsp_o.pgnt = '0;
+      assign ypb_amo_rsp_o.vgnt = '0;
 
       //  }}}
 
