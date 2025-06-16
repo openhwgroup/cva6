@@ -148,8 +148,6 @@ package build_config_pkg;
     cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
 
-    cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
-
     cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
 

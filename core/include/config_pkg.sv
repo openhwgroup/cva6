@@ -171,8 +171,6 @@ package config_pkg;
     int unsigned                 AxiUserWidth;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
-    // Transaction ID
-    int unsigned                 MemTidWidth;
     // Instruction cache size (in bytes)
     int unsigned                 IcacheByteSize;
     // Instruction cache associativity (number of ways)
@@ -363,8 +361,6 @@ package config_pkg;
     int unsigned DCACHE_USER_WIDTH;
     int unsigned DCACHE_OFFSET_WIDTH;
     int unsigned DCACHE_NUM_WORDS;
-
-    int unsigned DCACHE_MAX_TX;
 
     bit DcacheFlushOnFence;
     bit DcacheInvalidateOnFlush;
