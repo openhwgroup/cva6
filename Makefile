@@ -160,7 +160,6 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_reference_model_pkg.sv)         \
         $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_scoreboard_pkg.sv)              \
         $(if $(spike-tandem),corev_apu/tb/common/spike.sv)                           \
-        core/cva6_rvfi.sv                                                            \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
