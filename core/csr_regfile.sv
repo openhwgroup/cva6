@@ -311,7 +311,7 @@ module csr_regfile
   logic satp_mode_is_sv;
 
   if (CVA6Cfg.RVH) begin
-    assign vsstatus_fs_is_off = v_q && vsstatus_q.fs == riscv::Off;
+    assign vsstatus_fs_is_off = v_q && (vsstatus_q.fs == riscv::Off);
   end else begin
     assign vsstatus_fs_is_off = 1'b0;
   end
@@ -1812,7 +1812,9 @@ module csr_regfile
     if (CVA6Cfg.FpPresent && (dirty_fp_state_csr || dirty_fp_state_i)) begin
       mstatus_d.fs = riscv::Dirty;
       if (CVA6Cfg.RVH) begin
-        vsstatus_d.fs = v_q & riscv::Dirty;
+        if (v_q) begin
+          vsstatus_d.fs = riscv::Dirty;
+        end
       end
     end
     // mark the vector extension register as dirty
