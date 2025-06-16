@@ -33,10 +33,10 @@ module cva6_tlb
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
     input logic flush_i,  // Flush normal translations signal
-    input logic flush_vvma_i,  // Flush vs stage signal
-    input logic flush_gvma_i,  // Flush g stage signal
-    input logic s_st_enbl_i,  // s-stage enabled
-    input logic g_st_enbl_i,  // g-stage enabled
+    input logic flush_vvma_i,  // Flush VS stage signal
+    input logic flush_gvma_i,  // Flush G stage signal
+    input logic s_st_enbl_i,  // S-stage enabled
+    input logic g_st_enbl_i,  // G-stage enabled
     input logic v_i,  // virtualization mode
     // Update TLB
     input tlb_update_cva6_t update_i,
@@ -73,8 +73,8 @@ module cva6_tlb
       tags_q, tags_n;
 
   struct packed {
-    pte_cva6_t pte;   // Result of S-translation of the input
-    pte_cva6_t gpte;  // Output of G-translation of the (possibly S-translated) input
+    pte_cva6_t pte;   // S or VS-stage Page Table Entry structure
+    pte_cva6_t gpte;  // G-stage Page Table Entry structure
   } [TLB_ENTRIES-1:0]
       content_q, content_n;
 
@@ -107,7 +107,7 @@ module cva6_tlb
         assign vaddr_vpn_match[i][0][x] = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
         if (CVA6Cfg.RVH) begin
           assign vaddr_vpn_match[i][HYP_EXT][0] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] ==
-                                                                  gppn[i][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1)   :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x];
+                                                                  gppn[i][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x];
         end
       end
 
@@ -184,6 +184,7 @@ module cva6_tlb
     match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
     match_stage    = '{default: 0};
     g_content      = '{default: 0};
+    lu_gpaddr_o    = '{default: 0};
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // First level match, this may be a giga page, check the ASID flags as well
