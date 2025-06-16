@@ -232,10 +232,6 @@
      - ``bit``
      - AXI burst in write
 
-   * - ``MemTidWidth``
-     - ``int unsigned``
-     - Transaction ID
-
    * - ``IcacheByteSize``
      - ``int unsigned``
      - Instruction cache size (in bytes)

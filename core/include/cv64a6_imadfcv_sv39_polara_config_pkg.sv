@@ -47,7 +47,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigDcacheInvalidateOnFlush = 1'b0;
 
   localparam CVA6ConfigDcacheIdWidth = 1;
-  localparam CVA6ConfigMemTidWidth = 2;
 
   localparam CVA6ConfigWtDcacheWbufDepth = 8;
 
@@ -85,7 +84,6 @@ package cva6_config_pkg;
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
-      MemTidWidth: unsigned'(CVA6ConfigMemTidWidth),
       NrLoadBufEntries: unsigned'(CVA6ConfigNrLoadBufEntries),
       RVF: bit'(CVA6ConfigRVF),
       RVD: bit'(CVA6ConfigRVF),
