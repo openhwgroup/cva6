@@ -1273,7 +1273,11 @@ class CsrParser:
                     if isinstance(RegElement.get("address", None), str)
                     else hex(RegElement.get("address", None))
                 )
-                reset = hex(RegElement.get("reset-val", ""))
+
+                if RegElement.get("reset-val", "") != "":
+                  reset = hex(RegElement.get("reset-val", ""))
+                else:
+                  print(regName, "reset val not defined")
 
                 access = RegElement.get("priv_mode", "")
                 if Registers.get(register, {}).get("description", "") is not None:
