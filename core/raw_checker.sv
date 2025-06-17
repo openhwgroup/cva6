@@ -38,14 +38,11 @@ module raw_checker
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0] same_rd_as_rs;
 
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0] same_rd_as_rs_before;
-  logic                             last_before_valid;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] last_before_idx;
 
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0] same_rd_as_rs_after;
-  logic                             last_after_valid;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] last_after_idx;
 
-  logic                             valid;
   logic                             rs_is_gpr0;
 
   for (genvar i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
@@ -54,68 +51,23 @@ module raw_checker
     assign same_rd_as_rs_after[i] = (i >= issue_pointer_i) && same_rd_as_rs[i];
   end
 
-  //Last finders
-  // for instructions < instruction pointer
-  rr_arb_tree #(
-      .NumIn(CVA6Cfg.NR_SB_ENTRIES),
-      .DataWidth(1),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) i_last_finder_before (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ({$clog2(CVA6Cfg.NR_SB_ENTRIES){1'b1}}), // Highest index has highest prio.
-      .req_i  (same_rd_as_rs_before),
-      .gnt_o  (),
-      .data_i ('0),
-      .gnt_i  (1'b1),
-      .req_o  (last_before_valid),
-      .data_o (),
-      .idx_o  (last_before_idx)
-  );
+  always_comb begin
+    last_before_idx = '0;
+    last_after_idx  = '0;
 
-  // for instructions >= instruction pointer
-  rr_arb_tree #(
-      .NumIn(CVA6Cfg.NR_SB_ENTRIES),
-      .DataWidth(1),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) i_last_finder_after (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ({$clog2(CVA6Cfg.NR_SB_ENTRIES){1'b1}}), // Highest index has highest prio.
-      .req_i  (same_rd_as_rs_after),
-      .gnt_o  (),
-      .data_i ('0),
-      .gnt_i  (1'b1),
-      .req_o  (last_after_valid),
-      .data_o (),
-      .idx_o  (last_after_idx)
-  );
+    for (int unsigned i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
+      if (same_rd_as_rs_before[i]) begin
+        last_before_idx = i;
+      end
+      if (same_rd_as_rs_after[i]) begin
+        last_after_idx = i;
+      end
+    end
+  end
 
-  // take the minimum of the last indexes
-  rr_arb_tree #(
-      .NumIn(2),
-      .DataWidth(CVA6Cfg.TRANS_ID_BITS),
-      .ExtPrio(1'b1),
-      .AxiVldRdy(1'b1)
-  ) min_finder (
-      .clk_i  (clk_i),
-      .rst_ni (rst_ni),
-      .flush_i(1'b0),
-      .rr_i   ('0), // Lowest index has highest prio.
-      .req_i  ({last_after_valid,last_before_valid}),
-      .gnt_o  (),
-      .data_i ({last_after_idx,last_before_idx}),
-      .gnt_i  (1'b1),
-      .req_o  (valid),
-      .data_o (idx_o),
-      .idx_o  ()
-  );
+  assign idx_o = |same_rd_as_rs_before ? last_before_idx : last_after_idx;
 
   assign rs_is_gpr0 = (rs_i == '0) && !rs_fpr_i;
-  assign valid_o = valid && !rs_is_gpr0;
+  assign valid_o = |same_rd_as_rs && !rs_is_gpr0;
 
 endmodule
