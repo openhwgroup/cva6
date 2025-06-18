@@ -15,7 +15,7 @@
 // Author: Angela Gonzalez PlanV Technology
 // Date: 26/02/2024
 //
-// Description: Translation Lookaside Buffer, parameterizable to Sv32 or Sv39 , 
+// Description: Translation Lookaside Buffer, parameterizable to Sv32 or Sv39,
 //              or sv39x4 fully set-associative
 //              This module is an merge of the Sv32 TLB developed by Sebastien
 //              Jacq (Thales Research & Technology), the Sv39 TLB developed
@@ -33,10 +33,10 @@ module cva6_tlb
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
     input logic flush_i,  // Flush normal translations signal
-    input logic flush_vvma_i,  // Flush vs stage signal
-    input logic flush_gvma_i,  // Flush g stage signal
-    input logic s_st_enbl_i,  // s-stage enabled
-    input logic g_st_enbl_i,  // g-stage enabled
+    input logic flush_vvma_i,  // Flush VS stage signal
+    input logic flush_gvma_i,  // Flush G stage signal
+    input logic s_st_enbl_i,  // S-stage enabled
+    input logic g_st_enbl_i,  // G-stage enabled
     input logic v_i,  // virtualization mode
     // Update TLB
     input tlb_update_cva6_t update_i,
@@ -60,16 +60,21 @@ module cva6_tlb
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
     logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
+    // VPN is:
+    // [0] -> VPN0
+    // [1] -> VPN1
+    // [2] -> VPN2
+    // [3] -> 2-bit supplementary PPN2 in case of GPA
     logic [CVA6Cfg.PtLevels+HYP_EXT-1:0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] vpn;
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
-    logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
+    logic [HYP_EXT*2:0] v_st_enbl;  // v_i, g-stage enabled, s-stage enabled
     logic valid;
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
   struct packed {
-    pte_cva6_t pte;
-    pte_cva6_t gpte;
+    pte_cva6_t pte;   // S or VS-stage Page Table Entry structure
+    pte_cva6_t gpte;  // G-stage Page Table Entry structure
   } [TLB_ENTRIES-1:0]
       content_q, content_n;
 
@@ -87,7 +92,7 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0] match_stage;
   pte_cva6_t g_content;
   logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
-  logic [2:0] v_st_enbl;
+  logic [HYP_EXT*2:0] v_st_enbl;
 
   assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
   //-------------
@@ -98,45 +103,71 @@ module cva6_tlb
   generate
     for (i = 0; i < TLB_ENTRIES; i++) begin
       for (x = 0; x < CVA6Cfg.PtLevels; x++) begin
-        //identify page_match for all TLB Entries  
-        assign page_match[i][x] = x==0 ? 1 :((HYP_EXT==0 || x==(CVA6Cfg.PtLevels-1)) ? // PAGE_MATCH CONTAINS THE MATCH INFORMATION FOR EACH TAG OF is_1G and is_2M in sv39x4. HIGHER LEVEL (Giga page), THEN THERE IS THE Mega page AND AT THE LOWER LEVEL IS ALWAYS 1
-            &(tags_q[i].is_page[CVA6Cfg.PtLevels-1-x] | (~v_st_enbl[HYP_EXT:0])):
-                                        ((&v_st_enbl[HYP_EXT:0]) ? 
-                                        ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT])) 
-                                      || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]))):
-                                          tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && s_st_enbl_i || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && g_st_enbl_i));
+        // Identify if virtual address at level `x` matches the vaddr / gpaddr to be flushed
+        assign vaddr_vpn_match[i][0][x] = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
+        if (CVA6Cfg.RVH) begin
+          assign vaddr_vpn_match[i][HYP_EXT][0] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] ==
+                                                                  gppn[i][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x];
+        end
+      end
 
-        //identify if vpn matches at all PT levels for all TLB entries  
-        assign vpn_match[i][x] = (CVA6Cfg.RVH && x == (CVA6Cfg.PtLevels - 1) && ~s_st_enbl_i) ?  //
-            lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x] && lu_vaddr_i[12+HYP_EXT*(CVA6Cfg.VpnLen-1): 12+HYP_EXT*(CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))] == tags_q[i].vpn[x+HYP_EXT][(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)-HYP_EXT:0]: //
-            lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
+      for (x = 0; x < CVA6Cfg.PtLevels; x++) begin
+        // WARNING: `x` goes in the order {0 = 4K, 1 = 2M, 2 = 1G}.
 
-        //identify if there is a hit at each PT level for all TLB entries  
+        // Identify page_match for all TLB Entries:
+        // `page_match[i][x] == 1` if the entry `i` represents a page of (non-stricly) bigger length than
+        // requested.
+        // 4K is always a match
+        // In case of H-mode, the length of a page in the TLB is the smallest of S-translation and
+        // G-translation
+        if (x == 0) begin
+          assign page_match[i][x] = 1;
+        end else begin
+          if (HYP_EXT == 0 || x == (CVA6Cfg.PtLevels - 1)) begin
+            // No H-mode or Giga page. Then both condition must be true:
+            // - G-stage translation is *not* enabled or G-entry is a matching page (bit 1)
+            // - S-translation is *not* enabled or S-entry i is a matching page (bit 0)
+            assign page_match[i][x] = &(tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT:0] | (~v_st_enbl[HYP_EXT:0]));
+          end else begin
+            // Other cases: H-mode and mega page
+            assign page_match[i][x] = (&v_st_enbl[HYP_EXT:0]) ?
+                // If S-translation and G-translation are active, then either:
+                // - S-translation matchs and G-translation is Mega or Giga
+                // - G-translation matchs and S-translation is Mega or Giga
+                ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]       && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT]))
+            ||   (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0]       || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0])))
+            : // Else, either S or G-level must match depending which is active
+                ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0] && s_st_enbl_i) || (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && g_st_enbl_i));
+          end
+        end
+
+        // Identify if VPN matches at levels `x` for TLB entry `i`
+        if (CVA6Cfg.RVH && x == (CVA6Cfg.PtLevels - 1)) begin
+          // H-mode: extend the check on last level (Giga page) to include the supplementary bits in
+          // GPA (cfg.GPPNW = 29 bits in Sv39x4, compared to 27 bits in Sv39)
+          // /!\ Only in cases G-translation is active and not S-translation
+          assign vpn_match[i][x] = lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x]
+              && (s_st_enbl_i || lu_vaddr_i[12+CVA6Cfg.GPPNW-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))] == tags_q[i].vpn[x+HYP_EXT][(CVA6Cfg.GPPNW%(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels))-1:0]);
+
+        end else begin
+          // Standard match
+          assign vpn_match[i][x] = lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
+        end
+
+        // Identify if there is a hit at level `x`: VPN and page length must match
         assign level_match[i][x] = &vpn_match[i][CVA6Cfg.PtLevels-1:x] && page_match[i][x];
 
-        //identify vpage_match for all TLB Entries and vaddr_level match (if there is a hit at each PT level for all TLB entries on the vaddr)
+        // Identify `vpage_match` (matching page type) and deduce `vaddr_level` match (hit at all level on the virtual addr to be flushed
+        // and matching page type).
         for (z = 0; z < HYP_EXT + 1; z++) begin
           assign vpage_match[i][z][x] = x == 0 ? 1 : tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][z];
-          assign vaddr_level_match[i][z][x]= &vaddr_vpn_match[i][z][CVA6Cfg.PtLevels-1:x] && vpage_match[i][z][x];
-
+          assign vaddr_level_match[i][z][x] = &vaddr_vpn_match[i][z][CVA6Cfg.PtLevels-1:x] && vpage_match[i][z][x];
         end
-        //identify if virtual address vpn matches at all PT levels for all TLB entries 
-        assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
-
       end
 
-
-
-      if (CVA6Cfg.RVH) begin
-        //identify if GPADDR matches the GPPN
-        assign vaddr_vpn_match[i][HYP_EXT][0] = (gpaddr_to_be_flushed_i[20:12] == gppn[i][8:0]);
-        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT] = (gpaddr_to_be_flushed_i[29:21] == gppn[i][17:9]);
-        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (gpaddr_to_be_flushed_i[30+GPPN2:30] == gppn[i][18+GPPN2:18]);
-
-      end
-
+      // Reorganise the output structure to match `is_page` tag order: [1G, 2M]
       for (w = 0; w < CVA6Cfg.PtLevels - 1; w++) begin
-        assign is_page_o[i][w] = page_match[i][CVA6Cfg.PtLevels - 1 - w]; //THIS REORGANIZES THE PAGES TO MATCH THE OUTPUT STRUCTURE (2M,1G)
+        assign is_page_o[i][w] = page_match[i][CVA6Cfg.PtLevels-1-w];
       end
     end
   endgenerate
@@ -156,7 +187,7 @@ module cva6_tlb
     lu_gpaddr_o    = '{default: 0};
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
-      // first level match, this may be a giga page, check the ASID flags as well
+      // First level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
       match_asid[i] = ((lu_asid_i == tags_q[i].asid || content_q[i].pte.g) && s_st_enbl_i) || !s_st_enbl_i;
 
@@ -164,46 +195,58 @@ module cva6_tlb
         match_vmid[i] = (lu_vmid_i == tags_q[i].vmid && g_st_enbl_i) || !g_st_enbl_i;
       end
 
-      // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
+      // Check if that S-stage and G-stage modes corresponds, and that
+      // and virtualization mode is on/off
       match_stage[i] = tags_q[i].v_st_enbl[HYP_EXT*2:0] == v_st_enbl[HYP_EXT*2:0];
 
-      if (tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i]) begin
-
-        if (CVA6Cfg.RVH && vpn_match[i][HYP_EXT*2]) begin
+      // There was a match, i.e.:
+      // - tag is valid
+      // - asid matches
+      // - vmid matches
+      // - virtualisations / S-stage / G-stage matches
+      // - there exists a PT level for which and entry exists and corresponding VPN(s) match
+      if (tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && |level_match[i]) begin
+        lu_is_page_o = is_page_o[i];
+        lu_content_o = content_q[i].pte;
+        lu_hit_o     = 1'b1;
+        lu_hit[i]    = 1'b1;
+        // Translate S-stage to GPA: use `content_q[i].pte` to get PPN and use offset
+        // from input `lu_vaddr_i`. In case of mega/giga pages, PTE PPN must be aligned,
+        // so we should not overwite any useful bits.
+        if (CVA6Cfg.RVH) begin
           if (s_st_enbl_i) begin
+            // S-stage Normal page
             lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
-            // Giga page
-            if (tags_q[i].is_page[0][0])
-              lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
-            // Mega page
-            if (tags_q[i].is_page[HYP_EXT][0])
+            // S-stage Mega page
+            if (tags_q[i].is_page[1][0])
               lu_gpaddr_o[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
+            // S-stage Giga page
+            if (tags_q[i].is_page[0][0])
+              lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end else begin
-            lu_gpaddr_o =CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0]);
+            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32?CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
           end
-        end
 
-        if (|level_match[i]) begin
-          lu_is_page_o = is_page_o[i];
-          lu_content_o = content_q[i].pte;
-          lu_hit_o     = 1'b1;
-          lu_hit[i]    = 1'b1;
-
-          if (CVA6Cfg.RVH) begin
-            // Compute G-Stage PPN based on the gpaddr
-            g_content = content_q[i].gpte;
-            if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
-            if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
-            // Output G-stage and S-stage content
-            lu_g_content_o = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i].gpte : g_content;
+          // G-translation (if requested), depending on `content[i].gpte` page type
+          if (g_st_enbl_i) begin
+            // Compute G-Stage PPN based on the GPA
+            // in case of mega/giga pages, GPTE PPN must be aligned so
+            // here again, we should not overwrite useful bits.
+            lu_g_content_o = content_q[i].gpte;
+            // Mega page
+            if (tags_q[i].is_page[1][HYP_EXT])
+              lu_g_content_o.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+            // Giga page
+            if (tags_q[i].is_page[0][HYP_EXT])
+              lu_g_content_o.ppn[2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end
         end
       end
     end
   end
 
-  logic [HYP_EXT:0]asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
-  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
+  logic [HYP_EXT:0] asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
+  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
   logic vmid_to_be_flushed_is0;  // indicates that the VMID provided is 0, active high
   logic gpaddr_to_be_flushed_is0;  // indicates that the GPADDR provided is 0, active high
 
@@ -226,12 +269,12 @@ module cva6_tlb
 
         if (tags_q[i].v_st_enbl[0]) begin
           gppn[i] = content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0];
-          if (tags_q[i].is_page[HYP_EXT][0])
+          // Mega Page
+          if (tags_q[i].is_page[1][0])
             gppn[i][CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:0] = tags_q[i].vpn[0];
+          // Giga Page
           if (tags_q[i].is_page[0][0])
-            gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {
-              tags_q[i].vpn[HYP_EXT], tags_q[i].vpn[0]
-            };
+            gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {tags_q[i].vpn[1], tags_q[i].vpn[0]};
         end else begin
           gppn[i][CVA6Cfg.VpnLen-1:0] = CVA6Cfg.VpnLen'(tags_q[i].vpn);
         end
@@ -286,10 +329,11 @@ module cva6_tlb
         end
         // normal replacement
       end else if (update_i.valid & replace_en[i] & !lu_hit_o) begin
-        //update tag
+        // update tag
         tags_n[i] = {
           update_i.asid,
           update_i.vmid,
+          // Zero-extended VPN to fit the tag width
           ((CVA6Cfg.PtLevels + HYP_EXT) * (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels))'(update_i.vpn),
           update_i.is_page,
           update_i.v_st_enbl,
@@ -311,27 +355,27 @@ module cva6_tlb
     // The PLRU-tree indexing:
     // lvl0        0
     //            / \
-//           /   \
-// lvl1     1     2
-//         / \   / \
-// lvl2   3   4 5   6
-//       / \ /\/\  /\
-//      ... ... ... ...
-// Just predefine which nodes will be set/cleared
-// E.g. for a TLB with 8 entries, the for-loop is semantically
-// equivalent to the following pseudo-code:
-// unique case (1'b1)
-// lu_hit[7]: plru_tree_n[0, 2, 6] = {1, 1, 1};
-// lu_hit[6]: plru_tree_n[0, 2, 6] = {1, 1, 0};
-// lu_hit[5]: plru_tree_n[0, 2, 5] = {1, 0, 1};
-// lu_hit[4]: plru_tree_n[0, 2, 5] = {1, 0, 0};
-// lu_hit[3]: plru_tree_n[0, 1, 4] = {0, 1, 1};
-// lu_hit[2]: plru_tree_n[0, 1, 4] = {0, 1, 0};
-// lu_hit[1]: plru_tree_n[0, 1, 3] = {0, 0, 1};
-// lu_hit[0]: plru_tree_n[0, 1, 3] = {0, 0, 0};
-// default: begin /* No hit */ end
-// endcase
-for (
+    //           /   \
+    // lvl1     1     2
+    //         / \   / \
+    // lvl2   3   4 5   6
+    //       / \ /\/\  /\
+    //      ... ... ... ...
+    // Just predefine which nodes will be set/cleared
+    // E.g. for a TLB with 8 entries, the for-loop is semantically
+    // equivalent to the following pseudo-code:
+    // unique case (1'b1)
+    // lu_hit[7]: plru_tree_n[0, 2, 6] = {1, 1, 1};
+    // lu_hit[6]: plru_tree_n[0, 2, 6] = {1, 1, 0};
+    // lu_hit[5]: plru_tree_n[0, 2, 5] = {1, 0, 1};
+    // lu_hit[4]: plru_tree_n[0, 2, 5] = {1, 0, 0};
+    // lu_hit[3]: plru_tree_n[0, 1, 4] = {0, 1, 1};
+    // lu_hit[2]: plru_tree_n[0, 1, 4] = {0, 1, 0};
+    // lu_hit[1]: plru_tree_n[0, 1, 3] = {0, 0, 1};
+    // lu_hit[0]: plru_tree_n[0, 1, 3] = {0, 0, 0};
+    // default: begin /* No hit */ end
+    // endcase
+    for (
         int unsigned i = 0; i < TLB_ENTRIES; i++
     ) begin
       automatic int unsigned idx_base, shift, new_index;
