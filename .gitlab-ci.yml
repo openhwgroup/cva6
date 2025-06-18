@@ -343,16 +343,28 @@ benchmarks:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "coremark"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "dhrystone"
+        ISSUE: "singleaxi"
+        DV_HWCONFIG_OPTS: ["cv32a60x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "dhrystone"
+        ISSUE: "dualaxi"
+        DV_HWCONFIG_OPTS: ["cv32a65x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "coremark"
+        ISSUE: "singleaxi"
+        DV_HWCONFIG_OPTS: ["cv32a60x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "coremark"
+        ISSUE: "dualaxi"
+        DV_HWCONFIG_OPTS: ["cv32a65x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
   script:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
