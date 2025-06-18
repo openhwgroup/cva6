@@ -12,7 +12,12 @@
 ## Define variables
 
 # Top design
+ifndef TOP
+$(Warning : TOP is not set, Define TOP at cva6_example_obi (default) or cva6_example_axi)
 TOP= cva6_example_obi
+endif
+
+
 
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
