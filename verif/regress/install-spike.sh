@@ -8,6 +8,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 if [ -z ${NUM_JOBS} ]; then
   NUM_JOBS=1
 fi
