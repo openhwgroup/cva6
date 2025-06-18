@@ -162,7 +162,7 @@ module cva6_hpdcache_subsystem
   //  I$ instantiation
   //  {{{
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpicacheSetConfig();
-    hpdcache_pkg::hpdcache_user_cfg_t userCfg;
+    hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
     userCfg.nRequesters = 1;
     userCfg.paWidth = CVA6Cfg.PLEN;
     userCfg.wordWidth = 32;
@@ -197,6 +197,7 @@ module cva6_hpdcache_subsystem
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn = 1'b0;
     userCfg.wbEn = 1'b0;
+    userCfg.lowLatency = 1'b0;
     return userCfg;
   endfunction
 
@@ -302,7 +303,7 @@ module cva6_hpdcache_subsystem
   localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
-    hpdcache_pkg::hpdcache_user_cfg_t userCfg;
+    hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
     userCfg.nRequesters = HPDCACHE_NREQUESTERS;
     userCfg.paWidth = CVA6Cfg.PLEN;
     userCfg.wordWidth = CVA6Cfg.XLEN;
@@ -343,6 +344,7 @@ module cva6_hpdcache_subsystem
     userCfg.wbEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+    userCfg.lowLatency = 1'b0;
     return userCfg;
   endfunction
 
