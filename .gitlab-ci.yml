@@ -148,6 +148,10 @@ smoke-tests:
         DV_TARGET: "cv32a65x"
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a60x"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a65x_axi"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a60x_axi"
   script:
     - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
@@ -184,6 +188,8 @@ smoke-bench:
     matrix:
       - DV_TARGET: "cv32a60x"
       - DV_TARGET: "cv32a65x"
+      - DV_TARGET: "cv32a60x_axi"
+      - DV_TARGET: "cv32a65x_axi"
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$DV_TARGET" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log

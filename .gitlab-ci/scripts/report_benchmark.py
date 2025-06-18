@@ -25,6 +25,8 @@ valid_cycles = {
     "coremark_single": 1291566,
     "dhrystone_cv32a65x": 35952,
     "dhrystone_cv32a60x": 38856,
+    "dhrystone_cv32a65x_axi": 35952,
+    "dhrystone_cv32a60x_axi": 38856,
 }
 
 benchmark_iters = {
@@ -34,6 +36,8 @@ benchmark_iters = {
     "coremark_single": 4,
     "dhrystone_cv32a65x": 20,
     "dhrystone_cv32a60x": 20,
+    "dhrystone_cv32a65x_axi": 20,
+    "dhrystone_cv32a60x_axi": 20,
  }
 
 for arg in sys.argv[1:]:
