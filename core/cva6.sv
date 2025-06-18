@@ -592,6 +592,8 @@ module cva6
   jvt_t jvt;
   // trigger module
   logic debug_from_trigger;
+  //logic break_from_trigger;
+  logic e_matched_signal;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -1124,7 +1126,9 @@ module cva6
       .flush_commit_o    (flush_commit),
       .sfence_vma_o      (sfence_vma_commit_controller),
       .hfence_vvma_o     (hfence_vvma_commit_controller),
-      .hfence_gvma_o     (hfence_gvma_commit_controller)
+      .hfence_gvma_o     (hfence_gvma_commit_controller),
+      //.break_from_trigger_i (break_from_trigger)
+      .e_matched_i       (e_matched_signal)
   );
 
   assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
@@ -1219,7 +1223,9 @@ module cva6
       .debug_from_trigger_o    (debug_from_trigger),
       .vaddr_from_lsu_i        (rvfi_lsu_ctrl.vaddr),
       .orig_instr_i            (orig_instr_id_issue),
-      .store_result_i          (store_result_ex_id)
+      .store_result_i          (store_result_ex_id),
+      //.break_from_trigger_o    (break_from_trigger)
+      .e_matched_o             (e_matched_signal)
   );
 
   // ------------------------

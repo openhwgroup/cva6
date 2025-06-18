@@ -87,7 +87,9 @@ module commit_stage
     // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_vvma_o,
     // TO_BE_COMPLETED - CONTROLLER
-    output logic hfence_gvma_o
+    output logic hfence_gvma_o,
+    //input logic break_from_trigger_i
+    input logic e_matched_i
 );
 
   // ila_0 i_ila_commit (
@@ -159,7 +161,7 @@ module commit_stage
       // we will not commit the instruction if we took an exception
       if (commit_instr_i[0].ex.valid) begin
         // However we can drop it (with its exception)
-        if (commit_drop_i[0]) begin
+        if (commit_drop_i[0] || e_matched_i) begin
           commit_ack_o[0] = 1'b1;
         end
       end else begin
@@ -401,8 +403,13 @@ module commit_stage
     end
     // Don't take any exceptions iff:
     // - If we halted the processor
-    if (halt_i) begin
+    if (halt_i || e_matched_i) begin
       exception_o.valid = 1'b0;
     end
+    
+    // if (break_from_trigger_i) begin
+    //   exception_o.valid = 1'b1;
+    //   exception_o.cause = 32'h00000003;
+    // end
   end
 endmodule
