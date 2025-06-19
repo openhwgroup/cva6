@@ -23,7 +23,7 @@ valid_cycles = {
     "dhrystone_single": 22407,
     "coremark_dual": 981777,
     "coremark_single": 1294524,
-    "dhrystone_cv32a65x": 28825,
+    "dhrystone_cv32a65x": 28481,
     "dhrystone_cv32a60x": 36631,
 }
 
