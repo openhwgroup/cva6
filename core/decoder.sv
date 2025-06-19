@@ -1877,6 +1877,7 @@ module decoder
         end else if (priv_lvl_i == riscv::PRIV_LVL_M) begin
           instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
         end
+        if (CVA6Cfg.TvalEn) instruction_o.ex.tval = '0;
       end else if (ebreak) begin
         // this exception is valid
         instruction_o.ex.valid = 1'b1;
