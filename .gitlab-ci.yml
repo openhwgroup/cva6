@@ -274,7 +274,7 @@ cvxif-regression:
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
-.asic-synthesis:
+asic-synthesis:
   extends:
     - .synthesis_test
   tags: [$TAGS_RUNNER_SYNTH]
@@ -284,7 +284,16 @@ cvxif-regression:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
     PERIOD: "15"
-    DV_TARGET: cv32a65x
+  parallel:
+    matrix:
+      #- DESIGN_NAME: "cva6_example_obi"
+      #  DV_TARGET: "cv32a65x"
+      - DESIGN_NAME: "cva6_example_obi"
+        DV_TARGET: "cv32a60x"
+      - DESIGN_NAME: "cva6_example_axi"
+        DV_TARGET: "cv32a65x_axi"
+      #- DESIGN_NAME: "cva6_example_axi"
+      #  DV_TARGET: "cv32a60x_axi"
   script:
     - echo $PERIOD
     - echo $DV_TARGET
@@ -302,7 +311,7 @@ cvxif-regression:
     - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/ || echo "fail"
     - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/ || echo "fail"
 
-.fpga-build:
+fpga-build:
   extends:
     - .synthesis_test
   variables:
@@ -548,7 +557,7 @@ csr_embedded_tests:
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
 
-.simu-gate:
+simu-gate:
   timeout : 4 hours
   extends:
     - .backend_test
@@ -563,12 +572,14 @@ csr_embedded_tests:
     DASHBOARD_JOB_DESCRIPTION: "Tests to check netlist from ASIC synthesis and power consumption over different patterns"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
-    DV_TARGET: cv32a65x
-    TARGET: $DV_TARGET
     TOP: "cva6"
     SPIKE_TANDEM: 1
     SIMU_PERIOD: "20"  # 50 Mhz
     PERIOD: "15"  # 66 Mhz
+  parallel:
+    matrix:
+      - DV_TARGET: ["cv32a65x", "cv32a60x_axi"]
+        TARGET: ["cv32a65x", "cv32a60x_axi"]
   script:
     - mkdir -p artifacts/{reports,logs}
     - !reference [.copy_spike_artifacts]

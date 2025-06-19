@@ -8,7 +8,12 @@
 # Original Author: Jean-Roch COULON - Thales
 #
 
-DESIGN_NAME          ?= cva6_example_obi
+
+ifndef DESIGN_NAME
+$(Warning : DESIGN_NAME is not set, Define DESIGN_NAME at cva6_example_obi (default) or cva6_example_axi)
+DESIGN_NAME= cva6_example_obi
+endif
+
 PERIOD               ?= 17
 FOUNDRY_PATH         ?=
 LOCAL_LIB_PATH       ?=/shares/common/tools/RAMs/
@@ -18,6 +23,8 @@ OUTPUT_DELAY         ?= 0.11
 DC_SHELL_PATH        ?= /opt/synopsys/syn/Q-2019.12/bin/
 NAND2_AREA           ?= 1120
 TARGET               ?= cv32a65x
+
+
 
 EXPORT_LIST=SNPSLMD_QUEUE=TRUE TECH_NAME=$(TECH_NAME) DESIGN_NAME=$(DESIGN_NAME) TARGET=$(TARGET) TERM=vt100 PERIOD=$(PERIOD) FOUNDRY_PATH=$(FOUNDRY_PATH) LOCAL_LIB_PATH=$(LOCAL_LIB_PATH) TARGET_LIBRARY_FILES=$(TARGET_LIBRARY_FILES) INPUT_DELAY=$(INPUT_DELAY) OUTPUT_DELAY=$(OUTPUT_DELAY)
 
