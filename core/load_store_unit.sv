@@ -17,16 +17,14 @@ module load_store_unit
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type load_req_t = logic,
-    parameter type load_rsp_t = logic,
-    parameter type obi_store_req_t = logic,
-    parameter type obi_store_rsp_t = logic,
-    parameter type obi_amo_req_t = logic,
-    parameter type obi_amo_rsp_t = logic,
-    parameter type obi_load_req_t = logic,
-    parameter type obi_load_rsp_t = logic,
-    parameter type obi_mmu_ptw_req_t = logic,
-    parameter type obi_mmu_ptw_rsp_t = logic,
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_store_rsp_t = logic,
+    parameter type ypb_amo_req_t = logic,
+    parameter type ypb_amo_rsp_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_load_rsp_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_mmu_ptw_rsp_t = logic,
     parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type fetch_areq_t = logic,
@@ -94,73 +92,67 @@ module load_store_unit
     output fetch_arsp_t fetch_arsp_o,
 
     // Current privilege mode - CSR_REGFILE
-    input  riscv::priv_lvl_t                          priv_lvl_i,
+    input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
-    input  logic                                      v_i,
+    input logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
-    input  riscv::priv_lvl_t                          ld_st_priv_lvl_i,
+    input riscv::priv_lvl_t ld_st_priv_lvl_i,
     // Virtualization mode at which load and stores should happen - CSR_REGFILE
-    input  logic                                      ld_st_v_i,
+    input logic ld_st_v_i,
     // Instruction is a hyp load/store - CSR_REGFILE
-    output logic                                      csr_hs_ld_st_inst_o,
+    output logic csr_hs_ld_st_inst_o,
     // Supervisor User Memory - CSR_REGFILE
-    input  logic                                      sum_i,
+    input logic sum_i,
     // Virtual Supervisor User Memory - CSR_REGFILE
-    input  logic                                      vs_sum_i,
+    input logic vs_sum_i,
     // Make Executable Readable - CSR_REGFILE
-    input  logic                                      mxr_i,
+    input logic mxr_i,
     // Make Executable Readable Virtual Supervisor - CSR_REGFILE
-    input  logic                                      vmxr_i,
+    input logic vmxr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] vs_asid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
+    input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [      CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input  logic             [     CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
+    input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     // TLB flush - CONTROLLER
-    input  logic                                      flush_tlb_i,
-    input  logic                                      flush_tlb_vvma_i,
-    input  logic                                      flush_tlb_gvma_i,
+    input logic flush_tlb_i,
+    input logic flush_tlb_vvma_i,
+    input logic flush_tlb_gvma_i,
     // Instruction TLB miss - PERF_COUNTERS
-    output logic                                      itlb_miss_o,
+    output logic itlb_miss_o,
     // Data TLB miss - PERF_COUNTERS
-    output logic                                      dtlb_miss_o,
-
-    // Load cache input request ports - DCACHE
-    output load_req_t        load_req_o,
-    // Load cache output request ports - DCACHE
-    input  load_rsp_t        load_rsp_i,
+    output logic dtlb_miss_o,
     // Store cache response - DCACHE
-    output obi_store_req_t   obi_store_req_o,
+    output ypb_store_req_t ypb_store_req_o,
     // Store cache request - DCACHE
-    input  obi_store_rsp_t   obi_store_rsp_i,
+    input ypb_store_rsp_t ypb_store_rsp_i,
     // AMO request - DCACHE
-    output obi_amo_req_t     obi_amo_req_o,
+    output ypb_amo_req_t ypb_amo_req_o,
     // AMO response - DCACHE
-    input  obi_amo_rsp_t     obi_amo_rsp_i,
+    input ypb_amo_rsp_t ypb_amo_rsp_i,
     // Load cache response - DCACHE
-    output obi_load_req_t    obi_load_req_o,
+    output ypb_load_req_t ypb_load_req_o,
     // Load cache request - DCACHE
-    input  obi_load_rsp_t    obi_load_rsp_i,
+    input ypb_load_rsp_t ypb_load_rsp_i,
     // MMU PTW cache response - DCACHE
-    output obi_mmu_ptw_req_t obi_mmu_ptw_req_o,
+    output ypb_mmu_ptw_req_t ypb_mmu_ptw_req_o,
     // MMU PTW cache request - DCACHE
-    input  obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_i,
-
+    input ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic dcache_wbuffer_empty_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -267,8 +259,8 @@ module load_store_unit
         .exception_t      (exception_t),
         .fetch_areq_t     (fetch_areq_t),
         .fetch_arsp_t     (fetch_arsp_t),
-        .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
-        .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
+        .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+        .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
         .HYP_EXT          (HYP_EXT)
     ) i_cva6_mmu (
         .clk_i(clk_i),
@@ -322,8 +314,8 @@ module load_store_unit
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
 
-        .obi_mmu_ptw_req_o(obi_mmu_ptw_req_o),
-        .obi_mmu_ptw_rsp_i(obi_mmu_ptw_rsp_i),
+        .ypb_mmu_ptw_req_o(ypb_mmu_ptw_req_o),
+        .ypb_mmu_ptw_rsp_i(ypb_mmu_ptw_rsp_i),
 
         .pmpcfg_i,
         .pmpaddr_i
@@ -390,10 +382,10 @@ module load_store_unit
   // ------------------
   store_unit #(
       .CVA6Cfg(CVA6Cfg),
-      .obi_store_req_t(obi_store_req_t),
-      .obi_store_rsp_t(obi_store_rsp_t),
-      .obi_amo_req_t(obi_amo_req_t),
-      .obi_amo_rsp_t(obi_amo_rsp_t),
+      .ypb_store_req_t(ypb_store_req_t),
+      .ypb_store_rsp_t(ypb_store_rsp_t),
+      .ypb_amo_req_t(ypb_amo_req_t),
+      .ypb_amo_rsp_t(ypb_amo_rsp_t),
       .exception_t(exception_t),
       .lsu_ctrl_t(lsu_ctrl_t)
   ) i_store_unit (
@@ -429,10 +421,10 @@ module load_store_unit
       .page_offset_i        (page_offset),
       .page_offset_matches_o(page_offset_matches),
       // to memory arbiter
-      .obi_amo_req_o        (obi_amo_req_o),
-      .obi_amo_rsp_i        (obi_amo_rsp_i),
-      .obi_store_req_o      (obi_store_req_o),
-      .obi_store_rsp_i      (obi_store_rsp_i)
+      .ypb_amo_req_o        (ypb_amo_req_o),
+      .ypb_amo_rsp_i        (ypb_amo_rsp_i),
+      .ypb_store_req_o      (ypb_store_req_o),
+      .ypb_store_rsp_i      (ypb_store_rsp_i)
   );
 
   // ------------------
@@ -440,10 +432,8 @@ module load_store_unit
   // ------------------
   load_unit #(
       .CVA6Cfg       (CVA6Cfg),
-      .load_req_t    (load_req_t),
-      .load_rsp_t    (load_rsp_t),
-      .obi_load_req_t(obi_load_req_t),
-      .obi_load_rsp_t(obi_load_rsp_t),
+      .ypb_load_req_t(ypb_load_req_t),
+      .ypb_load_rsp_t(ypb_load_rsp_t),
       .exception_t   (exception_t),
       .lsu_ctrl_t    (lsu_ctrl_t)
   ) i_load_unit (
@@ -474,10 +464,8 @@ module load_store_unit
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
       // to memory arbiter
-      .obi_load_req_o       (obi_load_req_o),
-      .obi_load_rsp_i       (obi_load_rsp_i),
-      .load_req_o           (load_req_o),
-      .load_rsp_i           (load_rsp_i),
+      .ypb_load_req_o       (ypb_load_req_o),
+      .ypb_load_rsp_i       (ypb_load_rsp_i),
       .dcache_wbuffer_not_ni_i
   );
 

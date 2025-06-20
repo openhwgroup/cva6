@@ -232,10 +232,6 @@
      - ``bit``
      - AXI burst in write
 
-   * - ``MemTidWidth``
-     - ``int unsigned``
-     - Transaction ID
-
    * - ``IcacheByteSize``
      - ``int unsigned``
      - Instruction cache size (in bytes)
@@ -277,7 +273,7 @@
      - Data cache invalidate on flush
 
    * - ``DataUserEn``
-     - ``int unsigned``
+     - ``bit``
      - User field on data bus enable
 
    * - ``WtDcacheWbufDepth``
@@ -285,7 +281,7 @@
      - Write-through data cache write buffer depth
 
    * - ``FetchUserEn``
-     - ``int unsigned``
+     - ``bit``
      - User field on fetch bus enable
 
    * - ``FetchUserWidth``

@@ -56,7 +56,6 @@ package build_config_pkg;
     cfg.AxiDataWidth = CVA6Cfg.AxiDataWidth;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
-    cfg.MEM_TID_WIDTH = CVA6Cfg.AxiIdWidth;  //CVA6Cfg.MemTidWidth; FIXME HPDCACHE related
     cfg.NrLoadBufEntries = cfg.ObiVersion == config_pkg::OBI_NOT_COMPLIANT ? CVA6Cfg.NrLoadBufEntries : 1;  //FIXME: To fix in order response 
     cfg.NrFetchBufEntries = 1;  //cfg.ObiVersion == 0 ? CVA6Cfg.NrFetchBufEntries : 1;
     cfg.RVF = CVA6Cfg.RVF;
@@ -136,7 +135,7 @@ package build_config_pkg;
     cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
     cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
-    cfg.DCacheType = config_pkg::HPDCACHE_WT;  //CVA6Cfg.DCacheType;
+    cfg.DCacheType = CVA6Cfg.DCacheType;
     cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_SET_ASSOC_WIDTH = CVA6Cfg.DcacheSetAssoc > 1 ? $clog2(CVA6Cfg.DcacheSetAssoc) :
@@ -148,8 +147,6 @@ package build_config_pkg;
     cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;
     cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
-
-    cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;

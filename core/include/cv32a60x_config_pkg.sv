@@ -13,7 +13,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigRvfiTrace = 1;
 
-  localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
+  localparam CVA6ConfigAxiIdWidth = 5;  // axi_pkg.sv
   localparam CVA6ConfigAxiAddrWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigAxiDataWidth = 64;  // axi_pkg.sv
   localparam CVA6ConfigDataUserWidth = 32;  // axi_pkg.sv
@@ -30,7 +30,6 @@ package cva6_config_pkg;
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
       AxiUserWidth: unsigned'(CVA6ConfigDataUserWidth),
-      MemTidWidth: unsigned'(CVA6ConfigAxiIdWidth),
       NrLoadBufEntries: unsigned'(2),
       RVF: bit'(0),
       RVD: bit'(0),
@@ -43,7 +42,7 @@ package cva6_config_pkg;
       RVV: bit'(0),
       RVC: bit'(1),
       RVH: bit'(0),
-      RVZCMT: bit'(0),
+      RVZCMT: bit'(1),
       RVZCB: bit'(1),
       RVZCMP: bit'(0),
       XFVec: bit'(0),
@@ -89,15 +88,15 @@ package cva6_config_pkg;
       IcacheSetAssoc: unsigned'(2),
       IcacheLineWidth: unsigned'(128),
       DCacheType: config_pkg::HPDCACHE_WT,
-      DcacheByteSize: unsigned'(2028),
+      DcacheByteSize: unsigned'(2048),
       DcacheSetAssoc: unsigned'(2),
       DcacheLineWidth: unsigned'(128),
       DcacheFlushOnFence: bit'(0),
       DcacheInvalidateOnFlush: bit'(0),
-      DataUserEn: unsigned'(1),
+      DataUserEn: bit'(1),
       WtDcacheWbufDepth: int'(8),
       FetchUserWidth: unsigned'(32),
-      FetchUserEn: unsigned'(1),
+      FetchUserEn: bit'(1),
       InstrTlbEntries: int'(2),
       DataTlbEntries: int'(2),
       UseSharedTlb: bit'(1),

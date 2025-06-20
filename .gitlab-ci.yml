@@ -148,6 +148,10 @@ smoke-tests:
         DV_TARGET: "cv32a65x"
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a60x"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a65x_axi"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a60x_axi"
   script:
     - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
@@ -184,6 +188,8 @@ smoke-bench:
     matrix:
       - DV_TARGET: "cv32a60x"
       - DV_TARGET: "cv32a65x"
+      - DV_TARGET: "cv32a60x_axi"
+      - DV_TARGET: "cv32a65x_axi"
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$DV_TARGET" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
@@ -225,19 +231,29 @@ spyglass:
   extends:
     - .synthesis_test
   variables:
-    DV_TARGET: cv32a60x
-    DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors"
+    DASHBOARD_JOB_TITLE: "Report Spyglass Lint Errors $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Report lint errors and warnings detected by Spyglass"
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Lint Check"
+  parallel:
+    matrix:
+      - TOP: "cva6_example_obi"
+        DV_TARGET: "cv32a65x"
+      - TOP: "cva6_example_obi"
+        DV_TARGET: "cv32a60x"
+      - TOP: "cva6_example_axi"
+        DV_TARGET: "cv32a65x_axi"
+      - TOP: "cva6_example_axi"
+        DV_TARGET: "cv32a60x_axi"
   script:
+    - echo TOP=$TOP, DV_TARGET=$DV_TARGET
     - echo $SYN_SG_BASHRC; source $SYN_SG_BASHRC
     - mkdir -p artifacts/lint_reports
     - make -C spyglass design_read
     - make -C spyglass lint_check
-    - mv spyglass/sg_run_results/cva6_sg_reports/cva6_lint_lint_rtl artifacts/lint_reports
+    - mv spyglass/sg_run_results/${TOP}_sg_reports/${TOP}_lint_lint_rtl artifacts/lint_reports
     - cp spyglass/reference_summary.rpt artifacts/lint_reports
-    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
+    - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/${TOP}_lint_lint_rtl/summary.rpt
 
 cvxif-regression:
   extends:
@@ -258,7 +274,7 @@ cvxif-regression:
     - if [[ $DV_SIMULATORS == *"spike"* ]]; then unset SPIKE_TANDEM; fi # dirty hack to do trace comparison between tandem execution and spike standalone
     - !reference [.simu_after_script]
 
-.asic-synthesis:
+asic-synthesis:
   extends:
     - .synthesis_test
   tags: [$TAGS_RUNNER_SYNTH]
@@ -268,7 +284,16 @@ cvxif-regression:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
     PERIOD: "15"
-    DV_TARGET: cv32a65x
+  parallel:
+    matrix:
+      #- DESIGN_NAME: "cva6_example_obi"
+      #  DV_TARGET: "cv32a65x"
+      - DESIGN_NAME: "cva6_example_obi"
+        DV_TARGET: "cv32a60x"
+      - DESIGN_NAME: "cva6_example_axi"
+        DV_TARGET: "cv32a65x_axi"
+      #- DESIGN_NAME: "cva6_example_axi"
+      #  DV_TARGET: "cv32a60x_axi"
   script:
     - echo $PERIOD
     - echo $DV_TARGET
@@ -286,7 +311,7 @@ cvxif-regression:
     - mv pd/synth/cva6_${DV_TARGET}_synth.v artifacts/ || echo "fail"
     - mv pd/synth/cva6_${DV_TARGET}_synth.sdf artifacts/ || echo "fail"
 
-.fpga-build:
+fpga-build:
   extends:
     - .synthesis_test
   variables:
@@ -327,16 +352,28 @@ benchmarks:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x BHTEntries=128 NrScoreboardEntries=8"]
       - BENCH: "coremark"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "dhrystone"
+        ISSUE: "singleaxi"
+        DV_HWCONFIG_OPTS: ["cv32a60x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "dhrystone"
+        ISSUE: "dualaxi"
+        DV_HWCONFIG_OPTS: ["cv32a65x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "coremark"
+        ISSUE: "singleaxi"
+        DV_HWCONFIG_OPTS: ["cv32a60x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
+      - BENCH: "coremark"
+        ISSUE: "dualaxi"
+        DV_HWCONFIG_OPTS: ["cv32a65x_axi IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8"]
   script:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
@@ -520,7 +557,7 @@ csr_embedded_tests:
     - mkdir -p artifacts/{reports,logs}
     - python3 .gitlab-ci/scripts/report_fail.py
 
-.simu-gate:
+simu-gate:
   timeout : 4 hours
   extends:
     - .backend_test
@@ -535,12 +572,14 @@ csr_embedded_tests:
     DASHBOARD_JOB_DESCRIPTION: "Tests to check netlist from ASIC synthesis and power consumption over different patterns"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
-    DV_TARGET: cv32a65x
-    TARGET: $DV_TARGET
     TOP: "cva6"
     SPIKE_TANDEM: 1
     SIMU_PERIOD: "20"  # 50 Mhz
     PERIOD: "15"  # 66 Mhz
+  parallel:
+    matrix:
+      - DV_TARGET: ["cv32a65x", "cv32a60x_axi"]
+        TARGET: ["cv32a65x", "cv32a60x_axi"]
   script:
     - mkdir -p artifacts/{reports,logs}
     - !reference [.copy_spike_artifacts]

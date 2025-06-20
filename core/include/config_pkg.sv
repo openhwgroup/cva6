@@ -171,8 +171,6 @@ package config_pkg;
     int unsigned                 AxiUserWidth;
     // AXI burst in write
     bit                          AxiBurstWriteEn;
-    // Transaction ID
-    int unsigned                 MemTidWidth;
     // Instruction cache size (in bytes)
     int unsigned                 IcacheByteSize;
     // Instruction cache associativity (number of ways)
@@ -194,11 +192,11 @@ package config_pkg;
     // Data cache invalidate on flush
     bit                          DcacheInvalidateOnFlush;
     // User field on data bus enable
-    int unsigned                 DataUserEn;
+    bit                          DataUserEn;
     // Write-through data cache write buffer depth
     int unsigned                 WtDcacheWbufDepth;
     // User field on fetch bus enable
-    int unsigned                 FetchUserEn;
+    bit                          FetchUserEn;
     // Width of fetch user field
     int unsigned                 FetchUserWidth;
     // Is FPGA optimization of CV32A6 for Xilinx and Altera
@@ -268,7 +266,6 @@ package config_pkg;
     int unsigned AxiDataWidth;
     int unsigned AxiIdWidth;
     int unsigned AxiUserWidth;
-    int unsigned MEM_TID_WIDTH;
     int unsigned NrFetchBufEntries;
     int unsigned NrLoadBufEntries;
     bit          RVF;
@@ -365,15 +362,13 @@ package config_pkg;
     int unsigned DCACHE_OFFSET_WIDTH;
     int unsigned DCACHE_NUM_WORDS;
 
-    int unsigned DCACHE_MAX_TX;
-
     bit DcacheFlushOnFence;
     bit DcacheInvalidateOnFlush;
 
-    int unsigned DATA_USER_EN;
+    bit          DATA_USER_EN;
     int unsigned WtDcacheWbufDepth;
     int unsigned FETCH_USER_WIDTH;
-    int unsigned FETCH_USER_EN;
+    bit          FETCH_USER_EN;
     bit          AXI_USER_EN;
 
     int unsigned FETCH_WIDTH;
@@ -446,7 +441,7 @@ package config_pkg;
     else `ASSERT_FATAL("");
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
     else `ASSERT_FATAL("");
-    assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent))
+    assert ((Cfg.RVZCMT && ~Cfg.MmuPresent))
     else `ASSERT_FATAL("");
     // pragma translate_on
   endfunction

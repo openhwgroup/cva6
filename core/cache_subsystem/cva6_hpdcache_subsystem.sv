@@ -1,5 +1,6 @@
 // Copyright 2023 Commissariat a l'Energie Atomique et aux Energies
 //                Alternatives (CEA)
+// Copyright 2025 Inria, Universite Grenoble Alpes
 //
 // Licensed under the Solderpad Hardware License, Version 2.1 (the “License”);
 // you may not use this file except in compliance with the License.
@@ -12,40 +13,32 @@
 //              instruction cache and the Core-V High-Performance L1
 //              data cache (CV-HPDcache).
 
+`include "axi_types.svh"
+
+
 module cva6_hpdcache_subsystem
 //  Parameters
 //  {{{
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type fetch_req_t = logic,
-    parameter type fetch_rsp_t = logic,
-    parameter type load_req_t = logic,
-    parameter type load_rsp_t = logic,
-    parameter type obi_fetch_req_t = logic,
-    parameter type obi_fetch_rsp_t = logic,
-    parameter type obi_store_req_t = logic,
-    parameter type obi_store_rsp_t = logic,
-    parameter type obi_amo_req_t = logic,
-    parameter type obi_amo_rsp_t = logic,
-    parameter type obi_load_req_t = logic,
-    parameter type obi_load_rsp_t = logic,
-    parameter type obi_mmu_ptw_req_t = logic,
-    parameter type obi_mmu_ptw_rsp_t = logic,
-    parameter type obi_zcmt_req_t = logic,
-    parameter type obi_zcmt_rsp_t = logic,
-
-    parameter type icache_req_t  = logic,
-    parameter type icache_rtrn_t = logic,
+    parameter type ypb_fetch_req_t = logic,
+    parameter type ypb_fetch_rsp_t = logic,
+    parameter type ypb_store_req_t = logic,
+    parameter type ypb_store_rsp_t = logic,
+    parameter type ypb_amo_req_t = logic,
+    parameter type ypb_amo_rsp_t = logic,
+    parameter type ypb_load_req_t = logic,
+    parameter type ypb_load_rsp_t = logic,
+    parameter type ypb_mmu_ptw_req_t = logic,
+    parameter type ypb_mmu_ptw_rsp_t = logic,
+    parameter type ypb_zcmt_req_t = logic,
+    parameter type ypb_zcmt_rsp_t = logic,
 
     parameter int NrHwPrefetchers = 4,
-    // AXI types
-    parameter type axi_ar_chan_t = logic,
-    parameter type axi_aw_chan_t = logic,
-    parameter type axi_w_chan_t = logic,
-    parameter type axi_b_chan_t = logic,
-    parameter type axi_r_chan_t = logic,
-    parameter type noc_req_t = logic,
+
+    parameter type noc_req_t  = logic,
     parameter type noc_resp_t = logic,
+
     parameter type cmo_req_t = logic,
     parameter type cmo_rsp_t = logic
 )
@@ -71,21 +64,15 @@ module cva6_hpdcache_subsystem
     //  I$
     //  {{{
     // Instruction cache enable - CSR_REGFILE
-    input logic icache_en_i,
+    input logic icache_enable_i,
     // Flush the instruction cache - CONTROLLER
     input logic icache_flush_i,
     // instructino cache miss - PERF_COUNTERS
     output logic icache_miss_o,
-    // Access request - FRONTEND
-    input fetch_req_t fetch_req_i,
-    // Output Access request - FRONTEND
-    output fetch_rsp_t fetch_rsp_o,
-
-    // OBI Fetch Request channel - FRONTEND
-    input  obi_fetch_req_t obi_fetch_req_i,
-    // OBI Fetch Response channel - FRONTEND
-    output obi_fetch_rsp_t obi_fetch_rsp_o,
-
+    // Fetch Request channel - FRONTEND
+    input ypb_fetch_req_t ypb_fetch_req_i,
+    // Fetch Response channel - FRONTEND
+    output ypb_fetch_rsp_t ypb_fetch_rsp_o,
     //   }}}
 
     //  D$
@@ -105,31 +92,26 @@ module cva6_hpdcache_subsystem
     // CMO interface response - TO_BE_COMPLETED
     output cmo_rsp_t dcache_cmo_rsp_o,
 
-    // Load cache input request ports - EX_STAGE
-    input  load_req_t load_req_i,
-    // Load cache output request ports - EX_STAGE
-    output load_rsp_t load_rsp_o,
-
     // Store cache response - CACHES
-    input obi_store_req_t obi_store_req_i,
+    input ypb_store_req_t ypb_store_req_i,
     // Store cache request - CACHES
-    output obi_store_rsp_t obi_store_rsp_o,
+    output ypb_store_rsp_t ypb_store_rsp_o,
     // AMO cache request - CACHES
-    input obi_amo_req_t obi_amo_req_i,
+    input ypb_amo_req_t ypb_amo_req_i,
     // AMO cache response - CACHES
-    output obi_amo_rsp_t obi_amo_rsp_o,
+    output ypb_amo_rsp_t ypb_amo_rsp_o,
     // Load cache request - CACHES
-    input obi_load_req_t obi_load_req_i,
+    input ypb_load_req_t ypb_load_req_i,
     // Load cache response - CACHES
-    output obi_load_rsp_t obi_load_rsp_o,
+    output ypb_load_rsp_t ypb_load_rsp_o,
     // MMU Ptw cache request - CACHES
-    input obi_mmu_ptw_req_t obi_mmu_ptw_req_i,
+    input ypb_mmu_ptw_req_t ypb_mmu_ptw_req_i,
     // MMU Ptw cache response - CACHES
-    output obi_mmu_ptw_rsp_t obi_mmu_ptw_rsp_o,
+    output ypb_mmu_ptw_rsp_t ypb_mmu_ptw_rsp_o,
     // Zcmt cache response - CACHES
-    input obi_zcmt_req_t obi_zcmt_req_i,
+    input ypb_zcmt_req_t ypb_zcmt_req_i,
     // Zcmt cache response - CACHES
-    output obi_zcmt_rsp_t obi_zcmt_rsp_o,
+    output ypb_zcmt_rsp_t ypb_zcmt_rsp_o,
 
     // Write buffer status to know if empty - EX_STAGE
     output logic wbuffer_empty_o,
@@ -161,6 +143,12 @@ module cva6_hpdcache_subsystem
 );
   //  }}}
 
+  localparam type axi_ar_chan_t = `AXI_AR_CHAN_T(CVA6Cfg);
+  localparam type axi_aw_chan_t = `AXI_AW_CHAN_T(CVA6Cfg);
+  localparam type axi_w_chan_t = `AXI_W_CHAN_T(CVA6Cfg);
+  localparam type axi_b_chan_t = `AXI_B_CHAN_T(CVA6Cfg);
+  localparam type axi_r_chan_t = `AXI_R_CHAN_T(CVA6Cfg);
+
   function int unsigned __minu(int unsigned x, int unsigned y);
     return x < y ? x : y;
   endfunction
@@ -169,47 +157,131 @@ module cva6_hpdcache_subsystem
     return y < x ? x : y;
   endfunction
 
+  `include "hpdcache_typedef.svh"
+
   //  I$ instantiation
   //  {{{
-  logic icache_miss_valid, icache_miss_ready;
-  icache_req_t icache_miss;
+  function automatic hpdcache_pkg::hpdcache_user_cfg_t hpicacheSetConfig();
+    hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
+    userCfg.nRequesters = 1;
+    userCfg.paWidth = CVA6Cfg.PLEN;
+    userCfg.wordWidth = 32;
+    userCfg.sets = 2 ** (CVA6Cfg.ICACHE_INDEX_WIDTH - $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8));
+    userCfg.ways = CVA6Cfg.ICACHE_SET_ASSOC;
+    userCfg.clWords = CVA6Cfg.ICACHE_LINE_WIDTH / userCfg.wordWidth;
+    userCfg.reqWords = CVA6Cfg.FETCH_WIDTH / userCfg.wordWidth;
+    userCfg.reqTransIdWidth = 1;
+    userCfg.reqSrcIdWidth = 1;
+    userCfg.victimSel = hpdcache_pkg::HPDCACHE_VICTIM_RANDOM;
+    userCfg.dataWaysPerRamWord = __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / userCfg.wordWidth);
+    userCfg.dataSetsPerRam = userCfg.sets;
+    userCfg.dataRamByteEnable = 1'b1;
+    userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / userCfg.wordWidth, userCfg.reqWords);
+    userCfg.mshrSets = 1;
+    userCfg.mshrWays = 1;
+    userCfg.mshrWaysPerRamWord = userCfg.mshrWays;
+    userCfg.mshrSetsPerRam = userCfg.mshrSets;
+    userCfg.mshrRamByteEnable = 1'b0;
+    userCfg.mshrUseRegbank = 1'b1;
+    userCfg.refillCoreRspFeedthrough = 1'b1;
+    userCfg.refillFifoDepth = 2 * (userCfg.clWords / userCfg.accessWords);
+    userCfg.wbufDirEntries = 0;
+    userCfg.wbufDataEntries = 0;
+    userCfg.wbufWords = 0;
+    userCfg.wbufTimecntWidth = 3;
+    userCfg.rtabEntries = 1;
+    userCfg.flushEntries = 0;
+    userCfg.flushFifoDepth = 0;
+    userCfg.memAddrWidth = CVA6Cfg.AxiAddrWidth;
+    userCfg.memIdWidth = CVA6Cfg.AxiIdWidth - 1;
+    userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
+    userCfg.wtEn = 1'b0;
+    userCfg.wbEn = 1'b0;
+    userCfg.lowLatency = 1'b0;
+    return userCfg;
+  endfunction
 
+  localparam hpdcache_pkg::hpdcache_user_cfg_t HPIcacheUserCfg = hpicacheSetConfig();
+  localparam hpdcache_pkg::hpdcache_cfg_t HPIcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
+      HPIcacheUserCfg
+  );
+
+  `HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
+                               hpdcache_mem_be_t, HPIcacheCfg);
+  `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
+  `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
+  `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
+  `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
+
+  `HPDCACHE_TYPEDEF_REQ_ATTR_T(hpicache_req_offset_t, hpicache_data_word_t, hpicache_data_be_t,
+                               hpicache_req_data_t, hpicache_req_be_t, hpicache_req_sid_t,
+                               hpicache_req_tid_t, hpicache_tag_t, HPIcacheCfg);
+  `HPDCACHE_TYPEDEF_REQ_T(hpicache_req_t, hpicache_req_offset_t, hpicache_req_data_t,
+                          hpicache_req_be_t, hpicache_req_sid_t, hpicache_req_tid_t,
+                          hpicache_tag_t);
+  `HPDCACHE_TYPEDEF_RSP_T(hpicache_rsp_t, hpicache_req_data_t, hpicache_req_sid_t,
+                          hpicache_req_tid_t);
+
+  typedef logic [HPIcacheCfg.u.wbufTimecntWidth-1:0] hpicache_wbuf_timecnt_t;
+
+  logic icache_miss_ready;
+  logic icache_miss_valid;
+  hpdcache_mem_req_t icache_miss;
+
+  logic icache_miss_resp_ready;
   logic icache_miss_resp_valid;
-  icache_rtrn_t icache_miss_resp;
+  hpdcache_mem_resp_r_t icache_miss_resp;
 
-  localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
+  cva6_hpicache_wrapper #(
+      .CVA6Cfg    (CVA6Cfg),
+      .HPDcacheCfg(HPIcacheCfg),
 
-  cva6_icache #(
-      .CVA6Cfg(CVA6Cfg),
-      .fetch_req_t(fetch_req_t),
-      .fetch_rsp_t(fetch_rsp_t),
-      .obi_fetch_req_t(obi_fetch_req_t),
-      .obi_fetch_rsp_t(obi_fetch_rsp_t),
-      .icache_req_t(icache_req_t),
-      .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId(ICACHE_RDTXID)
-  ) i_cva6_icache (
-      .clk_i          (clk_i),
-      .rst_ni         (rst_ni),
-      .flush_i        (icache_flush_i),
-      .en_i           (icache_en_i),
-      .miss_o         (icache_miss_o),
-      .fetch_req_i    (fetch_req_i),
-      .fetch_rsp_o    (fetch_rsp_o),
-      .obi_fetch_req_i(obi_fetch_req_i),
-      .obi_fetch_rsp_o(obi_fetch_rsp_o),
-      .mem_rtrn_vld_i (icache_miss_resp_valid),
-      .mem_rtrn_i     (icache_miss_resp),
-      .mem_data_req_o (icache_miss_valid),
-      .mem_data_ack_i (icache_miss_ready),
-      .mem_data_o     (icache_miss)
+      .ypb_fetch_req_t(ypb_fetch_req_t),
+      .ypb_fetch_rsp_t(ypb_fetch_rsp_t),
+
+      .hpdcache_mem_addr_t    (hpdcache_mem_addr_t),
+      .hpdcache_mem_id_t      (hpdcache_mem_id_t),
+      .hpdcache_mem_data_t    (hpdcache_mem_data_t),
+      .hpdcache_mem_be_t      (hpdcache_mem_be_t),
+      .hpdcache_mem_req_t     (hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t   (hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t  (hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t  (hpdcache_mem_resp_w_t),
+      .hpdcache_req_offset_t  (hpicache_req_offset_t),
+      .hpdcache_data_word_t   (hpicache_data_word_t),
+      .hpdcache_req_data_t    (hpicache_req_data_t),
+      .hpdcache_req_be_t      (hpicache_req_be_t),
+      .hpdcache_req_sid_t     (hpicache_req_sid_t),
+      .hpdcache_req_tid_t     (hpicache_req_tid_t),
+      .hpdcache_tag_t         (hpicache_tag_t),
+      .hpdcache_req_t         (hpicache_req_t),
+      .hpdcache_rsp_t         (hpicache_rsp_t),
+      .hpdcache_wbuf_timecnt_t(hpicache_wbuf_timecnt_t),
+      .hpdcache_data_be_t     (hpicache_data_be_t)
+  ) i_icache (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .icache_enable_i   (icache_enable_i),
+      .icache_flush_i    (icache_flush_i),
+      .icache_flush_ack_o(  /*empty*/),
+      .icache_miss_o     (icache_miss_o),
+
+      .ypb_fetch_req_i(ypb_fetch_req_i),
+      .ypb_fetch_rsp_o(ypb_fetch_rsp_o),
+
+      .icache_mem_req_read_ready_i(icache_miss_ready),
+      .icache_mem_req_read_valid_o(icache_miss_valid),
+      .icache_mem_req_read_o      (icache_miss),
+
+      .icache_mem_resp_read_ready_o(icache_miss_resp_ready),
+      .icache_mem_resp_read_valid_i(icache_miss_resp_valid),
+      .icache_mem_resp_read_i      (icache_miss_resp)
   );
   //  }}}
 
   //  D$ instantiation
   //  {{{
-  `include "hpdcache_typedef.svh"
-
   //    0: Page-Table Walk (PTW)
   //    1: Load unit
   //    2: Accelerator load
@@ -231,7 +303,7 @@ module cva6_hpdcache_subsystem
   localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
-    hpdcache_pkg::hpdcache_user_cfg_t userCfg;
+    hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
     userCfg.nRequesters = HPDCACHE_NREQUESTERS;
     userCfg.paWidth = CVA6Cfg.PLEN;
     userCfg.wordWidth = CVA6Cfg.XLEN;
@@ -264,7 +336,7 @@ module cva6_hpdcache_subsystem
     /*FIXME we should add additional CVA6 config parameters (flushFifoDepth)*/
     userCfg.flushFifoDepth = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.memAddrWidth = CVA6Cfg.AxiAddrWidth;
-    userCfg.memIdWidth = CVA6Cfg.MEM_TID_WIDTH;
+    userCfg.memIdWidth = CVA6Cfg.AxiIdWidth - 1;
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT) ||
@@ -272,6 +344,7 @@ module cva6_hpdcache_subsystem
     userCfg.wbEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+    userCfg.lowLatency = 1'b0;
     return userCfg;
   endfunction
 
@@ -279,13 +352,6 @@ module cva6_hpdcache_subsystem
   localparam hpdcache_pkg::hpdcache_cfg_t HPDcacheCfg = hpdcache_pkg::hpdcacheBuildConfig(
       HPDcacheUserCfg
   );
-
-  `HPDCACHE_TYPEDEF_MEM_ATTR_T(hpdcache_mem_addr_t, hpdcache_mem_id_t, hpdcache_mem_data_t,
-                               hpdcache_mem_be_t, HPDcacheCfg);
-  `HPDCACHE_TYPEDEF_MEM_REQ_T(hpdcache_mem_req_t, hpdcache_mem_addr_t, hpdcache_mem_id_t);
-  `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_t, hpdcache_mem_id_t, hpdcache_mem_data_t);
-  `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
-  `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_t, hpdcache_mem_id_t);
 
   `HPDCACHE_TYPEDEF_REQ_ATTR_T(hpdcache_req_offset_t, hpdcache_data_word_t, hpdcache_data_be_t,
                                hpdcache_req_data_t, hpdcache_req_be_t, hpdcache_req_sid_t,
@@ -321,18 +387,16 @@ module cva6_hpdcache_subsystem
   cva6_hpdcache_wrapper #(
       .CVA6Cfg          (CVA6Cfg),
       .HPDcacheCfg      (HPDcacheCfg),
-      .load_req_t       (load_req_t),
-      .load_rsp_t       (load_rsp_t),
-      .obi_store_req_t  (obi_store_req_t),
-      .obi_store_rsp_t  (obi_store_rsp_t),
-      .obi_amo_req_t    (obi_amo_req_t),
-      .obi_amo_rsp_t    (obi_amo_rsp_t),
-      .obi_load_req_t   (obi_load_req_t),
-      .obi_load_rsp_t   (obi_load_rsp_t),
-      .obi_mmu_ptw_req_t(obi_mmu_ptw_req_t),
-      .obi_mmu_ptw_rsp_t(obi_mmu_ptw_rsp_t),
-      .obi_zcmt_req_t   (obi_zcmt_req_t),
-      .obi_zcmt_rsp_t   (obi_zcmt_rsp_t),
+      .ypb_store_req_t  (ypb_store_req_t),
+      .ypb_store_rsp_t  (ypb_store_rsp_t),
+      .ypb_amo_req_t    (ypb_amo_req_t),
+      .ypb_amo_rsp_t    (ypb_amo_rsp_t),
+      .ypb_load_req_t   (ypb_load_req_t),
+      .ypb_load_rsp_t   (ypb_load_rsp_t),
+      .ypb_mmu_ptw_req_t(ypb_mmu_ptw_req_t),
+      .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
+      .ypb_zcmt_req_t   (ypb_zcmt_req_t),
+      .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
 
       .HPDCACHE_ENABLE_CMO (HPDCACHE_ENABLE_CMO),
       .HPDCACHE_NREQUESTERS(HPDCACHE_NREQUESTERS),
@@ -375,18 +439,16 @@ module cva6_hpdcache_subsystem
       .dcache_miss_o(dcache_miss_o),
       .dcache_cmo_req_i(dcache_cmo_req_i),
       .dcache_cmo_rsp_o(dcache_cmo_rsp_o),
-      .obi_store_req_i(obi_store_req_i),
-      .obi_store_rsp_o(obi_store_rsp_o),
-      .obi_amo_req_i(obi_amo_req_i),
-      .obi_amo_rsp_o(obi_amo_rsp_o),
-      .obi_load_req_i(obi_load_req_i),
-      .obi_load_rsp_o(obi_load_rsp_o),
-      .obi_mmu_ptw_req_i(obi_mmu_ptw_req_i),
-      .obi_mmu_ptw_rsp_o(obi_mmu_ptw_rsp_o),
-      .obi_zcmt_req_i(obi_zcmt_req_i),
-      .obi_zcmt_rsp_o(obi_zcmt_rsp_o),
-      .load_req_i(load_req_i),
-      .load_rsp_o(load_rsp_o),
+      .ypb_store_req_i(ypb_store_req_i),
+      .ypb_store_rsp_o(ypb_store_rsp_o),
+      .ypb_amo_req_i(ypb_amo_req_i),
+      .ypb_amo_rsp_o(ypb_amo_rsp_o),
+      .ypb_load_req_i(ypb_load_req_i),
+      .ypb_load_rsp_o(ypb_load_rsp_o),
+      .ypb_mmu_ptw_req_i(ypb_mmu_ptw_req_i),
+      .ypb_mmu_ptw_rsp_o(ypb_mmu_ptw_rsp_o),
+      .ypb_zcmt_req_i(ypb_zcmt_req_i),
+      .ypb_zcmt_rsp_o(ypb_zcmt_rsp_o),
       .wbuffer_empty_o(wbuffer_empty_o),
       .wbuffer_not_ni_o(wbuffer_not_ni_o),
       .hwpf_base_set_i(hwpf_base_set_i),
@@ -420,18 +482,19 @@ module cva6_hpdcache_subsystem
       .dcache_mem_resp_write_valid_i(dcache_write_resp_valid),
       .dcache_mem_resp_write_i(dcache_write_resp)
   );
+  //  }}}
 
   //  AXI arbiter instantiation
   //  {{{
   cva6_hpdcache_subsystem_axi_arbiter #(
       .CVA6Cfg              (CVA6Cfg),
+      .hpdcache_mem_addr_t  (hpdcache_mem_addr_t),
       .hpdcache_mem_id_t    (hpdcache_mem_id_t),
+      .hpdcache_mem_data_t  (hpdcache_mem_data_t),
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
-      .icache_req_t         (icache_req_t),
-      .icache_rtrn_t        (icache_rtrn_t),
 
       .AxiAddrWidth (CVA6Cfg.AxiAddrWidth),
       .AxiDataWidth (CVA6Cfg.AxiDataWidth),
@@ -448,11 +511,11 @@ module cva6_hpdcache_subsystem
       .clk_i,
       .rst_ni,
 
-      .icache_miss_valid_i(icache_miss_valid),
       .icache_miss_ready_o(icache_miss_ready),
+      .icache_miss_valid_i(icache_miss_valid),
       .icache_miss_i      (icache_miss),
-      .icache_miss_id_i   (hpdcache_mem_id_t'(ICACHE_RDTXID)),
 
+      .icache_miss_resp_ready_i(icache_miss_resp_ready),
       .icache_miss_resp_valid_o(icache_miss_resp_valid),
       .icache_miss_resp_o      (icache_miss_resp),
 
@@ -483,81 +546,91 @@ module cva6_hpdcache_subsystem
 
   //  Assertions
   //  {{{
-  //  pragma translate_off
-  initial begin : initial_assertions
-    assert (HPDcacheCfg.u.reqSrcIdWidth >= $clog2(HPDcacheCfg.u.nRequesters))
-    else $fatal(1, "HPDCACHE_REQ_SRC_ID_WIDTH is not wide enough");
-    assert (CVA6Cfg.MEM_TID_WIDTH <= CVA6Cfg.AxiIdWidth)
-    else $fatal(1, "MEM_TID_WIDTH shall be less or equal to the AxiIdWidth");
-    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(HPDcacheCfg.u.mshrSets * HPDcacheCfg.u.mshrWays) + 1))
-    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ and I$ miss requests ");
-    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(HPDcacheCfg.u.wbufDirEntries) + 1))
-    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ write requests ");
+`ifndef HPDCACHE_ASSERT_OFF
+  if (HPDcacheCfg.u.reqSrcIdWidth < $clog2(
+          HPDcacheCfg.u.nRequesters
+      )) begin : hpdcache_srcid_width_assert
+    $fatal(1, "HPDcacheCfg.u.reqSrcIdWidth is not wide enough");
+  end
+
+  if ((CVA6Cfg.AxiIdWidth - 1) < ($clog2(
+          HPDcacheCfg.u.mshrSets * HPDcacheCfg.u.mshrWays
+      ) + 1)) begin : axi_id_width_dcache_mshr_assert
+    $fatal(1, "CVA6Cfg.AxiIdWidth shall allow to uniquely identify all D$ miss requests");
+  end
+
+  if ((CVA6Cfg.AxiIdWidth - 1) < ($clog2(
+          HPDcacheCfg.u.wbufDirEntries
+      ) + 1)) begin : axi_id_width_dcache_wbuf_assert
+    $fatal(1, "CVA6Cfg.AxiIdWidth shall allow to uniquely identify all D$ write requests");
+  end
+
+  if ((CVA6Cfg.AxiIdWidth - 1) < ($clog2(
+          HPIcacheCfg.u.mshrSets * HPIcacheCfg.u.mshrWays
+      ) + 1)) begin : axi_id_width_icache_mshr_assert
+    $fatal(1, "CVA6Cfg.AxiIdWidth shall allow to uniquely identify all I$ miss requests");
   end
 
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_fetch_rsp_o.rvalid && obi_fetch_req_i.rready && !fetch_rsp_o.invalid_data) |-> (|obi_fetch_rsp_o.r.rdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_fetch_rsp_o.rvalid && ypb_fetch_req_i.rready) |-> (|ypb_fetch_rsp_o.rdata) !== 1'hX)
   else
-    $warning(
-        1, "[l1 icache] FETCH reading invalid instructions: data=%08X", obi_fetch_rsp_o.r.rdata
-    );
+    $warning(1, "[l1 icache] FETCH reading invalid instructions: data=%08X", ypb_fetch_rsp_o.rdata);
 
   a_invalid_read_amo :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_rsp_o.rvalid && obi_amo_req_i.rready) |-> (|obi_amo_rsp_o.r.rdata) !== 1'hX)
-  else $warning(1, "[l1 dcache] AMO reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_amo_rsp_o.rvalid && ypb_amo_req_i.rready) |-> (|ypb_amo_rsp_o.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] AMO reading invalid data: data=%08X", ypb_amo_rsp_o.rdata);
 
   a_invalid_read_load :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_load_rsp_o.rvalid && obi_load_req_i.rready) |-> (|obi_load_rsp_o.r.rdata) !== 1'hX)
-  else $warning(1, "[l1 dcache] LOAD reading invalid data: data=%08X", obi_amo_rsp_o.r.rdata);
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_load_rsp_o.rvalid && ypb_load_req_i.rready) |-> (|ypb_load_rsp_o.rdata) !== 1'hX)
+  else $warning(1, "[l1 dcache] LOAD reading invalid data: data=%08X", ypb_amo_rsp_o.rdata);
 
   //  a_invalid_read_mmu_ptw :
   //  assert property (
-  //    @(posedge clk_i) disable iff (~rst_ni) (obi_mmu_ptw_rsp_o.rvalid && !obi_mmu_ptw_rsp_o.invalid_data) |-> (|obi_mmu_ptw_rsp_o.r.rdata) !== 1'hX)
+  //    @(posedge clk_i) disable iff (~rst_ni) (ypb_mmu_ptw_rsp_o.rvalid && !ypb_mmu_ptw_rsp_o.invalid_data) |-> (|ypb_mmu_ptw_rsp_o.rdata) !== 1'hX)
   //  else
   //    $warning(
   //        1,
   //        "[l1 dcache] MMU PTW reading invalid data: data=%08X",
-  //        obi_mmu_ptw_rsp_o.r.rdata
+  //        ypb_mmu_ptw_rsp_o.rdata
   //    );
 
   //  a_invalid_read_zcmt :
   //  assert property (
-  //    @(posedge clk_i) disable iff (~rst_ni) (obi_zcmt_rsp_o.rvalid && !obi_zcmt_rsp_o.invalid_data) |-> (|obi_zcmt_rsp_o.r.rdata) !== 1'hX)
+  //    @(posedge clk_i) disable iff (~rst_ni) (ypb_zcmt_rsp_o.rvalid && !ypb_zcmt_rsp_o.invalid_data) |-> (|ypb_zcmt_rsp_o.rdata) !== 1'hX)
   //  else
   //    $warning(
   //        1,
   //        "[l1 dcache] ZCMT reading invalid data: data=%08X",
-  //        obi_zcmt_rsp_o.r.rdata
+  //        ypb_zcmt_rsp_o.rdata
   //    );
 
   a_invalid_write_store :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_store_req_i.req && obi_store_rsp_o.gnt) |-> (|obi_store_req_i.a.wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_store_req_i.preq && ypb_store_rsp_o.pgnt) |-> (|ypb_store_req_i.wdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] STORE writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        obi_store_req_i.a.addr,
-        obi_store_req_i.a.be,
-        obi_store_req_i.a.wdata
+        ypb_store_req_i.paddr,
+        ypb_store_req_i.be,
+        ypb_store_req_i.wdata
     );
 
   a_invalid_write_amo :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) (obi_amo_req_i.req && obi_amo_rsp_o.gnt) |-> (|obi_amo_req_i.a.wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (ypb_amo_req_i.preq && ypb_amo_rsp_o.pgnt) |-> (|ypb_amo_req_i.wdata) !== 1'hX)
   else
     $warning(
         1,
         "[l1 dcache] AMO writing invalid data: paddr=%016X, be=%02X, data=%016X",
-        obi_amo_req_i.a.addr,
-        obi_amo_req_i.a.be,
-        obi_amo_req_i.a.wdata
+        ypb_amo_req_i.paddr,
+        ypb_amo_req_i.be,
+        ypb_amo_req_i.wdata
     );
-
-  //  pragma translate_on
+`endif
   //  }}}
 
 endmodule : cva6_hpdcache_subsystem

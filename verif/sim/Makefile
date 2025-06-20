@@ -47,6 +47,9 @@ log             ?=
 variant         ?=
 priv            ?=
 
+# Disable hpdcache assert TODO: enable this option by default
+export hpdcache_assert_off ?= 1
+
 # Spike tandem mode: default to environment setting (DISABLED if envariable SPIKE_TANDEM is not set).
 export spike-tandem ?= $(SPIKE_TANDEM)
 
@@ -186,6 +189,7 @@ COMMON_COMP_UVM_FLAGS = \
 	  +incdir+$(CVA6_REPO_DIR)/verif/env/uvme +incdir+$(CVA6_REPO_DIR)/verif/tb/uvmt \
 	  +core_name=$(target) \
 	  +define+UVM\
+	  $(if $(hpdcache_assert_off), +define+HPDCACHE_ASSERT_OFF=1)\
 	  $(if $(spike-tandem), +define+SPIKE_TANDEM=1)
 
 COMMON_PLUS_ARGS = \

@@ -160,7 +160,6 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_reference_model_pkg.sv)         \
         $(if $(spike-tandem),verif/tb/core/uvmc_rvfi_scoreboard_pkg.sv)              \
         $(if $(spike-tandem),corev_apu/tb/common/spike.sv)                           \
-        core/cva6_rvfi.sv                                                            \
         corev_apu/src/ariane.sv                                                      \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
         $(wildcard corev_apu/clint/*.sv)                                             \
@@ -662,6 +661,7 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     -Wno-UNOPTFLAT                                                                               \
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
+                    $(if $(filter $(ASSERT),1),--assert,)                                                        \
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG), --trace-structs,)                                                             \

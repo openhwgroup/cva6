@@ -1,0 +1,22 @@
+######################################################################################################
+## File Name : Local Waiver File(.awl)
+## Purpose   : To add local/module specific SpyGlass waivers
+## Type      : This is tcl compatible file and can only read spyglass waiver commands.
+## Usage     : This file is read under SpyGlass Project File(.prj).
+## Modified by : Asmaa Kassimi (asmaa.kassimi@external.thalesgroup.com) - Thales
+#######################################################################################################
+
+waive -file_line {$CVA6_REPO_DIR/common/local/util/sram_cache.sv}  {55}  -severity {  {ERROR}  }  -rule {  {ErrorAnalyzeBBox}  }
+waive -file_line {$CVA6_REPO_DIR/common/local/util/sram_cache.sv}  {85}  -severity {  {ERROR}  }  -rule {  {ErrorAnalyzeBBox}  }
+waive -file {  {$CVA6_REPO_DIR/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv}  }  -severity {  {ERROR}  }  -rule {  {ErrorAnalyzeBBox}  }
+waive -file {  {$CVA6_REPO_DIR/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv}  }  -severity {  {ERROR}  }  -rule {  {SYNTH_5251}  }
+waive -file {  {$CVA6_REPO_DIR/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv}  }  -severity {  {SynthesisWarning}  }  -rule {  {SYNTH_5143}  }
+waive -file {  {$CVA6_REPO_DIR/core/csr_regfile.sv}  }  -severity {  {SynthesisWarning}  }  -rule {  {SYNTH_89}  }
+#waive -file {  {$CVA6_REPO_DIR/common/local/util/tc_sram_wrapper_cache_techno.sv}  }  -du {  {tc_sram_wrapper_cache_techno}  }  -severity {  {ERROR}  }  -rule {  {ErrorAnalyzeBBox}  }
+waive -file {  {$CVA6_REPO_DIR/vendor/pulp-platform/axi/src/axi_pkg.sv} }
+waive -file {  {$CVA6_REPO_DIR/core/cva6_rvfi_probes.sv} }
+
+waive -file {$CVA6_REPO_DIR/core/cache_subsystem/*} -regexp
+
+waive -rule {  {W240}  }  -comment {Remove 'Input declared but not read' warning as it happens very often for disable features such as PMP, Accelerator, ...}
+waive -rule {  {W528}  }  -comment {Remove 'Set but not read' warning as it happens very often for disable features such as PMP, Accelerator, ...}
