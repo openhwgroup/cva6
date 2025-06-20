@@ -922,20 +922,20 @@ package ariane_pkg;
     logic load;
   } mcontrol6_32_tdata1_t;
 
-  // typedef struct packed {
-  //   logic [31:28] t_type;  // type 4 for etrigger
-  //   logic dmode;
-  //   logic hit;
-  //   logic [25:13] zeroed;
-  //   logic vs;
-  //   logic vu;
-  //   logic nmi;
-  //   logic m;
-  //   logic zero;
-  //   logic s;
-  //   logic u;
-  //   logic [5:0] action;
-  // } itrigger32_tdata1_t;
+  typedef struct packed {
+    logic [31:28] t_type;  // type 4 for etrigger
+    logic dmode;
+    logic hit;
+    logic [25:13] zeroed;
+    logic vs;
+    logic vu;
+    logic nmi;
+    logic m;
+    logic zero;
+    logic s;
+    logic u;
+    logic [5:0] action;
+  } itrigger32_tdata1_t;
 
   typedef struct packed {
     logic [31:28] t_type;  // type 5 for etrigger
@@ -951,4 +951,16 @@ package ariane_pkg;
     logic u;
     logic [5:0] action;
   } etrigger32_tdata1_t;
+
+  function automatic logic napot_match (logic [63:0] base, logic [63:0] value);  
+    logic [63:0] mask;
+    logic is_valid_napot;
+
+    is_valid_napot = ((base & (base + 1)) == 0);
+    if (!is_valid_napot) return 0;
+    
+    mask = ~(base & ~(base + 1));
+    return (value & mask) == (base & mask);
+  endfunction
+
 endpackage

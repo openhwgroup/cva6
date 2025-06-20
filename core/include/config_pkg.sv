@@ -120,6 +120,10 @@ package config_pkg;
     logic [63:0]                 ExceptionAddress;
     // Trigger Module Sdtrig Extension
     bit                          SDTRIG;
+    bit                          Mcontrol6;
+    bit                          Icount;
+    bit                          Etrigger;
+    bit                          Itrigger;
     // Tval Support Enable
     bit                          TvalEn;
     // MTVEC CSR supports only direct mode
@@ -347,6 +351,10 @@ package config_pkg;
     int unsigned                 MaxOutstandingStores;
     bit                          DebugEn;
     bit                          SDTRIG;
+    bit                          Mcontrol6;
+    bit                          Icount;
+    bit                          Etrigger;
+    bit                          Itrigger;
     bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
     bit                          AxiBurstWriteEn;
 
