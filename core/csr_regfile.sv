@@ -177,7 +177,7 @@ module csr_regfile
     input logic [CVA6Cfg.VLEN-1:0] vaddr_from_lsu_i,
     input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     input logic [CVA6Cfg.XLEN-1:0] store_result_i,
-    //output logic break_from_trigger_o
+    output logic break_from_trigger_o,
     output logic e_matched_o
 );
 
@@ -297,7 +297,7 @@ module csr_regfile
   textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] tdata2_q[N_Triggers], tdata2_d[N_Triggers];
   logic debug_from_trigger, in_trap_handler, prev_csr_write, matched, e_matched;
-  //logic break_from_trigger_q, break_from_trigger_d;
+  logic break_from_trigger_q, break_from_trigger_d;
   logic debug_from_trigger_q, debug_from_trigger_d;
   mcontrol6_32_tdata1_t mcontrol6_32_tdata1_q[N_Triggers], mcontrol6_32_tdata1_d[N_Triggers];
   etrigger32_tdata1_t etrigger32_tdata1_q[N_Triggers], etrigger32_tdata1_d[N_Triggers];
@@ -1984,7 +1984,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin // || (CVA6Cfg.SDTRIG && break_from_trigger_q)
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger_q)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -2077,7 +2077,7 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = ex_i.cause; //(break_from_trigger_q) ? 32'h00000003 : 
+        mcause_d = (break_from_trigger_q) ? 32'h00000003 : ex_i.cause;
         // set epc
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
@@ -2359,6 +2359,7 @@ module csr_regfile
     if (CVA6Cfg.SDTRIG) begin
       // icount match logic
       if (trigger_type_d[tselect_q] == 4'd3) begin
+        break_from_trigger_d = 1'b0;
         case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
           riscv::PRIV_LVL_M: if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
           riscv::PRIV_LVL_S: if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
@@ -2373,13 +2374,16 @@ module csr_regfile
         if (commit_ack_i && !in_trap_handler && (icount32_tdata1_q[tselect_q].count != 0)) begin
           icount32_tdata1_d[tselect_q].count = icount32_tdata1_q[tselect_q].count - 1;
         end
-        if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match) begin
+        if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match && !icount32_tdata1_q[tselect_q].pending) begin
           icount32_tdata1_d[tselect_q].pending = 1'b1;
           case (icount32_tdata1_d[tselect_q].action)
-            //6'd0 : break_from_trigger_d = 1'b1; //breakpoint
+            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
             6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
             default: ;
           endcase
+        end
+        if (break_from_trigger_q) begin
+          icount32_tdata1_d[tselect_q].hit = 1'b1;
         end
         if (debug_mode_d && icount32_tdata1_d[tselect_q].pending) begin
           icount32_tdata1_d[tselect_q].pending = 1'b0;
@@ -2460,6 +2464,7 @@ module csr_regfile
       // etrigger match logic
       if (trigger_type_d[tselect_q] == 4'd5) begin
         e_matched = 1'b0;
+        break_from_trigger_d = 1'b0;
         case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
           riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[tselect_q].m) priv_match = 1'b1;
           riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[tselect_q].s) priv_match = 1'b1;
@@ -2470,15 +2475,14 @@ module csr_regfile
         if (e_matched && priv_match) begin
           etrigger32_tdata1_d[tselect_q].hit = 1'b1;
           case (etrigger32_tdata1_d[tselect_q].action)
-            //6'd0: break_from_trigger_d = 1'b1;  //breakpoint
+            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
             6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
             default: ;
           endcase
         end
-        // if (break_from_trigger_o) begin
-        //   e_matched = 1'b0;
-        //   break_from_trigger_d = 1'b0;
-        // end
+        if (break_from_trigger_q) begin
+          e_matched = 1'b0;
+        end
         if (debug_mode_d && debug_from_trigger_d) begin
           e_matched = 1'b0;
           etrigger32_tdata1_d[tselect_q].hit = 1'b0;
@@ -2500,10 +2504,13 @@ module csr_regfile
         if (e_matched && priv_match) begin
           itrigger32_tdata1_d[tselect_q].hit = 1'b1;
           case (itrigger32_tdata1_d[tselect_q].action)
-            //6'd0: break_from_trigger_d = 1'b1;  //breakpoint
+            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
             6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
             default: ;
           endcase
+        end
+        if (break_from_trigger_q) begin
+          e_matched = 1'b0;
         end
         if (debug_mode_d && debug_from_trigger_d) begin
           e_matched = 1'b0;
@@ -2948,7 +2955,7 @@ module csr_regfile
         prev_csr_write <= 1'b0;
         matched    <=  1'b0;
         e_matched  <=  1'b0;
-        //break_from_trigger_q  <= 0;
+        break_from_trigger_q  <= 0;
         debug_from_trigger_q  <= 0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
@@ -3059,7 +3066,7 @@ module csr_regfile
         textra64_tdata3_q     <= textra64_tdata3_d;
         scontext_q            <= scontext_d;
         prev_csr_write        <= debug_from_trigger;
-        //break_from_trigger_q  <= break_from_trigger_d;
+        break_from_trigger_q  <= break_from_trigger_d;
         debug_from_trigger_q  <= debug_from_trigger_d;
       end
       // timer and counters
@@ -3076,7 +3083,7 @@ module csr_regfile
   end
 
   assign debug_from_trigger_o = debug_from_trigger & ~prev_csr_write;
-  //assign break_from_trigger_o = break_from_trigger_q;
+  assign break_from_trigger_o = break_from_trigger_q;
   assign e_matched_o = e_matched;
 
   // write logic pmp
