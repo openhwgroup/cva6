@@ -12,8 +12,7 @@
 // Description: Interface adapter for the CVA6 core fetch interface
 //
 // Additional contributions by:
-// June, 2025 - Yannick Casamatta, Thales
-//              YBP Protocol
+// June, 2025 - Yannick Casamatta, Thales : YBP Protocol
 
 module cva6_hpicache_if_adapter
 //  Parameters

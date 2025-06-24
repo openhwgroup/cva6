@@ -16,10 +16,7 @@
 // change request from the back-end and does branch prediction.
 
 // Additional contributions by:
-// June 2024 - Yannick Casamatta, Thales
-//              OBI Protocol
-// June 2025 - Yannick Casamatta, Thales
-//              YPB Protocol
+// June 2025 - Yannick Casamatta, Thales : YPB Protocol
 
 module frontend
   import ariane_pkg::*;

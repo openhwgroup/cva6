@@ -8,10 +8,6 @@
 // Authors: Yannick Casamatta
 // Date: June, 2025
 // Description: CVA6 in AXI configuration (with caches I & D)
-//
-// Additional contributions by:
-// Month, Year - Author, Organisation
-//        Short description
 
 `include "rvfi_types.svh"
 `include "cvxif_types.svh"
