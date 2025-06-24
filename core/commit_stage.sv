@@ -406,7 +406,7 @@ module commit_stage
     if (halt_i || e_matched_i) begin
       exception_o.valid = 1'b0;
     end
-    
+
     if (CVA6Cfg.SDTRIG && !CVA6Cfg.DebugEn && break_from_trigger_i) begin
       exception_o.valid = 1'b1;
       exception_o.cause = 32'h00000003;

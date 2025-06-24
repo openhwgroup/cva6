@@ -952,13 +952,13 @@ package ariane_pkg;
     logic [5:0] action;
   } etrigger32_tdata1_t;
 
-  function automatic logic napot_match (logic [63:0] base, logic [63:0] value);  
+  function automatic logic napot_match(logic [63:0] base, logic [63:0] value);
     logic [63:0] mask;
     logic is_valid_napot;
 
     is_valid_napot = ((base & (base + 1)) == 0);
     if (!is_valid_napot) return 0;
-    
+
     mask = ~(base & ~(base + 1));
     return (value & mask) == (base & mask);
   endfunction

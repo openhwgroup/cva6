@@ -415,7 +415,8 @@ module csr_regfile
         end
         riscv::CSR_TDATA1:  // tdata1 based on type and indexed by tselect
         if (CVA6Cfg.SDTRIG) begin
-          if (trigger_type_q[tselect_q] == 4'd3) csr_rdata = (CVA6Cfg.IS_XLEN32) ? icount32_tdata1_q[tselect_q] : {icount32_tdata1_q[tselect_q].t_type, icount32_tdata1_q[tselect_q].dmode, 32'd0, icount32_tdata1_q[tselect_q][26:0]};
+          if (trigger_type_q[tselect_q] == 4'd3)
+            csr_rdata = (CVA6Cfg.IS_XLEN32) ? icount32_tdata1_q[tselect_q] : {icount32_tdata1_q[tselect_q].t_type, icount32_tdata1_q[tselect_q].dmode, 32'd0, icount32_tdata1_q[tselect_q][26:0]};
           else if (trigger_type_q[tselect_q] == 4'd6)
             csr_rdata = (CVA6Cfg.IS_XLEN32) ? mcontrol6_32_tdata1_q[tselect_q] : {mcontrol6_32_tdata1_q[tselect_q].t_type, mcontrol6_32_tdata1_q[tselect_q].dmode, 32'd0, mcontrol6_32_tdata1_q[tselect_q][26:0]};
           else if (trigger_type_q[tselect_q] == 4'd5)
@@ -2357,165 +2358,170 @@ module csr_regfile
 
     // Triggers Match Logic
     if (CVA6Cfg.SDTRIG) begin
-      // icount match logic
-      if (trigger_type_d[tselect_q] == 4'd3) begin
-        break_from_trigger_d = 1'b0;
-        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-          riscv::PRIV_LVL_M: if (icount32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-          riscv::PRIV_LVL_S: if (icount32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-          riscv::PRIV_LVL_U: if (icount32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-          default: priv_match = 1'b0;
-        endcase
-        if (ex_i.valid) begin
-          in_trap_handler = 1'b1;
-          icount32_tdata1_d[tselect_q].count = icount32_tdata1_q[tselect_q].count - 1;
-        end
-        if (commit_ack_i && mret) in_trap_handler = 1'b0;
-        if (commit_ack_i && !in_trap_handler && (icount32_tdata1_q[tselect_q].count != 0)) begin
-          icount32_tdata1_d[tselect_q].count = icount32_tdata1_q[tselect_q].count - 1;
-        end
-        if ((icount32_tdata1_d[tselect_q].count == 0) && priv_match && !icount32_tdata1_q[tselect_q].pending) begin
-          icount32_tdata1_d[tselect_q].pending = 1'b1;
-          case (icount32_tdata1_d[tselect_q].action)
-            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
-            6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
-            default: ;
+      for (int i = 0; i < N_Triggers; i++) begin
+        // icount match logic
+        if (trigger_type_d[i] == 4'd3 && CVA6Cfg.Icount) begin
+          break_from_trigger_d = 1'b0;
+          case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+            riscv::PRIV_LVL_M: if (icount32_tdata1_d[i].m) priv_match = 1'b1;
+            riscv::PRIV_LVL_S: if (icount32_tdata1_d[i].s) priv_match = 1'b1;
+            riscv::PRIV_LVL_U: if (icount32_tdata1_d[i].u) priv_match = 1'b1;
+            default: priv_match = 1'b0;
           endcase
+          if (ex_i.valid) begin
+            in_trap_handler = 1'b1;
+            icount32_tdata1_d[i].count = icount32_tdata1_q[i].count - 1;
+          end
+          if (commit_ack_i && mret) in_trap_handler = 1'b0;
+          if (commit_ack_i && !in_trap_handler && (icount32_tdata1_q[i].count != 0)) begin
+            icount32_tdata1_d[i].count = icount32_tdata1_q[i].count - 1;
+          end
+          if ((icount32_tdata1_d[i].count == 0) && priv_match && !icount32_tdata1_q[i].pending) begin
+            icount32_tdata1_d[i].pending = 1'b1;
+            case (icount32_tdata1_d[i].action)
+              6'd0: break_from_trigger_d = 1'b1;  //breakpoint
+              6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
+              default: ;
+            endcase
+          end
+          if (break_from_trigger_q) begin
+            icount32_tdata1_d[i].hit = 1'b1;
+          end
+          if (debug_mode_d && icount32_tdata1_d[i].pending) begin
+            icount32_tdata1_d[i].pending = 1'b0;
+            icount32_tdata1_d[i].hit = 1'b1;
+            debug_from_trigger_d = 1'b0;
+          end
         end
-        if (break_from_trigger_q) begin
-          icount32_tdata1_d[tselect_q].hit = 1'b1;
-        end
-        if (debug_mode_d && icount32_tdata1_d[tselect_q].pending) begin
-          icount32_tdata1_d[tselect_q].pending = 1'b0;
-          icount32_tdata1_d[tselect_q].hit = 1'b1;
-          debug_from_trigger_d = 1'b0;
-        end
-      end
-      // mcontrol6 match logic
-      if (trigger_type_d[tselect_q] == 4'd6) begin
-        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-          riscv::PRIV_LVL_M: if (mcontrol6_32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-          riscv::PRIV_LVL_S: if (mcontrol6_32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-          riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-          default: priv_match = 1'b0;
-        endcase
-        // execute with address
-        if (mcontrol6_32_tdata1_d[tselect_q].execute && !mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == commit_instr_i.pc && commit_ack_i);
-          4'd1: matched =  (napot_match(tdata2_d[tselect_q], commit_instr_i.pc) && commit_ack_i);
-          4'd8: matched = (tdata2_d[tselect_q] != commit_instr_i.pc && commit_ack_i);
+        // mcontrol6 match logic
+        if (trigger_type_d[i] == 4'd6 && CVA6Cfg.Mcontrol6) begin
+          case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+            riscv::PRIV_LVL_M: if (mcontrol6_32_tdata1_d[i].m) priv_match = 1'b1;
+            riscv::PRIV_LVL_S: if (mcontrol6_32_tdata1_d[i].s) priv_match = 1'b1;
+            riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[i].u) priv_match = 1'b1;
+            default: priv_match = 1'b0;
           endcase
+          // execute with address
+          if (mcontrol6_32_tdata1_d[i].execute && !mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == commit_instr_i.pc && commit_ack_i);
+              4'd1: matched = (napot_match(tdata2_d[i], commit_instr_i.pc) && commit_ack_i);
+              4'd8: matched = (tdata2_d[i] != commit_instr_i.pc && commit_ack_i);
+            endcase
+          end
+          // execute with instruction
+          if (mcontrol6_32_tdata1_d[i].execute && mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == orig_instr_i);
+              4'd1: matched = (napot_match(tdata2_d[i], orig_instr_i));
+              4'd8: matched = (tdata2_d[i] != orig_instr_i);
+            endcase
+          end
+          // store with data
+          if (mcontrol6_32_tdata1_d[i].store && mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == store_result_i && commit_instr_i.op == 8'h29);
+              4'd1:
+              matched = (napot_match(tdata2_d[i], store_result_i) && commit_instr_i.op == 8'h29);
+              4'd8: matched = (tdata2_d[i] != store_result_i && commit_instr_i.op == 8'h29);
+            endcase
+          end
+          // store with address
+          if (mcontrol6_32_tdata1_d[i].store && !mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == vaddr_from_lsu_i);
+              4'd1: matched = (napot_match(tdata2_d[i], vaddr_from_lsu_i));
+              4'd8: matched = (tdata2_d[i] != vaddr_from_lsu_i);
+            endcase
+          end
+          // load with data
+          if (mcontrol6_32_tdata1_d[i].load && mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == commit_instr_i.result && commit_instr_i.op == 8'h27);
+              4'd1:
+              matched = (napot_match(tdata2_d[i], commit_instr_i.result) &&
+                         commit_instr_i.op == 8'h27);
+              4'd8: matched = (tdata2_d[i] != commit_instr_i.result && commit_instr_i.op == 8'h27);
+            endcase
+          end
+          // load with address
+          if (mcontrol6_32_tdata1_d[i].load && !mcontrol6_32_tdata1_d[i].select) begin
+            case (mcontrol6_32_tdata1_d[i].match)
+              4'd0: matched = (tdata2_d[i] == vaddr_from_lsu_i);
+              4'd1: matched = (napot_match(tdata2_d[i], vaddr_from_lsu_i));
+              4'd8: matched = (tdata2_d[i] != vaddr_from_lsu_i);
+            endcase
+          end
+          if (priv_match && matched) begin
+            case (mcontrol6_32_tdata1_d[i].action)
+              //6'd0 : break_from_trigger_d = 1'b1; //breakpoint
+              6'd1: debug_from_trigger = 1'b1;  //into debug mode;
+              default: ;
+            endcase
+          end
+          if (debug_mode_d && matched) begin
+            matched = 1'b0;
+            mcontrol6_32_tdata1_d[i].hit0 = 1'b0;
+            mcontrol6_32_tdata1_d[i].hit1 = 1'b1;
+            debug_from_trigger = 1'b0;
+          end
         end
-        // execute with instruction
-        if (mcontrol6_32_tdata1_d[tselect_q].execute && mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == orig_instr_i);
-          4'd1: matched = (napot_match(tdata2_d[tselect_q], orig_instr_i));
-          4'd8: matched = (tdata2_d[tselect_q] != orig_instr_i);
-          endcase
-        end
-        // store with data
-        if (mcontrol6_32_tdata1_d[tselect_q].store && mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == store_result_i && commit_instr_i.op == 8'h29);
-          4'd1: matched = (napot_match(tdata2_d[tselect_q], store_result_i) && commit_instr_i.op == 8'h29);
-          4'd8: matched = (tdata2_d[tselect_q] != store_result_i && commit_instr_i.op == 8'h29);
-          endcase
-        end
-        // store with address
-        if (mcontrol6_32_tdata1_d[tselect_q].store && !mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == vaddr_from_lsu_i);
-          4'd1: matched = (napot_match(tdata2_d[tselect_q], vaddr_from_lsu_i));
-          4'd8: matched = (tdata2_d[tselect_q] != vaddr_from_lsu_i);
-          endcase
-        end
-        // load with data
-        if (mcontrol6_32_tdata1_d[tselect_q].load && mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == commit_instr_i.result && commit_instr_i.op == 8'h27);
-          4'd1: matched = (napot_match(tdata2_d[tselect_q], commit_instr_i.result) && commit_instr_i.op == 8'h27);
-          4'd8: matched = (tdata2_d[tselect_q] != commit_instr_i.result && commit_instr_i.op == 8'h27);
-          endcase
-        end
-        // load with address
-        if (mcontrol6_32_tdata1_d[tselect_q].load && !mcontrol6_32_tdata1_d[tselect_q].select) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].match)
-          4'd0: matched = (tdata2_d[tselect_q] == vaddr_from_lsu_i);
-          4'd1: matched = (napot_match(tdata2_d[tselect_q], vaddr_from_lsu_i));
-          4'd8: matched = (tdata2_d[tselect_q] != vaddr_from_lsu_i);
-          endcase
-        end
-        if (priv_match && matched) begin
-          case (mcontrol6_32_tdata1_d[tselect_q].action)
-            //6'd0 : break_from_trigger_d = 1'b1; //breakpoint
-            6'd1: debug_from_trigger = 1'b1;  //into debug mode;
-            default: ;
-          endcase
-        end
-        if (debug_mode_d && matched) begin
-          matched = 1'b0;
-          mcontrol6_32_tdata1_d[tselect_q].hit0 = 1'b0;
-          mcontrol6_32_tdata1_d[tselect_q].hit1 = 1'b1;
-          debug_from_trigger = 1'b0;
-        end
-      end
-      // etrigger match logic
-      if (trigger_type_d[tselect_q] == 4'd5) begin
-        e_matched = 1'b0;
-        break_from_trigger_d = 1'b0;
-        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-          riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-          riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-          riscv::PRIV_LVL_U: if (etrigger32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-          default: priv_match = 1'b0;
-        endcase
-        if (tdata2_d[tselect_q][ex_i.cause]) e_matched = 1'b1;
-        if (e_matched && priv_match) begin
-          etrigger32_tdata1_d[tselect_q].hit = 1'b1;
-          case (etrigger32_tdata1_d[tselect_q].action)
-            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
-            6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
-            default: ;
-          endcase
-        end
-        if (break_from_trigger_q) begin
+        // etrigger match logic
+        if (trigger_type_d[i] == 4'd5 && CVA6Cfg.Etrigger) begin
           e_matched = 1'b0;
-        end
-        if (debug_mode_d && debug_from_trigger_d) begin
-          e_matched = 1'b0;
-          etrigger32_tdata1_d[tselect_q].hit = 1'b0;
-          debug_from_trigger_d = 1'b0;
-        end
-      end
-      // itrigger match logic
-      if (trigger_type_d[tselect_q] == 4'd4) begin
-        e_matched = 1'b0;
-        case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-          riscv::PRIV_LVL_M: if (itrigger32_tdata1_d[tselect_q].m) priv_match = 1'b1;
-          riscv::PRIV_LVL_S: if (itrigger32_tdata1_d[tselect_q].s) priv_match = 1'b1;
-          riscv::PRIV_LVL_U: if (itrigger32_tdata1_d[tselect_q].u) priv_match = 1'b1;
-          default: priv_match = 1'b0;
-        endcase
-        if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
-          if (tdata2_d[tselect_q][ex_i.cause[4:0]]) e_matched = 1'b1;
-        end
-        if (e_matched && priv_match) begin
-          itrigger32_tdata1_d[tselect_q].hit = 1'b1;
-          case (itrigger32_tdata1_d[tselect_q].action)
-            6'd0: break_from_trigger_d = 1'b1;  //breakpoint
-            6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
-            default: ;
+          break_from_trigger_d = 1'b0;
+          case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+            riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[i].m) priv_match = 1'b1;
+            riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[i].s) priv_match = 1'b1;
+            riscv::PRIV_LVL_U: if (etrigger32_tdata1_d[i].u) priv_match = 1'b1;
+            default: priv_match = 1'b0;
           endcase
+          if (tdata2_d[i][ex_i.cause]) e_matched = 1'b1;
+          if (e_matched && priv_match) begin
+            etrigger32_tdata1_d[i].hit = 1'b1;
+            case (etrigger32_tdata1_d[i].action)
+              6'd0: break_from_trigger_d = 1'b1;  //breakpoint
+              6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
+              default: ;
+            endcase
+          end
+          if (break_from_trigger_q) begin
+            e_matched = 1'b0;
+          end
+          if (debug_mode_d && debug_from_trigger_d) begin
+            e_matched = 1'b0;
+            etrigger32_tdata1_d[i].hit = 1'b0;
+            debug_from_trigger_d = 1'b0;
+          end
         end
-        if (break_from_trigger_q) begin
+        // itrigger match logic
+        if (trigger_type_d[i] == 4'd4 && CVA6Cfg.Itrigger) begin
           e_matched = 1'b0;
-        end
-        if (debug_mode_d && debug_from_trigger_d) begin
-          e_matched = 1'b0;
-          itrigger32_tdata1_d[tselect_q].hit = 1'b0;
-          debug_from_trigger_d = 1'b0;
+          case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
+            riscv::PRIV_LVL_M: if (itrigger32_tdata1_d[i].m) priv_match = 1'b1;
+            riscv::PRIV_LVL_S: if (itrigger32_tdata1_d[i].s) priv_match = 1'b1;
+            riscv::PRIV_LVL_U: if (itrigger32_tdata1_d[i].u) priv_match = 1'b1;
+            default: priv_match = 1'b0;
+          endcase
+          if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
+            if (tdata2_d[i][ex_i.cause[4:0]]) e_matched = 1'b1;
+          end
+          if (e_matched && priv_match) begin
+            itrigger32_tdata1_d[i].hit = 1'b1;
+            case (itrigger32_tdata1_d[i].action)
+              6'd0: break_from_trigger_d = 1'b1;  //breakpoint
+              6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
+              default: ;
+            endcase
+          end
+          if (break_from_trigger_q) begin
+            e_matched = 1'b0;
+          end
+          if (debug_mode_d && debug_from_trigger_d) begin
+            e_matched = 1'b0;
+            itrigger32_tdata1_d[i].hit = 1'b0;
+            debug_from_trigger_d = 1'b0;
+          end
         end
       end
     end
