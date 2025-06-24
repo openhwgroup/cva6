@@ -8,10 +8,6 @@
 // Authors: Yannick Casamatta
 // Date: June, 2025
 // Description: CVA6 Interface adapter YPB to OBI
-//
-// Additional contributions by:
-// Month, Year - Author, Organisation
-//        Short description
 
 `include "obi/typedef.svh"
 

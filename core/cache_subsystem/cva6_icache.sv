@@ -220,7 +220,7 @@ module cva6_icache
   always_comb begin : p_fsm_ypb_r
     // default assignment
     ypb_valid = '0;
-    //fetch_rsp_o.invalid_data = '0;
+    //fetch_rsp_o.invalid_data = '0; // FIXME To be removed
     ypb_rdata = data_q;
     ypb_ruser = userdata_q;
     ypb_r_state_d = ypb_r_state_q;
@@ -239,7 +239,7 @@ module cva6_icache
       YPB_R_WAIT: begin
         if (ypb_fetch_req_i.kill_req || flush_d) begin
           ypb_valid = '1;
-          //fetch_rsp_o.invalid_data = '1;
+          //fetch_rsp_o.invalid_data = '1; // FIXME To be removed
           ypb_r_state_d = YPB_R_IDLE;
         end else if (data_valid_ypb || data_valid_ypb_q) begin
           ypb_valid = '1;
@@ -256,7 +256,7 @@ module cva6_icache
 
       YPB_R_KILLED: begin
         ypb_valid = '1;
-        //fetch_rsp_o.invalid_data = '1;
+        //fetch_rsp_o.invalid_data = '1; // FIXME To be removed
         if (ypb_fetch_req_i.preq && ypb_grant) begin
           if (!(ypb_fetch_req_i.kill_req || flush_d)) begin
             ypb_r_state_d = YPB_R_WAIT;

@@ -11,10 +11,7 @@
 // Description: Interface adapter for the CVA6 core
 //
 // Additional contributions by:
-// June, 2024 - Yannick Casamatta, Thales
-//              OBI Protocol
-// June, 2025 - Yannick Casamatta, Thales
-//              YBP Protocol
+// June, 2025 - Yannick Casamatta, Thales : YBP Protocol
 
 
 module cva6_hpdcache_if_adapter
