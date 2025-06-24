@@ -377,7 +377,8 @@ module cva6
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
 
-  localparam NumPorts = 4;
+  // NumPorts is the sum of the four read ports (PTW, Load Unit, Accellerator, read access from mpt_store) and 1 write port used by Store Unit 
+  localparam NumPorts = 5;
 
   // CVXIF
   cvxif_req_t cvxif_req;
@@ -642,8 +643,8 @@ module cva6
   // ----------------
   // DCache <-> *
   // ----------------
-  dcache_req_i_t [2:0] dcache_req_ports_ex_cache;
-  dcache_req_o_t [2:0] dcache_req_ports_cache_ex;
+  dcache_req_i_t [3:0] dcache_req_ports_ex_cache; // Requests from ex_stage to dcache. [0] --> PTW, [1] --> Load Unit, [2] --> Accellerator, [3] --> Read requests from MPT_store
+  dcache_req_o_t [3:0] dcache_req_ports_cache_ex; // Resposes from dcache to ex_stage
   dcache_req_i_t dcache_req_ports_id_cache;
   dcache_req_o_t dcache_req_ports_cache_id;
   dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
@@ -1319,10 +1320,13 @@ module cva6
   end else begin
     assign dcache_req_to_cache[0] = dcache_req_ports_ex_cache[0];
   end
-  assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];
-  assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0];
-  assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
-                                                                          dcache_req_ports_acc_cache[1];
+  assign dcache_req_to_cache[1] = dcache_req_ports_ex_cache[1];  // rd_port_1 (Load Unit)
+  assign dcache_req_to_cache[2] = dcache_req_ports_acc_cache[0]; // rd_port_2 (Accellerator)
+  assign dcache_req_to_cache[3] = dcache_req_ports_ex_cache[3];  // rd_port_3 (MPT_store)
+  // Use (NumPorts-1) instead of a fixed index for the store unit's write port
+  // to improve flexibility and maintainability of the code.
+  assign dcache_req_to_cache[NumPorts-1] = dcache_req_ports_ex_cache[2].data_req ? dcache_req_ports_ex_cache [2] :
+                                                                          dcache_req_ports_acc_cache[1];   // write port (store unit)    dcache_req_ports_ex_cache[2] is the request from exectute stage specifically from store unit                                                                 
 
   // D$ response
   // Since ZCMT is only enable for embdeed class so MMU should be disable.
@@ -1334,11 +1338,12 @@ module cva6
     assign dcache_req_ports_cache_ex[0] = dcache_req_from_cache[0];
     assign dcache_req_ports_cache_id = '0;
   end
+  assign dcache_req_ports_cache_ex[3]  = dcache_req_from_cache[3];
   assign dcache_req_ports_cache_ex[1]  = dcache_req_from_cache[1];
   assign dcache_req_ports_cache_acc[0] = dcache_req_from_cache[2];
   always_comb begin : gen_dcache_req_store_data_gnt
-    dcache_req_ports_cache_ex[2]  = dcache_req_from_cache[3];
-    dcache_req_ports_cache_acc[1] = dcache_req_from_cache[3];
+    dcache_req_ports_cache_ex[2]  = dcache_req_from_cache[NumPorts-1];
+    dcache_req_ports_cache_acc[1] = dcache_req_from_cache[NumPorts-1];
 
     // Set gnt signal
     dcache_req_ports_cache_ex[2].data_gnt &= dcache_req_ports_ex_cache[2].data_req;

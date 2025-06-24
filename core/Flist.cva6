@@ -187,6 +187,13 @@ ${CVA6_REPO_DIR}/core/pmp/src/pmp.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_data_if.sv
 
+// Memory Protection Table
+${CVA6_REPO_DIR}/core/mem_to_dcache_converter.sv
+${CVA6_REPO_DIR}/core/mpt/rtl/mpt_pkg.sv
+${CVA6_REPO_DIR}/core/mpt/rtl/mpt64_top.sv
+${CVA6_REPO_DIR}/core/mpt/rtl/mpt_top.sv
+${CVA6_REPO_DIR}/core/mpu_data_if.sv
+
 // Tracer (behavioral code, not RTL)
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/tc_sram_wrapper.sv

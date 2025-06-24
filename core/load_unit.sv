@@ -73,6 +73,10 @@ module load_unit
     input logic store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // MPT control signals
+    input  logic mpt_valid_i,
+    input  logic mpt_allow_i,
+    output logic mpt_enable_o,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES
@@ -89,6 +93,7 @@ module load_unit
     ABORT_TRANSACTION_NI,
     WAIT_TRANSLATION,
     WAIT_FLUSH,
+    WAIT_MPT,
     WAIT_WB_EMPTY
   }
       state_d, state_q;
@@ -244,6 +249,7 @@ module load_unit
     req_port_o.data_be   = lsu_ctrl_i.be;
     req_port_o.data_size = extract_transfer_size(lsu_ctrl_i.operation);
     pop_ld_o             = 1'b0;
+    mpt_enable_o = 1'b0;
 
     // In IDLE and SEND_TAG states, this unit can accept a new load request
     // when the load buffer is not full or if there is a response and the
@@ -251,13 +257,14 @@ module load_unit
     accept_req           = (valid_i && (!ldbuf_full || (LDBUF_FALLTHROUGH && ldbuf_r)));
 
     case (state_q)
-      IDLE: begin
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does then stall and wait
-          if (!page_offset_matches_i) begin
+      // Wait for MPT to give allow signal
+      WAIT_MPT: begin
+        translation_req_o = 1'b1;
+        mpt_enable_o = 1'b1;
+        if (mpt_valid_i) begin
+          mpt_enable_o = 1'b0;
+          // only if access allowed make a dcache request else stall
+          if (mpt_allow_i) begin
             // make a load request to memory
             req_port_o.data_req = 1'b1;
             // we got no data grant so wait for the grant before sending the tag
@@ -277,6 +284,18 @@ module load_unit
                 end
               end
             end
+          end
+        end
+      end
+
+      IDLE: begin
+        if (accept_req) begin
+          // start the translation process even though we do not know if the addresses match
+          // this should ease timing
+          translation_req_o = 1'b1;
+          // check if the page offset matches with a store, if it does then stall and wait
+          if (!page_offset_matches_i) begin
+              state_d = WAIT_MPT;
           end else begin
             // wait for the store buffer to train and the page offset to not match anymore
             state_d = WAIT_PAGE_OFFSET;
@@ -288,7 +307,7 @@ module load_unit
       WAIT_PAGE_OFFSET: begin
         // we make a new request as soon as the page offset does not match anymore
         if (!page_offset_matches_i) begin
-          state_d = WAIT_GNT;
+          state_d = WAIT_MPT;
         end
       end
 
@@ -319,37 +338,19 @@ module load_unit
       // we know for sure that the tag we want to send is valid
       SEND_TAG: begin
         req_port_o.tag_valid = 1'b1;
-        state_d = IDLE;
-
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does stall and wait
-          if (!page_offset_matches_i) begin
-            // make a load request to memory
-            req_port_o.data_req = 1'b1;
-            // we got no data grant so wait for the grant before sending the tag
-            if (!req_port_i.data_gnt) begin
-              state_d = WAIT_GNT;
+        if (req_port_i.data_rvalid) begin 
+          state_d = IDLE;
+          if (accept_req) begin
+            // start the translation process even though we do not know if the addresses match
+            // this should ease timing
+            translation_req_o = 1'b1;
+            // check if the page offset matches with a store, if it does stall and wait
+            if (!page_offset_matches_i ) begin
+                state_d = WAIT_MPT;
             end else begin
-              // we got a grant so we can send the tag in the next cycle
-              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                state_d = ABORT_TRANSACTION;
-              end else begin
-                if (!stall_ni) begin
-                  // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                  state_d  = SEND_TAG;
-                  pop_ld_o = 1'b1;
-                  // translation valid but this is to NC and the WB is not yet empty.
-                end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                  state_d = ABORT_TRANSACTION_NI;
-                end
-              end
+              // wait for the store buffer to train and the page offset to not match anymore
+              state_d = WAIT_PAGE_OFFSET;
             end
-          end else begin
-            // wait for the store buffer to train and the page offset to not match anymore
-            state_d = WAIT_PAGE_OFFSET;
           end
         end
         // ----------

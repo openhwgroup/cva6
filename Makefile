@@ -53,6 +53,11 @@ $(warning must set CVA6_REPO_DIR to point at the root of CVA6 sources -- doing i
 export CVA6_REPO_DIR = $(abspath $(root-dir))
 endif
 
+# Location of MPT RTL
+export MPT_RTL_DIR=$(CVA6_REPO_DIR)/core/mpt/rtl
+# Verilator includes
+VINCLUDE = -I$(MPT_RTL_DIR)
+
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 1
@@ -646,6 +651,7 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 
 # verilator-specific
 verilate_command := $(verilator) --no-timing verilator_config.vlt                                                \
+					$(VINCLUDE)																					 \
                     -f core/Flist.cva6                                                                           \
                     core/cva6_rvfi.sv                                                                            \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \

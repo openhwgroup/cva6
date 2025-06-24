@@ -150,6 +150,7 @@ module wt_cache_subsystem
       .dcache_req_o_t(dcache_req_o_t),
       .dcache_req_t(dcache_req_t),
       .dcache_rtrn_t(dcache_rtrn_t),
+      .NumPorts (NumPorts),
       // use ID 1 for dcache reads and amos. note that the writebuffer
       // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
       .RdAmoTxId(1)

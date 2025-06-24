@@ -80,6 +80,10 @@ module store_unit
     output amo_req_t amo_req_o,
     // AMO response - CACHES
     input amo_resp_t amo_resp_i,
+    // MPT requests
+    input logic mpt_valid_i,
+    input logic mpt_allow_i,
+    output logic mpt_enable_o,
     // Data cache request - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache response - CACHES
@@ -315,6 +319,9 @@ module store_unit
       .data_i               (st_data_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
+      .mpt_valid_i,
+      .mpt_allow_i,
+      .mpt_enable_o,
       .req_port_i           (req_port_i),
       .req_port_o           (req_port_o)
   );
