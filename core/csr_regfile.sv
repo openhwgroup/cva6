@@ -29,7 +29,7 @@ module csr_regfile
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Timer threw a interrupt - SUBSYSTEM
+    // Timer threw an interrupt - SUBSYSTEM
     input logic time_irq_i,
     // send a flush request out when a CSR with a side effect changes - CONTROLLER
     output logic flush_o,
@@ -37,7 +37,7 @@ module csr_regfile
     output logic halt_csr_o,
     // Instruction to be committed - ID_STAGE
     input scoreboard_entry_t commit_instr_i,
-    // Commit acknowledged a instruction -> increase instret CSR - COMMIT_STAGE
+    // Commit acknowledged an instruction -> increase instret CSR - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     // Address from which to start booting, mtvec is set to the same address - SUBSYSTEM
     input logic [CVA6Cfg.VLEN-1:0] boot_addr_i,
@@ -53,7 +53,7 @@ module csr_regfile
     input logic [CVA6Cfg.XLEN-1:0] csr_wdata_i,
     // Read data out - COMMIT_STAGE
     output logic [CVA6Cfg.XLEN-1:0] csr_rdata_o,
-    // Mark the FP sate as dirty - COMMIT_STAGE
+    // Mark the FP state as dirty - COMMIT_STAGE
     input logic dirty_fp_state_i,
     // Write fflags register e.g.: we are retiring a floating point instruction - COMMIT_STAGE
     input logic csr_write_fflags_i,
@@ -81,7 +81,7 @@ module csr_regfile
     output riscv::xs_t fs_o,
     // Floating point extension virtual status - ID_STAGE
     output riscv::xs_t vfs_o,
-    // Floating-Point Accured Exceptions - COMMIT_STAGE
+    // Floating-Point Occurred Exceptions - COMMIT_STAGE
     output logic [4:0] fflags_o,
     // Floating-Point Dynamic Rounding Mode - EX_STAGE
     output logic [2:0] frm_o,

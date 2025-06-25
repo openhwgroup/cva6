@@ -88,7 +88,7 @@ module zcmt_decoder #(
             req_port_o.data_req = 1'b1;
             fetch_stall_o = 1'b1;
           end else illegal_instr_o = 1'b1;
-          // Condition may be extented for 64 bits embedded targets with No MMU
+          // Condition may be extended for 64 bits embedded targets with No MMU
         end else begin
           illegal_instr_o = illegal_instr_i;
           instr_o         = instr_i;
@@ -102,11 +102,11 @@ module zcmt_decoder #(
           if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
             instr_o = {
               20'h0, 5'h0, riscv::OpcodeJal
-            };  // immidiate assigned here (0) will be overwrite in decode stage with jump_address_o
+            };  // immediate assigned here (0) will be overwrite in decode stage with jump_address_o
           end else if ((instr_i[9:2] >= 32) & (instr_i[9:2] <= 255))  begin  //- jal pc_offset, x1 for return stack
             instr_o = {
               20'h0, 5'h1, riscv::OpcodeJal
-            };  // immidiate assigned here (0) will be overwrite in decode stage with jump_address_o
+            };  // immediate assigned here (0) will be overwrite in decode stage with jump_address_o
           end else begin
             illegal_instr_o = 1'b1;
             instr_o         = instr_i;

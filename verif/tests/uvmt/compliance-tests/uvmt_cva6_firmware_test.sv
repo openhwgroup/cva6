@@ -29,7 +29,7 @@
  *  translate the firmware into a "hexfile" that is read into the CVA6
  *  instruction memory in the testbench module.
  *
- *  This class doesn't care what the firmware does, it mearly compiles it.
+ *  This class doesn't care what the firmware does, it merely compiles it.
  *
  */
 class uvmt_cva6_firmware_test_c extends uvmt_cva6_base_test_c;

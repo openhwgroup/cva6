@@ -88,7 +88,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
       else
         size = 'h2;
 
-      // For LRs/SCs, choose from only 4 adresses,
+      // For LRs/SCs, choose from only 4 addresses,
       // so that valid LR/SC combinations become more likely.
       // Note: AMOs to address 0 are not supported in axi_riscv_atomics module
       //       so we start at 8 (for alignment purposes)
@@ -97,7 +97,7 @@ program tb_amoport import ariane_pkg::*; import tb_pkg::*; #(
       else
         void'(randomize(paddr) with {paddr >= 8; paddr < (MemWords<<$clog2(CVA6Cfg.XLEN/8));});
 
-      // Align adress
+      // Align address
       if (size == 2)
         paddr[1:0] = '0;
       else

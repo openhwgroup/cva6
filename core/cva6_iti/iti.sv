@@ -6,7 +6,7 @@
 // Darshak Sheladiya, SYSGO GmbH
 // Umberto Laghi, UNIBO
 
-// For reference : See Section 4.2 Intruction Trace Inteface from Efficient Trace for RISC-V v2.0 (may 5 2022)
+// For reference : See Section 4.2 Instruction Trace Interface from Efficient Trace for RISC-V v2.0 (may 5 2022)
 // iti stand for Instruction Trace Interface, changing because tip (Trace Ingress Port) and "type" are too similar creating confusion 
 
 module cva6_iti #(
@@ -79,7 +79,7 @@ module cva6_iti #(
   logic [CVA6Cfg.NrCommitPorts-1:0] special;
 
 
-  assign interrupt = rvfi_to_iti_i.cause[CVA6Cfg.XLEN-1];  // determinated based on the MSB of cause
+  assign interrupt = rvfi_to_iti_i.cause[CVA6Cfg.XLEN-1];  // determined based on the MSB of cause
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
     itype_detector #(
@@ -93,7 +93,7 @@ module cva6_iti #(
         .itype_o       (itype[i])
     );
 
-    // Adding this to ensure that interuption/exception happen only in commit port 0 of cva6
+    // Adding this to ensure that interrupt/exception happen only in commit port 0 of cva6
     assign cause_itt[i] = i == 0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
     assign tval_itt[i] = i == 0 ? rvfi_to_iti_i.tval : '0;
     // Systolic logic (First itt is connected to D Flip-Flop to continue computation if needed)
@@ -146,7 +146,7 @@ module cva6_iti #(
         iti_to_encoder_o.ilastsize[i] = itt_out[i].ilastsize;
         iti_to_encoder_o.itype[i] = itt_out[i].itype;
         iti_to_encoder_o.iaddr[i] = itt_out[i].iaddr;
-        iti_to_encoder_o.priv = itt_out[i].priv; // privilege don't change between 2 instr comitted in the same cycle
+        iti_to_encoder_o.priv = itt_out[i].priv; // privilege don't change between 2 instr committed in the same cycle
         iti_to_encoder_o.cycles = itt_out[i].cycles;  // Same here (same time at same cycle)
       end
     end

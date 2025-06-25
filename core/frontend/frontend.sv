@@ -197,7 +197,7 @@ module frontend
   end
   ;
 
-  // for the return address stack it doens't matter as we have the
+  // for the return address stack it doesn't matter as we have the
   // address of the call/return already
   logic bp_valid;
 

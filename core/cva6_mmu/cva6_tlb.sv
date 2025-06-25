@@ -115,7 +115,7 @@ module cva6_tlb
         // WARNING: `x` goes in the order {0 = 4K, 1 = 2M, 2 = 1G}.
 
         // Identify page_match for all TLB Entries:
-        // `page_match[i][x] == 1` if the entry `i` represents a page of (non-stricly) bigger length than
+        // `page_match[i][x] == 1` if the entry `i` represents a page of (non-strictly) bigger length than
         // requested.
         // 4K is always a match
         // In case of H-mode, the length of a page in the TLB is the smallest of S-translation and
@@ -132,8 +132,8 @@ module cva6_tlb
             // Other cases: H-mode and mega page
             assign page_match[i][x] = (&v_st_enbl[HYP_EXT:0]) ?
                 // If S-translation and G-translation are active, then either:
-                // - S-translation matchs and G-translation is Mega or Giga
-                // - G-translation matchs and S-translation is Mega or Giga
+                // - S-translation matches and G-translation is Mega or Giga
+                // - G-translation matches and S-translation is Mega or Giga
                 ((tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0]       && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][HYP_EXT] || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT]))
             ||   (tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][HYP_EXT] && (tags_q[i].is_page[CVA6Cfg.PtLevels-2-x][0]       || tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][0])))
             : // Else, either S or G-level must match depending which is active
@@ -212,7 +212,7 @@ module cva6_tlb
         lu_hit[i]    = 1'b1;
         // Translate S-stage to GPA: use `content_q[i].pte` to get PPN and use offset
         // from input `lu_vaddr_i`. In case of mega/giga pages, PTE PPN must be aligned,
-        // so we should not overwite any useful bits.
+        // so we should not overwrite any useful bits.
         if (CVA6Cfg.RVH) begin
           if (s_st_enbl_i) begin
             // S-stage Normal page

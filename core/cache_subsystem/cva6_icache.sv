@@ -209,7 +209,7 @@ module cva6_icache
     miss_o = 1'b0;
 
     // handle invalidations unconditionally
-    // note: invald are mutually exclusive with
+    // note: invals are mutually exclusive with
     // ifills, since both arrive over the same IF
     // however, we need to make sure below that we
     // do not trigger a cache readout at the same time...

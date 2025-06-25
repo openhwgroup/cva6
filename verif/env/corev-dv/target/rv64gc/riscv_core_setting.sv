@@ -64,10 +64,10 @@ parameter int SLEN = 64;
 parameter int NUM_HARTS = 1;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
-// Implemented previlieged CSR list
+// Implemented privileged CSR list
 `ifdef DSIM
 privileged_reg_t implemented_csr[] = {
 `else
