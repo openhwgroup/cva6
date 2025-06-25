@@ -7,6 +7,8 @@
 #
 # Original Author: Jean-Roch COULON - Thales
 
+set -exo pipefail
+
 if ! [ -n "$TESTS_REPO" ]; then
   TESTS_REPO="https://github.com/riscv/riscv-tests.git"
   TESTS_BRANCH="master"
