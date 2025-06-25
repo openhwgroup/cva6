@@ -1985,7 +1985,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger_q)) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger_q && CVA6Cfg.Icount)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -2078,7 +2078,7 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = (break_from_trigger_q) ? 32'h00000003 : ex_i.cause;
+        mcause_d = (break_from_trigger_q && CVA6Cfg.Icount) ? 32'h00000003 : ex_i.cause;
         // set epc
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
@@ -2454,7 +2454,7 @@ module csr_regfile
           end
           if (priv_match && matched) begin
             case (mcontrol6_32_tdata1_d[i].action)
-              //6'd0 : break_from_trigger_d = 1'b1; //breakpoint
+              //6'd0: break_from_trigger_d = 1'b1; //breakpoint
               6'd1: debug_from_trigger = 1'b1;  //into debug mode;
               default: ;
             endcase
@@ -2485,9 +2485,6 @@ module csr_regfile
               default: ;
             endcase
           end
-          if (break_from_trigger_q) begin
-            e_matched = 1'b0;
-          end
           if (debug_mode_d && debug_from_trigger_d) begin
             e_matched = 1'b0;
             etrigger32_tdata1_d[i].hit = 1'b0;
@@ -2513,9 +2510,6 @@ module csr_regfile
               6'd1: debug_from_trigger_d = 1'b1;  //into debug mode;
               default: ;
             endcase
-          end
-          if (break_from_trigger_q) begin
-            e_matched = 1'b0;
           end
           if (debug_mode_d && debug_from_trigger_d) begin
             e_matched = 1'b0;
