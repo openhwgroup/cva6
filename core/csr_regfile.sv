@@ -2420,10 +2420,9 @@ module csr_regfile
           // store with data
           if (mcontrol6_32_tdata1_d[i].store && mcontrol6_32_tdata1_d[i].select) begin
             case (mcontrol6_32_tdata1_d[i].match)
-              4'd0: matched = (tdata2_d[i] == store_result_i && commit_instr_i.op == 8'h29);
-              4'd1:
-              matched = (napot_match(tdata2_d[i], store_result_i) && commit_instr_i.op == 8'h29);
-              4'd8: matched = (tdata2_d[i] != store_result_i && commit_instr_i.op == 8'h29);
+              4'd0: matched = (tdata2_d[i] == store_result_i);
+              4'd1: matched = (napot_match(tdata2_d[i], store_result_i));
+              4'd8: matched = (tdata2_d[i] != store_result_i);
             endcase
           end
           // store with address
@@ -2469,7 +2468,6 @@ module csr_regfile
         // etrigger match logic
         if (trigger_type_d[i] == 4'd5 && CVA6Cfg.Etrigger) begin
           e_matched = 1'b0;
-          break_from_trigger_d = 1'b0;
           case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
             riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[i].m) priv_match = 1'b1;
             riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[i].s) priv_match = 1'b1;
