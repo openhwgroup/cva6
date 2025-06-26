@@ -34,13 +34,24 @@ module bht2lvl #(
   // number of bits we should use for prediction
   localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
 
-  struct packed {
+  typedef struct packed {
     logic valid;
     logic [CVA6Cfg.BHTHist-1:0] hist;
     logic [2**CVA6Cfg.BHTHist-1:0][1:0] saturation_counter;
-  }
-      bht_d[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0],
-      bht_q[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0];
+  } bht_entry_t;
+
+  // This parameter is needed to reset all saturation
+  // counters to 2'b10 while circumventing the Verilator
+  // limitation of unsupported delayed assignment to array
+  // inside for loops
+  localparam bht_entry_t BHT_RST_VALUE = '{
+      valid: 1'b0,
+      hist: '0,
+      saturation_counter: {2 ** CVA6Cfg.BHTHist{2'b10}}
+  };
+
+  bht_entry_t bht_d[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0];
+  bht_entry_t bht_q[NR_ROWS-1:0][CVA6Cfg.INSTR_PER_FETCH-1:0];
 
 
   logic [$clog2(NR_ROWS)-1:0] index, update_pc;
@@ -101,33 +112,20 @@ module bht2lvl #(
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      for (int unsigned i = 0; i < NR_ROWS; i++) begin
-        for (int j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin
-          bht_q[i][j] <= '0;
-          for (int k = 0; k < 2 ** CVA6Cfg.BHTHist; k++) begin
-            bht_q[i][j].saturation_counter[k] <= 2'b10;
+  for (genvar i = 0; i < NR_ROWS; i++) begin : gen_ff_rows
+    for (genvar j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin : gen_ff_cols
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          bht_q[i][j] <= BHT_RST_VALUE;
+        end else begin
+          if (flush_i) begin
+            bht_q[i][j] <= BHT_RST_VALUE;
+          end else begin
+            bht_q[i][j] <= bht_d[i][j];
           end
         end
-      end
-    end else begin
-      // evict all entries
-      if (flush_i) begin
-        for (int i = 0; i < NR_ROWS; i++) begin
-          for (int j = 0; j < CVA6Cfg.INSTR_PER_FETCH; j++) begin
-            bht_q[i][j].valid <= 1'b0;
-            bht_q[i][j].hist  <= '0;
-            for (int k = 0; k < 2 ** CVA6Cfg.BHTHist; k++) begin
-              bht_q[i][j].saturation_counter[k] <= 2'b10;
-            end
-          end
-        end
-      end else begin
-        bht_q <= bht_d;
       end
     end
   end
-
 
 endmodule
