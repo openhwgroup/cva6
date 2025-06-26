@@ -204,15 +204,17 @@ module cva6_hpdcache_subsystem
     userCfg.dataWaysPerRamWord = __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN);
     userCfg.dataSetsPerRam = CVA6Cfg.DCACHE_NUM_WORDS;
     userCfg.dataRamByteEnable = 1'b1;
-    userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN, 1  /*reqWords*/);
+    userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN, userCfg.reqWords);
     userCfg.mshrSets = CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2;
     userCfg.mshrWays = CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2;
     userCfg.mshrWaysPerRamWord = CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2;
     userCfg.mshrSetsPerRam = CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2;
     userCfg.mshrRamByteEnable = 1'b1;
     userCfg.mshrUseRegbank = (CVA6Cfg.NrLoadBufEntries < 16);
+    /*FIXME we should add additional CVA6 config parameters (cbufEntries)*/
+    userCfg.cbufEntries = 4;
     userCfg.refillCoreRspFeedthrough = 1'b1;
-    userCfg.refillFifoDepth = 2;
+    userCfg.refillFifoDepth = 2 * (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth);
     userCfg.wbufDirEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufDataEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufWords = 1;
@@ -231,6 +233,7 @@ module cva6_hpdcache_subsystem
     userCfg.wbEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+    userCfg.lowLatency = 1'b1;
     return userCfg;
   endfunction
 
