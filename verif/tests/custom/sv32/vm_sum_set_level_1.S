@@ -11,7 +11,7 @@
 # When satp.mode=sv32, PTE has (r,w,x) PMP permissions, PTE has non-reserved RWX
 # encoding, and pte.v=1, then test the following in supervisor mode for level1 PTE.
 # 
-# - Set pte.r=1 & pte.u=1 & s/mstatus.SUM = 1 and test the read acces.
+# - Set pte.r=1 & pte.u=1 & s/mstatus.SUM = 1 and test the read access.
 # - Set pte.w=1 & pte.u=1 & s/mstatus.SUM = 1 and test the write access.
 # - Set pte.x=1 & pte.u=1 & s/mstatus.SUM = 1 and test the execute access.
 #

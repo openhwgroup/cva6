@@ -21,7 +21,7 @@ ifeval::[{SuperscalarEn} == false]
 :ifetch-len: 32
 :instr-per-fetch: 2
 :issue-width: 1
-:commit-width: {NrCommmitPorts}
+:commit-width: {NrCommitPorts}
 endif::[]
 :SpeculativeSb: {SuperscalarEn}
 

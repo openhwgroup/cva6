@@ -188,7 +188,7 @@ module tb;
     $display("TB> response acquisition started");
 
     ///////////////////////////////////////////////
-    // acquisiton and verification
+    // acquisition and verification
     ///////////////////////////////////////////////
     repeat(4) begin
 

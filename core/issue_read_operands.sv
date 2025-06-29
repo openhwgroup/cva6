@@ -567,7 +567,7 @@ module issue_read_operands
     end
 
     if (CVA6Cfg.CvxifEn) begin
-      // Remove unecessary forward and stall in case source register is not needed by coprocessor.
+      // Remove unnecessary forward and stall in case source register is not needed by coprocessor.
       if (x_issue_valid_o && x_issue_resp_i.accept) begin
         if (~x_issue_resp_i.register_read[0]) begin
           forward_rs1[0] = 1'b0;
@@ -821,7 +821,7 @@ module issue_read_operands
     end
 
     issue_ack_o = issue_ack;
-    // Do not acknoledge the issued instruction if transaction is not completed.
+    // Do not acknowledge the issued instruction if transaction is not completed.
     if (issue_instr_i[0].fu == CVXIF && !(x_transaction_accepted_o || x_transaction_rejected)) begin
       issue_ack_o[0] = issue_instr_i[0].ex.valid && issue_instr_valid_i[0];
     end

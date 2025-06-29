@@ -30,7 +30,7 @@ class uvma_interrupt_cfg_c extends uvm_object;
    // Interrupt memory ack
    rand bit [XLEN-1:0]           irq_addr;
 
-   // enbale/disable clear mechanism
+   // enable/disable clear mechanism
    rand bit                      enable_clear_irq;
 
    // Number of cycle before Timeout if the agent failed to write into irq_add
