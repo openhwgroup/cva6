@@ -59,7 +59,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   localparam type hartid_t            = `HARTID_T(CVA6Cfg),
   localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
   localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartid_t, id_t),
   localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
   localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
   localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),

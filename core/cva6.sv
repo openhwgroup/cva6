@@ -300,7 +300,7 @@ module cva6
     parameter type hartid_t = `HARTID_T(CVA6Cfg),
     parameter type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
     parameter type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    parameter type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+    parameter type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartid_t, id_t),
     parameter type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
     parameter type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
     parameter type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
