@@ -20,14 +20,14 @@ module macro_decoder #(
     input  logic [31:0] instr_i,
     input  logic        clk_i,                      // Clock
     input  logic        rst_ni,                     // Synchronous reset
-    input  logic        is_macro_instr_i,           // Intruction is of macro extension
+    input  logic        is_macro_instr_i,           // Instruction is of macro extension
     input  logic        illegal_instr_i,            // From compressed decoder
     input  logic        is_compressed_i,
-    input  logic        issue_ack_i,                // Check if the intruction is acknowledged
+    input  logic        issue_ack_i,                // Check if the instruction is acknowledged
     output logic [31:0] instr_o,
     output logic        illegal_instr_o,
     output logic        is_compressed_o,
-    output logic        fetch_stall_o,              //Wait while push/pop/move instructions expand
+    output logic        fetch_stall_o,              // Wait while push/pop/move instructions expand
     output logic        is_last_macro_instr_o,
     output logic        is_double_rd_macro_instr_o
 );
@@ -459,7 +459,7 @@ module macro_decoder #(
               instr_o_reg = {offset_d[11:5], 5'h8, 5'h2, 3'h2, offset_d[4:0], riscv::OpcodeStore};
             end
             reg_numbers_d = reg_numbers_q - 1;
-            offset_d = offset_q + 12'hFFC;  // decrement offset by -4 i.e. add 2's compilment of 4
+            offset_d = offset_q + 12'hFFC;  // decrement offset by -4 i.e. add 2's complement of 4
           end
 
           if (reg_numbers_q == 4'b0011) begin

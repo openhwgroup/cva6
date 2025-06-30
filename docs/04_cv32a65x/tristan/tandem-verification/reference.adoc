@@ -2,7 +2,7 @@
 
 === Configuration parameter names and scopes
 
-Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierachical structure.  Supported values of `PREFIX` are:
+Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierarchical structure.  Supported values of `PREFIX` are:
 
 * `/top`: parameter values apply to the complete platform (which may consist of several cores.)
 * `/top/cores`: parameter values apply to all harts, and can be overridden on a core-by-core basis using core-specific values.
@@ -219,7 +219,7 @@ Extensions currently supported: +
 |`non_standard_interrupts`
 |bool
 |`False`
-|Support non-standard interrupt notification scheme in which arbitraty patterns can be written into the lower 16 bits of `mie` and `mip` CSRs.
+|Support non-standard interrupt notification scheme in which arbitrary patterns can be written into the lower 16 bits of `mie` and `mip` CSRs.
 
 |`override_custom_extensions`
 |bool

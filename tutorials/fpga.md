@@ -9,7 +9,7 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
     Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
    - DDR3 memory controller
-   - SPI controller to conncet to an SDCard
+   - SPI controller to connect to an SDCard
    - Ethernet controller
    - JTAG port (see debugging section below)
    - Bootrom containing zero stage bootloader and device tree.
@@ -71,7 +71,7 @@ Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 screen /dev/ttyUSB0 115200
 ```
 
-Default baudrate set by the bootlaoder and Linux is `115200`.
+Default baudrate set by the bootloader and Linux is `115200`.
 
 After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
 
@@ -237,6 +237,6 @@ To activate the different cache system, compile your code with the macro `DCACHE
 
 ## Re-generating the Bootcode (ZSBL)
 
-The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
+The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argument register `a0` and `a1` respectively.
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.

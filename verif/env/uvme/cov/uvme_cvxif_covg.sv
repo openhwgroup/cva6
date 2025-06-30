@@ -102,7 +102,7 @@ covergroup cg_cus_add_instr(
 
    `CVXIF_CP_BITWISE(cp_rs1_toggle, req_item.issue_req.rs[0], 1)
    `CVXIF_CP_BITWISE(cp_rs2_toggle, req_item.issue_req.rs[1], 1)
-   `CVXIF_CP_BITWISE(cp_rs3_toggle, req_item.issue_req.rs[2], rs3_valid) //TODO : fix need more filtring
+   `CVXIF_CP_BITWISE(cp_rs3_toggle, req_item.issue_req.rs[2], rs3_valid) //TODO : fix need more filtering
 
 endgroup: cg_cus_add_instr
 

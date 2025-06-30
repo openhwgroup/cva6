@@ -41,7 +41,7 @@ Check FETCH Fault/Exception and NO access propagation
 
 
 ///////////////////////////////////////////////////////////////////////////////////
-ADDITONAL VERIF PLAN
+ADDITIONAL VERIF PLAN
 ///////////////////////////////////////////////////////////////////////////////////
 
 [we assume there is only 1 hart in cv32a6]
@@ -1685,7 +1685,7 @@ TST51-2
   - execute the associated access
   - check no access-fault exception]
 
-// //IMPOSSIBLE TO IMPLEMENT (4-BYTE GRANUARITY) => FTR09-a
+// //IMPOSSIBLE TO IMPLEMENT (4-BYTE GRANULARITY) => FTR09-a
 // [implement checks for priority:
 //  for each access length (1byte, 2bytes, 3bytes or 4bytes)
 //       for each byte position on the 32bits bus

@@ -98,7 +98,7 @@ include::port_load_store_unit.adoc[]
 
 The store_unit module manages the data store operations.
 
-As stores can be speculative, the store instructions need to be committed by ISSUE_STAGE module before possibily altering the processor state.
+As stores can be speculative, the store instructions need to be committed by ISSUE_STAGE module before possibly altering the processor state.
 Store buffer keeps track of store requests.
 Outstanding store instructions (which are speculative) are differentiated from committed stores.
 When ISSUE_STAGE module commits a store instruction, outstanding stores
@@ -121,7 +121,7 @@ It stalls until it can satisfy the current request. This means:
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
 * A store after a load to the same address is allowed.
-* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.
+* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no forwarding.
 
 After the check of the store buffer, a read request is sent to the D$ with the index field of the address (1).
 The load unit stalls until the D$ acknowledges this request (2).
