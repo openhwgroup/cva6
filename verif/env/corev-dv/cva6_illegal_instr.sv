@@ -27,7 +27,7 @@ class cva6_illegal_instr_c extends riscv_illegal_instr;
   `uvm_object_utils(cva6_illegal_instr_c)
   `uvm_object_new
 
-  //Overriding the riscv_illegal_instr to ovveride this constraint, and disable kReservedC* constraint
+  //Overriding the riscv_illegal_instr to override this constraint, and disable kReservedC* constraint
   constraint reserved_compressed_instr_c {
     solve exception  before reserved_c;
     solve exception  before opcode;

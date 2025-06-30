@@ -363,7 +363,7 @@
   {Page 59 Volume II: RISC-V Privileged Architectures V20211203}  
      
   Software may determine the PMP granularity by writing zero to pmp0cfg, then writing all ones to pmpaddr0, then reading back pmpaddr0.  
-  If G is the index of the least-signicant bit set, the PMP granularity is 2G+2 bytes.
+  If G is the index of the least-significant bit set, the PMP granularity is 2G+2 bytes.
 * **Verification Goals**
   
   determine the PMP granularity 2^(G+2) bytes by writing zero to pmp(0)cfg, then writing all ones to pmpaddr(0), then reading back pmpaddr(0). G is the index G of the least-significant bit set
@@ -379,7 +379,7 @@
     
   FTR07-b  
   Software may determine the PMP granularity by writing zero to pmp0cfg, then writing all ones to pmpaddr0, then reading back pmpaddr0.  
-   If G is the index of the least-signicant bit set, the PMP granularity is 2G+2 bytes.  
+   If G is the index of the least-significant bit set, the PMP granularity is 2G+2 bytes.  
     
     
   TST01 (HIGH-PRIO) => FTR07-b  
@@ -1242,7 +1242,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1322,7 +1322,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1402,7 +1402,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1482,7 +1482,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1568,7 +1568,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1653,7 +1653,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1732,7 +1732,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1812,7 +1812,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1892,7 +1892,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -1972,7 +1972,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2057,7 +2057,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2142,7 +2142,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2221,7 +2221,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2301,7 +2301,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2381,7 +2381,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2461,7 +2461,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2546,7 +2546,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2631,7 +2631,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2710,7 +2710,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2790,7 +2790,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2870,7 +2870,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -2950,7 +2950,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3035,7 +3035,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3120,7 +3120,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3199,7 +3199,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3279,7 +3279,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3359,7 +3359,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3439,7 +3439,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3524,7 +3524,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3609,7 +3609,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3690,7 +3690,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3767,7 +3767,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3844,7 +3844,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -3921,7 +3921,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4001,7 +4001,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4081,7 +4081,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4158,7 +4158,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4235,7 +4235,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4312,7 +4312,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4389,7 +4389,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4469,7 +4469,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4549,7 +4549,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4626,7 +4626,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4703,7 +4703,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4780,7 +4780,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4857,7 +4857,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -4937,7 +4937,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5017,7 +5017,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5094,7 +5094,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5171,7 +5171,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5248,7 +5248,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5325,7 +5325,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5405,7 +5405,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5485,7 +5485,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5562,7 +5562,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5639,7 +5639,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5716,7 +5716,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5793,7 +5793,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5873,7 +5873,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined
@@ -5953,7 +5953,7 @@
       - if possible, the PMP entry number (i) is a configurable parameter  
       - if possible, the PMP entry lock (L) is a configurable parameter  
       - if possible, the PMP entry permissions (R,W,X) are configurable parameters  
-      - if possible, the PMP entry adress-matching mode (A) is a configurable parameter  
+      - if possible, the PMP entry address-matching mode (A) is a configurable parameter  
       - if possible, the PMP entry address range (pmpaddr) is a configurable parameter  
       - if possible, the PMP entry associated access address is a configurable parameter  
       - so a single CONFIGURATION function and a single ACCESS function can be reused and combined

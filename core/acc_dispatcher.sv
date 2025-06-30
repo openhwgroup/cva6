@@ -60,7 +60,7 @@ module acc_dispatcher
     output logic acc_valid_ex_o,  // FU executed
     // Interface with the commit stage
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
-    input logic commit_st_barrier_i,  // A store barrier was commited
+    input logic commit_st_barrier_i,  // A store barrier was committed
     // Interface with the load/store unit
     output logic acc_stall_st_pending_o,
     input logic acc_no_st_pending_i,
@@ -330,7 +330,7 @@ module acc_dispatcher
    *  Accelerator barriers  *
    **************************/
 
-  // On a store barrier (i.e. any barrier that requires preceeding stores to complete
+  // On a store barrier (i.e. any barrier that requires preceding stores to complete
   // before continuing execution), halt execution while there are pending stores in
   // the accelerator pipeline.
   logic wait_acc_store_d, wait_acc_store_q;

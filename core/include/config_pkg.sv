@@ -68,7 +68,7 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
-    // Scalar Cryptography RISC-V entension
+    // Scalar Cryptography RISC-V extension
     bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
@@ -200,7 +200,7 @@ package config_pkg;
     bit                          FpgaEn;
     // Is FPGA optimization for Altera FPGA
     bit                          FpgaAlteraEn;
-    // Is Techno Cut instanciated
+    // Is Techno Cut instantiated
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;

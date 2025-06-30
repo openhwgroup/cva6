@@ -1,6 +1,6 @@
 // Copyright 2018 - 2019 ETH Zurich and University of Bologna.
-// Copyright 2023 - Thales for additionnal contribution.
-// Copyright 2024 - PlanV Technologies for additionnal contribution.
+// Copyright 2023 - Thales for additional contribution.
+// Copyright 2024 - PlanV Technologies for additional contribution.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 2.0 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -16,7 +16,7 @@
 // Date: 09.06.2018
 // FPGA optimization: Sebastien Jacq, Thales
 // Date: 2023-01-30
-// FPGA optimization for Altera: Angela Gonzalez, PlanV Technolgies
+// FPGA optimization for Altera: Angela Gonzalez, PlanV Technologies
 // Date: 2024-10-16
 
 // branch history table - 2 bit saturation counter

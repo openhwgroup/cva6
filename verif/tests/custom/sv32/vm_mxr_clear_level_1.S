@@ -8,7 +8,7 @@
 # then read access on that PTE should raise load page fault exception.
 #
 # - Set pte.r=0 & pte.w=0 & pte.x=1 & s/mstatus.MXR=0 and test the 
-#   read acces.
+#   read access.
 #
 #=======================================================================
 

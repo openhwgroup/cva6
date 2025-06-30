@@ -159,7 +159,7 @@ Note for CV32A60X: Its first industrial use is without caches. Therefore its cac
 .. The full list of parameters for these configurations will be detailed in the users’ guide if and when these configurations are fully verified.
 ..
 .. +--------------------+---------+--------+------+-------+---------+---------+---------+---------+
-.. | Configuation ID    | Target  | ISA    | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
+.. | Configuration ID   | Target  | ISA    | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
 .. +====================+=========+========+======+=======+=========+=========+=========+=========+
 .. | cv32a6_imacf_sv32  | FPGA    | IMACF  |  32  | Yes   | TBD     | Sv32    | 32 kB   | 16 kB   |
 .. +--------------------+---------+--------+------+-------+---------+---------+---------+---------+
@@ -247,7 +247,7 @@ General requirement
 +-----------------------------------+-----------------------------------+
 
 As the RISC-V specification leaves space for variations, this
-specification specificies some of these variations.
+specification specifies some of these variations.
 
 .. _risc_v_standard_instructions:
 

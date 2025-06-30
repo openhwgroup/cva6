@@ -109,7 +109,7 @@ package wt_cache_pkg;
     L15_CPX_RESTYPE_ATOMIC_RES = 4'b1110   // custom type for atomic responses
   } l15_rtrntypes_t;
 
-  // swap endianess in a 64bit word
+  // swap endianness in a 64bit word
   function automatic logic [63:0] swendian64(input logic [63:0] in);
     automatic logic [63:0] out;
     for (int k = 0; k < 64; k += 8) begin

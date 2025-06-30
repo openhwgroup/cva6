@@ -20,7 +20,7 @@
 //
 // Manifest for the CVA6 TB.
 //   - This is a CORE-ONLY testbench.
-//   - Relevent simulation scripts/Makefiles must set the shell ENV variable
+//   - Relevant simulation scripts/Makefiles must set the shell ENV variable
 //     CVA6_TB_DIR as required.
 //
 ///////////////////////////////////////////////////////////////////////////////

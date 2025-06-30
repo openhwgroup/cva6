@@ -561,7 +561,7 @@ module fpu_wrap
     assign fpu_exception_o.valid = 1'b0;
     assign fpu_exception_o.tval = '0;
 
-    // Donwstream write port is dedicated to FPU and always ready
+    // Downstream write port is dedicated to FPU and always ready
     assign fpu_out_ready = 1'b1;
 
     // Downstream valid from unit

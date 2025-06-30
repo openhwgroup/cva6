@@ -6,7 +6,7 @@
 // Darshak Sheladiya, SYSGO GmbH
 // Umberto Laghi, UNIBO
 
-//Systollic module used to determines the iaddr, ilastsize, iretire for Encoder Module
+//Systolic module used to determines the iaddr, ilastsize, iretire for Encoder Module
 
 
 module instr_to_trace #(

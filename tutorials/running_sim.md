@@ -41,7 +41,7 @@ python3 cva6.py --target cv32a60x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
 -I../tests/custom/env -I../tests/custom/common"
 ```
 
-You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more informations on the available parameters.
+You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more information on the available parameters.
 
 ## Simulating with VCS and Verdi
 

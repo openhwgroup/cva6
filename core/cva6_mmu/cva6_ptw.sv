@@ -40,7 +40,7 @@ module cva6_ptw
     output logic ptw_error_o,  // set when an error occurred
     output logic ptw_error_at_g_st_o,  // set when an error occurred at the G-Stage
     output logic ptw_err_at_g_int_st_o,  // set when an error occurred at the G-Stage during S-Stage translation
-    output logic ptw_access_exception_o,  // set when an PMP access exception occured
+    output logic ptw_access_exception_o,  // set when an PMP access exception occurred
     input logic enable_translation_i,  // CSRs indicate to enable SV39 VS-Stage translation
     input logic enable_g_translation_i,  // CSRs indicate to enable SV39  G-Stage translation
     input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores

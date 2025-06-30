@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 20.09.2018
 // Description: Buffers AMO requests
-// This unit buffers an atomic memory operations for the cache subsyste.
+// This unit buffers an atomic memory operations for the cache subsystem.
 // Furthermore it handles interfacing with the commit stage
 
 module amo_buffer #(
@@ -28,10 +28,10 @@ module amo_buffer #(
     input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
     // D$
-    output ariane_pkg::amo_req_t amo_req_o,  // request to cache subsytem
+    output ariane_pkg::amo_req_t amo_req_o,  // request to cache subsystem
     input ariane_pkg::amo_resp_t amo_resp_i,  // response from cache subsystem
     // Auxiliary signals
-    input logic amo_valid_commit_i,  // We have a vaild AMO in the commit stage
+    input logic amo_valid_commit_i,  // We have a valid AMO in the commit stage
     input logic no_st_pending_i  // there is currently no store pending anymore
 );
   logic flush_amo_buffer;

@@ -59,9 +59,9 @@ package uvmt_cva6_pkg;
    // Base test case
    `include "uvmt_cva6_test_cfg.sv"
    `include "uvmt_cva6_base_test.sv"  // all testcases should extend from this testcase
-   //`include "uvmt_cva6_smoke_test.sv" // smoke test has multile XMRs that are illegal according to the LRM
+   //`include "uvmt_cva6_smoke_test.sv" // smoke test has multiple XMRs that are illegal according to the LRM
 
-   // Compilance tests
+   // Compliance tests
    `include "uvmt_cva6_firmware_test.sv"
 
 endpackage : uvmt_cva6_pkg

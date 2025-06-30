@@ -77,7 +77,7 @@ The selection of file locations for the Yaml configuration and the Yaml report f
 
 Option `+config_file` should only be used when an appropriate configuration file exists, and should be omitted otherwise.
 
-SystemVerilog code of the tandem infrastructure is maintained in OpenHW Group repositiory `core-v-verif` (https://github.com/openhwgroup/core-v-verif) which also contains the UVM components and agents that leverage the pure SystemVerilog layer.
+SystemVerilog code of the tandem infrastructure is maintained in OpenHW Group repository `core-v-verif` (https://github.com/openhwgroup/core-v-verif) which also contains the UVM components and agents that leverage the pure SystemVerilog layer.
 
 A pure SystemVerilog tandem testbench for CVA6 is available in the OpenHW Group CVA6 repository (https://github.com/openhwgroup/cva6/).
 
@@ -189,7 +189,7 @@ A machine-processable Yaml report file summarizing the mismatches detected durin
 
 === How to analyze tandem verification results
 
-To simplify failure analysis, the RVFI state comparator reports mismatches between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosioty level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
+To simplify failure analysis, the RVFI state comparator reports mismatches between commit states of the reference model and the RTL model at all verbosity levels.  However, it produces no output if the commit states are identical and the verbosity level is `UVM_LOW`.  By controlling output verbosity, the simulation log can be reduced to the sole list of state discrepancies, or it can contain a complete log of commits and exceptions to provide additional context at failure locations.
 
 A scoreboard discrepancy is represented by a line describing the nature of the error, followed by two lines that provide a summary view of the RVFI state of the reference model and the RTL core.
 

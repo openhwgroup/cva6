@@ -10,7 +10,7 @@
 # raise access fault exception.
 #
 # - Remove read PMP permission of translated Physical Address in pmpcfg
-#   and test the read acces.
+#   and test the read access.
 # - Remvoe write PMP permission of translated Physical Address in pmpcfg
 #   and test the write access.
 # - Remove execute PMP permission of translated Physical Address in 

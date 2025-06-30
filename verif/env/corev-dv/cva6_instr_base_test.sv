@@ -43,7 +43,7 @@ class cva6_instr_base_test_c extends riscv_instr_base_test;
     `uvm_info("CVA6_DV", $sformatf("Overriding ..."), UVM_LOW)
     uvm_factory::get().set_type_override_by_type(riscv_asm_program_gen::get_type(),
                                                  cva6_asm_program_gen_c::get_type());
-    `uvm_info("CVA6_DV", $sformatf("Overrid done "), UVM_LOW)
+    `uvm_info("CVA6_DV", $sformatf("Override done "), UVM_LOW)
   endfunction
 
   virtual function void override_gen_config();

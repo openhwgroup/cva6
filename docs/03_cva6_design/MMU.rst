@@ -255,7 +255,7 @@ The MMU block can be parameterized to support sv32, sv39 and sv39x4 virtual memo
      - in
      - CSR RegFile
      - logic 
-     - Enables virtual memory translation for instrucionts
+     - Enables virtual memory translation for instructions
 
    * - ``en_ld_st_translation_i``
      - in
@@ -1159,7 +1159,7 @@ Figure shows every possible path that traverses to find out the PLRU entry. If t
 
 .. raw:: html
 
-   <p style="text-align:center;"> <b>Table 9:</b> Entry Selection for Reaplacement </p>
+   <p style="text-align:center;"> <b>Table 9:</b> Entry Selection for Replacement </p>
 
 +-------------------+---------------+----------------------+
 | **Path Traverse** | **PLRU Bits** | **Entry to replace** |
@@ -1887,7 +1887,7 @@ Page Table Walker is implemented as a finite state machine. It listens to shared
 
 * **IDLE:** The initial state where the PTW is awaiting a trigger, often a Shared TLB miss, to initiate a memory access request. In the case of the Hypervisor extension, the stage to which the translation belongs is determined by the enable_translation_XX and en_ld_st_translation_XX signals. There are 3 possible stages: (i) S-Stage - the PTW current state is translating a guest-virtual address into a guest-physical address; (ii) G-Stage Intermed - the PTW current state is translating memory access made from the VS-Stage during the walk to host-physical address; and (iii) G-Stage Final - the PTW current state is translating the final output address from VS-Stage into a host-physical address. When Hypervisor is not enabled PTW is always in S_STAGE.
 * **WAIT_GRANT:** Request memory access and wait for data grant
-* **PTE_LOOKUP:** Once granted access, the PTW examines the valid Page Table Entry (PTE), checking attributes to determine the appropriate course of action. Depending on the STAGE determined in the previous state, pptr and other atributes are updated accordingly.
+* **PTE_LOOKUP:** Once granted access, the PTW examines the valid Page Table Entry (PTE), checking attributes to determine the appropriate course of action. Depending on the STAGE determined in the previous state, pptr and other attributes are updated accordingly.
 * **PROPAGATE_ERROR:** If the PTE is invalid, this state handles the propagation of an error, often leading to a page-fault exception due to non-compliance with access conditions.
 * **PROPAGATE_ACCESS_ERROR:** Propagate access fault if access is not allowed from a PMP perspective
 * **WAIT_RVALID:** After processing a PTE, the PTW waits for a valid data signal, indicating that relevant data is ready for further processing.

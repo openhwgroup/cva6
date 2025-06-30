@@ -120,7 +120,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   logic icache_miss_pending_q;
 
-  //  This FIFO has two functionnalities:
+  //  This FIFO has two functionalities:
   //  -  Stabilize the ready-valid protocol. The ICACHE can abort a valid
   //     transaction without receiving the corresponding ready signal. This
   //     behavior is not supported by AXI.

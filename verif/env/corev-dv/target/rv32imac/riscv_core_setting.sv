@@ -80,7 +80,7 @@ parameter int SELEN = 8;
 // Maximum size of a single vector element (encoded in vsew format)
 parameter int VELEN = int'($ln(ELEN)/$ln(2)) - 3;
 
-// Maxium LMUL supported by the core
+// Maximum LMUL supported by the core
 parameter int MAX_LMUL = 8;
 
 // ----------------------------------------------------------------------------
@@ -91,10 +91,10 @@ parameter int MAX_LMUL = 8;
 parameter int NUM_HARTS = 1;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
-// Implemented previlieged CSR list
+// Implemented privileged CSR list
 `ifdef DSIM
 privileged_reg_t implemented_csr[] = {
 `else

@@ -192,7 +192,7 @@
   
   *(none)*  
   
-### Sub-feature: 006_issue uniquness
+### Sub-feature: 006_issue uniqueness
 
 #### Item: 000
 
@@ -283,7 +283,7 @@
   
   *(none)*  
   
-### Sub-feature: 001_commit transaction uniquness
+### Sub-feature: 001_commit transaction uniqueness
 
 #### Item: 000
 
@@ -392,7 +392,7 @@
   
   *(none)*  
   
-### Sub-feature: 002_result transaction uniquness
+### Sub-feature: 002_result transaction uniqueness
 
 #### Item: 000
 

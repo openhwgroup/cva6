@@ -306,7 +306,7 @@ module store_unit
       .valid_i              (store_buffer_valid),
       // the flush signal can be critical and we need this valid
       // signal to check whether the page_offset matches or not,
-      // functionaly it doesn't make a difference whether we use
+      // functionally it doesn't make a difference whether we use
       // the correct valid signal or not as we are flushing
       // the whole pipeline anyway
       .valid_without_flush_i(st_valid_without_flush),

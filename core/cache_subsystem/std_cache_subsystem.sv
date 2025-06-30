@@ -183,7 +183,7 @@ module std_cache_subsystem
   // W Channel
   cva6_fifo_v3 #(
       .DATA_WIDTH  (2),
-      // we can have a maximum of 4 oustanding transactions as each port is blocking
+      // we can have a maximum of 4 outstanding transactions as each port is blocking
       .DEPTH       (4),
       .FALL_THROUGH(1'b1),
       .FPGA_EN     (CVA6Cfg.FpgaEn)

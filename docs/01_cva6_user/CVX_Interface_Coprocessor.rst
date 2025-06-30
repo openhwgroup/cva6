@@ -57,7 +57,7 @@ The specification of the CV-X-IF bus protocol can be found at [CV-X-IF].
 CV-X-IF aims to:
 
 * Create interfaces to connect a coprocessor to the CVA6 to execute instructions.
-* Offload CVA6 illegal instrutions to the coprocessor to be executed.
+* Offload CVA6 illegal instructions to the coprocessor to be executed.
 * Get the results of offloaded instructions from the coprocessor so they are written back into the CVA6 register file.
 * Add standard RISC-V instructions unsupported by CVA6 or custom instructions and implement them in a coprocessor.
 * Kill offloaded instructions to allow speculative execution in the coprocessor. (Unsupported in CVA6 yet)
@@ -154,7 +154,7 @@ Here is *how* and *to what* CV-X-IF interfaces are connected to the CVA6.
         | to take a result from coprocessor for an accepted offloaded instruction.
    - Response
       + | Result response is directly connected to writeback bus of the CV-X-IF
-        | functionnal unit.
+        | functional unit.
       + | Valid signal of result interface is connected to valid signal of
         | writeback bus.
       + | Id signal of result interface is connected to scoreboard id of
@@ -186,7 +186,7 @@ CVA6 supports all coprocessors supporting the CV-X-IF specification with the exc
      is not big enough to have RVC and a custom compressed extension.
 * Stateful coprocessors.
    - CVA6 will commit on the Commit interface all its issue transactions. Speculation
-     informations are only kept in the CVA6 and speculation process is only done in CVA6.
+     information is only kept in the CVA6 and speculation process is only done in CVA6.
      The coprocessor shall be stateless otherwise it will not be able to revert its state if CVA6 kills an
      in-flight instruction (in case of mispredict or flush).
 

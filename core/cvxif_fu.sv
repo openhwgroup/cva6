@@ -56,7 +56,7 @@ module cvxif_fu
 
   assign result_ready_o = 1'b1;
 
-  assign x_ready_o = 1'b1; // Readyness of cvxif_fu is determined in issue stage by CVXIF issue interface
+  assign x_ready_o = 1'b1; // Readiness of cvxif_fu is determined in issue stage by CVXIF issue interface
   // Result signals
   assign x_valid_o = x_illegal_i || result_valid_i;
   assign x_result_o = result_i.data;

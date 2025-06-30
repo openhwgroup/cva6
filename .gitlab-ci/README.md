@@ -144,7 +144,7 @@ import report_builder as rb
 
 # Create metrics
 metric = rb.TableMetric('Metric name')
-metric.add_value('colomn 1', 'colomn 2', 'etc')
+metric.add_value('column 1', 'column 2', 'etc')
 
 # Gather them into a report
 report = rb.Report('report label')
@@ -159,12 +159,12 @@ There are 3 kinds of metric:
 ```python
 # A simple table
 metric = rb.TableMetric('Metric name, actually not displayed yet')
-metric.add_value('colomn 1', 'colomn 2', 'etc')
+metric.add_value('column 1', 'column 2', 'etc')
 
 # A table with a pass/fail label on each line
 metric = rb.TableStatusMetric('Metric name, actually not displayed yet')
-metric.add_pass('colomn 1', 'colomn 2', 'etc')
-metric.add_fail('colomn 1', 'colomn 2', 'etc')
+metric.add_pass('column 1', 'column 2', 'etc')
+metric.add_fail('column 1', 'column 2', 'etc')
 
 # A log
 metric = rb.LogMetric('Metric name, actually not displayed yet')
