@@ -40,6 +40,7 @@ module instr_tracer #(
   input logic [CVA6Cfg.NrCommitPorts-1:0]              we_fpr,
   input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr, // commit instruction
   input logic [CVA6Cfg.NrCommitPorts-1:0]              commit_ack,
+  input logic [CVA6Cfg.NrCommitPorts-1:0]              commit_drop,
   input logic                                          st_valid,   // stores - address translation
   input logic [CVA6Cfg.PLEN-1:0]                       st_paddr,
   input logic                                          ld_valid, // loads
@@ -59,7 +60,6 @@ module instr_tracer #(
   logic [31:0] issue_queue [$];
   // issue scoreboard entries
   scoreboard_entry_t issue_sbe_queue [$];
-  scoreboard_entry_t issue_sbe_item;
   // store resolved branches, get (mis-)predictions
   bp_resolve_t bp [$];
   // shadow copy of the register files
@@ -87,6 +87,7 @@ module instr_tracer #(
   task trace();
     automatic logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
     automatic scoreboard_entry_t commit_instruction;
+    automatic scoreboard_entry_t issue_sbe_item;
     // initialize register 0
     gp_reg_file  = '{default:0};
     fp_reg_file  = '{default:0};
@@ -142,11 +143,11 @@ module instr_tracer #(
       if (resolve_branch.valid) begin
         bp.push_back(resolve_branch);
       end
-      // --------------
-      //  Commit
-      // --------------
-      // we are committing an instruction
-      for (int i = 0; i < 2; i++) begin
+      for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
+        // --------------
+        //  Commit
+        // --------------
+        // we are committing an instruction
         if (commit_ack[i]) begin
           commit_instruction = scoreboard_entry_t'(commit_instr[i]);
           issue_commit_instruction = issue_queue.pop_front();
@@ -159,6 +160,10 @@ module instr_tracer #(
 
           if (commit_instr[i].fu == ariane_pkg::CTRL_FLOW)
             bp_instruction = bp.pop_front();
+
+          // all the queues have been popped
+          // if the commit is to be dropped, we can do it now
+          if (commit_drop[i]) continue;
           // the scoreboards issue entry still contains the immediate value as a result
           // check if the write back is valid, if not we need to source the result from the register file
           // as the most recent version of this register will be there.
@@ -170,19 +175,17 @@ module instr_tracer #(
             printInstr(issue_sbe_item, issue_commit_instruction, gp_reg_file[commit_instruction.rd], address_mapping, priv_lvl, debug_mode, bp_instruction);
           end
         end
-      end
-      // --------------
-      // Exceptions
-      // --------------
-      if (commit_exception.valid && !(debug_mode && commit_exception.cause == riscv::BREAKPOINT)) begin
-        // print exception
-        printException(commit_instr[0].pc, commit_exception.cause, commit_exception.tval);
-      end
-      // ----------------------
-      // Commit Registers
-      // ----------------------
-      // update shadow reg files here
-      for (int i = 0; i < 2; i++) begin
+        // --------------
+        // Exceptions
+        // --------------
+        if (i == 0 && commit_exception.valid && !(debug_mode && commit_exception.cause == riscv::BREAKPOINT)) begin
+          // print exception
+          printException(commit_instr[0].pc, commit_exception.cause, commit_exception.tval);
+        end
+        // ----------------------
+        // Commit Registers
+        // ----------------------
+        // update shadow reg files here
         if (we_gpr[i] && waddr[i] != 5'b0) begin
           gp_reg_file[waddr[i]] = wdata[i];
         end else if (we_fpr[i]) begin
