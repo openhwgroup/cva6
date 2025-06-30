@@ -1680,7 +1680,7 @@ module cva6
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
-    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id};
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id[i]};
   end
 
   instr_tracer #(
@@ -1706,7 +1706,8 @@ module cva6
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
-      .commit_ack(commit_ack),
+      .commit_ack(commit_ack_commit_id),
+      .commit_drop(commit_drop_id_commit),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
       .ld_valid(ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid),
