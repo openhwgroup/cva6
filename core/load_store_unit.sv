@@ -209,7 +209,7 @@ module load_store_unit
   logic                    st_hs_ld_st_inst;
   logic                    st_hlvx_inst;
   logic translation_req, cva6_translation_req, acc_translation_req;
-  logic translation_valid, cva6_translation_valid, acc_translataion_valid;
+  logic translation_valid, cva6_translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr, cva6_mmu_vaddr, acc_mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, cva6_mmu_paddr, acc_mmu_paddr, lsu_paddr;
   logic [31:0] mmu_tinst;
