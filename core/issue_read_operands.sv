@@ -489,8 +489,8 @@ module issue_read_operands
 
     // Check if the instruction is going to be offloaded to cvxif and
     // the interface uses 3 operands.
-    assign rs3_gpr_cvxif[i] = (CVA6Cfg.CvxifEn && (OPERANDS_PER_INSTR == 3)
-        && issue_instr_i[i].op == OFFLOAD);
+    assign rs3_gpr_cvxif[i] = CVA6Cfg.CvxifEn && (OPERANDS_PER_INSTR == 3)
+        && issue_instr_i[i].op == OFFLOAD;
   end
 
   // ----------------------------------
