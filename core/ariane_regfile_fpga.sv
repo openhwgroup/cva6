@@ -1,5 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright 2024 - PlanV Technologies for additionnal contribution.
+// Copyright 2024 - PlanV Technologies for additional contribution.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -23,7 +23,7 @@
 //                 sync-write port, each with a parametrized number of async-read ports.
 //                 Read-accesses are multiplexed from the relevant block depending on which block
 //                 was last written to. For that purpose an additional array of registers is
-//                 maintained keeping track of write acesses.
+//                 maintained keeping track of write accesses.
 //
 
 module ariane_regfile_fpga #(
@@ -62,7 +62,7 @@ module ariane_regfile_fpga #(
   logic [NR_READ_PORTS-1:0][4:0] raddr_q;
   logic [NR_READ_PORTS-1:0][4:0] raddr;
 
-  // write adress decoder (for block selector)
+  // write address decoder (for block selector)
   always_comb begin
     for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       for (int unsigned i = 0; i < NUM_WORDS; i++) begin

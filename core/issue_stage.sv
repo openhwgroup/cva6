@@ -50,7 +50,7 @@ module issue_stage
     input logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_valid_i,
     // Is instruction a control flow instruction - ID_STAGE
     input logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_i,
-    // Handshake's acknowlege with decode stage - ID_STAGE
+    // Handshake's acknowledge with decode stage - ID_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_ack_o,
     // rs1 forwarding - EX_STAGE
     output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,

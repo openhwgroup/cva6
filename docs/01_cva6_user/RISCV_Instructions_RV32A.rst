@@ -134,7 +134,7 @@ Atomic Memory Operations
 
     **Format**: amomin.d rd, rs2, (rs1)
 
-    **Description**: AMOMIN.W atomically loads a data value from the address in rs1, places the value into register rd, then choses the minimum between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
+    **Description**: AMOMIN.W atomically loads a data value from the address in rs1, places the value into register rd, then chooses the minimum between the loaded value and the original value in rs2, then stores the result back to the address in rs1.
 
     **Pseudocode**: x[rd] = AMO32(M[x[rs1]] MIN x[rs2])
 

@@ -16,7 +16,7 @@ subfeatures: !!omap
         description: "{Page 59 Volume II: RISC-V Privileged Architectures V20211203}\n
           \nSoftware may determine the PMP granularity by writing zero to pmp0cfg,
           then writing all ones to pmpaddr0, then reading back pmpaddr0.\nIf G is
-          the index of the least-signicant bit set, the PMP granularity is 2G+2 bytes."
+          the index of the least-significant bit set, the PMP granularity is 2G+2 bytes."
         reqt_doc: ''
         ref_mode: page
         ref_page: '59'
@@ -34,7 +34,7 @@ subfeatures: !!omap
           files (not up-to-date) : reading below not mandatory but may help for better
           understanding >>\n\nFTR07-b\nSoftware may determine the PMP granularity
           by writing zero to pmp0cfg, then writing all ones to pmpaddr0, then reading
-          back pmpaddr0.\n If G is the index of the least-signicant bit set, the
+          back pmpaddr0.\n If G is the index of the least-significant bit set, the
           PMP granularity is 2G+2 bytes.\n\n\nTST01 (HIGH-PRIO) => FTR07-b\n[determine
           the PMP granularity 2^(G+2) bytes by writing zero to pmp(0)cfg, then writing
           all ones to pmpaddr(0), then reading back pmpaddr(0). G is the index G of
