@@ -63,7 +63,7 @@ module instr_queue
     input logic [CVA6Cfg.INSTR_PER_FETCH-1:0] valid_i,
     // Handshake’s ready with CACHE - CACHE
     output logic ready_o,
-    // Indicates instructions consummed, or popped by ID_STAGE - FRONTEND
+    // Indicates instructions consumed, or popped by ID_STAGE - FRONTEND
     output logic [CVA6Cfg.INSTR_PER_FETCH-1:0] consumed_o,
     // Exception (which is page-table fault) - CACHE
     input ariane_pkg::frontend_exception_t exception_i,

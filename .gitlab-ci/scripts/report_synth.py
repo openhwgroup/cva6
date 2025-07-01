@@ -45,7 +45,7 @@ for line in synthesis_log.splitlines():
         warning_log.append(line)
 log_metric.values = error_log + warning_log
 
-# Area repport:
+# Area report:
 pattern = re.compile(
     "^(Combinational area|Buf/Inv area|Noncombinational area|Macro/Black Box area):\ *(\d*\.\d*)$",
     re.MULTILINE)

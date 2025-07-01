@@ -401,6 +401,8 @@ module cva6_mmu
 
       if (CVA6Cfg.PtLevels == 3 && itlb_is_page[CVA6Cfg.PtLevels-2]) begin
 
+        // strange 9+PtLevels to avoid CI errors on (purely syntactic) checks on Sv32, where
+        // `PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)` equals `11` and would lead to `icache_areq_i.fetch_vaddr[11:12]`
         icache_areq_o.fetch_paddr[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = icache_areq_i.fetch_vaddr[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
 
       end
@@ -453,7 +455,7 @@ module cva6_mmu
             if (CVA6Cfg.TvalEn) icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
             if (CVA6Cfg.RVH) begin
               icache_areq_o.fetch_exception.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
-              icache_areq_o.fetch_exception.tinst=(ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+              icache_areq_o.fetch_exception.tinst = (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
               icache_areq_o.fetch_exception.gva = v_i;
             end
           end else begin
@@ -544,13 +546,15 @@ module cva6_mmu
     if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !misaligned_ex_q.valid) begin
       lsu_valid_o = 1'b0;
 
-      lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH)? dtlb_g_content.ppn :dtlb_content.ppn;
+      lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH) ? dtlb_g_content.ppn : dtlb_content.ppn;
       lsu_paddr_o = {
         (en_ld_st_g_translation_i && CVA6Cfg.RVH) ? dtlb_gpte_q.ppn : dtlb_pte_q.ppn,
         lsu_vaddr_q[11:0]
       };
 
       if (CVA6Cfg.PtLevels == 3 && dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
+        // Strange 9+PtLevels to avoid CI errors on (purely syntactic) checks on Sv32, where
+        // `PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)` equals `11` and would lead to `lsu_paddr_o[11:12]`
         lsu_paddr_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = lsu_vaddr_q[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
         lsu_dtlb_ppn_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] = lsu_vaddr_n[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
       end
@@ -584,7 +588,7 @@ module cva6_mmu
                 {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
               };
             if (CVA6Cfg.RVH) begin
-              lsu_exception_o.tval2= CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
+              lsu_exception_o.tval2 = CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32 ? CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
               lsu_exception_o.tinst = '0;
               lsu_exception_o.gva = ld_st_v_i;
             end
@@ -611,7 +615,7 @@ module cva6_mmu
                 {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
               };
             if (CVA6Cfg.RVH) begin
-              lsu_exception_o.tval2= CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32?CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
+              lsu_exception_o.tval2 = CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32 ? CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
               lsu_exception_o.tinst = '0;
               lsu_exception_o.gva = ld_st_v_i;
             end
@@ -652,7 +656,7 @@ module cva6_mmu
                 };
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
-                lsu_exception_o.tinst= (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+                lsu_exception_o.tinst = (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
                 lsu_exception_o.gva = ld_st_v_i;
               end
             end else begin
@@ -678,7 +682,7 @@ module cva6_mmu
                 };
               if (CVA6Cfg.RVH) begin
                 lsu_exception_o.tval2 = ptw_bad_gpaddr[CVA6Cfg.GPLEN-1:0];
-                lsu_exception_o.tinst= (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
+                lsu_exception_o.tinst = (ptw_err_at_g_int_st ? (CVA6Cfg.IS_XLEN64 ? riscv::READ_64_PSEUDOINSTRUCTION : riscv::READ_32_PSEUDOINSTRUCTION) : '0);
                 lsu_exception_o.gva = ld_st_v_i;
               end
             end else begin

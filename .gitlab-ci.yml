@@ -141,7 +141,7 @@ smoke-tests:
     - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenches configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     SPIKE_TANDEM: 1
@@ -230,7 +230,7 @@ iti-test:
     - .synthesis_test
   variables:
     DASHBOARD_JOB_TITLE: "ITI test"
-    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instuction Trace Interface"
+    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instruction Trace Interface"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-testharness"

@@ -63,7 +63,7 @@ module cva6_hpdcache_subsystem
     input logic icache_en_i,
     // Flush the instruction cache - CONTROLLER
     input logic icache_flush_i,
-    // instructino cache miss - PERF_COUNTERS
+    // instruction cache miss - PERF_COUNTERS
     output logic icache_miss_o,
     // Input address translation request - EX_STAGE
     input icache_areq_t icache_areq_i,

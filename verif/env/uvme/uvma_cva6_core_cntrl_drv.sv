@@ -19,7 +19,7 @@
 `define __UVMA_CVA6_CORE_CNTRL_DRV_SV__
 
 /**
- * Component driving bootstrap pins and other misecllaneous I/O for cva6 core
+ * Component driving bootstrap pins and other miscellaneous I/O for cva6 core
  */
 class uvma_cva6_core_cntrl_drv_c extends uvma_core_cntrl_drv_c;
 
