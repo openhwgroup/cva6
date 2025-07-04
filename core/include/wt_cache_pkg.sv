@@ -22,7 +22,7 @@
 
 package wt_cache_pkg;
 
-  // these parames need to coincide with the
+  // these parameters need to coincide with the
   // L1.5 parameterization, do not change
 `ifdef PITON_ARIANE
 
