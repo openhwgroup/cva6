@@ -106,7 +106,7 @@ module cva6_tlb
         // Identify if virtual address at level `x` matches the vaddr / gpaddr to be flushed
         assign vaddr_vpn_match[i][0][x] = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
         if (CVA6Cfg.RVH) begin
-          assign vaddr_vpn_match[i][HYP_EXT][0] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] ==
+          assign vaddr_vpn_match[i][HYP_EXT][x] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] ==
                                                                   gppn[i][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x];
         end
       end
