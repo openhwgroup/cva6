@@ -386,7 +386,7 @@ module load_unit
           state_d = WAIT_WB_EMPTY;
         end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
           // Wait until the write-back buffer is empty in the data cache.
-          // the write buffer is empty, so lets go and re-do the translation.
+          // the write buffer is empty, so let's go and re-do the translation.
           state_d = WAIT_TRANSLATION;
         end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
           translation_req_o = 1'b1;
@@ -406,7 +406,7 @@ module load_unit
       end
     endcase
 
-    // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
+    // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in an extra stage
     if (flush_i) begin
       state_d = WAIT_FLUSH;
     end
@@ -429,7 +429,7 @@ module load_unit
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
 
-    // we got an rvalid and it's corresponding request was not flushed
+    // we got an rvalid and its corresponding request was not flushed
     if (req_port_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
       // if the response corresponds to the last request, check that we are not killing it
       if ((ldbuf_last_id_q != ldbuf_rindex) || !req_port_o.kill_req) valid_o = 1'b1;
