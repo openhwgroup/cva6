@@ -505,7 +505,7 @@ module load_unit
 
   // select correct sign bit in parallel to result shifter above
   // pull to 0 if unsigned
-  assign rdata_sign_bit = rdata_is_signed & rdata_sign_bits[rdata_offset] | (CVA6Cfg.FpPresent && rdata_is_fp_signed);
+  assign rdata_sign_bit = (rdata_is_signed && rdata_sign_bits[rdata_offset]) || (CVA6Cfg.FpPresent && rdata_is_fp_signed);
 
   // result mux
   always_comb begin
