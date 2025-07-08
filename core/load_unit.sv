@@ -429,7 +429,7 @@ module load_unit
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
 
-    // we got an rvalid and it's corresponding request was not flushed
+    // we got an rvalid and its corresponding request was not flushed
     if (req_port_i.data_rvalid && !ldbuf_flushed_q[ldbuf_rindex]) begin
       // if the response corresponds to the last request, check that we are not killing it
       if ((ldbuf_last_id_q != ldbuf_rindex) || !req_port_o.kill_req) valid_o = 1'b1;
