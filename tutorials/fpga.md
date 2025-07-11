@@ -62,7 +62,7 @@ juart-terminal: (Use the IDE stop button or Ctrl-C to terminate)
 Hello World!
 ```
 
-## Preparing the SD Card
+## Booting Linux
 
 The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/pulp-platform/ariane-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
@@ -74,6 +74,43 @@ screen /dev/ttyUSB0 115200
 Default baudrate set by the bootloader and Linux is `115200`.
 
 After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
+
+## Booting zephyr RTOS
+
+[zephyr](https://zephyrproject.org/) is a real-time unikernel operating system developed by the Linux Foundation that targets resource-constrained embedded devices. It is highly configurable and optionally provides subsystems like userspace support with the PMP, a full network stack and a file system.
+
+zephyr natively supports the cva6 SoC and the **Genesys 2** board in two configurations: [cv64a6_imafdc_sv39](https://docs.zephyrproject.org/latest/boards/openhwgroup/cv64a6_genesys_2/doc/index.html) and [cv32a6_imac_sv32](https://docs.zephyrproject.org/latest/boards/openhwgroup/cv32a6_genesys_2/doc/index.html).
+See the 
+`cv64a6_imafdc_sv39` is the configuration that will be synthesized when you follow the steps [below](#generating-a-bitstream).
+In order to build `cv32a6_imac_sv32`, use the following command instead:
+```bash
+target=cv32a6_imac_sv32 make fpga
+```
+
+In order to build a zephyr application, follow the [zephyr getting started guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to setup the build dependencies and install zephyr's meta tool *west*.
+You can then build zephyr applications using the standard process:
+```bash
+west build -p -b cv64a6_genesys_2 samples/hello_world # for cv64a6_imafdc_sv39
+west build -p -b cv32a6_genesys_2 samples/hello_world # for cv32a6_imac_sv32
+```
+
+
+You can use zephyr's *west* to debug or flash the application via openocd, akin to [the instructions below](#debugging):
+```bash
+west flash # loads the application into memory and runs it
+west debug # launches an interactive GDB console that loads the application and stops at the first instruction
+west attach # attaches to an application loaded using "west load"
+```
+
+Alternatively, similar to the [Linux instructions](#booting-linux), you may load zephyr from an SD card.
+To this end, *after building the application*, use the provided script:
+```bash
+./util/write-zephyr-sd.sh /dev/sdXXX /path/to/zephyrproject/zephyr # provide correct SD card device and path to top level of cloned zephyrproject/zephyr repository
+```
+**WARNING: The script will wipe the partition table and destroy all data on the SD card. Double-check the device path before running the script.**
+
+You can then insert the SD card into the board and have the zero-stage boot loader load and run zephyr.
+
 
 
 ## Generating a Bitstream
