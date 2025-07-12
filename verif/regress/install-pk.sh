@@ -1,6 +1,18 @@
+#!/bin/bash
+# Copyright 2025 Isaar AHMAD
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Isaar AHMAD
+#
+# ==============================================================================
 # This script installs RISCV proxy kernel at ${ROOT_PROJECT}/tools/pk,
 # where ROOT_PROJECT is base of the CVA6 repository.
-#!/bin/bash
+# ==============================================================================
+set -e # Exit immediately if a command fails
+
 PK_ARCH=$1
 PK_MABI=$2
 PK_REPO="https://github.com/riscv-software-src/riscv-pk.git"
@@ -9,10 +21,10 @@ PK_COMMIT_HASH="e5563d1044bd6790325c4602c49f89e1182fa91a"
 
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
-  return
+  return 1
 fi
-PATH=$RISCV/bin:$PATH 
-CLEAN_INSTALL="1"
+
+PATH=$RISCV/bin:$PATH
 # Customise this to a fast local disk
 ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../../)
 
@@ -47,35 +59,49 @@ if [ -z "$PK_BUILD_DIR" ]; then
   echo "Setting PK_BUILD_DIR to '$PK_BUILD_DIR'..."
 fi
 
-echo "Cleaning $PK_INSTALL_DIR"
-rm -rf $PK_INSTALL_DIR
+# Clean previous installation directory to ensure a fresh install
+echo "Cleaning old installation directory: $PK_INSTALL_DIR"
+rm -rf "$PK_INSTALL_DIR"
 
-# Build and install pk only if not already installed at the expected
-# location $PK_INSTALL_DIR.
+# Build and install pk only if the final binary is not present.
+# Note: The script now always rebuilds due to the rm -rf above.
 if [ ! -f "$PK_INSTALL_DIR/riscv-none-elf/bin/pk" ]; then
     echo "Building pk in '$PK_BUILD_DIR'..."
     echo "pk will be installed in '$PK_INSTALL_DIR'"
     echo "PK_REPO=$PK_REPO"
-    echo "PK_BRANCH=$PK_BRANCH"
+    echo "PK_COMMIT_HASH=$PK_COMMIT_HASH"
     echo "NUM_JOBS=$NUM_JOBS"
-    mkdir -p $PK_BUILD_DIR
-    pushd $PK_BUILD_DIR
+
+    mkdir -p "$PK_BUILD_DIR"
+    pushd "$PK_BUILD_DIR"
     # Fetch repository only if the ".git" directory does not exist.
     # Do not remove the content arbitrarily if ".git" does not exist in order
     # to preserve user content - let git fail instead.
-    [ -d .git ] || git clone --depth=1 --branch ${PK_BRANCH} ${PK_REPO} . && git checkout ${PK_COMMIT_HASH}
-#    [ -d .git ] || git init && git remote add origin ${PK_REPO} && git fetch --depth=1 origin ${PK_COMMIT_HASH} && git reset --hard FETCH_HEAD 
+    if [ ! -d ".git" ]; then
+        echo "Cloning full repository from ${PK_REPO}..."
+        git clone "${PK_REPO}" .
+    else
+        echo "Repository already exists. Fetching updates..."
+        git fetch origin
+    fi
+
+    echo "Checking out commit: ${PK_COMMIT_HASH}"
+    git checkout "${PK_COMMIT_HASH}"
+
+    # Proceed with the build
     mkdir -p build
     pushd build
-    ../configure --prefix="$PK_INSTALL_DIR" --host=riscv-none-elf --with-arch=$PK_ARCH
-    make
+    ../configure --prefix="$PK_INSTALL_DIR" --host=riscv-none-elf --with-arch="$PK_ARCH"
+    make -j${NUM_JOBS}
     make install
-    popd
-    popd
+    popd # build
+    popd # $PK_BUILD_DIR
 else
     echo "pk already installed in '$PK_INSTALL_DIR'."
 fi
 
 # Add pk bin directory to PATH if not already present.
-echo $PATH | grep -q "$PK_INSTALL_DIR/bin:" || \
+echo "$PATH" | grep -q "$PK_INSTALL_DIR/bin:" || \
   export PATH="$PK_INSTALL_DIR/bin:$PATH"
+
+echo "Successfully configured RISC-V Proxy Kernel."
