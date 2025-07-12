@@ -6,6 +6,7 @@ The environment variable `DV_SIMULATORS` allows you to specify which simulator t
 
 Four simulation types are supported:
 - **veri-testharness**: verilator with corev_apu/testharness testbench
+- **veri-testharness-pk**: verilator with corev_apu/testharness and RISC-V Proxy Kernel (for system-level software)
 - **vcs-testharness**: vcs with corev_apu/testharness testbench
 - **vcs-uvm**: vcs with UVM testbench
 - **Spike** ISS 
@@ -42,6 +43,18 @@ python3 cva6.py --target cv32a60x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
 ```
 
 You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more information on the available parameters.
+
+## Simulating with the RISC-V proxy kernel
+When running C programs, a common requirement is to use standard library functions like printf. On a bare-metal core, these functions do not work because they rely on underlying system calls that have no operating system to handle them. The veri-testharness-pk simulation mode solves this by integrating the [RISC-V proxy kernel](https://github.com/riscv-software-src/riscv-pk), which acts as a lightweight service layer to handle these calls (e.g. to properly display printf output).
+
+A reference script is provided to demonstrate this flow. It automatically builds the proxy kernel and runs a hello_world test on both a 64-bit and a 32-bit target. 
+To run the simulation, execute the following from the repository root:
+```sh
+bash verif/regress/veri-testharness-pk-tests.sh
+```
+The C program associated with this test contains printf statement(s) with some text. The associated `.log.iss` logfile  will display the corresponding text, confirming that the printf statement was executed properly. 
+
+For more information about this simulation mode, installation directories, logfiles, refer to the comments in `verif/regress/veri-testharness-pk-tests.sh` and `verif/regress/install-pk.sh`. For general information regarding simulation logfiles, see the **Logs** section.
 
 ## Simulating with VCS and Verdi
 
@@ -82,7 +95,8 @@ Assuming you ran the smoke-tests scripts in the previous step, here is the log d
 - **directed_asm_tests/**: The compiled (to .o then .bin) assembly tests
 - **directed_c_tests/**: The compiled (to .o then .bin) c tests
 - **spike_sim/**: Spike simulation log and trace files
-- **veri_testharness_sim**: Verilator simulation log and trace files
+- **veri_testharness_sim**: Verilator simulation log and trace files, when simulated using veri-testharness
+- **veri-testharness-pk_sim:** Verilator simulation log and trace files, when simulated using veri-testharness-pk
 - **iss_regr.log**: The regression test log 
 
 The regression test log summarizes the comparison between the simulator trace and the Spike trace. Beware that a if a test fails before the comparison step, it will not appear in this log, check the output of cva6.py and the logs of the simulation instead.

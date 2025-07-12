@@ -208,6 +208,19 @@ smoke-hwconfig:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
 
+hello-pk:
+  extends:
+    - .fe_smoke_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Hello world with veri-testharness-pk on multiple RTL targets."
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
+    DASHBOARD_SORT_INDEX: 1
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    COLLECT_SIMU_LOGS: 1
+  script:
+    - bash verif/regress/veri-testharness-pk-tests.sh
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 .synthesis_test:
   stage: heavy tests
   timeout: 2 hours
