@@ -52,3 +52,9 @@ Bender.lock
 # Both following lines are needed to list contents of ISA manual build dir.
 !/vendor/riscv/riscv-isa-manual/build/
 !/vendor/riscv/riscv-isa-manual/build/*
+
+# bazel-orfs ignores
+bazel-bin
+bazel-cva6
+bazel-out
+bazel-testlogs
