@@ -775,6 +775,8 @@ package riscv;
   function automatic logic [63:0] mstatus_sd(logic IS_XLEN64);
     return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
   endfunction
+  localparam logic [63:0] MSTATUSH_SBE = 'h10;
+  localparam logic [63:0] MSTATUSH_MBE = 'h20;
 
   localparam logic [63:0] MENVCFG_FIOM = 'h00000001;
   localparam logic [63:0] MENVCFG_CBIE = 'h00000030;
