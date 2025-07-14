@@ -215,6 +215,7 @@ module csr_regfile
   riscv::hstatus_rv_t hstatus_q, hstatus_d;
   riscv::mstatus_rv_t vsstatus_q, vsstatus_d;
   logic [CVA6Cfg.XLEN-1:0] mstatus_extended;
+  logic [31:0] mstatush;
   logic [CVA6Cfg.XLEN-1:0] vsstatus_extended;
   satp_t satp_q, satp_d;
   satp_t vsatp_q, vsatp_d;
@@ -314,6 +315,7 @@ module csr_regfile
   // ----------------
   assign mstatus_extended = CVA6Cfg.IS_XLEN64 ? mstatus_q[CVA6Cfg.XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+  assign mstatush = {24'h0, mstatus_q.mpv, mstatus_q.gva, mstatus_q.mbe, mstatus_q.sbe, 4'h0};
   if (CVA6Cfg.RVH) begin
     if (CVA6Cfg.IS_XLEN64) begin : gen_vsstatus_64read
       assign vsstatus_extended = vsstatus_q[CVA6Cfg.XLEN-1:0];
@@ -521,7 +523,7 @@ module csr_regfile
         // machine mode registers
         riscv::CSR_MSTATUS: csr_rdata = mstatus_extended;
         riscv::CSR_MSTATUSH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = '0;
+        if (CVA6Cfg.XLEN == 32) csr_rdata = mstatush;
         else read_access_exception = 1'b1;
         riscv::CSR_MISA: csr_rdata = IsaCode;
         riscv::CSR_MEDELEG:
@@ -1396,7 +1398,18 @@ module csr_regfile
           // this register has side-effects on other registers, flush the pipeline
           flush_o         = 1'b1;
         end
-        riscv::CSR_MSTATUSH: if (CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
+        riscv::CSR_MSTATUSH: begin
+          if (CVA6Cfg.XLEN == 32) begin
+            mstatus_d.mbe = ((csr_wdata & riscv::MSTATUSH_MBE) != 0);
+            // Mirror MBE
+            mstatus_d.sbe = mstatus_d.mbe;
+            mstatus_d.ube = mstatus_d.mbe;
+            // this register has side-effects on other registers, flush the pipeline
+            flush_o       = 1'b1;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         // MISA is WARL (Write Any Value, Reads Legal Value)
         riscv::CSR_MISA: ;
         // machine exception delegation register
