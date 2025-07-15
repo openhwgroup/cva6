@@ -78,6 +78,7 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    endian_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -611,6 +612,11 @@ module cva6_ptw
     end
   end
 
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
+  assign byteSwapped_data = {<<8{req_port_i.data_rdata}};
+  assign endian_data = (endian_i == 1) ? byteSwapped_data : req_port_i.data_rdata;
+
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
@@ -640,7 +646,8 @@ module cva6_ptw
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= req_port_i.data_rdata;
+      //data_rdata_q      <= req_port_i.data_rdata;
+      data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (CVA6Cfg.RVH) begin
