@@ -268,6 +268,15 @@ class cva6_unsupported_instr_c extends uvm_object;
                  instr_bin[6:2] == 5'b0;
                  instr_bin[12] == 1'b0;
               }
+              if (c_msb == 3'b101) {
+                 if (instr_bin[12]) {
+                    !(instr_bin[11:8] inside {4'b1000, 4'b1010, 4'b1100, 4'b1110});
+                 }
+                 else {
+                    instr_bin[11:10] != 2'b11;
+                    !(instr_bin[6:5] inside {2'b01, 2'b11});
+                 }
+              }
            }
       }
     }
@@ -291,7 +300,10 @@ class cva6_unsupported_instr_c extends uvm_object;
          c_op inside {2'b00, 2'b01};
          c_msb == 3'b100;
          if (c_op == 2'b00) {
-            !(instr_bin[12:10] inside {3'b000, 3'b001, 3'b010, 3'b011});
+            !(instr_bin[12:10] inside {3'b000, 3'b001, 3'b010});
+            if (instr_bin[12:10] == 3'b011) {
+               instr_bin[6] == 1'b1;
+            }
          }
          if (c_op == 2'b01) {
             instr_bin[12:10] == 3'b111;
