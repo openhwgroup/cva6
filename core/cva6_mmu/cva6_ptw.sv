@@ -78,6 +78,7 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    mbe_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -645,6 +646,14 @@ module cva6_ptw
     end
   end
 
+  // Big Endian Capability Additions 
+  // req_port_i.data_rdata is the data coming into the Page Table Walker from Data Memory. If mbe=1 meaning the processor is in Big Endian data mode, then we need to reverse the byte order to correctly view this data.
+  // Otherwise, this page table walker would not be able to understand a page table stored in Big Endian byte order.
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
+  assign byteSwapped_data = {<<8{req_port_i.data_rdata}};
+  assign endian_data = mbe_i ? byteSwapped_data : req_port_i.data_rdata;
+
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
@@ -676,7 +685,8 @@ module cva6_ptw
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= req_port_i.data_rdata;
+      //data_rdata_q      <= req_port_i.data_rdata;
+      data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (CVA6Cfg.RVH) begin
