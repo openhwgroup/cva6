@@ -72,6 +72,7 @@ module cva6_mmu
     input logic vs_sum_i,
     input logic mxr_i,
     input logic vmxr_i,
+    input logic mbe_i,
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
     // input logic flag_mprv_i,
@@ -341,7 +342,7 @@ module cva6_mmu
       .hgatp_ppn_i,
       .mxr_i,
       .vmxr_i,
-
+      .mbe_i(mbe_i),
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
 
