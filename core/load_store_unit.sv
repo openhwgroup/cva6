@@ -294,6 +294,7 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
