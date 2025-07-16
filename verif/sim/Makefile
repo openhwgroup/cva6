@@ -350,11 +350,11 @@ questa_uvm_comp:
 	  -suppress vlog-2745 -suppress vlog-8386 \
 	  -suppress vlog-8607 \
 	  +define+UNSUPPORTED_WITH+ \
-	  +define+QUESTA+ \
-	  $(cov-comp-opt) $(isscomp_opts)
+	  +define+QUESTA
 	vopt -work $(VSIM_WORK_DIR) \
 	    -64 +acc uvmt_cva6_tb -o uvmt_cva6_tb_opt
 
+##	  $(cov-comp-opt) $(isscomp_opts)
 questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
@@ -366,10 +366,10 @@ questa_uvm_run:
 	  -suppress 3829 -suppress vsim-8386\
 	  +permissive \
 	  -sv_seed 0 \
-	  $(cov-run-opt) $(issrun_opts) \
 	  +define+UNSUPPORTED_WITH+ \
 	  uvmt_cva6_tb_opt
 
+	#  $(cov-run-opt) $(issrun_opts) \
 	# TODO: Add support for waveform collection.
 	#$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
 	#grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm

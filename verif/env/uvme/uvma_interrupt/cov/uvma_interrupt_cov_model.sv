@@ -21,7 +21,8 @@ covergroup cg_interrupt(
     option.name = name;
 
    cp_interrupt_req : coverpoint req_item.interrupt_vector {
-      bins INTERRUPTS[] = {[0:$]} with (item inside {[0:(2**(num_irq_supported))-1]});
+    //  bins INTERRUPTS[] = {[0:$]} with (item inside {[0:((2**(num_irq_supported))-1)]});
+      bins INTERRUPTS[] = {[0:((2**(num_irq_supported))-1)]};
    }
 
 endgroup: cg_interrupt
