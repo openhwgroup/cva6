@@ -359,6 +359,7 @@ questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
 	  $(COMMON_RUN_UVM_FLAGS) \
+	  $(COMMON_RUN_ARGS) \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \
 	  -c -do "run -all; " \
 	  -work $(VSIM_WORK_DIR) -t 1ns \
@@ -367,6 +368,7 @@ questa_uvm_run:
 	  +permissive \
 	  -sv_seed 0 \
 	  +define+UNSUPPORTED_WITH+ \
+	   $(issrun_opts) \
 	  uvmt_cva6_tb_opt
 
 	#  $(cov-run-opt) $(issrun_opts) \
