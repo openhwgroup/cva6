@@ -16,8 +16,8 @@
 // ------------------
 // LSU Control
 // ------------------
-// The LSU consists of two independent block which share a common address translation block.
-// The one block is the load unit, the other one is the store unit. They will signal their readiness
+// The LSU consists of two independent blocks which share a common address translation block.
+// One block is the load unit, the other one is the store unit. They will signal their readiness
 // with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
 // Furthermore it can be the case that another request for one of the two store units arrives in which case
 // the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
