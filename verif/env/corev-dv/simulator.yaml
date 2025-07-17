@@ -70,7 +70,7 @@
         +incdir+<user_extension>
         +acc
      	$QUESTASIM_HOME/verilog_src/uvm-1.2/src/uvm_pkg.sv
-        -f <cwd>/dv/files.f
+        -f <cwd>/../env/corev-dv/cva6-files.f
         -sv
         -mfcu -cuname design_cuname
         +define+UVM_REGEX_NO_DPI
