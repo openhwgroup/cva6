@@ -82,7 +82,7 @@
         -o design_opt"
   sim:
     cmd: >
-      vsim -64 -c <cov_opts> -do <cwd>/dv/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed>
+      vsim -64 -c <cov_opts> -do <cwd>/dv/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed> -sv_lib $QUESTASIM_HOME/uvm-1.2/linux_x86_64/uvm_dpi
     cov_opts: >
       -do "coverage save -onexit <out>/cov.ucdb;"
 
