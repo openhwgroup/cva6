@@ -367,14 +367,15 @@ questa_uvm_run:
 	  -suppress 3829 -suppress vsim-8386\
 	  +permissive \
 	  -sv_seed 0 \
+	  -noautoldlibpath \
 	  +define+UNSUPPORTED_WITH+ \
 	   $(issrun_opts) \
 	  uvmt_cva6_tb_opt
 
 	#  $(cov-run-opt) $(issrun_opts) \
 	# TODO: Add support for waveform collection.
-	#$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
-	#grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
+	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
 
 questa-uvm:
 	make questa_uvm_comp
