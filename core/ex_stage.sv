@@ -47,6 +47,8 @@ module ex_stage
     input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
     input fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_i,
+    // ALU to ALU bypass control - ISSUE_STAGE
+    input alu_bypass_t alu_bypass_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Is_zcmt instruction - ISSUE_STAGE
@@ -275,11 +277,14 @@ module ex_stage
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
-  logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result, aes_result;
+  logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] alu_result;
+  logic [CVA6Cfg.XLEN-1:0] csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
+
+  fu_data_t [CVA6Cfg.NrALUs-1:0] alu_data;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
   assign one_cycle_select = alu_valid_i | branch_valid_i | csr_valid_i | aes_valid_i;
@@ -302,15 +307,29 @@ module ex_stage
     end
   end
 
-  // 1. ALU (combinatorial)
-  alu #(
+  if (CVA6Cfg.SuperscalarEn) begin : gen_alu2_data_sel
+    always_comb begin
+      alu_data[1] = '0;
+      if (alu2_valid_i[1]) begin
+        alu_data[1] = fu_data_i[1];
+      end else if (alu2_valid_i[0]) begin
+        alu_data[1] = fu_data_i[0];
+      end
+    end
+  end
+
+  // 1. ALU(s) (combinatorial)
+
+  assign alu_data[0] = one_cycle_data;
+
+  alu_wrapper #(
       .CVA6Cfg  (CVA6Cfg),
-      .HasBranch(1'b1),
       .fu_data_t(fu_data_t)
-  ) alu_i (
+  ) alu_wrapper_i (
       .clk_i,
       .rst_ni,
-      .fu_data_i       (one_cycle_data),
+      .alu_bypass_i    (alu_bypass_i),
+      .fu_data_i       (alu_data),
       .result_o        (alu_result),
       .alu_branch_res_o(alu_branch_res)
   );
@@ -367,7 +386,7 @@ module ex_stage
     flu_trans_id_o = one_cycle_data.trans_id;
     // ALU result
     if (|alu_valid_i) begin
-      flu_result_o = alu_result;
+      flu_result_o = alu_result[0];
       // CSR result
     end else if (|csr_valid_i) begin
       flu_result_o = csr_result;
@@ -418,7 +437,6 @@ module ex_stage
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id;
   logic [CVA6Cfg.XLEN-1:0] fpu_result;
   logic alu2_valid;
-  logic [CVA6Cfg.XLEN-1:0] alu2_result;
 
   generate
     if (CVA6Cfg.FpPresent) begin : fpu_gen
@@ -461,45 +479,17 @@ module ex_stage
     end
   endgenerate
 
-  // ----------------
-  // ALU2
-  // ----------------
-  fu_data_t alu2_data;
-  if (CVA6Cfg.SuperscalarEn) begin : alu2_gen
-    always_comb begin
-      alu2_data = alu2_valid_i[0] ? fu_data_i[0] : '0;
-      if (alu2_valid_i[1]) begin
-        alu2_data = fu_data_i[1];
-      end
-    end
-
-    alu #(
-        .CVA6Cfg  (CVA6Cfg),
-        .HasBranch(1'b0),
-        .fu_data_t(fu_data_t)
-    ) alu2_i (
-        .clk_i,
-        .rst_ni,
-        .fu_data_i       (alu2_data),
-        .result_o        (alu2_result),
-        .alu_branch_res_o(  /* this ALU does not handle branching */)
-    );
-  end else begin
-    assign alu2_data   = '0;
-    assign alu2_result = '0;
-  end
-
   // result MUX
   // This is really explicit so that synthesis tools can elide unused signals
   if (CVA6Cfg.SuperscalarEn) begin
     if (CVA6Cfg.FpPresent) begin
       assign fpu_valid_o    = fpu_valid || |alu2_valid_i;
-      assign fpu_result_o   = fpu_valid ? fpu_result   : alu2_result;
-      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu2_data.trans_id;
+      assign fpu_result_o   = fpu_valid ? fpu_result   : alu_result[1];
+      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu_data[1].trans_id;
     end else begin
       assign fpu_valid_o    = |alu2_valid_i;
-      assign fpu_result_o   = alu2_result;
-      assign fpu_trans_id_o = alu2_data.trans_id;
+      assign fpu_result_o   = alu_result[1];
+      assign fpu_trans_id_o = alu_data[1].trans_id;
     end
   end else begin
     if (CVA6Cfg.FpPresent) begin

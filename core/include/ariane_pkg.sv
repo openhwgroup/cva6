@@ -532,6 +532,11 @@ package ariane_pkg;
     SHA512SUM1
   } fu_op;
 
+  typedef struct packed {
+    logic rs1_from_rd;
+    logic rs2_from_rd;
+  } alu_bypass_t;
+
   function automatic logic op_is_branch(input fu_op op);
     unique case (op) inside
       EQ, NE, LTS, GES, LTU, GEU: return 1'b1;
@@ -800,6 +805,7 @@ package ariane_pkg;
       default:                                              return 2'b11;
     endcase
   endfunction
+
   // ----------------------
   // MMU Functions
   // ----------------------
