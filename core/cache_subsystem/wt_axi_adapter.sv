@@ -52,6 +52,9 @@ module wt_axi_adapter
     output axi_req_t axi_req_o,
     input  axi_rsp_t axi_resp_i,
 
+    // Endianness Control Signal from CSR
+    input logic mbe_i,
+
     // Invalidations
     input  logic [63:0] inval_addr_i,
     input  logic        inval_valid_i,
@@ -264,43 +267,98 @@ module wt_axi_adapter
                 end
                 // RISC-V atops have a load semantic
                 AMO_SWAP: axi_wr_atop = axi_pkg::ATOP_ATOMICSWAP;
-                AMO_ADD:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD
-                };
+                AMO_ADD: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_ADD
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD
+                    };
+                  end
+                end
                 AMO_AND: begin
                   // in this case we need to invert the data to get a "CLR"
                   axi_wr_data[0] = ~{(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN) {dcache_data.data}};
                   axi_wr_user = ~{(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN) {dcache_data.user}};
-                  axi_wr_atop = {
-                    axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR
-                  };
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_CLR
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR
+                    };
+                  end
                 end
-                AMO_OR:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET
-                };
-                AMO_XOR:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR
-                };
-                AMO_MAX:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX
-                };
-                AMO_MAXU:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX
-                };
-                AMO_MIN:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN
-                };
-                AMO_MINU:
-                axi_wr_atop = {
-                  axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN
-                };
-                default: ;  // Do nothing
+                AMO_OR: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_SET
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET
+                    };
+                  end
+                end
+                AMO_XOR: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_EOR
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR
+                    };
+                  end
+                end
+                AMO_MAX: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_SMAX
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX
+                    };
+                  end
+                end
+                AMO_MAXU: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_UMAX
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX
+                    };
+                  end
+                end
+                AMO_MIN: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_SMIN
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN
+                    };
+                  end
+                end
+                AMO_MINU: begin
+                  if (mbe_i) begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_BIG_END, axi_pkg::ATOP_UMIN
+                    };
+                  end else begin
+                    axi_wr_atop = {
+                      axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN
+                    };
+                  end
+                end
+                default:  ;  // Do nothing
               endcase
             end
           end
