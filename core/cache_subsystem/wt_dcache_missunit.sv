@@ -38,6 +38,7 @@ module wt_dcache_missunit
     // AMO interface
     input amo_req_t amo_req_i,
     output amo_resp_t amo_resp_o,
+    input logic mbe_i,
     // miss handling interface (ld, ptw, wbuffer)
     input logic [NumPorts-1:0] miss_req_i,
     output logic [NumPorts-1:0] miss_ack_o,
@@ -288,9 +289,32 @@ module wt_dcache_missunit
       assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:3]*64+:64];
     end
 
-    // always sign extend 32bit values
-    assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
-                                                       amo_rtrn_mux ;
+    // BIG ENDIAN CAPABLE logic for amo return value from memory
+    logic [63:0] amoResult_LE;
+    logic [63:0] amoResult_BE;
+
+    // Little Endian Calculation of return value from memory (when 32bit, we need to sign extend)
+    logic [63:0] amoResult_32bitLE;
+    assign amoResult_32bitLE = {
+      {32{amo_rtrn_mux[amo_req_i.operand_a[2]*32+31]}}, amo_rtrn_mux[amo_req_i.operand_a[2]*32+:32]
+    };
+
+    // Big Endian Calculations of return value from memory with AMO operations (Bytes need swapping and sign extension is different)
+    logic [63:0] amoResult_64bitBE;
+    logic [31:0] amoResult_32bitBE_NoSign;
+    logic [63:0] amoResult_32bitBE;
+    assign amoResult_64bitBE = {<<8{amo_rtrn_mux}};
+    assign amoResult_32bitBE_NoSign = {<<8{amo_rtrn_mux[amo_req_i.operand_a[2]*32+:32]}};
+    assign amoResult_32bitBE = {
+      {32{amo_rtrn_mux[amo_req_i.operand_a[2]*32+7]}}, amoResult_32bitBE_NoSign
+    };  // +7 to the base address to find the sign bit, as in BE the Most Significant Byte is always at the lowest addressed byte.
+
+    assign amoResult_BE = (amo_req_i.size == 2'b10) ? amoResult_32bitBE : amoResult_64bitBE;
+    assign amoResult_LE = (amo_req_i.size == 2'b10) ? amoResult_32bitLE : amo_rtrn_mux;
+
+    assign amo_resp_o.result = mbe_i ? amoResult_BE : amoResult_LE;
+    // end BIG ENDIAN CAPABLE logic for amo return value from memory
+
     assign amo_req_d = amo_req_i.req;
   end
 
