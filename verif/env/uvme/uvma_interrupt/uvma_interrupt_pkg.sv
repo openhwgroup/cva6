@@ -17,6 +17,7 @@
 `include "uvml_hrtbt_macros.sv"
 `include "uvma_interrupt_macros.sv"
 
+`include "uvma_axi_macros.sv"
 /**
  * Encapsulates all the types needed for an UVM agent capable of driving and/or
  * monitoring Clock & Reset.
