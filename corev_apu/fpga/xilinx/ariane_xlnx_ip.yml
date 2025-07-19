@@ -69,6 +69,22 @@ xlnx_mig_7_ddr3:
     mig_dont_touch_param: Custom
     board_mig_param: Custom
 
+xlnx_mig_ddr4:
+  ip: xlnx_mig_ddr4
+  vendor: xilinx.com
+  config:
+    ADDN_UI_CLKOUT1_FREQ_HZ:200
+    C0_DDR4_BOARD_INTERFACE: ddr4_sdram_c1
+    System_Clock: Differential
+
+xlnx_axi_dwidth_converter512_64:
+  ip: axi_dwidth_converter
+  vendor: xilinx.com
+  config:
+    si_data_width: 64
+    si_id_width: 5
+    mi_data_width: 512
+
 xlnx_ila:
   ip: xlnx_ila
   vendor: xilinx.com
