@@ -172,13 +172,12 @@ module csr_regfile
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
     output jvt_t jvt_o,
-    // trigger request from trigger module
+    // trigger module signals
     output logic debug_from_trigger_o,
     input logic [CVA6Cfg.VLEN-1:0] vaddr_from_lsu_i,
     input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     input logic [CVA6Cfg.XLEN-1:0] store_result_i,
-    output logic break_from_trigger_o,
-    output logic e_matched_o
+    output logic break_from_trigger_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -291,13 +290,16 @@ module csr_regfile
   logic [N_Triggers-1:0] tselect_q, tselect_d;
   logic [3:0] trigger_type_q[N_Triggers], trigger_type_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
-  logic priv_match;
+  logic [N_Triggers-1:0] priv_match;
   icount32_tdata1_t icount32_tdata1_q[N_Triggers], icount32_tdata1_d[N_Triggers];
   textra32_tdata3_t textra32_tdata3_q[N_Triggers], textra32_tdata3_d[N_Triggers];
   textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] tdata2_q[N_Triggers], tdata2_d[N_Triggers];
-  logic debug_from_trigger, in_trap_handler, prev_csr_write, matched, e_matched;
+  logic debug_from_trigger, prev_csr_write, matched;
+  logic e_matched_q, e_matched_d;
+  logic mret_reg_q, mret_reg_d;
   logic break_from_trigger_q, break_from_trigger_d;
+  logic in_trap_handler_q, in_trap_handler_d;
   logic debug_from_trigger_q, debug_from_trigger_d;
   mcontrol6_32_tdata1_t mcontrol6_32_tdata1_q[N_Triggers], mcontrol6_32_tdata1_d[N_Triggers];
   etrigger32_tdata1_t etrigger32_tdata1_q[N_Triggers], etrigger32_tdata1_d[N_Triggers];
@@ -1985,7 +1987,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger_q && CVA6Cfg.Icount)) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger_q)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -2078,7 +2080,7 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = (break_from_trigger_q && CVA6Cfg.Icount) ? 32'h00000003 : ex_i.cause;
+        mcause_d = (break_from_trigger_q) ? 32'h00000003 : ex_i.cause;
         // set epc
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
@@ -2359,24 +2361,25 @@ module csr_regfile
     // Triggers Match Logic
     if (CVA6Cfg.SDTRIG) begin
       for (int i = 0; i < N_Triggers; i++) begin
+        priv_match[i] = 1'b0; // default assignment
         // icount match logic
         if (trigger_type_d[i] == 4'd3 && CVA6Cfg.Icount) begin
           break_from_trigger_d = 1'b0;
           case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (icount32_tdata1_d[i].m) priv_match = 1'b1;
-            riscv::PRIV_LVL_S: if (icount32_tdata1_d[i].s) priv_match = 1'b1;
-            riscv::PRIV_LVL_U: if (icount32_tdata1_d[i].u) priv_match = 1'b1;
-            default: priv_match = 1'b0;
+            riscv::PRIV_LVL_M: if (icount32_tdata1_d[i].m) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_S: if (icount32_tdata1_d[i].s) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_U: if (icount32_tdata1_d[i].u) priv_match[i] = 1'b1;
+            default: priv_match[i] = 1'b0;
           endcase
           if (ex_i.valid) begin
-            in_trap_handler = 1'b1;
+            in_trap_handler_d = 1'b1;
             icount32_tdata1_d[i].count = icount32_tdata1_q[i].count - 1;
           end
-          if (commit_ack_i && mret) in_trap_handler = 1'b0;
-          if (commit_ack_i && !in_trap_handler && (icount32_tdata1_q[i].count != 0)) begin
+          if (commit_ack_i && (mret || sret)) in_trap_handler_d = 1'b0;
+          if (commit_ack_i && !in_trap_handler_d && (icount32_tdata1_q[i].count != 0)) begin
             icount32_tdata1_d[i].count = icount32_tdata1_q[i].count - 1;
           end
-          if ((icount32_tdata1_d[i].count == 0) && priv_match && !icount32_tdata1_q[i].pending) begin
+          if ((icount32_tdata1_d[i].count == 0) && priv_match[i] && !icount32_tdata1_q[i].pending && !icount32_tdata1_q[i].hit) begin
             icount32_tdata1_d[i].pending = 1'b1;
             case (icount32_tdata1_d[i].action)
               6'd0: break_from_trigger_d = 1'b1;  //breakpoint
@@ -2386,6 +2389,7 @@ module csr_regfile
           end
           if (break_from_trigger_q) begin
             icount32_tdata1_d[i].hit = 1'b1;
+            icount32_tdata1_d[i].pending = 1'b0;
           end
           if (debug_mode_d && icount32_tdata1_d[i].pending) begin
             icount32_tdata1_d[i].pending = 1'b0;
@@ -2396,10 +2400,10 @@ module csr_regfile
         // mcontrol6 match logic
         if (trigger_type_d[i] == 4'd6 && CVA6Cfg.Mcontrol6) begin
           case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (mcontrol6_32_tdata1_d[i].m) priv_match = 1'b1;
-            riscv::PRIV_LVL_S: if (mcontrol6_32_tdata1_d[i].s) priv_match = 1'b1;
-            riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[i].u) priv_match = 1'b1;
-            default: priv_match = 1'b0;
+            riscv::PRIV_LVL_M: if (mcontrol6_32_tdata1_d[i].m) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_S: if (mcontrol6_32_tdata1_d[i].s) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[i].u) priv_match[i] = 1'b1;
+            default: priv_match[i] = 1'b0;
           endcase
           // execute with address
           if (mcontrol6_32_tdata1_d[i].execute && !mcontrol6_32_tdata1_d[i].select) begin
@@ -2451,7 +2455,7 @@ module csr_regfile
               4'd8: matched = (tdata2_d[i] != vaddr_from_lsu_i);
             endcase
           end
-          if (priv_match && matched) begin
+          if (priv_match[i] && matched) begin
             case (mcontrol6_32_tdata1_d[i].action)
               //6'd0: break_from_trigger_d = 1'b1; //breakpoint
               6'd1: debug_from_trigger = 1'b1;  //into debug mode;
@@ -2467,15 +2471,17 @@ module csr_regfile
         end
         // etrigger match logic
         if (trigger_type_d[i] == 4'd5 && CVA6Cfg.Etrigger) begin
-          e_matched = 1'b0;
+          break_from_trigger_d = 1'b0;
           case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[i].m) priv_match = 1'b1;
-            riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[i].s) priv_match = 1'b1;
-            riscv::PRIV_LVL_U: if (etrigger32_tdata1_d[i].u) priv_match = 1'b1;
-            default: priv_match = 1'b0;
+            riscv::PRIV_LVL_M: if (etrigger32_tdata1_d[i].m) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_S: if (etrigger32_tdata1_d[i].s) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_U: if (etrigger32_tdata1_d[i].u) priv_match[i] = 1'b1;
+            default: priv_match[i] = 1'b0;
           endcase
-          if (tdata2_d[i][ex_i.cause]) e_matched = 1'b1;
-          if (e_matched && priv_match) begin
+          if (tdata2_d[i][ex_i.cause]) e_matched_d = 1'b1;
+          if (mret || sret) mret_reg_d = 1'b1;
+          if (e_matched_q && priv_match[i] && mret_reg_q && commit_ack_i) begin
+            e_matched_d = 1'b0;
             etrigger32_tdata1_d[i].hit = 1'b1;
             case (etrigger32_tdata1_d[i].action)
               6'd0: break_from_trigger_d = 1'b1;  //breakpoint
@@ -2483,25 +2489,30 @@ module csr_regfile
               default: ;
             endcase
           end
+          if (break_from_trigger_q) begin
+            etrigger32_tdata1_d[i].hit = 1'b0;
+            break_from_trigger_d = 1'b0;
+          end
           if (debug_mode_d && debug_from_trigger_d) begin
-            e_matched = 1'b0;
             etrigger32_tdata1_d[i].hit = 1'b0;
             debug_from_trigger_d = 1'b0;
           end
         end
         // itrigger match logic
         if (trigger_type_d[i] == 4'd4 && CVA6Cfg.Itrigger) begin
-          e_matched = 1'b0;
+          break_from_trigger_d = 1'b0;
           case(priv_lvl_o) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (itrigger32_tdata1_d[i].m) priv_match = 1'b1;
-            riscv::PRIV_LVL_S: if (itrigger32_tdata1_d[i].s) priv_match = 1'b1;
-            riscv::PRIV_LVL_U: if (itrigger32_tdata1_d[i].u) priv_match = 1'b1;
-            default: priv_match = 1'b0;
+            riscv::PRIV_LVL_M: if (itrigger32_tdata1_d[i].m) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_S: if (itrigger32_tdata1_d[i].s) priv_match[i] = 1'b1;
+            riscv::PRIV_LVL_U: if (itrigger32_tdata1_d[i].u) priv_match[i] = 1'b1;
+            default: priv_match[i] = 1'b0;
           endcase
           if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
-            if (tdata2_d[i][ex_i.cause[4:0]]) e_matched = 1'b1;
+            if (tdata2_d[i][ex_i.cause[4:0]]) e_matched_d = 1'b1;
           end
-          if (e_matched && priv_match) begin
+          if (mret || sret) mret_reg_d = 1'b1;
+          if (e_matched_q && priv_match[i] && mret_reg_q && commit_ack_i) begin
+            e_matched_d = 1'b0;
             itrigger32_tdata1_d[i].hit = 1'b1;
             case (itrigger32_tdata1_d[i].action)
               6'd0: break_from_trigger_d = 1'b1;  //breakpoint
@@ -2509,8 +2520,11 @@ module csr_regfile
               default: ;
             endcase
           end
+          if (break_from_trigger_q) begin
+            itrigger32_tdata1_d[i].hit = 1'b0;
+            break_from_trigger_d = 1'b0;
+          end
           if (debug_mode_d && debug_from_trigger_d) begin
-            e_matched = 1'b0;
             itrigger32_tdata1_d[i].hit = 1'b0;
             debug_from_trigger_d = 1'b0;
           end
@@ -2952,11 +2966,14 @@ module csr_regfile
         tselect_q  <= '0;
         prev_csr_write <= 1'b0;
         matched    <=  1'b0;
-        e_matched  <=  1'b0;
+        e_matched_q  <=  1'b0;
+        mret_reg_q  <= 1'b0;
         break_from_trigger_q  <= 0;
         debug_from_trigger_q  <= 0;
+        in_trap_handler_d <= 0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
+          priv_match[i]              <=  0;
           icount32_tdata1_q[i]       <= '0;
           icount32_tdata1_q[i].count <= 1;
           mcontrol6_32_tdata1_q[i]   <= '0;
@@ -2966,8 +2983,6 @@ module csr_regfile
           etrigger32_tdata1_q[i]     <= '0;
           itrigger32_tdata1_q[i]     <= '0;
         end
-        priv_match <= 0;
-        in_trap_handler <= 0;
       end
       // timer and counters
       cycle_q                <= 64'b0;
@@ -3066,6 +3081,9 @@ module csr_regfile
         prev_csr_write        <= debug_from_trigger;
         break_from_trigger_q  <= break_from_trigger_d;
         debug_from_trigger_q  <= debug_from_trigger_d;
+        in_trap_handler_q     <= in_trap_handler_d;
+        e_matched_q           <= e_matched_d;
+        mret_reg_q            <= mret_reg_d;
       end
       // timer and counters
       cycle_q                <= cycle_d;
@@ -3082,7 +3100,6 @@ module csr_regfile
 
   assign debug_from_trigger_o = debug_from_trigger & ~prev_csr_write;
   assign break_from_trigger_o = break_from_trigger_q;
-  assign e_matched_o = e_matched;
 
   // write logic pmp
   always_comb begin : write
