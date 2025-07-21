@@ -143,7 +143,7 @@ task uvmt_cva6_firmware_test_c::run_phase(uvm_phase phase);
    `uvm_info("TEST", "Test FINISHED", UVM_NONE)
    // Set sim_finished (otherwise tb will flag that sim was aborted)
    uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
-   uvm_config_db#(int)::set(null, "", "test_exit_code", { 0'b0, tb_exit_vif.tb_exit_o[31:1] });
+   uvm_config_db#(int)::set(null, "", "test_exit_code", { 1'b0, tb_exit_vif.tb_exit_o[31:1] });
    // Let the termination-triggering instruction appear in the log.
    @(posedge env_cntxt.clknrst_cntxt.vif.clk);
    // Let all pending AXI requests settle.

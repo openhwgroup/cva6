@@ -64,7 +64,7 @@ class uvma_interrupt_mon_c extends uvm_monitor;
 endclass : uvma_interrupt_mon_c
 
 
-function uvma_interrupt_mon_c::new(string name = "uvma_interrupt_mon", uvm_component parent);
+function uvma_interrupt_mon_c::new(string name = "uvma_interrupt_mon", uvm_component parent = null);
    super.new(name, parent);
 
 endfunction

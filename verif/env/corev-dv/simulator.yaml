@@ -61,3 +61,28 @@
     cov_opts: >
       -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>_<test_id>
 
+- tool: questa
+  compile:
+    cmd:
+      - "vlog -64
+        +incdir+$QUESTASIM_HOME/verilog_src/uvm-1.2/src
+        +incdir+<setting>
+        +incdir+<user_extension>
+        +acc
+     	$QUESTASIM_HOME/verilog_src/uvm-1.2/src/uvm_pkg.sv
+        -f <cwd>/../env/corev-dv/cva6-files.f
+        -sv
+        -mfcu -cuname design_cuname
+        +define+UVM_REGEX_NO_DPI
+        -writetoplevels <out>/top.list
+        -l <out>/compile.log <cmp_opts>"
+      - "vopt -64 -debug
+        +designfile -f <out>/top.list
+        -l <out>/optimize.log <cmp_opts>
+        -o design_opt"
+  sim:
+    cmd: >
+      vsim -64 -c <cov_opts> -do <cwd>/dv/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed> -sv_lib $QUESTASIM_HOME/uvm-1.2/linux_x86_64/uvm_dpi
+    cov_opts: >
+      -do "coverage save -onexit <out>/cov.ucdb;"
+
