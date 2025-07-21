@@ -11,7 +11,7 @@
 //                Alternatives (CEA)
 //
 // Author: Tanuj Khandelwal - CEA
-// Date: Janvary, 2025
+// Date: January, 2025
 // Description: CVA6 configuration package using the HPDcache as cache subsystem
 
 
@@ -21,14 +21,36 @@ package cva6_config_pkg;
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam CVA6ConfigAxiIdWidth = 4;
-  localparam CVA6ConfigAxiAddrWidth = 64;
+  localparam CVA6ConfigAxiAddrWidth = 39;
   localparam CVA6ConfigAxiDataWidth = 128;
-  localparam CVA6ConfigDataUserWidth = 32;
+  localparam CVA6ConfigDataUserWidth = 12;
+
+
+`ifndef __UVMA_AXI_MACROS_SV__
+  `define __UVMA_AXI_MACROS_SV__
+
+  `define IFNDEF_DEFINE(name,value) \
+    `ifndef name \
+      `define name value \
+  `endif
+
+  `define UVMA_AXI_ADDR_MAX_WIDTH   39
+  `define UVMA_AXI_DATA_MAX_WIDTH   128
+  `define UVMA_AXI_USER_MAX_WIDTH   12
+  `define UVMA_AXI_ID_MAX_WIDTH     4
+  // `IFNDEF_DEFINE(UVMA_AXI_STRB_MAX_WIDTH , 8   )
+
+  `define UVMA_AXI_MAX_NB_TXN_BURST  256
+  `define UVMA_AXI_LOOP_MAX_WIDTH    8  
+  `define UVMA_AXI_MMUSID_MAX_WIDTH  32 
+  `define UVMA_AXI_MMUSSID_MAX_WIDTH 20 
+
+`endif // __UVMA_AXI_MACROS_SV__
 
 
 localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    XLEN: unsigned'(CVA6ConfigXlen),
-   VLEN: unsigned'(39),
+   VLEN: unsigned'(64),
    FpgaEn: bit'(0),  // for Xilinx and Altera
    FpgaAlteraEn: bit'(0),  // for Altera (only)
    TechnoCut: bit'(0),
@@ -47,7 +69,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    XF8: bit'(0),
    RVA: bit'(1),
    RVB: bit'(1),
-   ZKN: bit'(1),
+   ZKN: bit'(0),
    RVV: bit'(0),
    RVC: bit'(1),
    RVH: bit'(0),
@@ -65,15 +87,15 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    MmuPresent: bit'(1),
    RVS: bit'(1),
    RVU: bit'(1),
-   SoftwareInterruptEn: bit'(0),
+   SoftwareInterruptEn: bit'(1),
    HaltAddress: 64'h800,
    ExceptionAddress: 64'h808,
-   RASDepth: unsigned'(4),
+   RASDepth: unsigned'(2),
    BTBEntries: unsigned'(16),
    BPType: config_pkg::BHT,
    BHTEntries: unsigned'(64),
    BHTHist: unsigned'(3),
-   DmBaseAddress: 64'h0,
+   DmBaseAddress: 64'h300_0000,
    TvalEn: bit'(1),
    DirectVecOnly: bit'(0),
    NrPMPEntries: unsigned'(8),
@@ -85,16 +107,15 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    NrNonIdempotentRules: unsigned'(2),
    NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
    NonIdempotentLength: 1024'({64'b0, 64'b0}),
-   NrExecuteRegionRules: unsigned'(0),
-   ExecuteRegionAddrBase: 64'h0,
-   ExecuteRegionLength: 64'h0,
-   NrCachedRegionRules: unsigned'(0),
-   CachedRegionAddrBase: 64'h0,
-   CachedRegionLength: 64'h0,
-   // FIXME
+   NrExecuteRegionRules: unsigned'(6),
+   ExecuteRegionAddrBase: 1024'({64'h1_0000_0000, 64'h8000_0000, 64'h300_0000, 64'h0, 64'h2000_0000, 64'h8_0000_0000}),
+   ExecuteRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000, 64'h1000, 64'h1_0000, 64'h2000_0000, 64'h7_FFFF_FFFF}),
+   NrCachedRegionRules: unsigned'(2),
+   CachedRegionAddrBase: 1024'({64'h1_0000_0000, 64'h8000_0000}),
+   CachedRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000}),
    MaxOutstandingStores: unsigned'(7),
    DebugEn: bit'(1),
-   AxiBurstWriteEn: bit'(0),
+   AxiBurstWriteEn: bit'(1),
    IcacheByteSize: unsigned'(32768),
    IcacheSetAssoc: unsigned'(8),
    IcacheLineWidth: unsigned'(512),
@@ -110,7 +131,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    FetchUserEn: unsigned'(0),
    InstrTlbEntries: int'(16),
    DataTlbEntries: int'(16),
-   UseSharedTlb: bit'(1),
+   UseSharedTlb: bit'(0),
    SharedTlbDepth: int'(64),
    NrLoadPipeRegs: int'(0),
    NrStorePipeRegs: int'(0),

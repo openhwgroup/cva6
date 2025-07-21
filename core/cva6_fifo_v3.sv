@@ -1,5 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright 2024 - PlanV Technologies for additionnal contribution.
+// Copyright 2024 - PlanV Technologies for additional contribution.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License. You may obtain a copy of the License at
