@@ -354,7 +354,6 @@ questa_uvm_comp:
 	vopt -work $(VSIM_WORK_DIR) \
 	    -64 +acc uvmt_cva6_tb -o uvmt_cva6_tb_opt
 
-##	  $(cov-comp-opt) $(isscomp_opts)
 questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
@@ -374,7 +373,6 @@ questa_uvm_run:
 	  $(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	  grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
-	#  $(cov-run-opt) $(issrun_opts) \
 	# TODO: Add support for waveform collection.
 
 questa-uvm:
