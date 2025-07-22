@@ -38,7 +38,7 @@ issued to a functional unit and monitor the branch prediction
 information. If a branch was accidentally predicted on a non-branch
 instruction it also takes corrective action and re-sets the PC to the
 correct address (depending on whether the instruction was compressed or
-not it add PC `+ 2` or PC `+ 4`).
+not it adds PC `+ 2` or PC `+ 4`).
 
 As briefly mentioned in the section about instruction re-aligning the
 branch unit places the PC from an unaligned 32-bit instruction on the
@@ -121,9 +121,9 @@ is described in more detail in the upcoming paragraphs:
 
 ##### LSU Bypass {#par:lsu_bypass}
 
-The LSU bypass module is a auxiliary module which manages the LSU status
+The LSU bypass module is an auxiliary module which manages the LSU status
 information (full flag etc.) which it presents to the issue stage. This
-is necessary for a the following reason: The design of the LSU is critical in
+is necessary for the following reason: The design of the LSU is critical in
 most aspects as it directly interfaces the relatively slow SRAMs. It additionally
 needs to do some costly operation in sequence. The most costly (in terms
 of timing) being address generation, address translation and checking
@@ -320,7 +320,7 @@ division is a simple serial divider which needs 64 cycles in the worst case.
 The CSR buffer is a functional unit which only purpose is to store the
 address of the CSR register the instruction is going to read/write.
 There are two reasons why we need to do this. The first reason is that
-an CSR instruction alters the architectural state, hence this
+a CSR instruction alters the architectural state, hence this
 instruction has to be buffered and can only be executed as soon as the
 commit stage decides to commit the instruction. The second reason is the
 way the scoreboard entry is structured: It has only one result

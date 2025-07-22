@@ -214,7 +214,7 @@ module ex_stage
     input icache_arsp_t icache_areq_i,
     // icache translation request - CACHE
     output icache_areq_t icache_areq_o,
-    // Data cache request ouput - CACHE
+    // Data cache request output - CACHE
     input dcache_req_o_t [2:0] dcache_req_ports_i,
     // Data cache request input - CACHE
     output dcache_req_i_t [2:0] dcache_req_ports_o,
