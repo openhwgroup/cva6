@@ -17,7 +17,7 @@
 //
 // Description: Translation Lookaside Buffer, parameterizable to Sv32 or Sv39,
 //              or sv39x4 fully set-associative
-//              This module is an merge of the Sv32 TLB developed by Sebastien
+//              This module is a merge of the Sv32 TLB developed by Sebastien
 //              Jacq (Thales Research & Technology), the Sv39 TLB developed
 //              by Florian Zaruba and David Schaffenrath and the Sv39x4 by Bruno Sá.
 
