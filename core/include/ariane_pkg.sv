@@ -963,4 +963,18 @@ package ariane_pkg;
     return (value & mask) == (base & mask);
   endfunction
 
+  function automatic logic match_scontext(input logic [31:0] scontext, input logic [1:0] sselect, input logic [3:0] sbytemask, input logic [31:0] svalue, input bit flag);
+    logic match;
+    match = 1'b1;
+    if (sselect == 2'd1) begin
+      int max_bytes = flag ? 4 : 2;
+      for (int b = 0; b < max_bytes; b++) begin
+        if (!sbytemask[b]) begin
+          if (scontext[8*b +: 8] != svalue[8*b +: 8]) match = 1'b0;
+        end
+      end
+    end else match = 1'b0;
+    return match;
+  endfunction
+
 endpackage

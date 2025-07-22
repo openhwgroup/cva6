@@ -290,7 +290,7 @@ module csr_regfile
   logic [N_Triggers-1:0] tselect_q, tselect_d;
   logic [3:0] trigger_type_q[N_Triggers], trigger_type_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
-  logic [N_Triggers-1:0] priv_match;
+  logic [N_Triggers-1:0] priv_match, scontext_match;
   icount32_tdata1_t icount32_tdata1_q[N_Triggers], icount32_tdata1_d[N_Triggers];
   textra32_tdata3_t textra32_tdata3_q[N_Triggers], textra32_tdata3_d[N_Triggers];
   textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
@@ -2371,6 +2371,15 @@ module csr_regfile
             riscv::PRIV_LVL_U: if (icount32_tdata1_d[i].u) priv_match[i] = 1'b1;
             default: priv_match[i] = 1'b0;
           endcase
+          // S_MODE context match check
+          if (priv_lvl_o == riscv::PRIV_LVL_S && icount32_tdata1_d[i].s) begin
+            if (CVA6Cfg.IS_XLEN32) begin
+              scontext_match[i] = match_scontext(scontext_d, textra32_tdata3_d[i].sselect, textra32_tdata3_d[i].sbytemask, textra32_tdata3_d[i].svalue, 1'b0);
+            end else begin
+              scontext_match[i] = match_scontext(scontext_d, textra64_tdata3_d[i].sselect, textra64_tdata3_d[i].sbytemask, textra64_tdata3_d[i].svalue, 1'b1);
+            end
+            priv_match[i] &= scontext_match[i];
+          end
           if (ex_i.valid) begin
             in_trap_handler_d = 1'b1;
             icount32_tdata1_d[i].count = icount32_tdata1_q[i].count - 1;
@@ -2405,6 +2414,15 @@ module csr_regfile
             riscv::PRIV_LVL_U: if (mcontrol6_32_tdata1_d[i].u) priv_match[i] = 1'b1;
             default: priv_match[i] = 1'b0;
           endcase
+          // S_MODE context match check
+          if (priv_lvl_o == riscv::PRIV_LVL_S && mcontrol6_32_tdata1_d[i].s) begin
+            if (CVA6Cfg.IS_XLEN32) begin
+              scontext_match[i] = match_scontext(scontext_d, textra32_tdata3_d[i].sselect, textra32_tdata3_d[i].sbytemask, textra32_tdata3_d[i].svalue, 1'b0);
+            end else begin
+              scontext_match[i] = match_scontext(scontext_d, textra64_tdata3_d[i].sselect, textra64_tdata3_d[i].sbytemask, textra64_tdata3_d[i].svalue, 1'b1);
+            end
+            priv_match[i] &= scontext_match[i];
+          end
           // execute with address
           if (mcontrol6_32_tdata1_d[i].execute && !mcontrol6_32_tdata1_d[i].select) begin
             case (mcontrol6_32_tdata1_d[i].match)
@@ -2478,6 +2496,15 @@ module csr_regfile
             riscv::PRIV_LVL_U: if (etrigger32_tdata1_d[i].u) priv_match[i] = 1'b1;
             default: priv_match[i] = 1'b0;
           endcase
+          // S_MODE context match check
+          if (priv_lvl_o == riscv::PRIV_LVL_S && etrigger32_tdata1_d[i].s) begin
+            if (CVA6Cfg.IS_XLEN32) begin
+              scontext_match[i] = match_scontext(scontext_d, textra32_tdata3_d[i].sselect, textra32_tdata3_d[i].sbytemask, textra32_tdata3_d[i].svalue, 1'b0);
+            end else begin
+              scontext_match[i] = match_scontext(scontext_d, textra64_tdata3_d[i].sselect, textra64_tdata3_d[i].sbytemask, textra64_tdata3_d[i].svalue, 1'b1);
+            end
+            priv_match[i] &= scontext_match[i];
+          end
           if (tdata2_d[i][ex_i.cause]) e_matched_d = 1'b1;
           if (mret || sret) mret_reg_d = 1'b1;
           if (e_matched_q && priv_match[i] && mret_reg_q && commit_ack_i) begin
@@ -2507,6 +2534,15 @@ module csr_regfile
             riscv::PRIV_LVL_U: if (itrigger32_tdata1_d[i].u) priv_match[i] = 1'b1;
             default: priv_match[i] = 1'b0;
           endcase
+          // S_MODE context match check
+          if (priv_lvl_o == riscv::PRIV_LVL_S && itrigger32_tdata1_d[i].s) begin
+            if (CVA6Cfg.IS_XLEN32) begin
+              scontext_match[i] = match_scontext(scontext_d, textra32_tdata3_d[i].sselect, textra32_tdata3_d[i].sbytemask, textra32_tdata3_d[i].svalue, 1'b0);
+            end else begin
+              scontext_match[i] = match_scontext(scontext_d, textra64_tdata3_d[i].sselect, textra64_tdata3_d[i].sbytemask, textra64_tdata3_d[i].svalue, 1'b1);
+            end
+            priv_match[i] &= scontext_match[i];
+          end
           if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
             if (tdata2_d[i][ex_i.cause[4:0]]) e_matched_d = 1'b1;
           end
