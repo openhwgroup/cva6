@@ -746,7 +746,7 @@ module issue_read_operands
     end
   end
   // FU select, assert the correct valid out signal (in the next cycle)
-  // This needs to be like this to make verilator happy. I know its ugly.
+  // This needs to be like this to make verilator happy. I know it's ugly.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       alu_valid_q    <= '0;
