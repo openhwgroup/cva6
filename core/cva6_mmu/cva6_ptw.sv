@@ -15,7 +15,7 @@
 // Author: Angela Gonzalez, PlanV Technology
 // Date: 26/02/2024
 // Description: Hardware-PTW (Page-Table-Walker) for CVA6 supporting sv32, sv39 and sv39x4.
-//              This module is an merge of the PTW Sv39 developed by Florian Zaruba,
+//              This module is a merge of the PTW Sv39 developed by Florian Zaruba,
 //              the PTW Sv32 developed by Sebastien Jacq and the PTW Sv39x4 by Bruno Sá.
 
 /* verilator lint_off WIDTH */
@@ -40,7 +40,7 @@ module cva6_ptw
     output logic ptw_error_o,  // set when an error occurred
     output logic ptw_error_at_g_st_o,  // set when an error occurred at the G-Stage
     output logic ptw_err_at_g_int_st_o,  // set when an error occurred at the G-Stage during S-Stage translation
-    output logic ptw_access_exception_o,  // set when an PMP access exception occurred
+    output logic ptw_access_exception_o,  // set when a PMP access exception occurred
     input logic enable_translation_i,  // CSRs indicate to enable SV39 VS-Stage translation
     input logic enable_g_translation_i,  // CSRs indicate to enable SV39  G-Stage translation
     input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores
