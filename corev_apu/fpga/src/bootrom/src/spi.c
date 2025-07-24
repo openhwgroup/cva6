@@ -119,7 +119,7 @@ int spi_write_bytes(uint8_t *bytes, uint32_t len, uint8_t *ret)
     for (int i = 0; i < len;)
     {
         status = read_reg(SPI_STATUS_REG);
-        if ((status & 0x1) != 0x1) // recieve fifo not empty
+        if ((status & 0x1) != 0x1) // receive fifo not empty
         {
             ret[i++] = read_reg(SPI_RECEIVE_REG);
         }

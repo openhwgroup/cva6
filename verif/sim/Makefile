@@ -350,8 +350,7 @@ questa_uvm_comp:
 	  -suppress vlog-2745 -suppress vlog-8386 \
 	  -suppress vlog-8607 \
 	  +define+UNSUPPORTED_WITH+ \
-	  +define+QUESTA+ \
-	  $(cov-comp-opt) $(isscomp_opts)
+	  +define+QUESTA
 	vopt -work $(VSIM_WORK_DIR) \
 	    -64 +acc uvmt_cva6_tb -o uvmt_cva6_tb_opt
 
@@ -359,6 +358,7 @@ questa_uvm_run:
 	@echo "[QUESTA] Running Model"
 	vsim -64  \
 	  $(COMMON_RUN_UVM_FLAGS) \
+	  $(COMMON_RUN_ARGS) \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \
 	  -c -do "run -all; " \
 	  -work $(VSIM_WORK_DIR) -t 1ns \
@@ -366,13 +366,14 @@ questa_uvm_run:
 	  -suppress 3829 -suppress vsim-8386\
 	  +permissive \
 	  -sv_seed 0 \
-	  $(cov-run-opt) $(issrun_opts) \
+	  -noautoldlibpath \
 	  +define+UNSUPPORTED_WITH+ \
+	   $(issrun_opts) \
 	  uvmt_cva6_tb_opt
+	  $(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	  grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 	# TODO: Add support for waveform collection.
-	#$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
-	#grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
 
 questa-uvm:
 	make questa_uvm_comp
@@ -407,6 +408,22 @@ vcs-testharness:
 	  mv novas.vpd  `dirname $(log)`/`basename $(log) .log`.vpd
 	[ ! -f novas.fsdb ] || \
 	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
+	# Generate disassembled log.
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+veri-testharness-pk:
+	rm -rf $(path_var)/work-ver
+	@echo "Trace compact value $(TRACE_COMPACT)"
+	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) \
+		$(PK_INSTALL_DIR)/riscv-none-elf/bin/pk $(elf) \
+		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1) \
+		$(issrun_opts)
+	# If present, move default waveform files to log directory.
+	# Keep track of target in waveform file name.
+	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
+	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
 	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm

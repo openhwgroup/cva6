@@ -70,7 +70,7 @@ module ariane_regfile_lol #(
   end
 
   // WRITE : Write Address Decoder (WAD), combinatorial process
-  always_comb begin : decode_write_addess
+  always_comb begin : decode_write_address
     for (int unsigned i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       for (int unsigned j = 1; j < NUM_WORDS; j++) begin
         if (we_i[i] && (waddr_i[i] == j)) waddr_onehot[i][j] = 1'b1;

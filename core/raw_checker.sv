@@ -16,7 +16,7 @@ module raw_checker
     input logic clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input logic rst_ni,
-    // Register source of the instruction to check RAW dependancies - SCOREBOARD 
+    // Register source of the instruction to check RAW dependencies - SCOREBOARD
     input logic [REG_ADDR_SIZE-1:0] rs_i,
     // Type of register source (FPR or GPR) - SCOREBOARD
     input logic rs_fpr_i,
@@ -29,9 +29,9 @@ module raw_checker
     // Issue pointer - SCOREBOARD
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
 
-    // Index in the scoreboard of the most recent RAW dependancy - SCOREBOARD
+    // Index in the scoreboard of the most recent RAW dependency - SCOREBOARD
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] idx_o,
-    // Indicates if there is a RAW dependancy - SCOREBOARD
+    // Indicates if there is a RAW dependency - SCOREBOARD
     output logic valid_o
 );
 

@@ -508,13 +508,18 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   if test_type != "o":
     # gcc compilation
     logging.info("Compiling test: %s" % test_path)
-    cmd = ("%s %s \
-          -I%s/dv/user_extension \
-            -T%s %s -o %s " % \
-          (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, cwd,
-              linker, gcc_opts, elf))
+    if "veri-testharness-pk" not in iss_list:
+
+        cmd = ("%s %s \
+              -I%s/dv/user_extension \
+                -T%s %s -o %s " % \
+              (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, cwd,
+                  linker, gcc_opts, elf))
+    else: # veri-testharness with proxy kernel enabled.
+        cmd= ("%s %s %s -o %s " % (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, gcc_opts, elf))
     cmd += (" -march=%s" % isa)
     cmd += (" -mabi=%s" % mabi)
+    logging.info("Compilation cmd: %s" % cmd)
     run_cmd(cmd, debug_cmd = debug_cmd)
   log_list = []
   # ISS simulation

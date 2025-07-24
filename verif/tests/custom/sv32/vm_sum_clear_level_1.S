@@ -8,7 +8,7 @@
 # supervisor mode would raise page fault exception of the 
 # corresponding access type. 
 #
-# - Set pte.u=1 & s/mstatus.SUM = 0 and test the read acces.
+# - Set pte.u=1 & s/mstatus.SUM = 0 and test the read access.
 # - Set pte.u=1 & s/mstatus.SUM = 0 and test the write access.
 # - Set pte.u=1 & s/mstatus.SUM = 0 and test the execute access.
 #

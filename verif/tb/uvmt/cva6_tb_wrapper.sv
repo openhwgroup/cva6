@@ -39,7 +39,7 @@ import uvm_pkg::*;
 import "DPI-C" function void read_elf(input string filename);
 import "DPI-C" function byte read_symbol(input string symbol_name, inout longint unsigned address);
 import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
 `endif
 `endif
 
@@ -59,7 +59,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   localparam type hartid_t            = `HARTID_T(CVA6Cfg),
   localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
   localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartid_t, id_t),
   localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
   localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
   localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
