@@ -31,6 +31,16 @@
     make veri-testharness target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 ###############################################################################
+# Verilator with RISCV proxy kernel support
+###############################################################################
+- iss: veri-testharness-pk
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  cmd: >
+    make veri-testharness-pk target=<target> variant=<variant> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+
+###############################################################################
 # Synopsys VCS specific commands, variables
 ###############################################################################
 - iss: vcs-testharness
