@@ -184,6 +184,7 @@ module issue_read_operands
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_raw_check;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_has_raw;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_fpr;
+  logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_gpr_cvxif;
 
 
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0][ariane_pkg::REG_ADDR_SIZE-1:0] rd_list;
@@ -427,6 +428,8 @@ module issue_read_operands
     assign rs1_fpr[i] = (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(issue_instr_i[i].op));
     assign rs2_fpr[i] = (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(issue_instr_i[i].op));
     assign rs3_fpr[i] = (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(issue_instr_i[i].op));
+    assign rs3_gpr_cvxif[i] = CVA6Cfg.CvxifEn && (OPERANDS_PER_INSTR == 3)
+        && issue_instr_i[i].op == OFFLOAD;
   end
 
   // ----------------------------------
@@ -484,7 +487,7 @@ module issue_read_operands
         .idx_o(idx_hzd_rs3[i]),
         .valid_o(rs3_raw_check[i])
     );
-    assign rs3_has_raw[i] = rs3_raw_check[i] && rs3_fpr[i];
+    assign rs3_has_raw[i] = rs3_raw_check[i] && (rs3_fpr[i] || rs3_gpr_cvxif[i]);
   end
 
   // ----------------------------------
@@ -535,7 +538,7 @@ module issue_read_operands
     // operand forwarding signals
     forward_rs1 = '0;
     forward_rs2 = '0;
-    forward_rs3 = '0;  // FPR only
+    forward_rs3 = '0;  // FPR and CV-X-IF only
 
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       if (rs1_has_raw[i]) begin
@@ -556,7 +559,7 @@ module issue_read_operands
         end
       end
 
-      if (rs3_has_raw[i] && rs3_fpr[i]) begin
+      if (rs3_has_raw[i]) begin
         if (rs3_valid[i]) begin
           forward_rs3[i] = 1'b1;
         end else begin  // the operand is not available -> stall
@@ -743,7 +746,7 @@ module issue_read_operands
     end
   end
   // FU select, assert the correct valid out signal (in the next cycle)
-  // This needs to be like this to make verilator happy. I know its ugly.
+  // This needs to be like this to make verilator happy. I know it's ugly.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       alu_valid_q    <= '0;
@@ -843,7 +846,7 @@ module issue_read_operands
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
-  //adjust address to read from register file (when synchronous RAM is used reads take one cycle, so we advance the address)   
+  //adjust address to read from register file (when synchronous RAM is used reads take one cycle, so we advance the address)
   for (genvar i = 0; i <= CVA6Cfg.NrIssuePorts - 1; i++) begin
     assign raddr_pack[i*OPERANDS_PER_INSTR+0] = CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn ? issue_instr_i_prev[i].rs1[4:0] : issue_instr_i[i].rs1[4:0];
     assign raddr_pack[i*OPERANDS_PER_INSTR+1] = CVA6Cfg.FpgaEn && CVA6Cfg.FpgaAlteraEn ? issue_instr_i_prev[i].rs2[4:0] : issue_instr_i[i].rs2[4:0];
