@@ -180,11 +180,20 @@ module ariane_xilinx (
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
   // common part
-  // input logic      trst_n      ,
+ // input logic         trst_n      ,
   input  logic        tck         ,
   input  logic        tms         ,
   input  logic        tdi         ,
   output wire         tdo         ,
+  input logic prog_clko                 ,
+  input logic prog_rxen                 ,
+  input logic prog_txen                 ,
+  input logic prog_spien                ,
+  output logic prog_rdn                 ,
+  output logic prog_wrn                 ,
+  output logic prog_oen                 ,
+  output logic prog_siwun               ,
+  inout logic [7:0]  prog_d             ,
   input  logic        rx          ,
   output logic        tx
 );
@@ -902,6 +911,24 @@ ariane #(
         .pop_i     (encap_fifo_pop)
     );
 
+    localparam DATA_LEN = 8;
+    logic                           valid_slice;
+    logic [DATA_LEN-1:0]            slice;
+    logic [$clog2(DATA_LEN)-4:0]    valid_bytes;
+
+    slicer_DPTI #(
+        .SLICE_LEN(DATA_LEN),
+        .NO_TIME ('0)
+    ) i_slicer (
+        .clk_i             (clk),
+        .rst_ni            (ndmreset_n),
+        .valid_i           (!encap_fifo_empty),
+        .encap_fifo_entry_i(encap_fifo_entry_o),
+        .fifo_full_i       (usrFull), // usrFull DPTI
+        .valid_o           (valid_slice),
+        .slice_o           (slice),
+        .done_o            (encap_fifo_pop)
+    );
 // ---------------
 // CLINT
 // ---------------
@@ -974,7 +1001,67 @@ end else begin
         .rdata_o ( rom_rdata )
     );
 end
+// ---------------
+// DPTI
+// ---------------
 
+logic FifoEn ;
+logic usrFull ;
+logic usrEmpty ;
+logic [7:0] w_data;
+logic [7:0] r_data;
+
+logic [11:0] w_count;
+logic [11:0] r_count;
+
+logic prog_rxen_debug;
+logic prog_txen_debug;
+logic prog_spien_debug;
+logic prog_rdn_debug;
+logic prog_wrn_debug;
+logic prog_oen_debug;
+logic prog_siwun_debug;
+
+assign prog_rxen_debug = prog_rxen;
+assign prog_txen_debug = prog_txen;
+assign prog_spien_debug = prog_spien;
+assign prog_rdn_debug = prog_rdn;
+assign prog_wrn_debug = prog_wrn;
+assign prog_oen_debug = prog_oen;
+assign prog_siwun_debug = prog_siwun;
+
+//assign  w_data = {iti_to_encoder.itype[0],iti_to_encoder.itype[1],iti_to_encoder.valid} ;
+
+assign FifoEn = !usrFull && !usrEmpty;
+ dpti_ctrl i_dpti_ctrl (
+          .wr_clk (clk),
+          .wr_en  (valid_slice),
+          .wr_full(usrFull),
+          .wr_afull(),
+          .wr_err(),
+          .wr_count(w_count),
+          .wr_di(slice),
+
+          .rd_clk(clk),
+          .rd_en(FifoEn),
+          .rd_empty(usrEmpty),
+          .rd_aempty(),
+          .rd_err (),
+          .rd_count(r_count),
+          .rd_do(r_data),
+
+          .rst(rst),
+
+          .prog_clko(prog_clko),
+          .prog_rxen(prog_rxen),
+          .prog_txen(prog_txen),
+          .prog_spien('0),
+          .prog_rdn(prog_rdn),
+          .prog_wrn(prog_wrn),
+          .prog_oen(prog_oen),
+          .prog_siwun(prog_siwun),
+          .prog_d(prog_d)
+);
 // ---------------
 // Peripherals
 // ---------------

@@ -769,6 +769,25 @@ module ariane_testharness #(
         .data_o    (encap_fifo_entry_o),
         .pop_i     (encap_fifo_pop)
     );
+    localparam DATA_LEN = 8;
+
+    logic                           slicer_valid;
+    logic [DATA_LEN-1:0]            slice;
+    logic [$clog2(DATA_LEN)-4:0]    valid_bytes;
+
+    slicer_DPTI #(
+        .SLICE_LEN(DATA_LEN),
+        .NO_TIME ('0)
+    ) i_slicer (
+        .clk_i             (clk_i),
+        .rst_ni            (rst_ni),
+        .valid_i           (!encap_fifo_empty),
+        .encap_fifo_entry_i(encap_fifo_entry_o),
+        .fifo_full_i       ('0), // usrFull DPTI in ariane_xilinx
+        .valid_o           (slicer_valid),
+        .slice_o           (slice),
+        .done_o            (encap_fifo_pop)
+    );
 
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),

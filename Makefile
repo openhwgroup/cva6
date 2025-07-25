@@ -227,6 +227,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         corev_apu/instr_tracing/rv_tracer-main/rtl/te_resync_counter.sv              \
         corev_apu/instr_tracing/rv_tracer-main/rtl/rv_tracer.sv                      \
         vendor/pulp-platform/common_cells/src/fifo_v3.sv                             \
+        corev_apu/instr_tracing/DPTI/slicer_DPTI.sv                                  \
         corev_apu/instr_tracing/rv_encapsulator-main/src/rtl/encapsulator.sv
 src := $(addprefix $(root-dir), $(src))
 
@@ -236,6 +237,9 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/vhdl_orig/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
+
+dpti_src := $(wildcard corev_apu/instr_tracing/DPTI/*.vhd)
+dpti_src := $(addprefix $(root-dir), $(dpti_src))
 
 uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
               corev_apu/fpga/src/apb_uart/src/slib_counter.sv       \
@@ -805,9 +809,10 @@ fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/co
 $(addprefix $(root-dir), corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv):
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) PLATFORM=$(PLATFORM) bootrom_$(XLEN).sv
 
-fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
+fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(dpti_src) $(src_flist)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(dpti_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
