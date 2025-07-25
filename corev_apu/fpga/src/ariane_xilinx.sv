@@ -826,6 +826,44 @@ ariane #(
         .valid_o(),
         .iti_to_encoder_o(iti_to_encoder)
     );
+
+    logic                    packet_valid;
+    te_pkg::it_packet_type_e packet_type;
+    logic [te_pkg::P_LEN-1:0] packet_length;
+    logic [te_pkg::PAYLOAD_LEN-1:0] packet_payload;
+
+    rv_tracer #(
+        .N(1),
+        .ONLY_BRANCHES(1)
+    )i_encoder(
+        .clk_i               (clk),
+        .rst_ni              (ndmreset_n),
+        .valid_i             (iti_to_encoder.valid),
+        .itype_i             (iti_to_encoder.itype),
+        .cause_i             (iti_to_encoder.cause),
+        .tval_i              (iti_to_encoder.tval),
+        .priv_i              (iti_to_encoder.priv),
+        .iaddr_i             (iti_to_encoder.iaddr),
+        .iretire_i           (iti_to_encoder.iretire),
+        .ilastsize_i         (iti_to_encoder.ilastsize),
+        .time_i              (iti_to_encoder.cycles),
+        .tvec_i              ('0),
+        .epc_i               ('0),
+        .encapsulator_ready_i('1),
+        .paddr_i             ('0),
+        .pwrite_i            ('0),
+        .psel_i              ('0),
+        .penable_i           ('0),
+        .pwdata_i            ('0),
+        .packet_valid_o      (packet_valid),
+        .packet_type_o       (packet_type),
+        .packet_length_o     (packet_length),
+        .packet_payload_o    (packet_payload),
+        .stall_o             (),
+        .pready_o            (),
+        .prdata_o            ()
+    );
+
 // ---------------
 // CLINT
 // ---------------

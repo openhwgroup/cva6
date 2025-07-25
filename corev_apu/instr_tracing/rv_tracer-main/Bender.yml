@@ -1,0 +1,25 @@
+# Package metadata. Required.
+package:
+  # The name of the package. Required.
+  name: rv_tracer
+
+  # The list of package authors and contributors. Optional.
+  # By convention, authors should be listed in the form shown below.
+  authors: ["Umberto Laghi <umberto.laghi2@unibo.it>"]
+
+dependencies:
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.13 }
+  common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.38.0 }
+
+# List of source files in this package. Optional.
+sources:
+  # Source files can be grouped:
+  - files:
+      - include/te_pkg.sv
+      - rtl/te_branch_map.sv
+      - rtl/te_filter.sv
+      - rtl/te_packet_emitter.sv
+      - rtl/te_priority.sv
+      - rtl/te_reg.sv
+      - rtl/te_resync_counter.sv
+      - rtl/rv_tracer.sv

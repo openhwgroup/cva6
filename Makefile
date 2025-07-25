@@ -202,6 +202,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv     \
         vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                    \
         corev_apu/instr_tracing/ITI/include/iti_pkg.sv                               \
+        corev_apu/instr_tracing/rv_tracer-main/include/te_pkg.sv                     \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
@@ -212,6 +213,18 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         corev_apu/instr_tracing/ITI/cva6_iti/block_retirement.sv                     \
         corev_apu/instr_tracing/ITI/cva6_iti/single_retirement.sv                    \
         corev_apu/instr_tracing/ITI/cva6_iti/itype_detector.sv                       \
+        vendor/pulp-platform/common_cells/src/counter.sv                             \
+        vendor/pulp-platform/common_cells/src/sync.sv                                \
+        vendor/pulp-platform/common_cells/src/sync_wedge.sv                          \
+        vendor/pulp-platform/common_cells/src/edge_detect.sv                         \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/lzc.sv                            \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_branch_map.sv                  \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_filter.sv                      \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_packet_emitter.sv              \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_priority.sv                    \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_reg.sv                         \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_resync_counter.sv              \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/rv_tracer.sv                      \
 src := $(addprefix $(root-dir), $(src))
 
 copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
