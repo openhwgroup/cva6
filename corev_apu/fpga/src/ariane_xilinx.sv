@@ -864,6 +864,44 @@ ariane #(
         .prdata_o            ()
     );
 
+    logic                    encap_valid;
+    encap_pkg::encap_fifo_entry_s   encap_fifo_entry_i;
+    encap_pkg::encap_fifo_entry_s   encap_fifo_entry_o;
+    logic                           encap_fifo_full;
+    logic                           encap_fifo_empty;
+    logic                           encap_fifo_pop;
+
+    encapsulator i_encapsulator (
+        .clk_i              (clk),
+        .valid_i            (packet_valid),
+        .packet_length_i    (packet_length),
+        .flow_i             ('0),
+        .timestamp_present_i('1),
+        //.srcid_i(),
+        .timestamp_i        (rvfi_to_iti.cycles),
+        //.type_i(),
+        .trace_payload_i    (packet_payload),
+        .valid_o            (encap_valid),
+        .encap_fifo_entry_o (encap_fifo_entry_i)
+    );
+
+    fifo_v3 # (
+        .DEPTH(16),
+        .dtype(encap_pkg::encap_fifo_entry_s)
+    ) i_fifo_encap (
+        .clk_i     (clk),
+        .rst_ni    (ndmreset_n),
+        .flush_i   ('0),
+        .testmode_i('0),
+        .full_o    (encap_fifo_full),
+        .empty_o   (encap_fifo_empty),
+        .usage_o   (),
+        .data_i    (encap_fifo_entry_i),
+        .push_i    (encap_valid),
+        .data_o    (encap_fifo_entry_o),
+        .pop_i     (encap_fifo_pop)
+    );
+
 // ---------------
 // CLINT
 // ---------------

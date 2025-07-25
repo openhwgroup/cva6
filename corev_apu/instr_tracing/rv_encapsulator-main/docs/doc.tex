@@ -1,0 +1,139 @@
+\documentclass[12pt,a4paper,twoside]{book}
+\raggedbottom
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,inner=3.5cm,outer=2.5cm]{geometry}
+
+\usepackage[titletoc,title,toc,page]{appendix}
+\usepackage{verbatim}
+\usepackage{placeins}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{parskip}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{array}
+
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{chngcntr}
+\counterwithin{table}{chapter}
+
+\usepackage{newlfont}
+\usepackage{fancyhdr}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+\usepackage{soul}
+\usepackage[font=footnotesize,labelfont=bf]{caption}
+
+\usepackage{multirow}
+\usepackage{hyphenat}
+\hyphenation{mate-mati-ca recu-perare}
+
+\usepackage{lscape} 
+
+\usepackage[authoryear]{natbib}
+\bibliographystyle{alpha}
+\setcitestyle{super,open={[},close={]}}
+
+\newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+
+\usepackage{pdfpages}
+
+\let\cleardoublepage=\clearpage
+
+\begin{document}
+\pagestyle{empty}
+\newgeometry{
+    left=20mm,
+    right=20mm,
+    top=30mm,
+    bottom=20mm
+}
+
+\begin{titlepage}
+
+\begin{center}
+
+% marchio di ateneo
+\includegraphics[width=6.5cm,height=4.7cm]{img/marchio-di-ateneo.png}
+
+\vspace{10mm}
+
+% \large is 12pt
+{\large{\bf{Dipartimento di Ingegneria dell'Energia Elettrica e dell'Informazione "Guglielmo Marconi"}}} 
+
+\vspace{5mm}
+
+% \Large is 14.4pt
+%{\Large{\bf{Master Degree in Computer Engineering}}}
+
+\vspace{15mm}
+
+{\Huge{\bf Implementation of the }}\\
+\vspace{3mm}
+{\Huge{\bf Unformatted Trace \& Diagnostic Data}}\\
+\vspace{3mm}
+{\Huge{\bf Packet Encapsulation for RISC-V}}\\
+\vspace{3mm}
+{\Huge{\bf  specification}}\\
+\vspace{3mm}
+
+\end{center}
+
+\vspace{20mm}
+
+\begin{minipage}[t]{0.40\textwidth}
+{\Large{\bf Supervisor: \\ Prof.\\ Andrea Bartolini}}
+
+\vspace{3mm}
+
+{\Large{\bf Co-supervisor: \\ Simone Manoni \\}}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.40\textwidth}\raggedleft
+{\Large{\bf Presented by: \\ Umberto Laghi}}
+\end{minipage}
+
+%\vspace{50mm}
+
+%\rule[0.5cm]{15.8cm}{0.6mm}
+
+%\begin{center}
+%{\large{\bf December 2024 session\\}}
+%{\large{\bf Academic Year 2023/2024\\}}
+%\end{center}
+
+\end{titlepage}
+
+\restoregeometry
+\newpage~\newpage
+\pagenumbering{gobble}
+\input{tex_files/abstract.tex}
+\newpage~
+
+\topmargin=-1cm
+\tableofcontents
+\thispagestyle{empty}
+\listoftables
+\thispagestyle{empty}
+\listoffigures
+\thispagestyle{empty}
+\newpage~\newpage
+
+\pagestyle{plain}
+\pagenumbering{arabic}
+\input{tex_files/introduction.tex}
+\input{tex_files/encapsulator.tex}
+\input{tex_files/slicer.tex}
+\input{tex_files/atb_transmitter.tex}
+
+% last empty page
+\newpage~
+\pagenumbering{gobble}
+
+\end{document}

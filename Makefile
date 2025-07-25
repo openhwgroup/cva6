@@ -203,6 +203,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                    \
         corev_apu/instr_tracing/ITI/include/iti_pkg.sv                               \
         corev_apu/instr_tracing/rv_tracer-main/include/te_pkg.sv                     \
+        corev_apu/instr_tracing/rv_encapsulator-main/src/include/encap_pkg.sv        \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
@@ -225,6 +226,8 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         corev_apu/instr_tracing/rv_tracer-main/rtl/te_reg.sv                         \
         corev_apu/instr_tracing/rv_tracer-main/rtl/te_resync_counter.sv              \
         corev_apu/instr_tracing/rv_tracer-main/rtl/rv_tracer.sv                      \
+        vendor/pulp-platform/common_cells/src/fifo_v3.sv                             \
+        corev_apu/instr_tracing/rv_encapsulator-main/src/rtl/encapsulator.sv
 src := $(addprefix $(root-dir), $(src))
 
 copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \

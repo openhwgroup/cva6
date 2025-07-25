@@ -1,0 +1,18 @@
+\chapter*{Abstract}\label{abstract}
+
+The RISC-V \textit{Efficient Trace} (E-Trace) specification offers a standardized and efficient 
+branch tracing mechanism, defining algorithms, input ports, and trace output formats. However, 
+while the Trace Encoder (TE) can produce trace packets as per the specification, its output 
+remains inaccessible outside simulation environments.  
+
+To bridge this gap, the RISC-V consortium introduced the \textit{Unformatted Trace \& Diagnostic 
+Data Packet Encapsulation for RISC-V}, a module that transforms TE output into standardized 
+packets suitable for off-chip transmission.
+For our specific use case, the \textit{ARM Trace Bus} (ATB) protocol was selected as the output 
+format, owing to its suitability for trace data transport and seamless conversion to advanced 
+protocols like AXI and PCIe for debugging purposes.  
+
+The resulting architecture is modular and designed for adaptability, enabling easy integration 
+with alternative communication protocols as required. This work provides an efficient and 
+flexible solution for trace data handling, facilitating the extraction of real-time tracing data 
+in modern RISC-V-based systems.
