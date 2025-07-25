@@ -201,17 +201,17 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/tech_cells_generic/src/deprecated/cluster_clk_cells.sv  \
         vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv     \
         vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                    \
-		core/include/iti_pkg.sv														 \
+        corev_apu/instr_tracing/ITI/include/iti_pkg.sv                               \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
         corev_apu/tb/common/uart.sv                                                  \
         corev_apu/tb/common/SimDTM.sv                                                \
         corev_apu/tb/common/SimJTAG.sv                                               \
-        core/cva6_iti/instr_to_trace.sv                                              \
-        core/cva6_iti/iti.sv                                                         \
-        core/cva6_iti/itype_detector.sv
-
+        corev_apu/instr_tracing/ITI/cva6_iti/iti.sv                                  \
+        corev_apu/instr_tracing/ITI/cva6_iti/block_retirement.sv                     \
+        corev_apu/instr_tracing/ITI/cva6_iti/single_retirement.sv                    \
+        corev_apu/instr_tracing/ITI/cva6_iti/itype_detector.sv                       \
 src := $(addprefix $(root-dir), $(src))
 
 copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
@@ -316,6 +316,7 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
           $(CVA6_REPO_DIR)/verif/tb/core/ \
           $(CVA6_REPO_DIR)/core/include/ \
+          $(CVA6_REPO_DIR)/corev_apu/instr_tracing/ITI/include \
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
 # Compile and sim flags

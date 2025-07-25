@@ -682,15 +682,15 @@ module ariane_testharness #(
         .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
         .ITYPE_LEN (iti_pkg::ITYPE_LEN),
         .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
+        .block_mode(0),
         .rvfi_to_iti_t(rvfi_to_iti_t),
         .iti_to_encoder_t(iti_to_encoder_t)
-    ) i_iti (
+    ) i_cva6_iti (
         .clk_i  (clk_i),
         .rst_ni (ndmreset_n),
         // inputs from rvfi
         .valid_i(rvfi_to_iti.valid),
         .rvfi_to_iti_i(rvfi_to_iti),
-        // outputs for the encoder module TODO
         .valid_o(),
         .iti_to_encoder_o(iti_to_encoder)
     );

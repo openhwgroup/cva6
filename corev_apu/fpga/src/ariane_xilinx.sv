@@ -10,6 +10,9 @@
 
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+`include "axi/assign.svh"
+`include "rvfi_types.svh"
+`include "iti_types.svh"
 
 module ariane_xilinx (
 // WARNING: Do not define input parameters. This causes the FPGA build to fail.
@@ -199,11 +202,17 @@ endfunction
 // CVA6 Xilinx configuration
 localparam config_pkg::cva6_cfg_t CVA6Cfg = build_fpga_config(cva6_config_pkg::cva6_cfg);
 
+localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
+localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
+localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
+localparam type iti_to_encoder_t = `ITI_TO_ENCODER_T(CVA6Cfg);
+
 localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
 localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
 localparam type rvfi_probes_t = struct packed {
-  logic csr;
-  logic instr;
+  rvfi_probes_csr_t csr;
+  rvfi_probes_instr_t instr;
 };
 
 // 24 MByte in 8 byte words
@@ -753,6 +762,11 @@ end
 // ---------------
 ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
+rvfi_probes_t rvfi_probes;
+rvfi_csr_t rvfi_csr;
+rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+rvfi_to_iti_t rvfi_to_iti;
+iti_to_encoder_t iti_to_encoder;
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
@@ -767,7 +781,7 @@ ariane #(
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
-    .rvfi_probes_o( /* open */          ),
+    .rvfi_probes_o( rvfi_probes         ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
     .noc_resp_i   ( axi_ariane_resp     )
@@ -776,6 +790,42 @@ ariane #(
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
 `AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
 
+  cva6_rvfi #(
+      .CVA6Cfg   (CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(rvfi_csr_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
+  ) i_cva6_rvfi (
+      .clk_i        (clk),
+      .rst_ni       (ndmreset_n),
+      .rvfi_probes_i(rvfi_probes),
+      .rvfi_instr_o (rvfi_instr),
+      .rvfi_to_iti_o   (rvfi_to_iti),
+      .rvfi_csr_o   (rvfi_csr)
+  );
+
+
+    cva6_iti #(
+        .CVA6Cfg   (CVA6Cfg),
+        .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
+        .ITYPE_LEN (iti_pkg::ITYPE_LEN),
+        .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
+        .block_mode(0),
+        .rvfi_to_iti_t(rvfi_to_iti_t),
+        .iti_to_encoder_t(iti_to_encoder_t)
+    ) i_iti (
+        .clk_i  (clk),
+        .rst_ni (ndmreset_n),
+        // inputs from rvfi
+        .valid_i(rvfi_to_iti.valid),
+        .rvfi_to_iti_i(rvfi_to_iti),
+        // outputs for the encoder module TODO
+        .valid_o(),
+        .iti_to_encoder_o(iti_to_encoder)
+    );
 // ---------------
 // CLINT
 // ---------------

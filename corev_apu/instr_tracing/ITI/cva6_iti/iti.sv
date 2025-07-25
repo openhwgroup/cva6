@@ -14,6 +14,7 @@ module cva6_iti #(
     parameter CAUSE_LEN = 5,  //Size is ecause_width_p in the E-Trace SPEC
     parameter ITYPE_LEN = 3,  //Size is itype_width_p in the E-Trace SPEC (3 or 4)
     parameter IRETIRE_LEN = 32,  //Size is iretire_width_p in the E-Trace SPEC
+    parameter block_mode = 0,
     parameter type rvfi_to_iti_t = logic,
     parameter type iti_to_encoder_t = logic
 ) (
@@ -30,7 +31,8 @@ module cva6_iti #(
   // pragma translate_off
   int f;
   initial begin
-    f = $fopen("iti.trace", "w");
+    f = $fopen("iti.traces", "w");
+    $fwrite(f, "itype_0,cause,tval,priv,iaddr_0,context,ctype,iretire_0,ilastsize_0\n");
   end
   final $fclose(f);
   // pragma translate_on
@@ -95,31 +97,50 @@ module cva6_iti #(
 
     // Adding this to ensure that interrupt/exception happen only in commit port 0 of cva6
     assign cause_itt[i] = i == 0 ? rvfi_to_iti_i.cause[CAUSE_LEN-1:0] : '0;
-    assign tval_itt[i] = i == 0 ? rvfi_to_iti_i.tval : '0;
-    // Systolic logic (First itt is connected to D Flip-Flop to continue computation if needed)
-    assign counter_itt[i] = i == 0 ? counter_q : counter[i-1];
-    assign addr_itt[i] = i == 0 ? addr_q : addr[i-1];
-    assign special_itt[i] = i == 0 ? special_q : special[i-1];
+    assign tval_itt[i]  = i == 0 ? rvfi_to_iti_i.tval : '0;
 
-    instr_to_trace #(
-        .CVA6Cfg(CVA6Cfg),
-        .uop_entry_t(uop_entry_t),
-        .itt_out_t(itt_out_t),
-        .CAUSE_LEN(CAUSE_LEN),
-        .ITYPE_LEN(ITYPE_LEN),
-        .IRETIRE_LEN(IRETIRE_LEN)
-    ) i_instr_to_trace (
-        .uop_entry_i(uop_entry[i]),
-        .cause_i(cause_itt[i]),
-        .tval_i(tval_itt[i]),
-        .counter_i(counter_itt[i]),
-        .iaddr_i(addr_itt[i]),
-        .was_special_i(special_itt[i]),
-        .itt_out_o(itt_out[i]),
-        .counter_o(counter[i]),
-        .iaddr_o(addr[i]),
-        .is_special_o(special[i])
-    );
+    if (block_mode) begin
+      // Systolic logic (First block_retirement is connected to D Flip-Flop to continue computation if needed)
+      assign counter_itt[i] = i == 0 ? counter_q : counter[i-1];
+      assign addr_itt[i] = i == 0 ? addr_q : addr[i-1];
+      assign special_itt[i] = i == 0 ? special_q : special[i-1];
+
+      block_retirement #(
+          .CVA6Cfg(CVA6Cfg),
+          .uop_entry_t(uop_entry_t),
+          .itt_out_t(itt_out_t),
+          .CAUSE_LEN(CAUSE_LEN),
+          .ITYPE_LEN(ITYPE_LEN),
+          .IRETIRE_LEN(IRETIRE_LEN)
+      ) i_block_retirement (
+          .uop_entry_i(uop_entry[i]),
+          .cause_i(cause_itt[i]),
+          .tval_i(tval_itt[i]),
+          .counter_i(counter_itt[i]),
+          .iaddr_i(addr_itt[i]),
+          .was_special_i(special_itt[i]),
+          .itt_out_o(itt_out[i]),
+          .counter_o(counter[i]),
+          .iaddr_o(addr[i]),
+          .is_special_o(special[i])
+      );
+
+    end else begin
+      single_retirement #(
+          .CVA6Cfg(CVA6Cfg),
+          .uop_entry_t(uop_entry_t),
+          .itt_out_t(itt_out_t),
+          .CAUSE_LEN(CAUSE_LEN),
+          .ITYPE_LEN(ITYPE_LEN),
+          .IRETIRE_LEN(IRETIRE_LEN)
+      ) i_single_retirement (
+          .uop_entry_i(uop_entry[i]),
+          .cause_i(cause_itt[i]),
+          .tval_i(tval_itt[i]),
+          .itt_out_o(itt_out[i])
+      );
+
+    end
   end
 
 
@@ -158,29 +179,30 @@ module cva6_iti #(
       iti_to_encoder_o.tval  = itt_out[0].tval;
     end
   end
-
-  assign counter_d = counter[CVA6Cfg.NrCommitPorts-1];
-  assign addr_d = addr[CVA6Cfg.NrCommitPorts-1];
-  assign special_d = special[CVA6Cfg.NrCommitPorts-1];
+  if (block_mode) begin
+    assign counter_d = counter[CVA6Cfg.NrCommitPorts-1];
+    assign addr_d = addr[CVA6Cfg.NrCommitPorts-1];
+    assign special_d = special[CVA6Cfg.NrCommitPorts-1];
+  end
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      counter_q <= '0;
-      addr_q <= '0;
-      special_q <= 1'b1;
-    end else begin
-      counter_q <= counter_d;
-      addr_q <= addr_d;
-      special_q <= special_d;
+    if (block_mode) begin
+      if (!rst_ni) begin
+        counter_q <= '0;
+        addr_q <= '0;
+        special_q <= 1'b1;
+      end else begin
+        counter_q <= counter_d;
+        addr_q <= addr_d;
+        special_q <= special_d;
+      end
     end
     //pragma translate_off
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
       if (itt_out[i].valid) begin
-        $fwrite(
-            f,
-            "i :%d , val = %d , iret = %d, ilast = 0x%d , itype = %d , cause = 0x%h , tval= 0x%h , priv = 0x%d , iadd= 0x%h \n",
-            i, itt_out[i].valid, itt_out[i].iretire, itt_out[i].ilastsize, itt_out[i].itype,
-            itt_out[i].cause, itt_out[i].tval, itt_out[i].priv, itt_out[i].iaddr);
+        $fwrite(f, "%d,%0d,%0d,%d,%h,0,0,%0d,%0d\n", itt_out[i].itype, itt_out[i].cause,
+                itt_out[i].tval, itt_out[i].priv, itt_out[i].iaddr, itt_out[i].iretire,
+                itt_out[i].ilastsize);
       end
     end
     //pragma translate_on

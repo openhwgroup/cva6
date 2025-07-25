@@ -1,12 +1,20 @@
-# Copyright 2021 Thales DIS design services SAS
+# Copyright 2025 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Original Author: Jean-Roch COULON - Thales
+# Author: Maxime Colson - Thales
 
+if [ "$#" -eq 1 ]; then
+  ELF_ARG="$1"
+elif [ "$#" -gt 1 ]; then
+  echo "Usage: $0 <elf_executable>"
+  exit 1
+else 
+  ELF_ARG="../tests/custom/ITI/test_iti_asm.o"
+fi
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -14,7 +22,7 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
+  DV_SIMULATORS=vcs-testharness
 fi
 
 # install the required tools
@@ -40,9 +48,8 @@ cd verif/sim/
 
 make -C ../.. clean
 make clean_all
-python3 cva6.py --elf_tests ../tests/custom/ITI/test_iti_asm.o --target cv32a65x --iss_yaml cva6.yaml --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld $DV_OPTS
-#python3 cva6.py --c_tests ../tests/custom/ITI/test_iti_asm.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS
-cp iti.trace ../../.gitlab-ci
+python3 cva6.py --elf_tests "$ELF_ARG" --target cv32a60x --iss_yaml cva6.yaml --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld $DV_OPTS
+#python3 cva6.py --c_tests ../tests/custom/ITI/test_iti_asm.c --iss_yaml cva6.yaml --target cv32a60x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS
 make -C ../.. clean
 make clean_all
 

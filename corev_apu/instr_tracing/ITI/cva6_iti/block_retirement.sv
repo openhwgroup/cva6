@@ -9,7 +9,7 @@
 //Systolic module used to determines the iaddr, ilastsize, iretire for Encoder Module
 
 
-module instr_to_trace #(
+module block_retirement #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type uop_entry_t = logic,
     parameter type itt_out_t = logic,
