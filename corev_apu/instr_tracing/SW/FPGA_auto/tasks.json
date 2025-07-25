@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+
+        {
+            "label": "build-exec",
+            "type": "shell",
+            "command": "riscv-none-elf-gcc",
+            "args": [
+                "-g", "-T", "custom_linker.ld",
+                "-march=rv32imac_zicsr",
+                "-lgcc", "-fvisibility=hidden",
+                "-mcmodel=medany", "-mabi=ilp32",
+                "-nostartfiles", "crt.S", "syscalls.c", "test.c",
+                "-o", "Prog_compiled"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+        "label": "start openocd",
+        "type": "shell",
+        "command": "bash",
+        "args": [
+            "-c",
+            "nohup gnome-terminal -- bash -c \"openocd -f ariane.cfg; exec bash\""
+        ],
+        "problemMatcher": []
+    },
+    {
+        "label": "build-and-start-openocd",
+        "dependsOn": ["build-exec", "start openocd"]
+    }
+    ]
+  }

@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug FPGA via OpenOCD",
+        "type": "cppdbg",
+        "targetArchitecture": "x86_64",
+        "request": "launch",
+        "program": "${workspaceFolder}/Prog_compiled",
+        "miDebuggerServerAddress": "localhost:3333",
+        "useExtendedRemote": true,
+        "miDebuggerPath": "/home/mcolson/toolchain/bin/riscv-none-elf-gdb",
+        "stopAtEntry": true,
+        "stopAtConnect": true,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "preLaunchTask": "build-and-start-openocd",
+        "postRemoteConnectCommands": [
+          {
+           "text": "source ${workspaceFolder}/gdb_init.txt" 
+          }
+        ]
+        }
+    ]
+  }
+  
