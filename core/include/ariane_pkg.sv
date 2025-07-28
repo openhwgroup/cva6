@@ -856,7 +856,7 @@ package ariane_pkg;
   // ----------------------
   // Avoid negative array slices when defining parametrized sizes
   function automatic int unsigned avoid_neg(int n);
-    return (n < 0) ? 0 : n;
+    return (n < 0) ? 32'd0 : n;
   endfunction : avoid_neg
 
 endpackage
