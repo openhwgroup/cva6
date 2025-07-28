@@ -816,6 +816,13 @@ module cva6
     assign wt_valid_ex_id[ACC_WB] = acc_valid_ex_id;
   end else begin
     assign cvxif_req = '0;
+    assign x_compressed_ready = '0;
+    assign x_compressed_resp = '0;
+    assign x_issue_ready = '0;
+    assign x_issue_resp = '0;
+    assign x_register_ready = '0;
+    assign x_result_valid = '0;
+    assign x_result = '0;
   end
 
   if (CVA6Cfg.CvxifEn && CVA6Cfg.EnableAccelerator) begin : gen_err_xif_and_acc
@@ -1466,7 +1473,8 @@ module cva6
         .noc_req_o (noc_req_o),
         .noc_resp_i(noc_resp_i)
     );
-    assign inval_ready = 1'b1;
+    assign inval_ready   = 1'b1;
+    assign miss_vld_bits = '0;
   end else begin : gen_cache_wb
     std_cache_subsystem #(
         // note: this only works with one cacheable region
@@ -1519,6 +1527,7 @@ module cva6
     );
     assign dcache_commit_wbuffer_not_ni = 1'b1;
     assign inval_ready                  = 1'b1;
+    assign miss_vld_bits                = '0;
   end
 
   // ----------------

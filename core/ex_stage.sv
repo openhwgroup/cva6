@@ -636,6 +636,8 @@ module ex_stage
     assign x_exception_o    = '0;
     assign x_result_o       = '0;
     assign x_valid_o        = '0;
+    assign x_we_o           = '0;
+    assign x_rd_o           = '0;
   end
 
   if (CVA6Cfg.RVS) begin
