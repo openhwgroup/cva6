@@ -184,16 +184,16 @@ module ariane_xilinx (
   input  logic        tck         ,
   input  logic        tms         ,
   input  logic        tdi         ,
-  output wire         tdo         ,
-  input logic prog_clko                 ,
-  input logic prog_rxen                 ,
-  input logic prog_txen                 ,
-  input logic prog_spien                ,
-  output logic prog_rdn                 ,
-  output logic prog_wrn                 ,
-  output logic prog_oen                 ,
-  output logic prog_siwun               ,
-  inout logic [7:0]  prog_d             ,
+  output  wire         tdo         ,
+  input  logic        prog_clko   ,
+  input  logic        prog_rxen   ,
+  input  logic        prog_txen   ,
+  input  logic        prog_spien  ,
+  output logic        prog_rdn    ,
+  output logic        prog_wrn    ,
+  output logic        prog_oen    ,
+  output logic        prog_siwun  ,
+  inout  logic [7:0]  prog_d      ,
   input  logic        rx          ,
   output logic        tx
 );
@@ -212,15 +212,15 @@ endfunction
 localparam config_pkg::cva6_cfg_t CVA6Cfg = build_fpga_config(cva6_config_pkg::cva6_cfg);
 
 localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
-localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
-localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+//localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
+//localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
 localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
 localparam type iti_to_encoder_t = `ITI_TO_ENCODER_T(CVA6Cfg);
 
 localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
 localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
 localparam type rvfi_probes_t = struct packed {
-  rvfi_probes_csr_t csr;
+  logic csr;
   rvfi_probes_instr_t instr;
 };
 
@@ -772,7 +772,7 @@ end
 ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 rvfi_probes_t rvfi_probes;
-rvfi_csr_t rvfi_csr;
+
 rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
 rvfi_to_iti_t rvfi_to_iti;
 iti_to_encoder_t iti_to_encoder;
@@ -802,7 +802,7 @@ ariane #(
   cva6_rvfi #(
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
-      .rvfi_csr_t(rvfi_csr_t),
+      .rvfi_csr_t(),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
       .rvfi_probes_csr_t(rvfi_probes_csr_t),
       .rvfi_probes_t(rvfi_probes_t),
@@ -813,7 +813,7 @@ ariane #(
       .rvfi_probes_i(rvfi_probes),
       .rvfi_instr_o (rvfi_instr),
       .rvfi_to_iti_o   (rvfi_to_iti),
-      .rvfi_csr_o   (rvfi_csr)
+      .rvfi_csr_o   ()
   );
 
 
@@ -873,7 +873,7 @@ ariane #(
         .prdata_o            ()
     );
 
-    logic                    encap_valid;
+    logic                           encap_valid;
     encap_pkg::encap_fifo_entry_s   encap_fifo_entry_i;
     encap_pkg::encap_fifo_entry_s   encap_fifo_entry_o;
     logic                           encap_fifo_full;
