@@ -368,15 +368,15 @@ module cva6
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
-  riscv::priv_lvl_t                             priv_lvl;
-  logic                                         v;
-  exception_t                                   ex_commit;  // exception from commit stage
-  bp_resolve_t                                  resolved_branch;
-  logic             [         CVA6Cfg.VLEN-1:0] pc_commit;
-  logic                                         eret;
-  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
-  logic                                         mbe; // determines the data endian-ness of the processor
+  riscv::priv_lvl_t priv_lvl;
+  logic v;
+  exception_t ex_commit;  // exception from commit stage
+  bp_resolve_t resolved_branch;
+  logic [CVA6Cfg.VLEN-1:0] pc_commit;
+  logic eret;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
+  logic mbe;  // determines the data endian-ness of the processor
 
   localparam NumPorts = 4;
 
