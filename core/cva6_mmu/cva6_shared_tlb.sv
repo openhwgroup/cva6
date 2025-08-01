@@ -365,18 +365,18 @@ module cva6_shared_tlb #(
       i_req_q <= i_req_d;
       shared_tag_valid <= shared_tag_valid_q[tag_rd_addr];
 
-   end
+    end
   end
 
   if (CVA6Cfg.RVH) begin
-   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
-     tlb_update_vmid_q <= '{default: 0};
-    end else begin
-     tlb_update_vmid_q <= tlb_update_vmid_d;
-   end
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        tlb_update_vmid_q <= '{default: 0};
+      end else begin
+        tlb_update_vmid_q <= tlb_update_vmid_d;
+      end
+    end
   end
- end
 
   // ------------------
   // Update and Flush
