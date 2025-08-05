@@ -1,0 +1,313 @@
+load("@bazel-orfs//:openroad.bzl", "orfs_flow")
+
+TARGET_CFGS = {
+    "cv32a60x": {
+        "hpdcache_sram_1rw": {
+            "name": "hpdcache_sram_1rw\\$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[0].dir_sram.ram_i",
+            "rows": 64,
+            "width": 28,
+        },
+        "hpdcache_sram_wbyteenable_1rw": {
+            "name": "hpdcache_sram_wbyteenable_1rw\\$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[0].gen_data_sram_wbyteenable.data_sram.ram_i",
+            "rows": 128,
+            "width": 64,
+        },
+    },
+    "cv32a65x": {},
+    "cv64a6_mmu": {},
+}
+
+# The SRAMs have been identified by doing a build with the behavioral model SRAMs
+# which will then fail because there are SRAMs inferred that exceed SYNTH_MEMORY_MAX_BITS
+# and list all SRAM by bits in descending order.
+#
+# With SYNTH_MINIMUM_KEEP_SIZE=0 we don't flatten any modules and get a more accurate
+# report.
+# ---
+# Memories found in the design:
+#  Rows | Width |   Bits | Module               | Instances
+# ---------------------------------------------------------------------------------------------------------------------------------
+#   128 |    64 |   8192 | hpdcache_sram_wbyteenable_1rw$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[0].gen_data_sram_wbyteenable.data_sram.ram_i | cva6.gen_cache_hpd.i_cache_subsystem.cva6_hpdcache_subsystem$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.cva6_hpdcache_wrapper$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_ctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.hpdcache_memctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[0].gen_data_sram_wbyteenable.data_sram.hpdcache_sram_wbyteenable$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[0].gen_data_sram_wbyteenable.data_sram.ram_i
+#   128 |    64 |   8192 | hpdcache_sram_wbyteenable_1rw$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[1].gen_data_sram_wbyteenable.data_sram.ram_i | cva6.gen_cache_hpd.i_cache_subsystem.cva6_hpdcache_subsystem$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.cva6_hpdcache_wrapper$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_ctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.hpdcache_memctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[1].gen_data_sram_wbyteenable.data_sram.hpdcache_sram_wbyteenable$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_data_sram_row[0].gen_data_sram_col[1].gen_data_sram_wbyteenable.data_sram.ram_i
+#    64 |    28 |   1792 | hpdcache_sram_1rw$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[0].dir_sram.ram_i | cva6.gen_cache_hpd.i_cache_subsystem.cva6_hpdcache_subsystem$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.cva6_hpdcache_wrapper$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_ctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.hpdcache_memctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[0].dir_sram.hpdcache_sram$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[0].dir_sram.ram_i
+#    64 |    28 |   1792 | hpdcache_sram_1rw$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[1].dir_sram.ram_i | cva6.gen_cache_hpd.i_cache_subsystem.cva6_hpdcache_subsystem$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.cva6_hpdcache_wrapper$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_ctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.hpdcache_memctrl$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[1].dir_sram.hpdcache_sram$cva6.gen_cache_hpd.i_cache_subsystem.i_dcache.i_hpdcache.hpdcache_ctrl_i.hpdcache_memctrl_i.gen_dir_sram[1].dir_sram.ram_i
+# ...
+# Error: Synthesized memory size 1024 exceeds SYNTH_MEMORY_MAX_BITS
+
+SRAMS = {
+    # Used behavioral model to mock sram macros
+    "hpdcache_sram_1rw": "bazel/hpdcache_sram_1rw.sv",
+    "hpdcache_sram_wbyteenable_1rw": "bazel/hpdcache_sram_wbyteenable_1rw.sv",
+    "hpdcache_sram_wmask_1rw": "bazel/hpdcache_sram_wmask_1rw.sv",
+}
+
+filegroup(
+    name = "sram_io_constraints",
+    srcs = ["bazel/io-sram.tcl"],
+    data = ["bazel/util.tcl"],
+)
+
+[orfs_flow(
+    name = "{TARGET_CFG}_{name}".format(
+        name = name,
+        TARGET_CFG = TARGET_CFG,
+    ),
+    abstract_stage = "place",
+    arguments = {
+        "SYNTH_HIERARCHICAL": "1",
+        "SYNTH_MINIMUM_KEEP_SIZE": "0",
+        "SYNTH_MEMORY_MAX_BITS": "8192",
+        "CORE_UTILIZATION": "70",
+        "CORE_MARGIN": "2",
+    },
+    # Reduce size of the .lef area compared to SRAM implemented
+    # as flip-flops
+    mock_area = 0.2,
+    sources = {
+        "SDC_FILE": [":bazel/constraints-sram.sdc"],
+        "IO_CONSTRAINTS": [":sram_io_constraints"],
+    },
+    top = name + "_impl",
+    verilog_files = ["bazel/{name}_impl.sv".format(name = name)],
+) for TARGET_CFG, srams in TARGET_CFGS.items() for name, config in srams.items()]
+
+[orfs_flow(
+    name = TARGET_CFG,
+    # Some simple parameters, we don't care about physical size, we're counting
+    # instances.
+    arguments = {
+        # Synthesis
+        "SYNTH_HIERARCHICAL": "1",
+        "ABC_CLOCK_PERIOD_IN_PS": "2000",
+        "SYNTH_MINIMUM_KEEP_SIZE": "0",
+        "SYNTH_MEMORY_MAX_BITS": "1024",
+        "SYNTH_HDL_FRONTEND": "slang",
+        "VERILOG_DEFINES": "-D HPDCACHE_ASSERT_OFF",
+        "VERILOG_INCLUDE_DIRS": " ".join([
+            # See https://github.com/openhwgroup/cva6/blob/8202a7f714d708555021598a7baf3f97eda6b468/core/Flist.cva6_gate#L11-L15
+            "core/include",
+            "core/cache_subsystem/hpdcache/rtl/include",
+            "vendor/pulp-platform/common_cells/include",
+            "vendor/pulp-platform/common_cells/src",
+            "vendor/pulp-platform/axi/include",
+            "common/local/util",
+        ]),
+
+        # Floorplan
+        "CORE_UTILIZATION": "70",
+        "CORE_MARGIN": "2",
+        "MACRO_PLACE_HALO": "3 3",
+
+        # Placement
+        "PLACE_DENSITY": "0.73",
+
+        # CTS
+        "ASAP7_USE_VT": "RVT LVT SLVT",
+        "CTS_LIB_NAME": "asap7sc7p5t_INVBUF_SLVT_FF_nldm_211120",
+
+        # Speed up the flow by skipping things
+        "FILL_CELLS": "",
+        "TAPCELL_TCL": "",
+        "SKIP_REPORT_METRICS": "1",
+        "SKIP_CTS_REPAIR_TIMING": "1",
+        "SKIP_INCREMENTAL_REPAIR": "1",
+        "GND_NETS_VOLTAGES": "",
+        "PWR_NETS_VOLTAGES": "",
+        "GPL_ROUTABILITY_DRIVEN": "0",
+        "GPL_TIMING_DRIVEN": "0",
+        "SETUP_SLACK_MARGIN": "-10000",
+        "TNS_END_PERCENT": "0",
+        "SKIP_LAST_GASP": "1",
+    },
+    macros = ["{TARGET_CFG}_{name}_generate_abstract".format(
+        name = name,
+        TARGET_CFG = TARGET_CFG,
+    ) for name in srams.keys()],
+    sources = {
+        "SDC_FILE": [":bazel/constraints.sdc"],
+    },
+    top = "cva6",
+    verilog_files = glob([
+        "core/**/*.svh",
+        "vendor/**/*.svh",
+    ]) + [
+        # Excerpt from Flist.cva6_synth
+        "core/cvfpu/src/fpnew_pkg.sv",
+        "core/include/config_pkg.sv",
+        "core/include/{TARGET_CFG}_config_pkg.sv".format(TARGET_CFG = TARGET_CFG),
+        "core/include/riscv_pkg.sv",
+        "core/include/ariane_pkg.sv",
+        "vendor/pulp-platform/axi/src/axi_pkg.sv",
+        "core/include/wt_cache_pkg.sv",
+        "core/include/std_cache_pkg.sv",
+        "core/include/build_config_pkg.sv",
+        "core/include/aes_pkg.sv",
+        "core/cvxif_example/include/cvxif_instr_pkg.sv",
+        "vendor/pulp-platform/common_cells/src/cf_math_pkg.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hwpf_stride/hwpf_stride_pkg.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_pkg.sv",
+        "vendor/pulp-platform/fpga-support/rtl/SyncDpRam.sv",
+        "vendor/pulp-platform/fpga-support/rtl/AsyncDpRam.sv",
+        "vendor/pulp-platform/fpga-support/rtl/AsyncThreePortRam.sv",
+        "vendor/pulp-platform/fpga-support/rtl/SyncThreePortRam.sv",
+        "vendor/pulp-platform/fpga-support/rtl/SyncDpRam_ind_r_w.sv",
+        "core/cvfpu/src/fpnew_cast_multi.sv",
+        "core/cvfpu/src/fpnew_classifier.sv",
+        "core/cvfpu/src/fpnew_divsqrt_multi.sv",
+        "core/cvfpu/src/fpnew_fma_multi.sv",
+        "core/cvfpu/src/fpnew_fma.sv",
+        "core/cvfpu/src/fpnew_noncomp.sv",
+        "core/cvfpu/src/fpnew_opgroup_block.sv",
+        "core/cvfpu/src/fpnew_opgroup_fmt_slice.sv",
+        "core/cvfpu/src/fpnew_opgroup_multifmt_slice.sv",
+        "core/cvfpu/src/fpnew_rounding.sv",
+        "core/cvfpu/src/fpnew_top.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv",
+        "core/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv",
+        "core/cvxif_compressed_if_driver.sv",
+        "core/cvxif_issue_register_commit_if_driver.sv",
+        "core/cvxif_fu.sv",
+        "core/cvxif_example/cvxif_example_coprocessor.sv",
+        "core/cvxif_example/instr_decoder.sv",
+        "core/cvxif_example/compressed_instr_decoder.sv",
+        "core/cvxif_example/copro_alu.sv",
+        "vendor/pulp-platform/common_cells/src/fifo_v3.sv",
+        "vendor/pulp-platform/common_cells/src/lfsr.sv",
+        "vendor/pulp-platform/common_cells/src/lfsr_8bit.sv",
+        "vendor/pulp-platform/common_cells/src/stream_arbiter.sv",
+        "vendor/pulp-platform/common_cells/src/stream_arbiter_flushable.sv",
+        "vendor/pulp-platform/common_cells/src/stream_mux.sv",
+        "vendor/pulp-platform/common_cells/src/stream_demux.sv",
+        "vendor/pulp-platform/common_cells/src/lzc.sv",
+        "vendor/pulp-platform/common_cells/src/rr_arb_tree.sv",
+        "vendor/pulp-platform/common_cells/src/shift_reg.sv",
+        "vendor/pulp-platform/common_cells/src/unread.sv",
+        "vendor/pulp-platform/common_cells/src/popcount.sv",
+        "vendor/pulp-platform/common_cells/src/exp_backoff.sv",
+        "vendor/pulp-platform/common_cells/src/counter.sv",
+        "vendor/pulp-platform/common_cells/src/delta_counter.sv",
+        "core/cva6.sv",
+        "core/cva6_rvfi_probes.sv",
+        "core/alu.sv",
+        "core/aes.sv",
+        "core/fpu_wrap.sv",
+        "core/branch_unit.sv",
+        "core/compressed_decoder.sv",
+        "core/macro_decoder.sv",
+        "core/controller.sv",
+        "core/zcmt_decoder.sv",
+        "core/csr_buffer.sv",
+        "core/csr_regfile.sv",
+        "core/decoder.sv",
+        "core/ex_stage.sv",
+        "core/instr_realign.sv",
+        "core/id_stage.sv",
+        "core/issue_read_operands.sv",
+        "core/issue_stage.sv",
+        "core/load_unit.sv",
+        "core/load_store_unit.sv",
+        "core/lsu_bypass.sv",
+        "core/mult.sv",
+        "core/multiplier.sv",
+        "core/serdiv.sv",
+        "core/perf_counters.sv",
+        "core/ariane_regfile_ff.sv",
+        "core/ariane_regfile_fpga.sv",
+        "core/scoreboard.sv",
+        "core/raw_checker.sv",
+        "core/store_buffer.sv",
+        "core/amo_buffer.sv",
+        "core/store_unit.sv",
+        "core/commit_stage.sv",
+        "core/axi_shim.sv",
+        "core/cva6_accel_first_pass_decoder_stub.sv",
+        "core/acc_dispatcher.sv",
+        "core/cva6_fifo_v3.sv",
+        "core/frontend/btb.sv",
+        "core/frontend/bht.sv",
+        "core/frontend/bht2lvl.sv",
+        "core/frontend/ras.sv",
+        "core/frontend/instr_scan.sv",
+        "core/frontend/instr_queue.sv",
+        "core/frontend/frontend.sv",
+        "core/cache_subsystem/wt_dcache_ctrl.sv",
+        "core/cache_subsystem/wt_dcache_mem.sv",
+        "core/cache_subsystem/wt_dcache_missunit.sv",
+        "core/cache_subsystem/wt_dcache_wbuffer.sv",
+        "core/cache_subsystem/wt_dcache.sv",
+        "core/cache_subsystem/cva6_icache.sv",
+        "core/cache_subsystem/wt_cache_subsystem.sv",
+        "core/cache_subsystem/wt_axi_adapter.sv",
+        "core/cache_subsystem/tag_cmp.sv",
+        "core/cache_subsystem/axi_adapter.sv",
+        "core/cache_subsystem/miss_handler.sv",
+        "core/cache_subsystem/cache_ctrl.sv",
+        "core/cache_subsystem/cva6_icache_axi_wrapper.sv",
+        "core/cache_subsystem/std_cache_subsystem.sv",
+        "core/cache_subsystem/std_nbdcache.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/utils/hpdcache_mem_resp_demux.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/utils/hpdcache_mem_to_axi_read.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/utils/hpdcache_mem_to_axi_write.sv",
+        "core/cache_subsystem/cva6_hpdcache_subsystem.sv",
+        "core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv",
+        "core/cache_subsystem/cva6_hpdcache_if_adapter.sv",
+        "core/cache_subsystem/cva6_hpdcache_wrapper.sv",
+        "core/pmp/src/pmp.sv",
+        "core/pmp/src/pmp_entry.sv",
+        "core/pmp/src/pmp_data_if.sv",
+        "common/local/util/tc_sram_wrapper.sv",
+        "common/local/util/tc_sram_wrapper_cache_techno.sv",
+        "vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv",
+        "common/local/util/sram.sv",
+        "common/local/util/sram_cache.sv",
+        "core/cva6_mmu/cva6_mmu.sv",
+        "core/cva6_mmu/cva6_ptw.sv",
+        "core/cva6_mmu/cva6_tlb.sv",
+        "core/cva6_mmu/cva6_shared_tlb.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/utils/hpdcache_mem_req_read_arbiter.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/utils/hpdcache_mem_req_write_arbiter.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_demux.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_lfsr.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_sync_buffer.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_fifo_reg.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_fifo_reg_initialized.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_fxarb.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_rrarb.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_mux.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_decoder.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_1hot_to_binary.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_prio_1hot_encoder.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_sram.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_sram_wbyteenable.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_sram_wmask.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_regbank_wbyteenable_1rw.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_regbank_wmask_1rw.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_data_downsize.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_data_upsize.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/common/hpdcache_data_resize.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hwpf_stride/hwpf_stride.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hwpf_stride/hwpf_stride_arb.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hwpf_stride/hwpf_stride_wrapper.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_amo.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_cmo.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_core_arbiter.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_ctrl.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_ctrl_pe.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_memctrl.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_miss_handler.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_mshr.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_rtab.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_uncached.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_victim_plru.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_victim_random.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_victim_sel.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_wbuf.sv",
+        "core/cache_subsystem/hpdcache/rtl/src/hpdcache_flush.sv",
+    ] + SRAMS.values(),
+) for TARGET_CFG, srams in TARGET_CFGS.items()]

@@ -11,6 +11,25 @@ It can be used to investigate performance-related micro-architecture changes.
 
 <img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
+# Build and view CVA6 cv32a60x in OpenROAD
+
+1. Install [bazelisk](https://github.com/bazelbuild/bazelisk)
+2. Build and view CVA6 cv32a60x with [bazel-orfs](https://github.com/The-OpenROAD-Project/bazel-orfs) and [OpenROAD-flow-scripts](https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts) after global route in the [OpenROAD](https://github.com/The-OpenROAD-Project/OpenROAD) GUI:
+
+```sh
+bazelisk run cv32a60x_grt /tmp/grt gui_grt
+```
+
+![alt text](bazel/screenshot.png)
+
+Below the following views are crammed in to a screenshot:
+
+- Register to register endpoint slack histogram
+- WNS reg2reg path
+- Hierarchy Browser
+- PDN DRC errors (white x's in image)
+- Clock Tree Viewer
+
 
 # Quick setup
 
