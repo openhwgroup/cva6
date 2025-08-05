@@ -71,9 +71,10 @@ git checkout dca761264721068c4576eebd206e2c8b0b9d58b6
 cd referenceFlow
 bash scripts/build.sh
 
-tmp_riscv="tests/test_files/$base.riscv"
+tmp_riscv="$workdir/riscv-trace-spec/referenceFlow/tests/test_files/$base.riscv"
+cd ../../..
 cp "$exe" "$tmp_riscv"
-
+cd Instr_tracing_artifact/riscv-trace-spec/referenceFlow
 if ! ./scripts/run_regression.sh -t itype3_debug --annotate --debug $tmp_riscv; then
     exit_error "Error: run_regression failed"
 fi

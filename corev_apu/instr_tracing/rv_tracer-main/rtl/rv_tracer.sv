@@ -695,6 +695,8 @@ module rv_tracer #(
                         .resync_timer_rst_o       (resync_rst),
                         .qual_status_o            (qual_status[i]),
                         .tc_resync_o              (tc_resync[i]),
+                        .nc_exc_only_o            (nc_exc_only[i]),
+                        .nc_ppccd_br_o            (nc_ppccd_br[i]),
                         .keep_bits_o              (keep_bits[i])
                     );
 
@@ -713,6 +715,8 @@ module rv_tracer #(
                         .tc_tval_i                (tc_tval),
                         .tc_interrupt_i           (tc_interrupt),
                         .tc_resync_i              (tc_resync[i]),
+                        .nc_exc_only_i            (nc_exc_only[i]),
+                        .nc_ppccd_br_i            (nc_ppccd_br[i]),
                         .nocontext_i              (nocontext),
                         .notime_i                 (notime),
                         .tc_branch_i              (branch_q),
@@ -797,6 +801,8 @@ module rv_tracer #(
                         .resync_timer_rst_o       (), // connected only to the first port
                         .qual_status_o            (qual_status[i]),
                         .tc_resync_o              (tc_resync[i]),
+                        .nc_exc_only_o            (nc_exc_only[i]),
+                        .nc_ppccd_br_o            (nc_ppccd_br[i]),
                         .keep_bits_o              (keep_bits[i])
                     );
 
@@ -815,6 +821,8 @@ module rv_tracer #(
                         .tc_tval_i                (tc_tval),
                         .tc_interrupt_i           (tc_interrupt),
                         .tc_resync_i              (tc_resync[i]),
+                        .nc_exc_only_i            (nc_exc_only[i]),
+                        .nc_ppccd_br_i            (nc_ppccd_br[i]),
                         .nocontext_i              (nocontext),
                         .notime_i                 (notime),
                         .tc_branch_i              (branch_q),

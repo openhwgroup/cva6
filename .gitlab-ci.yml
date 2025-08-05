@@ -225,7 +225,7 @@ smoke-hwconfig:
     - when: manual
       allow_failure: true
 
-iti-test:
+it-test:
   extends:
     - .synthesis_test
   variables:
@@ -236,7 +236,7 @@ iti-test:
     DV_SIMULATORS: "vcs-testharness"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
-    - bash verif/regress/Instr_tracing_test.sh
+    - bash verif/regress/Instr_tracing_test.sh ../tests/custom/ITI/test_iti_asm.o
     - python3 .gitlab-ci/scripts/report_pass.py
     - cp -r verif/sim/Instr_tracing_artifact artifacts/
 
