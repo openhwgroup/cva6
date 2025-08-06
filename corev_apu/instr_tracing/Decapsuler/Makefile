@@ -9,13 +9,14 @@
 
 # Makefile to build the Decapsuler executable
 
-CC = g++
+CC = $(GCC_11_5_PATH)/g++
 TARGETS = Decapsuler
 CFLAGS = -Wall -Wextra -g
 
 all: $(TARGETS)
 
 Decapsuler: Decapsuler.cpp
+	$(CC) --version
 	$(CC) -o Decapsuler Decapsuler.cpp $(CFLAGS)
 
 .PHONY: clean
