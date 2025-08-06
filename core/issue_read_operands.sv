@@ -221,6 +221,7 @@ module issue_read_operands
   // ALU-ALU bypass signals
   alu_bypass_t alu_bypass, alu_bypass_n, alu_bypass_q;
   logic is_alu_bypass;
+  logic [1:0] use_alu2;
 
   // CVXIF Signals
   logic cvxif_req_allowed;
@@ -296,6 +297,27 @@ module issue_read_operands
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
   assign stall_issue_o = stall_raw[0];
   assign tinst_o = CVA6Cfg.RVH ? tinst_q : '0;
+
+  // ALU bypass signals
+  if (CVA6Cfg.ALUBypass) begin
+    // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
+    assign is_alu_bypass =
+      (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) &&
+      !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}));
+  end else begin
+    assign is_alu_bypass = 1'b0;
+  end
+
+  if (CVA6Cfg.SuperscalarEn) begin
+    // When a bypass is possible, an instruction uses `alu2` only when `alu` is already busy,
+    // in all other scenarios `alu2` is preferred over `alu, unless it is busy
+    for (genvar i = 0; i < 2; i++) begin
+      assign use_alu2[i] = is_alu_bypass ? fus_busy[i].alu : !fus_busy[i].alu2;
+    end
+  end else begin
+    assign use_alu2 = '0;
+  end
+
   // ---------------
   // Issue Stage
   // ---------------
@@ -366,25 +388,12 @@ module issue_read_operands
           end
         end
         ALU: begin
-          if (CVA6Cfg.SuperscalarEn && !fus_busy[0].alu2) begin
+          if (use_alu2[0]) begin
+            fus_busy[1].alu2 = 1'b1;
             // TODO is there a minimum float execution time?
             // If so we could issue FPU & ALU2 the same cycle
             fus_busy[1].fpu = 1'b1;
             fus_busy[1].fpu_vec = 1'b1;
-            if (issue_instr_i[1].fu == CTRL_FLOW) begin
-              // Control flow can use only `alu`
-              // Port 1 is going to use `alu`
-              // Port 0 can use `alu2` for any other ALU operation
-              fus_busy[0].alu = 1'b1;
-            end else if (CVA6Cfg.ALUBypass && issue_instr_i[1].fu == ALU && issue_instr_valid_i[1] && !fus_busy[0].alu) begin
-              // Port 1 is going to use `alu2`
-              // This situation allows `alu` -> `alu2` bypass
-              fus_busy[0].alu2 = 1'b1;
-            end else begin
-              // No bypass is possible
-              // Port 0 is going to use `alu2`
-              fus_busy[1].alu2 = 1'b1;
-            end
           end else begin
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
@@ -417,7 +426,7 @@ module issue_read_operands
       unique case (issue_instr_i[i].fu)
         NONE: fu_busy[i] = fus_busy[i].none;
         ALU: begin
-          if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
+          if (CVA6Cfg.SuperscalarEn && use_alu2[i]) begin
             fu_busy[i] = fus_busy[i].alu2;
           end else begin
             fu_busy[i] = fus_busy[i].alu;
@@ -550,15 +559,6 @@ module issue_read_operands
   // ---------------
   // check that all operands are available, otherwise stall
   // forward corresponding register
-
-  if (CVA6Cfg.ALUBypass) begin
-    // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
-    assign is_alu_bypass =
-      (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) &&
-      !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}));
-  end else begin
-    assign is_alu_bypass = 1'b0;
-  end
 
   always_comb begin : operands_available
     alu_bypass  = '0;
@@ -737,7 +737,7 @@ module issue_read_operands
       if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
         case (issue_instr_i[i].fu)
           ALU: begin
-            if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
+            if (CVA6Cfg.SuperscalarEn && use_alu2[i]) begin
               alu2_valid_n[i] = 1'b1;
             end else begin
               alu_valid_n[i] = 1'b1;
