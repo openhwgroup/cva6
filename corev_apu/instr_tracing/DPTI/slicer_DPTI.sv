@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Thales DIS design services SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// Author: Maxime Colson - Thales
+// Date: 21/05/2025
 module slicer_DPTI #(
     parameter SLICE_LEN = 32,
     parameter NO_TIME   = 0    // 0 : include time ; 1 : exclude time

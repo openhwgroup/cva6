@@ -7,6 +7,7 @@
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
 # Author: Maxime Colson - Thales
+# THis script remove lines above the start packet 3.3
 
 if [ $# -ne 1 ]; then
     echo "Usage!: $0 file/to/clean.csv"

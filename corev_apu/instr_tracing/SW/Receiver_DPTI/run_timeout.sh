@@ -1,4 +1,13 @@
-#!/usr/bin/env bash
+# Copyright 2025 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Author: Maxime Colson - Thales
+
+#Script to automate the aquisition process for the receiver
 
 NR_PKTS=(1 2 10 20 50 100 200)
 DURATION=5

@@ -1,5 +1,5 @@
 VIVADO ?= vivado
-VIVADOFLAGS ?= -nojournal -mode gui -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
