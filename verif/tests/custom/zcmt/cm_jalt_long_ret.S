@@ -1,6 +1,6 @@
 #include "riscv_test.h"
 
-RVTEST_RV32U
+RVTEST_RV32M
 RVTEST_CODE_BEGIN
 
     la t0, trap_handler
@@ -23,8 +23,8 @@ RVTEST_CODE_BEGIN
 
 // trap handler
 trap_handler:
-    lui    t0, %hi(success)        # Load upper 20 bits of address of 'success' into t0
-    addi   t0, t0, %lo(success)    # Add lower 12 bits to form full address
+    lui    t0, %hi(failure)        # Load upper 20 bits of address of 'success' into t0
+    addi   t0, t0, %lo(failure)    # Add lower 12 bits to form full address
     jalr   x0, 0(t0) 
 
 // cm.jalt target label
