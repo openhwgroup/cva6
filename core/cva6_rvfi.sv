@@ -369,6 +369,7 @@ module cva6_rvfi
   //----------------------------------------------------------------------------------------------------------
   // CSR
   //----------------------------------------------------------------------------------------------------------
+  // Changing verible formating to fix vivado synthesis errors and warnings
   `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
   always_ff @(posedge clk_i) begin \
       if (CSR_ENABLE_COND) begin \
