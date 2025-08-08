@@ -310,7 +310,7 @@ This design enables modular evolution: improvements or full spec-compliance in t
 
 ### Continuous Integration for Encoder + Encapsulator
 
-The CI (Continuous Integration) test for the Encoder and  Encapsulator is also contained in Instr_tracing_test.sh and consist of running a simulation on ariane_testharness with the previous test iti_test.sh and extracting the encoded.trace, it will convert them in decaspulated csv format with the Decapsuler. Then it run the regressionFlow from the [E-Trace specification](https://github.com/riscv-non-isa/riscv-trace-spec) and compare both files.
+The CI (Continuous Integration) test for the Encoder and  Encapsulator is also contained in Instr_tracing_test.sh and consists in running a simulation on ariane_testharness with the previous test iti_test.sh and extracting the `encoded.trace`, it will convert them in decaspulated csv format with the Decapsuler. Then it runs the regressionFlow from the [E-Trace specification](https://github.com/riscv-non-isa/riscv-trace-spec) and compare both files.
 We cleaned both file to compare what is comparable, again we exclude the start and the end because it's not matching based spike version.
 
 
@@ -462,7 +462,7 @@ Then upload the generated ariane_xilinx.bit via Vivado Lab or your preferred har
 
 The trace reception is handled on a **Linux-based host PC**, which is connected either to the **FTDI MiniModule** or directly to the **Genesys2 board via port J17**.
 
-To enable communication via **DPTI (Digilent Parallel Trace Interface)**, you must first install the [**Digilent Adept SDK**](https://lp.digilent.com/complete-adept-runtime-download), specifically version `2.4.2`. This provides the required runtime libraries and development headers. The receiver code need a c++17 version for std::optional.
+To enable communication via **DPTI (Digilent Parallel Trace Interface)**, you must first install the [**Digilent Adept SDK**](https://lp.digilent.com/complete-adept-runtime-download), specifically version `2.4.2`. This provides the required runtime libraries and development headers. The receiver code needs a C++17 version for `std::optional`.
 
 ---
 
