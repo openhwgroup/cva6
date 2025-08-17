@@ -14,7 +14,8 @@
 
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-set project ariane
+set project cva6_fpga  
+# ariane -> temp change to cva6_fpga
 
 create_project $project . -force -part $::env(XILINX_PART)
 set_property board_part $::env(XILINX_BOARD) [current_project]

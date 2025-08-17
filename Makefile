@@ -38,8 +38,8 @@ test-location  ?= output/test
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
-# board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
-BOARD          ?= genesys2
+# board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video, zedboard
+BOARD          ?= zedboard
 ALTERA_BOARD		 ?= DK-DEV-AGF014E3ES
 ALTERA_FAMILY	 ?= "AGILEX"
 ALTERA_PART		 ?= AGFB014R24B2E2V
@@ -86,6 +86,10 @@ else ifeq ($(BOARD), nexys_video)
 	XILINX_PART              := xc7a200tsbg484-1
 	XILINX_BOARD             := digilentinc.com:nexys_video:part0:1.1
 	CLK_PERIOD_NS            := 40
+else ifeq ($(BOARD), zedboard)
+	XILINX_PART              := xc7z020clg484-1
+	XILINX_BOARD             := digilentinc.com:zedboard:part0:1.1
+	CLK_PERIOD_NS            := 20
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif
@@ -101,7 +105,7 @@ endif
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
 # Changing the default target to cv32a60x for Step1 verification
-target     ?= cv64a6_imafdc_sv39
+target     ?= cv32a6_ima_sv32_fpga  # cv64a6_imafdc_sv39
 ifeq ($(target), cv64a6_imafdc_sv39)
 	XLEN ?= 64
 else
@@ -812,6 +816,17 @@ altera: $(ariane_pkg) $(src) $(fpga_src) $(src_flist)
 	$(MAKE) -C corev_apu/altera ALTERA_PART=$(ALTERA_PART) ALTERA_BOARD=$(ALTERA_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
 .PHONY: fpga
+
+# .PHONY: cva6_fpga # program_cva6_fpga
+
+# cva6_fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(src_flist) corev_apu/fpga/scripts/add_sources.tcl
+
+# 	cd corev_apu/fpga && make cva6_fpga BRAM=1 PS7_DDR=0 XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE) FPGA=1
+
+# program_zedboard: 
+# 	@echo "[FPGA] Program FPGA"
+# 	cd corev_apu/fpga && make program_zedboard BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS) BATCH_MODE=$(BATCH_MODE)
+	
 
 build-spike:
 	cd tb/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install

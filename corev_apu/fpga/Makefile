@@ -1,11 +1,14 @@
 VIVADO ?= vivado
-VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+# VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+VIVADOFLAGS ?= -source scripts/prologue.tcl
 
 work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
 mcs := $(work-dir)/ariane_xilinx.mcs
 ip-dir := xilinx
-ips := xlnx_axi_clock_converter.xci  \
+ips := xlnx_blk_mem_gen.xci \
+       xlnx_processing_system7.xci \
+	   xlnx_axi_clock_converter.xci  \
        xlnx_axi_dwidth_converter.xci \
        xlnx_axi_dwidth_converter_dm_master.xci \
        xlnx_axi_dwidth_converter_dm_slave.xci \

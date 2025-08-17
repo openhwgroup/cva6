@@ -15,6 +15,17 @@
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 # hard-coded to Genesys 2 for the moment
+# set project cva6_fpga
+# create_project $project . -force -part $::env(XILINX_PART)
+# set_property board_part $::env(XILINX_BOARD) [current_project]
+
+# set number of threads to 8 (maximum, unfortunately)
+# set_param general.maxThreads 8
+
+# set_msg_config -id {[Synth 8-5858]} -new_severity "info"
+
+# set_msg_config -id {[Synth 8-4480]} -limit 1000
+
 
 if {$::env(BOARD) eq "genesys2"} {
     add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
@@ -24,6 +35,8 @@ if {$::env(BOARD) eq "genesys2"} {
       add_files -fileset constrs_1 -norecurse constraints/vc707.xdc
 } elseif {$::env(BOARD) eq "nexys_video"} {
       add_files -fileset constrs_1 -norecurse constraints/nexys_video.xdc
+} elseif {$::env(BOARD) eq "zedboard"} {
+      add_files -fileset constrs_1 -norecurse constraints/zedboard.xdc      
 } else {
       exit 1
 }
@@ -37,6 +50,10 @@ read_ip { \
       "xilinx/xlnx_axi_gpio/xlnx_axi_gpio.srcs/sources_1/ip/xlnx_axi_gpio/xlnx_axi_gpio.xci" \
       "xilinx/xlnx_axi_quad_spi/xlnx_axi_quad_spi.srcs/sources_1/ip/xlnx_axi_quad_spi/xlnx_axi_quad_spi.xci" \
       "xilinx/xlnx_clk_gen/xlnx_clk_gen.srcs/sources_1/ip/xlnx_clk_gen/xlnx_clk_gen.xci" \
+      "xilinx/xlnx_blk_mem_gen/xlnx_blk_mem_gen.srcs/sources_1/ip/xlnx_blk_mem_gen/xlnx_blk_mem_gen.xci" \
+      "xilinx/xlnx_processing_system7/xlnx_processing_system7.srcs/sources_1/ip/xlnx_processing_system7/xlnx_processing_system7.xci" \
+
+
 }
 # read_ip xilinx/xlnx_protocol_checker/ip/xlnx_protocol_checker.xci
 
@@ -68,6 +85,10 @@ if {$::env(BOARD) eq "genesys2"} {
 } elseif {$::env(BOARD) eq "nexys_video"} {
       read_verilog -sv {src/nexys_video.svh ../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh}
       set file "src/nexys_video.svh"
+      set registers "../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh"
+} elseif {$::env(BOARD) eq "zedboard"} {
+      read_verilog -sv {src/zedboard.svh ../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh}
+      set file "src/zedboard.svh"
       set registers "../../vendor/pulp-platform/common_cells/include/common_cells/registers.svh"
 } else {
     exit 1
