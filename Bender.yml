@@ -75,6 +75,7 @@ sources:
       # Packages
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
+      - core/include/aes_pkg.sv
 
       # Extension Interface
       - core/cvxif_example/include/cvxif_instr_pkg.sv
@@ -89,6 +90,7 @@ sources:
       - core/cva6_fifo_v3.sv
       # Top-level source files (not necessarily instantiated at the top of the cva6).
       - core/cva6.sv
+      - core/aes.sv
       - core/alu.sv
       - core/fpu_wrap.sv # depends on fpnew_pkg, above
       - core/branch_unit.sv
