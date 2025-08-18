@@ -132,6 +132,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/delta_counter.sv
 ${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/cva6_rvfi_probes.sv
 ${CVA6_REPO_DIR}/core/alu.sv
+${CVA6_REPO_DIR}/core/alu_wrapper.sv
 ${CVA6_REPO_DIR}/core/aes.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/fpu_wrap.sv
