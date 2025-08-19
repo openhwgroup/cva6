@@ -310,7 +310,7 @@ module issue_read_operands
 
   if (CVA6Cfg.SuperscalarEn) begin
     // When a bypass is possible, an instruction uses `alu2` only when `alu` is already busy,
-    // in all other scenarios `alu2` is preferred over `alu, unless it is busy
+    // in all other scenarios `alu2` is preferred over `alu`, unless it is busy
     for (genvar i = 0; i < 2; i++) begin
       assign use_alu2[i] = is_alu_bypass ? fus_busy[i].alu : !fus_busy[i].alu2;
     end
