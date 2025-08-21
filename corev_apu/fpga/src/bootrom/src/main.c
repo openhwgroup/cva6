@@ -7,8 +7,7 @@
 #include "sd.h"
 #include "gpt.h"
 
-// 1 second at 50MHz
-#define SECOND_CYCLES   (50 * 1000 * 1000)
+#define SECOND_CYCLES   CLOCK_FREQUENCY
 #define WAIT_SECONDS    (5)
 
 static inline uintptr_t get_cycle_count() {
@@ -74,10 +73,32 @@ int main()
         print_uart(" booting!\r\n");
         #ifndef PLAT_AGILEX
         res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384); // linux boot not yet supported for altera
+        #else 
+            print_uart("I am Agilex 7! \r\n");
+
+            print_uart("Loading fw_payload into memory address 0x80000000 \n");
+            for (uint64_t i = 0; i < 9064; i++){
+                res = sd_copy_mmc((uint8_t *)0x80000000UL + (i * 0x200), 0x8570 + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
+
+                if (res)
+                {
+                    print_uart("TRANSFER ERROR\n");
+                    return res;
+                }
+            }
+            print_uart("Loading uImage into memory address 0x90000000 \n");
+            for (uint64_t i = 0; i < 100000; i++){
+                res = sd_copy_mmc((uint8_t *)0x90000000UL + (i * 0x200), 0x2bd20 + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
+
+                if (res)
+                {
+                    print_uart("TRANSFER ERROR\n");
+                    return res;
+                }
+		    }
         #endif 
     }
 
-    #ifndef PLAT_AGILEX // linux boot not yet supported for altera
     if (res == 0)
     {
         // jump to the address
@@ -86,7 +107,6 @@ int main()
             "la a1, _dtb;"
             "jr s0");
     }
-    #endif 
 
     while (1)
     {

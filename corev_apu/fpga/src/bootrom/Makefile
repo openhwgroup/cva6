@@ -8,6 +8,13 @@ CLOCK_FREQUENCY ?= 25000000 #25MHz
 HALF_CLOCK_FREQUENCY ?= 12500000 #12.5MHz
 UART_BITRATE ?= 57600
 HAS_ETHERNET ?= 0
+elsif ($(PLATFORM), PLAT_AGILEX)
+DRAM_SIZE_64 ?= 0x40000000 #1GB
+DRAM_SIZE_32 ?= 0x08000000 #128MB
+CLOCK_FREQUENCY ?= 200000000 #50MHz
+HALF_CLOCK_FREQUENCY ?= 100000000 #25MHz
+UART_BITRATE ?= 115200
+HAS_ETHERNET ?= 1
 else
 DRAM_SIZE_64 ?= 0x40000000 #1GB
 DRAM_SIZE_32 ?= 0x08000000 #128MB
@@ -29,11 +36,12 @@ CFLAGS = $(PLATFORM_DEFINES) -O2 -ggdb  -march=rv32im_zicsr -mabi=ilp32 -W -Wall
 endif
 
 CCASFLAGS = -mcmodel=medany -mexplicit-relocs
-LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
+LDFLAGS = -nostartfiles
+# LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
 
 INCLUDES = -I./ -I./src
 
-SRCS_C = src/main.c src/uart.c src/spi.c src/sd.c src/gpt.c
+SRCS_C = src/main.c src/uart.c src/spi.c src/sd.c src/gpt.c src/dw_mmc.c src/bouncebuf.c
 SRCS_ASM = startup.S
 OBJS_C = $(SRCS_C:.c=.o)
 OBJS_S = $(SRCS_ASM:.S=.o)
@@ -43,7 +51,11 @@ MAIN_BIN = $(MAIN:.elf=.bin)
 MAIN_IMG = $(MAIN:.elf=.img)
 MAIN_SV = $(MAIN:.elf=.sv)
 
+ifeq ($(PLATFORM), PLAT_AGILEX)
+DTB = cv$(XLEN)a6_agilex.dtb
+else
 DTB = cv$(XLEN)a6.dtb
+endif
 
 ifeq ($(HAS_ETHERNET), 1)
 SED_DELETE_OPT = -e "/DELETE_ETH/d"
@@ -82,7 +94,7 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	cat $@
 
 %.dtb: %.dts
-	dtc -I dts $< -O dtb -o $@
+	dtc -I dts $< -O dtb -o cv$(XLEN)a6.dtb
 
 %.sv: %.img
 	./gen_rom.py $<
