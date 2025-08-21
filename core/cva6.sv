@@ -442,6 +442,8 @@ module cva6
   exception_t flu_exception_ex_id;
   // ALU
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_id_ex;
+  logic [5:0] orig_instr_aes;
+  logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_id_ex;
   // Branches and Jumps
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_id_ex;
 
@@ -858,6 +860,7 @@ module cva6
       .flu_ready_i             (flu_ready_ex_id),
       // ALU
       .alu_valid_o             (alu_valid_id_ex),
+      .aes_valid_o             (aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_o          (branch_valid_id_ex),            // branch is valid
       .branch_predict_o        (branch_predict_id_ex),          // branch predict to ex
@@ -916,7 +919,8 @@ module cva6
       .rvfi_issue_pointer_o (rvfi_issue_pointer),
       .rvfi_commit_pointer_o(rvfi_commit_pointer),
       .rvfi_rs1_o           (rvfi_rs1),
-      .rvfi_rs2_o           (rvfi_rs2)
+      .rvfi_rs2_o           (rvfi_rs2),
+      .orig_instr_aes_bits  (orig_instr_aes)
   );
 
   // ---------
@@ -958,6 +962,8 @@ module cva6
       .flu_ready_o(flu_ready_ex_id),
       // ALU
       .alu_valid_i(alu_valid_id_ex),
+      .orig_instr_aes_i(orig_instr_aes),
+      .aes_valid_i(aes_valid_id_ex),
       // Branches and Jumps
       .branch_valid_i(branch_valid_id_ex),
       .branch_predict_i(branch_predict_id_ex),  // branch predict to ex
@@ -1663,10 +1669,15 @@ module cva6
 
 `ifndef VERILATOR
 
-  logic [31:0] fetch_instructions[CVA6Cfg.NrIssuePorts-1:0];
+  logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
+  logic [CVA6Cfg.NrCommitPorts-1:0][63:0] wdata_commit_id_padded;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
     assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id};
   end
 
   instr_tracer #(
@@ -1688,7 +1699,7 @@ module cva6
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
-      .wdata(wdata_commit_id),
+      .wdata(wdata_commit_id_padded),
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
