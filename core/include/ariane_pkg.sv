@@ -113,6 +113,7 @@ package ariane_pkg;
     return riscv::SSTATUS_UIE
     | riscv::SSTATUS_SIE
     | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_UBE
     | riscv::SSTATUS_SPP
     | riscv::SSTATUS_FS
     | riscv::SSTATUS_XS
