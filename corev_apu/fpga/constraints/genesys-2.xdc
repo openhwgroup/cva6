@@ -8,6 +8,47 @@ set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi   
 set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }];
 set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }];
 
+#PMOD Header JA
+set_property -dict {PACKAGE_PIN U27 IOSTANDARD LVCMOS33} [get_ports prog_clko]; #IO_L13P_T2_MRCC_14
+set_property -dict {PACKAGE_PIN U28 IOSTANDARD LVCMOS33} [get_ports prog_oen]
+set_property -dict {PACKAGE_PIN T26 IOSTANDARD LVCMOS33} [get_ports prog_rdn]
+set_property -dict {PACKAGE_PIN T27 IOSTANDARD LVCMOS33} [get_ports prog_rxen]
+set_property -dict {PACKAGE_PIN T22 IOSTANDARD LVCMOS33} [get_ports prog_siwun]
+set_property -dict {PACKAGE_PIN T23 IOSTANDARD LVCMOS33} [get_ports prog_spien]
+set_property -dict {PACKAGE_PIN T20 IOSTANDARD LVCMOS33} [get_ports prog_txen]
+set_property -dict {PACKAGE_PIN T21 IOSTANDARD LVCMOS33} [get_ports prog_wrn]
+
+#PMOD Header JB
+set_property -dict {PACKAGE_PIN V29 IOSTANDARD LVCMOS33} [get_ports {prog_d[0]}]
+set_property -dict {PACKAGE_PIN V30 IOSTANDARD LVCMOS33} [get_ports {prog_d[1]}]
+set_property -dict {PACKAGE_PIN V25 IOSTANDARD LVCMOS33} [get_ports {prog_d[2]}]
+set_property -dict {PACKAGE_PIN W26 IOSTANDARD LVCMOS33} [get_ports {prog_d[3]}]
+set_property -dict {PACKAGE_PIN T25 IOSTANDARD LVCMOS33} [get_ports {prog_d[4]}]
+set_property -dict {PACKAGE_PIN U25 IOSTANDARD LVCMOS33} [get_ports {prog_d[5]}]
+set_property -dict {PACKAGE_PIN U22 IOSTANDARD LVCMOS33} [get_ports {prog_d[6]}]
+set_property -dict {PACKAGE_PIN U23 IOSTANDARD LVCMOS33} [get_ports {prog_d[7]}]
+
+
+#PMOD Header JC
+# set_property -dict {PACKAGE_PIN AC26 IOSTANDARD LVCMOS33} [get_ports prog_clko]
+# set_property -dict {PACKAGE_PIN AJ27 IOSTANDARD LVCMOS33} [get_ports prog_oen]
+# set_property -dict {PACKAGE_PIN AH30 IOSTANDARD LVCMOS33} [get_ports prog_rdn]
+# set_property -dict {PACKAGE_PIN AK29 IOSTANDARD LVCMOS33} [get_ports prog_rxen]
+# set_property -dict {PACKAGE_PIN AD26 IOSTANDARD LVCMOS33} [get_ports prog_siwun]
+# set_property -dict {PACKAGE_PIN AG30 IOSTANDARD LVCMOS33} [get_ports prog_spien]
+# set_property -dict {PACKAGE_PIN AK30 IOSTANDARD LVCMOS33} [get_ports prog_txen]
+# set_property -dict {PACKAGE_PIN AK28 IOSTANDARD LVCMOS33} [get_ports prog_wrn]
+
+#PMOD Header JD
+# set_property -dict {PACKAGE_PIN V27 IOSTANDARD LVCMOS33} [get_ports {prog_d[0]}]
+# set_property -dict {PACKAGE_PIN Y30 IOSTANDARD LVCMOS33} [get_ports {prog_d[1]}]
+# set_property -dict {PACKAGE_PIN V24 IOSTANDARD LVCMOS33} [get_ports {prog_d[2]}]
+# set_property -dict {PACKAGE_PIN W22 IOSTANDARD LVCMOS33} [get_ports {prog_d[3]}]
+# set_property -dict {PACKAGE_PIN U24 IOSTANDARD LVCMOS33} [get_ports {prog_d[4]}]
+# set_property -dict {PACKAGE_PIN Y26 IOSTANDARD LVCMOS33} [get_ports {prog_d[5]}]
+# set_property -dict {PACKAGE_PIN V22 IOSTANDARD LVCMOS33} [get_ports {prog_d[6]}]
+# set_property -dict {PACKAGE_PIN W21 IOSTANDARD LVCMOS33} [get_ports {prog_d[7]}]
+
 ## UART
 set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVCMOS33} [get_ports tx]
 set_property -dict {PACKAGE_PIN Y20 IOSTANDARD LVCMOS33} [get_ports rx]

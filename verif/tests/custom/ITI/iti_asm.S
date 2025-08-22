@@ -14,7 +14,7 @@
 
 
 branch_test: 
-    c.li x12,10
+    li x12,10
     loop:
         bne x13,x13, branch_test
         bne x13,x13, branch_test
@@ -28,8 +28,8 @@ branch_test:
         bne x13,x13, branch_test
         bne x13,x13, branch_test
         bne x13,x13, branch_test
-    c.addi x12, -1
-    c.bnez x12, loop
+    addi x12,x12, -1
+    bne x12, x0, loop
 
 
-    c.jr ra
+   jalr x0,0(ra)

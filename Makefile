@@ -201,17 +201,34 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/tech_cells_generic/src/deprecated/cluster_clk_cells.sv  \
         vendor/pulp-platform/tech_cells_generic/src/deprecated/pulp_clk_cells.sv     \
         vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv                    \
-		core/include/iti_pkg.sv														 \
+        corev_apu/instr_tracing/ITI/include/iti_pkg.sv                               \
+        corev_apu/instr_tracing/rv_tracer-main/include/te_pkg.sv                     \
+        corev_apu/instr_tracing/rv_encapsulator-main/src/include/encap_pkg.sv        \
         corev_apu/tb/ariane_testharness.sv                                           \
         corev_apu/tb/ariane_peripherals.sv                                           \
         corev_apu/tb/rvfi_tracer.sv                                                  \
         corev_apu/tb/common/uart.sv                                                  \
         corev_apu/tb/common/SimDTM.sv                                                \
         corev_apu/tb/common/SimJTAG.sv                                               \
-        core/cva6_iti/instr_to_trace.sv                                              \
-        core/cva6_iti/iti.sv                                                         \
-        core/cva6_iti/itype_detector.sv
-
+        corev_apu/instr_tracing/ITI/cva6_iti/iti.sv                                  \
+        corev_apu/instr_tracing/ITI/cva6_iti/block_retirement.sv                     \
+        corev_apu/instr_tracing/ITI/cva6_iti/single_retirement.sv                    \
+        corev_apu/instr_tracing/ITI/cva6_iti/itype_detector.sv                       \
+        vendor/pulp-platform/common_cells/src/counter.sv                             \
+        vendor/pulp-platform/common_cells/src/sync.sv                                \
+        vendor/pulp-platform/common_cells/src/sync_wedge.sv                          \
+        vendor/pulp-platform/common_cells/src/edge_detect.sv                         \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/lzc.sv                            \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_branch_map.sv                  \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_filter.sv                      \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_packet_emitter.sv              \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_priority.sv                    \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_reg.sv                         \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/te_resync_counter.sv              \
+        corev_apu/instr_tracing/rv_tracer-main/rtl/rv_tracer.sv                      \
+        vendor/pulp-platform/common_cells/src/fifo_v3.sv                             \
+        corev_apu/instr_tracing/DPTI/slicer_DPTI.sv                                  \
+        corev_apu/instr_tracing/rv_encapsulator-main/src/rtl/encapsulator.sv
 src := $(addprefix $(root-dir), $(src))
 
 copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
@@ -220,6 +237,9 @@ copro_src := $(addprefix $(root-dir), $(copro_src))
 
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/vhdl_orig/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
+
+dpti_src := $(wildcard corev_apu/instr_tracing/DPTI/*.vhd)
+dpti_src := $(addprefix $(root-dir), $(dpti_src))
 
 uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
               corev_apu/fpga/src/apb_uart/src/slib_counter.sv       \
@@ -316,6 +336,7 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
           $(CVA6_REPO_DIR)/verif/tb/core/ \
           $(CVA6_REPO_DIR)/core/include/ \
+          $(CVA6_REPO_DIR)/corev_apu/instr_tracing/ITI/include \
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
 # Compile and sim flags
@@ -788,9 +809,10 @@ fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/co
 $(addprefix $(root-dir), corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv):
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) PLATFORM=$(PLATFORM) bootrom_$(XLEN).sv
 
-fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
+fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(dpti_src) $(src_flist)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(dpti_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl

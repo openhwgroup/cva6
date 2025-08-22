@@ -10,6 +10,9 @@
 
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+`include "axi/assign.svh"
+`include "rvfi_types.svh"
+`include "iti_types.svh"
 
 module ariane_xilinx (
 // WARNING: Do not define input parameters. This causes the FPGA build to fail.
@@ -177,11 +180,20 @@ module ariane_xilinx (
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
   // common part
-  // input logic      trst_n      ,
+ // input logic         trst_n      ,
   input  logic        tck         ,
   input  logic        tms         ,
   input  logic        tdi         ,
-  output wire         tdo         ,
+  output  wire         tdo         ,
+  input  logic        prog_clko   ,
+  input  logic        prog_rxen   ,
+  input  logic        prog_txen   ,
+  input  logic        prog_spien  ,
+  output logic        prog_rdn    ,
+  output logic        prog_wrn    ,
+  output logic        prog_oen    ,
+  output logic        prog_siwun  ,
+  inout  logic [7:0]  prog_d      ,
   input  logic        rx          ,
   output logic        tx
 );
@@ -199,11 +211,17 @@ endfunction
 // CVA6 Xilinx configuration
 localparam config_pkg::cva6_cfg_t CVA6Cfg = build_fpga_config(cva6_config_pkg::cva6_cfg);
 
+localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
+//localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
+//localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
+localparam type iti_to_encoder_t = `ITI_TO_ENCODER_T(CVA6Cfg);
+
 localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
 localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg);
 localparam type rvfi_probes_t = struct packed {
   logic csr;
-  logic instr;
+  rvfi_probes_instr_t instr;
 };
 
 // 24 MByte in 8 byte words
@@ -753,6 +771,11 @@ end
 // ---------------
 ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
+rvfi_probes_t rvfi_probes;
+
+rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+rvfi_to_iti_t rvfi_to_iti;
+iti_to_encoder_t iti_to_encoder;
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
@@ -767,7 +790,7 @@ ariane #(
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
-    .rvfi_probes_o( /* open */          ),
+    .rvfi_probes_o( rvfi_probes         ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
     .noc_resp_i   ( axi_ariane_resp     )
@@ -776,6 +799,136 @@ ariane #(
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
 `AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
 
+  cva6_rvfi #(
+      .CVA6Cfg   (CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
+  ) i_cva6_rvfi (
+      .clk_i        (clk),
+      .rst_ni       (ndmreset_n),
+      .rvfi_probes_i(rvfi_probes),
+      .rvfi_instr_o (rvfi_instr),
+      .rvfi_to_iti_o   (rvfi_to_iti),
+      .rvfi_csr_o   ()
+  );
+
+
+    cva6_iti #(
+        .CVA6Cfg   (CVA6Cfg),
+        .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
+        .ITYPE_LEN (iti_pkg::ITYPE_LEN),
+        .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
+        .block_mode(0),
+        .rvfi_to_iti_t(rvfi_to_iti_t),
+        .iti_to_encoder_t(iti_to_encoder_t)
+    ) i_iti (
+        .clk_i  (clk),
+        .rst_ni (ndmreset_n),
+        // inputs from rvfi
+        .valid_i(rvfi_to_iti.valid),
+        .rvfi_to_iti_i(rvfi_to_iti),
+        // outputs for the encoder module TODO
+        .valid_o(),
+        .iti_to_encoder_o(iti_to_encoder)
+    );
+
+    logic                    packet_valid;
+    te_pkg::it_packet_type_e packet_type;
+    logic [te_pkg::P_LEN-1:0] packet_length;
+    logic [te_pkg::PAYLOAD_LEN-1:0] packet_payload;
+
+    rv_tracer #(
+        .N(1),
+        .ONLY_BRANCHES(1)
+    )i_encoder(
+        .clk_i               (clk),
+        .rst_ni              (ndmreset_n),
+        .valid_i             (iti_to_encoder.valid),
+        .itype_i             (iti_to_encoder.itype),
+        .cause_i             (iti_to_encoder.cause),
+        .tval_i              (iti_to_encoder.tval),
+        .priv_i              (iti_to_encoder.priv),
+        .iaddr_i             (iti_to_encoder.iaddr),
+        .iretire_i           (iti_to_encoder.iretire),
+        .ilastsize_i         (iti_to_encoder.ilastsize),
+        .time_i              (iti_to_encoder.cycles),
+        .tvec_i              ('0),
+        .epc_i               ('0),
+        .encapsulator_ready_i('1),
+        .paddr_i             ('0),
+        .pwrite_i            ('0),
+        .psel_i              ('0),
+        .penable_i           ('0),
+        .pwdata_i            ('0),
+        .packet_valid_o      (packet_valid),
+        .packet_type_o       (packet_type),
+        .packet_length_o     (packet_length),
+        .packet_payload_o    (packet_payload),
+        .stall_o             (),
+        .pready_o            (),
+        .prdata_o            ()
+    );
+
+    logic                           encap_valid;
+    encap_pkg::encap_fifo_entry_s   encap_fifo_entry_i;
+    encap_pkg::encap_fifo_entry_s   encap_fifo_entry_o;
+    logic                           encap_fifo_full;
+    logic                           encap_fifo_empty;
+    logic                           encap_fifo_pop;
+
+    encapsulator i_encapsulator (
+        .clk_i              (clk),
+        .valid_i            (packet_valid),
+        .packet_length_i    (packet_length),
+        .flow_i             ('0),
+        .timestamp_present_i('1),
+        //.srcid_i(),
+        .timestamp_i        (rvfi_to_iti.cycles),
+        //.type_i(),
+        .trace_payload_i    (packet_payload),
+        .valid_o            (encap_valid),
+        .encap_fifo_entry_o (encap_fifo_entry_i)
+    );
+
+    fifo_v3 # (
+        .DEPTH(16),
+        .dtype(encap_pkg::encap_fifo_entry_s)
+    ) i_fifo_encap (
+        .clk_i     (clk),
+        .rst_ni    (ndmreset_n),
+        .flush_i   ('0),
+        .testmode_i('0),
+        .full_o    (encap_fifo_full),
+        .empty_o   (encap_fifo_empty),
+        .usage_o   (),
+        .data_i    (encap_fifo_entry_i),
+        .push_i    (encap_valid),
+        .data_o    (encap_fifo_entry_o),
+        .pop_i     (encap_fifo_pop)
+    );
+
+    localparam DATA_LEN = 8;
+    logic                           valid_slice;
+    logic [DATA_LEN-1:0]            slice;
+    logic [$clog2(DATA_LEN)-4:0]    valid_bytes;
+
+    slicer_DPTI #(
+        .SLICE_LEN(DATA_LEN),
+        .NO_TIME ('0)
+    ) i_slicer (
+        .clk_i             (clk),
+        .rst_ni            (ndmreset_n),
+        .valid_i           (!encap_fifo_empty),
+        .encap_fifo_entry_i(encap_fifo_entry_o),
+        .fifo_full_i       (usrFull), // usrFull DPTI
+        .valid_o           (valid_slice),
+        .slice_o           (slice),
+        .done_o            (encap_fifo_pop)
+    );
 // ---------------
 // CLINT
 // ---------------
@@ -848,7 +1001,67 @@ end else begin
         .rdata_o ( rom_rdata )
     );
 end
+// ---------------
+// DPTI
+// ---------------
 
+logic FifoEn ;
+logic usrFull ;
+logic usrEmpty ;
+logic [7:0] w_data;
+logic [7:0] r_data;
+
+logic [11:0] w_count;
+logic [11:0] r_count;
+
+logic prog_rxen_debug;
+logic prog_txen_debug;
+logic prog_spien_debug;
+logic prog_rdn_debug;
+logic prog_wrn_debug;
+logic prog_oen_debug;
+logic prog_siwun_debug;
+
+assign prog_rxen_debug = prog_rxen;
+assign prog_txen_debug = prog_txen;
+assign prog_spien_debug = prog_spien;
+assign prog_rdn_debug = prog_rdn;
+assign prog_wrn_debug = prog_wrn;
+assign prog_oen_debug = prog_oen;
+assign prog_siwun_debug = prog_siwun;
+
+//assign  w_data = {iti_to_encoder.itype[0],iti_to_encoder.itype[1],iti_to_encoder.valid} ;
+
+assign FifoEn = !usrFull && !usrEmpty;
+ dpti_ctrl i_dpti_ctrl (
+          .wr_clk (clk),
+          .wr_en  (valid_slice),
+          .wr_full(usrFull),
+          .wr_afull(),
+          .wr_err(),
+          .wr_count(w_count),
+          .wr_di(slice),
+
+          .rd_clk(clk),
+          .rd_en(FifoEn),
+          .rd_empty(usrEmpty),
+          .rd_aempty(),
+          .rd_err (),
+          .rd_count(r_count),
+          .rd_do(r_data),
+
+          .rst(rst),
+
+          .prog_clko(prog_clko),
+          .prog_rxen(prog_rxen),
+          .prog_txen(prog_txen),
+          .prog_spien('0),
+          .prog_rdn(prog_rdn),
+          .prog_wrn(prog_wrn),
+          .prog_oen(prog_oen),
+          .prog_siwun(prog_siwun),
+          .prog_d(prog_d)
+);
 // ---------------
 // Peripherals
 // ---------------
