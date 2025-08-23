@@ -1,0 +1,46 @@
+"""Basic bazel-orfs setup to build CVA6 with OpenROAD-flow-scripts"""
+
+module(
+    name = "cva6",
+)
+
+bazel_dep(
+    name = "rules_python",
+    version = "1.3.0",
+    # reduce namespace collisions by prefixing with cva6
+    repo_name = "cva6_rules_python",
+)
+
+python = use_extension("@cva6_rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    ignore_root_user_error = True,
+    python_version = "3.13",
+)
+
+pip = use_extension("@cva6_rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "cva6-pip",
+    python_version = "3.13",
+    requirements_lock = "//:bazel/requirements_lock.txt",
+)
+use_repo(pip, "cva6-pip")
+
+bazel_dep(name = "bazel-orfs")
+
+# To bump version, run: bazelisk run @bazel-orfs//:bump
+git_override(
+    module_name = "bazel-orfs",
+    commit = "34b6855af420bc9fed5ffb78862f548abf79ede1",
+    remote = "https://github.com/The-OpenROAD-Project/bazel-orfs.git",
+)
+
+orfs = use_extension("@bazel-orfs//:extension.bzl", "orfs_repositories")
+
+# To bump version, run: bazelisk run @bazel-orfs//:bump
+orfs.default(
+    # Official image https://hub.docker.com/r/openroad/orfs/tags
+    image = "docker.io/openroad/orfs:v3.0-3438-g5d2710a9",
+    sha256 = "b0d486e1cb9aafd920859eeaf464177ea7dded1f529058a1169b2f9c2d4d445c",
+)
+use_repo(orfs, "com_github_nixos_patchelf_download")
+use_repo(orfs, "docker_orfs")
