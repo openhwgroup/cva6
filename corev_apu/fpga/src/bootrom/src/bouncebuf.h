@@ -35,7 +35,7 @@
  * used directly) upon stop() call.
  */
 #define GEN_BB_RW	(GEN_BB_READ | GEN_BB_WRITE)
-#define size_t u32_t
+// #define u32_t u32_t
 
 struct bounce_buffer {
 	/* Copy of data parameter passed to start() */
@@ -47,9 +47,9 @@ struct bounce_buffer {
 	 */
 	void *bounce_buffer;
 	/* Copy of len parameter passed to start() */
-	size_t len;
+	u32_t len;
 	/* DMA-aligned buffer length */
-	size_t len_aligned;
+	u32_t len_aligned;
 	/* Copy of flags parameter passed to start() */
 	unsigned int flags;
 };
@@ -62,7 +62,7 @@ struct bounce_buffer {
  * flags:	flags describing the transaction, see above.
  */
 int bounce_buffer_start(struct bounce_buffer *state, void *data,
-			size_t len, unsigned int flags);
+			u32_t len, unsigned int flags);
 
 /**
  * bounce_buffer_start() -- Start the bounce buffer session with external align check function
@@ -74,8 +74,8 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
  * addr_is_aligned: function for checking the alignment instead of the default one
  */
 int bounce_buffer_start_extalign(struct bounce_buffer *state, void *data,
-				 size_t len, unsigned int flags,
-				 size_t alignment,
+				 u32_t len, unsigned int flags,
+				 u32_t alignment,
 				 int (*addr_is_aligned)(struct bounce_buffer *state));
 
 /**
