@@ -8,7 +8,7 @@
 #include "gpt.h"
 
 #define SECOND_CYCLES   CLOCK_FREQUENCY
-#define WAIT_SECONDS    (5)
+#define WAIT_SECONDS    (10)
 
 static inline uintptr_t get_cycle_count() {
     uintptr_t cycle;
@@ -47,6 +47,9 @@ int main()
     uint8_t uart_res = 0;
     uintptr_t start;
 
+    int start_block_fw_payload = XLEN ==32 ? 0x8570  : 0x3e9dd8;
+    int start_block_uImage     = XLEN ==32 ? 0x2bd20 : 0x338f8;
+
     #ifndef PLAT_AGILEX
     init_uart(CLOCK_FREQUENCY, UART_BITRATE); //not needed in intel setup as UART IP is already configured via HW
     #endif 
@@ -72,13 +75,13 @@ int main()
     } else {
         print_uart(" booting!\r\n");
         #ifndef PLAT_AGILEX
-        res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384); // linux boot not yet supported for altera
+        res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384); 
         #else 
             print_uart("I am Agilex 7! \r\n");
 
             print_uart("Loading fw_payload into memory address 0x80000000 \n");
             for (uint64_t i = 0; i < 9064; i++){
-                res = sd_copy_mmc((uint8_t *)0x80000000UL + (i * 0x200), 0x8570 + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
+                res = sd_copy_mmc((uint8_t *)0x80000000UL + (i * 0x200), start_block_fw_payload + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
 
                 if (res)
                 {
@@ -87,8 +90,8 @@ int main()
                 }
             }
             print_uart("Loading uImage into memory address 0x90000000 \n");
-            for (uint64_t i = 0; i < 100000; i++){
-                res = sd_copy_mmc((uint8_t *)0x90000000UL + (i * 0x200), 0x2bd20 + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
+            for (uint64_t i = 0; i < 30000; i++){
+                res = sd_copy_mmc((uint8_t *)0x90000000UL + (i * 0x200), start_block_uImage + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
 
                 if (res)
                 {

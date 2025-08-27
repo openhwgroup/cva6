@@ -27,7 +27,7 @@ endif
 CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
 OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
 SED = sed
-PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)
+PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)  -DXLEN=$(XLEN)
 
 ifeq ($(XLEN), 64)
 CFLAGS = $(PLATFORM_DEFINES) -Os -ggdb -march=rv64im_zicsr -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs -ffreestanding
@@ -36,8 +36,7 @@ CFLAGS = $(PLATFORM_DEFINES) -O2 -ggdb  -march=rv32im_zicsr -mabi=ilp32 -W -Wall
 endif
 
 CCASFLAGS = -mcmodel=medany -mexplicit-relocs
-LDFLAGS = -nostartfiles
-# LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
+LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
 
 INCLUDES = -I./ -I./src
 

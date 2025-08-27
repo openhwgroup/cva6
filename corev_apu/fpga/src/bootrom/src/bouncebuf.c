@@ -64,8 +64,8 @@ static int addr_aligned(struct bounce_buffer *state)
 }
 
 int bounce_buffer_start_extalign(struct bounce_buffer *state, void *data,
-				 size_t len, unsigned int flags,
-				 size_t alignment,
+				 u32_t len, unsigned int flags,
+				 u32_t alignment,
 				 int (*addr_is_aligned)(struct bounce_buffer *state))
 {
 	state->user_buffer = data;
@@ -103,7 +103,7 @@ int bounce_buffer_start_extalign(struct bounce_buffer *state, void *data,
 }
 
 int bounce_buffer_start(struct bounce_buffer *state, void *data,
-			size_t len, unsigned int flags)
+			u32_t len, unsigned int flags)
 {
 	return bounce_buffer_start_extalign(state, data, len, flags,
 					    ARCH_DMA_MINALIGN,
@@ -122,10 +122,10 @@ int bounce_buffer_stop(struct bounce_buffer *state)
 	if (state->bounce_buffer == state->user_buffer)
 		return 0;
 
-	if (state->flags & GEN_BB_WRITE)
-		memcpy(state->user_buffer, state->bounce_buffer, state->len);
+	// if (state->flags & GEN_BB_WRITE)
+	// 	memcpy(state->user_buffer, state->bounce_buffer, state->len);
 
-	free(state->bounce_buffer);
+	// free(state->bounce_buffer);
 
 	return 0;
 }
