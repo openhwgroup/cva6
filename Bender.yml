@@ -56,6 +56,14 @@ sources:
         files:
           - core/include/cv32a6_imafc_sv32_config_pkg.sv
 
+      - target: cv32a60x
+        files:
+          - core/include/cv32a60x_config_pkg.sv
+
+      - target: cv32a65x
+        files:
+          - core/include/cv32a65x_config_pkg.sv
+
       # General config infrastructure
       - core/include/riscv_pkg.sv
       - core/include/ariane_pkg.sv
