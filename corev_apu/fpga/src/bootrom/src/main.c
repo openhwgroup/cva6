@@ -47,8 +47,11 @@ int main()
     uint8_t uart_res = 0;
     uintptr_t start;
 
-    int start_block_fw_payload = XLEN ==32 ? 0x8570  : 0x3e9dd8;
-    int start_block_uImage     = XLEN ==32 ? 0x2bd20 : 0x338f8;
+    // int start_block_fw_payload = XLEN ==32 ? 0x8570  : 0x3e9dd8;
+    // int start_block_uImage     = XLEN ==32 ? 0x2bd20 : 0x338f8;
+
+     int start_block_fw_payload = 0xfa800;
+    int start_block_uImage      = 0x12c800;
 
     #ifndef PLAT_AGILEX
     init_uart(CLOCK_FREQUENCY, UART_BITRATE); //not needed in intel setup as UART IP is already configured via HW
