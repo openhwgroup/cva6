@@ -106,7 +106,8 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-    logic [9:0] reserved;
+    logic n;
+    logic [8:0] reserved;
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
@@ -120,12 +121,13 @@ module cva6_mmu
   };
 
   localparam type tlb_update_cva6_t = struct packed {
+    logic [3:0]                             napot_bits;  //Svnapot support
     logic                                   valid;
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
     logic [CVA6Cfg.VpnLen-1:0]              vpn;
     logic [CVA6Cfg.ASID_WIDTH-1:0]          asid;
     logic [CVA6Cfg.VMID_WIDTH-1:0]          vmid;
-    logic [HYP_EXT*2:0]                     v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
+    logic [HYP_EXT*2:0]                     v_st_enbl;   // v_i,g-stage enabled, s-stage enabled
     pte_cva6_t                              content;
     pte_cva6_t                              g_content;
   };
@@ -155,6 +157,8 @@ module cva6_mmu
   logic                               itlb_lu_hit;
   logic      [     CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
   logic      [CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
+  logic      [                   3:0] itlb_napot_bits;  // New signal for ITLB's napot_bits output
+  logic      [                   3:0] dtlb_napot_bits;  // New signal for DTLB's napot_bits output
 
   logic                               dtlb_lu_access;
   pte_cva6_t                          dtlb_content;
@@ -182,28 +186,29 @@ module cva6_mmu
       .TLB_ENTRIES      (CVA6Cfg.InstrTlbEntries),
       .HYP_EXT          (HYP_EXT)
   ) i_itlb (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (flush_tlb_i),
-      .flush_vvma_i  (flush_tlb_vvma_i),
-      .flush_gvma_i  (flush_tlb_gvma_i),
-      .s_st_enbl_i   (enable_translation_i),
-      .g_st_enbl_i   (enable_g_translation_i),
-      .v_i           (v_i),
-      .update_i      (update_itlb),
-      .lu_access_i   (itlb_lu_access),
-      .lu_asid_i     (itlb_lu_asid),
-      .lu_vmid_i     (vmid_i),
-      .lu_vaddr_i    (icache_areq_i.fetch_vaddr),
-      .lu_gpaddr_o   (itlb_gpaddr),
-      .lu_content_o  (itlb_content),
-      .lu_g_content_o(itlb_g_content),
+      .clk_i          (clk_i),
+      .rst_ni         (rst_ni),
+      .flush_i        (flush_tlb_i),
+      .flush_vvma_i   (flush_tlb_vvma_i),
+      .flush_gvma_i   (flush_tlb_gvma_i),
+      .s_st_enbl_i    (enable_translation_i),
+      .g_st_enbl_i    (enable_g_translation_i),
+      .v_i            (v_i),
+      .update_i       (update_itlb),
+      .lu_access_i    (itlb_lu_access),
+      .lu_asid_i      (itlb_lu_asid),
+      .lu_napot_bits_o(itlb_napot_bits),
+      .lu_vmid_i      (vmid_i),
+      .lu_vaddr_i     (icache_areq_i.fetch_vaddr),
+      .lu_gpaddr_o    (itlb_gpaddr),
+      .lu_content_o   (itlb_content),
+      .lu_g_content_o (itlb_g_content),
       .asid_to_be_flushed_i,
       .vmid_to_be_flushed_i,
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
-      .lu_is_page_o  (itlb_is_page),
-      .lu_hit_o      (itlb_lu_hit)
+      .lu_is_page_o   (itlb_is_page),
+      .lu_hit_o       (itlb_lu_hit)
   );
 
   cva6_tlb #(
@@ -213,28 +218,29 @@ module cva6_mmu
       .TLB_ENTRIES      (CVA6Cfg.DataTlbEntries),
       .HYP_EXT          (HYP_EXT)
   ) i_dtlb (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_ni),
-      .flush_i       (flush_tlb_i),
-      .flush_vvma_i  (flush_tlb_vvma_i),
-      .flush_gvma_i  (flush_tlb_gvma_i),
-      .s_st_enbl_i   (en_ld_st_translation_i),
-      .g_st_enbl_i   (en_ld_st_g_translation_i),
-      .v_i           (ld_st_v_i),
-      .update_i      (update_dtlb),
-      .lu_access_i   (dtlb_lu_access),
-      .lu_asid_i     (dtlb_lu_asid),
-      .lu_vmid_i     (vmid_i),
-      .lu_vaddr_i    (lsu_vaddr_i),
-      .lu_gpaddr_o   (dtlb_gpaddr),
-      .lu_content_o  (dtlb_content),
-      .lu_g_content_o(dtlb_g_content),
+      .clk_i          (clk_i),
+      .rst_ni         (rst_ni),
+      .flush_i        (flush_tlb_i),
+      .flush_vvma_i   (flush_tlb_vvma_i),
+      .flush_gvma_i   (flush_tlb_gvma_i),
+      .s_st_enbl_i    (en_ld_st_translation_i),
+      .g_st_enbl_i    (en_ld_st_g_translation_i),
+      .v_i            (ld_st_v_i),
+      .update_i       (update_dtlb),
+      .lu_access_i    (dtlb_lu_access),
+      .lu_asid_i      (dtlb_lu_asid),
+      .lu_napot_bits_o(dtlb_napot_bits),
+      .lu_vmid_i      (vmid_i),
+      .lu_vaddr_i     (lsu_vaddr_i),
+      .lu_gpaddr_o    (dtlb_gpaddr),
+      .lu_content_o   (dtlb_content),
+      .lu_g_content_o (dtlb_g_content),
       .asid_to_be_flushed_i,
       .vmid_to_be_flushed_i,
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
-      .lu_is_page_o  (dtlb_is_page),
-      .lu_hit_o      (dtlb_lu_hit)
+      .lu_is_page_o   (dtlb_is_page),
+      .lu_hit_o       (dtlb_lu_hit)
   );
 
 
@@ -393,11 +399,9 @@ module cva6_mmu
       end
 
       icache_areq_o.fetch_valid = 1'b0;
-
-      icache_areq_o.fetch_paddr = {
-        (enable_g_translation_i && CVA6Cfg.RVH) ? itlb_g_content.ppn : itlb_content.ppn,
-        icache_areq_i.fetch_vaddr[11:0]
-      };
+      final_fetch_ppn = (enable_g_translation_i && CVA6Cfg.RVH)? itlb_g_content.ppn : itlb_content.ppn;
+      itlb_napot_bits = itlb_lu_hit ? itlb_napot_bits : 4'd0;
+      icache_areq_o.fetch_paddr = {final_fetch_ppn, icache_areq_i.fetch_vaddr[11:0]};
 
       if (CVA6Cfg.PtLevels == 3 && itlb_is_page[CVA6Cfg.PtLevels-2]) begin
 
@@ -498,7 +502,8 @@ module cva6_mmu
   logic dtlb_hit_n, dtlb_hit_q;
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
-
+  logic [3:0] dtlb_napot_bits_n, dtlb_napot_bits_q;
+  logic [CVA6Cfg.PPNW-1:0] final_fetch_ppn;
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
 
@@ -513,7 +518,7 @@ module cva6_mmu
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
     misaligned_ex_n = misaligned_ex_i;
-
+    dtlb_napot_bits_n = dtlb_lu_hit ? dtlb_napot_bits : 4'd0;
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
 
@@ -529,7 +534,6 @@ module cva6_mmu
     daccess_err = en_ld_st_translation_i &&
               ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (ld_st_v_i ? !vs_sum_i : !sum_i ) && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
     (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));
-
     if (CVA6Cfg.RVH) begin
       lsu_tinst_n = lsu_tinst_i;
       hs_ld_st_inst_n = hs_ld_st_inst_i;
@@ -735,26 +739,27 @@ module cva6_mmu
   // ----------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      lsu_vaddr_q     <= '0;
-      lsu_gpaddr_q    <= '0;
-      lsu_req_q       <= '0;
-      dtlb_pte_q      <= '0;
-      dtlb_gpte_q     <= '0;
-      dtlb_hit_q      <= '0;
-      lsu_is_store_q  <= '0;
-      dtlb_is_page_q  <= '0;
-      lsu_tinst_q     <= '0;
-      hs_ld_st_inst_q <= '0;
-      misaligned_ex_q <= '0;
+      lsu_vaddr_q       <= '0;
+      lsu_gpaddr_q      <= '0;
+      lsu_req_q         <= '0;
+      dtlb_pte_q        <= '0;
+      dtlb_gpte_q       <= '0;
+      dtlb_hit_q        <= '0;
+      lsu_is_store_q    <= '0;
+      dtlb_is_page_q    <= '0;
+      lsu_tinst_q       <= '0;
+      hs_ld_st_inst_q   <= '0;
+      misaligned_ex_q   <= '0;
+      dtlb_napot_bits_q <= '0;
     end else begin
-      lsu_vaddr_q     <= lsu_vaddr_n;
-      lsu_req_q       <= lsu_req_n;
-      dtlb_pte_q      <= dtlb_pte_n;
-      dtlb_hit_q      <= dtlb_hit_n;
-      lsu_is_store_q  <= lsu_is_store_n;
-      dtlb_is_page_q  <= dtlb_is_page_n;
-      misaligned_ex_q <= misaligned_ex_n;
-
+      lsu_vaddr_q       <= lsu_vaddr_n;
+      lsu_req_q         <= lsu_req_n;
+      dtlb_pte_q        <= dtlb_pte_n;
+      dtlb_hit_q        <= dtlb_hit_n;
+      lsu_is_store_q    <= lsu_is_store_n;
+      dtlb_is_page_q    <= dtlb_is_page_n;
+      misaligned_ex_q   <= misaligned_ex_n;
+      dtlb_napot_bits_q <= dtlb_napot_bits_n;  //? or in RVH
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
         hs_ld_st_inst_q <= hs_ld_st_inst_n;

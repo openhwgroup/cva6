@@ -45,6 +45,7 @@ module cva6_tlb
     input logic [CVA6Cfg.ASID_WIDTH-1:0] lu_asid_i,
     input logic [CVA6Cfg.VMID_WIDTH-1:0] lu_vmid_i,
     input logic [CVA6Cfg.VLEN-1:0] lu_vaddr_i,
+    output logic [3:0] lu_napot_bits_o,
     output logic [CVA6Cfg.GPLEN-1:0] lu_gpaddr_o,
     output pte_cva6_t lu_content_o,
     output pte_cva6_t lu_g_content_o,
@@ -69,6 +70,7 @@ module cva6_tlb
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
     logic [HYP_EXT*2:0] v_st_enbl;  // v_i, g-stage enabled, s-stage enabled
     logic valid;
+    logic [3:0] napot_bits;  //Svnapot support
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
@@ -93,8 +95,10 @@ module cva6_tlb
   pte_cva6_t g_content;
   logic [TLB_ENTRIES-1:0][(CVA6Cfg.GPPNW-1):0] gppn;
   logic [HYP_EXT*2:0] v_st_enbl;
-
+  logic [CVA6Cfg.VpnLen-1:0] napot_tag_match;
+  logic [TLB_ENTRIES-1:0][CVA6Cfg.VpnLen-1:0] stored_vpn;
   assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
+
   //-------------
   // Translation
   //-------------
@@ -163,6 +167,21 @@ module cva6_tlb
           assign vpage_match[i][z][x] = x == 0 ? 1 : tags_q[i].is_page[CVA6Cfg.PtLevels-1-x][z];
           assign vaddr_level_match[i][z][x] = &vaddr_vpn_match[i][z][CVA6Cfg.PtLevels-1:x] && vpage_match[i][z][x];
         end
+        //identify if virtual address vpn matches at all PT levels for all TLB entries 
+        assign vaddr_vpn_match[i][0][x]  = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x)] == tags_q[i].vpn[x];
+
+      end
+
+      // NEW: Add continuous assignment for NAPOT tag matching
+      logic [CVA6Cfg.VpnLen-1:0] lu_vpn = lu_vaddr_i[CVA6Cfg.VLEN-1:12];
+      assign stored_vpn[i] = {tags_q[i].vpn[2], tags_q[i].vpn[1], tags_q[i].vpn[0]};
+      assign napot_tag_match[i] = (tags_q[i].napot_bits == 4) && (lu_vpn[CVA6Cfg.VpnLen-1:4] == stored_vpn[i][CVA6Cfg.VpnLen-1:4]);
+      if (CVA6Cfg.RVH) begin
+        //identify if GPADDR matches the GPPN
+        assign vaddr_vpn_match[i][HYP_EXT][0] = (gpaddr_to_be_flushed_i[20:12] == gppn[i][8:0]);
+        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT] = (gpaddr_to_be_flushed_i[29:21] == gppn[i][17:9]);
+        assign vaddr_vpn_match[i][HYP_EXT][HYP_EXT*2] = (gpaddr_to_be_flushed_i[30+GPPN2:30] == gppn[i][18+GPPN2:18]);
+
       end
 
       // Reorganise the output structure to match `is_page` tag order: [1G, 2M]
@@ -171,20 +190,21 @@ module cva6_tlb
       end
     end
   endgenerate
-
+  pte_cva6_t patched_pte;
   always_comb begin : translation
 
     // default assignment
-    lu_hit         = '{default: 0};
-    lu_hit_o       = 1'b0;
-    lu_content_o   = '{default: 0};
-    lu_g_content_o = '{default: 0};
-    lu_is_page_o   = '{default: 0};
-    match_asid     = '{default: 0};
-    match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
-    match_stage    = '{default: 0};
-    g_content      = '{default: 0};
-    lu_gpaddr_o    = '{default: 0};
+    lu_hit          = '{default: 0};
+    lu_napot_bits_o = '0;
+    lu_hit_o        = 1'b0;
+    lu_content_o    = '{default: 0};
+    lu_g_content_o  = '{default: 0};
+    lu_is_page_o    = '{default: 0};
+    match_asid      = '{default: 0};
+    match_vmid      = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
+    match_stage     = '{default: 0};
+    g_content       = '{default: 0};
+    lu_gpaddr_o     = '{default: 0};
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // First level match, this may be a giga page, check the ASID flags as well
@@ -205,7 +225,7 @@ module cva6_tlb
       // - vmid matches
       // - virtualisations / S-stage / G-stage matches
       // - there exists a PT level for which and entry exists and corresponding VPN(s) match
-      if (tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && |level_match[i]) begin
+      if (tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && (|level_match[i] || napot_tag_match[i])) begin
         lu_is_page_o = is_page_o[i];
         lu_content_o = content_q[i].pte;
         lu_hit_o     = 1'b1;
@@ -241,6 +261,30 @@ module cva6_tlb
               lu_g_content_o.ppn[2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end
         end
+        if (|level_match[i] || napot_tag_match[i]) begin
+          lu_is_page_o    = is_page_o[i];
+          lu_hit_o        = 1'b1;
+          lu_hit[i]       = 1'b1;
+          lu_napot_bits_o = tags_q[i].napot_bits;
+          // lu_content_o = content_q[i].pte;
+          // Patch the PPN on every TLB hit if this entry is a 64 KiB Svnapot page
+          if (tags_q[i].napot_bits == 4'd4) begin
+            patched_pte          = content_q[i].pte;
+            patched_pte.ppn[3:0] = lu_vaddr_i[15:12];
+            lu_content_o         = patched_pte;
+          end else begin
+            lu_content_o = content_q[i].pte;
+          end
+
+          if (CVA6Cfg.RVH) begin
+            // Compute G-Stage PPN based on the gpaddr
+            g_content = content_q[i].gpte;
+            if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
+            if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
+            // Output G-stage and S-stage content
+            lu_g_content_o = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i].gpte : g_content;
+          end
+        end
       end
     end
   end
@@ -254,6 +298,7 @@ module cva6_tlb
   assign vaddr_to_be_flushed_is0  = ~(|vaddr_to_be_flushed_i);
   assign vmid_to_be_flushed_is0   = ~(|vmid_to_be_flushed_i);
   assign gpaddr_to_be_flushed_is0 = ~(|gpaddr_to_be_flushed_i);
+
 
   // ------------------
   // Update and Flush
@@ -280,8 +325,25 @@ module cva6_tlb
         end
       end
 
-
       if (flush_i) begin
+        // NEW: Corrected flush logic for NAPOT
+        logic is_napot_entry = (tags_q[i].napot_bits == 4);
+        logic [CVA6Cfg.VpnLen-1:0] flush_vpn_masked = vaddr_to_be_flushed_i & ~('1 << 4);
+        logic [TLB_ENTRIES-1:0][CVA6Cfg.VpnLen-1:0] stored_vpn;
+        assign stored_vpn[i] = {tags_q[i].vpn[2], tags_q[i].vpn[1], tags_q[i].vpn[0]};
+
+        if (is_napot_entry &&
+            (flush_vpn_masked == stored_vpn[i]) &&
+          !content_q[i].pte.g && // Only flush non-global entries
+            (asid_to_be_flushed_i == tags_q[i].asid ||
+
+| asid_to_be_flushed_is0) // Check for ASID match
+            ) begin
+          tags_n[i].valid = 1'b0;
+        end
+
+        // Original flush logic for non-NAPOT and general cases
+
         if (!tags_q[i].v_st_enbl[HYP_EXT*2] || HYP_EXT == 0) begin
           // invalidate logic
           // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
@@ -329,15 +391,22 @@ module cva6_tlb
         end
         // normal replacement
       end else if (update_i.valid & replace_en[i] & !lu_hit_o) begin
-        // update tag
+        // NEW: Mask the VPN for NAPOT entries before storing
+        logic [CVA6Cfg.VpnLen-1:0] vpn_to_store = update_i.vpn;
+        if (update_i.napot_bits == 4) begin
+          // For a 64KB page, align the VPN by clearing the lower 4 bits.
+          vpn_to_store[3:0] = 4'b0;
+        end
+        //update tag
         tags_n[i] = {
           update_i.asid,
           update_i.vmid,
-          // Zero-extended VPN to fit the tag width
-          ((CVA6Cfg.PtLevels + HYP_EXT) * (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels))'(update_i.vpn),
+          // ((CVA6Cfg.PtLevels + HYP_EXT) * (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels))'(update_i.vpn),
+          ((CVA6Cfg.PtLevels + HYP_EXT) * (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels))'(vpn_to_store),
           update_i.is_page,
           update_i.v_st_enbl,
-          1'b1
+          1'b1,
+          update_i.napot_bits  // Added napot_bits
         };
         // update content as well
         content_n[i].pte = update_i.content;

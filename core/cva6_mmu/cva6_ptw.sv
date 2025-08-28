@@ -96,6 +96,10 @@ module cva6_ptw
   pte_cva6_t pte;
   // register to perform context switch between stages
   pte_cva6_t gpte_q, gpte_d;
+
+  //Fields for SVNAPOT
+  automatic logic [3:0] napot_bits;
+
   assign pte = pte_cva6_t'(data_rdata_q);
 
   enum logic [2:0] {
@@ -193,6 +197,7 @@ module cva6_ptw
 
   always_comb begin : tlb_update
     shared_tlb_update_o.valid = shared_tlb_update_valid;
+    shared_tlb_update_o.napot_bits = napot_bits;
 
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
@@ -293,10 +298,12 @@ module cva6_ptw
     ptw_err_at_g_int_st_o   = 1'b0;
     ptw_access_exception_o  = 1'b0;
     shared_tlb_update_valid = 1'b0;
+    napot_bits              = 4'd0;
     is_instr_ptw_n          = is_instr_ptw_q;
     ptw_lvl_n               = ptw_lvl_q;
     ptw_pptr_n              = ptw_pptr_q;
     state_d                 = state_q;
+    gpte_d                  = '0;
     ptw_stage_d             = ptw_stage_q;
     global_mapping_n        = global_mapping_q;
     // input registers
@@ -397,30 +404,49 @@ module cva6_ptw
       PTE_LOOKUP: begin
         // we wait for the valid signal
         if (data_rvalid_q) begin
+          // Create a local, mutable copy of the PTE from the raw data
+          pte_cva6_t pte_to_process = pte_cva6_t'(data_rdata_q);
+          logic is_napot_64k;
+          logic is_napot_err;
 
+          // Perform NAPOT detection directly on the raw data to be robust.
+          // Bit 63 is the N bit. Bits 13:10 are the lowest 4 bits of the PPN field.
+          is_napot_64k = pte_to_process[63] && (pte_to_process[13:10] == 4'b1000);
+          // Check for other reserved N=1 encodings
+          is_napot_err = pte_to_process[63] && (pte_to_process[13:10] != 4'b1000);
+          // Assign napot_bits for the TLB update
+          napot_bits   = is_napot_64k ? 4'd4 : 4'd0;
           // check if the global mapping bit is set
           if (pte.g && (ptw_stage_q == S_STAGE || !CVA6Cfg.RVH)) global_mapping_n = 1'b1;
 
           // -------------
           // Invalid PTE
           // -------------
+          // MODIFIED: Added ptw_error_o to the check
           // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
-          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64))
+          if (!pte_to_process.v || (!pte_to_process.r && pte_to_process.w) || (|pte_to_process.reserved && CVA6Cfg.XLEN == 64) || is_napot_err)
             state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE
           // -----------
+          // MODIFIED: Perform PPN patching for valid NAPOT entries
           else begin
             state_d = LATENCY;
-            // it is a valid PTE if pte.r = 1 or pte.x = 1
-            if (pte.r || pte.x) begin
+            // it is a valid PTE
+            // if pte.r = 1 or pte.x = 1 it is a valid PTE
+            if (pte_to_process.r || pte_to_process.x) begin
+              // if (is_napot_64k) begin     //PPN Patching
+              //   pte_to_process.ppn[3:0] = vaddr_q[15:12];
+              // end
+              // Assign the (potentially patched) PTE to the TLB update content
+              shared_tlb_update_o.content = (pte_to_process | (global_mapping_q << 5));
               if (CVA6Cfg.RVH) begin
                 case (ptw_stage_q)
                   S_STAGE: begin
                     if ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i)) begin
                       state_d = WAIT_GRANT;
                       ptw_stage_d = G_FINAL_STAGE;
-                      if (CVA6Cfg.RVH) gpte_d = pte;
+                      if (CVA6Cfg.RVH) gpte_d = pte_to_process;
                       ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                       gpaddr_n = gpaddr[ptw_lvl_q[0]];
                       ptw_pptr_n = {
@@ -432,10 +458,11 @@ module cva6_ptw
                     end
                   end
                   G_INTERMED_STAGE: begin
+                    // MODIFIED: Use patched PTE for address calculation
                     state_d = WAIT_GRANT;
                     ptw_stage_d = S_STAGE;
                     ptw_lvl_n[0] = ptw_lvl_q[HYP_EXT];
-                    pptr = {pte.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
+                    pptr = {pte_to_process.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
                     if (ptw_lvl_q[0] == 1) pptr[20:0] = gptw_pptr_q[20:0];
                     if (ptw_lvl_q[0] == 0) pptr[29:0] = gptw_pptr_q[29:0];
                     ptw_pptr_n = pptr;
@@ -451,8 +478,8 @@ module cva6_ptw
                 // If page is not executable, we can directly raise an error. This
                 // doesn't put a useless entry into the TLB. The same idea applies
                 // to the access flag since we let the access flag be managed by SW.
-                if ((!pte.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) || !pte.a
-                    || (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte.r)) begin
+                if ((!pte_to_process.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) || !pte_to_process.a
+                    || (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte_to_process.r)) begin
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end else if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH)
@@ -468,12 +495,12 @@ module cva6_ptw
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
                 if (
-                  (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
+                  (pte_to_process.a && ((pte_to_process.r && !hlvx_inst_i) || (pte_to_process.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
                     // Request is a store: perform some additional checks
                     // If the request was a store and the page is not write-able, raise an error
                     // the same applies if the dirty flag is not set
                     // g-intermediate nodes however never need write-permission
-                    && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
+                    && (!lsu_is_store_i || (pte_to_process.w && pte_to_process.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
                 ) begin
                   if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH)
                     shared_tlb_update_valid = 1'b1;
@@ -492,7 +519,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte_to_process.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
@@ -569,6 +596,7 @@ module cva6_ptw
             state_d = PROPAGATE_ACCESS_ERROR;
           end
         end
+
         // we've got a data WAIT_GRANT so tell the cache that the tag is valid
       end
       // Propagate error to MMU/LSU

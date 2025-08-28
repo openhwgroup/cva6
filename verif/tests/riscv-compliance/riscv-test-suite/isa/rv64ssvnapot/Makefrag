@@ -1,0 +1,8 @@
+#=======================================================================
+# Makefrag for rv64ssvnapot tests
+#-----------------------------------------------------------------------
+
+rv64ssvnapot_sc_tests = \
+	napot \
+
+rv64ssvnapot_p_tests = $(addprefix rv64ssvnapot-p-, $(rv64ssvnapot_sc_tests))
