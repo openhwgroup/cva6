@@ -227,6 +227,7 @@ sources:
         files:
           - common/local/util/tc_sram_wrapper.sv
           - common/local/util/sram_cache.sv
+          - common/local/util/tc_sram_wrapper_cache_techno.sv
 
       - target: all(fpga, xilinx)
         include_dirs:
