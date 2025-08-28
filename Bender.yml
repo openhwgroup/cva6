@@ -101,6 +101,7 @@ sources:
       - core/cva6.sv
       - core/aes.sv
       - core/alu.sv
+      - core/alu_wrapper.sv
       - core/fpu_wrap.sv # depends on fpnew_pkg, above
       - core/branch_unit.sv
       - core/compressed_decoder.sv
