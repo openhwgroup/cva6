@@ -141,7 +141,7 @@ smoke-tests:
     - .fe_smoke_test
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS $DV_TARGET"
-    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenches configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     SPIKE_TANDEM: 1
@@ -208,6 +208,19 @@ smoke-hwconfig:
     - source verif/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
 
+hello-pk:
+  extends:
+    - .fe_smoke_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Hello world with veri-testharness-pk on multiple RTL targets."
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
+    DASHBOARD_SORT_INDEX: 1
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    COLLECT_SIMU_LOGS: 1
+  script:
+    - bash verif/regress/veri-testharness-pk-tests.sh
+    - python3 .gitlab-ci/scripts/report_pass.py
+
 .synthesis_test:
   stage: heavy tests
   timeout: 2 hours
@@ -230,7 +243,7 @@ iti-test:
     - .synthesis_test
   variables:
     DASHBOARD_JOB_TITLE: "ITI test"
-    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instuction Trace Interface"
+    DASHBOARD_JOB_DESCRIPTION: "Short test to challenge the Instruction Trace Interface"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
     DV_SIMULATORS: "vcs-testharness"

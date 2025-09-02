@@ -63,7 +63,7 @@ module instr_queue
     input logic [CVA6Cfg.INSTR_PER_FETCH-1:0] valid_i,
     // Handshake’s ready with CACHE - CACHE
     output logic ready_o,
-    // Indicates instructions consummed, or popped by ID_STAGE - FRONTEND
+    // Indicates instructions consumed, or popped by ID_STAGE - FRONTEND
     output logic [CVA6Cfg.INSTR_PER_FETCH-1:0] consumed_o,
     // Exception (which is page-table fault) - CACHE
     input ariane_pkg::frontend_exception_t exception_i,
@@ -76,7 +76,7 @@ module instr_queue
     input logic [CVA6Cfg.VLEN-1:0] predict_address_i,
     // Instruction predict address - FRONTEND
     input ariane_pkg::cf_t [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type_i,
-    // Replay instruction because one of the FIFO was  full - FRONTEND
+    // Replay instruction because one of the FIFO was full - FRONTEND
     output logic replay_o,
     // Address at which to replay the fetch - FRONTEND
     output logic [CVA6Cfg.VLEN-1:0] replay_addr_o,

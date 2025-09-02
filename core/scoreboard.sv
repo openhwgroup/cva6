@@ -54,7 +54,7 @@ module scoreboard #(
     input  logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
     // Handshake's valid with decode stage - ID_STAGE
     input  logic              [CVA6Cfg.NrIssuePorts-1:0]       decoded_instr_valid_i,
-    // Handshake's acknowlege with decode stage - ID_STAGE
+    // Handshake's acknowledge with decode stage - ID_STAGE
     output logic              [CVA6Cfg.NrIssuePorts-1:0]       decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
@@ -146,7 +146,7 @@ module scoreboard #(
     assign issue_pointer[i+1] = issue_pointer[i] + 'd1;
   end
 
-  // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
+  // an instruction is ready for issue if we have place in the issue FIFO and the decoder says it is valid
   always_comb begin
     issue_instr_o = decoded_instr_i;
     orig_instr_o  = orig_instr_i;
@@ -166,7 +166,7 @@ module scoreboard #(
     mem_n     = mem_q;
     num_issue = '0;
 
-    // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
+    // if we got an acknowledge from the issue stage, put this scoreboard entry in the queue
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       if (decoded_instr_valid_i[i] && decoded_instr_ack_o[i] && !flush_unissued_instr_i) begin
         // the decoded instruction we put in there is valid (1st bit)

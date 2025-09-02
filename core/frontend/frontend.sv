@@ -36,6 +36,8 @@ module frontend
     input logic flush_i,
     // Halt requested by WFI and Accelerate port - CONTROLLER
     input logic halt_i,
+    // Halt frontend - CONTROLLER (in the case of fence_i to avoid fetching an old instruction)
+    input logic halt_frontend_i,
     // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
     input logic set_pc_commit_i,
     // COMMIT PC - COMMIT
@@ -195,7 +197,7 @@ module frontend
   end
   ;
 
-  // for the return address stack it doens't matter as we have the
+  // for the return address stack it doesn't matter as we have the
   // address of the call/return already
   logic bp_valid;
 
@@ -306,8 +308,9 @@ module frontend
   assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
   // Cache interface
-  assign icache_dreq_o.req = instr_queue_ready;
-  assign if_ready = icache_dreq_i.ready & instr_queue_ready;
+  // Gate ICache requests and NPC updates during fence.i
+  assign icache_dreq_o.req = instr_queue_ready & ~halt_frontend_i;
+  assign if_ready = icache_dreq_i.ready & instr_queue_ready & ~halt_frontend_i;
   // We need to flush the cache pipeline if:
   // 1. We mispredicted
   // 2. Want to flush the whole processor front-end

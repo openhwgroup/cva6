@@ -68,7 +68,7 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
-    // Scalar Cryptography RISC-V entension
+    // Scalar Cryptography RISC-V extension
     bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
@@ -200,10 +200,12 @@ package config_pkg;
     bit                          FpgaEn;
     // Is FPGA optimization for Altera FPGA
     bit                          FpgaAlteraEn;
-    // Is Techno Cut instanciated
+    // Is Techno Cut instantiated
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;
+    // Enable ALU-ALU bypass (superscalar mode only)
+    bit                          ALUBypass;
     // Number of commit ports. Forced to 2 if SuperscalarEn.
     int unsigned                 NrCommitPorts;
     // Load cycle latency number
@@ -255,6 +257,9 @@ package config_pkg;
     int unsigned NrCommitPorts;
     int unsigned NrIssuePorts;
     bit          SpeculativeSb;
+
+    int unsigned NrALUs;
+    bit          ALUBypass;
 
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;
