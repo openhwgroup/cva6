@@ -93,8 +93,6 @@
 			altr,sysmgr-syscon = <&sysmgr 0x28 4>;
 			status = "disabled";
 		};
-   
-    
   };
 };
 // delete ethernet device if disabled

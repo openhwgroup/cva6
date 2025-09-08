@@ -47,8 +47,6 @@ int main()
     uint8_t uart_res = 0;
     uintptr_t start;
 
-    int start_block_fw_payload  = 0x32800; //payload at 100MB
-    int start_block_uImage      = 0x100000; //uImage at 512MB
 
     #ifndef PLAT_AGILEX
     init_uart(CLOCK_FREQUENCY, UART_BITRATE); //not needed in intel setup as UART IP is already configured via HW
@@ -77,21 +75,12 @@ int main()
         #ifndef PLAT_AGILEX
         res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384); 
         #else 
+            int start_block_fw_payload  = 0x32800; //payload at 100MB
             print_uart("I am Agilex 7! \r\n");
 
             print_uart("Loading fw_payload into memory address 0x80000000 \n");
-            for (uint64_t i = 0; i < 9064; i++){
+            for (uint64_t i = 0; i < 15000; i++){
                 res = sd_copy_mmc((uint8_t *)0x80000000UL + (i * 0x200), start_block_fw_payload + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
-
-                if (res)
-                {
-                    print_uart("TRANSFER ERROR\n");
-                    return res;
-                }
-            }
-            print_uart("Loading uImage into memory address 0x90000000 \n");
-            for (uint64_t i = 0; i < 30000; i++){
-                res = sd_copy_mmc((uint8_t *)0x90000000UL + (i * 0x200), start_block_uImage + i, 1); // for now hardcoded, need to develop the code to find the file in the SD card
 
                 if (res)
                 {
