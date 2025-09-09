@@ -418,9 +418,15 @@ module csr_regfile
         riscv::CSR_TDATA3:
         if (CVA6Cfg.SDTRIG) csr_rdata = tdata3_from_tm;
         else read_access_exception = 1'b1;
-        riscv::CSR_TINFO:
-        if (CVA6Cfg.SDTRIG) csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000};  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
-        else read_access_exception = 1'b1;
+        riscv::CSR_TINFO: begin
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = {
+              {CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000
+            };  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_SCONTEXT:
         if (CVA6Cfg.SDTRIG) csr_rdata = scontext_q;
         else read_access_exception = 1'b1;
@@ -1132,44 +1138,44 @@ module csr_regfile
         end
         // Trigger module CSRs
         riscv::CSR_TSELECT: begin
-        if (CVA6Cfg.SDTRIG) begin
-          tselect_to_tm = csr_wdata;
-          tselect_we    = csr_we;
-        end else begin
-          update_access_exception = 1'b1;
-        end
+          if (CVA6Cfg.SDTRIG) begin
+            tselect_to_tm = csr_wdata;
+            tselect_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         riscv::CSR_TDATA1: begin
-        if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.SDTRIG) begin
             tdata1_to_tm = csr_wdata;
             tdata1_we    = csr_we;
             flush_o = flush_from_tm;
-        end else begin
-          update_access_exception = 1'b1;
-        end
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         riscv::CSR_TDATA2: begin
-        if (CVA6Cfg.SDTRIG) begin
-          tdata2_to_tm = csr_wdata;
-          tdata2_we    = csr_we;
-        end else begin
-          update_access_exception = 1'b1;
-        end
+          if (CVA6Cfg.SDTRIG) begin
+            tdata2_to_tm = csr_wdata;
+            tdata2_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         riscv::CSR_TDATA3: begin
-        if (CVA6Cfg.SDTRIG) begin
-          tdata3_to_tm = csr_wdata;
-          tdata3_we    = csr_we;
-        end else begin
-          update_access_exception = 1'b1;
-        end
+          if (CVA6Cfg.SDTRIG) begin
+            tdata3_to_tm = csr_wdata;
+            tdata3_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         riscv::CSR_SCONTEXT: begin
-        if (CVA6Cfg.SDTRIG) begin
-          scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
-        end else begin
-          update_access_exception = 1'b1;
-        end
+          if (CVA6Cfg.SDTRIG) begin
+            scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
+          end else begin
+            update_access_exception = 1'b1;
+          end
         end
         // virtual supervisor registers
         riscv::CSR_VSSTATUS: begin
@@ -1989,7 +1995,7 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = (break_from_trigger) ? 32'h00000003 : ex_i.cause; 
+        mcause_d = (break_from_trigger) ? 32'h00000003 : ex_i.cause;
         // set epc
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
@@ -2783,7 +2789,7 @@ module csr_regfile
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
       end
       if (CVA6Cfg.SDTRIG) begin
-        scontext_q            <= scontext_d;
+        scontext_q <= scontext_d;
       end
       // timer and counters
       cycle_q                <= cycle_d;
@@ -2798,8 +2804,8 @@ module csr_regfile
     end
   end
 
- assign debug_from_trigger_o = debug_from_mcontrol;  // from trigger module to id stage
- assign break_from_trigger_o = break_from_trigger;   // from trigger module to commit stage
+  assign debug_from_trigger_o = debug_from_mcontrol;  // from trigger module to id stage
+  assign break_from_trigger_o = break_from_trigger;  // from trigger module to commit stage
 
   // write logic pmp
   always_comb begin : write
@@ -2834,54 +2840,54 @@ module csr_regfile
   //-------------
   // Trigger Module
   //-------------
-  generate 
-    if(CVA6Cfg.SDTRIG) begin : tm_gen
+  generate
+    if (CVA6Cfg.SDTRIG) begin : tm_gen
       trigger_module #(
-          .CVA6Cfg            (CVA6Cfg),
-          .exception_t        (exception_t),
-          .scoreboard_entry_t (scoreboard_entry_t),
-          .N_Triggers         (N_Triggers)
+          .CVA6Cfg           (CVA6Cfg),
+          .exception_t       (exception_t),
+          .scoreboard_entry_t(scoreboard_entry_t),
+          .N_Triggers        (N_Triggers)
       ) trigger_module_i (
           .clk_i,
           .rst_ni,
-          .commit_instr_i          (commit_instr_i),
-          .commit_ack_i            (commit_ack_i),
-          .ex_i                    (ex_i),
-          .vaddr_from_lsu_i        (vaddr_from_lsu_i),
-          .orig_instr_i            (orig_instr_i),
-          .store_result_i          (store_result_i),
-          .priv_lvl_i              (priv_lvl_o),
-          .debug_mode_i            (debug_mode_q),
-          .mret_i                  (mret),
-          .sret_i                  (sret),
-          .scontext_i              (scontext_q),
-          .tselect_i               (tselect_to_tm),
-          .tdata1_i                (tdata1_to_tm),
-          .tdata2_i                (tdata2_to_tm),
-          .tdata3_i                (tdata3_to_tm),
-          .tselect_we              (tselect_we),
-          .tdata1_we               (tdata1_we),
-          .tdata2_we               (tdata2_we),
-          .tdata3_we               (tdata3_we),
-          .tselect_o               (tselect_from_tm),
-          .tdata1_o                (tdata1_from_tm),
-          .tdata2_o                (tdata2_from_tm),
-          .tdata3_o                (tdata3_from_tm),
-          .flush_o                 (flush_from_tm),
+          .commit_instr_i       (commit_instr_i),
+          .commit_ack_i         (commit_ack_i),
+          .ex_i                 (ex_i),
+          .vaddr_from_lsu_i     (vaddr_from_lsu_i),
+          .orig_instr_i         (orig_instr_i),
+          .store_result_i       (store_result_i),
+          .priv_lvl_i           (priv_lvl_o),
+          .debug_mode_i         (debug_mode_q),
+          .mret_i               (mret),
+          .sret_i               (sret),
+          .scontext_i           (scontext_q),
+          .tselect_i            (tselect_to_tm),
+          .tdata1_i             (tdata1_to_tm),
+          .tdata2_i             (tdata2_to_tm),
+          .tdata3_i             (tdata3_to_tm),
+          .tselect_we           (tselect_we),
+          .tdata1_we            (tdata1_we),
+          .tdata2_we            (tdata2_we),
+          .tdata3_we            (tdata3_we),
+          .tselect_o            (tselect_from_tm),
+          .tdata1_o             (tdata1_from_tm),
+          .tdata2_o             (tdata2_from_tm),
+          .tdata3_o             (tdata3_from_tm),
+          .flush_o              (flush_from_tm),
           // debug/break request from TM
-          .debug_from_trigger_o(debug_from_trigger),
-          .break_from_trigger_o(break_from_trigger),
-          .debug_from_mcontrol_o (debug_from_mcontrol)
+          .debug_from_trigger_o (debug_from_trigger),
+          .break_from_trigger_o (break_from_trigger),
+          .debug_from_mcontrol_o(debug_from_mcontrol)
       );
     end else begin
-          assign tdata1_from_tm  = '0;
-          assign tdata2_from_tm  = '0;
-          assign tdata3_from_tm  = '0;
-          assign tselect_from_tm = '0;
-          assign flush_from_tm   = 0;
-          assign debug_from_trigger = 0;
-          assign break_from_trigger = 0;
-          assign debug_from_mcontrol = 0;
+      assign tdata1_from_tm = '0;
+      assign tdata2_from_tm = '0;
+      assign tdata3_from_tm = '0;
+      assign tselect_from_tm = '0;
+      assign flush_from_tm = 0;
+      assign debug_from_trigger = 0;
+      assign break_from_trigger = 0;
+      assign debug_from_mcontrol = 0;
     end
   endgenerate
 
