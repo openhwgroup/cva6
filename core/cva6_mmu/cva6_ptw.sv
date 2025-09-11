@@ -297,6 +297,7 @@ module cva6_ptw
     ptw_lvl_n               = ptw_lvl_q;
     ptw_pptr_n              = ptw_pptr_q;
     state_d                 = state_q;
+    gpte_d                  = '0;
     ptw_stage_d             = ptw_stage_q;
     global_mapping_n        = global_mapping_q;
     // input registers

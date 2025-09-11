@@ -344,7 +344,6 @@ module cva6_shared_tlb #(
       itlb_vpn_q <= '0;
       dtlb_vpn_q <= '0;
       tlb_update_asid_q <= '{default: 0};
-      tlb_update_vmid_q <= '{default: 0};
       shared_tlb_access_q <= '0;
       shared_tlb_vaddr_q <= '0;
       shared_tag_valid_q <= '0;
@@ -366,7 +365,16 @@ module cva6_shared_tlb #(
       i_req_q <= i_req_d;
       shared_tag_valid <= shared_tag_valid_q[tag_rd_addr];
 
-      if (CVA6Cfg.RVH) tlb_update_vmid_q <= tlb_update_vmid_d;
+    end
+  end
+
+  if (CVA6Cfg.RVH) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        tlb_update_vmid_q <= '{default: 0};
+      end else begin
+        tlb_update_vmid_q <= tlb_update_vmid_d;
+      end
     end
   end
 
