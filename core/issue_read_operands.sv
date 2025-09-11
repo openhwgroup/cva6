@@ -855,14 +855,6 @@ module issue_read_operands
       if (issue_instr_valid_i[i] && !fu_busy[i]) begin
         if (!stall_raw[i]) begin
           issue_ack[i] = 1'b1;
-          // We can do inter dual-issue forwarding only in the case of ALU-ALU operations with a RAW dependency
-          if (i > 0) begin
-            if ((issue_instr_i[i].rd == issue_instr_i[i-1].rd) && (issue_instr_i[i].rd != '0)) begin
-              if (!(alu_bypass.rs1_from_rd || alu_bypass.rs2_from_rd)) begin
-                issue_ack[i] = 1'b0;
-              end
-            end
-          end
         end
         if (issue_instr_i[i].ex.valid) begin
           issue_ack[i] = 1'b1;
