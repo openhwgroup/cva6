@@ -414,8 +414,10 @@ module alu
         result_o = {
           {32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}
         };
-      if (fu_data_i.operation == UNZIP && CVA6Cfg.IS_XLEN32) result_o = unzip_gen;
-      if (fu_data_i.operation == ZIP && CVA6Cfg.IS_XLEN32) result_o = zip_gen;
+      if (CVA6Cfg.IS_XLEN32) begin
+        if (fu_data_i.operation == UNZIP) result_o = unzip_gen;
+        if (fu_data_i.operation == ZIP) result_o = zip_gen;
+      end
     end
   end
 endmodule
