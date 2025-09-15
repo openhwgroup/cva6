@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Thales Research and Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 /**
  * \file bootrom_io.h
  * \brief Contains the functions for reading and writing registers.

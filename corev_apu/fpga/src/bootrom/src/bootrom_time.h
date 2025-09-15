@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Thales Research and Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 /**
  * \file bootrom_time.h
  * \brief Contains a custom udelay function. It is a software wait with a loop that does not uses any hardware timer or any pre-existing timer. As such, the duration is not accurate at all. udelay(5) will not be a 5 microsecond wait. This solution is however good enough for our bootrom as it keeps the code small and still does a decent wait.

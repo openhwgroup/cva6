@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Thales Research and Technology
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 /**
  * \file mmc.h
  * \brief Contains all the symbols for the mmc commands.
