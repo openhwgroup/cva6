@@ -49,7 +49,7 @@ module trigger_module
   textra32_tdata3_t textra32_tdata3_q[N_Triggers], textra32_tdata3_d[N_Triggers];
   textra64_tdata3_t textra64_tdata3_q[N_Triggers], textra64_tdata3_d[N_Triggers];
   logic [CVA6Cfg.XLEN-1:0] tdata2_q[N_Triggers], tdata2_d[N_Triggers];
-  logic debug_from_trigger, prev_csr_write, matched;
+  logic mcontrol6_debug_d, mcontrol6_debug_q, matched;
   logic e_matched_q, e_matched_d;
   logic mret_reg_q, mret_reg_d;
   logic break_from_trigger_q, break_from_trigger_d;
@@ -163,6 +163,7 @@ module trigger_module
     if (CVA6Cfg.SDTRIG) begin
       for (int i = 0; i < N_Triggers; i++) begin
         priv_match[i] = 1'b0;
+        matched       = 1'b0;
         // icount match logic
         if (trigger_type_d[i] == 4'd3 && CVA6Cfg.Icount) begin
           break_from_trigger_d = 1'b0;
@@ -301,7 +302,7 @@ module trigger_module
           if (priv_match[i] && matched) begin
             case (mcontrol6_32_tdata1_d[i].action)
               //6'd0: breakpoint action currently not supported
-              6'd1: debug_from_trigger = 1'b1;  //into debug mode;
+              6'd1: mcontrol6_debug_d = 1'b1;  //into debug mode;
               default: ;
             endcase
           end
@@ -309,7 +310,7 @@ module trigger_module
             matched = 1'b0;
             mcontrol6_32_tdata1_d[i].hit0 = 1'b0;
             mcontrol6_32_tdata1_d[i].hit1 = 1'b1;
-            debug_from_trigger = 1'b0;
+            mcontrol6_debug_d = 1'b0;
           end
         end
         // etrigger match logic
@@ -452,17 +453,15 @@ module trigger_module
   always_ff @(posedge clk_i or negedge rst_ni) begin : state_update
     if (~rst_ni) begin
       if (CVA6Cfg.SDTRIG) begin
-        tselect_q  <= '0;
-        prev_csr_write <= 1'b0;
-        matched    <=  1'b0;
-        e_matched_q  <=  1'b0;
-        mret_reg_q  <= 1'b0;
-        break_from_trigger_q  <= 0;
-        debug_from_trigger_q  <= 0;
-        in_trap_handler_d <= 0;
+        tselect_q <= '0;
+        mcontrol6_debug_q <= 1'b0;
+        e_matched_q <= 1'b0;
+        mret_reg_q <= 1'b0;
+        break_from_trigger_q <= 0;
+        debug_from_trigger_q <= 0;
+        in_trap_handler_q <= 0;
         for (int i = 0; i < N_Triggers; ++i) begin
           trigger_type_q[i]          <= '0;
-          priv_match[i]              <= 0;
           icount32_tdata1_q[i]       <= '0;
           icount32_tdata1_q[i].count <= 1;
           mcontrol6_32_tdata1_q[i]   <= '0;
@@ -484,7 +483,7 @@ module trigger_module
         itrigger32_tdata1_q   <= itrigger32_tdata1_d;
         textra32_tdata3_q     <= textra32_tdata3_d;
         textra64_tdata3_q     <= textra64_tdata3_d;
-        prev_csr_write        <= debug_from_trigger;
+        mcontrol6_debug_q     <= mcontrol6_debug_d;
         break_from_trigger_q  <= break_from_trigger_d;
         debug_from_trigger_q  <= debug_from_trigger_d;
         in_trap_handler_q     <= in_trap_handler_d;
@@ -497,6 +496,6 @@ module trigger_module
   // Outputs
   assign debug_from_trigger_o  = debug_from_trigger_q;
   assign break_from_trigger_o  = break_from_trigger_q;
-  assign debug_from_mcontrol_o = debug_from_trigger & ~prev_csr_write;
+  assign debug_from_mcontrol_o = mcontrol6_debug_d & ~mcontrol6_debug_q;
 
 endmodule
