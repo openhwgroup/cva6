@@ -25,6 +25,7 @@
 [submodule "corev_apu/riscv-dbg"]
 	path = corev_apu/riscv-dbg
 	url = https://github.com/pulp-platform/riscv-dbg.git
+	branch = master
 [submodule "corev_apu/rv_plic"]
 	path = corev_apu/rv_plic
 	url = https://github.com/pulp-platform/rv_plic.git
