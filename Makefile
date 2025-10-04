@@ -89,7 +89,7 @@ else ifeq ($(BOARD), nexys_video)
 else ifeq ($(BOARD), zedboard)
 	XILINX_PART              := xc7z020clg484-1
 	XILINX_BOARD             := digilentinc.com:zedboard:part0:1.1
-	CLK_PERIOD_NS            := 20
+	CLK_PERIOD_NS            := 25
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif

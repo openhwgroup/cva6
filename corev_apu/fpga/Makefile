@@ -12,10 +12,24 @@ ips := xlnx_blk_mem_gen.xci \
        xlnx_axi_dwidth_converter.xci \
        xlnx_axi_dwidth_converter_dm_master.xci \
        xlnx_axi_dwidth_converter_dm_slave.xci \
-       xlnx_axi_quad_spi.xci         \
-       xlnx_axi_gpio.xci             \
        xlnx_clk_gen.xci              \
-       xlnx_mig_7_ddr3.xci
+
+# Only include MIG if not zedboard
+ifneq ($(BOARD), zedboard)
+	ips += xlnx_mig_7_ddr3.xci           \
+        	xlnx_axi_quad_spi.xci         \
+       		xlnx_axi_gpio.xci              
+endif
+project_prefix := ariane
+ifeq ($(BOARD), zedboard)
+	project_prefix := cva6_fpga
+endif
+# Vivado project artifact directories to remove
+project_dirs := \
+  $(project_prefix).runs \
+  $(project_prefix).gen  \
+  $(project_prefix).sim  \
+  $(project_prefix).srcs
 
 ips := $(addprefix $(work-dir)/, $(ips))
 ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)))), $(ips))
@@ -30,7 +44,7 @@ $(bit): $(ips)
 	mkdir -p $(work-dir)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
-
+	
 $(ips): %.xci :
 	mkdir -p $(work-dir)
 	@echo Generating $(@F)
@@ -43,7 +57,14 @@ program:
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) ariane.cache ariane.hw ariane.ip_user_files scripts/vivado*
-
+	rm -rf *.log *.jou *.str *.rpt *.mif *.xpr \
+		$(work-dir) \
+		$(project_prefix).cache \
+		$(project_prefix).hw \
+		$(project_prefix).ip_user_files \
+		$(project_dirs) \
+		reports \
+		scripts/vivado*
 .PHONY:
 	clean
+

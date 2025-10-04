@@ -42,5 +42,5 @@ if [ "$BOARD" = "zedboard" ]; then
   echo "Zedboard Zynq 7000"
   export XILINX_PART="xc7z020clg484-1"
   export XILINX_BOARD="digilentinc.com:zedboard:part0:1.1"
-  export CLK_PERIOD_NS="20"
+  export CLK_PERIOD_NS="25"
 fi
