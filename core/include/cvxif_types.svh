@@ -48,7 +48,7 @@
     writeregflags_t we;  /*Register file write enable(s)*/ \
 }
 
-`define CVXIF_REQ_T(Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t) struct packed { \
+`define CVXIF_REQ_T(Cfg, x_compressed_req_t, x_issue_req_t, x_register_t, x_commit_t) struct packed { \
     logic              compressed_valid; \
     x_compressed_req_t compressed_req; \
     logic              issue_valid; \
