@@ -248,39 +248,7 @@ axi_xbar_intf #(
 //`else
 //  assign dmi_trst_n = 1'b1;
 //`endif
-////TEMPORARY 
-  // `ifdef BSCAN2E
-    logic                            wire_tck_clk;
-    logic                            wire_trst;
-    logic                            wire_capture;
-    logic                            wire_run_test;
-    logic                            wire_sel;
-    logic                            wire_shift;
-    logic                            wire_tdi;
-    logic                            wire_tms;
-    logic                            wire_update;
-    logic                            wire_tdo;
 
-    BSCANE2 #(
-      .JTAG_CHAIN(4) // Value for USER command.
-    )
-    bse2_inst (
-      .CAPTURE (wire_capture), // 1-bit output: CAPTURE output from TAP controller.
-      .DRCK    (), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or SHIFT are asserted.
-      .RESET   (wire_trst), // 1-bit output: Reset output for TAP controller.
-      .RUNTEST (wire_run_test), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
-      .SEL     (wire_sel), // 1-bit output: USER instruction active output.
-      .SHIFT   (wire_shift), // 1-bit output: SHIFT output from TAP controller.
-      .TCK     (wire_tck_clk), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
-      .TDI     (wire_tdi), // 1-bit output: Test Data Input (TDI) output from TAP controller.
-      .TMS     (wire_tms), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
-      .UPDATE  (wire_update), // 1-bit output: UPDATE output from TAP controller
-      .TDO     (wire_tdo) // 1-bit input: Test Data Output (TDO) input for USER function.
-    );
-//  `endif
-// Create trst_n signal (active low)
-  logic trst_n_internal;
-  assign trst_n_internal = ~wire_trst;
 // ---------------
 // Debug Module
 // ---------------
@@ -297,16 +265,11 @@ dmi_jtag  #(
     .dmi_resp_valid_i     ( debug_resp_valid     ),
     .dmi_resp_ready_o     ( debug_resp_ready     ),
     .dmi_resp_i           ( debug_resp           ),
-    // .tck_i                ( tck    ),
-    // .tms_i                ( tms    ),
-    // .trst_ni              ( dmi_trst_n ),
-    // .td_i                 ( tdi    ),
-    // .td_o                 ( tdo    ),
-    .tck_i                ( wire_tck_clk ),
-    .tms_i                ( wire_tms    ),
-    .trst_ni              ( trst_n_internal ),
-    .td_i                 ( wire_tdi    ),
-        .td_o                 ( wire_tdo    ),
+    .tck_i                ( tck    ),
+    .tms_i                ( tms    ),
+    .trst_ni              ( dmi_trst_n ),
+    .td_i                 ( tdi    ),
+    .td_o                 ( tdo    ),
     .tdo_oe_o             (        )
 );
 
