@@ -50,6 +50,30 @@
 /// The FIFO size must be powers of two, which is why its depth is
 /// given as 2**LOG_DEPTH. LOG_DEPTH must be at least 1.
 ///
+/// # Reset Behavior!!
+///
+/// This module must not be used if warm reset capabily is a requirement. The
+/// only execption is if you consistently use a reset controller that sequences
+/// the resets while gating both clock domains (be very careful if you follow
+/// this strategy!). If you need warm reset/clear/flush capabilities, use (AND
+/// CAREFULLY READ THE DESCRIPTION) the cdc_fifo_gray_clearable module.
+///
+/// After this disclaimer, here is how you connect the src_rst_ni and the
+/// dst_rst_ni of this module for power-on-reset (POR). The src_rst_ni and
+/// dst_rst_ni signal must be asserted SIMULTANEOUSLY (i.e. asynchronous
+/// assertion). Othwerwise, spurious transactions could occur in the domain
+/// where the reset arrives later than the other. The de-assertion of both reset
+/// must be synchronized to their respective clock domain (i.e. src_rst_ni must
+/// be deasserted synchronously to the src_clk_i and dst_rst_ni must be
+/// deasserted synchronously to dst_clk_i.) You can use the rstgen cell in the
+/// common_cells library to achieve this (synchronization of only the
+/// de-assertion). However be carefull about reset domain crossings; If you
+/// reset both domain asynchronously in their entirety (i.e. POR) you are fine.
+/// However, if you use this strategy for warm resets (some parts of the circuit
+/// are not reset) you might introduce metastability in this separate
+/// reset-domain when you assert the reset (the deassertion synchronizer doen't
+/// help here).
+///
 /// # Constraints
 ///
 /// We need to make sure that the propagation delay of the
@@ -72,6 +96,7 @@
 /// ```
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 (* no_ungroup *)
 (* no_boundary_optimization *)
@@ -133,12 +158,10 @@ module cdc_fifo_gray #(
   );
 
   // Check the invariants.
-  // pragma translate_off
-  `ifndef VERILATOR
-  initial assert(LOG_DEPTH > 0);
-  initial assert(SYNC_STAGES >= 2);
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
+  `ASSERT_INIT(sync_stages_gt_2, SYNC_STAGES >= 2)
   `endif
-  // pragma translate_on
 
 endmodule
 
@@ -164,15 +187,17 @@ module cdc_fifo_gray_src #(
   localparam int PtrWidth = LOG_DEPTH+1;
   localparam logic [PtrWidth-1:0] PtrFull = (1 << LOG_DEPTH);
 
-  T [2**LOG_DEPTH-1:0] data_q;
+  T [2**LOG_DEPTH-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   // Data FIFO.
   assign async_data_o = data_q;
-  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_word
-    `FFLNR(data_q[i], src_data_i,
-          src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i), src_clk_i)
+
+  always_comb begin
+    data_d                          = data_q;
+    data_d[wptr_bin[LOG_DEPTH-1:0]] = src_data_i;
   end
+  `FFLARN(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
 
   // Read pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync

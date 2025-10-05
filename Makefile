@@ -196,6 +196,11 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         vendor/pulp-platform/axi/src/axi_demux.sv                                    \
         vendor/pulp-platform/axi/src/axi_xbar.sv                                     \
         vendor/pulp-platform/common_cells/src/cdc_2phase.sv                          \
+        vendor/pulp-platform/common_cells/src/cdc_2phase_clearable.sv                \
+        vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr.sv                	 \
+        vendor/pulp-platform/common_cells/src/cdc_reset_ctrlr_pkg.sv                	 \
+        vendor/pulp-platform/common_cells/src/cdc_4phase.sv                          \
+		vendor/pulp-platform/common_cells/src/sync.sv                   	         \
         vendor/pulp-platform/common_cells/src/spill_register_flushable.sv            \
         vendor/pulp-platform/common_cells/src/spill_register.sv                      \
         vendor/pulp-platform/common_cells/src/deprecated/fifo_v1.sv                  \
@@ -785,12 +790,21 @@ fpga_filter += $(addprefix $(root-dir), vendor/pulp-platform/tech_cells_generic/
 fpga_filter += $(addprefix $(root-dir), common/local/util/tc_sram_wrapper.sv)
 fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_peripherals.sv)
 fpga_filter += $(addprefix $(root-dir), corev_apu/tb/ariane_testharness.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_jtag_tap.sv)
+fpga_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_bscane_tap.sv)
 fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv)
 fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv)
 fpga_filter += $(addprefix $(root-dir), core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv)
 
 $(addprefix $(root-dir), corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv):
 	$(MAKE) -C corev_apu/fpga/src/bootrom BOARD=$(BOARD) XLEN=$(XLEN) PLATFORM=$(PLATFORM) bootrom_$(XLEN).sv
+
+# Extra debug TAP swap for zedboard (use BSCANE2 version)
+debug_tap_file := $(root-dir)/corev_apu/riscv-dbg/src/dmi_jtag_tap.sv
+
+ifeq ($(BOARD), zedboard)
+	debug_tap_file := $(root-dir)/corev_apu/riscv-dbg/src/dmi_bscane_tap.sv
+endif
 
 fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
 	@echo "[FPGA] Generate sources"
@@ -799,6 +813,8 @@ fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(src_flist)
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src_flist))}		>> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(debug_tap_file)} >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo "[FPGA] TAP: $(debug_tap_file)"
 	@echo "[FPGA] Generate Bitstream"
 	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
