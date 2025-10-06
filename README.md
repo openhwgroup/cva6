@@ -68,6 +68,28 @@ bash verif/regress/smoke-tests.sh
 * **[ASIC Implementation](tutorials/asic.md)**
 * **[FPGA Implementation and running an OS](tutorials/fpga.md)**
 
+## Selecting a CVA6 hardware configuration
+
+Build flows in this repository share the same configuration mechanism as the
+manual `bender` invocations discussed in the tutorials. The top-level
+`Makefile` exposes a `target` variable whose value selects the configuration
+package; it defaults to the Linux-ready `cv64a6_imafdc_sv39` profile but can be
+overridden on the command line. When you run `make`, that value is exported as
+`TARGET_CFG` so every recipe—including the FPGA bitstream flow—picks up the same
+choice of `core/include/<name>_config_pkg.sv`.【F:Makefile†L108-L133】【F:core/Flist.cva6†L88-L104】
+
+```sh
+# Use your custom configuration package when generating an FPGA bitstream
+make fpga target=my_kc705_config
+```
+
+Behind the scenes, the `fpga` rule builds a Vivado project after generating a
+file list that includes `${TARGET_CFG}_config_pkg.sv`, so the RTL compiled for
+the board matches the configuration you selected when calling `make`. Any other
+`make` target that relies on the configuration (simulation, synthesis, etc.)
+reads the same exported variable, so passing `target=<name>` once keeps all
+sub-flows consistent.【F:Makefile†L772-L796】
+
 
 # Directory Structure
 
