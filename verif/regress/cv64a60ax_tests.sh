@@ -36,7 +36,7 @@ source ./verif/sim/setup-env.sh
 echo "$SPIKE_INSTALL_DIR$"
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=cv64a6_imafdc_sv39_hpdcache
+  DV_TARGET=cv64a60ax
 fi
 
 if ! [ -n "$UVM_VERBOSITY" ]; then
