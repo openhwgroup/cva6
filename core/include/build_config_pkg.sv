@@ -76,6 +76,7 @@ package build_config_pkg;
     cfg.RVZCMT = CVA6Cfg.RVZCMT;
     cfg.RVZCMP = CVA6Cfg.RVZCMP;
     cfg.RVSCLIC = CVA6Cfg.RVSCLIC;
+    cfg.RVXHCLIC = CVA6Cfg.RVXHCLIC;
     cfg.XFVec = CVA6Cfg.XFVec;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
     cfg.CoproType = CVA6Cfg.CoproType;

@@ -15,6 +15,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam CVA6ConfigSclicExtEn = 0;
+  localparam CVA6ConfigXhclicExtEn = 0;
 
   localparam CVA6ConfigAxiIdWidth = 4;  // axi_pkg.sv
   localparam CVA6ConfigAxiAddrWidth = 64;  // axi_pkg.sv
@@ -61,6 +62,7 @@ package cva6_config_pkg;
       CoproType: config_pkg::COPRO_NONE,
       RVZiCond: bit'(0),
       RVSCLIC: bit'(CVA6ConfigSclicExtEn),
+      RVXHCLIC: bit'(CVA6ConfigXhclicExtEn),
       RVZicntr: bit'(1),
       RVZiCbom: bit'(0),
       RVZihpm: bit'(1),

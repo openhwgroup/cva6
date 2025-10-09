@@ -141,7 +141,7 @@ package riscv;
 
   typedef struct packed {
     logic [7:0] mil;
-    logic [7:0] wpri;
+    logic [7:0] vsil;
     logic [7:0] sil;
     logic [7:0] uil;
   } intstatus_rv_t;
@@ -418,11 +418,13 @@ package riscv;
     CSR_VSSTATUS         = 12'h200,
     CSR_VSIE             = 12'h204,
     CSR_VSTVEC           = 12'h205,
+    CSR_VSTVT            = 12'h207,
     CSR_VSSCRATCH        = 12'h240,
     CSR_VSEPC            = 12'h241,
     CSR_VSCAUSE          = 12'h242,
     CSR_VSTVAL           = 12'h243,
     CSR_VSIP             = 12'h244,
+    CSR_VSINTTHRESH      = 12'h247,
     CSR_VSATP            = 12'h280,
     // Supervisor Mode CSRs
     CSR_SSTATUS          = 12'h100,
