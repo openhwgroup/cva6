@@ -117,11 +117,13 @@ module ariane_verilog_wrap
     VLEN:                   VLEN,
     RVA:                    AExtEn,
     RVB:                    BExtEn,
+    ZKN:                    1'b0,  // Scalar Cryptography extension disabled
     RVV:                    VExtEn,
     RVC:                    CExtEn,
     RVH:                    HExtEn,
     RVZCB:                  ZcbExtEn,
     RVZCMP:                 ZcmpExtEn,
+    RVZCMT:                 1'b0,  // Zcmt extension disabled
     RVZiCond:               RVZiCondEn,
     RVZicntr:               RVZicntrEn,
     RVZihpm:                RVZihpmEn,
@@ -135,6 +137,7 @@ module ariane_verilog_wrap
     MmuPresent:             1'b1,
     RVS:                    SupervisorModeEn,
     RVU:                    RVUEn,
+    SoftwareInterruptEn:    1'b1,  // Software interrupts enabled
     DebugEn:                DebugEn,
     DmBaseAddress:          DmBaseAddress,
     HaltAddress:            HaltAddress,
@@ -145,6 +148,7 @@ module ariane_verilog_wrap
     PMPCfgRstVal:           {16{64'h0}},
     PMPAddrRstVal:          {16{64'h0}},
     PMPEntryReadOnly:       16'd0,
+    PMPNapotEn:             1'b1,  // PMP NAPOT mode enabled
     NrNonIdempotentRules:   NrNonIdempotentRules,
     NonIdempotentAddrBase:  NonIdempotentAddrBase,
     NonIdempotentLength:    NonIdempotentLength,
@@ -155,6 +159,7 @@ module ariane_verilog_wrap
     CachedRegionAddrBase:   CachedRegionAddrBase,
     CachedRegionLength:     CachedRegionLength,
     CvxifEn:                CvxifEn,
+    CoproType:              config_pkg::COPRO_NONE,  // No coprocessor
     NOCType:                SwapEndianess ? NOC_TYPE_L15_BIG_ENDIAN : NOC_TYPE_AXI4_ATOP,
     AxiAddrWidth:           AxiAddrWidth,
     AxiDataWidth:           AxiDataWidth,
@@ -170,6 +175,8 @@ module ariane_verilog_wrap
     DcacheByteSize:         8192,
     DcacheSetAssoc:         4,
     DcacheLineWidth:        128,
+    DcacheFlushOnFence:     1'b0,  // Don't flush D$ on fence
+    DcacheInvalidateOnFlush: 1'b0, // Don't invalidate on flush
     DataUserEn:             1'b0,
     WtDcacheWbufDepth:      8,
     FetchUserEn:            0,
@@ -178,6 +185,7 @@ module ariane_verilog_wrap
     FpgaAlteraEn:           FpgaAlteraEn,
     TechnoCut:              1'b0,
     SuperscalarEn:          1'b0,
+    ALUBypass:              1'b0,  // ALU bypass disabled
     NrCommitPorts:          NrCommitPorts,
     NrLoadPipeRegs:         2,
     NrStorePipeRegs:        0,
@@ -186,7 +194,9 @@ module ariane_verilog_wrap
     MaxOutstandingStores:   MaxOutstandingStores,
     RASDepth:               RASDepth,
     BTBEntries:             BTBEntries,
+    BPType:                 config_pkg::BHT,  // Bimodal predictor
     BHTEntries:             BHTEntries,
+    BHTHist:                2,  // 2-bit history for BHT
     InstrTlbEntries:        16,
     DataTlbEntries:         16,
     UseSharedTlb:           0,
