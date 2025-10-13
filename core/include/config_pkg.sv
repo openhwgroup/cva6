@@ -417,7 +417,6 @@ package config_pkg;
     assert (Cfg.NrExecuteRegionRules <= NrMaxRules);
     assert (Cfg.NrCachedRegionRules <= NrMaxRules);
     assert (Cfg.NrPMPEntries <= 64);
-    assert (!(Cfg.SuperscalarEn && Cfg.RVF));
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
     else $fatal(1, "[frontend] fetch width != not supported");
     // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
