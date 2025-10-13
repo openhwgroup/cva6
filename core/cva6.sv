@@ -179,7 +179,7 @@ module cva6
       logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
       logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
-      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // thread id (used as transaction id in Ariane)
     },
     localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
@@ -191,7 +191,7 @@ module cva6
         logic [CVA6Cfg.ICACHE_INDEX_WIDTH-1:0]     idx;  // physical address to invalidate
         logic [CVA6Cfg.ICACHE_SET_ASSOC_WIDTH-1:0] way;  // way to invalidate
       } inv;  // invalidation vector
-      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // threadi id (used as transaction id in Ariane)
+      logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // thread id (used as transaction id in Ariane)
     },
 
     // D$ data requests
@@ -300,13 +300,13 @@ module cva6
     parameter type hartid_t = `HARTID_T(CVA6Cfg),
     parameter type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
     parameter type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    parameter type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+    parameter type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartid_t, id_t),
     parameter type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
     parameter type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
     parameter type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
     parameter type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
     parameter type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_t, x_commit_t),
     parameter type cvxif_resp_t =
     `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t)
 ) (
@@ -430,6 +430,7 @@ module cva6
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2;
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
+  alu_bypass_t alu_bypass_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic zcmt_id_ex;
   logic is_compressed_instr_id_ex;
@@ -782,7 +783,7 @@ module cva6
   assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
 
   if (CVA6Cfg.CvxifEn) begin
-    always_comb begin : gen_cvxif_input_assignement
+    always_comb begin : gen_cvxif_input_assignment
       x_compressed_ready = cvxif_resp_i.compressed_ready;
       x_compressed_resp  = cvxif_resp_i.compressed_resp;
       x_issue_ready      = cvxif_resp_i.issue_ready;
@@ -792,7 +793,7 @@ module cva6
       x_result           = cvxif_resp_i.result;
     end
 
-    always_comb begin : gen_cvxif_output_assignement
+    always_comb begin : gen_cvxif_output_assignment
       cvxif_req.compressed_valid = x_compressed_valid;
       cvxif_req.compressed_req   = x_compressed_req;
       cvxif_req.issue_valid      = x_issue_valid;
@@ -854,6 +855,7 @@ module cva6
       .rs1_forwarding_o        (rs1_forwarding_id_ex),
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
       .fu_data_o               (fu_data_id_ex),
+      .alu_bypass_o            (alu_bypass_id_ex),
       .pc_o                    (pc_id_ex),
       .is_zcmt_o               (zcmt_id_ex),
       .is_compressed_instr_o   (is_compressed_instr_id_ex),
@@ -952,6 +954,7 @@ module cva6
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),
       .fu_data_i(fu_data_id_ex),
+      .alu_bypass_i(alu_bypass_id_ex),
       .pc_i(pc_id_ex),
       .is_zcmt_i(zcmt_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
@@ -1307,13 +1310,13 @@ module cva6
   // -------------------
 
   // Acc dispatcher and store buffer share a dcache request port.
-  // Store buffer always has priority access over acc dipsatcher.
+  // Store buffer always has priority access over acc dispatcher.
   dcache_req_i_t [NumPorts-1:0] dcache_req_to_cache;
   dcache_req_o_t [NumPorts-1:0] dcache_req_from_cache;
 
   // D$ request
-  // Since ZCMT is only enable for embdeed class so MMU should be disable. 
-  // Cache port 0 is being ultilize in implicit read access in ZCMT extension.
+  // Since ZCMT is only enabled for embedded class so MMU should be disabled.
+  // Cache port 0 is being utilized in implicit read access in ZCMT extension.
   if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
     assign dcache_req_to_cache[0] = dcache_req_ports_id_cache;
   end else begin
@@ -1325,8 +1328,8 @@ module cva6
                                                                           dcache_req_ports_acc_cache[1];
 
   // D$ response
-  // Since ZCMT is only enable for embdeed class so MMU should be disable.
-  // Cache port 0 is being ultilized in implicit read access in ZCMT extension.
+  // Since ZCMT is only enabled for embedded class so MMU should be disabled.
+  // Cache port 0 is being utilized in implicit read access in ZCMT extension.
   if (CVA6Cfg.RVZCMT & ~(CVA6Cfg.MmuPresent)) begin
     assign dcache_req_ports_cache_id = dcache_req_from_cache[0];
     assign dcache_req_ports_cache_ex[0] = '0;
@@ -1680,7 +1683,7 @@ module cva6
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
-    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id};
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id[i]};
   end
 
   instr_tracer #(
@@ -1706,7 +1709,8 @@ module cva6
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
-      .commit_ack(commit_ack),
+      .commit_ack(commit_ack_commit_id),
+      .commit_drop(commit_drop_id_commit),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
       .ld_valid(ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid),

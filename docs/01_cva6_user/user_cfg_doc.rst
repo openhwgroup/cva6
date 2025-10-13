@@ -262,7 +262,7 @@
 
    * - ``TechnoCut``
      - ``bit``
-     - Is Techno Cut instanciated
+     - Is Techno Cut instantiated
 
    * - ``SuperscalarEn``
      - ``bit``

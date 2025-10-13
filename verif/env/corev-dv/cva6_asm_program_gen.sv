@@ -159,7 +159,7 @@ class cva6_asm_program_gen_c extends riscv_asm_program_gen;
 
   // Generate the interrupt and trap handler for different privileged mode.
   // The trap handler checks the xCAUSE to determine the type of the exception and jumps to
-  // corresponding exeception handling routine.
+  // corresponding exception handling routine.
   virtual function void gen_trap_handler_section(int hart,
                                                  string mode,
                                                  privileged_reg_t cause, privileged_reg_t tvec,

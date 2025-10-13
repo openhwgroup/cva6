@@ -8,7 +8,7 @@
 # and PTE has pte.A=0, then accessing it would raise page fault 
 # exception of the corresponding access type. 
 #
-# - Set pte.r=1 & pte.a=0 and test the read acces. 
+# - Set pte.r=1 & pte.a=0 and test the read access. 
 # - Set pte.w=1 & pte.a=0 and test the write access.
 # - Set pte.x=1 & pte.a=0 and test the execute access.
 #

@@ -220,7 +220,7 @@ function uvmt_cva6_base_test_c::new(string name="uvmt_cva6_base_test", uvm_compo
    super.new(name, parent);
 
    // Replaces default report server
-   // Gives you short-and-sweet looger messages like this:
+   // Gives you short-and-sweet logger messages like this:
    //        UVM_INFO @ 9.750 ns : uvmt_cva6_dut_wrap.sv(79) reporter [DUT_WRAP] load_instr_mem asserted!
    rs = new("rs");
 

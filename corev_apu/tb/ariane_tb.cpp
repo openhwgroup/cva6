@@ -120,7 +120,7 @@ class preload_aware_dtm_t : public dtm_t {
     preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
     bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
     // We do not want to reset the hart here as the reset function in `dtm_t` seems to disregard
-    // the privilege level and in general does not perform propper reset (despite the name).
+    // the privilege level and in general does not perform proper reset (despite the name).
     // As all our binaries in preloading will always start at the base of DRAM this should not
     // be such a big problem.
     void reset() {}
@@ -351,7 +351,7 @@ done_processing:
         try {
           read_section_void(addr, (void *) MEM_USER , mem_size);
         } catch (...){
-          std::cerr << "No user memory instanciated ...\n";
+          std::cerr << "No user memory instantiated ...\n";
         }
   }
 

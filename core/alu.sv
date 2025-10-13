@@ -31,6 +31,8 @@ module alu
     input logic rst_ni,
     // FU data needed to execute instruction - ISSUE_STAGE
     input fu_data_t fu_data_i,
+    // FU data needed to execute CPOP/CPOPW - ISSUE_STAGE
+    input fu_data_t fu_data_cpop_i,
     // ALU result - ISSUE_STAGE
     output logic [CVA6Cfg.XLEN-1:0] result_o,
     // ALU branch compare result - branch_unit
@@ -74,21 +76,24 @@ module alu
   logic [CVA6Cfg.XLEN:0] adder_in_a, adder_in_b;
   logic [CVA6Cfg.XLEN-1:0] adder_result;
   logic [CVA6Cfg.XLEN-1:0] operand_a_bitmanip, bit_indx;
+  logic [CVA6Cfg.XLEN-1:0] operand_a_cpop;
 
   assign adder_op_b_negate = fu_data_i.operation inside {EQ, NE, SUB, SUBW, ANDN, ORN, XNOR};
 
   always_comb begin
     operand_a_bitmanip = fu_data_i.operand_a;
+    operand_a_cpop     = fu_data_cpop_i.operand_a;
 
     if (CVA6Cfg.RVB) begin
       if (CVA6Cfg.IS_XLEN64) begin
         unique case (fu_data_i.operation)
-          SH1ADDUW:           operand_a_bitmanip = fu_data_i.operand_a[31:0] << 1;
-          SH2ADDUW:           operand_a_bitmanip = fu_data_i.operand_a[31:0] << 2;
-          SH3ADDUW:           operand_a_bitmanip = fu_data_i.operand_a[31:0] << 3;
-          CTZW:               operand_a_bitmanip = operand_a_rev32;
-          ADDUW, CPOPW, CLZW: operand_a_bitmanip = fu_data_i.operand_a[31:0];
-          default:            ;
+          SH1ADDUW:    operand_a_bitmanip = fu_data_i.operand_a[31:0] << 1;
+          SH2ADDUW:    operand_a_bitmanip = fu_data_i.operand_a[31:0] << 2;
+          SH3ADDUW:    operand_a_bitmanip = fu_data_i.operand_a[31:0] << 3;
+          CTZW:        operand_a_bitmanip = operand_a_rev32;
+          ADDUW, CLZW: operand_a_bitmanip = fu_data_i.operand_a[31:0];
+          CPOPW:       operand_a_cpop = fu_data_cpop_i.operand_a[31:0];
+          default:     ;
         endcase
       end
       unique case (fu_data_i.operation)
@@ -208,7 +213,7 @@ module alu
     popcount #(
         .INPUT_WIDTH(CVA6Cfg.XLEN)
     ) i_cpop_count (
-        .data_i    (operand_a_bitmanip),
+        .data_i    (operand_a_cpop),
         .popcount_o(cpop)
     );
 
@@ -409,8 +414,10 @@ module alu
         result_o = {
           {32{fu_data_i.operand_b[15]}}, {fu_data_i.operand_b[15:0]}, {fu_data_i.operand_a[15:0]}
         };
-      if (fu_data_i.operation == UNZIP && CVA6Cfg.IS_XLEN32) result_o = unzip_gen;
-      if (fu_data_i.operation == ZIP && CVA6Cfg.IS_XLEN32) result_o = zip_gen;
+      if (CVA6Cfg.IS_XLEN32) begin
+        if (fu_data_i.operation == UNZIP) result_o = unzip_gen;
+        if (fu_data_i.operation == ZIP) result_o = zip_gen;
+      end
     end
   end
 endmodule

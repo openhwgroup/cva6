@@ -72,7 +72,7 @@ module commit_stage
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
     // Valid AMO in commit stage - EX_STAGE
     output logic amo_valid_commit_o,
-    // no store is pending - EX_STAGE
+    // No store is pending - EX_STAGE
     input logic no_st_pending_i,
     // Commit the pending CSR instruction - EX_STAGE
     output logic commit_csr_o,
@@ -117,7 +117,7 @@ module commit_stage
           commit_instr_i[i].op
       )) || (CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           commit_instr_i[i].op
-          // Check if we issued a vector floating-point instruction to the accellerator
+          // Check if we issued a vector floating-point instruction to the accelerator
       ))) | (commit_instr_i[i].fu == ACCEL && commit_instr_i[i].vfp);
     end
   end

@@ -150,7 +150,7 @@ class uvme_illegal_instr_cov_model_c extends uvm_component;
 
   `uvm_component_utils(uvme_illegal_instr_cov_model_c)
 
-   //Covergroup of Illegal instrcution
+   //Covergroup of Illegal instruction
    cg_illegal_i          illegal_i_cg;
    cg_illegal_m          illegal_m_cg;
    cg_illegal_zicsr      illegal_zicsr_cg;
