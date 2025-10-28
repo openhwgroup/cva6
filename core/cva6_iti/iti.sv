@@ -140,7 +140,6 @@ module cva6_iti #(
       iti_to_encoder_o.itype[i] = '0;
       iti_to_encoder_o.iaddr[i] = '0;
 
-      // Initialize valid_o[i] to prevent inferred latch in combinational logic
       valid_o[i] = 1'b0;
 
       if (itt_out[i].valid) begin
