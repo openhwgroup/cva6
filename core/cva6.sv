@@ -590,6 +590,9 @@ module cva6
   logic [31:0] mcountinhibit_csr_perf;
   //jvt
   jvt_t jvt;
+  // trigger module
+  logic debug_from_trigger;
+  logic break_from_trigger;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -732,29 +735,30 @@ module cva6
 
       .rvfi_is_compressed_o(rvfi_is_compressed),
 
-      .priv_lvl_i        (priv_lvl),
-      .v_i               (v),
-      .fs_i              (fs),
-      .vfs_i             (vfs),
-      .frm_i             (frm_csr_id_issue_ex),
-      .vs_i              (vs),
-      .irq_i             (irq_i),
-      .irq_ctrl_i        (irq_ctrl_csr_id),
-      .debug_mode_i      (debug_mode),
-      .tvm_i             (tvm_csr_id),
-      .tw_i              (tw_csr_id),
-      .vtw_i             (vtw_csr_id),
-      .tsr_i             (tsr_csr_id),
-      .hu_i              (hu),
-      .hart_id_i         (hart_id_i),
-      .compressed_ready_i(x_compressed_ready),
-      .compressed_resp_i (x_compressed_resp),
-      .compressed_valid_o(x_compressed_valid),
-      .compressed_req_o  (x_compressed_req),
-      .jvt_i             (jvt),
+      .priv_lvl_i          (priv_lvl),
+      .v_i                 (v),
+      .fs_i                (fs),
+      .vfs_i               (vfs),
+      .frm_i               (frm_csr_id_issue_ex),
+      .vs_i                (vs),
+      .irq_i               (irq_i),
+      .irq_ctrl_i          (irq_ctrl_csr_id),
+      .debug_mode_i        (debug_mode),
+      .tvm_i               (tvm_csr_id),
+      .tw_i                (tw_csr_id),
+      .vtw_i               (vtw_csr_id),
+      .tsr_i               (tsr_csr_id),
+      .hu_i                (hu),
+      .hart_id_i           (hart_id_i),
+      .compressed_ready_i  (x_compressed_ready),
+      .compressed_resp_i   (x_compressed_resp),
+      .compressed_valid_o  (x_compressed_valid),
+      .compressed_req_o    (x_compressed_req),
+      .jvt_i               (jvt),
+      .debug_from_trigger_i(debug_from_trigger),
       // DCACHE interfaces
-      .dcache_req_ports_i(dcache_req_ports_cache_id),
-      .dcache_req_ports_o(dcache_req_ports_id_cache)
+      .dcache_req_ports_i  (dcache_req_ports_cache_id),
+      .dcache_req_ports_o  (dcache_req_ports_id_cache)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -1090,38 +1094,39 @@ module cva6
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i            (halt_ctrl),
-      .flush_dcache_i    (dcache_flush_ctrl_cache),
-      .exception_o       (ex_commit),
-      .dirty_fp_state_o  (dirty_fp_state),
-      .single_step_i     (single_step_csr_commit || single_step_acc_commit),
-      .commit_instr_i    (commit_instr_id_commit),
-      .commit_drop_i     (commit_drop_id_commit),
-      .commit_ack_o      (commit_ack_commit_id),
-      .commit_macro_ack_o(commit_macro_ack),
-      .waddr_o           (waddr_commit_id),
-      .wdata_o           (wdata_commit_id),
-      .we_gpr_o          (we_gpr_commit_id),
-      .we_fpr_o          (we_fpr_commit_id),
-      .amo_resp_i        (amo_resp),
-      .pc_o              (pc_commit),
-      .csr_op_o          (csr_op_commit_csr),
-      .csr_wdata_o       (csr_wdata_commit_csr),
-      .csr_rdata_i       (csr_rdata_csr_commit),
-      .csr_write_fflags_o(csr_write_fflags_commit_cs),
-      .csr_exception_i   (csr_exception_csr_commit),
-      .commit_lsu_o      (lsu_commit_commit_ex),
-      .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
-      .commit_tran_id_o  (lsu_commit_trans_id),
-      .amo_valid_commit_o(amo_valid_commit),
-      .no_st_pending_i   (no_st_pending_commit),
-      .commit_csr_o      (csr_commit_commit_ex),
-      .fence_i_o         (fence_i_commit_controller),
-      .fence_o           (fence_commit_controller),
-      .flush_commit_o    (flush_commit),
-      .sfence_vma_o      (sfence_vma_commit_controller),
-      .hfence_vvma_o     (hfence_vvma_commit_controller),
-      .hfence_gvma_o     (hfence_gvma_commit_controller)
+      .halt_i              (halt_ctrl),
+      .flush_dcache_i      (dcache_flush_ctrl_cache),
+      .exception_o         (ex_commit),
+      .dirty_fp_state_o    (dirty_fp_state),
+      .single_step_i       (single_step_csr_commit || single_step_acc_commit),
+      .commit_instr_i      (commit_instr_id_commit),
+      .commit_drop_i       (commit_drop_id_commit),
+      .commit_ack_o        (commit_ack_commit_id),
+      .commit_macro_ack_o  (commit_macro_ack),
+      .waddr_o             (waddr_commit_id),
+      .wdata_o             (wdata_commit_id),
+      .we_gpr_o            (we_gpr_commit_id),
+      .we_fpr_o            (we_fpr_commit_id),
+      .amo_resp_i          (amo_resp),
+      .pc_o                (pc_commit),
+      .csr_op_o            (csr_op_commit_csr),
+      .csr_wdata_o         (csr_wdata_commit_csr),
+      .csr_rdata_i         (csr_rdata_csr_commit),
+      .csr_write_fflags_o  (csr_write_fflags_commit_cs),
+      .csr_exception_i     (csr_exception_csr_commit),
+      .commit_lsu_o        (lsu_commit_commit_ex),
+      .commit_lsu_ready_i  (lsu_commit_ready_ex_commit),
+      .commit_tran_id_o    (lsu_commit_trans_id),
+      .amo_valid_commit_o  (amo_valid_commit),
+      .no_st_pending_i     (no_st_pending_commit),
+      .commit_csr_o        (csr_commit_commit_ex),
+      .fence_i_o           (fence_i_commit_controller),
+      .fence_o             (fence_commit_controller),
+      .flush_commit_o      (flush_commit),
+      .sfence_vma_o        (sfence_vma_commit_controller),
+      .hfence_vvma_o       (hfence_vvma_commit_controller),
+      .hfence_gvma_o       (hfence_gvma_commit_controller),
+      .break_from_trigger_i(break_from_trigger)
   );
 
   assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
@@ -1211,7 +1216,13 @@ module cva6
       .mcountinhibit_o         (mcountinhibit_csr_perf),
       .jvt_o                   (jvt),
       //RVFI
-      .rvfi_csr_o              (rvfi_csr)
+      .rvfi_csr_o              (rvfi_csr),
+      // Trigger Signals
+      .debug_from_trigger_o    (debug_from_trigger),
+      .vaddr_from_lsu_i        (rvfi_lsu_ctrl.vaddr),
+      .orig_instr_i            (orig_instr_id_issue),
+      .store_result_i          (store_result_ex_id),
+      .break_from_trigger_o    (break_from_trigger)
   );
 
   // ------------------------
