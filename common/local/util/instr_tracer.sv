@@ -168,11 +168,41 @@ module instr_tracer #(
           // check if the write back is valid, if not we need to source the result from the register file
           // as the most recent version of this register will be there.
           if (we_gpr[i] || we_fpr[i]) begin
-            printInstr(issue_sbe_item, issue_commit_instruction, wdata[i], address_mapping, priv_lvl, debug_mode, bp_instruction);
+            printInstr(
+                issue_sbe_item,
+                issue_commit_instruction,
+                wdata[i],
+                we_gpr[i] || we_fpr[i],
+                we_fpr[i],
+                address_mapping,
+                priv_lvl,
+                debug_mode,
+                bp_instruction
+            );
           end else if (ariane_pkg::is_rd_fpr(commit_instruction.op)) begin
-            printInstr(issue_sbe_item, issue_commit_instruction, fp_reg_file[commit_instruction.rd], address_mapping, priv_lvl, debug_mode, bp_instruction);
+            printInstr(
+                issue_sbe_item,
+                issue_commit_instruction,
+                fp_reg_file[commit_instruction.rd],
+                1'b0,
+                1'b1,
+                address_mapping,
+                priv_lvl,
+                debug_mode,
+                bp_instruction
+            );
           end else begin
-            printInstr(issue_sbe_item, issue_commit_instruction, gp_reg_file[commit_instruction.rd], address_mapping, priv_lvl, debug_mode, bp_instruction);
+            printInstr(
+                issue_sbe_item,
+                issue_commit_instruction,
+                gp_reg_file[commit_instruction.rd],
+                1'b0,
+                1'b0,
+                address_mapping,
+                priv_lvl,
+                debug_mode,
+                bp_instruction
+            );
           end
         end
         // --------------
@@ -224,16 +254,31 @@ module instr_tracer #(
     bp              = {};
   endfunction
 
-  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
+  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic dest_we_valid, logic dest_is_fp, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
     automatic instr_trace_item #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t)
-    ) iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
+    ) iti = new (
+      $time,
+      clk_ticks,
+      sbe,
+      instr,
+      gp_reg_file,
+      fp_reg_file,
+      result,
+      dest_we_valid,
+      dest_is_fp,
+      paddr,
+      priv_lvl,
+      debug_mode,
+      bp
+    );
     // print instruction to console
     automatic string print_instr = iti.printInstr();
+    automatic logic commit_is_fp = dest_we_valid ? dest_is_fp : ariane_pkg::is_rd_fpr(sbe.op);
     if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
-      $fwrite(commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, ariane_pkg::is_rd_fpr(sbe.op)));
+      $fwrite(commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, commit_is_fp));
     end
     $fwrite(f, {print_instr, "\n"});
   endfunction
