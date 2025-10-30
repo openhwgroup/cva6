@@ -263,7 +263,7 @@ module store_unit
         default: endian_data[CVA6Cfg.XLEN-1:0] = {<<8{lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]}};
       endcase
     end else begin
-      endian_data = lsu_ctrl_i.data;
+      endian_data[CVA6Cfg.XLEN-1:0] = lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]; // If we are in Normal Little Endian Mode than pass straight through
     end
   end
 
