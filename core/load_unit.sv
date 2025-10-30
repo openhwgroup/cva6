@@ -530,7 +530,7 @@ module load_unit
         end
       endcase
     end else begin
-      endian_data = shifted_data; // if mbe=0, the we are in normal Little Endian mode, so just pass straight through.
+      endian_data[CVA6Cfg.XLEN-1:0] = shifted_data[CVA6Cfg.XLEN-1:0]; // if mbe=0, the we are in normal Little Endian mode, so just pass straight through.
     end
   end
 
