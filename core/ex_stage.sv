@@ -139,6 +139,8 @@ module ex_stage
     output logic fpu_valid_o,
     // FPU exception - ISSUE_STAGE
     output exception_t fpu_exception_o,
+    // FPU early valid - ISSUE_STAGE
+    output logic fpu_early_valid_o,
     // ALU2 instruction is valid - ISSUE_STAGE
     input logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_i,
     // CVXIF instruction is valid - ISSUE_STAGE
@@ -465,7 +467,8 @@ module ex_stage
           .fpu_trans_id_o(fpu_trans_id),
           .result_o(fpu_result),
           .fpu_valid_o(fpu_valid),
-          .fpu_exception_o
+          .fpu_exception_o,
+          .fpu_early_valid_o
       );
     end else begin : no_fpu_gen
       assign fpu_ready_o     = '0;

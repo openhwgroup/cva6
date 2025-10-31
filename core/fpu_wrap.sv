@@ -34,7 +34,8 @@ module fpu_wrap
     output logic       [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id_o,
     output logic       [         CVA6Cfg.FLen-1:0] result_o,
     output logic                                   fpu_valid_o,
-    output exception_t                             fpu_exception_o
+    output exception_t                             fpu_exception_o,
+    output logic                                   fpu_early_valid_o
 );
 
   // this is a workaround
@@ -553,7 +554,8 @@ module fpu_wrap
         .tag_o         (fpu_trans_id_o),
         .out_valid_o   (fpu_out_valid),
         .out_ready_i   (fpu_out_ready),
-        .busy_o        (  /* unused */)
+        .busy_o        (  /* unused */),
+        .early_valid_o (fpu_early_valid_o)
     );
 
     // Pack status flag into exception cause, tval ignored in wb, exception is always invalid

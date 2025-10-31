@@ -82,6 +82,8 @@ module issue_read_operands
     output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
+    // FPU FU will perform a writeback in the next cycle - EX_STAGE
+    input logic fpu_early_valid_i,
     // FPU FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_o,
     // FPU fmt field - EX_STAGE
@@ -152,10 +154,10 @@ module issue_read_operands
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_n, fu_data_q;
-  logic               [CVA6Cfg.VLEN-1:0] pc_n;
-  logic                                  is_compressed_instr_n;
-  branchpredict_sbe_t                    branch_predict_n;
-  logic               [CVA6Cfg.XLEN-1:0] imm_forward_rs3;
+  logic               [        CVA6Cfg.VLEN-1:0]                   pc_n;
+  logic                                                            is_compressed_instr_n;
+  branchpredict_sbe_t                                              branch_predict_n;
+  logic               [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_n, alu_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_n, aes_valid_q;
@@ -215,8 +217,10 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] forward_rs1, forward_rs2, forward_rs3;
 
   // original instruction
-  riscv::instruction_t orig_instr;
-  assign orig_instr = riscv::instruction_t'(orig_instr_i[0]);
+  riscv::instruction_t [CVA6Cfg.NrIssuePorts-1:0] orig_instr;
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+    assign orig_instr[i] = riscv::instruction_t'(orig_instr_i[i]);
+  end
 
   // ALU-ALU bypass signals
   alu_bypass_t alu_bypass, alu_bypass_n, alu_bypass_q;
@@ -309,10 +313,11 @@ module issue_read_operands
   end
 
   if (CVA6Cfg.SuperscalarEn) begin
-    // When a bypass is possible, an instruction uses `alu2` only when `alu` is already busy,
-    // in all other scenarios `alu2` is preferred over `alu`, unless it is busy
+    // When a bypass is possible or an FPU instruction is present on the second issue port,
+    // an instruction uses `alu2` only when `alu` is already busy
+    // In all other scenarios `alu2` is preferred over `alu`, unless it is busy
     for (genvar i = 0; i < 2; i++) begin
-      assign use_alu2[i] = is_alu_bypass ? fus_busy[i].alu : !fus_busy[i].alu2;
+      assign use_alu2[i] = is_alu_bypass || (issue_instr_i[1].fu inside {FPU, FPU_VEC}) ? fus_busy[i].alu : !fus_busy[i].alu2;
     end
   end else begin
     assign use_alu2 = '0;
@@ -347,7 +352,6 @@ module issue_read_operands
     if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
       fus_busy[0].fpu = 1'b1;
       fus_busy[0].fpu_vec = 1'b1;
-      if (CVA6Cfg.SuperscalarEn) fus_busy[0].alu2 = 1'b1;
     end
 
     if (!lsu_ready_i) begin
@@ -356,6 +360,11 @@ module issue_read_operands
     end
 
     if (CVA6Cfg.SuperscalarEn) begin
+
+      if (fpu_early_valid_i) begin
+        fus_busy[0].alu2 = 1'b1;
+      end
+
       fus_busy[1] = fus_busy[0];
 
       // Never issue CSR instruction on second issue port.
@@ -390,10 +399,6 @@ module issue_read_operands
         ALU: begin
           if (use_alu2[0]) begin
             fus_busy[1].alu2 = 1'b1;
-            // TODO is there a minimum float execution time?
-            // If so we could issue FPU & ALU2 the same cycle
-            fus_busy[1].fpu = 1'b1;
-            fus_busy[1].fpu_vec = 1'b1;
           end else begin
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
@@ -408,10 +413,18 @@ module issue_read_operands
         FPU, FPU_VEC: begin
           fus_busy[1].fpu = 1'b1;
           fus_busy[1].fpu_vec = 1'b1;
+          if (issue_instr_i[1].op inside {[FLD : FSB]}) begin
+            fus_busy[1].load  = 1'b1;
+            fus_busy[1].store = 1'b1;
+          end
         end
         LOAD, STORE: begin
           fus_busy[1].load  = 1'b1;
           fus_busy[1].store = 1'b1;
+          if (issue_instr_i[0].op inside {[FLD : FSB]}) begin
+            fus_busy[1].fpu = 1'b1;
+            fus_busy[1].fpu_vec = 1'b1;
+          end
         end
         CVXIF: ;
         default: ;
@@ -658,10 +671,12 @@ module issue_read_operands
   end
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
-  if (OPERANDS_PER_INSTR == 3) begin : gen_gp_rs3
-    assign imm_forward_rs3 = rs3_res[0];
-  end else begin : gen_fp_rs3
-    assign imm_forward_rs3 = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_res[0]};
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+    if (OPERANDS_PER_INSTR == 3) begin : gen_gp_rs3
+      assign imm_forward_rs3[i] = rs3_res[i];
+    end else begin : gen_fp_rs3
+      assign imm_forward_rs3[i] = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_res[i]};
+    end
   end
 
   // Forwarding/Output MUX
@@ -696,7 +711,7 @@ module issue_read_operands
         fu_data_n[i].operand_b = rs2_res[i];
       end
       if ((CVA6Cfg.FpPresent || (CVA6Cfg.CvxifEn && OPERANDS_PER_INSTR == 3)) && forward_rs3[i]) begin
-        fu_data_n[i].imm = imm_forward_rs3;
+        fu_data_n[i].imm = imm_forward_rs3[i];
       end
 
       // use the PC as operand a
@@ -760,12 +775,12 @@ module issue_read_operands
           default: begin
             if (issue_instr_i[i].fu == FPU && CVA6Cfg.FpPresent) begin
               fpu_valid_n[i] = 1'b1;
-              fpu_fmt_n      = orig_instr.rftype.fmt;  // fmt bits from instruction
-              fpu_rm_n       = orig_instr.rftype.rm;  // rm bits from instruction
+              fpu_fmt_n      = orig_instr[i].rftype.fmt;  // fmt bits from instruction
+              fpu_rm_n       = orig_instr[i].rftype.rm;  // rm bits from instruction
             end else if (issue_instr_i[i].fu == FPU_VEC && CVA6Cfg.FpPresent) begin
               fpu_valid_n[i] = 1'b1;
-              fpu_fmt_n      = orig_instr.rvftype.vfmt;  // vfmt bits from instruction
-              fpu_rm_n       = {2'b0, orig_instr.rvftype.repl};  // repl bit from instruction
+              fpu_fmt_n      = orig_instr[i].rvftype.vfmt;  // vfmt bits from instruction
+              fpu_rm_n       = {2'b0, orig_instr[i].rvftype.repl};  // repl bit from instruction
             end
           end
         endcase
@@ -948,7 +963,7 @@ module issue_read_operands
     };
 
     if (CVA6Cfg.SuperscalarEn) begin
-      if (!(issue_instr_i[0].fu inside {FPU, FPU_VEC})) begin
+      if (!(issue_instr_i[0].fu inside {FPU, FPU_VEC} || issue_instr_i[0].op inside {[FLD:FSB]})) begin
         fp_raddr_pack = {
           issue_instr_i[1].result[4:0], issue_instr_i[1].rs2[4:0], issue_instr_i[1].rs1[4:0]
         };
@@ -1099,20 +1114,6 @@ module issue_read_operands
           1,
           "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports."
       );
-  end
-
-  // FPU does not declare that it will return a result the subsequent cycle so
-  // it is not possible for issue stage to know when ALU2 can be used if there
-  // is an FPU.  As there are discussions to change the FPU, I did not explore
-  // its architecture to create this "FPU returns next cycle" signal.  Also, a
-  // "lookahead" optimization should be added to be performant with FPU:  when
-  // issue port 2 is issuing to FPU, issue port 1 should issue to ALU1 instead
-  // of ALU2 so that FPU is not busy.  However, if FPU has a minimum execution
-  // time of 2 cycles, it is possible to simply not raise fus_busy[1].alu2.
-  initial begin
-    assert (!(CVA6Cfg.SuperscalarEn && CVA6Cfg.FpPresent))
-    else
-      $fatal(1, "FPU is not yet supported in superscalar CVA6, see comments above this assertion.");
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
