@@ -294,7 +294,7 @@ module scoreboard #(
   end
 
   assign fwd_o.still_issued = still_issued;
-  assign fwd_o.issue_pointer = issue_pointer;
+  assign fwd_o.issue_pointer = issue_pointer[0];
   assign fwd_o.wb = wb;
   for (genvar i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
     assign fwd_o.sbe[i] = mem_q[i].sbe;
