@@ -43,7 +43,9 @@ module cva6_hpdcache_wrapper
     parameter type hpdcache_req_t = logic,
     parameter type hpdcache_rsp_t = logic,
     parameter type hpdcache_wbuf_timecnt_t = logic,
-    parameter type hpdcache_data_be_t = logic
+    parameter type hpdcache_data_be_t = logic,
+
+    localparam type hpdcache_nline_t = logic [HPDcacheCfg.nlineWidth-1:0]
 )
 //  }}}
 
@@ -100,6 +102,11 @@ module cva6_hpdcache_wrapper
     output logic                 dcache_mem_resp_read_ready_o,
     input  logic                 dcache_mem_resp_read_valid_i,
     input  hpdcache_mem_resp_r_t dcache_mem_resp_read_i,
+
+    `ifdef HPDCACHE_OPENPITON
+    input  logic                          mem_resp_read_inval_i,
+    input  hpdcache_nline_t               mem_resp_read_inval_nline_i,
+    `endif
 
     input  logic              dcache_mem_req_write_ready_i,
     output logic              dcache_mem_req_write_valid_o,
@@ -382,6 +389,11 @@ module cva6_hpdcache_wrapper
       .mem_resp_read_ready_o(dcache_mem_resp_read_ready_o),
       .mem_resp_read_valid_i(dcache_mem_resp_read_valid_i),
       .mem_resp_read_i      (dcache_mem_resp_read_i),
+
+      `ifdef HPDCACHE_OPENPITON
+      .mem_resp_read_inval_i(mem_resp_read_inval_i),
+      .mem_resp_read_inval_nline_i(mem_resp_read_inval_nline_i),
+      `endif
 
       .mem_req_write_ready_i(dcache_mem_req_write_ready_i),
       .mem_req_write_valid_o(dcache_mem_req_write_valid_o),

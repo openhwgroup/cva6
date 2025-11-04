@@ -48,19 +48,16 @@
 //           https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf
 //
 
-`include "wt_l15_types.svh"
-
 module wt_l15_adapter
   import ariane_pkg::*;
   import wt_cache_pkg::*;
+  import l15_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     parameter type dcache_req_t = logic,
-    parameter type dcache_rtrn_t = logic,
-    parameter type l15_req_t = `L15_REQ_T(CVA6Cfg),
-    parameter type l15_rtrn_t = `L15_RTRN_T(CVA6Cfg)
+    parameter type dcache_rtrn_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -139,7 +136,7 @@ module wt_l15_adapter
 
   assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
   assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
-  assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
+  assign l15_req_o.l15_amo_op               = l15_pkg::l15_amo_e'(logic'(dcache_data.amo_op));
   assign l15_req_o.l15_be                   = '0; // Not supported by WT cache
 
 
@@ -334,10 +331,10 @@ module wt_l15_adapter
   assign dcache_rtrn_o.tid     = rtrn_fifo_data.l15_threadid;
 
   // invalidation signal mapping
-  assign icache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
+  assign icache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address[15:4], 4'b0000};
   assign icache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
 
-  assign dcache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
+  assign dcache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address[15:4], 4'b0000};
   assign dcache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
 
   fifo_v2 #(

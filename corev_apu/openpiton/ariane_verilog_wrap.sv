@@ -12,11 +12,10 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
-`include "wt_l15_types.svh"
-
 module ariane_verilog_wrap
     import ariane_pkg::*;
     import config_pkg::*;
+    import l15_pkg::*;
 #(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
@@ -73,8 +72,6 @@ module ariane_verilog_wrap
   // swap endianness in l15 adapter
   parameter bit                        SwapEndianess         = 1,
   // AXI Configuration
-  parameter int unsigned               AxiAddrWidth          = 64,
-  parameter int unsigned               AxiDataWidth          = 64,
   parameter int unsigned               AxiIdWidth            = 4,
   parameter int unsigned               AxiUserWidth          = 64,
   parameter int unsigned               AxiBurstWriteEn       = 0,
@@ -164,16 +161,20 @@ module ariane_verilog_wrap
     CvxifEn:                CvxifEn,
     CoproType:              config_pkg::COPRO_NONE,  // No coprocessor
     NOCType:                SwapEndianess ? NOC_TYPE_L15_BIG_ENDIAN : NOC_TYPE_AXI4_ATOP,
-    AxiAddrWidth:           AxiAddrWidth,
-    AxiDataWidth:           AxiDataWidth,
-    AxiIdWidth:             AxiIdWidth,
+    AxiAddrWidth:           40,
+    AxiDataWidth:           128, // Used to calculate the mem data width of hpdc
+    AxiIdWidth:             6,
     AxiUserWidth:           AxiUserWidth,
     AxiBurstWriteEn:        AxiBurstWriteEn,
-    MemTidWidth:            1,
+    MemTidWidth:            6,
     IcacheByteSize:         16384,
     IcacheSetAssoc:         4,
     IcacheLineWidth:        256,
+    `ifdef HPDCACHE_OPENPITON
+    DCacheType:             config_pkg::HPDCACHE_WT,
+    `else
     DCacheType:             config_pkg::WT,
+    `endif
     DcacheIdWidth:          1,
     DcacheByteSize:         8192,
     DcacheSetAssoc:         4,
@@ -207,9 +208,6 @@ module ariane_verilog_wrap
   };
 
   localparam cva6_cfg_t cva6_cfg = build_config_pkg::build_config(cva6_user_cfg);
-
-  localparam type l15_req_t  = `L15_REQ_T(cva6_cfg);
-  localparam type l15_rtrn_t = `L15_RTRN_T(cva6_cfg);
 
 // assign bitvector to packed struct and vice versa
   // L15 (memory side)
