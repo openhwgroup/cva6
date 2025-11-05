@@ -7,7 +7,7 @@
 //
 // Original Author: Yannick Casamatta - Thales
 // Date: 09/01/2024
-
+`include "rvfi_types.svh"
 
 module cva6_rvfi
   import ariane_pkg::*;

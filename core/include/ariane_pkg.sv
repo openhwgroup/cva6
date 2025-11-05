@@ -627,6 +627,23 @@ package ariane_pkg;
     FE_INSTR_GUEST_PAGE_FAULT
   } frontend_exception_t;
 
+  // AMO request going to cache. this request is unconditionally valid as soon
+  // as request goes high.
+  // Furthermore, those signals are kept stable until the response indicates
+  // completion by asserting ack.
+  typedef struct packed {
+    logic        req;        // this request is valid
+    amo_t        amo_op;     // atomic memory operation to perform
+    logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
+    logic [63:0] operand_a;  // address
+    logic [63:0] operand_b;  // data as layouted in the register
+  } amo_req_t;
+
+  // AMO response coming from cache.
+  typedef struct packed {
+    logic        ack;     // response is valid
+    logic [63:0] result;  // sign-extended, result
+  } amo_resp_t;
 
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 

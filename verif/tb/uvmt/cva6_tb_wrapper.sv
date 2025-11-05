@@ -47,7 +47,7 @@ import "DPI-C" function byte get_section(
   output longint address,
   output longint len
 );
-import "DPI-C" context function read_section_sv(
+import "DPI-C" context function void read_section_sv(
   input longint address,
   inout byte buffer[]
 );
