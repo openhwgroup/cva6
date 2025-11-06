@@ -41,7 +41,6 @@ core/cache_subsystem/cva6_hpdcache_subsystem.sv
 core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv
 core/cache_subsystem/cva6_hpdcache_subsystem_l15_adapter.sv
 core/cache_subsystem/cva6_hpdcache_if_adapter.sv
-core/cache_subsystem/cva6_hpdcache_load_if_adapter.sv
 core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv
 core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
 core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv
