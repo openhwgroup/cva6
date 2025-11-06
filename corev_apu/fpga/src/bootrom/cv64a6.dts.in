@@ -125,6 +125,30 @@
       interrupts = <3 0>;
       local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
       reg = <0x0 0x30000000 0x0 0x8000>;
+      phy-mode = "rgmii-id";
+      phy-handle = <&phy0>;
+
+      // Management bus that the MAC uses to talk to external PHYs.
+      // Each PHY sits at a 5-bit MDIO address that is normally strap-configured
+      // in hardware; adjust the child node's unit address and reg value to match
+      // your board (KC705 ties the 88E1510 to 0b00111, for example).
+      mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        // The PHY node exposes the Marvell 88E1510 to Linux.  The optional
+        // marvell,reg-init sequence below shows how to program a vendor
+        // register at boot.  The tuple format is <page reg mask value>; here we
+        // overwrite the whole RGMII control register (page 3, reg 0x10) with the
+        // 0x1c1 value recommended by Marvell to enable both TX and RX internal
+        // delays.  Adjust or drop this write if your board needs different PHY
+        // tuning.
+        phy0: ethernet-phy@7 {
+          compatible = "marvell,88e1510";
+          reg = <0x7>;
+          marvell,reg-init = <0x3 0x10 0xffff 0x1c1>;
+        };
+      };
     };
     xlnx_gpio: gpio@40000000 {
       #gpio-cells = <2>;
