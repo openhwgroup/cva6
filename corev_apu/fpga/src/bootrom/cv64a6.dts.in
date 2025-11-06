@@ -146,7 +146,6 @@
         phy0: ethernet-phy@7 {
           compatible = "marvell,88e1510";
           reg = <0x7>;
-          marvell,reg-init = <0x3 0x10 0xffff 0x1c1>;
         };
       };
     };
