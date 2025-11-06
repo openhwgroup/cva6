@@ -423,7 +423,7 @@ module cva6_hpdcache_subsystem_l15_adapter import ariane_pkg::*;import wt_cache_
     .resp_pid_o           (mem_resp_pid),
     .resp_o               (mem_resp),
     //HPDC Inval ready
-    .hpdc_inval_ready_i   (dcache_inval_ready),
+    .hpdc_inval_ready_i   (inval_ready),
     //Back-off parameter to guarantee the LR/SC completion
     .sc_backoff_over_o         (sc_backoff_over),
 
@@ -435,8 +435,5 @@ module cva6_hpdcache_subsystem_l15_adapter import ariane_pkg::*;import wt_cache_
 
   assign l15_req_o = l15_req;
   assign l15_rtrn = l15_rtrn_i;
-  assign dcache_inval_o       = mem_resp.mem_inval[CVA6Cfg.PLEN-1:$clog2(HPDcacheMemDataWidth/8)],
-         dcache_inval_valid_o = mem_resp.mem_inval_dcache_valid,
-         dcache_inval_ready = dcache_read_resp_ready_i;
   //  }}}
 endmodule : cva6_hpdcache_subsystem_l15_adapter
