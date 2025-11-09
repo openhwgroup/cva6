@@ -82,7 +82,7 @@ module pmp_data_if
     // fault, therefore do not change the exception type in case of double
     // exception
     if (icache_areq_i.fetch_valid) begin
-      if(icache_areq_o.fetch_exception.cause != riscv::INSTR_PAGE_FAULT) begin
+      if (icache_areq_o.fetch_exception.cause != riscv::INSTR_PAGE_FAULT) begin
         if (!match_any_execute_region || !pmp_if_allow) begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
