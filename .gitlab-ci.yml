@@ -149,7 +149,7 @@ smoke-tests:
   parallel:
     matrix:
       - DV_SIMULATORS: ["vcs-testharness", "questa-testharness"]
-        DV_TARGET: ["cv32a6_imac_sv32", "cv64a6_imafdc_sv39"]
+        DV_TARGET: ["cv32a6_imac_sv32", "cv64a60ax"]
       - DV_SIMULATORS: "vcs-uvm"
         DV_TARGET: "cv32a65x"
   script:
@@ -419,7 +419,7 @@ riscv-tests-v:
     DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
     DV_SIMULATORS: "veri-testharness,spike"
-    DV_TARGET: cv64a6_imafdc_sv39
+    DV_TARGET: cv64a60x
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
   script: source verif/regress/dv-riscv-tests.sh
   after_script: *simu_after_script
