@@ -471,11 +471,12 @@ module ex_stage
           .fpu_early_valid_o
       );
     end else begin : no_fpu_gen
-      assign fpu_ready_o     = '0;
-      assign fpu_trans_id    = '0;
-      assign fpu_result      = '0;
-      assign fpu_valid       = '0;
-      assign fpu_exception_o = '0;
+      assign fpu_ready_o       = '0;
+      assign fpu_trans_id      = '0;
+      assign fpu_result        = '0;
+      assign fpu_valid         = '0;
+      assign fpu_exception_o   = '0;
+      assign fpu_early_valid_o = '0;
     end
   endgenerate
 
