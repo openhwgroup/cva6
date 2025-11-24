@@ -94,6 +94,8 @@ module issue_stage
     output logic [1:0] fpu_fmt_o,
     // FPU rm field - EX_STAGE
     output logic [2:0] fpu_rm_o,
+    // FPU early valid - EX_STAGE
+    input logic fpu_early_valid_i,
     // ALU2 FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_o,
     // CSR is valid - EX_STAGE
@@ -283,6 +285,7 @@ module issue_stage
       .fpu_valid_o,
       .fpu_fmt_o,
       .fpu_rm_o,
+      .fpu_early_valid_i,
       .alu2_valid_o,
       .csr_valid_o,
       .cvxif_valid_o           (xfu_valid_o),
