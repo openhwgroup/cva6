@@ -76,9 +76,11 @@ module pmp_data_if
     icache_areq_o.fetch_paddr     = icache_areq_i.fetch_paddr;
     icache_areq_o.fetch_exception = icache_areq_i.fetch_exception;
 
-    // if it didn't match any execute region throw an `Instruction Access Fault` (PMA)
+    // Check if the translation could be completed (i.e. there wasn't a page fault), then
+    // if the paddr didn't match any execute region throw an `Instruction Access Fault` (PMA)
     // or if PMP reject the access
-    if (!match_any_execute_region || !pmp_if_allow) begin
+    if (~(icache_areq_i.fetch_valid && icache_areq_i.fetch_exception.valid && icache_areq_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT)
+        && (!match_any_execute_region || !pmp_if_allow)) begin
       icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
       icache_areq_o.fetch_exception.valid = 1'b1;
       // For exception, the virtual address is required for tval, if no MMU is
