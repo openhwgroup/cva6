@@ -72,9 +72,9 @@ sources:
         files:
           - core/include/cv32a65x_config_pkg.sv
 
-      - target: cv64a60ax
+      - target: cv64a60ax_cvfpu-uvm
         files:
-          - core/include/cv64a60ax_config_pkg.sv
+          - core/include/cv64a60ax_config_pkg_cvfpu-uvm.sv
 
       # General config infrastructure
       - core/include/riscv_pkg.sv
