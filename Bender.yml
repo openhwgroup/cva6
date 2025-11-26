@@ -64,7 +64,7 @@ sources:
         files:
           - core/include/cv32a65x_config_pkg.sv
 
-      - target: cv64a60ax_cvfpu-uvm
+      - target: cv64a60ax_cvfpu_uvm
         files:
           - core/include/cv64a60ax_config_pkg_cvfpu-uvm.sv
 
