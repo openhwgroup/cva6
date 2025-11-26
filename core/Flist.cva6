@@ -97,6 +97,7 @@ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/aes_pkg.sv
+${CVA6_REPO_DIR}/core/include/triggers_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/cvxif_compressed_if_driver.sv
@@ -143,6 +144,7 @@ ${CVA6_REPO_DIR}/core/controller.sv
 ${CVA6_REPO_DIR}/core/zcmt_decoder.sv
 ${CVA6_REPO_DIR}/core/csr_buffer.sv
 ${CVA6_REPO_DIR}/core/csr_regfile.sv
+${CVA6_REPO_DIR}/core/trigger_module.sv
 ${CVA6_REPO_DIR}/core/decoder.sv
 ${CVA6_REPO_DIR}/core/ex_stage.sv
 ${CVA6_REPO_DIR}/core/instr_realign.sv

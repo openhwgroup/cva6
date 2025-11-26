@@ -78,18 +78,25 @@ module pmp_data_if
 
     // if it didn't match any execute region throw an `Instruction Access Fault` (PMA)
     // or if PMP reject the access
-    if (!match_any_execute_region || !pmp_if_allow) begin
-      icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
-      icache_areq_o.fetch_exception.valid = 1'b1;
-      // For exception, the virtual address is required for tval, if no MMU is
-      // instantiated then it will be equal to physical address
-      if (CVA6Cfg.TvalEn) begin
-        icache_areq_o.fetch_exception.tval = fetch_vaddr_xlen;
-      end
-      if (CVA6Cfg.RVH) begin
-        icache_areq_o.fetch_exception.tval2 = '0;
-        icache_areq_o.fetch_exception.tinst = '0;
-        icache_areq_o.fetch_exception.gva   = v_i;
+    // Per RISCV privilege spec, a page fault has higher priority than access
+    // fault, therefore do not change the exception type in case of double
+    // exception
+    if (icache_areq_i.fetch_valid) begin
+      if (icache_areq_o.fetch_exception.cause != riscv::INSTR_PAGE_FAULT) begin
+        if (!match_any_execute_region || !pmp_if_allow) begin
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          // For exception, the virtual address is required for tval, if no MMU is
+          // instantiated then it will be equal to physical address
+          if (CVA6Cfg.TvalEn) begin
+            icache_areq_o.fetch_exception.tval = fetch_vaddr_xlen;
+          end
+          if (CVA6Cfg.RVH) begin
+            icache_areq_o.fetch_exception.tval2 = '0;
+            icache_areq_o.fetch_exception.tinst = '0;
+            icache_areq_o.fetch_exception.gva   = v_i;
+          end
+        end
       end
     end
   end

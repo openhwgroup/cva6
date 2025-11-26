@@ -643,6 +643,8 @@ package riscv;
     CSR_TDATA2           = 12'h7A2,
     CSR_TDATA3           = 12'h7A3,
     CSR_TINFO            = 12'h7A4,
+    CSR_MCONTEXT         = 12'h7A8,
+    CSR_SCONTEXT         = 12'h5A8,
     // Debug CSR
     CSR_DCSR             = 12'h7b0,
     CSR_DPC              = 12'h7b1,
