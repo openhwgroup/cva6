@@ -50,6 +50,9 @@ package build_config_pkg;
     cfg.NrIssuePorts = unsigned'(CVA6Cfg.SuperscalarEn ? 2 : 1);
     cfg.SpeculativeSb = CVA6Cfg.SuperscalarEn;
 
+    cfg.NrALUs = CVA6Cfg.SuperscalarEn ? unsigned'(2) : unsigned'(1);
+    cfg.ALUBypass = CVA6Cfg.SuperscalarEn ? bit'(CVA6Cfg.ALUBypass) : bit'(0);
+
     cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
     cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
     cfg.AxiAddrWidth = CVA6Cfg.AxiAddrWidth;
@@ -126,6 +129,11 @@ package build_config_pkg;
     cfg.CachedRegionLength = CVA6Cfg.CachedRegionLength;
     cfg.MaxOutstandingStores = CVA6Cfg.MaxOutstandingStores;
     cfg.DebugEn = CVA6Cfg.DebugEn;
+    cfg.SDTRIG = CVA6Cfg.SDTRIG;
+    cfg.Mcontrol6 = CVA6Cfg.Mcontrol6;
+    cfg.Icount = CVA6Cfg.Icount;
+    cfg.Etrigger = CVA6Cfg.Etrigger;
+    cfg.Itrigger = CVA6Cfg.Itrigger;
     cfg.NonIdemPotenceEn = (CVA6Cfg.NrNonIdempotentRules > 0) && (CVA6Cfg.NonIdempotentLength > 0);
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 

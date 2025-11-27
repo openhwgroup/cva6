@@ -23,7 +23,8 @@ module csr_regfile
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
     parameter int                    VmidWidth          = 1,
-    parameter int unsigned           MHPMCounterNum     = 6
+    parameter int unsigned           MHPMCounterNum     = 6,
+    parameter int unsigned           N_Triggers         = 4
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -170,7 +171,13 @@ module csr_regfile
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
-    output jvt_t jvt_o
+    output jvt_t jvt_o,
+    // trigger module signals
+    output logic debug_from_trigger_o,
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_from_lsu_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
+    input logic [CVA6Cfg.XLEN-1:0] store_result_i,
+    output logic break_from_trigger_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -279,6 +286,22 @@ module csr_regfile
   logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
 
+  // Trigger Module Registers
+  logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
+  logic [CVA6Cfg.XLEN-1:0] tdata1_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata1_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata2_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata2_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata3_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata3_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tselect_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tselect_from_tm;
+  logic tselect_we, tdata1_we, tdata2_we, tdata3_we;
+  logic flush_from_tm;
+  logic break_from_trigger;
+  logic debug_from_trigger;
+  logic debug_from_mcontrol;
+
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
@@ -382,11 +405,31 @@ module csr_regfile
         riscv::CSR_DSCRATCH1:
         if (CVA6Cfg.DebugEn) csr_rdata = dscratch1_q;
         else read_access_exception = 1'b1;
-        // trigger module registers
-        riscv::CSR_TSELECT: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: read_access_exception = 1'b1;  // not implemented
+        // Trigger module registers
+        riscv::CSR_TSELECT:
+        if (CVA6Cfg.SDTRIG) csr_rdata = tselect_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA1:
+        if (CVA6Cfg.SDTRIG) csr_rdata = tdata1_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA2:
+        if (CVA6Cfg.SDTRIG) csr_rdata = tdata2_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA3:
+        if (CVA6Cfg.SDTRIG) csr_rdata = tdata3_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TINFO: begin
+          if (CVA6Cfg.SDTRIG) begin
+            csr_rdata = {
+              {CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000
+            };  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SCONTEXT:
+        if (CVA6Cfg.SDTRIG) csr_rdata = scontext_q;
+        else read_access_exception = 1'b1;
         riscv::CSR_VSSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = vsstatus_extended;
         else read_access_exception = 1'b1;
@@ -558,7 +601,7 @@ module csr_regfile
         end
         riscv::CSR_MVENDORID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, OPENHWGROUP_MVENDORID};
         riscv::CSR_MARCHID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, ARIANE_MARCHID};
-        riscv::CSR_MIMPID: csr_rdata = '0;  // not implemented
+        riscv::CSR_MIMPID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, ARIANE_MIMPID};
         riscv::CSR_MHARTID: csr_rdata = hart_id_i;
         riscv::CSR_MCONFIGPTR: csr_rdata = '0;  // not implemented
         riscv::CSR_MCOUNTINHIBIT:
@@ -1008,6 +1051,16 @@ module csr_regfile
     pmpcfg_d               = pmpcfg_q;
     pmpaddr_d              = pmpaddr_q;
 
+    // trigger module defaults
+    tdata1_to_tm           = '0;
+    tdata2_to_tm           = '0;
+    tdata3_to_tm           = '0;
+    tselect_to_tm          = '0;
+    tselect_we             = 1'b0;
+    tdata1_we              = 1'b0;
+    tdata2_we              = 1'b0;
+    tdata3_we              = 1'b0;
+
     // check for correct access rights and that we are writing
     if (csr_we) begin
       unique case (conv_csr_addr.address)
@@ -1083,11 +1136,47 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
-        // trigger module CSRs
-        riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: update_access_exception = 1'b1;  // not implemented
+        // Trigger module CSRs
+        riscv::CSR_TSELECT: begin
+          if (CVA6Cfg.SDTRIG) begin
+            tselect_to_tm = csr_wdata;
+            tselect_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA1: begin
+          if (CVA6Cfg.SDTRIG) begin
+            tdata1_to_tm = csr_wdata;
+            tdata1_we    = csr_we;
+            flush_o = flush_from_tm;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA2: begin
+          if (CVA6Cfg.SDTRIG) begin
+            tdata2_to_tm = csr_wdata;
+            tdata2_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA3: begin
+          if (CVA6Cfg.SDTRIG) begin
+            tdata3_to_tm = csr_wdata;
+            tdata3_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SCONTEXT: begin
+          if (CVA6Cfg.SDTRIG) begin
+            scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         // virtual supervisor registers
         riscv::CSR_VSSTATUS: begin
           if (CVA6Cfg.RVH) begin
@@ -1813,7 +1902,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -1906,7 +1995,7 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = ex_i.cause;
+        mcause_d = (break_from_trigger) ? 32'h00000003 : ex_i.cause;
         // set epc
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
@@ -1964,7 +2053,16 @@ module csr_regfile
       dcsr_d.prv = priv_lvl_o;
       // save virtualization mode bit
       dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
+
       // trigger module fired
+      if (CVA6Cfg.SDTRIG && debug_from_trigger) begin
+        dcsr_d.prv = priv_lvl_o;
+        dcsr_d.v = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
+        dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+        debug_mode_d = 1'b1;
+        set_debug_pc_o = 1'b1;
+        dcsr_d.cause = ariane_pkg::CauseTrigger;
+      end
 
       // caused by a breakpoint
       if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
@@ -2604,6 +2702,9 @@ module csr_regfile
         vsatp_q                  <= {CVA6Cfg.XLEN{1'b0}};
         en_ld_st_g_translation_q <= 1'b0;
       end
+      if (CVA6Cfg.SDTRIG) begin
+        scontext_q <= '0;
+      end
       // timer and counters
       cycle_q                <= 64'b0;
       instret_q              <= 64'b0;
@@ -2687,6 +2788,9 @@ module csr_regfile
         vsatp_q                  <= vsatp_d;
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
       end
+      if (CVA6Cfg.SDTRIG) begin
+        scontext_q <= scontext_d;
+      end
       // timer and counters
       cycle_q                <= cycle_d;
       instret_q              <= instret_d;
@@ -2699,6 +2803,9 @@ module csr_regfile
       pmpaddr_q              <= pmpaddr_next;
     end
   end
+
+  assign debug_from_trigger_o = debug_from_mcontrol;  // from trigger module to id stage
+  assign break_from_trigger_o = break_from_trigger;  // from trigger module to commit stage
 
   // write logic pmp
   always_comb begin : write
@@ -2729,6 +2836,60 @@ module csr_regfile
       end
     end
   end
+
+  //-------------
+  // Trigger Module
+  //-------------
+  generate
+    if (CVA6Cfg.SDTRIG) begin : tm_gen
+      trigger_module #(
+          .CVA6Cfg           (CVA6Cfg),
+          .exception_t       (exception_t),
+          .scoreboard_entry_t(scoreboard_entry_t),
+          .N_Triggers        (N_Triggers)
+      ) trigger_module_i (
+          .clk_i,
+          .rst_ni,
+          .commit_instr_i       (commit_instr_i),
+          .commit_ack_i         (commit_ack_i),
+          .ex_i                 (ex_i),
+          .vaddr_from_lsu_i     (vaddr_from_lsu_i),
+          .orig_instr_i         (orig_instr_i),
+          .store_result_i       (store_result_i),
+          .priv_lvl_i           (priv_lvl_o),
+          .debug_mode_i         (debug_mode_q),
+          .mret_i               (mret),
+          .sret_i               (sret),
+          .scontext_i           (scontext_q),
+          .tselect_i            (tselect_to_tm),
+          .tdata1_i             (tdata1_to_tm),
+          .tdata2_i             (tdata2_to_tm),
+          .tdata3_i             (tdata3_to_tm),
+          .tselect_we           (tselect_we),
+          .tdata1_we            (tdata1_we),
+          .tdata2_we            (tdata2_we),
+          .tdata3_we            (tdata3_we),
+          .tselect_o            (tselect_from_tm),
+          .tdata1_o             (tdata1_from_tm),
+          .tdata2_o             (tdata2_from_tm),
+          .tdata3_o             (tdata3_from_tm),
+          .flush_o              (flush_from_tm),
+          // debug/break request from TM
+          .debug_from_trigger_o (debug_from_trigger),
+          .break_from_trigger_o (break_from_trigger),
+          .debug_from_mcontrol_o(debug_from_mcontrol)
+      );
+    end else begin
+      assign tdata1_from_tm = '0;
+      assign tdata2_from_tm = '0;
+      assign tdata3_from_tm = '0;
+      assign tselect_from_tm = '0;
+      assign flush_from_tm = 0;
+      assign debug_from_trigger = 0;
+      assign break_from_trigger = 0;
+      assign debug_from_mcontrol = 0;
+    end
+  endgenerate
 
   //-------------
   // Assertions

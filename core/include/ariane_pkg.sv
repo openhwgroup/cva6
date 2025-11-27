@@ -54,6 +54,7 @@ package ariane_pkg;
 
   localparam logic [31:0] OPENHWGROUP_MVENDORID = 32'h0602;
   localparam logic [31:0] ARIANE_MARCHID = 32'd3;
+  localparam logic [31:0] ARIANE_MIMPID = 32'd0;
 
   // 32 registers
   localparam REG_ADDR_SIZE = 5;
@@ -531,6 +532,11 @@ package ariane_pkg;
     SHA512SUM0,
     SHA512SUM1
   } fu_op;
+
+  typedef struct packed {
+    logic rs1_from_rd;
+    logic rs2_from_rd;
+  } alu_bypass_t;
 
   function automatic logic op_is_branch(input fu_op op);
     unique case (op) inside

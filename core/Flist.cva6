@@ -42,6 +42,31 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncDpRam_ind_r_w.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_pkg.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_cast_multi.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_classifier.sv
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/clk/rtl/gated_clk_cell.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_ctrl.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_ff1.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_pack_single.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_prepare.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_round_single.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_special.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_srt_single.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fdsu/rtl/pa_fdsu_top.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fpu/rtl/pa_fpu_dp.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fpu/rtl/pa_fpu_frbus.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/opene906/E906_RTL_FACTORY/gen_rtl/fpu/rtl/pa_fpu_src_type.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_ctrl.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_double.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_ff1.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_pack.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_prepare.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_round.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_scalar_dp.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_srt_radix16_bound_table.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_srt_radix16_with_sqrt.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_srt.v
+${CVA6_REPO_DIR}/core/cvfpu/vendor/openc910/C910_RTL_FACTORY/gen_rtl/vfdsu/rtl/ct_vfdsu_top.v
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_divsqrt_th_32.sv
+${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_divsqrt_th_64_multi.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_divsqrt_multi.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_fma_multi.sv
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_fma.sv
@@ -72,6 +97,7 @@ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/aes_pkg.sv
+${CVA6_REPO_DIR}/core/include/triggers_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/cvxif_compressed_if_driver.sv
@@ -107,6 +133,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/delta_counter.sv
 ${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/cva6_rvfi_probes.sv
 ${CVA6_REPO_DIR}/core/alu.sv
+${CVA6_REPO_DIR}/core/alu_wrapper.sv
 ${CVA6_REPO_DIR}/core/aes.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/fpu_wrap.sv
@@ -117,6 +144,7 @@ ${CVA6_REPO_DIR}/core/controller.sv
 ${CVA6_REPO_DIR}/core/zcmt_decoder.sv
 ${CVA6_REPO_DIR}/core/csr_buffer.sv
 ${CVA6_REPO_DIR}/core/csr_regfile.sv
+${CVA6_REPO_DIR}/core/trigger_module.sv
 ${CVA6_REPO_DIR}/core/decoder.sv
 ${CVA6_REPO_DIR}/core/ex_stage.sv
 ${CVA6_REPO_DIR}/core/instr_realign.sv

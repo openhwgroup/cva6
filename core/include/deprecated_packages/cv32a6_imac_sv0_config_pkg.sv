@@ -1,4 +1,4 @@
-// Copyright 2022 Thales DIS design services SAS
+// Copyright 2021 Thales DIS design services SAS
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -6,6 +6,7 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Jean-Roch COULON - Thales
+
 
 package cva6_config_pkg;
 
@@ -18,13 +19,13 @@ package cva6_config_pkg;
   localparam CVA6ConfigF8En = 0;
   localparam CVA6ConfigFVecEn = 0;
 
-  localparam CVA6ConfigCvxifEn = 1;
+  localparam CVA6ConfigCvxifEn = 0;
   localparam CVA6ConfigCExtEn = 1;
-  localparam CVA6ConfigZcbExtEn = 1;
+  localparam CVA6ConfigZcbExtEn = 0;
   localparam CVA6ConfigZcmpExtEn = 0;
-  localparam CVA6ConfigAExtEn = 0;
+  localparam CVA6ConfigAExtEn = 1;
   localparam CVA6ConfigHExtEn = 0;  // always disabled
-  localparam CVA6ConfigBExtEn = 1;
+  localparam CVA6ConfigBExtEn = 0;
   localparam CVA6ConfigVExtEn = 0;
   localparam CVA6ConfigRVZiCond = 0;
 
@@ -43,44 +44,42 @@ package cva6_config_pkg;
   localparam CVA6ConfigDcacheSetAssoc = 8;
   localparam CVA6ConfigDcacheLineWidth = 128;
 
-  localparam CVA6ConfigDcacheFlushOnFence = 1'b0;
-  localparam CVA6ConfigDcacheInvalidateOnFlush = 1'b0;
-
   localparam CVA6ConfigDcacheIdWidth = 1;
   localparam CVA6ConfigMemTidWidth = 2;
 
-  localparam CVA6ConfigWtDcacheWbufDepth = 2;
+  localparam CVA6ConfigWtDcacheWbufDepth = 8;
 
-  localparam CVA6ConfigSuperscalarEn = 0;
-  localparam CVA6ConfigNrCommitPorts = 1;
-  localparam CVA6ConfigNrScoreboardEntries = 4;
+  localparam CVA6ConfigNrScoreboardEntries = 8;
+  localparam CVA6ConfigNrLoadBufEntries = 2;
 
-  localparam CVA6ConfigNrLoadPipeRegs = 0;
+  localparam CVA6ConfigNrLoadPipeRegs = 1;
   localparam CVA6ConfigNrStorePipeRegs = 0;
-  localparam CVA6ConfigNrLoadBufEntries = 1;
 
   localparam CVA6ConfigRASDepth = 2;
-  localparam CVA6ConfigBTBEntries = 0;
-  localparam CVA6ConfigBHTEntries = 32;
+  localparam CVA6ConfigBTBEntries = 32;
+  localparam CVA6ConfigBHTEntries = 128;
 
-  localparam CVA6ConfigTvalEn = 0;
+  localparam CVA6ConfigTvalEn = 1;
 
   localparam CVA6ConfigNrPMPEntries = 8;
 
-  localparam CVA6ConfigPerfCounterEn = 0;
+  localparam CVA6ConfigPerfCounterEn = 1;
 
   localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
 
-  localparam CVA6ConfigMmuPresent = 0;
+  localparam CVA6ConfigMmuPresent = 1;
 
   localparam CVA6ConfigRvfiTrace = 1;
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
+      VLEN: unsigned'(32),
       FpgaEn: bit'(0),  // for Xilinx and Altera
       FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
-      NrCommitPorts: unsigned'(CVA6ConfigNrCommitPorts),
+      SuperscalarEn: bit'(0),
+      ALUBypass: bit'(0),
+      NrCommitPorts: unsigned'(2),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),
       AxiDataWidth: unsigned'(CVA6ConfigAxiDataWidth),
       AxiIdWidth: unsigned'(CVA6ConfigAxiIdWidth),
@@ -99,9 +98,9 @@ package cva6_config_pkg;
       RVC: bit'(CVA6ConfigCExtEn),
       RVH: bit'(CVA6ConfigHExtEn),
       RVZCB: bit'(CVA6ConfigZcbExtEn),
+      RVZCMT: bit'(0),
       RVZCMP: bit'(CVA6ConfigZcmpExtEn),
       XFVec: bit'(CVA6ConfigFVecEn),
-      RVZCMT: bit'(0),
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       CoproType: config_pkg::COPRO_NONE,
       RVZiCond: bit'(CVA6ConfigRVZiCond),
@@ -110,8 +109,8 @@ package cva6_config_pkg;
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
       MmuPresent: bit'(CVA6ConfigMmuPresent),
-      RVS: bit'(0),
-      RVU: bit'(0),
+      RVS: bit'(1),
+      RVU: bit'(1),
       SoftwareInterruptEn: bit'(1),
       HaltAddress: 64'h800,
       ExceptionAddress: 64'h808,
@@ -121,7 +120,7 @@ package cva6_config_pkg;
       BHTEntries: unsigned'(CVA6ConfigBHTEntries),
       BHTHist: unsigned'(3),
       DmBaseAddress: 64'h0,
-      TvalEn: bit'(CVA6ConfigTvalEn),
+      TvalEn: unsigned'(CVA6ConfigTvalEn),
       DirectVecOnly: bit'(0),
       NrPMPEntries: unsigned'(CVA6ConfigNrPMPEntries),
       PMPCfgRstVal: {64{64'h0}},
@@ -139,7 +138,12 @@ package cva6_config_pkg;
       CachedRegionAddrBase: 1024'({64'h8000_0000}),
       CachedRegionLength: 1024'({64'h40000000}),
       MaxOutstandingStores: unsigned'(7),
-      DebugEn: bit'(0),
+      DebugEn: bit'(1),
+      SDTRIG: bit'(0),
+      Mcontrol6: bit'(0),
+      Icount: bit'(0),
+      Etrigger: bit'(0),
+      Itrigger: bit'(0),
       AxiBurstWriteEn: bit'(0),
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
@@ -148,8 +152,8 @@ package cva6_config_pkg;
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
-      DcacheFlushOnFence: bit'(CVA6ConfigDcacheFlushOnFence),
-      DcacheInvalidateOnFlush: bit'(CVA6ConfigDcacheInvalidateOnFlush),
+      DcacheFlushOnFence: bit'(0),
+      DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
       WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),
@@ -162,5 +166,4 @@ package cva6_config_pkg;
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
   };
-
 endpackage
