@@ -209,6 +209,8 @@ module load_unit
                                               CVA6Cfg.DCACHE_INDEX_WIDTH];
   // request id = index of the load buffer's entry
   assign req_port_o.data_id = ldbuf_windex;
+  // user field not used
+  assign req_port_o.data_wuser = '0;
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;
