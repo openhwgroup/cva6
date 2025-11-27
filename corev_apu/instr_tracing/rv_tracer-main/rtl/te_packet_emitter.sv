@@ -154,7 +154,6 @@ module te_packet_emitter
     assign time_and_context = {~notime_i, ~nocontext_i};
     assign branch_map_flush_o = flush_q;
     assign payload_length_o = (used_bits + 7) >> 3;
-    assign latest_branch_addr_d = tc_address_i;
 
     always_comb begin
         // init

@@ -321,7 +321,7 @@ module rv_tracer #(
     assign nc_exception = exception_tab[0];
     assign nc_interrupt = interrupt_tab[0];
     assign nc_cause= cause_tab[0];
-    assign nc_tcvec = tvec_tab[0];
+    assign nc_tvec = tvec_tab[0];
     assign nc_tval = tval_tab[0];
     assign nc_itype = itype_tab[0];
     assign nc_priv = priv_tab[0];
