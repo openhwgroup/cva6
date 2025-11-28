@@ -829,7 +829,7 @@ cva6_peripherals #(
 //    .eth_mdio,
 //    .eth_mdc,
     .phy_tx_clk_i   ( phy_tx_clk                  ),
-    .sd_clk_i       ( sd_clk_sys                  ),
+    .sd_irq       ( sd_irq                  ),
 //    .spi_clk_o      ( spi_clk_o                   ),
 //    .spi_mosi       ( spi_mosi                    ),
 //    .spi_miso       ( spi_miso                    ),
@@ -876,6 +876,7 @@ logic [31:0] calbus_rdata, calbus_rdata1;
 logic [4095:0] calbus_seq_param_tbl, calbus_seq_param_tbl1;
 logic cal_success;
 logic ddr_amm_wait_request;
+logic sd_irq;
 
 assign ddr_amm_wait_request = ~ddr_amm_ready;
 
@@ -1198,6 +1199,7 @@ axi_dw_adapter  #(
    );
 
 system hps_minimal (
+        .hps_h2f_sdmmc_interrupt_irq(sd_irq), //  output,   width = 1
         .hps_hps_io_EMAC0_TX_CLK  (hps_emac0_TX_CLK),  								//  output,   width = 1,           hps_hps_io.EMAC0_TX_CLK
         .hps_hps_io_EMAC0_TXD0    (hps_emac0_TXD0),    								//  output,   width = 1,                     .EMAC0_TXD0
         .hps_hps_io_EMAC0_TXD1    (hps_emac0_TXD1),    								//  output,   width = 1,                     .EMAC0_TXD1
