@@ -57,7 +57,7 @@ module cva6_peripherals #(
     input  logic       spi_miso        ,
     output logic       spi_ss          ,
     // SD Card
-    input  logic       sd_clk_i        ,
+    input  logic       sd_irq        ,
     output logic [7:0] leds_o          ,
     input  logic [7:0] dip_switches_i
 );
@@ -68,7 +68,8 @@ module cva6_peripherals #(
     logic [ariane_soc::NumSources-1:0] irq_sources;
 
     // Unused interrupt sources
-    assign irq_sources[ariane_soc::NumSources-1:7] = '0;
+    assign irq_sources[ariane_soc::NumSources-1:8] = '0;
+    assign irq_sources[7] = sd_irq;
 
     REG_BUS #(
         .ADDR_WIDTH ( 32 ),
