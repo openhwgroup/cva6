@@ -157,6 +157,8 @@ module cva6_ptw
   assign req_port_o.data_wdata = '0;
   // we only issue one single request at a time
   assign req_port_o.data_id = '0;
+  // user field not used
+  assign req_port_o.data_wuser = '0;
 
   // -----------
   // TLB Update
@@ -297,6 +299,7 @@ module cva6_ptw
     ptw_lvl_n               = ptw_lvl_q;
     ptw_pptr_n              = ptw_pptr_q;
     state_d                 = state_q;
+    gpte_d                  = '0;
     ptw_stage_d             = ptw_stage_q;
     global_mapping_n        = global_mapping_q;
     // input registers
@@ -540,6 +543,7 @@ module cva6_ptw
                         pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
                       };
                     end
+                    default: ;
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 

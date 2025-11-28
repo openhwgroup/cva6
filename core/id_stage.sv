@@ -91,7 +91,9 @@ module id_stage #(
     input x_compressed_resp_t compressed_resp_i,
     output logic compressed_valid_o,
     output x_compressed_req_t compressed_req_o,
-    // Data cache request output - CACHE
+    // breakpoint request from trigger module
+    input debug_from_trigger_i,
+    // Data cache request ouput - CACHE
     input dcache_req_o_t dcache_req_ports_i,
     // Data cache request input - CACHE
     output dcache_req_i_t dcache_req_ports_o
@@ -339,7 +341,8 @@ module id_stage #(
         .hu_i,
         .instruction_o             (decoded_instruction[i]),
         .orig_instr_o              (orig_instr[i]),
-        .is_control_flow_instr_o   (is_control_flow_instr[i])
+        .is_control_flow_instr_o   (is_control_flow_instr[i]),
+        .debug_from_trigger_i      (debug_from_trigger_i)
     );
   end
 

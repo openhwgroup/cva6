@@ -67,7 +67,7 @@ bash verif/regress/smoke-tests.sh
 * **[Running Simulations](tutorials/running_sim.md)**
 * **[ASIC Implementation](tutorials/asic.md)**
 * **[FPGA Implementation and running an OS](tutorials/fpga.md)**
-
+* **[Instruction Tracing](corev_apu/instr_tracing/README.md)**
 
 # Directory Structure
 
