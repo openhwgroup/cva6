@@ -50,6 +50,17 @@ xlnx_clk_gen:
     clkout4_requested_out_freq: 50
     clkin1_jitter_ps: 50
 
+xlnx_dpti_clk:
+  ip: clk_wiz
+  vendor: xilinx.com
+  config:
+    prim_in_freq: 60
+    num_out_clks: 2
+    clkout2_used: true
+    clkout1_requested_out_freq: 60
+    clkout1_requested_phase: 230
+    clkout2_requested_out_freq: 60
+
 xlnx_ila:
   ip: ila
   vendor: xilinx.com
