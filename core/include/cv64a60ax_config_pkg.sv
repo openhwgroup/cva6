@@ -138,6 +138,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    InstrTlbEntries: int'(16),
    DataTlbEntries: int'(16),
    UseSharedTlb: bit'(0),
+   SvnapotEn: bit'(0),
    SharedTlbDepth: int'(64),
    NrLoadPipeRegs: int'(0),
    NrStorePipeRegs: int'(0),

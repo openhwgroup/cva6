@@ -184,6 +184,7 @@ package build_config_pkg;
     cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
     cfg.DataTlbEntries = CVA6Cfg.DataTlbEntries;
     cfg.UseSharedTlb = CVA6Cfg.UseSharedTlb;
+    cfg.SvnapotEn = CVA6Cfg.SvnapotEn;
     cfg.SharedTlbDepth = CVA6Cfg.SharedTlbDepth;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;
