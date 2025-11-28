@@ -370,6 +370,7 @@ module cva6_rvfi
   // CSR
   //----------------------------------------------------------------------------------------------------------
   // Changing verible formating to fix vivado synthesis errors and warnings
+  // verilog_format: off
   `define CONNECT_RVFI_FULL(CSR_ENABLE_COND, CSR_NAME, CSR_SOURCE_NAME) \
   always_ff @(posedge clk_i) begin \
       if (CSR_ENABLE_COND) begin \
@@ -474,4 +475,5 @@ module cva6_rvfi
     end
     ;
   end
+  // verilog_format: on
 endmodule
