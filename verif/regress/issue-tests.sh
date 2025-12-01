@@ -35,5 +35,8 @@ make -C verif/sim clean_all
 python3 cva6.py --testlist=../tests/testlist_issues.yaml --test hsv-misaligned-exception-cause --iss_yaml cva6.yaml --target cv64a6_imafdch_sv39 --iss=$DV_SIMULATORS $DV_OPTS
 make clean
 make -C verif/sim clean_all
+python3 cva6.py --testlist=../tests/testlist_issues.yaml --test hlv-misaligned-exception-cause --iss_yaml cva6.yaml --target cv64a6_imafdch_sv39 --iss=$DV_SIMULATORS $DV_OPTS
+make clean
+make -C verif/sim clean_all
 
 cd -
