@@ -242,6 +242,8 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    // Option to enable Svnapot extension
+    bit                          SvnapotEn;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -326,6 +328,7 @@ package config_pkg;
     int unsigned InstrTlbEntries;
     int unsigned DataTlbEntries;
     bit unsigned UseSharedTlb;
+    bit SvnapotEn;
     int unsigned SharedTlbDepth;
     int unsigned VpnLen;
     int unsigned PtLevels;
