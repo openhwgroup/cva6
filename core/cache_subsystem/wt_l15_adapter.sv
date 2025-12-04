@@ -79,7 +79,7 @@ module wt_l15_adapter
     output dcache_rtrn_t dcache_rtrn_o,
 
     // L15
-    output l15_req_t l15_req_o,
+    output l15_req_t  l15_req_o,
     input  l15_rtrn_t l15_rtrn_i
 );
 
@@ -125,8 +125,8 @@ module wt_l15_adapter
                                                                                                   (CVA6Cfg.DCACHE_OFFSET_WIDTH == 3'b101) ? 3'b110  : 3'b111) : 
                                                                                                   dcache_data.size + 1 :                 
                                                                  (icache_data.nc) ? 3'b011 : 3'b110;
-  assign l15_req_o.l15_threadid             = (arb_idx)        ? dcache_data.tid   : icache_data.tid;
-  assign l15_req_o.l15_prefetch             = '0; // unused in openpiton
+  assign l15_req_o.l15_threadid = (arb_idx) ? dcache_data.tid : icache_data.tid;
+  assign l15_req_o.l15_prefetch = '0;  // unused in openpiton
   assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no ECC at the moment
   assign l15_req_o.l15_blockstore = '0;  // unused in openpiton
   assign l15_req_o.l15_blockinitstore = '0;  // unused in openpiton
@@ -136,8 +136,8 @@ module wt_l15_adapter
 
   assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
   assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
-  assign l15_req_o.l15_amo_op               = l15_pkg::l15_amo_e'(logic'(dcache_data.amo_op));
-  assign l15_req_o.l15_be                   = '0; // Not supported by WT cache
+  assign l15_req_o.l15_amo_op = l15_pkg::l15_amo_e'(logic'(dcache_data.amo_op));
+  assign l15_req_o.l15_be = '0;  // Not supported by WT cache
 
 
   // openpiton is big endian

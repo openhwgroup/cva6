@@ -103,10 +103,10 @@ module cva6_hpdcache_wrapper
     input  logic                 dcache_mem_resp_read_valid_i,
     input  hpdcache_mem_resp_r_t dcache_mem_resp_read_i,
 
-    `ifdef HPDCACHE_OPENPITON
-    input  logic                          mem_resp_read_inval_i,
-    input  hpdcache_nline_t               mem_resp_read_inval_nline_i,
-    `endif
+`ifdef HPDCACHE_OPENPITON
+    input logic            mem_resp_read_inval_i,
+    input hpdcache_nline_t mem_resp_read_inval_nline_i,
+`endif
 
     input  logic              dcache_mem_req_write_ready_i,
     output logic              dcache_mem_req_write_valid_o,
@@ -390,10 +390,10 @@ module cva6_hpdcache_wrapper
       .mem_resp_read_valid_i(dcache_mem_resp_read_valid_i),
       .mem_resp_read_i      (dcache_mem_resp_read_i),
 
-      `ifdef HPDCACHE_OPENPITON
+`ifdef HPDCACHE_OPENPITON
       .mem_resp_read_inval_i(mem_resp_read_inval_i),
       .mem_resp_read_inval_nline_i(mem_resp_read_inval_nline_i),
-      `endif
+`endif
 
       .mem_req_write_ready_i(dcache_mem_req_write_ready_i),
       .mem_req_write_valid_o(dcache_mem_req_write_valid_o),

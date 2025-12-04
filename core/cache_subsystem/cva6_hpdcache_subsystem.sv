@@ -212,12 +212,12 @@ module cva6_hpdcache_subsystem
     userCfg.mshrRamByteEnable = 1'b1;
     userCfg.mshrUseRegbank = (CVA6Cfg.NrLoadBufEntries < 16);
     userCfg.refillCoreRspFeedthrough = 1'b1;
-    `ifdef HPDCACHE_OPENPITON
+`ifdef HPDCACHE_OPENPITON
     // OpenPiton needs a larger refill FIFO to store as many invalidations as in-flight requests (plus some extra to be safe)
     userCfg.refillFifoDepth = (userCfg.mshrSets * userCfg.mshrWays) + 10;
-    `else
+`else
     userCfg.refillFifoDepth = 2 * (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth);
-    `endif
+`endif
     userCfg.wbufDirEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufDataEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufWords = 1;
@@ -284,10 +284,10 @@ module cva6_hpdcache_subsystem
   logic                 dcache_write_resp_valid;
   hpdcache_mem_resp_w_t dcache_write_resp;
 
-  `ifdef HPDCACHE_OPENPITON
-  logic                 dcache_resp_read_inval;
-  hpdcache_nline_t      dcache_resp_read_inval_nline;
-  `endif
+`ifdef HPDCACHE_OPENPITON
+  logic            dcache_resp_read_inval;
+  hpdcache_nline_t dcache_resp_read_inval_nline;
+`endif
 
   cva6_hpdcache_wrapper #(
       .CVA6Cfg(CVA6Cfg),
@@ -351,10 +351,10 @@ module cva6_hpdcache_subsystem
       .dcache_mem_resp_read_valid_i(dcache_read_resp_valid),
       .dcache_mem_resp_read_i(dcache_read_resp),
 
-      `ifdef HPDCACHE_OPENPITON
+`ifdef HPDCACHE_OPENPITON
       .mem_resp_read_inval_i(dcache_resp_read_inval),
       .mem_resp_read_inval_nline_i(dcache_resp_read_inval_nline),
-      `endif
+`endif
 
       .dcache_mem_req_write_ready_i(dcache_write_ready),
       .dcache_mem_req_write_valid_o(dcache_write_valid),
@@ -369,88 +369,88 @@ module cva6_hpdcache_subsystem
       .dcache_mem_resp_write_i(dcache_write_resp)
   );
 
-///////////////////////////////////////////////////////
-// memory plumbing, either use 64bit AXI port or native
-// L15 cache interface (derived from OpenSPARC CCX).
-///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////
+  // memory plumbing, either use 64bit AXI port or native
+  // L15 cache interface (derived from OpenSPARC CCX).
+  ///////////////////////////////////////////////////////
 `ifdef PITON_ARIANE
   localparam NUM_PORTS_ADAPTER = 4;
   localparam NUM_PORTS_ADAPTER_WIDTH = $clog2(NUM_PORTS_ADAPTER);
   // Adapter HPDC-L1.5 Request Ports type
   // 0: Maximum priority 
   // NUM_PORTS_ADAPTER - 1 : Less priority 
-  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] ICACHE_PORT       = 0;
-  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] DCACHE_READ_PORT  = 1;
+  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] ICACHE_PORT = 0;
+  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] DCACHE_READ_PORT = 1;
   localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] DCACHE_WRITE_PORT = 2;
-  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] DCACHE_AMO_PORT   = 3;
+  localparam [NUM_PORTS_ADAPTER_WIDTH-1:0] DCACHE_AMO_PORT = 3;
 
   typedef logic [NUM_PORTS_ADAPTER_WIDTH-1:0] req_portid_t;
   //L15 adapter instantiation
   //{{{
   cva6_hpdcache_subsystem_l15_adapter #(
-    .CVA6Cfg                                         (CVA6Cfg),
+      .CVA6Cfg(CVA6Cfg),
 
-    .NumPorts                                        (NUM_PORTS_ADAPTER),
-    .IcachePort                                      (ICACHE_PORT),
-    .DcacheReadPort                                  (DCACHE_READ_PORT),
-    .DcacheWritePort                                 (DCACHE_WRITE_PORT),
-    .DcacheAmoPort                                   (DCACHE_AMO_PORT),
+      .NumPorts       (NUM_PORTS_ADAPTER),
+      .IcachePort     (ICACHE_PORT),
+      .DcacheReadPort (DCACHE_READ_PORT),
+      .DcacheWritePort(DCACHE_WRITE_PORT),
+      .DcacheAmoPort  (DCACHE_AMO_PORT),
 
-    .HPDcacheMemDataWidth                            (CVA6Cfg.DCACHE_LINE_WIDTH),
-    .L15BusWidth                                     (l15_pkg::L15_DATA_BUS_WIDTH),
+      .HPDcacheMemDataWidth(CVA6Cfg.DCACHE_LINE_WIDTH),
+      .L15BusWidth         (l15_pkg::L15_DATA_BUS_WIDTH),
 
-    .icache_req_t(icache_req_t),
-    .icache_rtrn_t(icache_rtrn_t),
-    .dcache_req_i_t(dcache_req_i_t),
-    .dcache_req_o_t(dcache_req_o_t),
+      .icache_req_t  (icache_req_t),
+      .icache_rtrn_t (icache_rtrn_t),
+      .dcache_req_i_t(dcache_req_i_t),
+      .dcache_req_o_t(dcache_req_o_t),
 
-    .l15_req_t(noc_req_t),
-    .l15_rtrn_t(noc_resp_t),
+      .l15_req_t (noc_req_t),
+      .l15_rtrn_t(noc_resp_t),
 
-    .hpdcache_mem_req_t                              (hpdcache_mem_req_t),
-    .hpdcache_mem_req_w_t                            (hpdcache_mem_req_w_t),
-    .hpdcache_mem_resp_r_t                           (hpdcache_mem_resp_r_t),
-    .hpdcache_mem_resp_w_t                           (hpdcache_mem_resp_w_t),
-    .hpdcache_mem_id_t                               (hpdcache_mem_id_t),
-    .hpdcache_mem_addr_t                             (hpdcache_mem_addr_t),
-    .hpdcache_nline_t                                (hpdcache_nline_t),
-    .req_portid_t                                    (req_portid_t)
+      .hpdcache_mem_req_t   (hpdcache_mem_req_t),
+      .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
+      .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
+      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .hpdcache_mem_id_t    (hpdcache_mem_id_t),
+      .hpdcache_mem_addr_t  (hpdcache_mem_addr_t),
+      .hpdcache_nline_t     (hpdcache_nline_t),
+      .req_portid_t         (req_portid_t)
   ) i_l15_adapter (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .icache_miss_valid_i                             (icache_miss_valid),
-    .icache_miss_ready_o                             (icache_miss_ready),
-    .icache_miss_i                                   (icache_miss),
+      .icache_miss_valid_i(icache_miss_valid),
+      .icache_miss_ready_o(icache_miss_ready),
+      .icache_miss_i      (icache_miss),
 
-    .icache_miss_resp_valid_o                        (icache_miss_resp_valid),
-    .icache_miss_resp_o                              (icache_miss_resp),
+      .icache_miss_resp_valid_o(icache_miss_resp_valid),
+      .icache_miss_resp_o      (icache_miss_resp),
 
-    .dcache_read_ready_o                             (dcache_read_ready),
-    .dcache_read_valid_i                             (dcache_read_valid),
-    .dcache_read_i                                   (dcache_read),
+      .dcache_read_ready_o(dcache_read_ready),
+      .dcache_read_valid_i(dcache_read_valid),
+      .dcache_read_i      (dcache_read),
 
-    .dcache_read_resp_ready_i                        (dcache_read_resp_ready),
-    .dcache_read_resp_valid_o                        (dcache_read_resp_valid),
-    .dcache_read_resp_o                              (dcache_read_resp),
+      .dcache_read_resp_ready_i(dcache_read_resp_ready),
+      .dcache_read_resp_valid_o(dcache_read_resp_valid),
+      .dcache_read_resp_o      (dcache_read_resp),
 
-    .dcache_inval_valid_o                            (dcache_resp_read_inval),
-    .dcache_inval_o                                  (dcache_resp_read_inval_nline),
+      .dcache_inval_valid_o(dcache_resp_read_inval),
+      .dcache_inval_o      (dcache_resp_read_inval_nline),
 
-    .dcache_write_ready_o                            (dcache_write_ready),
-    .dcache_write_valid_i                            (dcache_write_valid),
-    .dcache_write_i                                  (dcache_write),
+      .dcache_write_ready_o(dcache_write_ready),
+      .dcache_write_valid_i(dcache_write_valid),
+      .dcache_write_i      (dcache_write),
 
-    .dcache_write_data_ready_o                       (dcache_write_data_ready),
-    .dcache_write_data_valid_i                       (dcache_write_data_valid),
-    .dcache_write_data_i                             (dcache_write_data),
+      .dcache_write_data_ready_o(dcache_write_data_ready),
+      .dcache_write_data_valid_i(dcache_write_data_valid),
+      .dcache_write_data_i      (dcache_write_data),
 
-    .dcache_write_resp_ready_i                       (dcache_write_resp_ready),
-    .dcache_write_resp_valid_o                       (dcache_write_resp_valid),
-    .dcache_write_resp_o                             (dcache_write_resp),
+      .dcache_write_resp_ready_i(dcache_write_resp_ready),
+      .dcache_write_resp_valid_o(dcache_write_resp_valid),
+      .dcache_write_resp_o      (dcache_write_resp),
 
-    .l15_req_o                                       (noc_req_o),
-    .l15_rtrn_i                                      (noc_resp_i)
+      .l15_req_o (noc_req_o),
+      .l15_rtrn_i(noc_resp_i)
   );
   //}}}
 `else
