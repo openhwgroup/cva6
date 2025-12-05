@@ -255,6 +255,7 @@ module store_unit
   logic [CVA6Cfg.XLEN-1:0] endian_data;
 
   always_comb begin
+    endian_data = lsu_ctrl_i.data;
     if (mbe_i) begin
       case (lsu_ctrl_i.operation)
         SB, HSV_B, FSB: endian_data[7:0] = {lsu_ctrl_i.data[7:0]};
@@ -264,8 +265,6 @@ module store_unit
         endian_data[31:0] = {<<8{lsu_ctrl_i.data[31:0]}};
         default: endian_data[CVA6Cfg.XLEN-1:0] = {<<8{lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]}};
       endcase
-    end else begin
-      endian_data = lsu_ctrl_i.data;
     end
   end
 
