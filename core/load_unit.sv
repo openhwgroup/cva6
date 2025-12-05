@@ -515,6 +515,7 @@ module load_unit
   // Reversing the order of the Bytes in the data loaded from memory if mbe=1 -> which comes from the CSRregfile meaning the processor is in Big Endian Mode.
   // If mbe=1 then the processor should treat Data memory as Big Endian. The internals of CVA6 are Little endian, so we achieve this by Reversing the Byte Order to Little Endian when it enters the processor through a Load.
   always_comb begin
+    endian_data = shifted_data;
     if (mbe_i) begin
       case (ldbuf_rdata.operation)
         LB, LBU, HLV_B, HLV_BU, FLB: begin
@@ -532,8 +533,6 @@ module load_unit
           endian_data[CVA6Cfg.XLEN-1:0] = {<<8{shifted_data[CVA6Cfg.XLEN-1:0]}};
         end
       endcase
-    end else begin
-      endian_data = shifted_data; // if mbe=0, the we are in normal Little Endian mode, so just pass straight through.
     end
   end
 
