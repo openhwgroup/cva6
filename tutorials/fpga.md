@@ -48,9 +48,9 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
    - Open Quartus programmer
    - Configure HW Setup by selecting the AGF FPGA Development Kit
    - Click Auto-Detect to scan the JTAG chain
-   - In the device list, right click over device AGFB014R24B and add file (.sof)
+   - In the device list, right click over device AGFB014R24B and add file (.rbf under corev_apu/altera/output_files)
    - Click on Start button to program the FPGA
-   - Right now only baremetal is supported, so right after programming you can connect to the UART and see your CVA6 alive on Agilex!
+   - Right after programming you can connect to the UART and see your CVA6 alive on Agilex!
    - For this you need to use the JTAG UART provided with Quartus installation
 
 ```

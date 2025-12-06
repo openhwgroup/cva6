@@ -1,4 +1,3 @@
-# Quartus Pro License required to use this file
 package require -exact qsys 24.1
 
 # create the system "system"
@@ -6,7 +5,7 @@ proc do_create_system {} {
 	# create the system
 	create_system system
 	set_project_property BOARD {default}
-	set_project_property DEVICE {AGFB014R24A3E3V}
+	set_project_property DEVICE {AGFB014R24B2E2V}
 	set_project_property DEVICE_FAMILY {Agilex 7}
 	set_project_property HIDE_FROM_IP_CATALOG {false}
 	set_use_testbench_naming_pattern 0 {}
@@ -291,7 +290,7 @@ proc do_create_system {} {
 	set_component_parameter_value S2FINTERRUPT_I2CEMAC2_Enable {0}
 	set_component_parameter_value S2FINTERRUPT_L4TIMER_Enable {0}
 	set_component_parameter_value S2FINTERRUPT_NAND_Enable {0}
-	set_component_parameter_value S2FINTERRUPT_SDMMC_Enable {0}
+	set_component_parameter_value S2FINTERRUPT_SDMMC_Enable {1}
 	set_component_parameter_value S2FINTERRUPT_SPIM0_Enable {0}
 	set_component_parameter_value S2FINTERRUPT_SPIM1_Enable {0}
 	set_component_parameter_value S2FINTERRUPT_SPIS0_Enable {0}
@@ -362,6 +361,14 @@ proc do_create_system {} {
 	add_instantiation_interface_port hps_emif hps_emif_hps_to_emif hps_to_emif 4096 STD_LOGIC_VECTOR Output
 	add_instantiation_interface_port hps_emif hps_emif_emif_to_gp emif_to_gp 1 STD_LOGIC Input
 	add_instantiation_interface_port hps_emif hps_emif_gp_to_emif gp_to_emif 2 STD_LOGIC_VECTOR Output
+	add_instantiation_interface h2f_sdmmc_interrupt interrupt INPUT
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt associatedAddressablePoint {}
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt associatedClock {}
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt associatedReset {}
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt bridgedReceiverOffset {0}
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt bridgesToReceiver {}
+	set_instantiation_interface_parameter_value h2f_sdmmc_interrupt irqScheme {NONE}
+	add_instantiation_interface_port h2f_sdmmc_interrupt s2f_sdmmc_irq irq 1 STD_LOGIC Output
 	add_instantiation_interface hps_io conduit INPUT
 	set_instantiation_interface_parameter_value hps_io associatedClock {}
 	set_instantiation_interface_parameter_value hps_io associatedReset {}
@@ -2455,6 +2462,7 @@ proc do_create_system {} {
 	set_connection_parameter_value system_intel_cache_coherency_translator.m0/hps.f2h_axi_slave slaveDataWidthSysInfo {-1}
 
 	# add the exports
+	set_interface_property hps_h2f_sdmmc_interrupt EXPORT_OF hps.h2f_sdmmc_interrupt
 	set_interface_property hps_hps_io EXPORT_OF hps.hps_io
 	set_interface_property h2f_reset EXPORT_OF hps.h2f_reset
 	set_interface_property hps_h2f_axi_clock EXPORT_OF hps.h2f_axi_clock
