@@ -96,6 +96,10 @@ module cva6_ptw
   pte_cva6_t pte;
   // register to perform context switch between stages
   pte_cva6_t gpte_q, gpte_d;
+
+  //Field for SVNAPOT
+  logic is_napot_64k;
+
   assign pte = pte_cva6_t'(data_rdata_q);
 
   enum logic [2:0] {
@@ -195,6 +199,7 @@ module cva6_ptw
 
   always_comb begin : tlb_update
     shared_tlb_update_o.valid = shared_tlb_update_valid;
+    shared_tlb_update_o.is_napot_64k = is_napot_64k;
 
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
@@ -295,6 +300,7 @@ module cva6_ptw
     ptw_err_at_g_int_st_o   = 1'b0;
     ptw_access_exception_o  = 1'b0;
     shared_tlb_update_valid = 1'b0;
+    is_napot_64k            = 1'b0;
     is_instr_ptw_n          = is_instr_ptw_q;
     ptw_lvl_n               = ptw_lvl_q;
     ptw_pptr_n              = ptw_pptr_q;
@@ -408,15 +414,26 @@ module cva6_ptw
           // Invalid PTE
           // -------------
           // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
-          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64))
+          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
             state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE
           // -----------
           else begin
             state_d = LATENCY;
-            // it is a valid PTE if pte.r = 1 or pte.x = 1
+            // if pte.r = 1 or pte.x = 1 it is a valid leaf PTE
             if (pte.r || pte.x) begin
+              // A 64KiB NAPOT page is identified by the N-bit being set and PPN[3:0] encoding '1000'
+              if (CVA6Cfg.SvnapotEn && pte.n) begin
+                // Svnapot: Check if the leaf PTE represents a 64KiB NAPOT page
+                is_napot_64k = (pte.ppn[3:0] == 4'b1000) && (ptw_lvl_q[0] == 2);
+                // Svnapot: Any other encoding with the N-bit set is a reserved format and must cause a page fault
+                // Additionally, fault if N is set on a megapage or gigapage
+                if (!is_napot_64k) begin
+                  state_d = PROPAGATE_ERROR;
+                end
+              end
+
               if (CVA6Cfg.RVH) begin
                 case (ptw_stage_q)
                   S_STAGE: begin
