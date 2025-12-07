@@ -52,7 +52,8 @@ all: create_project \
 	write_source_files \
 	write_timing_constraints \
 	generate_ips \
-	sta
+	sta \
+	rbf
 
 clean:
 	$(RM) -rf *.rpt *.chg smart.log *.htm *.eqn *.pin *.sof *.pof db incremental_db *.summary *.smsg *.jdi $(ASSIGNMENT_FILES)
@@ -164,12 +165,16 @@ sta: asm
 	@echo "Running Quartus Timing Analysis"
 	$(QUARTUS_PATH)quartus_sta $(PROJECT) --do_report_timing
 
+rbf: sta
+	@echo "Running Quartus Prime Programming File Generator"
+	$(QUARTUS_PATH)/quartus_pfg -c output_files/*.sof output_files/cva6-hps.rbf -o hps_path=u-boot-spl-dtb.hex
+
+
 clean:
 	@echo "Cleaning project files"
 	rm -f $(PROJECT).qsf $(PROJECT).qpf $(PROJECT).map.rpt $(PROJECT).fit.rpt $(PROJECT).asm.rpt $(PROJECT).sta.rpt
 	rm -f interconnect.qsys*
 	rm -f *.backup
-	rm -f *.hex
 	rm -f *.txt
 	rm -f *.ip
 	rm -f ip/board.info
