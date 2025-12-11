@@ -1,18 +1,23 @@
-// Copyright 2021 Thales DIS design services SAS
-//
-// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
-// You may obtain a copy of the License at https://solderpad.org/licenses/
-//
-// Original Author: Jean-Roch COULON - Thales
-//
-// Copyright 2023 Commissariat a l'Energie Atomique et aux Energies
-//                Alternatives (CEA)
-//
-// Author: Tanuj Khandelwal - CEA
-// Date: January, 2025
-// Description: CVA6 configuration package using the HPDcache as cache subsystem
+/*
+ *  Copyright (c) 2025 CEA*
+ *  *Commissariat a l'Energie Atomique et aux Energies Alternatives (CEA)
+ *
+ *  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+ *
+ *  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
+ *  may not use this file except in compliance with the License, or, at your
+ *  option, the Apache License version 2.0. You may obtain a copy of the
+ *  License at
+ *
+ *  https://solderpad.org/licenses/SHL-2.1/
+ *
+ *  Unless required by applicable law or agreed to in writing, any work
+ *  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
+ */
+
 
 
 package cva6_config_pkg;
@@ -24,29 +29,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiAddrWidth = 39;
   localparam CVA6ConfigAxiDataWidth = 128;
   localparam CVA6ConfigDataUserWidth = 12;
-
-
-`ifndef __UVMA_AXI_MACROS_SV__
-  `define __UVMA_AXI_MACROS_SV__
-
-  `define IFNDEF_DEFINE(name, value) \
-    `ifndef name \
-      `define name value \
-  `endif
-
-  `define UVMA_AXI_ADDR_MAX_WIDTH 39
-  `define UVMA_AXI_DATA_MAX_WIDTH 128
-  `define UVMA_AXI_USER_MAX_WIDTH 12
-  `define UVMA_AXI_ID_MAX_WIDTH 4
-  // `IFNDEF_DEFINE(UVMA_AXI_STRB_MAX_WIDTH , 8   )
-
-  `define UVMA_AXI_MAX_NB_TXN_BURST 256
-  `define UVMA_AXI_LOOP_MAX_WIDTH 8  
-  `define UVMA_AXI_MMUSID_MAX_WIDTH 32 
-  `define UVMA_AXI_MMUSSID_MAX_WIDTH 20 
-
-`endif  // __UVMA_AXI_MACROS_SV__
-
 
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
@@ -65,9 +47,9 @@ package cva6_config_pkg;
       NrLoadBufEntries: unsigned'(8),
       RVF: bit'(1),
       RVD: bit'(1),
-      XF16: bit'(0),
-      XF16ALT: bit'(0),
-      XF8: bit'(0),
+      XF16: bit'(1),
+      XF16ALT: bit'(1),
+      XF8: bit'(1),
       RVA: bit'(1),
       RVB: bit'(1),
       ZKN: bit'(0),
