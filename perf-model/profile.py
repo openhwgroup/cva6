@@ -29,7 +29,7 @@ class AsmFunc:
         return self.vma + self.size
 
     def contains(self, addr):
-        return self.start_addr() <= addr and addr <= self.end_addr()
+        return self.start_addr() <= addr and addr < self.end_addr()
 
     def load_elf(path):
         with open(path, "r", encoding="utf8") as f:
