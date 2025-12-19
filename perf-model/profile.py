@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import subprocess
+import sys
 import re
 
 import pstats
@@ -33,10 +34,9 @@ class AsmFunc:
         return self.start_addr() <= addr and addr <= self.end_addr()
 
     def load_elf(path):
-        objdump = "/shares/common/tools/gcc-13.1.0/bin/riscv-none-elf-objdump"
-        out = subprocess.check_output([objdump, "-h", path]).decode("utf-8")
-        lines = [l for l in out.split("\n") if ".text." in l]
-        return [AsmFunc._from_line(l.split()) for l in lines]
+        with open(path, "r", encoding="utf8") as f:
+            lines = f.readlines()
+        return [AsmFunc._from_line(l.split()) for l in lines if ".text." in l]
 
     def _from_line(line):
         return AsmFunc(
@@ -339,10 +339,9 @@ def filter_events(events, func_name):
     return [e for e in events if func_name not in e.stack]
 
 if __name__ == "__main__":
-    #elf_file = "pqc/32.o"
-    #trace_file = "pqc/32.log"
-    elf_file = "out_2025-03-28/directed_c_tests/main.o"
-    trace_file = "out_2025-03-28/veri-testharness_sim/main.hwconfig.log"
+    assert len(sys.argv) == 3
+    elf_file = sys.argv[1]
+    trace_file = sys.argv[2]
 
     functions = AsmFunc.load_elf(elf_file)
     instructions = RvfiInstr.load_trace(trace_file)
