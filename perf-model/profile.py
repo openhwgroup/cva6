@@ -3,8 +3,6 @@ import subprocess
 import sys
 import re
 
-import pstats
-
 import flameprof
 
 import isa
@@ -192,16 +190,6 @@ def run_all(fns, instrs):
         print(hex(addr), count, "stores")
     return events
 
-#def build_situations(events, key):
-#    situations = {}
-#    for e in events:
-#        k = key(e)
-#        if k in situations:
-#            situations[k] += e.duration
-#        else:
-#            situations[k] = e.duration
-#    return situations
-
 def fake_file(func):
     return ("", 1, func)
 
@@ -314,21 +302,6 @@ def format_stack_change(old_stack, new_stack):
         return f"CALL {new_stack[-1]} (in {old_stack})"
     return None
 
-def print_stats(stats):
-    for func, stat in stats.items():
-        print(f'- {func}:')
-        print('    cc:', stat.cc)
-        print('    nc:', stat.nc)
-        print('    tt:', stat.tt)
-        print('    ct:', stat.ct)
-        print('    callers:')
-        for caller, cstat in stat.callers.items():
-            print(f'    - {caller}:')
-            print('        cc:', cstat[0])
-            print('        nc:', cstat[1])
-            print('        tt:', cstat[2])
-            print('        ct:', cstat[3])
-
 def render(stats, svg_path):
     stats = { fake_file(func): stat.build() for func, stat in stats.items() }
 
@@ -348,24 +321,12 @@ if __name__ == "__main__":
 
     events = run_all(functions, instructions)
 
-    #for size in ['128', '256']:
-    #    events = filter_events(events, f'shake{size}_inc_init')
-    #    events = filter_events(events, f'PQCLEAN_DILITHIUM3_CLEAN_dilithium_shake{size}_stream_init')
-    #    events = filter_events(events, f'shake{size}_inc_squeeze')
-    #    events = filter_events(events, f'shake{size}_inc_absorb')
-    #    events = filter_events(events, f'shake{size}_inc_finalize')
-    #    events = filter_events(events, f'shake{size}_inc_ctx_release')
-    #events = filter_events(events, 'shake256')
-
-    #events = filter_events(events, 'PQCLEAN_DILITHIUM3_CLEAN_montgomery_reduce')
-
     i_event = 0
     for instr in instructions:
         if i_event < len(events) and events[i_event].instr is instr:
             print(">>>", format_stack_change(events[i_event-1].stack, events[i_event].stack))
             i_event += 1
         print(instr.line)
-        #print(instr.next_line)
 
     stats = build_stats(events)
     duration = sum(map(lambda e: e.duration, events))
@@ -381,39 +342,3 @@ if __name__ == "__main__":
     for ipc, func in ipcs:
         print(f"{ipc:.02f} IPC for {func}")
     render(stats, 'result-base.svg')
-
-    #r = lambda op, d, n, tt: f"{d}/{n}={d/n:.01f} cycles per {op}, {d/tt*100:.01f}% of duration"
-    #report = lambda op, d, n, tt: r(op, d, n, tt) if n > 0 else f"no {op}s"
-
-    #mem_usage = lambda s: (s.dloads + s.dstores) / s.tt if s.tt > 0 else 0
-    #by_mem_usage = sorted(list(stats.items()), key=lambda s: mem_usage(s[1]), reverse=True)
-
-    #dloads_tot = dstores_tot = nloads_tot = nstores_tot = 0
-    #for func, stat in by_mem_usage:
-    #    dloads_tot += stat.dloads
-    #    dstores_tot += stat.dstores
-    #    nloads_tot += stat.nloads
-    #    nstores_tot += stat.nstores
-    #    if stat.tt > 0:
-    #        load_report = report('load', stat.dloads, stat.nloads, stat.tt)
-    #        store_report = report('store', stat.dstores, stat.nstores, stat.tt)
-    #        mem_report = report('mem', stat.dloads + stat.dstores, stat.nloads + stat.nstores, stat.tt)
-    #        print(f"in {func}:")
-    #        print(f"    {load_report}")
-    #        print(f"    {store_report}")
-    #        print(f"    {mem_report}")
-    #print(report('load', dloads_tot, nloads_tot, duration))
-    #print(report('store', dstores_tot, nstores_tot, duration))
-    #print(report('mem', dloads_tot + dstores_tot, nloads_tot + nstores_tot, duration))
-
-    #situations = build_situations(events, lambda e: ' '.join(e.stack))
-    #leaves = build_situations(events, lambda e: e.stack[-1] if len(e.stack) > 0 else "")
-    #limited = build_situations(events, lambda e: ' '.join(e.stack[:5]) if len(e.stack) > 0 else "")
-
-    #for s in [situations, leaves, limited]:
-    #    items = list(s.items())
-    #    items.sort(key=lambda t: t[0], reverse=False)
-    #    for stack, duration in items:
-    #        print(stack, duration)
-    #    total = sum(s.values())
-    #    print(total)
