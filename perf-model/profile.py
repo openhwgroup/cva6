@@ -323,8 +323,8 @@ if __name__ == "__main__":
 
     i_event = 0
     for instr in instructions:
-        if i_event < len(events) and events[i_event].instr is instr:
-            print(">>>", format_stack_change(events[i_event-1].stack, events[i_event].stack))
+        if i_event < len(events)-1 and events[i_event].instr is instr:
+            print(">>>", format_stack_change(events[i_event].stack, events[i_event+1].stack))
             i_event += 1
         print(instr.line)
 
