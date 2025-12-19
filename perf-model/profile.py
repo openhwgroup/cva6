@@ -335,9 +335,7 @@ if __name__ == "__main__":
     print("icount:", icount)
     print("IPC:", icount / duration)
 
-    ipcs = []
-    for func, stat in stats.items():
-        ipcs.append((stat.ipc(), func))
+    ipcs = [(stat.ipc(), func) for func, stat in stats.items()]
     ipcs.sort(reverse=True)
     for ipc, func in ipcs:
         print(f"{ipc:.02f} IPC for {func}")
