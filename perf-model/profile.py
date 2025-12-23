@@ -49,11 +49,12 @@ class AsmFunc:
 
 @dataclass
 class RvfiInstr:
-    def __init__(self, address, cycle, op, line, next_line=None):
+    def __init__(self, address, cycle, op, name, line, next_line=None):
         self.address = address
         self.cycle = cycle
         self.op = isa.Instr(op)
         self.line = line
+        self.name = name
         self.mem_address = None
         if self.op.is_load() or self.op.is_store():
             assert(next_line is not None)
@@ -75,6 +76,7 @@ class RvfiInstr:
                     cycle = int(found.group(4)),
                     op = int(found.group(3), 16),
                     line = line,
+                    name = found.group(5).split(" ")[0],
                     next_line = lines[i+1] if i + 1 < len(lines) else None,
                 )
                 instrs.append(instr)
@@ -117,25 +119,35 @@ class Event:
     instr: RvfiInstr
     duration: int
     icount: int
+    executed_ins : dict
 
 def run_all(fns, instrs):
     events = []
     cs = CallStack(fns)
-    cycle = icount = dcycle = 0
+    last_event_cycle = 0
+    last_event_i = 0
+    last_instr_cycle = 0
+    executed_ins = {}
+
     for i, instr in enumerate(instrs):
-        dcycle = instr.cycle
+        count, tot_duration = executed_ins.get(instr.name, (0, 0))
+        count += 1
+        tot_duration += instr.cycle - last_instr_cycle
+        executed_ins[instr.name] = count, tot_duration  
+        last_instr_cycle = instr.cycle
 
         event = cs.run(instr)
         if event:
             events.append(Event(
                 stack = event.stack,
                 instr = instr,
-                duration = event.cycle - cycle,
-                icount = i - icount,
+                duration = event.cycle - last_event_cycle,
+                icount = i - last_event_i,
+                executed_ins = executed_ins,
             ))
-            cycle = event.cycle
-            icount = i
-
+            last_event_cycle = event.cycle
+            last_event_i = i
+            executed_ins = {}
 
     return events
 
@@ -173,7 +185,7 @@ def put_stat(d, name):
     if not name in d:
         d[name] = Stat()
 
-def build_stats(events):
+def build_stats(events, inst_analysis=False):
     stats = {}
     last_stack = []
 
@@ -183,8 +195,16 @@ def build_stats(events):
         stack = event.stack
         # Current function, in the which event.duration has been spent
         func = stack[-1]
-        duration = event.duration
         put_stat(stats, func)
+        # All time is spent inside instructions
+        duration = 0 if inst_analysis else event.duration
+
+        if inst_analysis:
+            for instr_name, (count, d) in event.executed_ins.items():
+                put_stat(stats, instr_name)
+                stats[instr_name].tt += d
+                stats[instr_name].ct += d
+                stats[instr_name].add_caller(func, 0, count, d, d)
 
         # Spent duration right into func
         stats[func].tt += duration
@@ -192,7 +212,7 @@ def build_stats(events):
 
         # Spent duration in func and its parents
         for f in stack:
-            stats[f].ct += duration
+            stats[f].ct += event.duration
 
         # Spent duration while being called directly by caller
         if len(stack) > 1:
@@ -203,7 +223,7 @@ def build_stats(events):
         for i, callee in enumerate(stack):
             if i > 0:
                 caller = stack[i - 1]
-                stats[callee].add_caller(caller, 0, 0, 0, duration)
+                stats[callee].add_caller(caller, 0, 0, 0, event.duration)
 
         if len(event.stack) >= len(last_stack):
             # Make sure it is a call
@@ -252,9 +272,11 @@ def filter_events(events, func_name):
     return [e for e in events if func_name not in e.stack]
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 3
+    assert len(sys.argv) == 4
     elf_file = sys.argv[1]
     trace_file = sys.argv[2]
+    path_svg = sys.argv[3]
+    assert path_svg.endswith(".svg")
 
     functions = AsmFunc.load_elf(elf_file)
     instructions = RvfiInstr.load_trace(trace_file)
@@ -279,4 +301,10 @@ if __name__ == "__main__":
     ipcs.sort(reverse=True)
     for ipc, func in ipcs:
         print(f"{ipc:.02f} IPC for {func}")
-    render(stats, 'result-base.svg')
+
+    render(stats, path_svg)
+
+    stats = build_stats(events, True)
+    for f, s in stats.items():
+        print(f"{f}: {s.ct}")
+    render(stats, f"{path_svg[:-4]}_with_ins.svg")
