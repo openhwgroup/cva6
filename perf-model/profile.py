@@ -262,11 +262,11 @@ def format_stack_change(old_stack, new_stack):
         return f"CALL {new_stack[-1]} (in {old_stack})"
     return None
 
-def render(stats, svg_path):
+def render(stats, svg_path, threshold=0):
     stats = { fake_file(func): stat.build() for func, stat in stats.items() }
 
     with open(svg_path, 'w') as f:
-        flameprof.render(stats, f, width=1920)
+        flameprof.render(stats, f, width=3000, threshold=threshold)
 
 def filter_events(events, func_name):
     return [e for e in events if func_name not in e.stack]
