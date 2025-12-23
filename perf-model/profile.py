@@ -175,13 +175,12 @@ def put_stat(d, name):
 
 def build_stats(events):
     stats = {}
-    stack = []
+    last_stack = []
 
     for event in events:
-        if len(event.stack) == 0 or len(stack) == 0:
-            stack = event.stack
+        if len(event.stack) == 0:
             continue
-
+        stack = event.stack
         # Current function, in the which event.duration has been spent
         func = stack[-1]
         duration = event.duration
@@ -206,15 +205,15 @@ def build_stats(events):
                 caller = stack[i - 1]
                 stats[callee].add_caller(caller, 0, 0, 0, duration)
 
-        if len(event.stack) >= len(stack):
+        if len(event.stack) >= len(last_stack):
             # Make sure it is a call
-            assert len(event.stack) <= len(stack) + 1
+            assert len(event.stack) == len(last_stack) + 1
         else:
             # Make sure it is a ret
-            assert len(event.stack) == len(stack) - 1
+            assert len(event.stack) == len(last_stack) - 1
 
-            callee = func
-            caller = event.stack[-1]
+            callee = last_stack[-1]
+            caller = func
             put_stat(stats, caller)
 
             # The caller called the callee once
@@ -224,7 +223,7 @@ def build_stats(events):
             stats[callee].cc += c_cc
             stats[callee].nc += 1
 
-        stack = event.stack
+        last_stack = stack
 
     return stats
 
