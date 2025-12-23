@@ -80,6 +80,24 @@ Feel free to modify the script to suit your needs.
 diff -y traceout.log model.log | less
 ```
 
+## RVFI-based Flamegraph Profiler
+
+This tool generates execution profile visualizations and performance metrics from CVA6 RISC-V trace logs.
+The profiler processes RVFI traces with cycle number (cf Adapt RVFI trace generation) and produces two complementary flamegraph outputs: a standard cycle-attribution and an instruction-level breakdown variant.
+
+```bash
+python perf-model/profile.py dumpfile.dump traceout.log svg_name.svg
+```
+
+**Parameters:**
+- `dumpfile.dump`: ELF binary dump file (generated via `riscv-none-elf-objdump -h test_name.o`)
+- `traceout.log`: RVFI execution trace file from CVA6 simulation
+- `svg_name.svg`: Output flamegraph basename (generates `svg_name.svg` and `svg_name_with_ins.svg`)
+
+**Outputs:**
+- `svg_name.svg`: Cycle-based flamegraph showing execution hotspots by cycle attribution
+- `svg_name_with_ins.svg`: Instruction-level flamegraph with per-instruction cost breakdown
+
 
 ## Files
 
@@ -88,6 +106,7 @@ diff -y traceout.log model.log | less
 | `cycle_diff.py` | Calculates duration of each instruction in an RVFI trace |
 | `isa.py`        | Module to create Python objects from RISC-V instructions |
 | `model.py`      | The CVA6 performance model                               |
+| `profile.py`    | RVFI-based flamegraph profiler                           |
 
 
 ## Citing
