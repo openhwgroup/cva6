@@ -1182,9 +1182,9 @@ module decoder
               unique case (instr.itype.funct3)
                 3'b001: begin
                   if (instr.instr[31:25] == 7'b0110000) begin
-                    if (instr.instr[21:20] == 2'b10) instruction_o.op = ariane_pkg::CPOPW;
-                    else if (instr.instr[21:20] == 2'b00) instruction_o.op = ariane_pkg::CLZW;
-                    else if (instr.instr[21:20] == 2'b01) instruction_o.op = ariane_pkg::CTZW;
+                    if (instr.instr[24:20] == 5'b00010) instruction_o.op = ariane_pkg::CPOPW;
+                    else if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::CLZW;
+                    else if (instr.instr[24:20] == 5'b00001) instruction_o.op = ariane_pkg::CTZW;
                     else illegal_instr_bm = 1'b1;
                   end else if (instr.instr[31:26] == 6'b000010) begin
                     instruction_o.op = ariane_pkg::SLLIUW; // Shift Left Logic by Immediate (Unsigned Word)
