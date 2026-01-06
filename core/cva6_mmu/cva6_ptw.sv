@@ -163,6 +163,8 @@ module cva6_ptw
   assign req_port_o.data_id = '0;
   // user field not used
   assign req_port_o.data_wuser = '0;
+  // not a write
+  assign req_port_o.cbo_op = ariane_pkg::CBO_NONE;
 
   // -----------
   // TLB Update

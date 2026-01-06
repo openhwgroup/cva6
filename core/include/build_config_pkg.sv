@@ -79,6 +79,7 @@ package build_config_pkg;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
     cfg.CoproType = CVA6Cfg.CoproType;
     cfg.RVZiCond = CVA6Cfg.RVZiCond;
+    cfg.RVZiCbom = CVA6Cfg.RVZiCbom;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;

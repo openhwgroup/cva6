@@ -20,7 +20,8 @@ module store_unit
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
-    parameter type lsu_ctrl_t = logic
+    parameter type lsu_ctrl_t = logic,
+    parameter type cbo_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -135,6 +136,7 @@ module store_unit
   logic [(CVA6Cfg.XLEN/8)-1:0] st_be_n, st_be_q;
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
+  cbo_t cbo_op_d, cbo_op_q;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
@@ -273,6 +275,17 @@ module store_unit
     end else begin
       amo_op_d = AMO_NONE;
     end
+
+    if (CVA6Cfg.RVZiCbom) begin
+      case (lsu_ctrl_i.operation)
+        ariane_pkg::CBO_INVAL: cbo_op_d = ariane_pkg::CBO_INVAL;
+        ariane_pkg::CBO_CLEAN: cbo_op_d = ariane_pkg::CBO_CLEAN;
+        ariane_pkg::CBO_FLUSH: cbo_op_d = ariane_pkg::CBO_FLUSH;
+        default:               cbo_op_d = ariane_pkg::CBO_NONE;
+      endcase
+    end else begin
+      cbo_op_d = ariane_pkg::CBO_NONE;
+    end
   end
 
   logic store_buffer_valid, amo_buffer_valid;
@@ -288,9 +301,10 @@ module store_unit
   // Store Queue
   // ---------------
   store_buffer #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg       (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dcache_req_o_t(dcache_req_o_t),
+      .cbo_t         (cbo_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,
@@ -313,6 +327,7 @@ module store_unit
       .paddr_i,
       .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .data_i               (st_data_q),
+      .cbo_op_i             (cbo_op_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
       .req_port_i           (req_port_i),
@@ -353,6 +368,7 @@ module store_unit
       st_data_size_q <= '0;
       trans_id_q     <= '0;
       amo_op_q       <= AMO_NONE;
+      cbo_op_q       <= ariane_pkg::CBO_NONE;
     end else begin
       state_q        <= state_d;
       st_be_q        <= st_be_n;
@@ -360,6 +376,7 @@ module store_unit
       trans_id_q     <= trans_id_n;
       st_data_size_q <= st_data_size_n;
       amo_op_q       <= amo_op_d;
+      cbo_op_q       <= cbo_op_d;
     end
   end
 

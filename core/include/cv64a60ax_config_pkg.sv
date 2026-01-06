@@ -77,6 +77,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    RVZCMT: bit'(0),
    RVZCB: bit'(1),
    RVZCMP: bit'(0),
+   RVZiCbom: bit'(0),
    XFVec: bit'(0),
    CvxifEn: bit'(1),
    CoproType: config_pkg::COPRO_EXAMPLE,

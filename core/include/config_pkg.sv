@@ -84,6 +84,8 @@ package config_pkg;
     bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
+    // Zicbom RISC-V extension (cache management / CBO)
+    bit                          RVZiCbom;
     // Zicntr RISC-V extension
     bit                          RVZicntr;
     // Zihpm RISC-V extension
@@ -296,6 +298,7 @@ package config_pkg;
     bit          CvxifEn;
     copro_type_t CoproType;
     bit          RVZiCond;
+    bit          RVZiCbom;
     bit          RVZicntr;
     bit          RVZihpm;
 
