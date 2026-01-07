@@ -154,6 +154,7 @@ package cva6_config_pkg;
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
       DcacheFlushOnFence: bit'(0),
+      DcacheFlushOnFenceI: bit'(0),
       DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: unsigned'(CVA6ConfigDataUserEn),
       WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),

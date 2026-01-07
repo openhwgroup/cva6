@@ -161,6 +161,7 @@ package build_config_pkg;
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
 
     cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
+    cfg.DcacheFlushOnFenceI = CVA6Cfg.DcacheFlushOnFenceI;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
 
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
