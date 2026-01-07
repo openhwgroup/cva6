@@ -408,9 +408,9 @@ module cva6_ptw
       end
 
       KILL_REQ: begin
-          kill_req_n = 1'b0;
-          // even when killed, the request sends a response
-          state_d = WAIT_RVALID;
+        kill_req_n = 1'b0;
+        // even when killed, the request sends a response
+        state_d = WAIT_RVALID;
       end
 
       PTE_LOOKUP: begin
@@ -636,10 +636,8 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if ((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q)
-        state_d = WAIT_RVALID;
-      else if (state_q != WAIT_GRANT)
-        state_d = LATENCY;
+      if ((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) state_d = WAIT_RVALID;
+      else if (state_q != WAIT_GRANT) state_d = LATENCY;
 
       kill_req_n = (state_q == WAIT_GRANT);
     end
