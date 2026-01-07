@@ -238,7 +238,7 @@ module cva6_ptw
   end
 
   assign req_port_o.tag_valid = tag_valid_q;
-  assign req_port_o.kill_req  = kill_req_q;
+  assign req_port_o.kill_req  = (state_q == KILL_REQ);
 
   logic allow_access;
 
@@ -294,7 +294,7 @@ module cva6_ptw
     // default assignments
     // PTW memory interface
     tag_valid_n             = 1'b0;
-    kill_req_n              = 1'b0;
+    kill_req_n              = kill_req_q;
     req_port_o.data_req     = 1'b0;
     req_port_o.data_size    = 2'(CVA6Cfg.PtLevels);
     req_port_o.data_we      = 1'b0;
@@ -395,17 +395,22 @@ module cva6_ptw
         end
       end
 
-      WAIT_GRANT, KILL_REQ: begin
+      WAIT_GRANT: begin
         // send a request out
         req_port_o.data_req = 1'b1;
         // wait for the WAIT_GRANT
         if (req_port_i.data_gnt) begin
           // send the tag valid signal one cycle later
-          // exception: when killing the request, do not send tag valid
-          tag_valid_n = (state_q == PTE_LOOKUP);
-          kill_req_n  = (state_q == KILL_REQ);
-          state_d     = (state_q == KILL_REQ) ? LATENCY : PTE_LOOKUP;
+          tag_valid_n = 1'b1;
+          // if the request has been flushed, kill it one cycle later
+          state_d = (kill_req_q || flush_i) ? KILL_REQ : PTE_LOOKUP;
         end
+      end
+
+      KILL_REQ: begin
+          kill_req_n = 1'b0;
+          // even when killed, the request sends a response
+          state_d = WAIT_RVALID;
       end
 
       PTE_LOOKUP: begin
@@ -631,17 +636,12 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+      if ((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q)
         state_d = WAIT_RVALID;
-      else state_d = LATENCY;
+      else if (state_q != WAIT_GRANT)
+        state_d = LATENCY;
 
-      if(state_q == WAIT_GRANT && CVA6Cfg.DCacheType inside {
-        config_pkg::HPDCACHE_WT,
-        config_pkg::HPDCACHE_WB,
-        config_pkg::HPDCACHE_WT_WB}) begin
-        // need to finish request / wait for grant and rvalid so we can get correct data next time
-        state_d = KILL_REQ;
-      end
+      kill_req_n = (state_q == WAIT_GRANT);
     end
   end
 
