@@ -166,6 +166,9 @@ module cva6
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
+
+    localparam type cbo_t = logic [7:0],
+
     localparam type fu_data_t = struct packed {
       fu_t                              fu;
       fu_op                             operation;
@@ -207,6 +210,7 @@ module cva6
       logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
       logic                                  kill_req;
       logic                                  tag_valid;
+      cbo_t                                  cbo_op;
     },
 
     localparam type dcache_req_o_t = struct packed {
@@ -594,6 +598,8 @@ module cva6
   // trigger module
   logic debug_from_trigger;
   logic break_from_trigger;
+  riscv::cbie_t mcbie, scbie, hcbie;
+  logic mcbcfe, scbcfe, hcbcfe;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -750,6 +756,12 @@ module cva6
       .vtw_i               (vtw_csr_id),
       .tsr_i               (tsr_csr_id),
       .hu_i                (hu),
+      .mcbie_i             (mcbie),
+      .scbie_i             (scbie),
+      .hcbie_i             (hcbie),
+      .mcbcfe_i            (mcbcfe),
+      .scbcfe_i            (scbcfe),
+      .hcbcfe_i            (hcbcfe),
       .hart_id_i           (hart_id_i),
       .compressed_ready_i  (x_compressed_ready),
       .compressed_resp_i   (x_compressed_resp),
@@ -958,7 +970,8 @@ module cva6
       .lsu_ctrl_t(lsu_ctrl_t),
       .x_result_t(x_result_t),
       .acc_mmu_req_t(acc_mmu_req_t),
-      .acc_mmu_resp_t(acc_mmu_resp_t)
+      .acc_mmu_resp_t(acc_mmu_resp_t),
+      .cbo_t(cbo_t)
   ) ex_stage_i (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -1224,6 +1237,12 @@ module cva6
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
+      .mcbie_o                 (mcbie),
+      .scbie_o                 (scbie),
+      .hcbie_o                 (hcbie),
+      .mcbcfe_o                (mcbcfe),
+      .scbcfe_o                (scbcfe),
+      .hcbcfe_o                (hcbcfe),
       .jvt_o                   (jvt),
       //RVFI
       .rvfi_csr_o              (rvfi_csr),
