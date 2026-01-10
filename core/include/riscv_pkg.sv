@@ -49,6 +49,13 @@ package riscv;
     Dirty   = 2'b11
   } xs_t;
 
+  typedef enum logic [1:0] {
+    CBIE_ILLEGAL = 2'b00, // execution of CBO.INVAL in lower privilege mode causes illegal instruction / virtual instruction exception
+    CBIE_FLUSH = 2'b01,  // CBO.INVAL causes flush
+    CBIE_RSVD = 2'b10,  // reserved
+    CBIE_INVAL = 2'b11  // CBO.INVAL causes invalidate
+  } cbie_t;
+
   typedef struct packed {
     logic sd;  // signal dirty state - read-only
     logic [62:34] wpri6;  // writes preserved reads ignored

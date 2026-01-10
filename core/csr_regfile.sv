@@ -126,6 +126,18 @@ module csr_regfile
     output logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_o,
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_o,
+    // machine-mode cache block invalidate enable - ID_STAGE
+    output riscv::cbie_t mcbie_o,
+    // supervisor-mode cache block invalidate enable - ID_STAGE
+    output riscv::cbie_t scbie_o,
+    // hypervisor-mode cache block invalidate enable - ID_STAGE
+    output riscv::cbie_t hcbie_o,
+    // machine-mode clean/flush cache block invalidate enable - ID_STAGE
+    output logic mcbcfe_o,
+    // supervisor-mode clean/flush cache block invalidate enable - ID_STAGE
+    output logic scbcfe_o,
+    // hypervisor-mode clean/flush cache block invalidate enable - ID_STAGE
+    output logic hcbcfe_o,
     // external interrupt in - SUBSYSTEM
     input logic [1:0] irq_i,
     // inter processor interrupt -> connected to machine mode sw - SUBSYSTEM
@@ -301,6 +313,10 @@ module csr_regfile
   logic break_from_trigger;
   logic debug_from_trigger;
   logic debug_from_mcontrol;
+
+  // CBO enable flags from menvcfg/senvcfg/henvcfg
+  riscv::cbie_t mcbie_q, mcbie_d, scbie_q, scbie_d, hcbie_q, hcbie_d;
+  logic mcbcfe_q, mcbcfe_d, scbcfe_q, scbcfe_d, hcbcfe_q, hcbcfe_d;
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -508,9 +524,17 @@ module csr_regfile
             read_access_exception = 1'b1;
           end
         end
-        riscv::CSR_SENVCFG:
-        if (CVA6Cfg.RVS) csr_rdata = '0 | fiom_q;
-        else read_access_exception = 1'b1;
+        riscv::CSR_SENVCFG: begin
+          if (CVA6Cfg.RVS) begin
+            csr_rdata = '0 | fiom_q;
+            if (CVA6Cfg.RVZiCbom) begin
+              csr_rdata[5:4] = scbie_q;
+              csr_rdata[6]   = scbcfe_q;
+            end
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         // hypervisor mode registers
         riscv::CSR_HSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = hstatus_q[CVA6Cfg.XLEN-1:0];
@@ -545,9 +569,17 @@ module csr_regfile
         riscv::CSR_HGEIP:
         if (CVA6Cfg.RVH) csr_rdata = '0;
         else read_access_exception = 1'b1;
-        riscv::CSR_HENVCFG:
-        if (CVA6Cfg.RVH) csr_rdata = '0 | {{CVA6Cfg.XLEN - 1{1'b0}}, fiom_q};
-        else read_access_exception = 1'b1;
+        riscv::CSR_HENVCFG: begin
+          if (CVA6Cfg.RVH) begin
+            csr_rdata = '0 | {{CVA6Cfg.XLEN - 1{1'b0}}, fiom_q};
+            if (CVA6Cfg.RVZiCbom) begin
+              csr_rdata[5:4] = hcbie_q;
+              csr_rdata[6]   = hcbcfe_q;
+            end
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_HGATP: begin
           if (CVA6Cfg.RVH) begin
             // intercept reads to HGATP if in HS-Mode and TVM is enabled
@@ -592,8 +624,17 @@ module csr_regfile
         else read_access_exception = 1'b1;
         riscv::CSR_MIP: csr_rdata = mip_q;
         riscv::CSR_MENVCFG: begin
-          if (CVA6Cfg.RVU) csr_rdata = '0 | fiom_q;
-          else read_access_exception = 1'b1;
+          csr_rdata = '0;
+          if (CVA6Cfg.RVU) begin
+            csr_rdata = '0 | fiom_q;
+          end
+          if (CVA6Cfg.RVZiCbom) begin
+            csr_rdata[5:4] = mcbie_q;
+            csr_rdata[6]   = mcbcfe_q;
+          end
+          if (!CVA6Cfg.RVU && !CVA6Cfg.RVZiCbom) begin
+            read_access_exception = 1'b1;
+          end
         end
         riscv::CSR_MENVCFGH: begin
           if (CVA6Cfg.RVU && CVA6Cfg.XLEN == 32) csr_rdata = '0;
@@ -1051,6 +1092,14 @@ module csr_regfile
     pmpcfg_d               = pmpcfg_q;
     pmpaddr_d              = pmpaddr_q;
 
+    mcbie_d                = mcbie_q;
+    scbie_d                = scbie_q;
+    hcbie_d                = hcbie_q;
+
+    mcbcfe_d               = mcbcfe_q;
+    scbcfe_d               = scbcfe_q;
+    hcbcfe_d               = hcbcfe_q;
+
     // trigger module defaults
     tdata1_to_tm           = '0;
     tdata2_to_tm           = '0;
@@ -1331,9 +1380,22 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
-        riscv::CSR_SENVCFG:
-        if (CVA6Cfg.RVU) fiom_d = csr_wdata[0];
-        else update_access_exception = 1'b1;
+        riscv::CSR_SENVCFG: begin
+          if (CVA6Cfg.RVS) begin
+            fiom_d = csr_wdata[0];
+            if (CVA6Cfg.RVZiCbom) begin
+              unique case (csr_wdata[5:4])
+                2'b00:   scbie_d = riscv::CBIE_ILLEGAL;
+                2'b01:   scbie_d = riscv::CBIE_FLUSH;
+                2'b11:   scbie_d = riscv::CBIE_INVAL;
+                default: scbie_d = riscv::CBIE_RSVD;
+              endcase
+              scbcfe_d = csr_wdata[6];
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         //hypervisor mode registers
         riscv::CSR_HSTATUS: begin
           if (CVA6Cfg.RVH) begin
@@ -1445,9 +1507,22 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
-        riscv::CSR_HENVCFG:
-        if (CVA6Cfg.RVH) fiom_d = csr_wdata[0];
-        else update_access_exception = 1'b1;
+        riscv::CSR_HENVCFG: begin
+          if (CVA6Cfg.RVH) begin
+            fiom_d = csr_wdata[0];
+            if (CVA6Cfg.RVZiCbom) begin
+              unique case (csr_wdata[5:4])
+                2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
+                2'b01:   hcbie_d = riscv::CBIE_FLUSH;
+                2'b11:   hcbie_d = riscv::CBIE_INVAL;
+                default: hcbie_d = riscv::CBIE_RSVD;
+              endcase
+              hcbcfe_d = csr_wdata[6];
+            end
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         riscv::CSR_MSTATUS: begin
           mstatus_d    = {{64 - CVA6Cfg.XLEN{1'b0}}, csr_wdata};
           mstatus_d.xs = riscv::Off;
@@ -1600,7 +1675,20 @@ module csr_regfile
           end
           mip_d = (mip_q & ~mask) | (csr_wdata & mask);
         end
-        riscv::CSR_MENVCFG: if (CVA6Cfg.RVU) fiom_d = csr_wdata[0];
+        riscv::CSR_MENVCFG: begin
+          if (CVA6Cfg.RVU) begin
+            fiom_d = csr_wdata[0];
+          end
+          if (CVA6Cfg.RVZiCbom) begin
+            unique case (csr_wdata[5:4])
+              2'b00:   mcbie_d = riscv::CBIE_ILLEGAL;
+              2'b01:   mcbie_d = riscv::CBIE_FLUSH;
+              2'b11:   mcbie_d = riscv::CBIE_INVAL;
+              default: mcbie_d = riscv::CBIE_RSVD;
+            endcase
+            mcbcfe_d = csr_wdata[6];
+          end
+        end
         riscv::CSR_MENVCFGH: begin
           if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
         end
@@ -2587,6 +2675,14 @@ module csr_regfile
   assign sum_o = mstatus_q.sum;
   assign vs_sum_o = CVA6Cfg.RVH ? vsstatus_q.sum : '0;
   assign hu_o = CVA6Cfg.RVH ? hstatus_q.hu : '0;
+
+  assign mcbie_o = CVA6Cfg.RVZiCbom ? mcbie_q : riscv::CBIE_ILLEGAL;
+  assign scbie_o = CVA6Cfg.RVZiCbom ? scbie_q : riscv::CBIE_ILLEGAL;
+  assign hcbie_o = CVA6Cfg.RVZiCbom ? hcbie_q : riscv::CBIE_ILLEGAL;
+
+  assign mcbcfe_o = CVA6Cfg.RVZiCbom ? mcbcfe_q : 1'b0;
+  assign scbcfe_o = CVA6Cfg.RVZiCbom ? scbcfe_q : 1'b0;
+  assign hcbcfe_o = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
   // we support bare memory addressing and SV39
   if (CVA6Cfg.RVH) begin
     assign en_translation_o = (((config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && !v_q) || (config_pkg::vm_mode_t'(vsatp_q.mode) == CVA6Cfg.MODE_SV && v_q)) &&
@@ -2667,6 +2763,10 @@ module csr_regfile
       icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q <= '0;
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
+      if (CVA6Cfg.RVZiCbom) begin
+        mcbie_q  <= riscv::CBIE_INVAL;
+        mcbcfe_q <= 1'b1;
+      end
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};
@@ -2678,6 +2778,10 @@ module csr_regfile
         sscratch_q   <= {CVA6Cfg.XLEN{1'b0}};
         stval_q      <= {CVA6Cfg.XLEN{1'b0}};
         satp_q       <= {CVA6Cfg.XLEN{1'b0}};
+        if (CVA6Cfg.RVZiCbom) begin
+          scbie_q  <= riscv::CBIE_INVAL;
+          scbcfe_q <= 1'b1;
+        end
       end
 
       if (CVA6Cfg.RVH) begin
@@ -2701,6 +2805,10 @@ module csr_regfile
         vstval_q                 <= {CVA6Cfg.XLEN{1'b0}};
         vsatp_q                  <= {CVA6Cfg.XLEN{1'b0}};
         en_ld_st_g_translation_q <= 1'b0;
+        if (CVA6Cfg.RVZiCbom) begin
+          hcbie_q  <= riscv::CBIE_INVAL;
+          hcbcfe_q <= 1'b1;
+        end
       end
       if (CVA6Cfg.SDTRIG) begin
         scontext_q <= '0;
@@ -2753,6 +2861,10 @@ module csr_regfile
       icache_q        <= icache_d;
       mcountinhibit_q <= mcountinhibit_d;
       acc_cons_q      <= acc_cons_d;
+      if (CVA6Cfg.RVZiCbom) begin
+        mcbie_q  <= mcbie_d;
+        mcbcfe_q <= mcbcfe_d;
+      end
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= medeleg_d;
@@ -2764,6 +2876,10 @@ module csr_regfile
         sscratch_q   <= sscratch_d;
         if (CVA6Cfg.TvalEn) stval_q <= stval_d;
         satp_q <= satp_d;
+        if (CVA6Cfg.RVZiCbom) begin
+          scbie_q  <= scbie_d;
+          scbcfe_q <= scbcfe_d;
+        end
       end
       if (CVA6Cfg.RVH) begin
         v_q                      <= v_d;
@@ -2787,6 +2903,10 @@ module csr_regfile
         vstval_q                 <= vstval_d;
         vsatp_q                  <= vsatp_d;
         en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
+        if (CVA6Cfg.RVZiCbom) begin
+          hcbie_q  <= hcbie_d;
+          hcbcfe_q <= hcbcfe_d;
+        end
       end
       if (CVA6Cfg.SDTRIG) begin
         scontext_q <= scontext_d;

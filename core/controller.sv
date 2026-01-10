@@ -129,6 +129,7 @@ module controller
       flush_ex_o             = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
+      // or we are expecting explicit flush/inval via RVZiCbom
       if (CVA6Cfg.DcacheFlushOnFence) begin
         flush_dcache   = 1'b1;
         fence_active_d = 1'b1;
@@ -148,7 +149,7 @@ module controller
       // this is not needed in the case since we
       // have a write-through cache in this case
       // When handling fence.i, flush both caches and activate fence_i state
-      if (CVA6Cfg.DcacheFlushOnFence) begin
+      if (CVA6Cfg.DcacheFlushOnFenceI) begin
         flush_dcache = 1'b1;
         fence_active_d = 1'b1;
         fence_i_active_d = 1'b1;
@@ -157,7 +158,7 @@ module controller
 
     // this is not needed in the case since we
     // have a write-through cache in this case
-    if (CVA6Cfg.DcacheFlushOnFence) begin
+    if (CVA6Cfg.DcacheFlushOnFence || CVA6Cfg.DcacheFlushOnFenceI) begin
       // Wait for the acknowledge here
       // Deassert fence_i state only after DCache flush completes
       if (flush_dcache_ack_i && fence_i_active_q) begin
@@ -253,7 +254,7 @@ module controller
   // ----------------------
   always_comb begin
     // halt the core if the fence is active
-    halt_o = halt_csr_i || halt_acc_i || (CVA6Cfg.DcacheFlushOnFence && fence_active_q);
+    halt_o = halt_csr_i || halt_acc_i || ((CVA6Cfg.DcacheFlushOnFence || CVA6Cfg.DcacheFlushOnFenceI) && fence_active_q);
     // Halt frontend during fence.i to synchronize ICache/DCache flushes
     halt_frontend_o = fence_i_active_q;
   end
