@@ -19,9 +19,6 @@
 [submodule "corev_apu/fpga/src/ariane-ethernet"]
 	path = corev_apu/fpga/src/ariane-ethernet
 	url = https://github.com/lowRISC/ariane-ethernet.git
-[submodule "corev_apu/src/axi_riscv_atomics"]
-	path = corev_apu/src/axi_riscv_atomics
-	url = https://github.com/pulp-platform/axi_riscv_atomics.git
 [submodule "corev_apu/riscv-dbg"]
 	path = corev_apu/riscv-dbg
 	url = https://github.com/pulp-platform/riscv-dbg.git
