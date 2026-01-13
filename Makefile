@@ -167,7 +167,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
         $(wildcard corev_apu/fpga/src/apb_timer/*.sv)                                \
         $(wildcard corev_apu/fpga/src/axi_slice/src/*.sv)                            \
-        $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
+        $(wildcard vendor/pulp-platform/axi_riscv_atomics/src/*.sv)                  \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         $(wildcard corev_apu/riscv-dbg/src/*.sv)                                     \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
