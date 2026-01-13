@@ -196,6 +196,7 @@ module axi_riscv_amos #(
                                         b_valid,        b_ready,        b_free,
                                         ar_valid,       ar_ready,       ar_free,
                                         r_valid,        r_ready,        r_free;
+    logic                               big_endian;
     // ALU Signals
     logic [RISCV_WORD_WIDTH-1:0]                        alu_operand_a;
     logic [RISCV_WORD_WIDTH-1:0]                        alu_operand_b;
@@ -269,11 +270,11 @@ module axi_riscv_amos #(
                 atop_valid_d = INVALID;
                 // Valid load operation
                 if ((slv_aw_atop_i      ==  axi_pkg::ATOP_ATOMICSWAP) ||
-                    (slv_aw_atop_i[5:3] == {axi_pkg::ATOP_ATOMICLOAD , axi_pkg::ATOP_LITTLE_END})) begin
+                    (slv_aw_atop_i[5:4] == {axi_pkg::ATOP_ATOMICLOAD})) begin
                     atop_valid_d = LOAD;
                 end
                 // Valid store operation
-                if (slv_aw_atop_i[5:3] == {axi_pkg::ATOP_ATOMICSTORE, axi_pkg::ATOP_LITTLE_END}) begin
+                if (slv_aw_atop_i[5:4] == {axi_pkg::ATOP_ATOMICSTORE}) begin
                     atop_valid_d = STORE;
                 end
                 // Invalidate valid request if control signals do not match
@@ -913,11 +914,12 @@ module axi_riscv_amos #(
      * ALU
      */
 
-    assign op_a           = r_data_q & strb_ext;
-    assign op_b           = w_data_q & strb_ext;
+    assign big_endian     = (atop_q[3] == axi_pkg::ATOP_BIG_END);
+    assign op_a           = big_endian ? {<<8{r_data_q & strb_ext}} : (r_data_q & strb_ext);
+    assign op_b           = big_endian ? {<<8{w_data_q & strb_ext}} : (w_data_q & strb_ext);
     assign sign_a         = |(op_a & ~(strb_ext >> 1));
     assign sign_b         = |(op_b & ~(strb_ext >> 1));
-    assign alu_result_ext = res;
+    assign alu_result_ext = big_endian ? {<<8{res}} : res;
 
     generate
         if (AXI_ALU_RATIO == 1 && RISCV_WORD_WIDTH == 32) begin

@@ -15,7 +15,7 @@
 // Author: Angela Gonzalez, PlanV Technology
 // Date: 26/02/2024
 // Description: Hardware-PTW (Page-Table-Walker) for CVA6 supporting sv32, sv39 and sv39x4.
-//              This module is an merge of the PTW Sv39 developed by Florian Zaruba,
+//              This module is a merge of the PTW Sv39 developed by Florian Zaruba,
 //              the PTW Sv32 developed by Sebastien Jacq and the PTW Sv39x4 by Bruno Sá.
 
 /* verilator lint_off WIDTH */
@@ -40,7 +40,7 @@ module cva6_ptw
     output logic ptw_error_o,  // set when an error occurred
     output logic ptw_error_at_g_st_o,  // set when an error occurred at the G-Stage
     output logic ptw_err_at_g_int_st_o,  // set when an error occurred at the G-Stage during S-Stage translation
-    output logic ptw_access_exception_o,  // set when an PMP access exception occurred
+    output logic ptw_access_exception_o,  // set when a PMP access exception occurred
     input logic enable_translation_i,  // CSRs indicate to enable SV39 VS-Stage translation
     input logic enable_g_translation_i,  // CSRs indicate to enable SV39  G-Stage translation
     input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores
@@ -78,6 +78,7 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    mbe_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -645,6 +646,14 @@ module cva6_ptw
     end
   end
 
+  // Big Endian Capability Additions 
+  // req_port_i.data_rdata is the data coming into the Page Table Walker from Data Memory. If mbe=1 meaning the processor is in Big Endian data mode, then we need to reverse the byte order to correctly view this data.
+  // Otherwise, this page table walker would not be able to understand a page table stored in Big Endian byte order.
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
+  assign byteSwapped_data = {<<8{req_port_i.data_rdata}};
+  assign endian_data = mbe_i ? byteSwapped_data : req_port_i.data_rdata;
+
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
@@ -676,7 +685,8 @@ module cva6_ptw
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= req_port_i.data_rdata;
+      //data_rdata_q      <= req_port_i.data_rdata;
+      data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (CVA6Cfg.RVH) begin
