@@ -372,8 +372,8 @@ module load_unit
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        be_q <= lsu_ctrl_i.be;
-        paddr_is_cacheable_q <= paddr_is_cacheable;
+        if (lsu_ctrl_i.valid) be_q <= lsu_ctrl_i.be;
+        if (lsu_ctrl_i.valid) paddr_is_cacheable_q <= paddr_is_cacheable;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
