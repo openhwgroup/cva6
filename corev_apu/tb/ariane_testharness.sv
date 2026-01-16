@@ -696,7 +696,7 @@ module ariane_testharness #(
     );
 
     logic                    packet_valid;
-    te_pkg::it_packet_type_e packet_type;
+    te_pkg::it_packet_type_e [0:0] packet_type;
     logic [te_pkg::P_LEN-1:0] packet_length;
     logic [te_pkg::PAYLOAD_LEN-1:0] packet_payload;
 
