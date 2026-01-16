@@ -27,7 +27,8 @@ module lsu_bypass
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type lsu_ctrl_t = logic
+    parameter type lsu_ctrl_t = logic,
+    parameter type bp_resolve_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -44,6 +45,8 @@ module lsu_bypass
     input logic      pop_ld_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic      pop_st_i,
+
+    input bp_resolve_t resolved_branch_i,
 
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output lsu_ctrl_t lsu_ctrl_o,
@@ -73,6 +76,15 @@ module lsu_bypass
     // we've got a valid LSU request
     if (lsu_req_valid_i) begin
       mem_n[write_pointer_q] = lsu_req_i;
+      if (lsu_req_i.is_speculative_load && resolved_branch_i.valid) begin
+        if (resolved_branch_i.is_mispredict) begin
+          // missprediction: mark speculative loads as misspredicted
+          mem_n[write_pointer_q].is_speculative_load_miss = 1'b1;
+        end else begin
+          // correct prediction: the load is no longer speculative
+          mem_n[write_pointer_q].is_speculative_load = 1'b0;
+        end
+      end
       write_pointer++;
       status_cnt++;
     end

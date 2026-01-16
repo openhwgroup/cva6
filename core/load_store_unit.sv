@@ -28,7 +28,8 @@ module load_store_unit
     parameter type lsu_ctrl_t = logic,
     parameter type acc_mmu_req_t = logic,
     parameter type acc_mmu_resp_t = logic,
-    parameter type cbo_t = logic
+    parameter type cbo_t = logic,
+    parameter type bp_resolve_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -74,8 +75,11 @@ module load_store_unit
     // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
-    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // Signals speculative loads for non-idempotent load handling - ISSUE_STAGE
+    input logic speculative_load_i,
+    // Result from branch unit - EX_STAGE
+    input bp_resolve_t resolved_branch_i,
     // Enable virtual memory translation - TO_BE_COMPLETED
     input logic enable_translation_i,
     // Enable G-Stage memory translation - TO_BE_COMPLETED
@@ -561,7 +565,8 @@ module load_store_unit
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .bp_resolve_t(bp_resolve_t)
   ) i_load_unit (
       .clk_i,
       .rst_ni,
@@ -590,6 +595,7 @@ module load_store_unit
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
+      .resolved_branch_i,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[1]),
       .req_port_o           (dcache_req_ports_o[1]),
@@ -860,12 +866,15 @@ module load_store_unit
     be_i,
     fu_data_i.fu,
     fu_data_i.operation,
-    fu_data_i.trans_id
+    fu_data_i.trans_id,
+    speculative_load_i,
+    1'b0
   };
 
   lsu_bypass #(
       .CVA6Cfg(CVA6Cfg),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .bp_resolve_t(bp_resolve_t)
   ) lsu_bypass_i (
       .clk_i,
       .rst_ni,
@@ -874,6 +883,7 @@ module load_store_unit
       .lsu_req_valid_i(lsu_valid_i),
       .pop_ld_i       (pop_ld),
       .pop_st_i       (pop_st),
+      .resolved_branch_i,
 
       .lsu_ctrl_o(lsu_ctrl_byp),
       .ready_o   (lsu_ready_o)
