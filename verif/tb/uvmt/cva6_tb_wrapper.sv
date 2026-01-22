@@ -427,31 +427,31 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     assign obi_load_rsp.r.r_optional.rchk   = obi_load_slave.rchk;
 
     if (CVA6Cfg.MmuPresent) begin
-      //assign obi_mmu_ptw_slave.req        = i_cva6.obi_fetch_req.req;
-      //assign obi_mmu_ptw_slave.addr       = i_cva6.obi_fetch_req.a.addr;
-      //assign obi_mmu_ptw_slave.we         = i_cva6.obi_fetch_req.a.we;
-      //assign obi_mmu_ptw_slave.be         = i_cva6.obi_fetch_req.a.be;
-      //assign obi_mmu_ptw_slave.wdata      = i_cva6.obi_fetch_req.a.wdata;
-      //assign obi_mmu_ptw_slave.auser      = i_cva6.obi_fetch_req.a.a_optional.auser;
-      //assign obi_mmu_ptw_slave.wuser      = i_cva6.obi_fetch_req.a.a_optional.wuser;
-      //assign obi_mmu_ptw_slave.aid        = i_cva6.obi_fetch_req.a.aid;
-      //assign obi_mmu_ptw_slave.atop       = i_cva6.obi_fetch_req.a.a_optional.atop;
-      //assign obi_mmu_ptw_slave.memtype    = i_cva6.obi_fetch_req.a.a_optional.memtype;
-      //assign obi_mmu_ptw_slave.prot       = i_cva6.obi_fetch_req.a.a_optional.prot;
-      //assign obi_mmu_ptw_slave.reqpar     = i_cva6.obi_fetch_req.reqpar;
-      //assign obi_mmu_ptw_slave.achk       = i_cva6.obi_fetch_req.a.a_optional.achk;
-      //assign obi_mmu_ptw_slave.rready     = i_cva6.obi_fetch_req.rready;
-      //assign obi_mmu_ptw_slave.rreadypar  = i_cva6.obi_fetch_req.rreadypar;
-      //assign i_cva6.obi_fetch_rsp.gnt                  = obi_mmu_ptw_slave.gnt;
-      //assign i_cva6.obi_fetch_rsp.gntpar               = obi_mmu_ptw_slave.gntpar;
-      //assign i_cva6.obi_fetch_rsp.rvalid               = obi_mmu_ptw_slave.rvalid;
-      //assign i_cva6.obi_fetch_rsp.r.rdata              = obi_mmu_ptw_slave.rdata;
-      //assign i_cva6.obi_fetch_rsp.r.err                = obi_mmu_ptw_slave.err;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.ruser   = obi_mmu_ptw_slave.ruser;
-      //assign i_cva6.obi_fetch_rsp.r.rid                = obi_mmu_ptw_slave.rid;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.exokay  = obi_mmu_ptw_slave.exokay;
-      //assign i_cva6.obi_fetch_rsp.rvalidpar            = obi_mmu_ptw_slave.rvalidpar;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.rchk    = obi_mmu_ptw_slave.rchk;
+      assign obi_mmu_ptw_slave.req        = obi_mmu_ptw_req.req;
+      assign obi_mmu_ptw_slave.addr       = obi_mmu_ptw_req.a.addr;
+      assign obi_mmu_ptw_slave.we         = obi_mmu_ptw_req.a.we;
+      assign obi_mmu_ptw_slave.be         = obi_mmu_ptw_req.a.be;
+      assign obi_mmu_ptw_slave.wdata      = obi_mmu_ptw_req.a.wdata;
+      assign obi_mmu_ptw_slave.auser      = obi_mmu_ptw_req.a.a_optional.auser;
+      assign obi_mmu_ptw_slave.wuser      = obi_mmu_ptw_req.a.a_optional.wuser;
+      assign obi_mmu_ptw_slave.aid        = obi_mmu_ptw_req.a.aid;
+      assign obi_mmu_ptw_slave.atop       = obi_mmu_ptw_req.a.a_optional.atop;
+      assign obi_mmu_ptw_slave.memtype    = obi_mmu_ptw_req.a.a_optional.memtype;
+      assign obi_mmu_ptw_slave.prot       = obi_mmu_ptw_req.a.a_optional.prot;
+      assign obi_mmu_ptw_slave.reqpar     = obi_mmu_ptw_req.reqpar;
+      assign obi_mmu_ptw_slave.achk       = obi_mmu_ptw_req.a.a_optional.achk;
+      assign obi_mmu_ptw_slave.rready     = obi_mmu_ptw_req.rready;
+      assign obi_mmu_ptw_slave.rreadypar  = obi_mmu_ptw_req.rreadypar;
+      assign obi_mmu_ptw_rsp.gnt                  = obi_mmu_ptw_slave.gnt;
+      assign obi_mmu_ptw_rsp.gntpar               = obi_mmu_ptw_slave.gntpar;
+      assign obi_mmu_ptw_rsp.rvalid               = obi_mmu_ptw_slave.rvalid;
+      assign obi_mmu_ptw_rsp.r.rdata              = obi_mmu_ptw_slave.rdata;
+      assign obi_mmu_ptw_rsp.r.err                = obi_mmu_ptw_slave.err;
+      assign obi_mmu_ptw_rsp.r.r_optional.ruser   = obi_mmu_ptw_slave.ruser;
+      assign obi_mmu_ptw_rsp.r.rid                = obi_mmu_ptw_slave.rid;
+      assign obi_mmu_ptw_rsp.r.r_optional.exokay  = obi_mmu_ptw_slave.exokay;
+      assign obi_mmu_ptw_rsp.rvalidpar            = obi_mmu_ptw_slave.rvalidpar;
+      assign obi_mmu_ptw_rsp.r.r_optional.rchk    = obi_mmu_ptw_slave.rchk;
     end
 
       if (CVA6Cfg.RVZCMT) begin
