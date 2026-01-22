@@ -128,6 +128,7 @@ module cva6_ptw
   logic global_mapping_q, global_mapping_n;
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
+  logic grant_q;
   // register the ASID
   logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VMID
@@ -159,6 +160,9 @@ module cva6_ptw
   assign ypb_mmu_ptw_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_mmu_ptw_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
+  assign ypb_mmu_ptw_req_o.rready = '1; 
+  assign ypb_mmu_ptw_req_o.access_type = 1'b1;  //1 = data
+  assign ypb_mmu_ptw_req_o.atop = ariane_pkg::AMO_NONE;
   // -----------
   // TLB Update
   // -----------
@@ -225,7 +229,7 @@ module cva6_ptw
       bad_gpaddr_o[CVA6Cfg.GPLEN-1:0] = ptw_error_at_g_st_o ? ((ptw_stage_q == G_INTERMED_STAGE) ? gptw_pptr_q[CVA6Cfg.GPLEN-1:0] : gpaddr_q) : 'b0;
   end
 
-  assign ypb_mmu_ptw_req_o.preq = tag_valid_q;
+  assign ypb_mmu_ptw_req_o.preq = ypb_mmu_ptw_req_o.vreq;
 
   logic allow_access;
 
@@ -383,9 +387,7 @@ module cva6_ptw
         // send a request out
         ypb_mmu_ptw_req_o.vreq = 1'b1;
         // wait for the WAIT_GRANT
-        if (ypb_mmu_ptw_rsp_i.vgnt) begin
-          // send the tag valid signal one cycle later
-          tag_valid_n = 1'b1;
+        if (ypb_mmu_ptw_rsp_i.pgnt) begin
           state_d     = PTE_LOOKUP;
         end
       end
@@ -584,6 +586,7 @@ module cva6_ptw
       end
       // wait for the rvalid before going back to IDLE
       WAIT_RVALID: begin
+        ypb_mmu_ptw_req_o.vreq = grant_q ? '0 : tag_valid_q; //keep request if it was set, unless grant just came in
         if (data_rvalid_q) state_d = IDLE;
       end
       LATENCY: begin
@@ -603,7 +606,7 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && ypb_mmu_ptw_rsp_i.rvalid))
+      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT)))
         state_d = WAIT_RVALID;
       else state_d = LATENCY;
     end
@@ -623,6 +626,7 @@ module cva6_ptw
       global_mapping_q  <= 1'b0;
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
+      grant_q           <= 1'b0;
       if (CVA6Cfg.RVH) begin
         gpaddr_q    <= '0;
         gptw_pptr_q <= '0;
@@ -634,12 +638,13 @@ module cva6_ptw
       ptw_pptr_q        <= ptw_pptr_n;
       is_instr_ptw_q    <= is_instr_ptw_n;
       ptw_lvl_q         <= ptw_lvl_n;
-      tag_valid_q       <= tag_valid_n;
+      tag_valid_q       <= ypb_mmu_ptw_req_o.vreq;
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
       data_rdata_q      <= ypb_mmu_ptw_rsp_i.rdata;
       data_rvalid_q     <= ypb_mmu_ptw_rsp_i.rvalid;
+      grant_q           <= ypb_mmu_ptw_rsp_i.pgnt;
 
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= gpaddr_n;
