@@ -117,54 +117,13 @@ class Event:
     instr: RvfiInstr
     duration: int
     icount: int
-    nloads: int
-    nstores: int
-    dloads: int
-    dstores: int
-    mem_contig: bool
-
-class MemoryAccesses:
-    def __init__(self):
-        self.loads = {}
-        self.stores = {}
-
-    def load(self, addr):
-        if addr in self.loads:
-            self.loads[addr] += 1
-        else:
-            self.loads[addr] = 1
-
-    def store(self, addr):
-        if addr in self.stores:
-            self.stores[addr] += 1
-        else:
-            self.stores[addr] = 1
 
 def run_all(fns, instrs):
     events = []
     cs = CallStack(fns)
-    cycle = 0
-    icount = 0
-    mem = MemoryAccesses()
-
-    nloads = nstores = dloads = dstores = mem_contig = 0
-    dcycle = maddr = None
-
+    cycle = icount = dcycle = 0
     for i, instr in enumerate(instrs):
-        if instr.op.is_load():
-            nloads += 1
-            dloads += instr.cycle - dcycle
-            mem.load(instr.mem_address)
-        if instr.op.is_store():
-            nstores += 1
-            dstores += instr.cycle - dcycle
-            mem.store(instr.mem_address)
         dcycle = instr.cycle
-
-        if instr.op.is_load() or instr.op.is_store():
-            if maddr is not None and instr.mem_address in (maddr + 4, maddr - 4):
-                mem_contig += 1
-            maddr = instr.mem_address
 
         event = cs.run(instr)
         if event:
@@ -173,21 +132,11 @@ def run_all(fns, instrs):
                 instr = instr,
                 duration = event.cycle - cycle,
                 icount = i - icount,
-                nloads = nloads,
-                nstores = nstores,
-                dloads = dloads,
-                dstores = dstores,
-                mem_contig = mem_contig
             ))
             cycle = event.cycle
             icount = i
 
-            nloads = nstores = dloads = dstores = mem_contig = 0
 
-    for addr, count in sorted(mem.loads.items(), key=lambda item: item[1], reverse=True)[:10]:
-        print(hex(addr), count, "loads")
-    for addr, count in sorted(mem.stores.items(), key=lambda item: item[1], reverse=True)[:10]:
-        print(hex(addr), count, "stores")
     return events
 
 def fake_file(func):
@@ -200,10 +149,6 @@ class Stat:
         self.tt = 0
         self.ct = 0
         self.icount = 0
-        self.nloads = 0
-        self.nstores = 0
-        self.dloads = 0
-        self.dstores = 0
         self.callers = {}
 
     def ipc(self):
@@ -245,10 +190,6 @@ def build_stats(events):
         # Spent duration right into func
         stats[func].tt += duration
         stats[func].icount += event.icount
-        stats[func].nloads += event.nloads
-        stats[func].nstores += event.nstores
-        stats[func].dloads += event.dloads
-        stats[func].dstores += event.dstores
 
         # Spent duration in func and its parents
         for f in stack:
