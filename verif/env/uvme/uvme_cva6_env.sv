@@ -559,7 +559,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_mmu_ptw_slv_thread
-         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.MmuPresent) begin
             mmu_ptw_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("mmu_ptw_slv_seq");
             if (!mmu_ptw_slv_seq.randomize()) begin
                `uvm_fatal("MMUPTWSLVSEQ", "Randomize failed");
