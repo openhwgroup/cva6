@@ -350,6 +350,7 @@ endif
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
 questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) \
 			+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+			+fromhost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w fromhost | cut -d' ' -f1) \
 			+core_name=$(target) +define+QUESTA -suppress 3356 -suppress 3579 +report_file=$(report_file) \
 			$(spike-yaml-plusarg)
 compile_flag_vhd += -64 -nologo -quiet -2008
@@ -591,6 +592,7 @@ xrun_sim: xrun_comp
 		+UVM_TESTNAME=$(test_case)	\
 		+time_out=200000000000            \
 		+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+		+fromhost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w fromhost | cut -d' ' -f1)          \
 		-log $(XRUN_RUN_LOG)		\
 		+gui				\
 		+permissive-off			\
@@ -700,7 +702,8 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     --threads-dpi none                                                                           \
                     --Mdir $(ver-library) -O3                                                                    \
                     --exe corev_apu/tb/ariane_tb.cpp corev_apu/tb/dpi/SimDTM.cc corev_apu/tb/dpi/SimJTAG.cc      \
-                    corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc
+                    corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc                           \
+                    corev_apu/tb/dpi/syscalls.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
