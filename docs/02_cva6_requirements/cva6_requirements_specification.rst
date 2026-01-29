@@ -569,9 +569,6 @@ They also apply to the HPDCache, except L1W‑80, that is superseding the legacy
 Note that the HPDCache has more features, such as write-back options, that
 are beyond the scope of this specification.
 
-.. attention::
-   L1W-80 (replacement policy) does not apply to HPDCache.
-
 .. _l1_instruction_cache:
 
 L1 Instruction cache
@@ -630,9 +627,8 @@ size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1I-50.
 
-These requirement to the HPICache, a modified verision of HPICache, that
-will likely supersede the legacy PULP cache. The replacement policy will
-likely be different.
+These requirements to the HPICache, a modified verision of HPICache, that
+will likely supersede the legacy PULP cache.
 
 .. _fence_t_custom_instruction:
 
