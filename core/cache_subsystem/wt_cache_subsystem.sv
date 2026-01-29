@@ -59,6 +59,7 @@ module wt_cache_subsystem
     // AMO interface
     input amo_req_t dcache_amo_req_i,
     output amo_resp_t dcache_amo_resp_o,
+    input logic mbe_i,
     // Request ports
     input dcache_req_i_t [NumPorts-1:0] dcache_req_ports_i,  // to/from LSU
     output dcache_req_o_t [NumPorts-1:0] dcache_req_ports_o,  // to/from LSU
@@ -164,6 +165,7 @@ module wt_cache_subsystem
       .wbuffer_not_ni_o(wbuffer_not_ni_o),
       .amo_req_i       (dcache_amo_req_i),
       .amo_resp_o      (dcache_amo_resp_o),
+      .mbe_i           (mbe_i),
       .req_ports_i     (dcache_req_ports_i),
       .req_ports_o     (dcache_req_ports_o),
       .miss_vld_bits_o (miss_vld_bits_o),
@@ -228,6 +230,7 @@ module wt_cache_subsystem
       .dcache_rtrn_o    (adapter_dcache),
       .axi_req_o        (noc_req_o),
       .axi_resp_i       (noc_resp_i),
+      .mbe_i            (mbe_i),
       .inval_addr_i     (inval_addr_i),
       .inval_valid_i    (inval_valid_i),
       .inval_ready_o    (inval_ready_o)
