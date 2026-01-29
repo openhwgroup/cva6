@@ -49,6 +49,13 @@ package riscv;
     Dirty   = 2'b11
   } xs_t;
 
+  typedef enum logic [1:0] {
+    CBIE_ILLEGAL = 2'b00, // execution of CBO.INVAL in lower privilege mode causes illegal instruction / virtual instruction exception
+    CBIE_FLUSH = 2'b01,  // CBO.INVAL causes flush
+    CBIE_RSVD = 2'b10,  // reserved
+    CBIE_INVAL = 2'b11  // CBO.INVAL causes invalidate
+  } cbie_t;
+
   typedef struct packed {
     logic sd;  // signal dirty state - read-only
     logic [62:34] wpri6;  // writes preserved reads ignored
@@ -721,6 +728,7 @@ package riscv;
   localparam logic [63:0] SSTATUS_UIE = 'h00000001;
   localparam logic [63:0] SSTATUS_SIE = 'h00000002;
   localparam logic [63:0] SSTATUS_SPIE = 'h00000020;
+  localparam logic [63:0] SSTATUS_UBE = 'h00000040;
   localparam logic [63:0] SSTATUS_SPP = 'h00000100;
   localparam logic [63:0] SSTATUS_FS = 'h00006000;
   localparam logic [63:0] SSTATUS_XS = 'h00018000;
@@ -751,7 +759,8 @@ package riscv;
   localparam logic [63:0] MSTATUS_MIE = 'h00000008;
   localparam logic [63:0] MSTATUS_UPIE = 'h00000010;
   localparam logic [63:0] MSTATUS_SPIE = 'h00000020;
-  localparam logic [63:0] MSTATUS_HPIE = 'h00000040;
+  localparam logic [63:0] MSTATUS_UBE = 'h00000040;
+  localparam logic [63:0] MSTATUS_HPIE = 'h00000040;  // TODO - delete old version of H extension
   localparam logic [63:0] MSTATUS_MPIE = 'h00000080;
   localparam logic [63:0] MSTATUS_SPP = 'h00000100;
   localparam logic [63:0] MSTATUS_HPP = 'h00000600;
@@ -764,6 +773,8 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
+  localparam logic [63:0] MSTATUS_SBE = 64'h1000000000;
+  localparam logic [63:0] MSTATUS_MBE = 64'h2000000000;
   function automatic logic [63:0] mstatus_uxl(logic IS_XLEN64);
     return {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
   endfunction
@@ -773,6 +784,8 @@ package riscv;
   function automatic logic [63:0] mstatus_sd(logic IS_XLEN64);
     return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
   endfunction
+  localparam logic [63:0] MSTATUSH_SBE = 'h10;
+  localparam logic [63:0] MSTATUSH_MBE = 'h20;
 
   localparam logic [63:0] MENVCFG_FIOM = 'h00000001;
   localparam logic [63:0] MENVCFG_CBIE = 'h00000030;

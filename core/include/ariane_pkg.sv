@@ -114,6 +114,7 @@ package ariane_pkg;
     return riscv::SSTATUS_UIE
     | riscv::SSTATUS_SIE
     | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_UBE
     | riscv::SSTATUS_SPP
     | riscv::SSTATUS_FS
     | riscv::SSTATUS_XS
@@ -363,6 +364,11 @@ package ariane_pkg;
     AMO_MAXDU,
     AMO_MIND,
     AMO_MINDU,
+    // cache block operations (CBO)
+    CBO_CLEAN,
+    CBO_FLUSH,
+    CBO_INVAL,
+    CBO_NONE,
     // Multiplications
     MUL,
     MULH,
@@ -803,6 +809,7 @@ package ariane_pkg;
       end
       LH, LHU, HLV_H, HLV_HU, HLVX_HU, SH, HSV_H, FLH, FSH: return 2'b01;
       LB, LBU, HLV_B, HLV_BU, SB, HSV_B, FLB, FSB:          return 2'b00;
+      CBO_CLEAN, CBO_FLUSH, CBO_INVAL:                      return 2'b00;
       default:                                              return 2'b11;
     endcase
   endfunction

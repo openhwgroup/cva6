@@ -20,7 +20,8 @@ module store_unit
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
-    parameter type lsu_ctrl_t = logic
+    parameter type lsu_ctrl_t = logic,
+    parameter type cbo_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -46,6 +47,8 @@ module store_unit
     output logic commit_ready_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
+    // Data Endian mode - CSR_REGFILE
+    input logic mbe_i,
     // Store result is valid - ISSUE_STAGE
     output logic valid_o,
     // Transaction ID - ISSUE_STAGE
@@ -135,6 +138,7 @@ module store_unit
   logic [(CVA6Cfg.XLEN/8)-1:0] st_be_n, st_be_q;
   logic [1:0] st_data_size_n, st_data_size_q;
   amo_t amo_op_d, amo_op_q;
+  cbo_t cbo_op_d, cbo_op_q;
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
@@ -244,6 +248,26 @@ module store_unit
     if (flush_i) state_d = IDLE;
   end
 
+  // -------------
+  // Byte-Swapper
+  // -------------
+  // We need to reverse the byte order of what we intend to Store in Data Memory if we are in Big Endian Mode (mbe defines endianness and comes from CSRregfile).
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+
+  always_comb begin
+    endian_data = lsu_ctrl_i.data;
+    if (mbe_i) begin
+      case (lsu_ctrl_i.operation)
+        SB, HSV_B, FSB: endian_data[7:0] = {lsu_ctrl_i.data[7:0]};
+        SH, HSV_H, FSH: endian_data[15:0] = {<<8{lsu_ctrl_i.data[15:0]}};
+        SW, HSV_W, FSW, AMO_LRW, AMO_SCW, AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW,
+        AMO_MINW, AMO_MAXWU, AMO_MINWU:
+        endian_data[31:0] = {<<8{lsu_ctrl_i.data[31:0]}};
+        default: endian_data[CVA6Cfg.XLEN-1:0] = {<<8{lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]}};
+      endcase
+    end
+  end
+
   // -----------
   // Re-aligner
   // -----------
@@ -251,8 +275,8 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data});
+    st_data_n = ((CVA6Cfg.RVA && instr_is_amo) ? endian_data[CVA6Cfg.XLEN-1:0] :
+                 data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, endian_data}));
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if (CVA6Cfg.RVA) begin
@@ -273,6 +297,17 @@ module store_unit
     end else begin
       amo_op_d = AMO_NONE;
     end
+
+    if (CVA6Cfg.RVZiCbom) begin
+      case (lsu_ctrl_i.operation)
+        ariane_pkg::CBO_INVAL: cbo_op_d = ariane_pkg::CBO_INVAL;
+        ariane_pkg::CBO_CLEAN: cbo_op_d = ariane_pkg::CBO_CLEAN;
+        ariane_pkg::CBO_FLUSH: cbo_op_d = ariane_pkg::CBO_FLUSH;
+        default:               cbo_op_d = ariane_pkg::CBO_NONE;
+      endcase
+    end else begin
+      cbo_op_d = ariane_pkg::CBO_NONE;
+    end
   end
 
   logic store_buffer_valid, amo_buffer_valid;
@@ -288,9 +323,10 @@ module store_unit
   // Store Queue
   // ---------------
   store_buffer #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg       (CVA6Cfg),
       .dcache_req_i_t(dcache_req_i_t),
-      .dcache_req_o_t(dcache_req_o_t)
+      .dcache_req_o_t(dcache_req_o_t),
+      .cbo_t         (cbo_t)
   ) store_buffer_i (
       .clk_i,
       .rst_ni,
@@ -313,6 +349,7 @@ module store_unit
       .paddr_i,
       .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .data_i               (st_data_q),
+      .cbo_op_i             (cbo_op_q),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
       .req_port_i           (req_port_i),
@@ -353,6 +390,7 @@ module store_unit
       st_data_size_q <= '0;
       trans_id_q     <= '0;
       amo_op_q       <= AMO_NONE;
+      cbo_op_q       <= ariane_pkg::CBO_NONE;
     end else begin
       state_q        <= state_d;
       st_be_q        <= st_be_n;
@@ -360,6 +398,7 @@ module store_unit
       trans_id_q     <= trans_id_n;
       st_data_size_q <= st_data_size_n;
       amo_op_q       <= amo_op_d;
+      cbo_op_q       <= cbo_op_d;
     end
   end
 

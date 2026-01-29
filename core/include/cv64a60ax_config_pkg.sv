@@ -130,6 +130,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    DcacheSetAssoc: unsigned'(8),
    DcacheLineWidth: unsigned'(512),
    DcacheFlushOnFence: bit'(0),
+   DcacheFlushOnFenceI: bit'(0),
    DcacheInvalidateOnFlush: bit'(0),
    DataUserEn: unsigned'(0),
    WtDcacheWbufDepth: int'(8),

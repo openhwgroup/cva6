@@ -166,6 +166,9 @@ module cva6
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
     },
 
+
+    localparam type cbo_t = logic [7:0],
+
     localparam type fu_data_t = struct packed {
       fu_t                              fu;
       fu_op                             operation;
@@ -207,6 +210,7 @@ module cva6
       logic [CVA6Cfg.DcacheIdWidth-1:0]      data_id;
       logic                                  kill_req;
       logic                                  tag_valid;
+      cbo_t                                  cbo_op;
     },
 
     localparam type dcache_req_o_t = struct packed {
@@ -368,14 +372,15 @@ module cva6
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
-  riscv::priv_lvl_t                             priv_lvl;
-  logic                                         v;
-  exception_t                                   ex_commit;  // exception from commit stage
-  bp_resolve_t                                  resolved_branch;
-  logic             [         CVA6Cfg.VLEN-1:0] pc_commit;
-  logic                                         eret;
-  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
-  logic             [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
+  riscv::priv_lvl_t priv_lvl;
+  logic v;
+  exception_t ex_commit;  // exception from commit stage
+  bp_resolve_t resolved_branch;
+  logic [CVA6Cfg.VLEN-1:0] pc_commit;
+  logic eret;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
+  logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
+  logic mbe;  // determines the data endian-ness of the processor
 
   localparam NumPorts = 4;
 
@@ -594,6 +599,8 @@ module cva6
   // trigger module
   logic debug_from_trigger;
   logic break_from_trigger;
+  riscv::cbie_t mcbie, scbie, hcbie;
+  logic mcbcfe, scbcfe, hcbcfe;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -750,6 +757,12 @@ module cva6
       .vtw_i               (vtw_csr_id),
       .tsr_i               (tsr_csr_id),
       .hu_i                (hu),
+      .mcbie_i             (mcbie),
+      .scbie_i             (scbie),
+      .hcbie_i             (hcbie),
+      .mcbcfe_i            (mcbcfe),
+      .scbcfe_i            (scbcfe),
+      .hcbcfe_i            (hcbcfe),
       .hart_id_i           (hart_id_i),
       .compressed_ready_i  (x_compressed_ready),
       .compressed_resp_i   (x_compressed_resp),
@@ -958,7 +971,8 @@ module cva6
       .lsu_ctrl_t(lsu_ctrl_t),
       .x_result_t(x_result_t),
       .acc_mmu_req_t(acc_mmu_req_t),
-      .acc_mmu_resp_t(acc_mmu_resp_t)
+      .acc_mmu_resp_t(acc_mmu_resp_t),
+      .cbo_t(cbo_t)
   ) ex_stage_i (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
@@ -1061,6 +1075,7 @@ module cva6
       .flush_tlb_vvma_i        (flush_tlb_vvma_ctrl_ex),
       .flush_tlb_gvma_i        (flush_tlb_gvma_ctrl_ex),
       .priv_lvl_i              (priv_lvl),                       // from CSR
+      .mbe_i                   (mbe),                            // from CSR
       .v_i                     (v),                              // from CSR
       .ld_st_priv_lvl_i        (ld_st_priv_lvl_csr_ex),          // from CSR
       .ld_st_v_i               (ld_st_v_csr_ex),                 // from CSR
@@ -1176,6 +1191,7 @@ module cva6
       .eret_o                  (eret),
       .trap_vector_base_o      (trap_vector_base_commit_pcgen),
       .priv_lvl_o              (priv_lvl),
+      .mbe_o                   (mbe),
       .v_o                     (v),
       .acc_fflags_ex_i         (acc_resp_fflags),
       .acc_fflags_ex_valid_i   (acc_resp_fflags_valid),
@@ -1224,6 +1240,12 @@ module cva6
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
+      .mcbie_o                 (mcbie),
+      .scbie_o                 (scbie),
+      .hcbie_o                 (hcbie),
+      .mcbcfe_o                (mcbcfe),
+      .scbcfe_o                (scbcfe),
+      .hcbcfe_o                (hcbcfe),
       .jvt_o                   (jvt),
       //RVFI
       .rvfi_csr_o              (rvfi_csr),
@@ -1403,6 +1425,7 @@ module cva6
         // to commit stage
         .dcache_amo_req_i  (amo_req),
         .dcache_amo_resp_o (amo_resp),
+        .mbe_i             (mbe),
         // from PTW, Load Unit  and Store Unit
         .dcache_miss_o     (dcache_miss_cache_perf),
         .miss_vld_bits_o   (miss_vld_bits),

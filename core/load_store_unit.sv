@@ -27,7 +27,8 @@ module load_store_unit
     parameter type icache_drsp_t = logic,
     parameter type lsu_ctrl_t = logic,
     parameter type acc_mmu_req_t = logic,
-    parameter type acc_mmu_resp_t = logic
+    parameter type acc_mmu_resp_t = logic,
+    parameter type cbo_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -95,6 +96,8 @@ module load_store_unit
 
     // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                          priv_lvl_i,
+    // Data Endian mode - CSR_REGFILE
+    input  logic                                      mbe_i,
     // Current virtualization mode - CSR_REGFILE
     input  logic                                      v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
@@ -292,6 +295,7 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
@@ -506,7 +510,8 @@ module load_store_unit
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .cbo_t(cbo_t)
   ) i_store_unit (
       .clk_i,
       .rst_ni,
@@ -521,6 +526,7 @@ module load_store_unit
       .commit_i,
       .commit_ready_o,
       .amo_valid_commit_i,
+      .mbe_i     (mbe_i),
 
       .valid_o              (st_valid),
       .trans_id_o           (st_trans_id),
@@ -568,6 +574,7 @@ module load_store_unit
       .trans_id_o           (ld_trans_id),
       .result_o             (ld_result),
       .ex_o                 (ld_ex),
+      .mbe_i                (mbe_i),
       // MMU port
       .translation_req_o    (ld_translation_req),
       .vaddr_o              (ld_vaddr),
