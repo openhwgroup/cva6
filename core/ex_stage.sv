@@ -113,7 +113,9 @@ module ex_stage
     // Commit queue ready to accept another commit request - COMMIT_STAGE
     output logic lsu_commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
-    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // Speculative load signal - ISSUE_STAGE
+    input logic speculative_load_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
     // TO_BE_COMPLETED - COMMIT_STAGE
@@ -289,6 +291,7 @@ module ex_stage
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
+  bp_resolve_t resolved_branch;
   fu_data_t [CVA6Cfg.NrALUs-1:0] alu_data;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
@@ -359,10 +362,11 @@ module ex_stage
       .branch_comp_res_i (alu_branch_res),
       .branch_result_o   (branch_result),
       .branch_predict_i,
-      .resolved_branch_o,
+      .resolved_branch_o (resolved_branch),
       .resolve_branch_o,
       .branch_exception_o(flu_exception_o)
   );
+  assign resolved_branch_o = resolved_branch;
 
   // 3. CSR (sequential)
   csr_buffer #(
@@ -537,7 +541,8 @@ module ex_stage
       .lsu_ctrl_t(lsu_ctrl_t),
       .cbo_t(cbo_t),
       .acc_mmu_req_t(acc_mmu_req_t),
-      .acc_mmu_resp_t(acc_mmu_resp_t)
+      .acc_mmu_resp_t(acc_mmu_resp_t),
+      .bp_resolve_t(bp_resolve_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -558,6 +563,8 @@ module ex_stage
       .commit_i              (lsu_commit_i),
       .commit_ready_o        (lsu_commit_ready_o),
       .commit_tran_id_i,
+      .speculative_load_i,
+      .resolved_branch_i     (resolved_branch),
       .enable_translation_i,
       .enable_g_translation_i,
       .en_ld_st_translation_i,
