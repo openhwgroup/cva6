@@ -538,7 +538,7 @@ module issue_read_operands
   always_comb begin
     for (int unsigned i = 0; i < CVA6Cfg.NR_SB_ENTRIES; i++) begin
       fwd_res[i] = fwd_i.sbe[i].result;
-      fwd_res_valid[i] = fwd_i.sbe[i].valid;
+      fwd_res_valid[i] = fwd_i.sbe[i].valid & (~fwd_i.sbe[i].ex.valid);
     end
     for (int unsigned i = 0; i < CVA6Cfg.NrWbPorts; i++) begin
       if (fwd_i.wb[i].valid && !fwd_i.wb[i].ex_valid) begin
