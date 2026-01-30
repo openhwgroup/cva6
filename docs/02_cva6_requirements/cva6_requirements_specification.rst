@@ -562,7 +562,7 @@ The design will support one replacement policy allowed by L1W-80.
 
 These L1WTD requirements apply to the legacy WT cache from PULP.
 
-They also apply to the HPDCache, except L1W‑80, that is superseding the legacy PULP caches.
+They also apply to the HPDCache that is superseding the legacy PULP caches.
 Note that the HPDCache has more features, such as write-back options, that
 are beyond the scope of this specification.
 
