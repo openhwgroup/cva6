@@ -505,11 +505,8 @@ where a high level of timing predictability is needed.
 |                                   | cycles. The upper-bound is fixed  |
 |                                   | but not specified here.           |
 +-----------------------------------+-----------------------------------+
-| L1W‑20                            | L1WTD shall not change the order  |
-|                                   | of write accesses to the external |
-|                                   | memory with respect to the order  |
-|                                   | of write accesses (stores)        |
-|                                   | received from the CVA6 core.      |
+| L1W‑20                            | L1WTD shall support RISC-V        |
+|                                   | Weak Memory Ordering (RVWMO).     |
 +-----------------------------------+-----------------------------------+
 | L1W‑30                            | L1WTD should offer the            |
 |                                   | following size/ways               |
@@ -627,7 +624,7 @@ size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1I-50.
 
-These requirements to the HPICache, a modified verision of HPICache, that
+These requirements apply to the HPICache, a modified version of HPDCache, that
 will likely supersede the legacy PULP cache.
 
 .. _fence_t_custom_instruction:
