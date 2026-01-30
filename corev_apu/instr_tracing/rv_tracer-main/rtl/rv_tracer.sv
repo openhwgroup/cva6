@@ -57,7 +57,7 @@ module rv_tracer #(
     // outputs
     // info needed for the encapsulator
     output logic [N-1:0]                            packet_valid_o,
-    output te_pkg::it_packet_type_e [N-1:0]         packet_type_o,
+    output te_pkg::it_packet_type_e                 packet_type_o,
     output logic [N-1:0][te_pkg::P_LEN-1:0]         packet_length_o, // in bytes
     output logic [N-1:0][te_pkg::PAYLOAD_LEN-1:0]   packet_payload_o,
     // sideband signals
