@@ -519,8 +519,9 @@ module cva6_mmu
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
 
-    // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
-    misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
+    // Latch LSU-reported misaligned accesses even if no translation request is issued that cycle.
+    // Hypervisor loads/stores can skip translation, so gating on lsu_req_i would drop the exception.
+    misaligned_ex_n.valid = misaligned_ex_i.valid;
 
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal to bit [CVA6Cfg.SV]
     canonical_addr_check = (lsu_req_i && en_ld_st_translation_i &&
