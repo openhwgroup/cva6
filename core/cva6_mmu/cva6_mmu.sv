@@ -18,7 +18,7 @@
 // Description: Memory Management Unit for CVA6, contains TLB and
 //              address translation unit. SV32 SV39 and SV39x4 as defined in RISC-V
 //              privilege specification 1.11-WIP.
-//              This module is an merge of the MMU Sv39 developed
+//              This module is a merge of the MMU Sv39 developed
 //              by Florian Zaruba, the MMU Sv32 developed by Sebastien Jacq and the MMU Sv39x4 developed by Bruno Sá.
 
 
@@ -72,6 +72,7 @@ module cva6_mmu
     input logic vs_sum_i,
     input logic mxr_i,
     input logic vmxr_i,
+    input logic mbe_i,
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
     // input logic flag_mprv_i,
@@ -344,7 +345,7 @@ module cva6_mmu
       .hgatp_ppn_i,
       .mxr_i,
       .vmxr_i,
-
+      .mbe_i(mbe_i),
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
 
