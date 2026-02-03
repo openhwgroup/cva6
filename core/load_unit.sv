@@ -75,7 +75,7 @@ module load_unit
     // Store buffer is empty - STORE_UNIT
     input logic store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // Data cache request out - CACHES
@@ -233,11 +233,9 @@ module load_unit
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
   );
-  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_not_commit_time
-    assign not_commit_time[i] = (commit_tran_id_i[i] != lsu_ctrl_i.trans_id);
-  end
+  assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || &not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
 
   // ---------------
   // Load Control

@@ -69,7 +69,7 @@ module commit_stage
     // Commit buffer of LSU is ready - EX_STAGE
     input logic commit_lsu_ready_i,
     // Transaction id of first commit port - ID_STAGE
-    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
+    output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
     // Valid AMO in commit stage - EX_STAGE
     output logic amo_valid_commit_o,
     // No store is pending - EX_STAGE
@@ -124,9 +124,7 @@ module commit_stage
     end
   end
 
-  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin : gen_commit_tran_id
-    assign commit_tran_id_o[i] = commit_instr_i[i].trans_id;
-  end
+  assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
   logic instr_0_is_amo;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;

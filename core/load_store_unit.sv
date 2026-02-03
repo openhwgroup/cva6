@@ -75,7 +75,7 @@ module load_store_unit
     // Commit queue is ready to accept another commit request - TO_BE_COMPLETED
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Signals speculative loads for non-idempotent load handling - ISSUE_STAGE
     input logic speculative_load_i,
     // Result from branch unit - EX_STAGE

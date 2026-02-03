@@ -521,7 +521,7 @@ module cva6
   // LSU Commit
   logic lsu_commit_commit_ex;
   logic lsu_commit_ready_ex_commit;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic stall_st_pending_ex;
   logic no_st_pending_ex;
   logic no_st_pending_commit;

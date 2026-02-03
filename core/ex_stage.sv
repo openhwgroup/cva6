@@ -113,7 +113,7 @@ module ex_stage
     // Commit queue ready to accept another commit request - COMMIT_STAGE
     output logic lsu_commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
     // Speculative load signal - ISSUE_STAGE
     input logic speculative_load_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
