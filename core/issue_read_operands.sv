@@ -134,9 +134,7 @@ module issue_read_operands
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
     // Original instruction bits for AES
-    output logic [5:0] orig_instr_aes_bits,
-    // Signals speculative loads to LSU for non-idempotent load handling - EX_STAGE
-    output logic speculative_load_o
+    output logic [5:0] orig_instr_aes_bits
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
@@ -1076,11 +1074,9 @@ module issue_read_operands
       branch_predict_o         <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
       x_transaction_rejected_o <= 1'b0;
       alu_bypass_q             <= '0;
-      speculative_load_o       <= 1'b0;
     end else begin
       fu_data_q <= fu_data_n;
       alu_bypass_q <= alu_bypass_n;
-      speculative_load_o <= 1'b0;
       if (CVA6Cfg.ZKN) begin
         orig_instr_aes_bits <= {orig_instr_i[0][31:30], orig_instr_i[0][23:20]};
       end
@@ -1100,11 +1096,6 @@ module issue_read_operands
         branch_predict_o      <= issue_instr_i[0].bp;
         if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
         else is_zcmt_o <= '0;
-        if (CVA6Cfg.SuperscalarEn && CVA6Cfg.SpeculativeSb) begin
-          if (issue_instr_valid_i[1] && issue_instr_i[1].fu == LOAD && issue_ack_o[1]) begin
-            speculative_load_o <= 1'b1;
-          end
-        end
       end
       x_transaction_rejected_o <= 1'b0;
       if (issue_instr_i[0].fu == CVXIF) begin
