@@ -465,7 +465,6 @@ module cva6
   logic [CVA6Cfg.XLEN-1:0] load_result_ex_id;
   logic load_valid_ex_id;
   exception_t load_exception_ex_id;
-  logic speculative_load;
 
   logic [CVA6Cfg.XLEN-1:0] store_result_ex_id;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] store_trans_id_ex_id;
@@ -953,8 +952,7 @@ module cva6
       .rvfi_commit_pointer_o(rvfi_commit_pointer),
       .rvfi_rs1_o           (rvfi_rs1),
       .rvfi_rs2_o           (rvfi_rs2),
-      .orig_instr_aes_bits  (orig_instr_aes),
-      .speculative_load_o   (speculative_load)
+      .orig_instr_aes_bits  (orig_instr_aes)
   );
 
   // ---------
@@ -1029,7 +1027,6 @@ module cva6
       .lsu_commit_i            (lsu_commit_commit_ex),           // from commit
       .lsu_commit_ready_o      (lsu_commit_ready_ex_commit),     // to commit
       .commit_tran_id_i        (lsu_commit_trans_id),            // from commit
-      .speculative_load_i      (speculative_load),
       .stall_st_pending_i      (stall_st_pending_ex),
       .no_st_pending_o         (no_st_pending_ex),
       // FPU

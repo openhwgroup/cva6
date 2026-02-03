@@ -114,8 +114,6 @@ module ex_stage
     output logic lsu_commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // Speculative load signal - ISSUE_STAGE
-    input logic speculative_load_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
     // TO_BE_COMPLETED - COMMIT_STAGE
@@ -516,14 +514,19 @@ module ex_stage
   // ----------------
   fu_data_t lsu_data;
   logic [31:0] lsu_tinst;
+  logic speculative_load;
   always_comb begin
     lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
     lsu_tinst = tinst_i[0];
+    speculative_load = 1'b0;
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (lsu_valid_i[1]) begin
         lsu_data  = fu_data_i[1];
         lsu_tinst = tinst_i[1];
+        if (CVA6Cfg.SpeculativeSb) begin
+          speculative_load = branch_valid_i[0] ? 1'b1 : 1'b0;
+        end
       end
     end
   end
@@ -563,7 +566,7 @@ module ex_stage
       .commit_i              (lsu_commit_i),
       .commit_ready_o        (lsu_commit_ready_o),
       .commit_tran_id_i,
-      .speculative_load_i,
+      .speculative_load_i    (speculative_load),
       .resolved_branch_i     (resolved_branch),
       .enable_translation_i,
       .enable_g_translation_i,
