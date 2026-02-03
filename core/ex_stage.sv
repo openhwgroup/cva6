@@ -285,11 +285,11 @@ module ex_stage
   logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] alu_result;
   logic [CVA6Cfg.XLEN-1:0] csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
+  bp_resolve_t resolved_branch;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
 
-  bp_resolve_t resolved_branch;
   fu_data_t [CVA6Cfg.NrALUs-1:0] alu_data;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] one_cycle_select;
@@ -516,7 +516,7 @@ module ex_stage
   logic [31:0] lsu_tinst;
   logic speculative_load;
   always_comb begin
-    lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
+    lsu_data = lsu_valid_i[0] ? fu_data_i[0] : '0;
     lsu_tinst = tinst_i[0];
     speculative_load = 1'b0;
 
@@ -555,6 +555,7 @@ module ex_stage
       .fu_data_i             (lsu_data),
       .lsu_ready_o,
       .lsu_valid_i           (|lsu_valid_i),
+      .speculative_load_i    (speculative_load),
       .load_trans_id_o,
       .load_result_o,
       .load_valid_o,
@@ -566,7 +567,6 @@ module ex_stage
       .commit_i              (lsu_commit_i),
       .commit_ready_o        (lsu_commit_ready_o),
       .commit_tran_id_i,
-      .speculative_load_i    (speculative_load),
       .resolved_branch_i     (resolved_branch),
       .enable_translation_i,
       .enable_g_translation_i,

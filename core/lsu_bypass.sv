@@ -46,6 +46,7 @@ module lsu_bypass
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic      pop_st_i,
 
+    // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
 
     // TO_BE_COMPLETED - TO_BE_COMPLETED

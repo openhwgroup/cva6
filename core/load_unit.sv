@@ -25,8 +25,7 @@ module load_unit
     parameter type dcache_req_i_t = logic,
     parameter type dcache_req_o_t = logic,
     parameter type exception_t = logic,
-    parameter type lsu_ctrl_t = logic,
-    parameter type bp_resolve_t = logic
+    parameter type lsu_ctrl_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -76,8 +75,6 @@ module load_unit
     input logic store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // Result from branch unit - EX_STAGE
-    input bp_resolve_t resolved_branch_i,
     // Data cache request out - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache request in - CACHES

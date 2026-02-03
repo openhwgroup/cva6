@@ -51,6 +51,8 @@ module load_store_unit
     output logic lsu_ready_o,
     // Load Store Unit instruction is valid - ISSUE_STAGE
     input logic lsu_valid_i,
+    // Signals speculative loads for non-idempotent load handling - EX_STAGE
+    input logic speculative_load_i,
 
     // Load transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
@@ -76,8 +78,6 @@ module load_store_unit
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-    // Signals speculative loads for non-idempotent load handling - ISSUE_STAGE
-    input logic speculative_load_i,
     // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // Enable virtual memory translation - TO_BE_COMPLETED
@@ -565,8 +565,7 @@ module load_store_unit
       .dcache_req_i_t(dcache_req_i_t),
       .dcache_req_o_t(dcache_req_o_t),
       .exception_t(exception_t),
-      .lsu_ctrl_t(lsu_ctrl_t),
-      .bp_resolve_t(bp_resolve_t)
+      .lsu_ctrl_t(lsu_ctrl_t)
   ) i_load_unit (
       .clk_i,
       .rst_ni,
@@ -595,7 +594,6 @@ module load_store_unit
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
-      .resolved_branch_i,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[1]),
       .req_port_o           (dcache_req_ports_o[1]),
