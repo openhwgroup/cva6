@@ -72,7 +72,7 @@ INFO       ElabSummary          1     Generates Elaborated design units
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Severity   Rule Name            Count Short Help                               
 ===============================================================================
-ERROR      W123                 12    A signal or variable has been read but 
+ERROR      W123                 18    A signal or variable has been read but 
                                       is not set 
 ERROR      W416                 1     Width of return type and return value 
                                       of a function should be same (Verilog) 
