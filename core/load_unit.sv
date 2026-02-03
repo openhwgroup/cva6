@@ -224,7 +224,7 @@ module load_unit
 
   // Check that NI operations follow the necessary conditions
   logic paddr_ni;
-  logic [CVA6Cfg.NrCommitPorts-1:0] not_commit_time;
+  logic not_commit_time;
   logic inflight_stores;
   logic stall_ni;
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
