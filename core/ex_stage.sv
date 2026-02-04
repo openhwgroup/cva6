@@ -525,7 +525,7 @@ module ex_stage
         lsu_data  = fu_data_i[1];
         lsu_tinst = tinst_i[1];
         if (CVA6Cfg.SpeculativeSb) begin
-          speculative_load = branch_valid_i[0] ? 1'b1 : 1'b0;
+          speculative_load = branch_valid_i[0];
         end
       end
     end
