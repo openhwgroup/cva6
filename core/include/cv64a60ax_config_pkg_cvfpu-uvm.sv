@@ -30,6 +30,27 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 128;
   localparam CVA6ConfigDataUserWidth = 12;
 
+  `ifndef __UVMA_AXI_MACROS_SV__
+  `define __UVMA_AXI_MACROS_SV__
+
+  `define IFNDEF_DEFINE(name, value) \
+    `ifndef name \
+      `define name value \
+  `endif
+
+  `define UVMA_AXI_ADDR_MAX_WIDTH 39
+  `define UVMA_AXI_DATA_MAX_WIDTH 128
+  `define UVMA_AXI_USER_MAX_WIDTH 12
+  `define UVMA_AXI_ID_MAX_WIDTH 4
+  // `IFNDEF_DEFINE(UVMA_AXI_STRB_MAX_WIDTH , 8   )
+
+  `define UVMA_AXI_MAX_NB_TXN_BURST 256
+  `define UVMA_AXI_LOOP_MAX_WIDTH 8  
+  `define UVMA_AXI_MMUSID_MAX_WIDTH 32 
+  `define UVMA_AXI_MMUSSID_MAX_WIDTH 20 
+
+`endif  // __UVMA_AXI_MACROS_SV__
+
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
@@ -64,6 +85,7 @@ package cva6_config_pkg;
       CoproType: config_pkg::COPRO_EXAMPLE,
       RVZiCond: bit'(1),
       RVZicntr: bit'(1),
+      RVZiCbom: bit'(1),
       RVZihpm: bit'(1),
       NrScoreboardEntries: unsigned'(8),
       PerfCounterEn: bit'(1),
@@ -104,6 +126,11 @@ package cva6_config_pkg;
       CachedRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000}),
       MaxOutstandingStores: unsigned'(7),
       DebugEn: bit'(1),
+      SDTRIG: bit'(0),
+      Mcontrol6: bit'(0),
+      Icount: bit'(0),
+      Etrigger: bit'(0),
+      Itrigger: bit'(0),
       AxiBurstWriteEn: bit'(1),
       IcacheByteSize: unsigned'(32768),
       IcacheSetAssoc: unsigned'(8),
@@ -113,6 +140,7 @@ package cva6_config_pkg;
       DcacheSetAssoc: unsigned'(8),
       DcacheLineWidth: unsigned'(512),
       DcacheFlushOnFence: bit'(0),
+      DcacheFlushOnFenceI: bit'(0),
       DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: unsigned'(0),
       WtDcacheWbufDepth: int'(8),
@@ -121,6 +149,7 @@ package cva6_config_pkg;
       InstrTlbEntries: int'(16),
       DataTlbEntries: int'(16),
       UseSharedTlb: bit'(0),
+      SvnapotEn: bit'(0),
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
