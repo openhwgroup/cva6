@@ -30,7 +30,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 128;
   localparam CVA6ConfigDataUserWidth = 12;
 
-  `ifndef __UVMA_AXI_MACROS_SV__
+`ifndef __UVMA_AXI_MACROS_SV__
   `define __UVMA_AXI_MACROS_SV__
 
   `define IFNDEF_DEFINE(name, value) \
