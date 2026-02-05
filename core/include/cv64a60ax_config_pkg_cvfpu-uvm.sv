@@ -30,27 +30,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigAxiDataWidth = 128;
   localparam CVA6ConfigDataUserWidth = 12;
 
-`ifndef __UVMA_AXI_MACROS_SV__
-  `define __UVMA_AXI_MACROS_SV__
-
-  `define IFNDEF_DEFINE(name, value) \
-    `ifndef name \
-      `define name value \
-  `endif
-
-  `define UVMA_AXI_ADDR_MAX_WIDTH 39
-  `define UVMA_AXI_DATA_MAX_WIDTH 128
-  `define UVMA_AXI_USER_MAX_WIDTH 12
-  `define UVMA_AXI_ID_MAX_WIDTH 4
-  // `IFNDEF_DEFINE(UVMA_AXI_STRB_MAX_WIDTH , 8   )
-
-  `define UVMA_AXI_MAX_NB_TXN_BURST 256
-  `define UVMA_AXI_LOOP_MAX_WIDTH 8  
-  `define UVMA_AXI_MMUSID_MAX_WIDTH 32 
-  `define UVMA_AXI_MMUSSID_MAX_WIDTH 20 
-
-`endif  // __UVMA_AXI_MACROS_SV__
-
   localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
