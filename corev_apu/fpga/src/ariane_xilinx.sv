@@ -10,6 +10,9 @@
 
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+`include "axi/assign.svh"
+`include "rvfi_types.svh"
+`include "iti_types.svh"
 
 module ariane_xilinx (
 // WARNING: Do not define input parameters. This causes the FPGA build to fail.
@@ -177,11 +180,20 @@ module ariane_xilinx (
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
   // common part
-  // input logic      trst_n      ,
+ // input logic         trst_n      ,
   input  logic        tck         ,
   input  logic        tms         ,
   input  logic        tdi         ,
-  output wire         tdo         ,
+  output  wire         tdo         ,
+  input  logic        prog_clko   ,
+  input  logic        prog_rxen   ,
+  input  logic        prog_txen   ,
+  input  logic        prog_spien  ,
+  output logic        prog_rdn    ,
+  output logic        prog_wrn    ,
+  output logic        prog_oen    ,
+  output logic        prog_siwun  ,
+  inout  logic [7:0]  prog_d      ,
   input  logic        rx          ,
   output logic        tx
 );
@@ -214,7 +226,7 @@ localparam NumWords = (24 * 1024 * 1024) / 8;
 localparam NBSlave = 2; // debug, ariane
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
-localparam AxiIdWidthMaster = 4;
+localparam AxiIdWidthMaster = 5;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
 localparam AxiUserWidth = CVA6Cfg.AxiUserWidth;
 
@@ -765,7 +777,7 @@ ariane #(
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
-    .rvfi_probes_o( /* open */          ),
+    .rvfi_probes_o(          ),
     .debug_req_i  ( debug_req_irq       ),
     .noc_req_o    ( axi_ariane_req      ),
     .noc_resp_i   ( axi_ariane_resp     )
@@ -773,6 +785,8 @@ ariane #(
 
 `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
 `AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
+
+
 
 // ---------------
 // CLINT

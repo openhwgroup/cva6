@@ -152,7 +152,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
     dut_req_port_o.data_wdata    = 'x;
   endtask : genSeqWrite
 
-  // Repeadedly write to the same address
+  // Repeatedly write to the same address
   task automatic genConstWrite();
     automatic logic [CVA6Cfg.XLEN-1:0] val;
     paddr                         = CachedAddrBeg;
