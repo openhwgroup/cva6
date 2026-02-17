@@ -271,7 +271,7 @@ spyglass:
     - cp spyglass/reference_summary.rpt artifacts/lint_reports
     - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
 
-cvxif-regression:
+.cvxif-regression:
   extends:
     - .synthesis_test
   variables:

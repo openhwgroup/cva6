@@ -1,6 +1,8 @@
-== Programming Reference Manual
+= Tandem Programming Reference Manual: Spike Interface
+:toc:
 
-=== Configuration parameter names and scopes
+
+== Spike configuration parameter names and scopes
 
 Parameters are referenced by their hierarchical names of the form `PREFIX/PARAM_NAME` that enable a tree-like hierarchical structure.  Supported values of `PREFIX` are:
 
@@ -18,9 +20,9 @@ Parameter names are not constrained by the C/C++/SystemVerilog identifier syntax
 
 Some parameters are only meaningful in specific scopes: either platform (`/top/`), or core (`/top/cores/` or `/top/core/<hartid>/`).
 
-=== Parameter index
+== Parameter index
 
-==== Platform-level parameters
+=== Platform-level parameters
 
 [cols="1,1,1,5"]
 |===
@@ -87,7 +89,7 @@ Some parameters are only meaningful in specific scopes: either platform (`/top/`
 |Number of cores (harts) in the platform.
 |===
 
-==== Per-CSR parameters
+=== Per-CSR parameters
 
 All CSRs of cores in the platform can be controlled wrt. their presence ("availability") using a per-CSR parameter.  For each CSR that is available, per-CSR parameters control the initial value, the writable bits and the overall writability of the register.
 
@@ -133,15 +135,20 @@ Depending on the prefix used (`/top/cores/` or `/top/core/<hartid>`) the core-le
 |===
 |Name |Type |Default |Description 
 
-|`boot_addr`
-|uint64_t
-|`0x10000`
-|Boot address for core(s).
+|`allow_unmapped_mem_access`
+|bool
+|`False`
+|If `True`, do not raise exceptions upon accessing unmapped memory locations; instead, return zeroes on load and fetch accesses, and do nothing on store accesses.
 
-|`csr_counters_injection`
+r|`csr_counters_injection`
 |bool
 |`False`
 |If `True`, inject values of microarchitecture-dependent counter CSRs from RTL into the reference model.  Affected CSRs are `cycle`, `cycleh`, `mcycle`, `mcycleh` and `mip`.
+
+|`cvxif_x_num_rs`
+|uint64_t
+|`3`
+|Maximum count of source registers that can be accessed by R4-type instructions of the CV-X-IF interface on this core.
 
 |`debug_exception_handler_addr`
 |uint64_t
@@ -268,14 +275,14 @@ Extensions currently supported: +
 |===
 
 
-=== DPI Programming Interface
+== DPI Programming Interface
 
 The DPI interface is implemented in file `vendor/riscv/riscv-isa-sim/riscv/riscv_dpi.cc` in `core-v-verif` repository (https://github.com/openhwgroup/core-v-verif/).
 
 The shared library providing the implementation of the DPI functions to RTL simulators is named `libriscv.so`.  It is built during Spike build and is installed in the `lib` subdirectory of Spike installation directory, typically `<CVA6_ROOT>/tools/spike/lib`.
 
 
-==== Create a new instance of Spike extended with DPI interfaces suitable for tandem operation
+=== Create a new instance of Spike extended with DPI interfaces suitable for tandem operation
 
 [,verilog]
 ----
@@ -334,7 +341,7 @@ Return value: NONE.
 
 Before stepping, the entry state of the reference model will be adjusted according to the state of the RTL model.  After the step completes, the return state will represent the result of stepping the reference model for one commit (or exception) from the *updated* input state.
 
-==== Set Boolean parameter `<base><name>` to `<value>`
+=== Set Boolean parameter `<base><name>` to `<value>`
 
 [,verilog]
 ----
@@ -354,7 +361,7 @@ Input args:
 
 Return value: NONE.
 
-==== Set uint64_t parameter `<base><name>` to `<value>`
+=== Set uint64_t parameter `<base><name>` to `<value>`
 
 [,verilog]
 ----
@@ -374,7 +381,7 @@ Input args:
 
 Return value: NONE.
 
-==== Set string parameter `<base><name>` to `<value>`
+=== Set string parameter `<base><name>` to `<value>`
 
 [,verilog]
 ----
@@ -394,7 +401,7 @@ Input args:
 
 Return value: NONE.
 
-==== Return the value of Boolean parameter `<base><name>`
+=== Return the value of Boolean parameter `<base><name>`
 
 [,verilog]
 ----
@@ -413,7 +420,7 @@ Input args:
 
 Return value: Current value of Boolean parameter `<base><name>`.
 
-==== Return the value of uint64_t parameter `<base><name>`
+=== Return the value of uint64_t parameter `<base><name>`
 
 [,verilog]
 ----
@@ -432,7 +439,7 @@ Input args:
 
 Return value: Current value of uint64_t parameter `<base><name>`
 
-==== Return the value of string parameter `<base><name>`
+=== Return the value of string parameter `<base><name>`
 
 [,verilog]
 ----
@@ -451,7 +458,7 @@ Input args:
 
 Return value: Current value of string parameter `<base><name>`.
 
-==== Set a collection of parameters from a Yaml configuration file
+=== Set a collection of parameters from a Yaml configuration file
 
 [,verilog]
 ----
@@ -465,7 +472,7 @@ extern "C" void spike_set_params_from_file(const char *paramFilePath);
 
 Sets parameters of the current Spike instance according to the content of file named `<paramFilePath>`.
 
-==== Get current value of a Spike CSR of a specific core
+=== Get current value of a Spike CSR of a specific core
 
 [,verilog]
 ----
@@ -485,7 +492,7 @@ Input args:
 
 Return value: NONE (CSR value is passed in an in-out arg).
 
-==== Set value of a Spike CSR for a specific core
+=== Set value of a Spike CSR for a specific core
 
 [,verilog]
 ----
@@ -508,14 +515,14 @@ Return value: NONE.
 
 //=== C++ Programming Interface
 
-=== Command-line interface
+== Command-line interface
 
 Command-line options added to Spike serve a dual purpose:
 
 * run Spike in standalone mode using the same configurations as in tandem mode;
 * (development aid) test the effect of individual parameters without editing configuration files.
 
-==== Load Spike parameters from a configuration file
+=== Load Spike parameters from a configuration file
 
 [,sh]
 ----
@@ -526,7 +533,7 @@ Load the parameter tree from Yaml file named `<NAME>`.
 
 The file is expected to contain a valid parameter tree.  Parameters which are not recognized will be silently ignored.
 
-==== Set a single Spike parameter
+=== Set a single Spike parameter
 
 [,sh]
 ----

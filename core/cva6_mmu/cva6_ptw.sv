@@ -15,7 +15,7 @@
 // Author: Angela Gonzalez, PlanV Technology
 // Date: 26/02/2024
 // Description: Hardware-PTW (Page-Table-Walker) for CVA6 supporting sv32, sv39 and sv39x4.
-//              This module is an merge of the PTW Sv39 developed by Florian Zaruba,
+//              This module is a merge of the PTW Sv39 developed by Florian Zaruba,
 //              the PTW Sv32 developed by Sebastien Jacq and the PTW Sv39x4 by Bruno Sá.
 
 /* verilator lint_off WIDTH */
@@ -40,7 +40,7 @@ module cva6_ptw
     output logic ptw_error_o,  // set when an error occurred
     output logic ptw_error_at_g_st_o,  // set when an error occurred at the G-Stage
     output logic ptw_err_at_g_int_st_o,  // set when an error occurred at the G-Stage during S-Stage translation
-    output logic ptw_access_exception_o,  // set when an PMP access exception occurred
+    output logic ptw_access_exception_o,  // set when a PMP access exception occurred
     input logic enable_translation_i,  // CSRs indicate to enable SV39 VS-Stage translation
     input logic enable_g_translation_i,  // CSRs indicate to enable SV39  G-Stage translation
     input logic en_ld_st_translation_i,  // enable virtual memory translation for load/stores
@@ -78,6 +78,7 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    mbe_i,
 
     // Performance counters
     output logic shared_tlb_miss_o,
@@ -109,6 +110,7 @@ module cva6_ptw
     WAIT_RVALID,
     PROPAGATE_ERROR,
     PROPAGATE_ACCESS_ERROR,
+    KILL_REQ,
     LATENCY
   }
       state_q, state_d;
@@ -133,6 +135,8 @@ module cva6_ptw
   logic global_mapping_q, global_mapping_n;
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
+  // latched kill signal
+  logic kill_req_n, kill_req_q;
   // register the ASID
   logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VMID
@@ -155,14 +159,14 @@ module cva6_ptw
   // directly output the correct physical address
   assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
-  // we are never going to kill this request
-  assign req_port_o.kill_req = '0;
   // we are never going to write with the HPTW
   assign req_port_o.data_wdata = '0;
   // we only issue one single request at a time
   assign req_port_o.data_id = '0;
   // user field not used
   assign req_port_o.data_wuser = '0;
+  // not a write
+  assign req_port_o.cbo_op = ariane_pkg::CBO_NONE;
 
   // -----------
   // TLB Update
@@ -237,6 +241,7 @@ module cva6_ptw
   end
 
   assign req_port_o.tag_valid = tag_valid_q;
+  assign req_port_o.kill_req  = (state_q == KILL_REQ);
 
   logic allow_access;
 
@@ -292,6 +297,7 @@ module cva6_ptw
     // default assignments
     // PTW memory interface
     tag_valid_n             = 1'b0;
+    kill_req_n              = kill_req_q;
     req_port_o.data_req     = 1'b0;
     req_port_o.data_size    = 2'(CVA6Cfg.PtLevels);
     req_port_o.data_we      = 1'b0;
@@ -399,8 +405,15 @@ module cva6_ptw
         if (req_port_i.data_gnt) begin
           // send the tag valid signal one cycle later
           tag_valid_n = 1'b1;
-          state_d     = PTE_LOOKUP;
+          // if the request has been flushed, kill it one cycle later
+          state_d = (kill_req_q || flush_i) ? KILL_REQ : PTE_LOOKUP;
         end
+      end
+
+      KILL_REQ: begin
+        kill_req_n = 1'b0;
+        // even when killed, the request sends a response
+        state_d = WAIT_RVALID;
       end
 
       PTE_LOOKUP: begin
@@ -626,11 +639,20 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
-      if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
-        state_d = WAIT_RVALID;
-      else state_d = LATENCY;
+      if ((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) state_d = WAIT_RVALID;
+      else if (state_q != WAIT_GRANT) state_d = LATENCY;
+
+      kill_req_n = (state_q == WAIT_GRANT);
     end
   end
+
+  // Big Endian Capability Additions 
+  // req_port_i.data_rdata is the data coming into the Page Table Walker from Data Memory. If mbe=1 meaning the processor is in Big Endian data mode, then we need to reverse the byte order to correctly view this data.
+  // Otherwise, this page table walker would not be able to understand a page table stored in Big Endian byte order.
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
+  assign byteSwapped_data = {<<8{req_port_i.data_rdata}};
+  assign endian_data = mbe_i ? byteSwapped_data : req_port_i.data_rdata;
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -639,6 +661,7 @@ module cva6_ptw
       is_instr_ptw_q    <= 1'b0;
       ptw_lvl_q         <= '0;
       tag_valid_q       <= 1'b0;
+      kill_req_q        <= 1'b0;
       tlb_update_asid_q <= '0;
       vaddr_q           <= '0;
       ptw_pptr_q        <= '0;
@@ -658,10 +681,12 @@ module cva6_ptw
       is_instr_ptw_q    <= is_instr_ptw_n;
       ptw_lvl_q         <= ptw_lvl_n;
       tag_valid_q       <= tag_valid_n;
+      kill_req_q        <= kill_req_n;
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= req_port_i.data_rdata;
+      //data_rdata_q      <= req_port_i.data_rdata;
+      data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
 
       if (CVA6Cfg.RVH) begin

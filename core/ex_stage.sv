@@ -31,7 +31,8 @@ module ex_stage
     parameter type lsu_ctrl_t = logic,
     parameter type x_result_t = logic,
     parameter type acc_mmu_req_t = logic,
-    parameter type acc_mmu_resp_t = logic
+    parameter type acc_mmu_resp_t = logic,
+    parameter type cbo_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -186,6 +187,8 @@ module ex_stage
     input logic flush_tlb_gvma_i,
     // Privilege mode - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
+    // Data endianness - CSR REGFILE
+    input logic mbe_i,
     // Virtualization mode - CSR_REGFILE
     input logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
@@ -532,6 +535,7 @@ module ex_stage
       .icache_dreq_t(icache_dreq_t),
       .icache_drsp_t(icache_drsp_t),
       .lsu_ctrl_t(lsu_ctrl_t),
+      .cbo_t(cbo_t),
       .acc_mmu_req_t(acc_mmu_req_t),
       .acc_mmu_resp_t(acc_mmu_resp_t)
   ) lsu_i (
@@ -563,6 +567,7 @@ module ex_stage
       .icache_areq_i,
       .icache_areq_o,
       .priv_lvl_i,
+      .mbe_i,
       .v_i,
       .ld_st_priv_lvl_i,
       .ld_st_v_i,
