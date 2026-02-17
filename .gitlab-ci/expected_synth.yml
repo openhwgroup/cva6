@@ -1,5 +1,5 @@
 cv32a65x:
-  gates: 184679
+  gates: 186061
 cv32a60x:
   gates: 184679
 cv32a65x_axi:
