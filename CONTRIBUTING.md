@@ -88,6 +88,7 @@ For RTL coding, the OpenHW Group has adopted the [lowRISC Style Guides](https://
 
 ## Git Considerations
 
+- The pull request must be rebased on the master branch to be merged on GitHub. That is why we are requesting permissions on the PR branch to allow the committer to perform the rebasing.
 - Do not push to master, if you want to add a feature do it in your branch.
 - Separate subject from body with a blank line.
 - Limit the subject line to 50 characters.
