@@ -44,7 +44,7 @@ CVA6 User Manual
    RVZbs <RISCV_Instructions_RVZbs>
    RVZbkb <RISCV_Instructions_RVZbkb>
    RVZbkc <RISCV_Instructions_RVZbkc>
-   RVZbkx >RISCV_Instructions_RVZbkx>
+   RVZbkx <RISCV_Instructions_RVZbkx>
    RVZkne <RISCV_Instructions_RVZkne>
    RVZknd <RISCV_Instructions_RVZknd>
    RVZknh <RISCV_Instructions_RVZknh>
@@ -68,3 +68,4 @@ CVA6 User Manual
 
    
    
+
