@@ -39,19 +39,21 @@ Some of them are optional and are enabled through parameters in the SystemVerilo
    :align: left
    :header: "Extension", "Optional", "RV32 (in CV32A6)", "RV64 (in CV64A6)", "Note"
 
-   "I- Base Integer Instruction Set",                                   "No",  "✔", "✔", "Note 1"
-   "A - Atomic Instructions",                                           "Yes", "✔", "✔", "Note 1"
-   "Zb* - Bit-Manipulation",                                            "Yes", "✔", "✔", "Note 1"
-   "C - Compressed Instructions ",                                      "Yes", "✔", "✔", "Note 1"
-   "Zcb - Code Size Reduction",                                         "Yes", "✔", "✔", "Note 1"
-   "Zcmp - Code Size Reduction",                                        "Yes", "✔", "✔", "Note 1"
-   "D - Double precision floating-point",                               "Yes", "",  "✔", "Note 1"
-   "F - Single precision floating-point",                               "Yes", "✔", "✔", "Note 1"
-   "M - Integer Multiply/Divide",                                       "No",  "✔", "✔", "Note 1"
-   "Zicount - Performance Counters",                                    "Yes", "✔", "✔", "Note 2"
-   "Zicsr - Control and Status Register Instructions",                  "No",  "✔", "✔", "Note 2"
-   "Zifencei - Instruction-Fetch Fence",                                "No",  "✔", "✔", "Note 2"
-   "Zicond - Integer Conditional Operations(Ratification pending)",     "Yes", "✔", "✔", "Note 2"
+   "I- Base Integer Instruction Set",                                                 "No",  "✔", "✔", "Note 1"
+   "A - Atomic Instructions",                                                         "Yes", "✔", "✔", "Note 1"
+   "Zb* - Bit-Manipulation",                                                          "Yes", "✔", "✔", "Note 1"
+   "C - Compressed Instructions ",                                                    "Yes", "✔", "✔", "Note 1"
+   "Zcb - Code Size Reduction",                                                       "Yes", "✔", "✔", "Note 1"
+   "Zcmp - Code Size Reduction",                                                      "Yes", "✔", "✔", "Note 1"
+   "Zcmt - Code Size Reduction",                                                      "Yes", "✔", "✔", "Note 2"
+   "Zkn - NIST Algorithm Suite (comprised of Zbkb, Zbkc, Zbkx, Zkne, Zknd and Zknh)", "Yes", "✔", "✔", "Note 1"
+   "D - Double precision floating-point",                                             "Yes", "",  "✔", "Note 1"
+   "F - Single precision floating-point",                                             "Yes", "✔", "✔", "Note 1"
+   "M - Integer Multiply/Divide",                                                     "No",  "✔", "✔", "Note 1"
+   "Zicount - Performance Counters",                                                  "Yes", "✔", "✔", "Note 2"
+   "Zicsr - Control and Status Register Instructions",                                "No",  "✔", "✔", "Note 2"
+   "Zifencei - Instruction-Fetch Fence",                                              "No",  "✔", "✔", "Note 2"
+   "Zicond - Integer Conditional Operations(Ratification pending)",                   "Yes", "✔", "✔", "Note 2"
 
 Notes:
 
@@ -76,6 +78,8 @@ These extensions are available in CV32A60AX:
    "RV32C - Compressed Instructions ",                                      "✔"
    "RV32Zcb - Code Size Reduction",                                         "✔"
    "RVZcmp - Code Size Reduction",                                          ""
+   "RVZcmt - Code Size Reduction",                                          ""
+   "Zkn - NIST Algorithm Suite",                                            ""
    "RV32D - Double precision floating-point",                               ""
    "RV32F - Single precision floating-point",                               ""
    "RV32M - Integer Multiply/Divide",                                       "✔"
@@ -100,6 +104,8 @@ These extensions are available in CV32A60X:
    "RV32C - Compressed Instructions ",                                      "✔"
    "RV32Zcb - Code Size Reduction",                                         "✔"
    "RVZcmp - Code Size Reduction",                                          "✔"
+   "RVZcmt - Code Size Reduction",                                          ""
+   "Zkn - NIST Algorithm Suite",                                            ""
    "RV32D - Double precision floating-point",                               ""
    "RV32F - Single precision floating-point",                               ""
    "RV32M - Integer Multiply/Divide",                                       "✔"
@@ -124,6 +130,8 @@ These extensions are available in CV64A6_MMU:
    "RV32C - Compressed Instructions ",                                      "✔"
    "RV32Zcb - Code Size Reduction",                                         "✔"
    "RVZcmp - Code Size Reduction",                                          "✔"
+   "RVZcmt - Code Size Reduction",                                          ""
+   "Zkn - NIST Algorithm Suite",                                            ""
    "RV32D - Double precision floating-point",                               ""
    "RV32F - Single precision floating-point",                               ""
    "RV32M - Integer Multiply/Divide",                                       "✔"
@@ -203,7 +211,7 @@ CVA6 family
 
 CV32A6 supports the RISC-V **Sv32** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 32).
 
-CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
+CV64A6 supports the RISC-V **Sv39** virtual memory when the ``MMUEn`` parameter is set to 1 (and ``Xlen`` is set to 64). Additionally, the **Svnapot** extension can be enabled with Sv39 when ``SvnapotEn`` parameter is set to 1.
 
 Within CV64A6, the hypervisor extension is available and supports **Sv39x4** virtual memory when the ``CVA6ConfigHExtEn`` parameter is set to 1 (and ``Xlen`` is set to 64).
 
