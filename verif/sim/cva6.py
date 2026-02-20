@@ -943,7 +943,19 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
     elif base == "cv32a65x":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
@@ -951,7 +963,19 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
     elif base == "cv32a65x_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar_axi":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
