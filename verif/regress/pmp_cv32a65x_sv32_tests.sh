@@ -34,14 +34,18 @@ make clean
 cd verif/sim/
 make clean_all
 
-python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld
+python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target cv32a65x_sv32_axi --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld
 
 make clean_all
 
 
 export DV_TARGET=cv32a65x
 
+<<<<<<<< HEAD:verif/regress/pmp_cv32a65x_sv32_tests.sh
 python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld
+========
+python3 cva6.py --testlist=../tests/testlist_pmp-$DV_TARGET.yaml --target cv32a65x_sv32 --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../../config/gen_from_riscv_config/cv32a60x/linker/link.ld
+>>>>>>>> 27305f670 (create all configs and their smoke tests):verif/regress/pmp_cv32a65x_tests.sh
 
 make clean_all
 
