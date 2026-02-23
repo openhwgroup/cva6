@@ -233,39 +233,28 @@ sources:
       - core/cache_subsystem/hpdcache/rtl/src/utils/ecc/prim_secded_55_48_enc.sv
       - core/cache_subsystem/hpdcache/rtl/src/utils/ecc/prim_secded_72_64_dec.sv
       - core/cache_subsystem/hpdcache/rtl/src/utils/ecc/prim_secded_72_64_enc.sv
-      # HPDCache SRAM models
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_ecc_1rw.sv
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_ecc_1rw.sv
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv
-      - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_ecc_1rw.sv
+      # HPDCache SRAM models (remapped to `tc_sram`)
+      - core/cache_subsystem/hpdcache_tc_sram.sv
+
+      - target: not(synthesis)
+        files:
+          - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_ecc_1rw.sv
+          - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_ecc_1rw.sv
+          - core/cache_subsystem/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_ecc_1rw.sv
 
       # Physical Memory Protection
       - core/pmp/src/pmp.sv
       - core/pmp/src/pmp_entry.sv
       - core/pmp/src/pmp_data_if.sv
 
-      - include_dirs:
-        - common/local/util
-        files:
-          - common/local/util/sram.sv
+      # FPGA support stubs: these should never be instantiated (and will throw assertions)
+      - vendor/pulp-platform/fpga-support/fpga-support-stubs.sv
 
-      - target: not(all(fpga, xilinx))
-        include_dirs:
-          - common/local/util
-        files:
-          - common/local/util/tc_sram_wrapper.sv
-          - common/local/util/sram_cache.sv
-          - common/local/util/tc_sram_wrapper_cache_techno.sv
-
-      - target: all(fpga, xilinx)
-        include_dirs:
-          - common/local/util
-        files:
-          - common/local/util/sram_cache.sv
-          - common/local/util/tc_sram_fpga_wrapper.sv
-          - vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv
+      # SRAM Wrappers stay tech-independent; we leave technology mapping to tc_sram
+      - common/local/util/tc_sram_wrapper.sv
+      - common/local/util/tc_sram_wrapper_cache_techno.sv
+      - common/local/util/sram_pulp.sv
+      - common/local/util/sram_cache.sv
 
       - target: not(synthesis)
         include_dirs:

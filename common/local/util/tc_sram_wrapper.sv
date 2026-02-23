@@ -34,8 +34,6 @@ module tc_sram_wrapper #(
   output data_t [NumPorts-1:0] rdata_o     // read data
 );
 
-// synthesis translate_off
-
   tc_sram #(
     .NumWords(NumWords),
     .DataWidth(DataWidth),
@@ -54,7 +52,5 @@ module tc_sram_wrapper #(
       .addr_i   ( addr_i  ),
       .rdata_o  ( rdata_o )
     );
-
-// synthesis translate_on
 
 endmodule
