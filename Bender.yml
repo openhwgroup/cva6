@@ -5,14 +5,16 @@ package:
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
     - "Andreas Kuster <kustera@ethz.ch>"
 
-# WT_DCACHE
+remotes:
+  pulp:
+    url: "https://github.com/pulp-platform"
+    default: true
+
 dependencies:
-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.31.0 }
-  common_cells:
-    { git: "https://github.com/pulp-platform/common_cells", version: 1.23.0 }
+  axi: { version: 0.39.10 }
+  common_cells: { version: 1.40.0 }
   fpnew: { git: "https://github.com/openhwgroup/cvfpu.git", rev: 3eb6afe } # branch: develop
-  tech_cells_generic:
-    { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.13 }
+  tech_cells_generic: { version: 0.2.14 }
 
 export_include_dirs:
   - core/include
@@ -22,6 +24,7 @@ export_include_dirs:
 sources:
   - include_dirs:
       - core/include
+      - common/local/util
     files:
       - core/include/config_pkg.sv
       # Pick the right configuration by passing the right bender flag.
@@ -126,6 +129,7 @@ sources:
       - core/ex_stage.sv
       - core/acc_dispatcher.sv
       - core/instr_realign.sv
+      - core/macro_decoder.sv
       - core/id_stage.sv
       - core/issue_read_operands.sv
       - core/issue_stage.sv
@@ -164,11 +168,12 @@ sources:
       - core/cache_subsystem/wt_axi_adapter.sv
       - core/cache_subsystem/cva6_icache.sv
       - core/cache_subsystem/tag_cmp.sv
-      - core/cache_subsystem/cva6_icache_axi_wrapper.sv
+      - core/cache_subsystem/cache_ctrl.sv
+      - core/cache_subsystem/amo_alu.sv
       - core/cache_subsystem/axi_adapter.sv
       - core/cache_subsystem/miss_handler.sv
-      - core/cache_subsystem/cache_ctrl.sv
       - core/cache_subsystem/std_nbdcache.sv
+      - core/cache_subsystem/cva6_icache_axi_wrapper.sv
       - core/cache_subsystem/std_cache_subsystem.sv
       # HPDCache sources
       - core/cache_subsystem/hpdcache/rtl/src/hpdcache_pkg.sv
@@ -257,9 +262,6 @@ sources:
       - common/local/util/sram_cache.sv
 
       - target: not(synthesis)
-        include_dirs:
-          - core/include
-          - common/local/util
         files:
           # Tracer (behavioral code, not RTL)
           - core/include/instr_tracer_pkg.sv
