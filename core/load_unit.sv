@@ -91,7 +91,8 @@ module load_unit
     ABORT_TRANSACTION_NI,
     WAIT_TRANSLATION,
     WAIT_FLUSH,
-    WAIT_WB_EMPTY
+    WAIT_WB_EMPTY,
+    WAIT_SPEC_LOAD
   }
       state_d, state_q;
 
@@ -258,33 +259,39 @@ module load_unit
     case (state_q)
       IDLE: begin
         if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does then stall and wait
-          if (!page_offset_matches_i) begin
-            // make a load request to memory
-            req_port_o.data_req = 1'b1;
-            // we got no data grant so wait for the grant before sending the tag
-            if (!req_port_i.data_gnt) begin
-              state_d = WAIT_GNT;
-            end else begin
-              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                state_d = ABORT_TRANSACTION;
+          // start the translation process even though we do not know if the addresses match this should ease timing
+          // don't start the translation for speculative loads that miss on tlb
+          translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
+          // check if load is speculative and non idempotent, if it is then stall and wait for branch result
+          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+            // check if the page offset matches with a store, if it does then stall and wait
+            if (!page_offset_matches_i) begin
+              // make a load request to memory
+              req_port_o.data_req = 1'b1;
+              // we got no data grant so wait for the grant before sending the tag
+              if (!req_port_i.data_gnt) begin
+                state_d = WAIT_GNT;
               end else begin
-                if (!stall_ni) begin
-                  // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                  state_d  = SEND_TAG;
-                  pop_ld_o = 1'b1;
-                  // translation valid but this is to NC and the WB is not yet empty.
-                end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                  state_d = ABORT_TRANSACTION_NI;
+                if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+                  state_d = ABORT_TRANSACTION;
+                end else begin
+                  if (!stall_ni) begin
+                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                    state_d  = SEND_TAG;
+                    pop_ld_o = 1'b1;
+                    // translation valid but this is to NC and the WB is not yet empty.
+                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                    state_d = ABORT_TRANSACTION_NI;
+                  end
                 end
               end
+            end else begin
+              // wait for the store buffer to train and the page offset to not match anymore
+              state_d = WAIT_PAGE_OFFSET;
             end
           end else begin
-            // wait for the store buffer to train and the page offset to not match anymore
-            state_d = WAIT_PAGE_OFFSET;
+            // check branch result on the next cycle
+            state_d = WAIT_SPEC_LOAD;
           end
         end
       end
@@ -294,6 +301,20 @@ module load_unit
         // we make a new request as soon as the page offset does not match anymore
         if (!page_offset_matches_i) begin
           state_d = WAIT_GNT;
+        end
+      end
+
+      WAIT_SPEC_LOAD: begin
+        // if we have a misspredicted speculative load
+        if (CVA6Cfg.SpeculativeSb && lsu_ctrl_i.is_speculative_load_miss) begin
+          // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
+          if (!req_port_i.data_rvalid) begin
+            state_d  = IDLE;
+            pop_ld_o = 1'b1;
+          end
+          // if we have a correct prediction this is now a regular load
+        end else begin
+          state_d = IDLE;
         end
       end
 
@@ -327,34 +348,40 @@ module load_unit
         state_d = IDLE;
 
         if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match
-          // this should ease timing
-          translation_req_o = 1'b1;
-          // check if the page offset matches with a store, if it does stall and wait
-          if (!page_offset_matches_i) begin
-            // make a load request to memory
-            req_port_o.data_req = 1'b1;
-            // we got no data grant so wait for the grant before sending the tag
-            if (!req_port_i.data_gnt) begin
-              state_d = WAIT_GNT;
-            end else begin
-              // we got a grant so we can send the tag in the next cycle
-              if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                state_d = ABORT_TRANSACTION;
+          // start the translation process even though we do not know if the addresses match this should ease timing
+          // don't start the translation for speculative loads that miss on tlb
+          translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
+          // check if load is speculative and non idempotent, if it is then stall and wait for branch result
+          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+            // check if the page offset matches with a store, if it does stall and wait
+            if (!page_offset_matches_i) begin
+              // make a load request to memory
+              req_port_o.data_req = 1'b1;
+              // we got no data grant so wait for the grant before sending the tag
+              if (!req_port_i.data_gnt) begin
+                state_d = WAIT_GNT;
               end else begin
-                if (!stall_ni) begin
-                  // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                  state_d  = SEND_TAG;
-                  pop_ld_o = 1'b1;
-                  // translation valid but this is to NC and the WB is not yet empty.
-                end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                  state_d = ABORT_TRANSACTION_NI;
+                // we got a grant so we can send the tag in the next cycle
+                if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+                  state_d = ABORT_TRANSACTION;
+                end else begin
+                  if (!stall_ni) begin
+                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                    state_d  = SEND_TAG;
+                    pop_ld_o = 1'b1;
+                    // translation valid but this is to NC and the WB is not yet empty.
+                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                    state_d = ABORT_TRANSACTION_NI;
+                  end
                 end
               end
+            end else begin
+              // wait for the store buffer to train and the page offset to not match anymore
+              state_d = WAIT_PAGE_OFFSET;
             end
           end else begin
-            // wait for the store buffer to train and the page offset to not match anymore
-            state_d = WAIT_PAGE_OFFSET;
+            // check branch result on the next cycle
+            state_d = WAIT_SPEC_LOAD;
           end
         end
         // ----------
@@ -455,6 +482,13 @@ module load_unit
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
+    end
+
+    // raise valid when removing a misspredicted speculative load
+    if (CVA6Cfg.SpeculativeSb && (state_q == WAIT_SPEC_LOAD) && lsu_ctrl_i.is_speculative_load_miss && !req_port_i.data_rvalid && valid_i) begin
+      trans_id_o = lsu_ctrl_i.trans_id;
+      valid_o = 1'b1;
+      ex_o.valid = 1'b0;
     end
   end
 
