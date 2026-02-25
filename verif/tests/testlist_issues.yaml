@@ -45,3 +45,13 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: hsv-misaligned-exception-cause
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/hsv-misaligned-exception-cause.S
+
+  - test: hlv-misaligned-exception-cause
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/hlv-misaligned-exception-cause.S
+
