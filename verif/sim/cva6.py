@@ -28,6 +28,7 @@ import yaml
 
 from dv.scripts.lib import *
 from verilator_log_to_trace_csv import *
+from compare_text_traces import *
 from cva6_spike_log_to_trace_csv import *
 from dv.scripts.ovpsim_log_to_trace_csv import *
 from dv.scripts.whisper_log_trace_csv import *
@@ -180,7 +181,7 @@ def get_iss_cmd(base_cmd, elf, target, log, nr_harts):
   cmd = re.sub(r"\<target\>", target, cmd)
   cmd = re.sub(r"\<log\>", log, cmd)
   cmd += (" CVA6_NR_HARTS=%d" % nr_harts)
-  cmd += (" &> %s.iss" % log)
+  cmd += (" STDOUT=%s.out 2> %s.iss" % (log, log))
   return cmd
 
 
@@ -464,7 +465,8 @@ def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, initial_cr
 
 def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
              setting_dir, debug_cmd, linker, priv, spike_params, test_name=None,
-             iss_timeout=500, testlist="custom", nr_harts=1):
+             iss_timeout=500, testlist="custom", nr_harts=1, compare_outputs=False,
+             output_ref_file=""):
   """Run a directed test with ISS
 
   Args:
@@ -484,6 +486,10 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     test_name   : (Optional) Name of the test
     iss_timeout : Timeout for ISS simulation (default: 500)
     testlist    : Test list identifier (default: "custom")
+
+    nr_harts       : Number of harts to simulate
+    compare_outputs: Perform stdout comparison across simulators
+    output_ref_file: If set, check simulator output against reference file
   """
   if testlist != None:
     testlist = testlist.split('/')[-1].strip("testlist_").split('.')[0]
@@ -556,6 +562,10 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report, nr_harts=nr_harts)
+    if (compare_outputs):
+      compare_output_logs(iss_list, log_list, report)
+  if output_ref_file:
+      compare_output_regexp(iss_list, log_list, os.path.abspath(output_ref_file), report)
 
 
 def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
@@ -605,7 +615,8 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
             tandem_postprocess(yaml, target, isa, test['test'], log, "generated tests", iss, i)
 
 
-def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd, nr_harts=1):
+def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd,
+        nr_harts=1, compare_outputs=False, output_ref_file=""):
   """Compare ISS simulation reult
 
   Args:
@@ -619,9 +630,11 @@ def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_
   if debug_cmd:
     return
   iss_list = iss.split(",")
-  if len(iss_list) != 2:
-    return
   report = ("%s/iss_regr.log" % output_dir).rstrip()
+  if len(iss_list) != 2:
+    if len(iss_list) == 1 and (compare_outputs or output_ref_file):
+        save_regr_report(report)
+    return
   for test in test_list:
     for i in range(0, test['iterations']):
       elf = ("%s/asm_tests/%s_%d.o" % (output_dir, test['test'], i))
@@ -634,41 +647,61 @@ def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_
       compare_iss_log(iss_list, log_list, report, stop_on_first_error, exp, nr_harts=nr_harts)
   save_regr_report(report)
 
-
 def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False, nr_harts=1):
+  if (len(iss_list) != 2 or len(log_list) != 2):
+    logging.error("Only support comparing two ISS logs")
+    logging.info("len(iss_list) = %s len(log_list) = %s" % (len(iss_list), len(log_list)))
+    return
+
   for n in range(nr_harts):
     logging.info("[Hart #%02g]" % n)
-    if (len(iss_list) != 2 or len(log_list) != 2):
-      logging.error("Only support comparing two ISS logs")
-      logging.info("len(iss_list) = %s len(log_list) = %s" % (len(iss_list), len(log_list)))
-    else:
-      csv_list = []
-      for i in range(2):
-        log = log_list[i] + ("_hart_%02g" % n) + ".log"
-        csv = log.replace(".log", ".csv");
-        iss = iss_list[i]
-        csv_list.append(csv)
-        if iss == "spike":
-            if (n == 0):
-                process_spike_sim_log(log, csv)
-            else:
-                pass # Spike log in monocore only
-        elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
-          process_verilator_sim_log(log, csv)
-        elif iss == "ovpsim":
-          process_ovpsim_sim_log(log, csv, stop_on_first_error)
-        elif iss == "sail":
-          process_sail_sim_log(log, csv)
-        elif iss == "whisper":
-          process_whisper_sim_log(log, csv)
-        else:
-          logging.error("Unsupported ISS" % iss)
-          sys.exit(RET_FAIL)
-      if (n == 0 or "spike" not in iss_list):
-        result = compare_trace_csv(csv_list[0], csv_list[1], iss_list[0], iss_list[1], report)
-        logging.info(result)
+
+    csv_list = []
+    for i in range(2):
+      log = log_list[i] + ("_hart_%02g" % n) + ".log"
+      csv = log.replace(".log", ".csv");
+      iss = iss_list[i]
+      csv_list.append(csv)
+      if iss == "spike":
+          if (n == 0):
+              process_spike_sim_log(log, csv)
+          else:
+              pass # Spike log in monocore only
+      elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
+        process_verilator_sim_log(log, csv)
+      elif iss == "ovpsim":
+        process_ovpsim_sim_log(log, csv, stop_on_first_error)
+      elif iss == "sail":
+        process_sail_sim_log(log, csv)
+      elif iss == "whisper":
+        process_whisper_sim_log(log, csv)
       else:
-        logging.info("Skipping comparison for hart id > 0 (incompatibility with spike)\n")
+        logging.error("Unsupported ISS" % iss)
+        sys.exit(RET_FAIL)
+    if (n == 0 or "spike" not in iss_list):
+      result = compare_trace_csv(csv_list[0], csv_list[1], iss_list[0], iss_list[1], report)
+      logging.info(result)
+    else:
+      logging.info("Skipping comparison for hart id > 0 (incompatibility with spike)\n")
+
+def compare_output_logs(iss_list, log_list, report):
+  logging.info("[Test outputs]")
+  logging.info("Comparing outputs:")
+  logging.info("%s : %s" % (iss_list[0], log_list[0] + ".out"))
+  logging.info("%s : %s" % (iss_list[1], log_list[1] + ".out"))
+  result = compare_text_traces(log_list[0] + ".out", log_list[1] + ".out", iss_list[0], iss_list[1],
+          report)
+  logging.info(result)
+
+def compare_output_regexp(iss_list, log_list, ref_file, report):
+  for iss, log in zip(iss_list, log_list):
+      logging.info("[Test %s against reference]" % iss)
+      logging.info("Comparing:")
+      logging.info("%s : %s" % (iss, log + ".out"))
+      logging.info("Reference : %s" % ref_file)
+
+      result = compare_text_regexp(log + ".out", ref_file, iss, report)
+      logging.info(result)
 
 
 def save_regr_report(report):
@@ -682,7 +715,7 @@ def save_regr_report(report):
     logging.info(failed_details)
     run_cmd(("echo %s >> %s" % (failed_details, report)))
     #sys.exit(RET_FAIL) #Do not return error code in case of test fail.
-  logging.info("ISS regression report is saved to %s" % report)
+  logging.info("ISS regression report is saved to %s\n" % report)
 
 
 def read_seed(arg):
@@ -811,6 +844,10 @@ def parse_args(cwd):
                       help="Spike command line parameters, run spike --help and spike --print-params to see more")
   parser.add_argument("--nr_harts", type=int, default=1,
                       help="Number of simulated harts")
+  parser.add_argument("--compare_outputs", action="store_true",
+                      default=False, help="Also compares test stdout traces")
+  parser.add_argument("--output_ref_file", type=str, default="",
+                      help="Reference file to be checked against for output parsing")
   rsg = parser.add_argument_group('Random seeds',
                                   'To control random seeds, use at most one '
                                   'of the --start_seed, --seed or --seed_yaml '
@@ -1205,7 +1242,8 @@ def main():
             run_test(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                   args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
                   args.priv, args.spike_params, iss_timeout=args.iss_timeout,
-                  nr_harts=args.nr_harts)
+                  nr_harts=args.nr_harts, compare_outputs=args.compare_outputs,
+                  output_ref_file=args.output_ref_file)
           else:
             logging.error('%s does not exist or is not a file' % full_path)
             sys.exit(RET_FAIL)
@@ -1282,7 +1320,8 @@ def main():
                 run_test(path_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                              args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
                              args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout,
-                             testlist=args.testlist, nr_harts=args.nr_harts)
+                             testlist=args.testlist, nr_harts=args.nr_harts,
+                             compare_outputs=args.compare_outputs, output_ref_file=args.output_ref_file)
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_test)
@@ -1306,7 +1345,8 @@ def main():
         # Compare ISS simulation result
         if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
           iss_cmp(matched_list, args.iss, args.target, output_dir, args.stop_on_first_error,
-                  args.exp, args.debug, args.nr_harts)
+                  args.exp, args.debug, args.nr_harts, compare_outputs=args.compare_outputs,
+                  output_ref_file=args.output_ref_file)
 
     sys.exit(RET_SUCCESS)
   except KeyboardInterrupt:
