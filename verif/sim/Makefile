@@ -21,6 +21,7 @@ export TARGET_CFG = $(target)
 endif
 
 CVA6_NR_HARTS ?= 1
+STDOUT        ?= &2
 HART_IDS := $(shell seq -f "%02g" 0 $$(($(CVA6_NR_HARTS)-1)))
 
 HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
@@ -142,7 +143,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf) 1>$(STDOUT)
 	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)_hart_00.log
 
 ###############################################################################
@@ -437,7 +438,7 @@ veri-testharness-pk:
 veri-testharness:
 	make -C $(path_var) verilate verilator="verilator --no-timing -GNR_CORES=$(CVA6_NR_HARTS)" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) \
-	  $(COMMON_PLUS_ARGS)
+	  $(COMMON_PLUS_ARGS) 1>$(STDOUT)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
