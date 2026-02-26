@@ -35,14 +35,14 @@ module ariane_testharness #(
     parameter bit InclSimDTM = 1'b1,
     parameter int unsigned NUM_WORDS = 2 ** 25,  // memory size
     parameter bit StallRandomOutput = 1'b0,
-    parameter bit StallRandomInput = 1'b0
+    parameter bit StallRandomInput = 1'b0,
+    parameter int NR_CORES = 1
 ) (
     input  logic        clk_i,
     input  logic        rtc_i,
     input  logic        rst_ni,
     output logic [31:0] exit_o
 );
-  localparam int NR_CORES = 1;
 
   // RVFI
   localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
@@ -68,9 +68,9 @@ module ariane_testharness #(
   int   jtag_enable;
   logic init_done;
   logic [31:0] jtag_exit, dmi_exit;
-  logic          [31:0] rvfi_exit          [NR_CORES];
-  logic          [31:0] tracer_exit        [NR_CORES];
-  logic          [31:0] tandem_exit        [NR_CORES];
+  logic          [31:0] rvfi_exit;
+  logic          [31:0] tracer_exit;
+  logic          [31:0] tandem_exit;
 
   logic                 jtag_TCK;
   logic                 jtag_TMS;
@@ -144,11 +144,7 @@ module ariane_testharness #(
   assign debug_req        = (jtag_enable[0]) ? jtag_dmi_req : dmi_req;
   if (ariane_pkg::RVFI) begin
     for (genvar i = 0; i < 32; i++) begin
-      logic [NR_CORES-1:0] rvfi_exit_and;
-      for (genvar HartId = 0; HartId < NR_CORES; HartId++) begin
-        assign rvfi_exit_and[HartId] = rvfi_exit[HartId][i];
-      end
-      assign exit_o[i] = (jtag_enable[0]) ? jtag_exit[i] : &rvfi_exit_and;
+      assign exit_o[i] = (jtag_enable[0]) ? jtag_exit[i] : rvfi_exit[i];
     end
   end else begin
     assign exit_o = (jtag_enable[0]) ? jtag_exit : dmi_exit;
@@ -679,11 +675,11 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
-  rvfi_probes_t rvfi_probes[NR_CORES];
-  rvfi_csr_t rvfi_csr[NR_CORES];
-  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr[NR_CORES];
-  rvfi_to_iti_t rvfi_to_iti[NR_CORES];
-  iti_to_encoder_t iti_to_encoder[NR_CORES];
+  rvfi_probes_t rvfi_probes;
+  rvfi_csr_t rvfi_csr;
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
+  rvfi_to_iti_t rvfi_to_iti;
+  iti_to_encoder_t iti_to_encoder;
 
   ariane #(
       .CVA6Cfg            (CVA6Cfg),
@@ -692,7 +688,6 @@ module ariane_testharness #(
       .rvfi_probes_t      (rvfi_probes_t),
       .noc_req_t          (ariane_axi::req_t),
       .noc_resp_t         (ariane_axi::resp_t),
-      .NrHarts            (NR_CORES)
   ) i_ariane (
       .clk_i        (clk_i),
       .rst_ni       (ndmreset_n),
@@ -732,194 +727,190 @@ module ariane_testharness #(
     end
   end
 
-  generate
-    for (genvar HartId = 0; HartId < NR_CORES; HartId++) begin
-      cva6_iti #(
-          .CVA6Cfg   (CVA6Cfg),
-          .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
-          .ITYPE_LEN (iti_pkg::ITYPE_LEN),
-          .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
-          .block_mode(0),
-          .rvfi_to_iti_t(rvfi_to_iti_t),
-          .iti_to_encoder_t(iti_to_encoder_t)
-      ) i_iti (
-          .clk_i(clk_i),
-          .rst_ni(ndmreset_n),
-          // inputs from rvfi
-          .valid_i(rvfi_to_iti[HartId].valid),
-          .rvfi_to_iti_i(rvfi_to_iti[HartId]),
-          // outputs for the encoder module TODO
-          .valid_o(),
-          .iti_to_encoder_o(iti_to_encoder[HartId])
-      );
+  cva6_iti #(
+      .CVA6Cfg   (CVA6Cfg),
+      .CAUSE_LEN  (iti_pkg::CAUSE_LEN),
+      .ITYPE_LEN (iti_pkg::ITYPE_LEN),
+      .IRETIRE_LEN (iti_pkg::IRETIRE_LEN),
+      .block_mode(0),
+      .rvfi_to_iti_t(rvfi_to_iti_t),
+      .iti_to_encoder_t(iti_to_encoder_t)
+  ) i_iti (
+      .clk_i(clk_i),
+      .rst_ni(ndmreset_n),
+      // inputs from rvfi
+      .valid_i(rvfi_to_iti.valid),
+      .rvfi_to_iti_i(rvfi_to_iti),
+      // outputs for the encoder module TODO
+      .valid_o(),
+      .iti_to_encoder_o(iti_to_encoder)
+  );
 
-      logic                                              packet_valid;
-      te_pkg::it_packet_type_e [                    0:0] packet_type;
-      logic                    [      te_pkg::P_LEN-1:0] packet_length;
-      logic                    [te_pkg::PAYLOAD_LEN-1:0] packet_payload;
+  logic                                              packet_valid;
+  te_pkg::it_packet_type_e [                    0:0] packet_type;
+  logic                    [      te_pkg::P_LEN-1:0] packet_length;
+  logic                    [te_pkg::PAYLOAD_LEN-1:0] packet_payload;
 
-      rv_tracer #(
-          .N(1),
-          .ONLY_BRANCHES(1)
-      ) i_encoder (
-          .clk_i               (clk_i),
-          .rst_ni              (rst_ni),
-          .valid_i             (iti_to_encoder[HartId].valid),
-          .itype_i             (iti_to_encoder[HartId].itype),
-          .cause_i             (iti_to_encoder[HartId].cause),
-          .tval_i              (iti_to_encoder[HartId].tval),
-          .priv_i              (iti_to_encoder[HartId].priv),
-          .iaddr_i             (iti_to_encoder[HartId].iaddr),
-          .iretire_i           (iti_to_encoder[HartId].iretire),
-          .ilastsize_i         (iti_to_encoder[HartId].ilastsize),
-          .time_i              (iti_to_encoder[HartId].cycles),
-          .tvec_i              ('0),
-          .epc_i               ('0),
-          .encapsulator_ready_i('1),
-          .paddr_i             ('0),
-          .pwrite_i            ('0),
-          .psel_i              ('0),
-          .penable_i           ('0),
-          .pwdata_i            ('0),
-          .packet_valid_o      (packet_valid),
-          .packet_type_o       (packet_type),
-          .packet_length_o     (packet_length),
-          .packet_payload_o    (packet_payload),
-          .stall_o             (),
-          .pready_o            (),
-          .prdata_o            ()
-      );
+  rv_tracer #(
+      .N(1),
+      .ONLY_BRANCHES(1)
+  ) i_encoder (
+      .clk_i               (clk_i),
+      .rst_ni              (rst_ni),
+      .valid_i             (iti_to_encoder.valid),
+      .itype_i             (iti_to_encoder.itype),
+      .cause_i             (iti_to_encoder.cause),
+      .tval_i              (iti_to_encoder.tval),
+      .priv_i              (iti_to_encoder.priv),
+      .iaddr_i             (iti_to_encoder.iaddr),
+      .iretire_i           (iti_to_encoder.iretire),
+      .ilastsize_i         (iti_to_encoder.ilastsize),
+      .time_i              (iti_to_encoder.cycles),
+      .tvec_i              ('0),
+      .epc_i               ('0),
+      .encapsulator_ready_i('1),
+      .paddr_i             ('0),
+      .pwrite_i            ('0),
+      .psel_i              ('0),
+      .penable_i           ('0),
+      .pwdata_i            ('0),
+      .packet_valid_o      (packet_valid),
+      .packet_type_o       (packet_type),
+      .packet_length_o     (packet_length),
+      .packet_payload_o    (packet_payload),
+      .stall_o             (),
+      .pready_o            (),
+      .prdata_o            ()
+  );
 
-      logic                         encap_valid;
-      encap_pkg::encap_fifo_entry_s encap_fifo_entry_i;
-      encap_pkg::encap_fifo_entry_s encap_fifo_entry_o;
-      logic                         encap_fifo_full;
-      logic                         encap_fifo_empty;
-      logic                         encap_fifo_pop;
+  logic                         encap_valid;
+  encap_pkg::encap_fifo_entry_s encap_fifo_entry_i;
+  encap_pkg::encap_fifo_entry_s encap_fifo_entry_o;
+  logic                         encap_fifo_full;
+  logic                         encap_fifo_empty;
+  logic                         encap_fifo_pop;
 
-      encapsulator i_encapsulator (
-          .clk_i              (clk_i),
-          .valid_i            (packet_valid),
-          .packet_length_i    (packet_length),
-          .flow_i             ('0),
-          .timestamp_present_i('1),
-          //.srcid_i(),
-          .timestamp_i        (rvfi_to_iti[HartId].cycles),
-          //.type_i(),
-          .trace_payload_i    (packet_payload),
-          .valid_o            (encap_valid),
-          .encap_fifo_entry_o (encap_fifo_entry_i)
-      );
+  encapsulator i_encapsulator (
+      .clk_i              (clk_i),
+      .valid_i            (packet_valid),
+      .packet_length_i    (packet_length),
+      .flow_i             ('0),
+      .timestamp_present_i('1),
+      //.srcid_i(),
+      .timestamp_i        (rvfi_to_iti.cycles),
+      //.type_i(),
+      .trace_payload_i    (packet_payload),
+      .valid_o            (encap_valid),
+      .encap_fifo_entry_o (encap_fifo_entry_i)
+  );
 
-      fifo_v3 #(
-          .DEPTH(16),
-          .dtype(encap_pkg::encap_fifo_entry_s)
-      ) i_fifo_encap (
-          .clk_i     (clk_i),
-          .rst_ni    (rst_ni),
-          .flush_i   ('0),
-          .testmode_i('0),
-          .full_o    (encap_fifo_full),
-          .empty_o   (encap_fifo_empty),
-          .usage_o   (),
-          .data_i    (encap_fifo_entry_i),
-          .push_i    (encap_valid),
-          .data_o    (encap_fifo_entry_o),
-          .pop_i     (encap_fifo_pop)
-      );
-      localparam DATA_LEN = 8;
+  fifo_v3 #(
+      .DEPTH(16),
+      .dtype(encap_pkg::encap_fifo_entry_s)
+  ) i_fifo_encap (
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .flush_i   ('0),
+      .testmode_i('0),
+      .full_o    (encap_fifo_full),
+      .empty_o   (encap_fifo_empty),
+      .usage_o   (),
+      .data_i    (encap_fifo_entry_i),
+      .push_i    (encap_valid),
+      .data_o    (encap_fifo_entry_o),
+      .pop_i     (encap_fifo_pop)
+  );
+  localparam DATA_LEN = 8;
 
-      logic                        slicer_valid;
-      logic [        DATA_LEN-1:0] slice;
-      logic [$clog2(DATA_LEN)-4:0] valid_bytes;
+  logic                        slicer_valid;
+  logic [        DATA_LEN-1:0] slice;
+  logic [$clog2(DATA_LEN)-4:0] valid_bytes;
 
-      slicer_DPTI #(
-          .SLICE_LEN(DATA_LEN),
-          .NO_TIME  ('0)
-      ) i_slicer (
-          .clk_i             (clk_i),
-          .rst_ni            (rst_ni),
-          .valid_i           (!encap_fifo_empty),
-          .encap_fifo_entry_i(encap_fifo_entry_o),
-          .fifo_full_i       ('0),                  // usrFull DPTI in ariane_xilinx
-          .valid_o           (slicer_valid),
-          .slice_o           (slice),
-          .done_o            (encap_fifo_pop)
-      );
+  slicer_DPTI #(
+      .SLICE_LEN(DATA_LEN),
+      .NO_TIME  ('0)
+  ) i_slicer (
+      .clk_i             (clk_i),
+      .rst_ni            (rst_ni),
+      .valid_i           (!encap_fifo_empty),
+      .encap_fifo_entry_i(encap_fifo_entry_o),
+      .fifo_full_i       ('0),                  // usrFull DPTI in ariane_xilinx
+      .valid_o           (slicer_valid),
+      .slice_o           (slice),
+      .done_o            (encap_fifo_pop)
+  );
 
-      cva6_rvfi #(
-          .CVA6Cfg   (CVA6Cfg),
-          .rvfi_instr_t(rvfi_instr_t),
-          .rvfi_csr_t(rvfi_csr_t),
-          .rvfi_probes_instr_t(rvfi_probes_instr_t),
-          .rvfi_probes_csr_t(rvfi_probes_csr_t),
-          .rvfi_probes_t(rvfi_probes_t),
-          .rvfi_to_iti_t(rvfi_to_iti_t)
-      ) i_cva6_rvfi (
-          .clk_i        (clk_i),
-          .rst_ni       (rst_ni),
-          .rvfi_probes_i(rvfi_probes[HartId]),
-          .rvfi_instr_o (rvfi_instr[HartId]),
-          .rvfi_to_iti_o(rvfi_to_iti[HartId]),
-          .rvfi_csr_o   (rvfi_csr[HartId])
-      );
+  cva6_rvfi #(
+      .CVA6Cfg   (CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(rvfi_csr_t),
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
+  ) i_cva6_rvfi (
+      .clk_i        (clk_i),
+      .rst_ni       (rst_ni),
+      .rvfi_probes_i(rvfi_probes),
+      .rvfi_instr_o (rvfi_instr),
+      .rvfi_to_iti_o(rvfi_to_iti),
+      .rvfi_csr_o   (rvfi_csr)
+  );
 
-      rvfi_tracer #(
-          .CVA6Cfg(CVA6Cfg),
-          .rvfi_instr_t(rvfi_instr_t),
-          .rvfi_csr_t(rvfi_csr_t),
-          //
-          .HART_ID(HartId),
-          .DEBUG_START(0),
-          .DEBUG_STOP(0)
-      ) i_rvfi_tracer (
-          .clk_i(clk_i),
-          .rst_ni(rst_ni),
-          .rvfi_i(rvfi_instr[HartId]),
-          .rvfi_csr_i(rvfi_csr[HartId]),
-          .end_of_test_o(tracer_exit[HartId])
-      );
+  rvfi_tracer #(
+      .CVA6Cfg(CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(rvfi_csr_t),
+      //
+      .HART_ID(0),
+      .DEBUG_START(0),
+      .DEBUG_STOP(0)
+  ) i_rvfi_tracer (
+      .clk_i(clk_i),
+      .rst_ni(rst_ni),
+      .rvfi_i(rvfi_instr),
+      .rvfi_csr_i(rvfi_csr),
+      .end_of_test_o(tracer_exit)
+  );
 
 `ifdef SPIKE_TANDEM
-      spike #(
-          .CVA6Cfg(CVA6Cfg),
-          .rvfi_instr_t(rvfi_instr_t),
-          .rvfi_csr_t(rvfi_csr_t)
-      ) i_spike (
-          .clk_i,
-          .rst_ni,
-          .clint_tick_i (rtc_i),
-          .rvfi_i       (rvfi_instr[HartId]),
-          .rvfi_csr_i   (rvfi_csr[HartId]),
-          .end_of_test_o(tandem_exit[HartId])
-      );
-      initial begin
-        $display("Running binary in tandem mode");
-      end
+  spike #(
+      .CVA6Cfg(CVA6Cfg),
+      .rvfi_instr_t(rvfi_instr_t),
+      .rvfi_csr_t(rvfi_csr_t)
+  ) i_spike (
+      .clk_i,
+      .rst_ni,
+      .clint_tick_i (rtc_i),
+      .rvfi_i       (rvfi_instr),
+      .rvfi_csr_i   (rvfi_csr),
+      .end_of_test_o(tandem_exit)
+  );
+  initial begin
+    $display("Running binary in tandem mode");
+  end
 
-      bit tandem_timeout_enable;
-      bit [31:0] tandem_timeout;
-      localparam TANDEM_TIMEOUT_THRESHOLD = 60;
+  bit tandem_timeout_enable;
+  bit [31:0] tandem_timeout;
+  localparam TANDEM_TIMEOUT_THRESHOLD = 60;
 
-      // Tandem timeout logic
-      always_ff @(posedge clk_i) begin
-        if (tandem_timeout > TANDEM_TIMEOUT_THRESHOLD) tandem_timeout_enable <= 0;
-        else if (tracer_exit[HartId]) tandem_timeout_enable <= 1;
+  // Tandem timeout logic
+  always_ff @(posedge clk_i) begin
+    if (tandem_timeout > TANDEM_TIMEOUT_THRESHOLD) tandem_timeout_enable <= 0;
+    else if (tracer_exit) tandem_timeout_enable <= 1;
 
-        if (tandem_timeout_enable) tandem_timeout <= tandem_timeout + 1;
-      end
+    if (tandem_timeout_enable) tandem_timeout <= tandem_timeout + 1;
+  end
 
-      always_ff @(posedge clk_i) begin
-        if (&tandem_exit || (tandem_timeout > TANDEM_TIMEOUT_THRESHOLD)) begin
-          rvfi_exit[HartId] <= tracer_exit[HartId];
-        end
-
-      end
-`else
-      assign rvfi_exit[HartId] = tracer_exit[HartId];
-`endif
+  always_ff @(posedge clk_i) begin
+    if (&tandem_exit || (tandem_timeout > TANDEM_TIMEOUT_THRESHOLD)) begin
+      rvfi_exit <= tracer_exit;
     end
-  endgenerate
+
+  end
+`else
+  assign rvfi_exit = tracer_exit;
+`endif
 
 `ifdef VERILATOR
   initial begin
