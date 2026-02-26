@@ -28,14 +28,16 @@
 module cva6_icache
   import ariane_pkg::*;
   import wt_cache_pkg::*;
+  import icache_dtypes_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type icache_areq_t = logic,
-    parameter type icache_arsp_t = logic,
-    parameter type icache_dreq_t = logic,
-    parameter type icache_drsp_t = logic,
-    parameter type icache_req_t = logic,
-    parameter type icache_rtrn_t = logic,
+    /// parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = icache_dtypes_pkg::CVA6Cfg,
+    parameter type icache_areq_t = icache_dtypes_pkg::icache_areq_t,
+    parameter type icache_arsp_t = icache_dtypes_pkg::icache_arsp_t,
+    parameter type icache_dreq_t = icache_dtypes_pkg::icache_dreq_t,
+    parameter type icache_drsp_t = icache_dtypes_pkg::icache_drsp_t,
+    parameter type icache_req_t = icache_dtypes_pkg::icache_req_t,
+    parameter type icache_rtrn_t = icache_dtypes_pkg::icache_rtrn_t,
     /// ID to be used for read transactions
     parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0
 ) (
