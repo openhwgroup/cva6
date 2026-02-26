@@ -157,8 +157,8 @@ module rvfi_tracer #(
         logic dest_is_fp;
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
-          $fwrite(f, "core   %d INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n", HART_ID, pc64,
-                  rvfi_i[i].insn, rvfi_i[i].insn);
+          $fwrite(f, "core   INTERRUPT %d: 0x%h (0x%h) DASM(%h)\n", HART_ID, pc64, rvfi_i[i].insn,
+                  rvfi_i[i].insn);
         end else begin
           $fwrite(f, "core   %d: 0x%h (0x%h) DASM(%h)\n", HART_ID, pc64, rvfi_i[i].insn,
                   rvfi_i[i].insn);

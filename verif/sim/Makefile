@@ -20,10 +20,6 @@ ifndef TARGET_CFG
 export TARGET_CFG = $(target)
 endif
 
-CVA6_NR_HARTS ?= 1
-STDOUT        ?= &2
-HART_IDS := $(shell seq -f "%02g" 0 $$(($(CVA6_NR_HARTS)-1)))
-
 HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
 export HPDCACHE_DIR
 HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
@@ -143,7 +139,7 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf) 1>$(STDOUT)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
 	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)_hart_00.log
 
 ###############################################################################
@@ -300,7 +296,7 @@ vcs-uvm: vcs_uvm_comp vcs_uvm_run
 	[ ! -f $(VCS_WORK_DIR)/novas.fsdb ] || \
 	  mv $(VCS_WORK_DIR)/novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
 
 
 ### XRUN UVM rules
@@ -376,8 +372,8 @@ questa_uvm_run:
 	  +define+UNSUPPORTED_WITH+ \
 	   $(issrun_opts) \
 	  uvmt_cva6_tb_opt
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
-	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 	# TODO: Add support for waveform collection.
 
@@ -415,13 +411,13 @@ vcs-testharness:
 	[ ! -f novas.fsdb ] || \
 	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
-	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness-pk:
 	rm -rf $(path_var)/work-ver
 	@echo "Trace compact value $(TRACE_COMPACT)"
-	make -C $(path_var) verilate verilator="verilator --no-timing -GNR_CORES=$(CVA6_NR_HARTS)" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) \
 		$(PK_INSTALL_DIR)/riscv-none-elf/bin/pk $(elf) \
 		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1) \
@@ -432,20 +428,20 @@ veri-testharness-pk:
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
-	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness:
-	make -C $(path_var) verilate verilator="verilator --no-timing -GNR_CORES=$(CVA6_NR_HARTS)" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) \
-	  $(COMMON_PLUS_ARGS) 1>$(STDOUT)
+	  $(COMMON_PLUS_ARGS)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
-	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 xrun-testharness:
 	@echo "[XRUN-TESTHARNESS] Running"
@@ -457,15 +453,15 @@ xrun-testharness:
 	@echo "[XRUN-TESTHARNESS] $(elf)"
 	make -C $(path_var) xrun_sim target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
 	@echo "[XRUN-TESTHARNESS1] $(elf)"
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
+	$(CVA6_REPO_DIR)/tools/spike/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm > $(log)
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
 	    report_file=$(log).yaml $(spike-yaml-makearg)
 	# TODO: Add support for waveform collection.
-	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
-	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
+	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
 
 ###############################################################################
 # Common targets and rules

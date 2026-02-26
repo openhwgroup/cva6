@@ -46,9 +46,23 @@ static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintpt
   // - the environment acknowledges the env request by writing 0 into tohost.
   // - the completion of the request is signalled by the environment through
   //   a write of a non-zero value into fromhost.
-  tohost = (((uint64_t) ((unsigned long int) magic_mem)) << 16) >> 16;    // clear the DEV and CMD bytes, clip payload.
-  while (fromhost == 0)
-    ;
+  tohost = (((uint64_t)((unsigned long int)magic_mem)) << 16) >>
+           16; // clear the DEV and CMD bytes, clip payload.
+
+ #ifdef __riscv_atomic
+  // Required for Verilator consistency, else `fromhost` will
+  // be fetched from the cache
+  invalidate_cacheline(&fromhost);
+  invalidate_cacheline(&magic_mem);
+#endif
+
+  while (fromhost == 0) {
+#ifdef __riscv_atomic
+  // Idem
+  invalidate_cacheline(&fromhost);
+#endif
+  }
+
   fromhost = 0;
 
 #ifdef __riscv_atomic // __sync_synchronize requires A extension
@@ -182,7 +196,7 @@ int putchar(int ch)
 
   buf[buflen++] = ch;
 
-  if (ch == '\n' || buflen == sizeof(buf))
+  if (ch == '\n' || ch == ' ' || buflen == sizeof(buf))
   {
     syscall(SYS_write, 1, (uintptr_t)buf, buflen);
     buflen = 0;
@@ -279,7 +293,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     case '-':
       padc = '-';
       goto reswitch;
-      
+
     // flag to pad with 0's instead of spaces
     case '0':
       padc = '0';
@@ -388,7 +402,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     case '%':
       putch(ch, putdat);
       break;
-      
+
     // unrecognized escape sequence - just print it literally
     default:
       putch('%', putdat);
