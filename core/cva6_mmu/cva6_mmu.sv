@@ -382,8 +382,11 @@ module cva6_mmu
     // AXI decode error), or when PTW performs walk due to ITLB miss and raises
     // an error.
     if ((enable_translation_i || enable_g_translation_i)) begin
-      // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
-      if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)) begin
+      // If we work with SV39 or SV32, so if VM is enabled:
+      // - in VS stage, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
+      // - in G stage (x4 mode), [CVA6Cfg.VLEN-1:CVA6Cfg.SV+1] must be zero.
+      if ((enable_translation_i && (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)))
+        ||(enable_g_translation_i && !(|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV+2]) == 1'b0)) begin
 
         icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
         icache_areq_o.fetch_exception.valid = 1'b1;
@@ -473,7 +476,7 @@ module cva6_mmu
         end else begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
-          if (CVA6Cfg.TvalEn)  //To confirm this is the right TVAL
+          if (CVA6Cfg.TvalEn)  // To confirm this is the right TVAL
             icache_areq_o.fetch_exception.tval = CVA6Cfg.XLEN'(update_vaddr);
           if (CVA6Cfg.RVH) begin
             icache_areq_o.fetch_exception.tval2 = '0;
