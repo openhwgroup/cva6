@@ -20,6 +20,10 @@
      - ``int unsigned``
      - General Purpose Register Size (in bits)
 
+   * - ``VLEN``
+     - ``int unsigned``
+     - Virtual address Size (in bits)
+
    * - ``RVA``
      - ``bit``
      - Atomic RISC-V extension
@@ -27,6 +31,10 @@
    * - ``RVB``
      - ``bit``
      - Bit manipulation RISC-V extension
+
+   * - ``ZKN``
+     - ``bit``
+     - Scalar Cryptography RISC-V extension
 
    * - ``RVV``
      - ``bit``
@@ -47,6 +55,10 @@
    * - ``RVZCMP``
      - ``bit``
      - Zcmp RISC-V extension
+
+   * - ``RVZCMT``
+     - ``bit``
+     - Zcmt RISC-V extension
 
    * - ``RVZiCond``
      - ``bit``
@@ -100,6 +112,10 @@
      - ``bit``
      - User mode
 
+   * - ``SoftwareInterruptEn``
+     - ``bit``
+     - Software interrupts are enabled
+
    * - ``DebugEn``
      - ``bit``
      - Debug support
@@ -140,6 +156,10 @@
      - ``bit [63:0]``
      - PMP CSR read-only bits
 
+   * - ``PMPNapotEn``
+     - ``bit``
+     - PMP NA4 and NAPOT mode enable
+
    * - ``NrNonIdempotentRules``
      - ``int unsigned``
      - PMA non idempotent rules number
@@ -179,6 +199,10 @@
    * - ``CvxifEn``
      - ``bit``
      - CV-X-IF coprocessor interface enable
+
+   * - ``CoproType``
+     - ``copro_type_t``
+     - Coprocessor type
 
    * - ``NOCType``
      - ``noc_type_e``
@@ -240,6 +264,14 @@
      - ``int unsigned``
      - Data cache line width
 
+   * - ``DcacheFlushOnFence``
+     - ``bit``
+     - Data cache flush on fence
+
+   * - ``DcacheInvalidateOnFlush``
+     - ``bit``
+     - Data cache invalidate on flush
+
    * - ``DataUserEn``
      - ``int unsigned``
      - User field on data bus enable
@@ -258,7 +290,11 @@
 
    * - ``FpgaEn``
      - ``bit``
-     - Is FPGA optimization of CV32A6
+     - Is FPGA optimization of CV32A6 for Xilinx and Altera
+
+   * - ``FpgaAlteraEn``
+     - ``bit``
+     - Is FPGA optimization for Altera FPGA
 
    * - ``TechnoCut``
      - ``bit``
@@ -267,6 +303,10 @@
    * - ``SuperscalarEn``
      - ``bit``
      - Enable superscalar* with 2 issue ports and 2 commit ports.
+
+   * - ``ALUBypass``
+     - ``bit``
+     - Enable ALU-ALU bypass (superscalar mode only)
 
    * - ``NrCommitPorts``
      - ``int unsigned``
@@ -300,9 +340,17 @@
      - ``int unsigned``
      - Branch target buffer entries
 
+   * - ``BPType``
+     - ``bp_type_t``
+     - Branch predictor type
+
    * - ``BHTEntries``
      - ``int unsigned``
      - Branch history entries
+
+   * - ``BHTHist``
+     - ``int unsigned``
+     - Branch history bits
 
    * - ``InstrTlbEntries``
      - ``int unsigned``
