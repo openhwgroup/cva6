@@ -155,12 +155,12 @@ module cva6_tlb
         // Identify `vpage_match` (matching page type) and deduce `vaddr_level` match (hit at all level on the virtual addr to be flushed
         // and matching page type).
         for (z_gen = 0; z_gen < HYP_EXT + 1; z_gen++) begin
-          assign vpage_match[i_gen][z_gen][x_gen] = x_gen == 0 ? 1 : tags_q[i_gen].is_page[CVA6Cfg.PtLevels-1-x_gen][z_gen];
+          assign vpage_match      [i_gen][z_gen][x_gen] = x_gen == 0 ? 1 : tags_q[i_gen].is_page[CVA6Cfg.PtLevels-1-x_gen][z_gen];
           assign vaddr_level_match[i_gen][z_gen][x_gen] = &vaddr_vpn_match[i_gen][z_gen][CVA6Cfg.PtLevels-1:x_gen] && vpage_match[i_gen][z_gen][x_gen];
         end
-        //identify if virtual address vpn matches at all PT levels for all TLB entries
-        assign vaddr_vpn_match[i_gen][0][x_gen]  = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
 
+        // Identify if virtual address vpn matches at all PT levels for all TLB entries
+        assign vaddr_vpn_match[i_gen][0][x_gen] = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
       end
 
       // Identify if the input virtual address matches a stored NAPOT tag
@@ -366,9 +366,9 @@ module cva6_tlb
           // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
           if (vmid_to_be_flushed_is0 && gpaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
           // flush gpaddr in all addressing space ("HFENCE.GVMA gpaddr x0" case), it should happen only for leaf pages
-          else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT] ) && (~gpaddr_to_be_flushed_is0))
+          else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT]) && (~gpaddr_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
-          // the entry vmid and gpaddr both matches with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
+          // the entry vmid and gpaddr both match with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
           else if ((|vaddr_level_match[i][HYP_EXT]) && (vmid_to_be_flushed_i == tags_q[i].vmid) && (~gpaddr_to_be_flushed_is0) && (~vmid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)
