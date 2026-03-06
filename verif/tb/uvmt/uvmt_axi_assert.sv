@@ -18,7 +18,7 @@ module  uvmt_axi_assert#(int HPDCache=2)
 
    uvma_axi_ar_assert         axi_ar_assert(.axi_assert(axi_assert_if));
 
-   uvma_axi_w_assert          axi_w_assert(.axi_assert(axi_assert_if));
+   uvma_axi_w_assert #(.CHECK_STROBE(1)) axi_w_assert(.axi_assert(axi_assert_if));
 
    uvma_axi_r_assert          axi_r_assert(.axi_assert(axi_assert_if));
 
