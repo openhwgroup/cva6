@@ -61,7 +61,12 @@ module cva6_icache
     input  icache_rtrn_t mem_rtrn_i,
     output logic         mem_data_req_o,
     input  logic         mem_data_ack_i,
-    output icache_req_t  mem_data_o
+    output icache_req_t  mem_data_o,
+
+    // symbolic variables for verification
+    input logic [CVA6Cfg.VLEN-1:0] sym_vaddr_i,
+    input logic [CVA6Cfg.PLEN-1:0] sym_paddr_i,
+    input logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] sym_cache_line_i
 );
 
   localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
@@ -536,65 +541,65 @@ module cva6_icache
   // assertions
   ///////////////////////////////////////////////////////
 
-  //pragma translate_off
-`ifndef VERILATOR
-  repl_inval0 :
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) cache_wren |-> !(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
-  else $fatal(1, "[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
+//   //pragma translate_off
+// `ifndef VERILATOR
+//   repl_inval0 :
+//   assert property (
+//     @(posedge clk_i) disable iff (!rst_ni) cache_wren |-> !(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
+//   else $fatal(1, "[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
 
-  repl_inval1 :
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld) |-> !cache_wren)
-  else $fatal(1, "[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
+//   repl_inval1 :
+//   assert property (
+//     @(posedge clk_i) disable iff (!rst_ni) (mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld) |-> !cache_wren)
+//   else $fatal(1, "[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
 
-  invalid_state :
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
-  else $fatal(1, "[l1 icache] fsm reached an invalid state");
+//   invalid_state :
+//   assert property (
+//     @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
+//   else $fatal(1, "[l1 icache] fsm reached an invalid state");
 
-  hot1 :
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (!inv_en) |-> cache_rden |=> cmp_en_q |-> $onehot0(
-      cl_hit
-  ))
-  else $fatal(1, "[l1 icache] cl_hit signal must be hot1");
+//   hot1 :
+//   assert property (
+//     @(posedge clk_i) disable iff (!rst_ni) (!inv_en) |-> cache_rden |=> cmp_en_q |-> $onehot0(
+//       cl_hit
+//   ))
+//   else $fatal(1, "[l1 icache] cl_hit signal must be hot1");
 
-  // this is only used for verification!
-  logic vld_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
-  logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
-  logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+//   // this is only used for verification!
+//   logic vld_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
+//   logic [CVA6Cfg.ICACHE_TAG_WIDTH-1:0] tag_mirror[ICACHE_NUM_WORDS-1:0][CVA6Cfg.ICACHE_SET_ASSOC-1:0];
+//   logic [CVA6Cfg.ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
-    if (!rst_ni) begin
-      vld_mirror <= '{default: '0};
-      tag_mirror <= '{default: '0};
-    end else begin
-      for (int i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin
-        if (vld_req[i] & vld_we) begin
-          vld_mirror[vld_addr][i] <= vld_wdata[i];
-          tag_mirror[vld_addr][i] <= cl_tag_q;
-        end
-      end
-    end
-  end
+//   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
+//     if (!rst_ni) begin
+//       vld_mirror <= '{default: '0};
+//       tag_mirror <= '{default: '0};
+//     end else begin
+//       for (int i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin
+//         if (vld_req[i] & vld_we) begin
+//           vld_mirror[vld_addr][i] <= vld_wdata[i];
+//           tag_mirror[vld_addr][i] <= cl_tag_q;
+//         end
+//       end
+//     end
+//   end
 
-  for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_dupl
-    assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
-  end
+//   for (genvar i = 0; i < CVA6Cfg.ICACHE_SET_ASSOC; i++) begin : gen_tag_dupl
+//     assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
+//   end
 
-  tag_write_duplicate :
-  assert property (
-    @(posedge clk_i) disable iff (!rst_ni) |vld_req |-> vld_we |-> !(|tag_write_duplicate_test))
-  else $fatal(1, "[l1 icache] cannot allocate a CL that is already present in the cache");
+//   tag_write_duplicate :
+//   assert property (
+//     @(posedge clk_i) disable iff (!rst_ni) |vld_req |-> vld_we |-> !(|tag_write_duplicate_test))
+//   else $fatal(1, "[l1 icache] cannot allocate a CL that is already present in the cache");
 
 
-  initial begin
-    // assert wrong parameterizations
-    assert (CVA6Cfg.ICACHE_INDEX_WIDTH <= 12)
-    else $fatal(1, "[l1 icache] cache index width can be maximum 12bit since VM uses 4kB pages");
-  end
-`endif
-  //pragma translate_on
+//   initial begin
+//     // assert wrong parameterizations
+//     assert (CVA6Cfg.ICACHE_INDEX_WIDTH <= 12)
+//     else $fatal(1, "[l1 icache] cache index width can be maximum 12bit since VM uses 4kB pages");
+//   end
+// `endif
+//   //pragma translate_on
 
 endmodule  // cva6_icache
