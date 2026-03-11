@@ -1,0 +1,67 @@
+diff --git a/p/link.ld b/p/link.ld
+index b3e315e..493b90d 100644
+--- a/p/link.ld
++++ b/p/link.ld
+@@ -13,5 +13,6 @@ SECTIONS
+   .data : { *(.data) }
+   .bss : { *(.bss) }
+   _end = .;
++  __base_regs = 0x10000000;
+ }
+ 
+diff --git a/p/riscv_test.h b/p/riscv_test.h
+index 3d4637a..1226862 100644
+--- a/p/riscv_test.h
++++ b/p/riscv_test.h
+@@ -215,7 +215,13 @@ handle_exception:                                                       \
+   write_tohost:                                                         \
+         sw TESTNUM, tohost, t5;                                         \
+         sw zero, tohost + 4, t5;                                        \
+-        j write_tohost;                                                 \
++        slli TESTNUM, TESTNUM, 1;                                       \
++        ori  TESTNUM, TESTNUM, 1;                                       \
++        la t0, __base_regs;                                             \
++        sw TESTNUM, 4(t0);                                              \
++_end_loop:                                                              \
++        wfi;                                                            \
++        j _end_loop;                                                    \
+ reset_vector:                                                           \
+         INIT_XREG;                                                      \
+         RISCV_MULTICORE_DISABLE;                                        \
+diff --git a/v/vm.c b/v/vm.c
+index cc58417..8fd0302 100644
+--- a/v/vm.c
++++ b/v/vm.c
+@@ -66,7 +66,12 @@ static void cputstring(const char* s)
+ 
+ static void terminate(int code)
+ {
+-  do_tohost(code);
++  // Write to EOC register at __base_regs
++  __asm__ (
++    "li t0, 0x10000000;"
++    "li t1, 3;"
++    "sw t1, 4(t0);"
++  );
+   while (1);
+ }
+ 
+@@ -253,6 +258,8 @@ static void coherence_torture()
+   }
+ }
+ 
++extern char __base_regs;
++
+ void vm_boot(uintptr_t test_addr)
+ {
+   uint64_t random = ENTROPY;
+@@ -276,7 +283,9 @@ void vm_boot(uintptr_t test_addr)
+ #elif SATP_MODE_CHOICE == SATP_MODE_SV39
+   l1pt[PTES_PER_PT-1] = ((pte_t)kernel_l2pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+   kernel_l2pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
++  kernel_l2pt[63] = ((pte_t)&__base_regs >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
+   user_l2pt[0] = ((pte_t)user_llpt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
++  user_l2pt[128] = ((pte_t)&__base_regs >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
+ #elif SATP_MODE_CHOICE == SATP_MODE_SV32
+   l1pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
+ #else

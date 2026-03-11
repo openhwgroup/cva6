@@ -1,0 +1,31 @@
+diff --git a/isa/Makefile b/isa/Makefile
+index 0f0106f..77e93e3 100644
+--- a/isa/Makefile
++++ b/isa/Makefile
+@@ -63,6 +63,7 @@ RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
+ RISCV_GCC ?= $(RISCV_PREFIX)gcc
+ RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+ RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data
++RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy
+ RISCV_SIM ?= spike
+ 
+ vpath %.S $(src_dir)
+@@ -70,6 +71,9 @@ vpath %.S $(src_dir)
+ #------------------------------------------------------------
+ # Build assembly tests
+ 
++%.hex: %
++	$(RISCV_OBJCOPY) -O verilog $< $@
++
+ %.dump: %
+ 	$(RISCV_OBJDUMP) $< > $@
+ 
+@@ -153,7 +157,7 @@ junk += $(tests) $(tests_dump) $(tests_hex) $(tests_out) $(tests32_out)
+ #------------------------------------------------------------
+ # Default
+ 
+-all: $(tests_dump)
++all: $(tests_dump) $(tests_hex)
+ 
+ #------------------------------------------------------------
+ # Clean up

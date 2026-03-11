@@ -1,0 +1,74 @@
+diff --git a/isa/rv64ui/Makefrag b/isa/rv64ui/Makefrag
+index 59e40cf..50ffaa6 100644
+--- a/isa/rv64ui/Makefrag
++++ b/isa/rv64ui/Makefrag
+@@ -8,7 +8,7 @@ rv64ui_sc_tests = \
+ 	auipc \
+ 	beq bge bgeu blt bltu bne \
+ 	simple \
+-	fence_i \
++	fence_i fence_t \
+ 	jal jalr \
+ 	lb lbu lh lhu lw lwu ld ld_st \
+ 	lui \
+diff --git a/isa/rv64ui/fence_t.S b/isa/rv64ui/fence_t.S
+new file mode 100644
+index 0000000..cde4e38
+--- /dev/null
++++ b/isa/rv64ui/fence_t.S
+@@ -0,0 +1,55 @@
++# See LICENSE for license details.
++
++#*****************************************************************************
++# fence_i.S
++#-----------------------------------------------------------------------------
++#
++# Test self-modifying code and the fence.i instruction.
++#
++
++#include "riscv_test.h"
++#include "test_macros.h"
++
++RVTEST_RV64U
++RVTEST_CODE_BEGIN
++
++li TESTNUM, 2
++
++.align 12
++l1:
++  j l2
++.align 12
++l2:
++  j l3
++.align 12
++l3:
++  j l4
++.align 12
++l4:
++  j l5
++.align 12
++l5:
++  j l6
++.align 12
++l6:
++  j l7
++.align 12
++l7:
++  .word 0x00fff00b
++  addi TESTNUM, TESTNUM, -1
++  bnez TESTNUM, l1
++  li   TESTNUM, 1
++
++TEST_PASSFAIL
++
++RVTEST_CODE_END
++
++  .data
++RVTEST_DATA_BEGIN
++
++  TEST_DATA
++
++insn:
++  addi a3, a3, 333
++
++RVTEST_DATA_END
