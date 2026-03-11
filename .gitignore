@@ -45,7 +45,6 @@ xrun_results/
 /core/include/hwconfig_config_pkg.sv
 __pycache__
 .bender/
-Bender.lock
 /tools/
 /util/toolchain-builder/src/
 /util/toolchain-builder/build/

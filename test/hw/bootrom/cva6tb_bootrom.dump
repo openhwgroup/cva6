@@ -1,0 +1,100 @@
+
+cva6tb_bootrom.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000010000 <_start>:
+   10000:	4081                	li	ra,0
+   10002:	4101                	li	sp,0
+   10004:	4181                	li	gp,0
+   10006:	4201                	li	tp,0
+   10008:	4281                	li	t0,0
+   1000a:	4301                	li	t1,0
+   1000c:	4381                	li	t2,0
+   1000e:	4401                	li	s0,0
+   10010:	4481                	li	s1,0
+   10012:	4501                	li	a0,0
+   10014:	4581                	li	a1,0
+   10016:	4601                	li	a2,0
+   10018:	4681                	li	a3,0
+   1001a:	4701                	li	a4,0
+   1001c:	4781                	li	a5,0
+   1001e:	4801                	li	a6,0
+   10020:	4881                	li	a7,0
+   10022:	4901                	li	s2,0
+   10024:	4981                	li	s3,0
+   10026:	4a01                	li	s4,0
+   10028:	4a81                	li	s5,0
+   1002a:	4b01                	li	s6,0
+   1002c:	4b81                	li	s7,0
+   1002e:	4c01                	li	s8,0
+   10030:	4c81                	li	s9,0
+   10032:	4d01                	li	s10,0
+   10034:	4d81                	li	s11,0
+   10036:	4e01                	li	t3,0
+   10038:	4e81                	li	t4,0
+   1003a:	4f01                	li	t5,0
+   1003c:	4f81                	li	t6,0
+   1003e:	200f0117          	auipc	sp,0x200f0
+   10042:	fba10113          	addi	sp,sp,-70 # 200ffff8 <__stack_pointer$>
+   10046:	00000197          	auipc	gp,0x0
+   1004a:	10a18193          	addi	gp,gp,266 # 10150 <__base_heap>
+   1004e:	00000297          	auipc	t0,0x0
+   10052:	0b228293          	addi	t0,t0,178 # 10100 <__trap_handler>
+   10056:	30529073          	csrw	mtvec,t0
+   1005a:	0fff0297          	auipc	t0,0xfff0
+   1005e:	fa628293          	addi	t0,t0,-90 # 10000000 <__base_regs>
+   10062:	0002a303          	lw	t1,0(t0)
+   10066:	00031b63          	bnez	t1,1007c <__boot_spm>
+
+000000000001006a <__boot_dram>:
+   1006a:	f1402573          	csrr	a0,mhartid
+   1006e:	7fff0297          	auipc	t0,0x7fff0
+   10072:	f9228293          	addi	t0,t0,-110 # 80000000 <__base_dram>
+   10076:	000280e7          	jalr	t0
+   1007a:	a809                	j	1008c <_exit>
+
+000000000001007c <__boot_spm>:
+   1007c:	f1402573          	csrr	a0,mhartid
+   10080:	1fff0297          	auipc	t0,0x1fff0
+   10084:	f8028293          	addi	t0,t0,-128 # 20000000 <__base_spm>
+   10088:	000280e7          	jalr	t0
+
+000000000001008c <_exit>:
+   1008c:	0506                	slli	a0,a0,0x1
+   1008e:	00156513          	ori	a0,a0,1
+   10092:	0fff0297          	auipc	t0,0xfff0
+   10096:	f6e28293          	addi	t0,t0,-146 # 10000000 <__base_regs>
+   1009a:	00a2a223          	sw	a0,4(t0)
+   1009e:	10500073          	wfi
+   100a2:	bff5                	j	1009e <_exit+0x12>
+   100a4:	00000013          	nop
+   100a8:	00000013          	nop
+   100ac:	00000013          	nop
+   100b0:	00000013          	nop
+   100b4:	00000013          	nop
+   100b8:	00000013          	nop
+   100bc:	00000013          	nop
+   100c0:	00000013          	nop
+   100c4:	00000013          	nop
+   100c8:	00000013          	nop
+   100cc:	00000013          	nop
+   100d0:	00000013          	nop
+   100d4:	00000013          	nop
+   100d8:	00000013          	nop
+   100dc:	00000013          	nop
+   100e0:	00000013          	nop
+   100e4:	00000013          	nop
+   100e8:	00000013          	nop
+   100ec:	00000013          	nop
+   100f0:	00000013          	nop
+   100f4:	00000013          	nop
+   100f8:	00000013          	nop
+   100fc:	00000013          	nop
+
+0000000000010100 <__trap_handler>:
+   10100:	342022f3          	csrr	t0,mcause
+   10104:	10500073          	wfi
+   10108:	bff5                	j	10104 <__trap_handler+0x4>
+	...

@@ -1,0 +1,6 @@
+*.flist
+*.fst
+*.vcd
+*.dasm
+build/
+logs/

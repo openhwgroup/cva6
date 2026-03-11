@@ -1,0 +1,15 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+
+{
+    instance_name: "rv_plic",
+    param_values: {
+        src: 32,
+        target: 2,  // Two per hart: M and S modes
+        prio: 7,
+        nonstd_regs: 0  // Do *not* include these: MSIPs are not used and we use a 64 MiB address space
+    },
+}

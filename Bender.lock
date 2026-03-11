@@ -1,0 +1,97 @@
+packages:
+  apb:
+    revision: 77ddf073f194d44b9119949d2421be59789e69ae
+    version: 0.2.4
+    source:
+      Git: https://github.com/pulp-platform/apb.git
+    dependencies:
+    - common_cells
+  axi:
+    revision: a8c53cee2520d328d390c507c88818e8ac144c8c
+    version: 0.39.10
+    source:
+      Git: https://github.com/pulp-platform/axi.git
+    dependencies:
+    - common_cells
+    - common_verification
+    - tech_cells_generic
+  axi_riscv_atomics:
+    revision: 97a1dd2ac643c276880420a0cf8eea697f228aa9
+    version: 0.8.3
+    source:
+      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+    dependencies:
+    - axi
+    - common_cells
+    - common_verification
+  clic:
+    revision: 6515a71eb4ae3b143ab912d265e79832b3179a76
+    version: 3.0.0
+    source:
+      Git: https://github.com/pulp-platform/clic.git
+    dependencies:
+    - common_cells
+    - register_interface
+  clint:
+    revision: d5390a805c20f9226758a152ba1645f61da73349
+    version: 0.2.0
+    source:
+      Git: https://github.com/pulp-platform/clint.git
+    dependencies:
+    - common_cells
+    - register_interface
+  common_cells:
+    revision: 1281545696eb3fcba50ec5b4275993476a3c710e
+    version: 1.40.0
+    source:
+      Git: https://github.com/pulp-platform/common_cells.git
+    dependencies:
+    - common_verification
+    - tech_cells_generic
+  common_verification:
+    revision: fb1885f48ea46164a10568aeff51884389f67ae3
+    version: 0.2.5
+    source:
+      Git: https://github.com/pulp-platform/common_verification.git
+    dependencies: []
+  fpnew:
+    revision: 3eb6afeab2cb33f7d8689222955d0171aeb3a801
+    version: null
+    source:
+      Git: https://github.com/openhwgroup/cvfpu.git
+    dependencies:
+    - common_cells
+    - fpu_div_sqrt_mvp
+  fpu_div_sqrt_mvp:
+    revision: 86e1f558b3c95e91577c41b2fc452c86b04e85ac
+    version: 1.0.4
+    source:
+      Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+    dependencies:
+    - common_cells
+  opentitan_peripherals:
+    revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
+    version: 0.4.0
+    source:
+      Git: https://github.com/pulp-platform/opentitan_peripherals.git
+    dependencies:
+    - common_cells
+    - register_interface
+    - tech_cells_generic
+  register_interface:
+    revision: d6e1d4cdaab7870f4faf3f88a1c788eaf5ac129d
+    version: 0.4.7
+    source:
+      Git: https://github.com/pulp-platform/register_interface.git
+    dependencies:
+    - apb
+    - axi
+    - common_cells
+    - common_verification
+  tech_cells_generic:
+    revision: 3a3de73632a06826b1bd9c65a0a2e92b32016845
+    version: 0.2.14
+    source:
+      Git: https://github.com/pulp-platform/tech_cells_generic.git
+    dependencies:
+    - common_verification

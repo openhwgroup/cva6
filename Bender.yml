@@ -15,6 +15,13 @@ dependencies:
   common_cells: { version: 1.40.0 }
   fpnew: { git: "https://github.com/openhwgroup/cvfpu.git", rev: 3eb6afe } # branch: develop
   tech_cells_generic: { version: 0.2.14 }
+  # Required by standalone CVA6 testbench
+  axi_riscv_atomics: { version: 0.8.3, target: cva6tb }
+  clic: { version: 3.0.0, target: cva6tb }
+  clint: { version: 0.2.0, target: cva6tb }
+  common_verification: { version: 0.2.5, target: cva6tb }
+  opentitan_peripherals: { version: 0.4.0, target: cva6tb }
+  register_interface: { version: 0.4.7, target: cva6tb }
 
 export_include_dirs:
   - core/include
@@ -295,3 +302,18 @@ sources:
           # Tracer (behavioral code, not RTL)
           - core/include/instr_tracer_pkg.sv
           - common/local/util/instr_tracer.sv
+
+      - target: cva6tb
+        files:
+          - test/hw/cva6tb_pkg.sv
+          - test/hw/bootrom/cva6tb_bootrom.sv
+          - test/hw/cva6tb_clk_rst_gen.sv
+          - test/hw/cva6tb_regs.sv
+          - test/hw/cva6tb_rtc_timer.sv
+          - test/hw/cva6tb_sim_console.sv
+          - test/hw/cva6tb_axi_sim_mem.sv
+          - test/hw/cva6tb_soc.sv
+
+      - target: all(cva6tb, test_simple)
+        files:
+          - test/hw/cva6tb_test_simple.sv

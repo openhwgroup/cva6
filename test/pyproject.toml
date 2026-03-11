@@ -1,0 +1,14 @@
+[project]
+name = "cva6tb"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "hjson",
+    "mako",
+    "pyyaml",
+    "tabulate",
+    "setuptools<81", # Required by old `regtool`
+]
+
+[tool.uv]
+package = false
