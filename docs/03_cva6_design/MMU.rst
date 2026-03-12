@@ -2069,3 +2069,37 @@ The first step when a flush is triggered is to check whether the Page Table Entr
 
 * **Return to Idle State if Neither Condition is Met:** After evaluating the above two conditions, the code determines whether either of these conditions is true. If neither of these conditions applies, it suggests that the PTW module can return to its idle state, indicating that it can continue normal operations without any dependencies on the flush condition.
 
+Future RISC-V Virtual Memory Extensions
+=======================================
+
+Svadu Extension
+---------------
+
+The Svadu extension enables hardware updates of the Accessed (A)
+and Dirty (D) bits in page table entries.
+
+In the current CVA6 implementation, the MMU checks the A and D bits
+during page table walks but does not update them in hardware.
+Software is responsible for updating these bits when required.
+
+Supporting Svadu in CVA6 would require modifications to:
+
+* Page Table Walker
+* Memory Management Unit
+* Translation Lookaside Buffer (TLB)
+
+Svpbmt Extension
+----------------
+
+The Svpbmt extension introduces Page-Based Memory Types (PBMT)
+for RISC-V virtual memory.
+
+It allows page table entries to define memory attributes such as:
+
+* cacheable memory
+* non-cacheable memory
+* IO memory regions
+
+Currently, the CVA6 page table entry format does not include
+PBMT fields. Supporting Svpbmt would require extending the PTE
+format and propagating memory attributes to the memory subsystem.
