@@ -1,3 +1,4 @@
 out/
 deps/printf/
 deps/riscv-tests/
+deps/riscv-hyp-tests/

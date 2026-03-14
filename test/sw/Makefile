@@ -57,10 +57,22 @@ $(DEPS_DIR)/riscv-tests/: $(DEPS_DIR)/patches/riscv-tests.patch $(DEPS_DIR)/patc
 	cd $(DEPS_DIR)/riscv-tests && git apply $(DEPS_DIR)/patches/riscv-tests-fencet.patch
 	cd $(DEPS_DIR)/riscv-tests/env && git apply $(DEPS_DIR)/patches/riscv-tests-env.patch
 
+RISCV_HYP_TESTS_REV := f0a558cbb79638c37f5e90b53183416e9e4111b6
+
+$(DEPS_DIR)/riscv-hyp-tests/: $(DEPS_DIR)/patches/riscv-hyp-tests.patch
+	git clone https://github.com/josecm/riscv-hyp-tests.git $(DEPS_DIR)/riscv-hyp-tests
+	cd $(DEPS_DIR)/riscv-hyp-tests && git checkout $(RISCV_HYP_TESTS_REV)
+	cd $(DEPS_DIR)/riscv-hyp-tests && git apply $(DEPS_DIR)/patches/riscv-hyp-tests.patch
+
 .PHONY: riscv-tests
 riscv-tests: | $(DEPS_DIR)/riscv-tests/
 	@mkdir -p $(DEPS_DIR)/riscv-tests/build
 	cd $(DEPS_DIR)/riscv-tests/build && ../configure && make isa
+
+.PHONY: riscv-hyp-tests
+riscv-hyp-tests: | $(DEPS_DIR)/riscv-hyp-tests/
+	make -C $(DEPS_DIR)/riscv-hyp-tests PLAT=cva6 LOG_LEVEL=LOG_DETAIL
+	$(RV_OBJCOPY) -O verilog $(DEPS_DIR)/riscv-hyp-tests/build/cva6/rvh_test.elf $(DEPS_DIR)/riscv-hyp-tests/build/cva6/rvh_test.hex
 
 .PHONY: deps
 deps: $(DEPS_DIR)/printf
