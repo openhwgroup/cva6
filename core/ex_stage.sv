@@ -285,6 +285,7 @@ module ex_stage
   logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] alu_result;
   logic [CVA6Cfg.XLEN-1:0] csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
+  bp_resolve_t resolved_branch;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
   logic mult_valid;
@@ -359,10 +360,11 @@ module ex_stage
       .branch_comp_res_i (alu_branch_res),
       .branch_result_o   (branch_result),
       .branch_predict_i,
-      .resolved_branch_o,
+      .resolved_branch_o (resolved_branch),
       .resolve_branch_o,
       .branch_exception_o(flu_exception_o)
   );
+  assign resolved_branch_o = resolved_branch;
 
   // 3. CSR (sequential)
   csr_buffer #(
@@ -512,14 +514,19 @@ module ex_stage
   // ----------------
   fu_data_t lsu_data;
   logic [31:0] lsu_tinst;
+  logic speculative_load;
   always_comb begin
-    lsu_data  = lsu_valid_i[0] ? fu_data_i[0] : '0;
+    lsu_data = lsu_valid_i[0] ? fu_data_i[0] : '0;
     lsu_tinst = tinst_i[0];
+    speculative_load = 1'b0;
 
     if (CVA6Cfg.SuperscalarEn) begin
       if (lsu_valid_i[1]) begin
         lsu_data  = fu_data_i[1];
         lsu_tinst = tinst_i[1];
+        if (CVA6Cfg.SpeculativeSb) begin
+          speculative_load = branch_valid_i[0];
+        end
       end
     end
   end
@@ -537,7 +544,8 @@ module ex_stage
       .lsu_ctrl_t(lsu_ctrl_t),
       .cbo_t(cbo_t),
       .acc_mmu_req_t(acc_mmu_req_t),
-      .acc_mmu_resp_t(acc_mmu_resp_t)
+      .acc_mmu_resp_t(acc_mmu_resp_t),
+      .bp_resolve_t(bp_resolve_t)
   ) lsu_i (
       .clk_i,
       .rst_ni,
@@ -547,6 +555,7 @@ module ex_stage
       .fu_data_i             (lsu_data),
       .lsu_ready_o,
       .lsu_valid_i           (|lsu_valid_i),
+      .speculative_load_i    (speculative_load),
       .load_trans_id_o,
       .load_result_o,
       .load_valid_o,
@@ -558,6 +567,7 @@ module ex_stage
       .commit_i              (lsu_commit_i),
       .commit_ready_o        (lsu_commit_ready_o),
       .commit_tran_id_i,
+      .resolved_branch_i     (resolved_branch),
       .enable_translation_i,
       .enable_g_translation_i,
       .en_ld_st_translation_i,

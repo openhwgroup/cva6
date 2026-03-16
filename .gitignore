@@ -52,3 +52,8 @@ Bender.lock
 # Both following lines are needed to list contents of ISA manual build dir.
 !/vendor/riscv/riscv-isa-manual/build/
 !/vendor/riscv/riscv-isa-manual/build/*
+/config/gen_from_riscv_config/hwconfig/linker/link.ld
+/config/gen_from_riscv_config/hwconfig/spike/spike.yaml
+/verif/sim/encaps.traces
+/verif/sim/iti.traces
+/verif/sim/verilator.fst.hier
