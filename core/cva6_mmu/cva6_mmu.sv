@@ -386,7 +386,7 @@ module cva6_mmu
       // - in VS stage, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal
       // - in G stage (x4 mode), [CVA6Cfg.VLEN-1:CVA6Cfg.SV+1] must be zero.
       if ((enable_translation_i && (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0)))
-        ||((enable_g_translation_i && !enable_translation_i) && !(|icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:CVA6Cfg.SV+2]) == 1'b0)) begin
+        ||((enable_g_translation_i && !enable_translation_i) && !(|icache_areq_i.fetch_vaddr[CVA6Cfg.SV+2:CVA6Cfg.VLEN-1]) == 1'b0)) begin
 
         icache_areq_o.fetch_exception.cause = riscv::INSTR_PAGE_FAULT;
         icache_areq_o.fetch_exception.valid = 1'b1;
