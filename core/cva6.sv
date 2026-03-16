@@ -164,6 +164,8 @@ module cva6
       fu_t                              fu;
       fu_op                             operation;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic                             is_speculative_load;
+      logic                             is_speculative_load_miss;
     },
 
 
