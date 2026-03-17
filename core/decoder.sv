@@ -1877,6 +1877,7 @@ module decoder
         end else if (priv_lvl_i == riscv::PRIV_LVL_M) begin
           instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
         end
+        if (CVA6Cfg.TvalEn) instruction_o.ex.tval = '0;
       end else if (ebreak) begin
         // this exception is valid
         instruction_o.ex.valid = 1'b1;
@@ -1885,6 +1886,7 @@ module decoder
         // set gva bit
         if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
         else instruction_o.ex.gva = 1'b0;
+        if (CVA6Cfg.TvalEn) instruction_o.ex.tval = pc_i;
       end
       // -----------------
       // Interrupt Control
