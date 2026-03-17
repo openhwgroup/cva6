@@ -609,7 +609,7 @@ module cva6_pipeline
       .issue_entry_valid_o(issue_entry_valid_id_issue),
       .is_ctrl_flow_o     (is_ctrl_fow_id_issue),
       .issue_instr_ack_i  (issue_instr_issue_id),
-
+      .rvfi_is_compressed_o(rvfi_is_compressed),
       .priv_lvl_i        (priv_lvl),
       .v_i               (v),
       .fs_i              (fs),
@@ -1246,6 +1246,13 @@ module cva6_pipeline
 `endif  // PITON_ARIANE
 
 `ifndef VERILATOR
+
+  logic [31:0] fetch_instructions[CVA6Cfg.NrIssuePorts-1:0];
+
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
+    assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
@@ -1259,9 +1266,9 @@ module cva6_pipeline
       .rstn(rst_ni),
       .flush_unissued(flush_unissued_instr_ctrl_id),
       .flush_all(flush_ctrl_ex),
-      .instruction(id_stage_i.fetch_entry_i[0].instruction),
-      .fetch_valid(id_stage_i.fetch_entry_valid_i[0]),
-      .fetch_ack(id_stage_i.fetch_entry_ready_o[0]),
+      .instruction(fetch_instructions),
+      .fetch_valid(id_stage_i.fetch_entry_valid_i),
+      .fetch_ack(id_stage_i.fetch_entry_ready_o),
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
@@ -1274,7 +1281,7 @@ module cva6_pipeline
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
       .ld_valid(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.preq),
       .ld_kill(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.kill_req),
-      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.paddr),
+      .ld_paddr(ex_stage_i.lsu_i.i_load_unit.paddr_i),
       .resolve_branch(resolved_branch),
       .commit_exception(commit_stage_i.exception_o),
       .priv_lvl(priv_lvl),
@@ -1342,10 +1349,8 @@ module cva6_pipeline
 
   //RVFI INSTR
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] rvfi_fetch_instr;
-  fu_t [CVA6Cfg.NrIssuePorts-1:0] rvfi_decoded_fu;
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign rvfi_fetch_instr[i] = orig_instr_id_issue[i];
-    assign rvfi_decoded_fu[i]  = issue_entry_id_issue[i].fu;
+    assign rvfi_fetch_instr[i] = fetch_entry_if_id[i].instruction;
   end
 
   cva6_rvfi_probes #(
@@ -1353,16 +1358,17 @@ module cva6_pipeline
       .exception_t        (exception_t),
       .scoreboard_entry_t (scoreboard_entry_t),
       .lsu_ctrl_t         (lsu_ctrl_t),
+      .bp_resolve_t       (bp_resolve_t),
       .rvfi_probes_instr_t(rvfi_probes_instr_t),
       .rvfi_probes_csr_t  (rvfi_probes_csr_t),
       .rvfi_probes_t      (rvfi_probes_t)
   ) i_cva6_rvfi_probes (
 
-      .flush_i          (flush_ctrl_if),
-      .issue_instr_ack_i(issue_instr_issue_id),
-      .instruction_i    (orig_instr_id_issue),
-      .decoded_fu_i     (rvfi_decoded_fu),
-      .was_compressed_i (was_compressed),
+      .flush_i            (flush_ctrl_if),
+      .issue_instr_ack_i  (issue_instr_issue_id),
+      .fetch_entry_valid_i(fetch_valid_if_id),
+      .instruction_i      (rvfi_fetch_instr),
+      .is_compressed_i    (rvfi_is_compressed),
 
       .issue_pointer_i (rvfi_issue_pointer),
       .commit_pointer_i(rvfi_commit_pointer),
@@ -1388,9 +1394,17 @@ module cva6_pipeline
 
       .csr_i(rvfi_csr),
       .irq_i(irq_i),
-
+      .resolved_branch_i(resolved_branch),
+      .flu_trans_id_ex_id_i(flu_trans_id_ex_id),
       .rvfi_probes_o(rvfi_probes_o)
 
   );
+
+  //pragma translate_off
+  initial begin
+    assert (!(CVA6Cfg.SuperscalarEn && CVA6Cfg.EnableAccelerator))
+    else $fatal(1, "Accelerator is not supported by superscalar pipeline");
+  end
+  //pragma translate_on
 
 endmodule  // ariane
