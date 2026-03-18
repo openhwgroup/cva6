@@ -228,10 +228,10 @@ module cva6_tlb
             lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
             // S-stage Mega page
             if (tags_q[i].is_page[1][0])
-              lu_gpaddr_o[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
+              lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
             // S-stage Giga page
             if (tags_q[i].is_page[0][0])
-              lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+              lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end else begin
             lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32?CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
           end
