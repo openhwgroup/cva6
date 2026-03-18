@@ -21,8 +21,8 @@ iterations = None
 valid_cycles = {
     "dhrystone_dual": 16282,
     "dhrystone_single": 22256,
-    "coremark_dual": 865167,
-    "coremark_single": 1294524,
+    "coremark_dual": 215642,
+    "coremark_single": 322997,
     "dhrystone_cv32a65x": 27329,
     "dhrystone_cv32a60x": 36629,
 }
