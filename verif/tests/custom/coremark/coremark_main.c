@@ -281,6 +281,7 @@ for (i = 0; i < MULTITHREAD; i++)
             divisor = 1;
         results[0].iterations *= 1 + 10 / divisor;
     }
+    terate(1);
     /* perform actual benchmark */
     start_time();
 #if (MULTITHREAD > 1)
