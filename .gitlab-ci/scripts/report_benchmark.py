@@ -33,7 +33,7 @@ for arg in sys.argv[1:]:
             iterations = 50
         else:
             if "--coremark" in arg:
-                iterations = 4
+                iterations = 1
         mode = arg.replace("-", "")
     else:
         path = arg
