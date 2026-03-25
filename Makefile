@@ -39,7 +39,7 @@ torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 # board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
-BOARD          ?= genesys2
+BOARD          ?= vc707
 ALTERA_BOARD		 ?= DK-DEV-AGF014E3ES
 ALTERA_FAMILY	 ?= "AGILEX"
 ALTERA_PART		 ?= AGFB014R24B2E2V
