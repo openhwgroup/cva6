@@ -547,7 +547,7 @@ module ariane_peripherals #(
     `ifdef VC707
     framing_top_sgmii eth_sgmii (
        .msoc_clk(clk_i),
-       .core_lsu_addr(eth_addr[14:0]),
+       .core_lsu_addr(eth_addr[16:0]),
        .core_lsu_wdata(eth_wrdata),
        .core_lsu_be(eth_be),
        .ce_d(eth_en),

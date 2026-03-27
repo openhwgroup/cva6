@@ -820,6 +820,15 @@ fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(dpti_src) $(src_flist)
 	@echo "[FPGA] Generate Bitstream"
 	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
+program:
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/program.tcl
+
+flash: corev_apu/fpga/work-fpga/ariane_xilinx.mcs
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/flash.tcl
+
+corev_apu/fpga/work-fpga/ariane_xilinx.mcs: corev_apu/fpga/work-fpga/ariane_xilinx.bit
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/write_cfgmem.tcl -tclargs work-fpga/ariane_xilinx.mcs work-fpga/ariane_xilinx.bit
+
 altera: PLATFORM := "PLAT_AGILEX"
 
 altera: $(ariane_pkg) $(src) $(fpga_src) $(src_flist)
@@ -849,7 +858,7 @@ clean-altera: clean
 	$(MAKE) -C corev_apu/altera clean
 
 .PHONY:
-	build sim sim-verilate clean                                              \
+	build sim sim-verilate clean program flash                                 \
 	$(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests))             \
 	$(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks))           \
 	check-benchmarks check-asm-tests                                          \

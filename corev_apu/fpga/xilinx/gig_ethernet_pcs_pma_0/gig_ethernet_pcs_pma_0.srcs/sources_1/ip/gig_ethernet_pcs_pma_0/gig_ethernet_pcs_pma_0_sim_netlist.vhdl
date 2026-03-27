@@ -1,7 +1,7 @@
 -- Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2020.1.1 (lin64) Build 2960000 Wed Aug  5 22:57:21 MDT 2020
--- Date        : Wed Mar 25 12:20:31 2026
+-- Date        : Thu Mar 26 10:34:07 2026
 -- Host        : jonathan-nuc10i7fnk running 64-bit KDE neon Unstable Edition
 -- Command     : write_vhdl -force -mode funcsim
 --               /home/jonathan/cva6-ethernet/corev_apu/fpga/xilinx/gig_ethernet_pcs_pma_0/gig_ethernet_pcs_pma_0.srcs/sources_1/ip/gig_ethernet_pcs_pma_0/gig_ethernet_pcs_pma_0_sim_netlist.vhdl
