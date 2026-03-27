@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<Runs Version="1" Minor="0">
-	<Run Id="gig_ethernet_pcs_pma_0_synth_1" LaunchDir="/home/jonathan/cva6-ethernet/corev_apu/fpga/xilinx/gig_ethernet_pcs_pma_0/gig_ethernet_pcs_pma_0.runs/gig_ethernet_pcs_pma_0_synth_1" FlowId="Vivado_Synthesis" FromStepId="vivado" ToStepId="vivado"/>
-	<Parameters>
-		<Parameter Name="runs.monitorLSFJobs" Val="true" Type="bool"/>
-		<Parameter Name="runs.enableClusterConf" Val="true" Type="bool"/>
-	</Parameters>
-</Runs>
-
