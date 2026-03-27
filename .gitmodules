@@ -16,9 +16,6 @@
 [submodule "corev_apu/fpga/src/axi_slice"]
 	path = corev_apu/fpga/src/axi_slice
 	url = https://github.com/pulp-platform/axi_slice.git
-[submodule "corev_apu/fpga/src/ariane-ethernet"]
-	path = corev_apu/fpga/src/ariane-ethernet
-	url = https://github.com/lowRISC/ariane-ethernet.git
 [submodule "corev_apu/riscv-dbg"]
 	path = corev_apu/riscv-dbg
 	url = https://github.com/pulp-platform/riscv-dbg.git
