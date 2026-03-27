@@ -13,6 +13,7 @@
 //
 // Date: 18.10.2018
 // Description: simple 64bit serial divider
+// Radix-4 modification: processes 2 quotient bits per cycle, halving latency.
 
 
 module serdiv
@@ -92,6 +93,16 @@ module serdiv
   logic lzc_a_no_one, lzc_b_no_one;
   logic div_res_zero_d, div_res_zero_q;
 
+  // Radix-4 additional signals
+  logic first_div_d, first_div_q;     // high in the first DIVIDE cycle after load
+  logic div_shift_odd_d, div_shift_odd_q; // latched div_shift[0] at load time
+  logic half_step;                    // first cycle with even div_shift → only 1 Radix-2 step
+  logic [WIDTH-1:0] a_mid_r4;        // partial remainder after high step
+  logic [WIDTH-1:0] b_half_r4;       // op_b_q shifted right by 1 (for low step)
+  logic ab_comp_lo_r4;                // low-step comparator result
+  logic [WIDTH-1:0] a_new_r4;        // partial remainder after both steps
+  logic [WIDTH-1:0] a_final_r4;      // selected result (half or full step)
+
 
   /////////////////////////////////////
   // align the input operands
@@ -127,6 +138,8 @@ module serdiv
   assign shift_a = (lzc_a_no_one) ? WIDTH : {1'b0, lzc_a_result};
   assign div_shift = {1'b0, lzc_b_result} - shift_a;
 
+  // Keep op_b shift identical to the original — no forced-odd padding.
+  // Handling of even div_shift is done via half_step in the datapath.
   assign op_b = op_b_i <<< div_shift;
 
   // the division is zero if |opB| > |opA| and can be terminated
@@ -141,8 +154,11 @@ module serdiv
   // muxes
   assign add_mux = (load_en) ? op_a_i : op_b_q;
 
-  // attention: logical shift by one in case of negative operand B!
-  assign b_mux = (load_en) ? op_b : {comp_inv_q, (op_b_q[$high(op_b_q):1])};
+  // Radix-4: shift op_b_q right by 2 each full step, by 1 for the half step.
+  // half_step is 1 only in the first DIVIDE cycle when div_shift was even.
+  assign b_mux = (load_en) ? op_b
+               : half_step ? {comp_inv_q, op_b_q[$high(op_b_q):1]}
+               : {comp_inv_q, comp_inv_q, op_b_q[$high(op_b_q):2]};
 
   // in case of bad timing, we could output from regs -> needs a cycle more in the FSM
   assign out_mux     = (rem_sel_q) ? (op_b_neg_one_q ? '0 : op_a_q) : (op_b_zero_q ? '1 : (op_b_neg_one_q ? op_a_q : res_q));
@@ -150,19 +166,48 @@ module serdiv
   // invert if necessary
   assign res_o = (res_inv_q) ? -$signed(out_mux) : out_mux;
 
-  // main comparator
+  // main comparator (high step, same as original ab_comp)
   assign ab_comp     = ((op_a_q == op_b_q) | ((op_a_q > op_b_q) ^ comp_inv_q)) & ((|op_a_q) | op_b_zero_q);
 
-  // main adder
+  // main adder (used only for load)
   assign add_tmp = (load_en) ? 0 : op_a_q;
   assign add_out = (pm_sel) ? add_tmp + add_mux : add_tmp - $signed(add_mux);
+
+  /////////////////////////////////////
+  // Radix-4 two-step datapath
+  //
+  // Strategy for even div_shift:
+  //   The first DIVIDE cycle (first_div_q=1, div_shift_odd_q=0) processes
+  //   only the HIGH Radix-2 step (half_step=1).  All other cycles process
+  //   both steps.  This avoids any extra shift of op_b_i that could overflow.
+  /////////////////////////////////////
+
+  // Detect the half-step cycle
+  assign half_step = first_div_q & ~div_shift_odd_q;
+
+  // High step: partial remainder after subtracting op_b_q if ab_comp is set
+  assign a_mid_r4 = ab_comp ? (op_a_q - op_b_q) : op_a_q;
+
+  // B for the low step: one arithmetic right-shift of the current op_b_q
+  assign b_half_r4 = {comp_inv_q, op_b_q[$high(op_b_q):1]};
+
+  // Low-step comparator (same structure as ab_comp, applied to a_mid_r4/b_half_r4)
+  assign ab_comp_lo_r4 = ((a_mid_r4 == b_half_r4) | ((a_mid_r4 > b_half_r4) ^ comp_inv_q))
+                          & ((|a_mid_r4) | op_b_zero_q);
+
+  // Low step: partial remainder after subtracting b_half_r4 if ab_comp_lo_r4 is set
+  assign a_new_r4 = ab_comp_lo_r4 ? (a_mid_r4 - b_half_r4) : a_mid_r4;
+
+  // Select A result: half step uses only the high result
+  assign a_final_r4 = half_step ? a_mid_r4 : a_new_r4;
 
   /////////////////////////////////////
   // FSM, counter
   /////////////////////////////////////
 
+  // Radix-4: counter increments by 2 per step → initialise to div_shift >> 1
   assign cnt_zero = (cnt_q == 0);
-  assign cnt_d = (load_en) ? div_shift[$clog2(WIDTH)-1:0] : (~cnt_zero) ? cnt_q - 1 : cnt_q;
+  assign cnt_d = (load_en) ? div_shift[$clog2(WIDTH)-1:1] : (~cnt_zero) ? cnt_q - 1 : cnt_q;
 
   always_comb begin : p_fsm
     // default
@@ -190,7 +235,9 @@ module serdiv
       end
       DIVIDE: begin
         if (~(div_res_zero_q | op_b_zero_q | op_b_neg_one_q)) begin
-          a_reg_en   = ab_comp;
+          // Radix-4: always update A (a_final_r4 produces the correct value
+          // regardless of whether ab_comp / ab_comp_lo_r4 are 0 or 1).
+          a_reg_en   = 1'b1;
           b_reg_en   = 1'b1;
           res_reg_en = 1'b1;
         end
@@ -236,41 +283,58 @@ module serdiv
   assign op_b_neg_one_d = (load_en) ? op_b_neg_one : op_b_neg_one_q;
   assign res_inv_d       = (load_en) ? (~op_b_zero | opcode_i[1]) & opcode_i[0] & (op_a_sign ^ op_b_sign ^ op_b_neg_one) : res_inv_q;
 
+  // Radix-4 flags: latch div_shift[0] and flag the first DIVIDE cycle
+  assign div_shift_odd_d = (load_en) ? div_shift[0] : div_shift_odd_q;
+  assign first_div_d     = load_en ? 1'b1 : 1'b0;
+
   // transaction id
   assign id_d = (load_en) ? id_i : id_q;
   assign id_o = id_q;
 
-  assign op_a_d = (a_reg_en) ? add_out : op_a_q;
+  // op_a: at load use add_out (may negate A for signed ops); in DIVIDE use a_final_r4
+  assign op_a_d = load_en ? add_out : (a_reg_en ? a_final_r4 : op_a_q);
   assign op_b_d = (b_reg_en) ? b_mux : op_b_q;
-  assign res_d = (load_en) ? '0 : (res_reg_en) ? {res_q[$high(res_q)-1:0], ab_comp} : res_q;
+
+  // Quotient accumulation:
+  //   half_step  → 1-bit shift, insert ab_comp (high step only)
+  //   full step  → 2-bit shift, insert {ab_comp, ab_comp_lo_r4}
+  assign res_d = (load_en) ? '0
+               : (res_reg_en) ? (half_step
+                   ? {res_q[$high(res_q)-1:0], ab_comp}
+                   : {res_q[$high(res_q)-2:0], ab_comp, ab_comp_lo_r4})
+               : res_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (~rst_ni) begin
-      state_q        <= IDLE;
-      op_a_q         <= '0;
-      op_b_q         <= '0;
-      res_q          <= '0;
-      cnt_q          <= '0;
-      id_q           <= '0;
-      rem_sel_q      <= 1'b0;
-      comp_inv_q     <= 1'b0;
-      res_inv_q      <= 1'b0;
-      op_b_zero_q    <= 1'b0;
-      op_b_neg_one_q <= 1'b0;
-      div_res_zero_q <= 1'b0;
+      state_q          <= IDLE;
+      op_a_q           <= '0;
+      op_b_q           <= '0;
+      res_q            <= '0;
+      cnt_q            <= '0;
+      id_q             <= '0;
+      rem_sel_q        <= 1'b0;
+      comp_inv_q       <= 1'b0;
+      res_inv_q        <= 1'b0;
+      op_b_zero_q      <= 1'b0;
+      op_b_neg_one_q   <= 1'b0;
+      div_res_zero_q   <= 1'b0;
+      div_shift_odd_q  <= 1'b0;
+      first_div_q      <= 1'b0;
     end else begin
-      state_q        <= state_d;
-      op_a_q         <= op_a_d;
-      op_b_q         <= op_b_d;
-      res_q          <= res_d;
-      cnt_q          <= cnt_d;
-      id_q           <= id_d;
-      rem_sel_q      <= rem_sel_d;
-      comp_inv_q     <= comp_inv_d;
-      res_inv_q      <= res_inv_d;
-      op_b_zero_q    <= op_b_zero_d;
-      op_b_neg_one_q <= op_b_neg_one_d;
-      div_res_zero_q <= div_res_zero_d;
+      state_q          <= state_d;
+      op_a_q           <= op_a_d;
+      op_b_q           <= op_b_d;
+      res_q            <= res_d;
+      cnt_q            <= cnt_d;
+      id_q             <= id_d;
+      rem_sel_q        <= rem_sel_d;
+      comp_inv_q       <= comp_inv_d;
+      res_inv_q        <= res_inv_d;
+      op_b_zero_q      <= op_b_zero_d;
+      op_b_neg_one_q   <= op_b_neg_one_d;
+      div_res_zero_q   <= div_res_zero_d;
+      div_shift_odd_q  <= div_shift_odd_d;
+      first_div_q      <= first_div_d;
     end
   end
 
