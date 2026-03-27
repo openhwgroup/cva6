@@ -256,7 +256,7 @@ uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
               corev_apu/fpga/src/apb_uart/src/apb_uart_wrap.sv
 uart_src_sv := $(addprefix $(root-dir), $(uart_src_sv))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv common/local/util/hpdcache_sram_1rw.sv common/local/util/hpdcache_sram_wbyteenable_1rw.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx32.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRam.sv
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/cva6-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv common/local/util/hpdcache_sram_1rw.sv common/local/util/hpdcache_sram_wbyteenable_1rw.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx32.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRam.sv
 
 altera_src := $(shell find $(root-dir)/corev_apu/altera/src -type f \( -name "*.v" -o -name "*.sv" -o -name "*.svh" \) -print | sed 's|//|/|g')
 altera_src += $(src)
