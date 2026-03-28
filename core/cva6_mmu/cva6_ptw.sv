@@ -204,6 +204,8 @@ module cva6_ptw
   always_comb begin : tlb_update
     shared_tlb_update_o.valid = shared_tlb_update_valid;
     shared_tlb_update_o.is_napot_64k = is_napot_64k;
+    // Svpbmt: propagate pbmt from PTE into TLB update when extension is enabled
+    shared_tlb_update_o.pbmt = CVA6Cfg.SvpbmtEn ? pte.pbmt : 2'b00;
 
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
@@ -426,7 +428,10 @@ module cva6_ptw
           // -------------
           // Invalid PTE
           // -------------
-          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
+          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved != 0
+          // (bits [60:54] in sv39/sv39x4), stop and raise a page-fault exception.
+          // Note: pte.pbmt (bits [62:61]) is intentionally excluded from this
+          // check per the Svpbmt extension (RISC-V Priv. Spec v1.12, 12.3).
           if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
             state_d = PROPAGATE_ERROR;
           // -----------
