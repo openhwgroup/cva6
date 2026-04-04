@@ -426,7 +426,7 @@ module cva6_ptw
           // -------------
           // Invalid PTE
           // -------------
-          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
+          // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved != 0 (bits [60:54]) in sv39/sv39x4, raise a page-fault. pte.pbmt (bits [62:61]) is intentionally excluded from this check per the Svpbmt extension.
           if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
             state_d = PROPAGATE_ERROR;
           // -----------
