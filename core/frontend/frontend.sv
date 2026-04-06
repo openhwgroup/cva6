@@ -156,7 +156,7 @@ module frontend
   logic            [           CVA6Cfg.VLEN-1:0]                   vpc_bht;
 
   // branch-predict update
-  logic                                                            is_mispredict;
+  logic is_mispredict, was_mispredicted;
   logic ras_push, ras_pop;
   logic [           CVA6Cfg.VLEN-1:0] ras_update;
 
@@ -415,7 +415,7 @@ module frontend
       fetchbuf_valid_d[fetchbuf_rindex] = 1'b0;
     end
     // Flush on bp_valid
-    if (bp_valid) begin
+    if (kill_s2) begin
       fetchbuf_flushed_d[fetchbuf_last_id_q] = 1'b1;
     end
     // Free on exception
@@ -459,7 +459,7 @@ module frontend
 
   assign stall_ni = spec_req_non_idempot;
   assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
-  assign stall_translation = CVA6Cfg.MmuPresent ? areq_o.fetch_req && (!arsp_i.fetch_valid) : 1'b0;
+  assign stall_translation = CVA6Cfg.MmuPresent ? areq_o.fetch_req && (!arsp_i.fetch_valid || (arsp_i.fetch_valid && arsp_i.fetch_exception.valid)) : 1'b0;
   assign stall_instr_queue = !instr_queue_ready;
 
   assign ex_s1 = (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.valid);
@@ -482,7 +482,7 @@ module frontend
   assign ypb_fetch_req_o.vaddr = npc_fetch_address;
   assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
 
-  assign data_req = (CVA6Cfg.MmuPresent ? fetchbuf_w_q && !ex_s1 && !bp_valid : fetchbuf_w);
+  assign data_req = (CVA6Cfg.MmuPresent ? fetchbuf_w_q && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignmen
@@ -499,11 +499,11 @@ module frontend
     areq_o.fetch_req = 1'b1;
     ypb_fetch_req_o.vreq = 1'b1;
     if (!CVA6Cfg.MmuPresent || ypb_fetch_rsp_i.vgnt) begin
-      if (stall_ni || stall_ypb || stall_instr_queue || fetchbuf_full) begin
+      if (stall_ni || stall_ypb || stall_instr_queue || stall_translation || fetchbuf_full) begin
         kill_req_d = CVA6Cfg.MmuPresent ? 1'b1 :  1'b0; // MmuPresent only : next cycle is s2 but we need to kill because not ready to sent tag
       end else begin
         fetchbuf_w  = !kill_s1 && !flush_i; // record request into outstanding fetch fifo and trigger YPB physical request
-        pop_fetch = 1'b1;  // release lsu_bypass fifo
+        pop_fetch = arsp_i.fetch_valid;  // release lsu_bypass fifo
       end
     end
     //end
@@ -515,10 +515,10 @@ module frontend
       ex_rvalid = 1'b0;
       // RETIRE EXCEPTION (low priority)
     end else if (CVA6Cfg.MmuPresent && ex_s1) begin
-      vaddr_rvalid = CVA6Cfg.MmuPresent ? fetchbuf_q[fetchbuf_windex_q].vaddr : npc_fetch_address;
-      rvalid    = !bp_valid && !flush_i;
+      vaddr_rvalid = vaddr_q;
+      rvalid    = arsp_i.fetch_valid && !bp_valid && !flush_i && !was_mispredicted;
       ex_rvalid = 1'b1;
-      pop_fetch = 1'b1; // release lsu_bypass fifo
+      pop_fetch = arsp_i.fetch_valid; // release lsu_bypass fifo
     end
 
   end
@@ -544,7 +544,7 @@ module frontend
   assign ypb_fetch_req_o.wdata = '0;
   assign ypb_fetch_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
   assign ypb_fetch_req_o.atop = ariane_pkg::AMO_NONE;
-  assign ypb_fetch_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
+  assign ypb_fetch_req_o.cacheable = paddr_is_cacheable;
   assign ypb_fetch_req_o.access_type = '0;  //  0 = fetch
   assign ypb_fetch_req_o.rready = '1;  //always ready  TODO maybe manage instr_queue_ready & replay with this signal
 
@@ -598,7 +598,7 @@ module frontend
       kill_req_q <= kill_req_d;
       //if (!ex_s1) begin
       fetchbuf_windex_q <= fetchbuf_windex;
-      fetchbuf_w_q <= fetchbuf_w;
+      fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
       //end
       vaddr_q <= vaddr_d;
     end
@@ -658,7 +658,7 @@ module frontend
       npc_d = predict_address;
     end
     // 1. Default assignment
-    if (pop_fetch) begin
+    if (pop_fetch && (!was_mispredicted || !stall_translation)) begin
       npc_d = {
         fetch_address[CVA6Cfg.VLEN-1:CVA6Cfg.FETCH_ALIGN_BITS] + 1, {CVA6Cfg.FETCH_ALIGN_BITS{1'b0}}
       };
@@ -670,14 +670,17 @@ module frontend
     // 3. Control flow change request
     if (is_mispredict) begin
       npc_d = resolved_branch_i.target_address;
+      fetch_address = resolved_branch_i.target_address;
     end
     // 4. Return from environment call
     if (eret_i) begin
       npc_d = epc_i;
+      fetch_address = epc_i;
     end
     // 5. Exception/Interrupt
     if (ex_valid_i) begin
       npc_d = trap_vector_base_i;
+      fetch_address = trap_vector_base_i;
     end
     // 6. Pipeline Flush because of CSR side effects
     // On a pipeline flush start fetching from the next address
@@ -690,6 +693,7 @@ module frontend
     // IMPROVEMENT: This adder can at least be merged with the one in the csr_regfile stage
     if (set_pc_commit_i) begin
       npc_d = pc_commit_i + (halt_i ? '0 : {{CVA6Cfg.VLEN - 3{1'b0}}, 3'b100});
+      fetch_address = pc_commit_i + (halt_i ? '0 : {{CVA6Cfg.VLEN - 3{1'b0}}, 3'b100});
     end
     // 7. Debug
     // enter debug on a hard-coded base-address
@@ -720,6 +724,7 @@ module frontend
       fetch_ex_valid_q <= ariane_pkg::FE_NONE;
       btb_q            <= '0;
       bht_q            <= '0;
+      was_mispredicted <= '0;
     end else begin
       npc_rst_load_q <= 1'b0;
       npc_q <= npc_d;
@@ -752,6 +757,11 @@ module frontend
         btb_q <= btb_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
         bht_q <= bht_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
       end
+
+      if (is_mispredict & !arsp_i.fetch_valid)  // translation request for misprediction ongoing
+        was_mispredicted <= '1;
+      if (arsp_i.fetch_valid)  // translation finished, can clear flag
+        was_mispredicted <= '0;
     end
   end
 
