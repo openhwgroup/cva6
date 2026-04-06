@@ -33,7 +33,7 @@ package tb_pkg;
   time CLK_LO               = 5ns;     // set clock low time
   time CLK_PERIOD           = CLK_HI+CLK_LO;
   time APPL_DEL             = 2ns;     // set stimuli application delay
-  time ACQ_DEL              = 8ns;     // set response aquisition delay
+  time ACQ_DEL              = 8ns;     // set response acquisition delay
 
   parameter ERROR_CNT_STOP_LEVEL = 1; // use 1 for debugging. 0 runs the complete simulation...
 
