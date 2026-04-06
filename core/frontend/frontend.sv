@@ -156,7 +156,7 @@ module frontend
   logic            [           CVA6Cfg.VLEN-1:0]                   vpc_bht;
 
   // branch-predict update
-  logic                                                            is_mispredict, was_mispredicted;
+  logic is_mispredict, was_mispredicted;
   logic ras_push, ras_pop;
   logic [           CVA6Cfg.VLEN-1:0] ras_update;
 
@@ -598,7 +598,7 @@ module frontend
       kill_req_q <= kill_req_d;
       //if (!ex_s1) begin
       fetchbuf_windex_q <= fetchbuf_windex;
-      fetchbuf_w_q <= ( CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
+      fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
       //end
       vaddr_q <= vaddr_d;
     end
@@ -758,10 +758,10 @@ module frontend
         bht_q <= bht_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
       end
 
-      if(is_mispredict & !arsp_i.fetch_valid) // translation request for misprediction ongoing
-        was_mispredicted <= '1; 
-      if(arsp_i.fetch_valid) // translation finished, can clear flag
-        was_mispredicted <= '0; 
+      if (is_mispredict & !arsp_i.fetch_valid)  // translation request for misprediction ongoing
+        was_mispredicted <= '1;
+      if (arsp_i.fetch_valid)  // translation finished, can clear flag
+        was_mispredicted <= '0;
     end
   end
 

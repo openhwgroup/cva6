@@ -160,7 +160,7 @@ module cva6_ptw
   assign ypb_mmu_ptw_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_mmu_ptw_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
-  assign ypb_mmu_ptw_req_o.rready = '1; 
+  assign ypb_mmu_ptw_req_o.rready = '1;
   assign ypb_mmu_ptw_req_o.access_type = 1'b1;  //1 = data
   assign ypb_mmu_ptw_req_o.atop = ariane_pkg::AMO_NONE;
   // -----------
@@ -388,7 +388,7 @@ module cva6_ptw
         ypb_mmu_ptw_req_o.vreq = 1'b1;
         // wait for the WAIT_GRANT
         if (ypb_mmu_ptw_rsp_i.pgnt) begin
-          state_d     = PTE_LOOKUP;
+          state_d = PTE_LOOKUP;
         end
       end
 

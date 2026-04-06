@@ -495,7 +495,7 @@ module cva6_hpdcache_subsystem
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
-      .hpdcache_mem_be_t (hpdcache_mem_be_t),
+      .hpdcache_mem_be_t    (hpdcache_mem_be_t),
 
       .AxiAddrWidth (CVA6Cfg.AxiAddrWidth),
       .AxiDataWidth (CVA6Cfg.AxiDataWidth),
