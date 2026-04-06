@@ -118,7 +118,7 @@ module cva6_hpicache_if_adapter
       end
       FLUSH_PEND: begin
         if (hpicache_rsp_valid_i) begin
-          if (hpicache_rsp_i.tid == '0) begin
+          if (hpicache_rsp_i.tid == '1) begin
             cva6_icache_flush_ack_o = 1'b1;
             flush_fsm_d = FLUSH_IDLE;
           end
@@ -160,7 +160,7 @@ module cva6_hpicache_if_adapter
           be: '0,
           size: '0,
           sid: '0,
-          tid: '0,
+          tid: '1,
           need_rsp: 1'b1,
           phys_indexed: 1'b0,
           pma: '{
@@ -171,7 +171,7 @@ module cva6_hpicache_if_adapter
       };
 
   assign hpicache_req_valid_o = forward_fetch | forward_flush;
-  assign hpicache_req = forward_fetch ? hpicache_req_fetch : hpicache_req_flush;
+  assign hpicache_req = forward_flush ? hpicache_req_flush : hpicache_req_fetch; //flush has higher priority
   assign hpicache_req_abort_o = 1'b0;  // unused on physically indexed requests
   assign hpicache_req_tag_o = '0;  // unused on physically indexed requests
   assign hpicache_req_pma_o.uncacheable = 1'b0;
@@ -184,9 +184,9 @@ module cva6_hpicache_if_adapter
   //  {{{
   logic ypb_fetch_valid;
   assign ypb_fetch_valid = hpicache_rsp_valid_i && (hpicache_rsp_i.tid != '1);
-  assign ypb_fetch_rsp_o.pgnt = hpicache_req_ready_i & ypb_fetch_req_i.preq;
-  assign ypb_fetch_rsp_o.vgnt = hpicache_req_ready_i & ypb_fetch_req_i.vreq;
-  assign ypb_fetch_rsp_o.rvalid = hpicache_rsp_valid_i;
+  assign ypb_fetch_rsp_o.pgnt = hpicache_req_ready_i & ypb_fetch_req_i.preq & !cva6_icache_flush_i;
+  assign ypb_fetch_rsp_o.vgnt = ypb_fetch_req_i.vreq;
+  assign ypb_fetch_rsp_o.rvalid = ypb_fetch_valid;
   assign ypb_fetch_rsp_o.rid = hpicache_rsp_i.tid;
   assign ypb_fetch_rsp_o.err = '0;
   assign ypb_fetch_rsp_o.rdata = hpicache_rsp_i.rdata;

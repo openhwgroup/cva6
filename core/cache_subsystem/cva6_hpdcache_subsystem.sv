@@ -296,10 +296,10 @@ module cva6_hpdcache_subsystem
   localparam int NUM_SNOOP_PORTS = HPDCACHE_ENABLE_CMO ? 3 : 2;
 
   localparam int MMU_PTW_INDEX = 0;
-  localparam int ZCMT_INDEX = (CVA6Cfg.RVZCMT ? 1 : 0);
-  localparam int LOAD_INDEX = (CVA6Cfg.MmuPresent ? ZCMT_INDEX + 1 : ZCMT_INDEX);
-  localparam int STORE_AMO_INDEX = LOAD_INDEX + 1;
-  localparam int CMO_INDEX = STORE_AMO_INDEX + 1;
+  localparam int ZCMT_INDEX = (CVA6Cfg.MmuPresent ? 1 : 0);
+  localparam int STORE_AMO_INDEX = (CVA6Cfg.RVZCMT ? ZCMT_INDEX + 1 : ZCMT_INDEX);
+  localparam int LOAD_INDEX = STORE_AMO_INDEX + 1;
+  localparam int CMO_INDEX = LOAD_INDEX + 1;
   localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
@@ -495,6 +495,7 @@ module cva6_hpdcache_subsystem
       .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .hpdcache_mem_be_t (hpdcache_mem_be_t),
 
       .AxiAddrWidth (CVA6Cfg.AxiAddrWidth),
       .AxiDataWidth (CVA6Cfg.AxiDataWidth),

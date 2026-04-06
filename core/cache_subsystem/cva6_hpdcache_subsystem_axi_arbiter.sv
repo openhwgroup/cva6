@@ -25,6 +25,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
     parameter type hpdcache_mem_req_w_t = logic,
     parameter type hpdcache_mem_resp_r_t = logic,
     parameter type hpdcache_mem_resp_w_t = logic,
+    parameter type hpdcache_mem_be_t = logic,
 
     parameter int unsigned AxiAddrWidth = 1,
     parameter int unsigned AxiDataWidth = 1,
@@ -101,6 +102,10 @@ module cva6_hpdcache_subsystem_axi_arbiter
   `HPDCACHE_TYPEDEF_MEM_RESP_R_T(hpdcache_mem_resp_r_idext_t, hpdcache_mem_idext_t,
                                  hpdcache_mem_data_t);
 
+  `HPDCACHE_TYPEDEF_MEM_RESP_W_T(hpdcache_mem_resp_w_idext_t, hpdcache_mem_idext_t);
+
+  `HPDCACHE_TYPEDEF_MEM_REQ_W_T(hpdcache_mem_req_w_idext_t, hpdcache_mem_data_t, hpdcache_mem_be_t);
+
   localparam int MEM_RESP_RT_DEPTH = (1 << CVA6Cfg.AxiIdWidth);
   typedef hpdcache_mem_idext_t [MEM_RESP_RT_DEPTH-1:0] mem_resp_rt_t;
 
@@ -144,6 +149,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   //  Suffix the transaction identifier with the index of the initiator (0:icache, 1:dcache)
   hpdcache_mem_req_idext_t mem_req_read_idext_arb;
+  assign mem_req_read_index = (mem_req_read_arb == mem_req_read[0]) ? 1'b0 : 1'b1;
   assign mem_req_read_idext_arb.mem_req_id = {mem_req_read_index, mem_req_read_arb.mem_req_id};
   assign mem_req_read_idext_arb.mem_req_addr = mem_req_read_arb.mem_req_addr;
   assign mem_req_read_idext_arb.mem_req_len = mem_req_read_arb.mem_req_len;
@@ -153,6 +159,15 @@ module cva6_hpdcache_subsystem_axi_arbiter
   assign mem_req_read_idext_arb.mem_req_cacheable = mem_req_read_arb.mem_req_cacheable;
   //  }}}
 
+  //Add prefix to write requests index from data cache (only data writes, so all...)
+  hpdcache_mem_req_idext_t dcache_write_idx;
+  assign dcache_write_idx.mem_req_id = {1'b1, dcache_write_i.mem_req_id[CVA6Cfg.AxiIdWidth-2:0]};
+  assign dcache_write_idx.mem_req_addr = dcache_write_i.mem_req_addr;
+  assign dcache_write_idx.mem_req_len = dcache_write_i.mem_req_len;
+  assign dcache_write_idx.mem_req_size = dcache_write_i.mem_req_size;
+  assign dcache_write_idx.mem_req_command = dcache_write_i.mem_req_command;
+  assign dcache_write_idx.mem_req_atomic = dcache_write_i.mem_req_atomic;
+  assign dcache_write_idx.mem_req_cacheable = dcache_write_i.mem_req_cacheable;
   //  Read response demultiplexor
   //  {{{
   //
@@ -170,7 +185,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   always_comb begin : build_resp_read_rt_comb
     for (int i = 0; i < MEM_RESP_RT_DEPTH; i++) begin
-      mem_resp_read_rt[i] = (i < 8) ? 0 : 1;
+      mem_resp_read_rt[i] = (i < (2**(CVA6Cfg.AxiIdWidth - 1))) ? 0 : 1;
     end
   end
 
@@ -220,17 +235,22 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
   //  AXI adapters
   //  {{{
+  hpdcache_mem_resp_w_idext_t  dcache_write_resp_idx;
+  assign dcache_write_resp_o.mem_resp_w_is_atomic = dcache_write_resp_idx.mem_resp_w_is_atomic;
+  assign dcache_write_resp_o.mem_resp_w_error=dcache_write_resp_idx.mem_resp_w_error;
+  assign dcache_write_resp_o.mem_resp_w_id=dcache_write_resp_idx.mem_resp_w_id[0+:(CVA6Cfg.AxiIdWidth-1)];;
+
   hpdcache_mem_to_axi_write #(
-      .hpdcache_mem_req_t   (hpdcache_mem_req_t),
-      .hpdcache_mem_req_w_t (hpdcache_mem_req_w_t),
-      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
+      .hpdcache_mem_req_t   (hpdcache_mem_req_idext_t),
+      .hpdcache_mem_req_w_t (hpdcache_mem_req_w_idext_t),
+      .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_idext_t),
       .aw_chan_t            (axi_aw_chan_t),
       .w_chan_t             (axi_w_chan_t),
       .b_chan_t             (axi_b_chan_t)
   ) i_hpdcache_mem_to_axi_write (
       .req_ready_o(dcache_write_ready_o),
       .req_valid_i(dcache_write_valid_i),
-      .req_i      (dcache_write_i),
+      .req_i      (dcache_write_idx),
 
       .req_data_ready_o(dcache_write_data_ready_o),
       .req_data_valid_i(dcache_write_data_valid_i),
@@ -238,7 +258,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
       .resp_ready_i(dcache_write_resp_ready_i),
       .resp_valid_o(dcache_write_resp_valid_o),
-      .resp_o      (dcache_write_resp_o),
+      .resp_o      (dcache_write_resp_idx),
 
       .axi_aw_valid_o(axi_req_o.aw_valid),
       .axi_aw_o      (axi_req_o.aw),
