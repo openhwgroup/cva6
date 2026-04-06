@@ -558,7 +558,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   AXI_BUS #(
       .AXI_ADDR_WIDTH(CVA6Cfg.AxiAddrWidth),
       .AXI_DATA_WIDTH(CVA6Cfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (ariane_axi_soc::IdWidthSlave),
+      .AXI_ID_WIDTH  (CVA6Cfg.AxiIdWidth),
       .AXI_USER_WIDTH(CVA6Cfg.AxiUserWidth)
   ) cva6_axi_bus ();
 
@@ -569,7 +569,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   );
 
   axi2mem #(
-      .AXI_ID_WIDTH  (ariane_axi_soc::IdWidthSlave),
+      .AXI_ID_WIDTH  (CVA6Cfg.AxiIdWidth),
       .AXI_ADDR_WIDTH(CVA6Cfg.AxiAddrWidth),
       .AXI_DATA_WIDTH(CVA6Cfg.AxiDataWidth),
       .AXI_USER_WIDTH(CVA6Cfg.AxiUserWidth)
