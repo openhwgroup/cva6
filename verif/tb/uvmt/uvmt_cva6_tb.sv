@@ -41,6 +41,7 @@ module uvmt_cva6_tb;
    localparam type rvfi_instr_t = `RVFI_INSTR_T(CVA6Cfg);
    localparam type rvfi_csr_elmt_t = `RVFI_CSR_ELMT_T(CVA6Cfg);
    localparam type rvfi_csr_t = `RVFI_CSR_T(CVA6Cfg, rvfi_csr_elmt_t);
+   localparam type rvfi_to_iti_t = `RVFI_TO_ITI_T(CVA6Cfg);
 
    // RVFI PROBES
    localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
@@ -163,16 +164,18 @@ module uvmt_cva6_tb;
                           .ACHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth),
                           .RCHK_WIDTH(CVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth),
                           .IS_1P2(1)) obi_load_assert(.obi(obi_load_if));
-      //bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
-      //                    .AUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth),
-      //                    .WUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth),
-      //                    .RUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth),
-      //                    .ADDR_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.AddrWidth),
-      //                    .DATA_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.DataWidth),
-      //                    .ID_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.IdWidth),
-      //                    .ACHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth),
-      //                    .RCHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth),
-      //                    .IS_1P2(1)) obi_mmu_ptw_assert(.obi(obi_mmu_ptw_if));
+      if (CVA6Cfg.MmuPresent) begin
+         bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
+                          .AUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth),
+                          .WUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth),
+                          .RUSER_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth),
+                          .ADDR_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.AddrWidth),
+                          .DATA_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.DataWidth),
+                          .ID_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.IdWidth),
+                          .ACHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth),
+                          .RCHK_WIDTH(CVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth),
+                          .IS_1P2(1)) obi_mmu_ptw_assert(.obi(obi_mmu_ptw_if));
+      end
    end
 
    uvme_cva6_core_cntrl_if      core_cntrl_if();
@@ -219,6 +222,7 @@ module uvmt_cva6_tb;
      .rvfi_probes_instr_t(rvfi_probes_instr_t    ),
      .rvfi_probes_csr_t ( rvfi_probes_csr_t      ),
      .rvfi_probes_t     ( rvfi_probes_t          ),
+     .rvfi_to_iti_t     ( rvfi_to_iti_t          ),
      //
      .AXI_USER_EN       (CVA6Cfg.AXI_USER_EN),
      .NUM_WORDS         (NUM_WORDS)
@@ -507,6 +511,7 @@ module uvmt_cva6_tb;
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_load_agent"),     .field_name("vif"),    .value(obi_load_if));
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_amo_agent"),     .field_name("vif"),    .value(obi_amo_if));
      uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_zcmt_agent"),     .field_name("vif"),    .value(obi_zcmt_if));
+     uvm_config_db#(virtual uvma_obi_memory_if)::set(.cntxt(null), .inst_name("*obi_memory_mmu_ptw_agent"),     .field_name("vif"),    .value(obi_mmu_ptw_if));
      uvm_config_db#(virtual uvmt_rvfi_if#( .CVA6Cfg(CVA6Cfg), .rvfi_instr_t(rvfi_instr_t), .rvfi_csr_t (rvfi_csr_t)))::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),  .value(rvfi_if));
      uvm_config_db#(virtual uvme_cva6_core_cntrl_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),  .value(core_cntrl_if));
      uvm_config_db#(virtual uvma_interrupt_if)::set(.cntxt(null), .inst_name("*"), .field_name("interrupt_vif"),  .value(interrupt_vif));

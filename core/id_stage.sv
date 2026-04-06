@@ -55,6 +55,7 @@ module id_stage #(
     output logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack_i,
+    output logic rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -270,6 +271,8 @@ module id_stage #(
     end else begin
       assign stall_instr_fetch[0] = stall_macro_deco;
     end
+  end else begin
+    assign stall_instr_fetch[0] = '0;
   end
 
   // ---------------------------------------------------------
@@ -277,10 +280,14 @@ module id_stage #(
   // ---------------------------------------------------------
 
   always_comb begin
-    // No CVXIF, No ZCMP, No ZCMT => Connect directly compressed decoder to decoder
-    is_illegal_deco    = is_illegal_rvc;
-    instruction_deco   = instruction_rvc;
-    is_compressed_deco = is_compressed_rvc;
+    // No CVXIF, No ZCMP, No ZCMT => Connect directly compressed decoder to decoder if C extension enabled, otherwise to fetch entry
+    is_illegal_deco    = CVA6Cfg.RVC ? is_illegal_rvc : '0;
+    instruction_deco[0]   = CVA6Cfg.RVC ? instruction_rvc[0] : fetch_entry_i[0].instruction;
+    is_compressed_deco = CVA6Cfg.RVC ? is_compressed_rvc : '0;
+    if (CVA6Cfg.SuperscalarEn) begin
+      instruction_deco[1] = CVA6Cfg.RVC ? instruction_rvc[1] : fetch_entry_i[1].instruction;
+    end
+
     if (CVA6Cfg.CvxifEn) begin
       is_illegal_deco[0]    = is_illegal_cvxif_o;
       instruction_deco[0]   = instruction_cvxif_o;
@@ -292,6 +299,7 @@ module id_stage #(
     end
   end
 
+  assign rvfi_is_compressed_o = is_compressed_rvc;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     decoder #(

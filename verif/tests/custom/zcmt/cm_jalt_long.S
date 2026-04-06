@@ -1,59 +1,57 @@
-.globl _start
-_start:
-	la t0, trap_handler
-	csrw mtvec, t0
+#include "riscv_test.h"
+
+RVTEST_RV32U
+RVTEST_CODE_BEGIN
+
+    la t0, trap_handler
+    csrw mtvec, t0
 
     la a1, target1
     la t0, __jvt_base$
 
-    sw a1, 128(t0)       //cm.jalt entry start from index >=32
+    sw a1, 256(t0)       // cm.jalt entry start from index >=32
 
-    csrw  jvt, t0
+    csrw jvt, t0
 
     fence.i
-    # Perform jump using the index from JVT
-    cm.jalt 32
+    //Perform jump using the index from JVT
+    cm.jalt 64
 
     li t1, 1
-    addi x20,x20, 9
-    j write_tohost
+    addi x20, x20, 9
+    j failure
 
-
-exit:
-    j write_tohost
-
-write_tohost:
-   li   x1, 1
-   la   t0, tohost
-   sw   x1, 0(t0)
-   j    write_tohost
-
-
-# Jump Vector Table (JVT) Section
-# Create a separate section for the JVT
-.section .riscv.jvt, "ax" 
-.align 6                    # Align the JVT on a 64-byte boundary (6 = 2^6 = 64)
-__jvt_base$:
-     .word 0x80000054
-     .word 0x80000800
-     .word 0x80000802
-     .word 0x80000804
-
-# Target Addresses (Where cm.jalt will jump)
-.align 20
 target1:
     li x2, 99
-    lui    t0, %hi(write_tohost)        # Load upper 20 bits of target address into t0
-    addi   t0, t0, %lo(write_tohost)    # Add the lower 12 bits to t0
-    jalr   x0, 0(t0)
-              
-                  
+    j success
 
 trap_handler:
-	lui    t0, %hi(write_tohost)        # Load upper 20 bits of target address into t0
-    addi   t0, t0, %lo(write_tohost)    # Add the lower 12 bits to t0
-    jalr   x0, 0(t0) 
+    j failure
+
+// jump to this label to signal that the test failed
+failure:
+    li x1, 1
+	slli x1, x1, 1
+	addi x1, x1, 1
+	sw x1, tohost, t5
+	self_loop_2: j self_loop_2
+
+// jump to this label to signal that the test passed
+success:
+    li x1, 0
+	slli x1, x1, 1
+	addi x1, x1, 1
+	sw x1, tohost, t5
+	self_loop: j self_loop
 
 
-.align 6;   .global tohost;   tohost:   .dword 0;
-.align 6;   .global fromhost; fromhost: .dword 0;
+RVTEST_CODE_END
+
+.data
+RVTEST_DATA_BEGIN
+    // Jump Vector Table (JVT)
+    .align 6
+__jvt_base$:
+    .space 256              //Reserve space for indices 0-63 (unused)
+    .word 0                 //Entry 64 (will be overwritten by test)
+RVTEST_DATA_END

@@ -42,9 +42,9 @@ module dmi_vjtag #(
   output logic         tdo_oe_o,  // Data out output enable
   input  logic[IrLength-1:0]  ir_in_i,            // Virtual IR in
   input  logic                jtag_state_tlr_i,     // Test logic reset
-  input  logic                virtual_state_cdr_i,  // Virtual Captude DR
+  input  logic                virtual_state_cdr_i,  // Virtual Capture DR
   input  logic                virtual_state_sdr_i,  // Virtual Shift DR
-  input  logic                virtual_state_udr_i  // Virutal Update DR
+  input  logic                virtual_state_udr_i  // Virtual Update DR
 );
   assign       dmi_rst_no = rst_ni;
 
@@ -85,7 +85,7 @@ module dmi_vjtag #(
   assign dmi_req.addr = address_q;
   assign dmi_req.data = data_q;
   assign dmi_req.op   = (state_q == Write) ? dm::DTM_WRITE : dm::DTM_READ;
-  // we'will always be ready to accept the data we requested
+  // we will always be ready to accept the data we requested
   assign dmi_resp_ready = 1'b1;
 
   logic error_dmi_busy;
