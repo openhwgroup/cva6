@@ -5,3 +5,71 @@ IO_STANDARD "1.2 V" -to led[3] -entity cva6_altera
 IO_STANDARD "1.2 V" -to led[2] -entity cva6_altera
 IO_STANDARD "1.2 V" -to led[1] -entity cva6_altera
 IO_STANDARD "1.2 V" -to led[0] -entity cva6_altera
+IO_STANDARD "1.8-V" -to hps_emac0_MDC -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_MDIO -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RXD0 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RXD1 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RXD2 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RXD3 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RX_CLK -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_RX_CTL -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TXD0 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TXD1 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TXD2 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TXD3 -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TX_CLK -entity ghrd
+IO_STANDARD "1.8-V" -to hps_emac0_TX_CTL -entity ghrd
+IO_STANDARD "1.8-V" -to hps_i2c1_SCL -entity ghrd
+IO_STANDARD "1.8-V" -to hps_i2c1_SDA -entity ghrd
+IO_STANDARD "1.8-V" -to hps_jtag_tck -entity ghrd
+IO_STANDARD "1.8-V" -to hps_jtag_tdo -entity ghrd
+IO_STANDARD "1.8-V" -to hps_ref_clk -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_CMD -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_CCLK -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_D0 -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_D1 -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_D2 -entity ghrd
+IO_STANDARD "1.8 V" -to hps_sdmmc_D3 -entity ghrd
+IO_STANDARD "1.8 V" -to hps_uart0_TX -entity ghrd
+IO_STANDARD "1.8 V" -to hps_uart0_RX -entity ghrd
+IO_STANDARD "TRUE DIFFERENTIAL SIGNALING" -to fpga_clk_100 -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_emac0_MDC -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_emac0_MDIO -entity ghrd
+AUTO_OPEN_DRAIN_PINS ON -to hps_emac0_MDIO -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_MDIO -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RXD0 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RXD1 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RXD2 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RXD3 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RX_CLK -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_emac0_RX_CTL -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TXD0 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TXD1 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TXD2 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TXD3 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TX_CLK -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_emac0_TX_CTL -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_i2c1_SCL -entity ghrd
+AUTO_OPEN_DRAIN_PINS ON -to hps_i2c1_SCL -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_i2c1_SCL -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_i2c1_SDA -entity ghrd
+AUTO_OPEN_DRAIN_PINS ON -to hps_i2c1_SDA -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_i2c1_SDA -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_jtag_tck -entity ghrd
+IO_STANDARD "1.8-V" -to hps_jtag_tdi -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_jtag_tdi -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_jtag_tdo -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_jtag_tms -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_CMD -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_CCLK -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_sdmmc_CMD -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_D0 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_sdmmc_D0 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_D1 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_sdmmc_D1 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_D2 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_sdmmc_D2 -entity ghrd
+CURRENT_STRENGTH_NEW 8MA -to hps_sdmmc_D3 -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_sdmmc_D3 -entity ghrd
+CURRENT_STRENGTH_NEW 4MA -to hps_uart0_TX -entity ghrd
+WEAK_PULL_UP_RESISTOR ON -to hps_uart0_RX -entity ghrd

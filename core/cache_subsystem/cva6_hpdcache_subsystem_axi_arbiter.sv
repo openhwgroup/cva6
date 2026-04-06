@@ -138,9 +138,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
 
       .mem_req_read_ready_i(mem_req_read_ready_arb),
       .mem_req_read_valid_o(mem_req_read_valid_arb),
-      .mem_req_read_o      (mem_req_read_arb),
-
-      .gnt_index_o(mem_req_read_index)
+      .mem_req_read_o      (mem_req_read_arb)
   );
 
 

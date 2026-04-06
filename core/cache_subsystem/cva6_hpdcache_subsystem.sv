@@ -197,7 +197,7 @@ module cva6_hpdcache_subsystem
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn = 1'b0;
     userCfg.wbEn = 1'b0;
-    userCfg.lowLatency = 1'b0;
+    //userCfg.lowLatency = 1'b0;
     return userCfg;
   endfunction
 
@@ -344,7 +344,7 @@ module cva6_hpdcache_subsystem
     userCfg.wbEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
-    userCfg.lowLatency = 1'b0;
+    //userCfg.lowLatency = 1'b0;
     return userCfg;
   endfunction
 

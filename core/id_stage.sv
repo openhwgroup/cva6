@@ -55,6 +55,7 @@ module id_stage #(
     output logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_o,
     // Handshake's acknowlege between decode and issue - ISSUE
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack_i,
+    output logic rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
     // Current virtualization mode - CSR_REGFILE
@@ -292,6 +293,7 @@ module id_stage #(
     end
   end
 
+  assign rvfi_is_compressed_o = is_compressed_rvc;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
     decoder #(
