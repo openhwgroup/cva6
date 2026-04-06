@@ -239,7 +239,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
   assign dcache_write_resp_o.mem_resp_w_is_atomic = dcache_write_resp_idx.mem_resp_w_is_atomic;
   assign dcache_write_resp_o.mem_resp_w_error = dcache_write_resp_idx.mem_resp_w_error;
   assign dcache_write_resp_o.mem_resp_w_id=dcache_write_resp_idx.mem_resp_w_id[0+:(CVA6Cfg.AxiIdWidth-1)];
-  
+
 
   hpdcache_mem_to_axi_write #(
       .hpdcache_mem_req_t   (hpdcache_mem_req_idext_t),
