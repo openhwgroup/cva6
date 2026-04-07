@@ -28,7 +28,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * Your contribution shall be optional and fully disabled by default.
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
     * To configure your contribution, System Verilog top-level parameters are strongly advised.
-        - `directives are not permitted.
+        - Conditional compiler directives such as <code>`ifdef</code>, etc. are strongly discouraged.
         - Synchronize with CVA6 team if you do not find an appropriate solution.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
