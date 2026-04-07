@@ -79,7 +79,7 @@ endif
 
 # Updated paths for CVA6 directory structure
 certification_PROGRAM_PATH    = $(ACT4_PKG)/work/cv32a65x/elfs
-certification_PROGRAM_RELPATH = ../../vendor_lib/cva6/external/act4/work/cv32a65x/elfs/priv
+certification_PROGRAM_RELPATH = ../../vendor_lib/cva6/external/act4/work/cv32a65x/elfs
 VERI_LOG_DIR = $(CVA6_REPO_DIR)/verif/sim/simulation_results
 
 .PHONY: gen
@@ -90,7 +90,7 @@ gen: $(ACT4_PKG)
 	@echo "* Generating ACT4.0 tests for CVA6 (cv32a65x)..."
 	@# Test generation now relies on the YAML config for extensions and parameters
 	@$(MAKE) -C $(ACT4_PKG) \
-		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml \
+		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm" \
 		--jobs $(shell nproc)
 	@echo "* Tests generated in: $(certification_PROGRAM_PATH)"
 
