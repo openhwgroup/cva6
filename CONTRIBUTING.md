@@ -50,6 +50,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
         - At this point, we do not request a 100%-coverage verification suite.
+    * Please consider adding related documentation in the user's guide and design document.
     * Be kind to the people who process your pull request(s)
         - Explain your contribution in the pull request.
         - If your contribution solves an issue, fill in an issue and cross link it in the pull-request.
