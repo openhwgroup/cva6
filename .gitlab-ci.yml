@@ -365,6 +365,7 @@ benchmarks:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+    RISCV: "/shares/common/tools/rhel8/gcc-15.2.0-cva6-2026-03-24/bin/"
   parallel:
     matrix:
       - BENCH: "dhrystone"
