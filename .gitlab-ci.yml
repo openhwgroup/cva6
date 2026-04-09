@@ -190,7 +190,6 @@ smoke-bench:
       - DV_TARGET: "cv32a65x"
   script:
     - bash verif/regress/"$BENCH"_smoke.sh --no-print
-    - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$DV_TARGET" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
 
 smoke-hwconfig:
   extends:
