@@ -78,6 +78,7 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    pbmte_i,
     input logic                    mbe_i,
 
     // Performance counters
@@ -204,7 +205,6 @@ module cva6_ptw
   always_comb begin : tlb_update
     shared_tlb_update_o.valid = shared_tlb_update_valid;
     shared_tlb_update_o.is_napot_64k = is_napot_64k;
-    // Svpbmt: propagate pbmt from PTE into TLB update when extension is enabled
     shared_tlb_update_o.pbmt = CVA6Cfg.SvpbmtEn ? pte.pbmt : 2'b00;
 
     // update the correct page table level
@@ -432,7 +432,7 @@ module cva6_ptw
           // (bits [60:54] in sv39/sv39x4), stop and raise a page-fault exception.
           // Note: pte.pbmt (bits [62:61]) is intentionally excluded from this
           // check per the Svpbmt extension (RISC-V Priv. Spec v1.12, 12.3).
-          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
+          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvpbmtEn && |pte.pbmt && CVA6Cfg.XLEN == 64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
             state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE
@@ -448,6 +448,15 @@ module cva6_ptw
                 // Svnapot: Any other encoding with the N-bit set is a reserved format and must cause a page fault
                 // Additionally, fault if N is set on a megapage or gigapage
                 if (!is_napot_64k) begin
+                  state_d = PROPAGATE_ERROR;
+                end
+              end
+
+              // Validate PBMT encoding on leaf PTEs
+              if (CVA6Cfg.SvpbmtEn) begin
+                if (pte.pbmt == 2'b11) begin
+                  state_d = PROPAGATE_ERROR;
+                end else if (!pbmte_i && (pte.pbmt != 2'b00)) begin
                   state_d = PROPAGATE_ERROR;
                 end
               end
@@ -549,6 +558,11 @@ module cva6_ptw
               end else begin
                 ptw_lvl_n[0] = ptw_lvl_q[0] + 1'b1;
                 state_d = WAIT_GRANT;
+
+                if (CVA6Cfg.SvpbmtEn && pte.pbmt != 2'b00) begin
+                  state_d = PROPAGATE_ERROR;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                end
 
                 if (CVA6Cfg.RVH) begin
                   case (ptw_stage_q)

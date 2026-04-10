@@ -72,6 +72,7 @@ module cva6_mmu
     input logic vs_sum_i,
     input logic mxr_i,
     input logic vmxr_i,
+    input logic pbmte_i,
     input logic mbe_i,
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
@@ -108,8 +109,8 @@ module cva6_mmu
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
     logic n;
-    logic [1:0] pbmt;  // bits [62:61] — PBMT field (Svpbmt, currently unused)
-    logic [6:0] reserved;  // bits [60:54] — truly reserved, must be zero
+    logic [1:0] pbmt;  // bits [62:61] -- PBMT field (Svpbmt, currently unused)
+    logic [6:0] reserved;  // bits [60:54] -- truly reserved, must be zero
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
@@ -347,6 +348,7 @@ module cva6_mmu
       .hgatp_ppn_i,
       .mxr_i,
       .vmxr_i,
+      .pbmte_i,
       .mbe_i(mbe_i),
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
