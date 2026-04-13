@@ -58,7 +58,7 @@ srcA=(
 )
 
 cflags_opt=(
-        -O1 -g
+        -O3 -g
         -fno-tree-loop-distribute-patterns
         -static
         -mcmodel=medany
