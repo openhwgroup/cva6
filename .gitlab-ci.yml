@@ -365,7 +365,7 @@ benchmarks:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
-    RISCV: "$RISCV-GCC15"
+    RISCV: "$RISCV_GCC15"
   parallel:
     matrix:
       - BENCH: "dhrystone"
