@@ -2,7 +2,7 @@
 New Contributors are always welcome.
 
 Note that Contributors are required to be covered by an [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
-Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group.
+Contributors are encouraged, but not required, to be a [member](https://openhwfoundation.org/membership/become-a-member/) of the OpenHW Foundation, part of the Eclipse Foundation.
 
 ## Read this before
 
@@ -20,26 +20,25 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * The CVA6 team can provide you recommendations to ease the upcoming contribution.
     * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
-    * If you do not know how to contact us already, get in touch through info@openhwgroup.org or open an issue in GitHub.
+    * If you do not know how to contact us already, get in touch through info@eclipse-foundation.org or open an issue in GitHub.
 
 - Specific recommendations:
     * For instruction set extensions, talk to the team to assess the relevance of including it into the core or as a coprocessor on the CV-X-IF interface.
         -  If the extension is custom (not a RISC-V specified extension), a coprocessor on CV-X-IF is definitely its place.
     * Your contribution shall be optional and fully disabled by default.
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
-    * To configure your contribution, System Verilog top-level parameters are preferred.
-        - Synchronize with CVA6 team if this is not possible and you need other means (`directives, ariane_pkg parameters, templating...)
-        - Synchronize with CVA6 team (again) because this rule is likely to change over time as we are considering templating.
+    * To configure your contribution, System Verilog top-level parameters are strongly advised.
+        - Conditional compiler directives such as <code>`ifdef</code>, etc. are strongly discouraged.
+        - Synchronize with CVA6 team if you do not find an appropriate solution.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
-    * Your complete contribution shall be identifiable with parameters (or `directives / templating if together we decide to go this way).
+    * Your complete contribution shall be identifiable with parameters.
         - If at some point we need to revert it, e.g. if there is no-one maintaining nor using it and it has become a burden to the project.
         - We call this the "parachute" rule: The CVA6 team does not want to use it but is far more comfortable getting one.
         - Also, this allows not to lose code coverage in verification when your contribution is not enabled (with some tweaks in the coverage tool).
         - This rule also applies to CSRs which are specific to your contribution.
     * To ease maintenance, all common code lines shall exist only once.
-        - Counter-example: CVA6 used to have two different MMU modules (Sv32 and Sv39) for CV32A6 and CV64A6.
-        - It took time to refactor both in a joint design to ease maintenance.
+        - Counter-example: CVA6 used to have two different MMU modules (Sv32 and Sv39) for CV32A6 and CV64A6. It took time to refactor both in a joint design to ease maintenance.
         - Related reading for reference: [DRY principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
     * Your contribution shall pass the Continuous Integration (CI) flow
         - When the contribution is disabled: in all cases, to ensure you have not broken the design.
@@ -51,6 +50,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
         - At this point, we do not request a 100%-coverage verification suite.
+    * Please consider adding related documentation in the user's guide and design document.
     * Be kind to the people who process your pull request(s)
         - Explain your contribution in the pull request.
         - If your contribution solves an issue, fill in an issue and cross link it in the pull-request.
@@ -82,9 +82,12 @@ This makes sure the CI flow has run in the to-be version of the master.
 To allow us to update the pull request before merging it, please consider checking the "Allow edits from maintainers" checkbox.
 Note that this can only be done with pull requests from your personal repository (it is impossible from organization repositories).
 
+One last note: use the same email address for your GitHub and Eclipse accounts, to ensure a smooth Eclipse Contributor Agreement
+check for your pull request.
+
 ## Coding Style
 
-For RTL coding, the OpenHW Group has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
+For RTL coding, the OpenHW Foundation has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
 
 ## Git Considerations
 
