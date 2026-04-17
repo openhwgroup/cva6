@@ -27,22 +27,23 @@ module hpdcache_sram_1rw_00000006_0000001c_00000040
 #(
     parameter int unsigned ADDR_SIZE = 6,
     parameter int unsigned DATA_SIZE = 28,
-    parameter int unsigned DEPTH = 2**ADDR_SIZE
+    parameter int unsigned DEPTH = 2**ADDR_SIZE,
+    parameter int unsigned NDATA = 1
 )
 (
-    input  logic                  clk,
-    input  logic                  rst_n,
-    input  logic                  cs,
-    input  logic                  we,
-    input  logic [ADDR_SIZE-1:0]  addr,
-    input  logic [DATA_SIZE-1:0]  wdata,
-    output logic [DATA_SIZE-1:0]  rdata
+    input  logic                          clk,
+    input  logic                          rst_n,
+    input  logic                          cs,
+    input  logic                          we,
+    input  logic [ADDR_SIZE-1:0]          addr,
+    input  logic [NDATA-1][DATA_SIZE-1:0] wdata,
+    output logic [NDATA-1][DATA_SIZE-1:0] rdata
 );
 
     /*
      *  Internal memory array declaration
      */
-    typedef logic [DATA_SIZE-1:0] mem_t [DEPTH];
+    typedef logic [NDATA-1:0][DATA_SIZE-1:0] mem_t [DEPTH];
     mem_t mem;
 
     /*
@@ -53,8 +54,9 @@ module hpdcache_sram_1rw_00000006_0000001c_00000040
         if (cs == 1'b1) begin
             if (we == 1'b1) begin
                 mem[addr] <= wdata;
+            end else begin
+                rdata <= mem[addr];
             end
-            rdata <= mem[addr];
         end
     end : mem_update_ff
 endmodule : hpdcache_sram_1rw_00000006_0000001c_00000040
