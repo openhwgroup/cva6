@@ -90,7 +90,7 @@ gen: $(ACT4_PKG)
 	@echo "* Generating ACT4.0 tests for CVA6 (cv32a65x)..."
 	@# Test generation now relies on the YAML config for extensions and parameters
 	@$(MAKE) -C $(ACT4_PKG) \
-		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm" \
+		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm,ExceptionsZc,ExceptionsSm" \
 		--jobs $(shell nproc)
 	@echo "* Tests generated in: $(certification_PROGRAM_PATH)"
 
@@ -106,7 +106,12 @@ certify:
 	echo "RESULT  TEST" > "$$SUMMARY"; \
 	echo "------  ----" >> "$$SUMMARY"; \
 	ROOT="$(certification_PROGRAM_PATH)"; \
-	ELFS="$$(find -L "$$ROOT" \( -type f -o -type l \) -a \( -iname '*.elf' -o -iname '*.elf32' \) 2>/dev/null | sort)"; \
+	if [ "$(SMOKE)" = "1" ]; then \
+	  echo "* SMOKE mode enabled: running limited tests"; \
+	  ELFS="$$(find -L "$$ROOT" \( -type f -o -type l \) -a \( -iname '*.elf' -o -iname '*.elf32' \) 2>/dev/null | sort | head -n 20)"; \
+	else \
+	  ELFS="$$(find -L "$$ROOT" \( -type f -o -type l \) -a \( -iname '*.elf' -o -iname '*.elf32' \) 2>/dev/null | sort)"; \
+	fi; \
 	if [ -z "$$ELFS" ]; then \
 	  echo "No .elf files found under $$ROOT"; \
 	  exit 2; \

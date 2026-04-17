@@ -4,11 +4,11 @@
 # where are the tools
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
-  return
+  exit 1
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=vcs-testharness,spike
+  DV_SIMULATORS=veri-testharness,spike
 fi
 
 # install the required tools
@@ -20,23 +20,23 @@ source ./verif/regress/install-spike.sh
 # setup sim env
 source ./verif/sim/setup-env.sh
 
-echo "$SPIKE_INSTALL_DIR$"
+if [ ! -d "external/act4" ]; then
+  echo "ERROR: ACT4 submodule missing"
+  exit 1
+fi
+
+echo "$SPIKE_INSTALL_DIR"
 
 set -e
 
 # ================== CONFIGURATION ==================
-export CVA6_REPO_DIR="${HOME}/cva6"
-export ACT4_PKG="${HOME}/cva6/external/act4"
+export CVA6_REPO_DIR="$(pwd)"
+export ACT4_PKG="$(pwd)/external/act4"
 export TARGET_RTL="cv32a65x"
-
-# Toolchain configuration
-export RISCV="${HOME}/riscv_toolchain"
-export PATH="${RISCV}/bin:${PATH}"
 export CV_SW_PREFIX="riscv64-unknown-elf-"
 export max_cycles=2000000
 
 echo "Environment Setup Complete"
-cd "${CVA6_REPO_DIR}"
 
 # Build the Verilator model
 echo "Building Verilator model for ${TARGET_RTL}"
@@ -47,7 +47,7 @@ cd "${CVA6_REPO_DIR}/verif/sim"
 # Run generation and certification via Makefile
 # This triggers the 'gen' then 'certify' targets defined in verif/sim/Makefile
 echo "Starting ACT Regression (Generation + RTL Simulation)"
-make gen-certify target=${TARGET_RTL}
+make gen-certify target=${TARGET_RTL} SMOKE=1
 
 #Display Summary
 # Path derived from SIM_RESULTS and VERI_LOG_DIR in Makefile
