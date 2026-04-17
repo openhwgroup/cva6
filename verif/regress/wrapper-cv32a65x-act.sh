@@ -33,6 +33,7 @@ set -e
 export CVA6_REPO_DIR="$(pwd)"
 export ACT4_PKG="$(pwd)/external/act4"
 export TARGET_RTL="cv32a65x"
+export RISCV="${RISCV}"
 export CV_SW_PREFIX="riscv64-unknown-elf-"
 export max_cycles=2000000
 
@@ -47,7 +48,7 @@ cd "${CVA6_REPO_DIR}/verif/sim"
 # Run generation and certification via Makefile
 # This triggers the 'gen' then 'certify' targets defined in verif/sim/Makefile
 echo "Starting ACT Regression (Generation + RTL Simulation)"
-make gen-certify target=${TARGET_RTL} SMOKE=1
+make gen-certify target=${TARGET_RTL}
 
 #Display Summary
 # Path derived from SIM_RESULTS and VERI_LOG_DIR in Makefile

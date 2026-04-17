@@ -133,6 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPIKE_TANDEM: 1
+      RISCV: /opt/riscv
     strategy:
       matrix:
         testcase:  [ dv-riscv-arch-test, cv32a6_tests, wrapper-cv32a65x-act]
