@@ -28,23 +28,24 @@ module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080
 #(
     parameter int unsigned ADDR_SIZE = 7,
     parameter int unsigned DATA_SIZE = 64,
-    parameter int unsigned DEPTH = 2**ADDR_SIZE
+    parameter int unsigned DEPTH = 2**ADDR_SIZE,
+    parameter int unsigned NDATA = 1
 )
 (
-    input  logic                   clk,
-    input  logic                   rst_n,
-    input  logic                   cs,
-    input  logic                   we,
-    input  logic [ADDR_SIZE-1:0]   addr,
-    input  logic [DATA_SIZE-1:0]   wdata,
-    input  logic [DATA_SIZE/8-1:0] wbyteenable,
-    output logic [DATA_SIZE-1:0]   rdata
+    input  logic                              clk,
+    input  logic                              rst_n,
+    input  logic                              cs,
+    input  logic                              we,
+    input  logic [ADDR_SIZE-1:0]              addr,
+    input  logic [NDATA-1:0][DATA_SIZE-1:0]   wdata,
+    input  logic [NDATA-1:0][DATA_SIZE/8-1:0] wbyteenable,
+    output logic [NDATA-1:0][DATA_SIZE-1:0]   rdata
 );
 
     /*
      *  Internal memory array declaration
      */
-    typedef logic [DATA_SIZE-1:0] mem_t [DEPTH];
+    typedef logic [NDATA-1:0][DATA_SIZE-1:0] mem_t [DEPTH];
     mem_t mem;
 
     /*
@@ -54,11 +55,14 @@ module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080
     begin : mem_update_ff
         if (cs == 1'b1) begin
             if (we == 1'b1) begin
-                for (int i = 0; i < DATA_SIZE/8; i++) begin
-                    if (wbyteenable[i]) mem[addr][i*8 +: 8] <= wdata[i*8 +: 8];
+                for (int j = 0; j < NDATA; j++) begin
+                    for (int i = 0; i < DATA_SIZE/8; i++) begin
+                        if (wbyteenable[j][i]) mem[addr][j][i*8 +: 8] <= wdata[j][i*8 +: 8];
+                    end
                 end
+            end else begin
+                rdata <= mem[addr];
             end
-            rdata <= mem[addr];
         end
     end : mem_update_ff
 endmodule : hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080

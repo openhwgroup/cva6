@@ -12,23 +12,24 @@ module hpdcache_sram_wbyteenable_1rw
 #(
     parameter int unsigned ADDR_SIZE = 0,
     parameter int unsigned DATA_SIZE = 0,
-    parameter int unsigned DEPTH = 2**ADDR_SIZE
+    parameter int unsigned DEPTH = 2**ADDR_SIZE,
+    parameter int unsigned NDATA = 1
 )
 (
-    input  logic                   clk,
-    input  logic                   rst_n,
-    input  logic                   cs,
-    input  logic                   we,
-    input  logic [ADDR_SIZE-1:0]   addr,
-    input  logic [DATA_SIZE-1:0]   wdata,
-    input  logic [DATA_SIZE/8-1:0] wbyteenable,
-    output logic [DATA_SIZE-1:0]   rdata
+    input  logic                              clk,
+    input  logic                              rst_n,
+    input  logic                              cs,
+    input  logic                              we,
+    input  logic [ADDR_SIZE-1:0]              addr,
+    input  logic [NDATA-1:0][DATA_SIZE-1:0]   wdata,
+    input  logic [NDATA-1:0][DATA_SIZE/8-1:0] wbyteenable,
+    output logic [NDATA-1:0][DATA_SIZE-1:0]   rdata
 );
 
-if (DATA_SIZE == 128) begin
+if (NDATA*DATA_SIZE == 128) begin
     // Découpage des données en deux moitiés de 64 bits
-    logic [DATA_SIZE/2-1:0] wdata_low, wdata_high;
-    logic [DATA_SIZE/2-1:0] rdata_low, rdata_high;
+    logic [NDATA*DATA_SIZE/2-1:0] wdata_low, wdata_high;
+    logic [NDATA*DATA_SIZE/2-1:0] rdata_low, rdata_high;
     logic [7:0] be_low, be_high;
     assign wdata_low  = wdata[63:0];
     assign wdata_high = wdata[127:64];
@@ -69,7 +70,7 @@ if (DATA_SIZE == 128) begin
 
     assign rdata = {rdata_high, rdata_low};
 
-end else if (DATA_SIZE == 64) begin
+end else if (NDATA*DATA_SIZE == 64) begin
     SyncSpRamBeNx64 #(
       .ADDR_WIDTH(ADDR_SIZE),
       .DATA_DEPTH(DEPTH), // usually 2**ADDR_WIDTH, but can be lower
@@ -87,7 +88,7 @@ end else if (DATA_SIZE == 64) begin
       .WrData_DI(wdata),
       .RdData_DO(rdata)
     );
-end else if (DATA_SIZE == 32) begin
+end else if (NDATA*DATA_SIZE == 32) begin
     SyncSpRamBeNx32 #(
       .ADDR_WIDTH(ADDR_SIZE),
       .DATA_DEPTH(DEPTH), // usually 2**ADDR_WIDTH, but can be lower
@@ -107,7 +108,7 @@ end else if (DATA_SIZE == 32) begin
     );
 
 end else begin
-   $fatal(1, "DATASIZE=%d, in not supported " ,DATA_SIZE);
+   $fatal(1, "DATASIZE=%d, in not supported", NDATA*DATA_SIZE);
 end
 
 

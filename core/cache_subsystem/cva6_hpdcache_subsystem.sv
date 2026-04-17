@@ -211,6 +211,7 @@ module cva6_hpdcache_subsystem
     userCfg.mshrSetsPerRam = CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2;
     userCfg.mshrRamByteEnable = 1'b1;
     userCfg.mshrUseRegbank = (CVA6Cfg.NrLoadBufEntries < 16);
+    userCfg.cbufEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.refillCoreRspFeedthrough = 1'b1;
     userCfg.refillFifoDepth = 2 * (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth);
     userCfg.wbufDirEntries = CVA6Cfg.WtDcacheWbufDepth;
@@ -218,10 +219,8 @@ module cva6_hpdcache_subsystem
     userCfg.wbufWords = 1;
     userCfg.wbufTimecntWidth = 3;
     userCfg.rtabEntries = 4;
-    /*FIXME we should add additional CVA6 config parameters (flushEntries)*/
-    userCfg.flushEntries = CVA6Cfg.WtDcacheWbufDepth;
-    /*FIXME we should add additional CVA6 config parameters (flushFifoDepth)*/
-    userCfg.flushFifoDepth = CVA6Cfg.WtDcacheWbufDepth;
+    userCfg.flushEntries = CVA6Cfg.WtDcacheWbufDepth;  /*FIXME add additional CVA6 parameter*/
+    userCfg.flushFifoDepth = CVA6Cfg.WtDcacheWbufDepth;  /*FIXME add additional CVA6 parameter*/
     userCfg.memAddrWidth = CVA6Cfg.AxiAddrWidth;
     userCfg.memIdWidth = CVA6Cfg.MEM_TID_WIDTH;
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
@@ -231,6 +230,9 @@ module cva6_hpdcache_subsystem
     userCfg.wbEn =
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+    userCfg.lowLatency = 1'b1;
+    userCfg.eccEn = 1'b0;  /*FIXME add additional CVA6 parameter*/
+    userCfg.eccScrubberEn = 1'b0;  /*FIXME: add additional CVA6 parameter*/
     return userCfg;
   endfunction
 
@@ -338,6 +340,9 @@ module cva6_hpdcache_subsystem
       .dcache_mem_resp_read_ready_o(dcache_read_resp_ready),
       .dcache_mem_resp_read_valid_i(dcache_read_resp_valid),
       .dcache_mem_resp_read_i(dcache_read_resp),
+
+      .dcache_mem_resp_read_inval_i(1'b0),
+      .dcache_mem_resp_read_inval_nline_i('0),
 
       .dcache_mem_req_write_ready_i(dcache_write_ready),
       .dcache_mem_req_write_valid_o(dcache_write_valid),
