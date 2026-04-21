@@ -154,7 +154,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
         spike_isa = isa
         if spike_extension_list != ['']:
           for i in spike_extension_list:
-            if i!= "":
+            if i != "":
               spike_isa += (f"_{i}")
         cmd = re.sub(r"\<variant\>", spike_isa, cmd)
         cmd = re.sub(r"\<priv\>", priv, cmd)
