@@ -40,7 +40,7 @@ echo "Environment Setup Complete"
 
 # Build the Verilator model
 echo "Building Verilator model for ${TARGET_RTL}"
-make verilate target=${TARGET_RTL} -j$(nproc)
+make verilate target="$TARGET_RTL" -j$(nproc)
 
 cd "${CVA6_REPO_DIR}/verif/sim"
 
