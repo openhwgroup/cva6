@@ -90,7 +90,7 @@ gen: $(ACT4_PKG)
 	@echo "* Generating ACT4.0 tests for CVA6 (cv32a65x)..."
 	# Test generation now relies on the YAML config for extensions and parameters
 	$(MAKE) -C $(ACT4_PKG) \
-		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm,ExceptionsZc,ExceptionsSm" \
+		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm" \
 		--jobs $(shell nproc)
 	@echo "* Tests generated in: $(certification_PROGRAM_PATH)"
 
@@ -117,10 +117,10 @@ certify:
 	  REL="$${ELF#$$ROOT/}"; \
 	  LOG="$(VERI_LOG_DIR)/$${REL%.*}.log"; \
 	  mkdir -p "$$(dirname "$$LOG")"; \
-	  # CVA6 requires the exact tohost address to be passed as a plusarg [1, 2] \
+	  # CVA6 requires the exact tohost address to be passed as a plusarg\
 	  TOHOST_ADDR=$$(riscv64-unknown-elf-nm -B $$ELF | grep -w tohost | cut -d' ' -f1); \
 	  set +e; \
-	  # Using the CVA6 Variane_testharness binary directly [6, 7] \
+	  # Using the CVA6 Variane_testharness binary directly \
 	  $(CVA6_REPO_DIR)/work-ver/Variane_testharness \
 	    $$ELF \
 	    +elf_file=$$ELF \
@@ -129,7 +129,7 @@ certify:
 	    > "$$LOG" 2>&1; \
 	  RC=$$?; \
 	  set -e; \
-	  # CVA6 testbench signals success with "ALL TESTS PASSED" [8] \
+	  # CVA6 testbench signals success with "ALL TESTS PASSED"\
 	  if [ $$RC -eq 0 ] && grep -q "PASSED" "$$LOG"; then \
 	    echo "PASS    $$REL" | tee -a "$$SUMMARY"; \
 	    PASS=$$((PASS+1)); \
