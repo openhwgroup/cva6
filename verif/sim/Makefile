@@ -88,8 +88,8 @@ gen: $(ACT4_PKG)
 	@echo "* Cleaning ACT4.0 directory..."
 	$(MAKE) -C $(ACT4_PKG) clean
 	@echo "* Generating ACT4.0 tests for CVA6 (cv32a65x)..."
-	@# Test generation now relies on the YAML config for extensions and parameters
-	@$(MAKE) -C $(ACT4_PKG) \
+	# Test generation now relies on the YAML config for extensions and parameters
+	$(MAKE) -C $(ACT4_PKG) \
 		CONFIG_FILES=config/cores/cva6/cv32a65x/test_config.yaml EXTENSIONS=""  EXCLUDE_EXTENSIONS="InterruptsSm,Sm,ExceptionsZc,ExceptionsSm" \
 		--jobs $(shell nproc)
 	@echo "* Tests generated in: $(certification_PROGRAM_PATH)"
