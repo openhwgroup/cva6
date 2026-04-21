@@ -54,5 +54,4 @@
 	url = https://github.com/pulp-platform/gpio.git
 [submodule "external/act4"]
 	path = external/act4
-	url = https://github.com/arshiarifat-10x/riscv-arch-test.git
-	branch = cv32a65x-act4
+	url = https://github.com/riscv-non-isa/riscv-arch-test.git
