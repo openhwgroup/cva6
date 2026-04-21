@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPIKE_TANDEM: 1
-      RISCV: /opt/riscv
+      RISCV: ${{ github.workspace }}/tools/riscv-toolchain
     strategy:
       matrix:
         testcase:  [ dv-riscv-arch-test, cv32a6_tests, wrapper-cv32a65x-act]
