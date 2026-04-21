@@ -33,7 +33,6 @@ set -e
 export CVA6_REPO_DIR="$(pwd)"
 export ACT4_PKG="$CVA6_REPO_DIR/external/act4"
 export TARGET_RTL="cv32a65x"
-export RISCV="${RISCV}"
 export CV_SW_PREFIX="riscv64-unknown-elf-"
 export max_cycles=2000000
 
