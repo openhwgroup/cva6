@@ -128,8 +128,6 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
   Returns:
     cmd         : ISS run command
   """
-
-
   logging.info("Processing ISS setup file: %s" % iss_yaml)
   yaml_data = read_yaml(iss_yaml)
   # Search for matched ISS
