@@ -152,7 +152,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
         cmd = re.sub(r"\<cfg_path\>", setting_dir, cmd)
       elif iss == "spike":
         spike_isa = isa
-        if spike_extension_list !=['']:
+        if spike_extension_list != ['']:
           for i in spike_extension_list:
             if i!= "":
               spike_isa += (f"_{i}")
