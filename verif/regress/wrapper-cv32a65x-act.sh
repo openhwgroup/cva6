@@ -48,7 +48,7 @@ cd "${CVA6_REPO_DIR}/verif/sim"
 # Run generation and certification via Makefile
 # This triggers the 'gen' then 'certify' targets defined in verif/sim/Makefile
 echo "Starting ACT Regression (Generation + RTL Simulation)"
-make gen-certify target=${TARGET_RTL}
+make gen-certify target="$TARGET_RTL"
 
 #Display Summary
 # Path derived from SIM_RESULTS and VERI_LOG_DIR in Makefile
