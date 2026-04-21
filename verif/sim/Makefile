@@ -86,7 +86,7 @@ VERI_LOG_DIR = $(CVA6_REPO_DIR)/verif/sim/simulation_results
 gen: $(ACT4_PKG)
 	@command -v uv >/dev/null 2>&1 || { echo "Error: 'uv' not found. Install from https://docs.astral.sh/uv/getting-started/installation/"; exit 1; }
 	@echo "* Cleaning ACT4.0 directory..."
-	@$(MAKE) -C $(ACT4_PKG) clean
+	$(MAKE) -C $(ACT4_PKG) clean
 	@echo "* Generating ACT4.0 tests for CVA6 (cv32a65x)..."
 	@# Test generation now relies on the YAML config for extensions and parameters
 	@$(MAKE) -C $(ACT4_PKG) \
