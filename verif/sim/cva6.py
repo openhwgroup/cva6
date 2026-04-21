@@ -804,8 +804,7 @@ def parse_args(cwd):
                       help="Spike command line parameters, run spike --help and spike --print-params to see more")
   parser.add_argument("--spike_extension", type=str, default="",
                       help="Additional ISA extensions enabled only for Spike simulation. "
-                         "Use this for extensions not yet supported by the GCC toolchain (e.g., svadu).")
-  
+                           "Use this for extensions not yet supported by the GCC toolchain (e.g., svadu).")
   rsg = parser.add_argument_group('Random seeds',
                                   'To control random seeds, use at most one '
                                   'of the --start_seed, --seed or --seed_yaml '
