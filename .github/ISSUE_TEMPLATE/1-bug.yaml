@@ -17,6 +17,14 @@ body:
 - type: textarea
   attributes:
     label: Bug Description
-    description: A concise description of the bug
+    value: |
+      <!-- Introduction -->
+
+      = Steps to reproduce
+
+      == Expected behavior
+
+      == Observed behavior
+
   validations:
     required: true
