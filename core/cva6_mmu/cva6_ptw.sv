@@ -35,6 +35,7 @@ module cva6_ptw
     input logic flush_i,  // flush everything, we need to do this because
                           // actually everything we do is speculative at this stage
                           // e.g.: there could be a CSR instruction that changes everything
+    input new_req_i, //set when the request from shared tlb has changed
     output logic ptw_active_o,
     output logic walking_instr_o,  // set when walking for TLB
     output logic ptw_error_o,  // set when an error occurred
@@ -601,7 +602,7 @@ module cva6_ptw
     // Flush
     // -------
     // should we have flushed before we got an rvalid, wait for it until going back to IDLE
-    if (flush_i) begin
+    if (flush_i || (new_req_i && state_q !=IDLE && state_q!= LATENCY)) begin
       // on a flush check whether we are
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it

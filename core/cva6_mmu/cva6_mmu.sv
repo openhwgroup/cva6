@@ -145,6 +145,9 @@ module cva6_mmu
 
   tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
+  logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_prev;
+  logic new_req;
+
   logic                               itlb_lu_access;
   pte_cva6_t                          itlb_content;
   pte_cva6_t                          itlb_g_content;
@@ -170,7 +173,8 @@ module cva6_mmu
   assign dtlb_lu_access = lsu_req_i;
   assign itlb_lu_asid   = v_i ? vs_asid_i : asid_i;
   assign dtlb_lu_asid   = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
-
+  
+  assign new_req = shared_tlb_vaddr == shared_tlb_vaddr_prev ? '0 : shared_tlb_access && !shared_tlb_hit;
 
   cva6_tlb #(
       .CVA6Cfg          (CVA6Cfg),
@@ -296,7 +300,7 @@ module cva6_mmu
       .clk_i (clk_i),
       .rst_ni(rst_ni),
       .flush_i,
-
+      .new_req_i(new_req),
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
       .ptw_error_o           (ptw_error),
@@ -740,6 +744,7 @@ module cva6_mmu
       dtlb_hit_q     <= dtlb_hit_n;
       lsu_is_store_q <= lsu_is_store_n;
       dtlb_is_page_q <= dtlb_is_page_n;
+      shared_tlb_vaddr_prev <= shared_tlb_vaddr;
 
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
