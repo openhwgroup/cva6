@@ -1,21 +1,8 @@
 /*
- *  Copyright 2023 CEA*
- *  *Commissariat a l'Energie Atomique et aux Energies Alternatives (CEA)
+ *  Copyright 2023 Commissariat a l'Energie Atomique et aux Energies Alternatives (CEA)
+ *  Copyright 2025 Univ. Grenoble Alpes, Inria, TIMA Laboratory
  *
  *  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
- *
- *  Licensed under the Solderpad Hardware License v 2.1 (the “License”); you
- *  may not use this file except in compliance with the License, or, at your
- *  option, the Apache License version 2.0. You may obtain a copy of the
- *  License at
- *
- *  https://solderpad.org/licenses/SHL-2.1/
- *
- *  Unless required by applicable law or agreed to in writing, any work
- *  distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
  */
 /*
  *  Authors       : Cesar Fuguet
@@ -23,13 +10,12 @@
  *  Description   : Behavioral model of a 1RW SRAM with write byte enable
  *  History       :
  */
-module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080
-
+module hpdcache_sram_wbyteenable_1rw_00000007_00000020_00000080_00000002
 #(
     parameter int unsigned ADDR_SIZE = 7,
-    parameter int unsigned DATA_SIZE = 64,
+    parameter int unsigned DATA_SIZE = 32,
     parameter int unsigned DEPTH = 2**ADDR_SIZE,
-    parameter int unsigned NDATA = 1
+    parameter int unsigned NDATA = 2
 )
 (
     input  logic                              clk,
@@ -64,5 +50,26 @@ module hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080
                 rdata <= mem[addr];
             end
         end
-    end : mem_update_ff
-endmodule : hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080
+    end
+
+    //  DPI
+    //  {{{
+`ifdef HPDCACHE_DPI_ON
+    export "DPI-C" task publicSramBeSetMask;
+    export "DPI-C" task publicSramBeSetData;
+
+    task automatic publicSramBeSetMask;
+        input int index;
+        input logic [NDATA-1:0][DATA_SIZE-1:0] mask;
+        mem[index] ^= mask;
+    endtask
+
+    task automatic publicSramBeSetData;
+        input int index;
+        input logic [NDATA-1:0][DATA_SIZE-1:0] data;
+        mem[index] = data;
+    endtask
+`endif
+    //  }}}
+endmodule
+// vim: ts=4 : sts=4 : sw=4 : et : tw=100 : spell : spelllang=en
