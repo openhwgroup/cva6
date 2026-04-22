@@ -71,7 +71,8 @@ Bug fixing is always welcome. You can issue a GitHub issue. Better: solve the bu
 
 ### Use of AI
 
-We understand that some developers are assisted by large language models to help write code. However, AI-generated code shall always be reviewed and endorsed **by a human person**.
+We understand that some developers are assisted by large language models to help write code. However, AI-generated code shall always be reviewed and endorsed **by the human contributor** before submitting the pull request.
+The review by the human contributor shall be as thorough as if they had written the code themselves. Notably the human contributor shall understand and explain all generated code and assess the relevance of comments.
 
 Contributions through code/documentation (pull requests) or feedback (issues) are highly appreciated, but keep in mind that each contribution has a cost for the project, as reviewers will spend time discussing the contributions.
 For more information on this topic, see: <https://llvm.org/docs/AIToolPolicy.html#extractive-contributions>
