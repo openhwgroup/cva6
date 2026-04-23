@@ -517,7 +517,7 @@ module frontend
     end else if (CVA6Cfg.MmuPresent && ex_s1) begin
       vaddr_rvalid = vaddr_q;
       rvalid    = arsp_i.fetch_valid && !bp_valid && !flush_i && !was_mispredicted;
-      ex_rvalid = 1'b1;
+      ex_rvalid = arsp_i.fetch_valid; //1'b1;
       pop_fetch = arsp_i.fetch_valid; // release lsu_bypass fifo
     end
 
@@ -596,10 +596,10 @@ module frontend
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
-      //if (!ex_s1) begin
+      if (!ex_s1) begin
       fetchbuf_windex_q <= fetchbuf_windex;
       fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
-      //end
+      end
       vaddr_q <= vaddr_d;
     end
   end
