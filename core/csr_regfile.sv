@@ -140,6 +140,8 @@ module csr_regfile
     output logic scbcfe_o,
     // hypervisor-mode clean/flush cache block invalidate enable - ID_STAGE
     output logic hcbcfe_o,
+    // page-based memory type enable - EX_STAGE
+    output logic pbmte_o,
     // external interrupt in - SUBSYSTEM
     input logic [1:0] irq_i,
     // inter processor interrupt -> connected to machine mode sw - SUBSYSTEM
@@ -267,6 +269,8 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] mtinst_q, mtinst_d;
   logic [CVA6Cfg.XLEN-1:0] mtval2_q, mtval2_d;
   logic fiom_d, fiom_q;
+  logic pbmte_d, pbmte_q;
+  logic hpbmte_d, hpbmte_q;
 
   logic [CVA6Cfg.XLEN-1:0] stvec_q, stvec_d;
   logic [CVA6Cfg.XLEN-1:0] scounteren_q, scounteren_d;
@@ -580,6 +584,9 @@ module csr_regfile
               csr_rdata[5:4] = hcbie_q;
               csr_rdata[6]   = hcbcfe_q;
             end
+            if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) begin
+              csr_rdata[62] = hpbmte_q;
+            end
           end else begin
             read_access_exception = 1'b1;
           end
@@ -636,7 +643,10 @@ module csr_regfile
             csr_rdata[5:4] = mcbie_q;
             csr_rdata[6]   = mcbcfe_q;
           end
-          if (!CVA6Cfg.RVU && !CVA6Cfg.RVZiCbom) begin
+          if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) begin
+            csr_rdata[62] = pbmte_q;
+          end
+          if (!CVA6Cfg.RVU && !CVA6Cfg.RVZiCbom && !CVA6Cfg.SvpbmtEn) begin
             read_access_exception = 1'b1;
           end
         end
@@ -1059,6 +1069,8 @@ module csr_regfile
     end
 
     fiom_d     = fiom_q;
+    pbmte_d    = pbmte_q;
+    hpbmte_d   = hpbmte_q;
     dcache_d   = dcache_q;
     icache_d   = icache_q;
     acc_cons_d = acc_cons_q;
@@ -1523,6 +1535,7 @@ module csr_regfile
               endcase
               hcbcfe_d = csr_wdata[6];
             end
+            if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) hpbmte_d = csr_wdata[62] & pbmte_q;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1705,6 +1718,7 @@ module csr_regfile
             endcase
             mcbcfe_d = csr_wdata[6];
           end
+          if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) pbmte_d = csr_wdata[62];
         end
         riscv::CSR_MENVCFGH: begin
           if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
@@ -2702,6 +2716,8 @@ module csr_regfile
   assign mcbcfe_o = CVA6Cfg.RVZiCbom ? mcbcfe_q : 1'b0;
   assign scbcfe_o = CVA6Cfg.RVZiCbom ? scbcfe_q : 1'b0;
   assign hcbcfe_o = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
+
+  assign pbmte_o = CVA6Cfg.SvpbmtEn ? pbmte_q : 1'b0;
   // we support bare memory addressing and SV39
   if (CVA6Cfg.RVH) begin
     assign en_translation_o = (((config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && !v_q) || (config_pkg::vm_mode_t'(vsatp_q.mode) == CVA6Cfg.MODE_SV && v_q)) &&
@@ -2780,6 +2796,8 @@ module csr_regfile
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       fiom_q          <= '0;
+      pbmte_q         <= '0;
+      hpbmte_q        <= '0;
       dcache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q <= '0;
@@ -2878,6 +2896,8 @@ module csr_regfile
       mscratch_q       <= mscratch_d;
       if (CVA6Cfg.TvalEn) mtval_q <= mtval_d;
       fiom_q          <= fiom_d;
+      pbmte_q         <= pbmte_d;
+      hpbmte_q        <= hpbmte_d;
       dcache_q        <= dcache_d;
       icache_q        <= icache_d;
       mcountinhibit_q <= mcountinhibit_d;
