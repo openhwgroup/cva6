@@ -102,13 +102,14 @@ module ariane_xilinx (
   output logic [ 0:0]  ddr3_cs_n   ,
   output logic [ 7:0]  ddr3_dm     ,
   output logic [ 0:0]  ddr3_odt    ,
+  // SGMII Ethernet
+  input  wire          sgmii_rxp       ,
+  input  wire          sgmii_rxn       ,
+  output wire          sgmii_txp       ,
+  output wire          sgmii_txn       ,
+  input  wire          sgmii_refclk_p  ,  // 125 MHz GTX reference clock
+  input  wire          sgmii_refclk_n  ,
   output wire          eth_rst_n   ,
-  input  wire          eth_rxck    ,
-  input  wire          eth_rxctl   ,
-  input  wire [3:0]    eth_rxd     ,
-  output wire          eth_txck    ,
-  output wire          eth_txctl   ,
-  output wire [3:0]    eth_txd     ,
   inout  wire          eth_mdio    ,
   output logic         eth_mdc     ,
   output logic [ 7:0]  led         ,
@@ -185,6 +186,7 @@ module ariane_xilinx (
   input  logic        tms         ,
   input  logic        tdi         ,
   output  wire         tdo         ,
+`ifndef VC707
   input  logic        prog_clko   ,
   input  logic        prog_rxen   ,
   input  logic        prog_txen   ,
@@ -194,6 +196,7 @@ module ariane_xilinx (
   output logic        prog_oen    ,
   output logic        prog_siwun  ,
   inout  logic [7:0]  prog_d      ,
+`endif
   input  logic        rx          ,
   output logic        tx
 );
@@ -1005,9 +1008,11 @@ end
 // DPTI
 // ---------------
 
-logic FifoEn ;
-logic usrFull ;
-logic usrEmpty ;
+logic usrFull;
+
+`ifndef VC707
+logic FifoEn;
+logic usrEmpty;
 logic [7:0] w_data;
 logic [7:0] r_data;
 
@@ -1029,8 +1034,6 @@ assign prog_rdn_debug = prog_rdn;
 assign prog_wrn_debug = prog_wrn;
 assign prog_oen_debug = prog_oen;
 assign prog_siwun_debug = prog_siwun;
-
-//assign  w_data = {iti_to_encoder.itype[0],iti_to_encoder.itype[1],iti_to_encoder.valid} ;
 
 assign FifoEn = !usrFull && !usrEmpty;
  dpti_ctrl i_dpti_ctrl (
@@ -1062,6 +1065,9 @@ assign FifoEn = !usrFull && !usrEmpty;
           .prog_siwun(prog_siwun),
           .prog_d(prog_d)
 );
+`else
+assign usrFull = 1'b0;
+`endif
 // ---------------
 // Peripherals
 // ---------------
@@ -1087,7 +1093,7 @@ ariane_peripherals #(
     .InclEthernet ( 1'b0         ) // Ethernet requires RAMB16 fpga/src/ariane-ethernet/dualmem_widen8.sv to be defined
     `elsif VC707
     .InclSPI      ( 1'b1         ),
-    .InclEthernet ( 1'b0         )
+    .InclEthernet ( 1'b1         )
     `elsif VCU118
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
@@ -1103,22 +1109,31 @@ ariane_peripherals #(
     .uart         ( master[ariane_soc::UART]     ),
     .spi          ( master[ariane_soc::SPI]      ),
     .gpio         ( master[ariane_soc::GPIO]     ),
-    .eth_clk_i    ( eth_clk                      ),
     .ethernet     ( master[ariane_soc::Ethernet] ),
     .timer        ( master[ariane_soc::Timer]    ),
     .irq_o        ( irq                          ),
     .rx_i         ( rx                           ),
     .tx_o         ( tx                           ),
+    `ifdef VC707
+    .sgmii_rxp,
+    .sgmii_rxn,
+    .sgmii_txp,
+    .sgmii_txn,
+    .sgmii_refclk_p,
+    .sgmii_refclk_n,
+    `else
+    .eth_clk_i    ( eth_clk                      ),
     .eth_txck,
     .eth_rxck,
     .eth_rxctl,
     .eth_rxd,
-    .eth_rst_n,
     .eth_txctl,
     .eth_txd,
+    .phy_tx_clk_i   ( phy_tx_clk                  ),
+    `endif
+    .eth_rst_n,
     .eth_mdio,
     .eth_mdc,
-    .phy_tx_clk_i   ( phy_tx_clk                  ),
     .sd_clk_i       ( sd_clk_sys                  ),
     .spi_clk_o      ( spi_clk_o                   ),
     .spi_mosi       ( spi_mosi                    ),

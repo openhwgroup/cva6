@@ -38,6 +38,16 @@ module ariane_peripherals #(
     input  logic       rx_i            ,
     output logic       tx_o            ,
     // Ethernet
+`ifdef VC707
+    // SGMII interface
+    input  wire        sgmii_rxp       ,
+    input  wire        sgmii_rxn       ,
+    output wire        sgmii_txp       ,
+    output wire        sgmii_txn       ,
+    input  wire        sgmii_refclk_p  ,
+    input  wire        sgmii_refclk_n  ,
+`else
+    // RGMII interface
     input  logic       eth_clk_i       ,
     input  wire        eth_rxck        ,
     input  wire        eth_rxctl       ,
@@ -45,8 +55,9 @@ module ariane_peripherals #(
     output wire        eth_txck        ,
     output wire        eth_txctl       ,
     output wire [3:0]  eth_txd         ,
-    output wire        eth_rst_n       ,
     input  logic       phy_tx_clk_i    , // 125 MHz Clock
+`endif
+    output wire        eth_rst_n       ,
     // MDIO Interface
     inout  wire        eth_mdio        ,
     output logic       eth_mdc         ,
@@ -533,6 +544,35 @@ module ariane_peripherals #(
         .data_i ( eth_rdata               )
     );
 
+    `ifdef VC707
+    framing_top_sgmii eth_sgmii (
+       .msoc_clk(clk_i),
+       .core_lsu_addr(eth_addr[16:0]),
+       .core_lsu_wdata(eth_wrdata),
+       .core_lsu_be(eth_be),
+       .ce_d(eth_en),
+       .we_d(eth_en & eth_we),
+       .framing_sel(eth_en),
+       .framing_rdata(eth_rdata),
+       .rst_int(!rst_ni),
+       .clk_int(clk_i),
+       /*
+        * Ethernet: 1000BASE-X SGMII
+        */
+       .sgmii_rxp(sgmii_rxp),
+       .sgmii_rxn(sgmii_rxn),
+       .sgmii_txp(sgmii_txp),
+       .sgmii_txn(sgmii_txn),
+       .sgmii_refclk_p(sgmii_refclk_p),
+       .sgmii_refclk_n(sgmii_refclk_n),
+       .phy_reset_n(eth_rst_n),
+       .phy_mdio_i(eth_mdio_i),
+       .phy_mdio_o(eth_mdio_o),
+       .phy_mdio_oe(eth_mdio_oe),
+       .phy_mdc(eth_mdc),
+       .eth_irq(irq_sources[2])
+    );
+    `else
     framing_top eth_rgmii (
        .msoc_clk(clk_i),
        .core_lsu_addr(eth_addr[14:0]),
@@ -564,6 +604,7 @@ module ariane_peripherals #(
        .phy_mdio_oe(eth_mdio_oe),
        .eth_irq(irq_sources[2])
     );
+    `endif
 
        IOBUF #(
           .DRIVE(12), // Specify the output drive strength

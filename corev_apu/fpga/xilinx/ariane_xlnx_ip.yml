@@ -66,8 +66,14 @@ xlnx_ila:
   vendor: xilinx.com
   config:
     c_num_of_probes: 8
+    c_probe0_width: 8
+    c_probe1_width: 8
+    c_probe2_width: 8
     c_probe3_width: 4
-    c_probe6_width: 4
+    c_probe4_width: 4
+    c_probe5_width: 4
+    c_probe6_width: 11
+    c_probe7_width: 16
     c_data_depth: 16384
     c_input_pipe_stages: 1
 

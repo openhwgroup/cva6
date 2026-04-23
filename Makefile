@@ -39,7 +39,7 @@ torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf_file        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 # board name for bitstream generation. Currently supported: kc705, genesys2, nexys_video
-BOARD          ?= genesys2
+BOARD          ?= vc707
 ALTERA_BOARD		 ?= DK-DEV-AGF014E3ES
 ALTERA_FAMILY	 ?= "AGILEX"
 ALTERA_PART		 ?= AGFB014R24B2E2V
@@ -256,7 +256,7 @@ uart_src_sv:= corev_apu/fpga/src/apb_uart/src/slib_clock_div.sv     \
               corev_apu/fpga/src/apb_uart/src/apb_uart_wrap.sv
 uart_src_sv := $(addprefix $(root-dir), $(uart_src_sv))
 
-fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv common/local/util/hpdcache_sram_1rw.sv common/local/util/hpdcache_sram_wbyteenable_1rw.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx32.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRam.sv
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/cva6-ethernet/*.sv) common/local/util/tc_sram_fpga_wrapper.sv common/local/util/hpdcache_sram_1rw.sv common/local/util/hpdcache_sram_wbyteenable_1rw.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx64.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRamBeNx32.sv vendor/pulp-platform/fpga-support/rtl/SyncSpRam.sv
 
 altera_src := $(shell find $(root-dir)/corev_apu/altera/src -type f \( -name "*.v" -o -name "*.sv" -o -name "*.svh" \) -print | sed 's|//|/|g')
 altera_src += $(src)
@@ -820,6 +820,15 @@ fpga: $(ariane_pkg) $(src) $(fpga_src) $(uart_src) $(dpti_src) $(src_flist)
 	@echo "[FPGA] Generate Bitstream"
 	$(MAKE) -C corev_apu/fpga BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
+program:
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/program.tcl
+
+flash: corev_apu/fpga/work-fpga/ariane_xilinx.mcs
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/flash.tcl
+
+corev_apu/fpga/work-fpga/ariane_xilinx.mcs: corev_apu/fpga/work-fpga/ariane_xilinx.bit
+	cd corev_apu/fpga && BOARD=$(BOARD) vivado -nojournal -mode batch -source scripts/write_cfgmem.tcl -tclargs work-fpga/ariane_xilinx.mcs work-fpga/ariane_xilinx.bit
+
 altera: PLATFORM := "PLAT_AGILEX"
 
 altera: $(ariane_pkg) $(src) $(fpga_src) $(src_flist)
@@ -849,7 +858,7 @@ clean-altera: clean
 	$(MAKE) -C corev_apu/altera clean
 
 .PHONY:
-	build sim sim-verilate clean                                              \
+	build sim sim-verilate clean program flash                                 \
 	$(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests))             \
 	$(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks))           \
 	check-benchmarks check-asm-tests                                          \
