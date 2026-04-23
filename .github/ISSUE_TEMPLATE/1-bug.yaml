@@ -1,14 +1,13 @@
-name: CVA6 bug
-description: Create a CVA6 bug
+name: Bug
+description: Report a CVA6 RTL bug
 title: "[BUG] <title>"
 labels: ["Type:Bug"]
 body:
 - type: checkboxes
   attributes:
-    label: Is there an existing CVA6 bug for this?
-    description: Please search to see if an issue already exist for the bug you need to create
+    label: Code of Conduct
     options:
-    - label: I have searched the existing bug issues
+    - label: I have searched the existing bug issues.
       required: true
     - label: >-
         I am a human engaging in an interpersonal interaction.
@@ -18,6 +17,14 @@ body:
 - type: textarea
   attributes:
     label: Bug Description
-    description: A concise description of the bug
+    value: |
+      <!-- Introduction -->
+
+      = Steps to reproduce
+
+      == Expected behavior
+
+      == Observed behavior
+
   validations:
     required: true
