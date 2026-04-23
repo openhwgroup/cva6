@@ -3,7 +3,7 @@
 <!-- Thanks for your contribution! Before sending us a pull request, please make sure you have read CONTRIBUTING.md -->
 
 - [ ] I have searched for similar pull requests
-- [ ] I, as a human, thereby engage in an interpersonal interaction. During this interaction, my words are my own and are not generated. If relevant, I provide links to my sources.
+- [ ] I am a human engaging in an interpersonal interaction. During this interaction, my words are my own and are not generated. If relevant, I provide links to my sources.
 
 
 <!-- Please indicate why this PR is needed for the project -->
