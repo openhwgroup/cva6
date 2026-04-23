@@ -108,7 +108,8 @@ module cva6_mmu
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
     logic n;
-    logic [8:0] reserved;
+    logic [1:0] pbmt;  // bits [62:61] -- PBMT field (Svpbmt, currently unused)
+    logic [6:0] reserved;  // bits [60:54] -- truly reserved, must be zero
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
@@ -124,6 +125,7 @@ module cva6_mmu
   localparam type tlb_update_cva6_t = struct packed {
     logic valid;
     logic is_napot_64k;  // Svnapot: Flag indicating a 64KiB NAPOT page
+    logic [1:0] pbmt;  // Svpbmt: Page-based memory type (bits [62:61] of PTE)
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
     logic [CVA6Cfg.VpnLen-1:0] vpn;
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
