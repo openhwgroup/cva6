@@ -31,10 +31,10 @@ if (NDATA*DATA_SIZE == 128) begin
     logic [NDATA*DATA_SIZE/2-1:0] wdata_low, wdata_high;
     logic [NDATA*DATA_SIZE/2-1:0] rdata_low, rdata_high;
     logic [7:0] be_low, be_high;
-    assign wdata_low  = wdata[63:0];
-    assign wdata_high = wdata[127:64];
-    assign be_low  = wbyteenable[7:0];
-    assign be_high = wbyteenable[15:8];
+    assign wdata_low  = wdata[0][63:0];
+    assign wdata_high = wdata[1][63:0];
+    assign be_low  = wbyteenable[0][7:0];
+    assign be_high = wbyteenable[1][7:0];
 
     SyncSpRamBeNx64 #(
         .ADDR_WIDTH(ADDR_SIZE),
