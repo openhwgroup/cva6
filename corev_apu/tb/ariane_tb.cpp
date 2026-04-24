@@ -43,6 +43,7 @@
 #include <fesvr/htif_hexwriter.h>
 #include <fesvr/elfloader.h>
 #include "remote_bitbang.h"
+#include "dpi/syscalls.h"
 
 // This software is heavily based on Rocket Chip
 // Checkout this awesome project:
@@ -354,6 +355,8 @@ done_processing:
           std::cerr << "No user memory instantiated ...\n";
         }
   }
+
+  SyscallHandler::init(MEM);
 
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
     top->clk_i = 0;

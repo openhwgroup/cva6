@@ -20,6 +20,10 @@ ifndef TARGET_CFG
 export TARGET_CFG = $(target)
 endif
 
+CVA6_NR_HARTS ?= 1
+STDOUT        ?= &2
+HART_IDS := $(shell seq -f "%02g" 0 $$(($(CVA6_NR_HARTS)-1)))
+
 HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
 export HPDCACHE_DIR
 HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
@@ -139,8 +143,8 @@ endif
 ###############################################################################
 spike:
 	LD_LIBRARY_PATH="$$(realpath ../../tools/spike/lib):$$LD_LIBRARY_PATH" \
-		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf)
-	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)
+		$(tool_path)/spike $(spike_stepout) $(spike_extension) --log-commits --isa=$(variant) --priv=$(priv) $(spike_params_final) -l $(elf) 1>$(STDOUT)
+	grep -v '^\([[]\|/top/\)' $(log).iss > $(log)_hart_00.log
 
 ###############################################################################
 # UVM specific commands, variables
@@ -194,6 +198,7 @@ COMMON_PLUS_ARGS = \
 	+core_name=$(target) \
         $(spike-yaml-plusarg) \
 	+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+	+fromhost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(elf) | grep -w fromhost | cut -d' ' -f1) \
 	+signature=$(elf).signature_output +UVM_TESTNAME=uvmt_cva6_firmware_test_c \
 	+report_file=$(log).yaml +core_name=$(target)
 
@@ -295,7 +300,7 @@ vcs-uvm: vcs_uvm_comp vcs_uvm_run
 	[ ! -f $(VCS_WORK_DIR)/novas.fsdb ] || \
 	  mv $(VCS_WORK_DIR)/novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
-	$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_00.dasm > $(log)
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./vcs_results/default/vcs.d/trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
 
 
 ### XRUN UVM rules
@@ -325,6 +330,7 @@ xrun_uvm_run:
           +define+UVM_NO_DEPRECATED  \
 	  +UVM_TESTNAME=uvmt_cva6_firmware_test_c	\
 	  +tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+	  +fromhost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w fromhost | cut -d' ' -f1)          \
 	  $(cov-comp-opt) $(issrun_opts)
 
 
@@ -370,8 +376,8 @@ questa_uvm_run:
 	  +define+UNSUPPORTED_WITH+ \
 	   $(issrun_opts) \
 	  uvmt_cva6_tb_opt
-	  $(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-	  grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
+	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
 
 	# TODO: Add support for waveform collection.
 
@@ -409,36 +415,37 @@ vcs-testharness:
 	[ ! -f novas.fsdb ] || \
 	  mv novas.fsdb `dirname $(log)`/`basename $(log) .log`.fsdb
 	# Generate disassembled log.
-	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
+	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
 
 veri-testharness-pk:
 	rm -rf $(path_var)/work-ver
 	@echo "Trace compact value $(TRACE_COMPACT)"
-	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	make -C $(path_var) verilate verilator="verilator --no-timing -GNR_CORES=$(CVA6_NR_HARTS)" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) \
 		$(PK_INSTALL_DIR)/riscv-none-elf/bin/pk $(elf) \
 		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1) \
+		+fromhost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w fromhost | cut -d' ' -f1) \
 		$(issrun_opts)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
-	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart$(h).log &&) true
+	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
 
 veri-testharness:
-	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	make -C $(path_var) verilate verilator="verilator --no-timing -GNR_CORES=$(CVA6_NR_HARTS)" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts) \
-	  $(COMMON_PLUS_ARGS)
+	  $(COMMON_PLUS_ARGS) 1>$(STDOUT)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.
 	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.fst
 	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.vcd
 	# Generate disassembled log.
-	$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
-	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
+	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
 
 xrun-testharness:
 	@echo "[XRUN-TESTHARNESS] Running"
@@ -450,15 +457,15 @@ xrun-testharness:
 	@echo "[XRUN-TESTHARNESS] $(elf)"
 	make -C $(path_var) xrun_sim target=$(target) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
 	@echo "[XRUN-TESTHARNESS1] $(elf)"
-	$(CVA6_REPO_DIR)/tools/spike/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_00.dasm > $(log)
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./xrun_results/xcelium.d/trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
 
 questa-testharness:
 	mkdir -p $(path_var)/tmp
 	make -C $(path_var) sim target=$(target) defines=$(subst +define+,,$(isscomp_opts)+core_name=$(target)) batch-mode=1 elf_file=$(elf) \
 	    report_file=$(log).yaml $(spike-yaml-makearg)
 	# TODO: Add support for waveform collection.
-	$(tool_path)/spike-dasm --isa=$(variant) < $(path_var)/trace_rvfi_hart_00.dasm > $(log)
-	grep $(isspostrun_opts) $(path_var)/trace_rvfi_hart_00.dasm
+	$(foreach h,$(HART_IDS),$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_$(h).dasm > $(log)_hart_$(h).log &&) true
+	$(foreach h,$(HART_IDS),grep $(isspostrun_opts) ./trace_rvfi_hart_$(h).dasm &&) true
 
 ###############################################################################
 # Common targets and rules
