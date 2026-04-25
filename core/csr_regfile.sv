@@ -2717,7 +2717,12 @@ module csr_regfile
   assign scbcfe_o = CVA6Cfg.RVZiCbom ? scbcfe_q : 1'b0;
   assign hcbcfe_o = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
 
-  assign pbmte_o = CVA6Cfg.SvpbmtEn ? pbmte_q : 1'b0;
+  // Svpbmt: effective PBMTE depends on virtualization mode.
+  // In HS-mode (v=0): effective = menvcfg.PBMTE
+  // In VS/VU-mode (v=1): effective = menvcfg.PBMTE AND henvcfg.PBMTE
+  assign pbmte_o = CVA6Cfg.SvpbmtEn ?
+                   (CVA6Cfg.RVH ? (pbmte_q & (v_q ? hpbmte_q : 1'b1)) : pbmte_q) :
+                   1'b0;
   // we support bare memory addressing and SV39
   if (CVA6Cfg.RVH) begin
     assign en_translation_o = (((config_pkg::vm_mode_t'(satp_q.mode) == CVA6Cfg.MODE_SV && !v_q) || (config_pkg::vm_mode_t'(vsatp_q.mode) == CVA6Cfg.MODE_SV && v_q)) &&

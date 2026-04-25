@@ -63,6 +63,8 @@ module cva6_mmu
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
+    // Svpbmt: page-based memory type for data accesses - EX_STAGE
+    output logic [1:0] lsu_pbmt_o,
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -171,6 +173,10 @@ module cva6_mmu
   logic                               dtlb_lu_hit;
   logic      [     CVA6Cfg.GPLEN-1:0] dtlb_gpaddr;
 
+  // Svpbmt: PBMT value from TLB lookup
+  logic      [                   1:0] itlb_pbmt;
+  logic      [                   1:0] dtlb_pbmt;
+
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
 
@@ -210,6 +216,7 @@ module cva6_mmu
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
+      .lu_pbmt_o     (itlb_pbmt),
       .lu_hit_o      (itlb_lu_hit)
   );
 
@@ -241,6 +248,7 @@ module cva6_mmu
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (dtlb_is_page),
+      .lu_pbmt_o     (dtlb_pbmt),
       .lu_hit_o      (dtlb_lu_hit)
   );
 
@@ -503,6 +511,7 @@ module cva6_mmu
   logic lsu_is_store_n, lsu_is_store_q;
   logic dtlb_hit_n, dtlb_hit_q;
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
+  logic [1:0] dtlb_pbmt_n, dtlb_pbmt_q;  // Svpbmt: registered PBMT from DTLB
   exception_t misaligned_ex_n, misaligned_ex_q;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
@@ -518,10 +527,12 @@ module cva6_mmu
     dtlb_hit_n = dtlb_lu_hit;
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
+    dtlb_pbmt_n = dtlb_pbmt;
     misaligned_ex_n = misaligned_ex_i;
 
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
+    lsu_pbmt_o = 2'b00;  // Svpbmt: default to PMA (no override)
 
     // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
     misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
@@ -551,6 +562,7 @@ module cva6_mmu
     // translation is enabled and no misaligned exception occurred
     if ((en_ld_st_translation_i || en_ld_st_g_translation_i) && !misaligned_ex_q.valid) begin
       lsu_valid_o = 1'b0;
+      lsu_pbmt_o = CVA6Cfg.SvpbmtEn ? dtlb_pbmt_q : 2'b00;
 
       lsu_dtlb_ppn_o = (en_ld_st_g_translation_i && CVA6Cfg.RVH) ? dtlb_g_content.ppn : dtlb_content.ppn;
       lsu_paddr_o = {
@@ -749,6 +761,7 @@ module cva6_mmu
       dtlb_hit_q      <= '0;
       lsu_is_store_q  <= '0;
       dtlb_is_page_q  <= '0;
+      dtlb_pbmt_q     <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
       misaligned_ex_q <= '0;
@@ -759,6 +772,7 @@ module cva6_mmu
       dtlb_hit_q      <= dtlb_hit_n;
       lsu_is_store_q  <= lsu_is_store_n;
       dtlb_is_page_q  <= dtlb_is_page_n;
+      dtlb_pbmt_q     <= dtlb_pbmt_n;
       misaligned_ex_q <= misaligned_ex_n;
 
       if (CVA6Cfg.RVH) begin
