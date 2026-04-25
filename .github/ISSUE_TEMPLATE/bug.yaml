@@ -10,6 +10,11 @@ body:
     options:
     - label: I have searched the existing bug issues
       required: true
+    - label: >-
+        I am a human engaging in an interpersonal interaction.
+        During this interaction, my words are my own and are not generated.
+        If relevant, I provide links to my sources.
+      required: true
 - type: textarea
   attributes:
     label: Bug Description
