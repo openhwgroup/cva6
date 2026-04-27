@@ -9,8 +9,6 @@ on:
     types:
       - completed
   workflow_dispatch:
-  schedule:
-    - cron: '30 6 * * *'
 
 concurrency:
   group: openhw-cva6-tier-dashboard
