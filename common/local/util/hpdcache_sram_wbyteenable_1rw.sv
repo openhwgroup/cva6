@@ -27,14 +27,13 @@ module hpdcache_sram_wbyteenable_1rw
 );
 
 if (NDATA*DATA_SIZE == 128) begin
-    // Découpage des données en deux moitiés de 64 bits
-    logic [NDATA*DATA_SIZE/2-1:0] wdata_low, wdata_high;
-    logic [NDATA*DATA_SIZE/2-1:0] rdata_low, rdata_high;
-    logic [7:0] be_low, be_high;
-    assign wdata_low  = wdata[0][63:0];
-    assign wdata_high = wdata[1][63:0];
-    assign be_low  = wbyteenable[0][7:0];
-    assign be_high = wbyteenable[1][7:0];
+    // split in two 64-bits wide SRAMs
+    logic [127:0] __wdata;
+    logic [127:0] __rdata;
+    logic [15:0]  __be;
+
+    assign __wdata = wdata;
+    assign __be    = wbyteenable;
 
     SyncSpRamBeNx64 #(
         .ADDR_WIDTH(ADDR_SIZE),
@@ -45,11 +44,11 @@ if (NDATA*DATA_SIZE == 128) begin
         .Clk_CI   (clk),
         .Rst_RBI  (rst_n),
         .CSel_SI  (cs),
-        .WrEn_SI  (we),          // Ecriture sur la banque basse
-        .BEn_SI   (be_low),
+        .WrEn_SI  (we),
+        .BEn_SI   (__be[0 +: 8]), // write LSBs
         .Addr_DI  (addr),
-        .WrData_DI(wdata_low),
-        .RdData_DO(rdata_low)
+        .WrData_DI(__wdata[0 +: 64]),
+        .RdData_DO(__rdata[0 +: 64])
     );
 
     SyncSpRamBeNx64 #(
@@ -61,14 +60,14 @@ if (NDATA*DATA_SIZE == 128) begin
         .Clk_CI   (clk),
         .Rst_RBI  (rst_n),
         .CSel_SI  (cs),
-        .WrEn_SI  (we),          // Ecriture sur la banque haute
-        .BEn_SI   (be_high),
+        .WrEn_SI  (we),
+        .BEn_SI   (__be[8 +: 8]), // write MSbs
         .Addr_DI  (addr),
-        .WrData_DI(wdata_high),
-        .RdData_DO(rdata_high)
+        .WrData_DI(__wdata[64 +: 64]),
+        .RdData_DO(__rdata[64 +: 64])
     );
 
-    assign rdata = {rdata_high, rdata_low};
+    assign rdata = __rdata;
 
 end else if (NDATA*DATA_SIZE == 64) begin
     SyncSpRamBeNx64 #(
