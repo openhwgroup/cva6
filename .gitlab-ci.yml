@@ -301,7 +301,7 @@ asic-synthesis:
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 3c0dd72d
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
@@ -591,7 +591,7 @@ simu-gate:
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 3c0dd72d
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh
