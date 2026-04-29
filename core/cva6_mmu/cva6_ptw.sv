@@ -87,7 +87,8 @@ module cva6_ptw
     input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
     input logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     output logic [CVA6Cfg.PLEN-1:0] bad_paddr_o,
-    output logic [CVA6Cfg.GPLEN-1:0] bad_gpaddr_o
+    output logic [CVA6Cfg.GPLEN-1:0] bad_gpaddr_o,
+    output logic aborted_req_o
 );
 
   // input registers
@@ -322,6 +323,7 @@ module cva6_ptw
         ptw_lvl_n        = '0;
         global_mapping_n = 1'b0;
         is_instr_ptw_n   = 1'b0;
+        aborted_req_o    = 1'b0;
 
 
         if (CVA6Cfg.RVH) begin
@@ -607,6 +609,7 @@ module cva6_ptw
       // 1. in the PTE Lookup check whether we still need to wait for an rvalid
       // 2. waiting for a grant, if so: wait for it
       // if not, go back to idle
+      aborted_req_o = 1'b1;
       if (((state_q inside {PTE_LOOKUP, WAIT_RVALID}) && !data_rvalid_q) || ((state_q == WAIT_GRANT)))
         state_d = WAIT_RVALID;
       else state_d = LATENCY;
