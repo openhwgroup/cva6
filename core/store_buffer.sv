@@ -179,16 +179,16 @@ module store_buffer
 
     direct_req_from_speculative = 1'b0;
 
-    pending_rvalid_n = pending_rvalid_q;
+    pending_rvalid_n            = pending_rvalid_q;
 
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
       ypb_store_req_o.preq = pending_rvalid_q ? 1'b0 : 1'b1;
-      if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1; 
-      
+      if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
+
       if (ypb_store_rsp_i.rvalid) begin
-        pending_rvalid_n = 1'b0; 
+        pending_rvalid_n = 1'b0;
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
         // advance the read_pointer
@@ -260,7 +260,7 @@ module store_buffer
       speculative_read_pointer_q  <= '0;
       speculative_write_pointer_q <= '0;
       speculative_status_cnt_q    <= '0;
-      pending_rvalid_q            <=1'b0;
+      pending_rvalid_q            <= 1'b0;
     end else begin
       speculative_queue_q         <= speculative_queue_n;
       speculative_read_pointer_q  <= speculative_read_pointer_n;

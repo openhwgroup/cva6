@@ -597,8 +597,8 @@ module frontend
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
       if (!ex_s1) begin
-      fetchbuf_windex_q <= fetchbuf_windex;
-      fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
+        fetchbuf_windex_q <= fetchbuf_windex;
+        fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
       end
       vaddr_q <= vaddr_d;
     end
