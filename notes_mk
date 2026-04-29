@@ -1,0 +1,23 @@
+OBI_COMMITS : 
+  - core/frontend/frontend.sv
+  - core/load_unit.sv
+  - core/store_buffer.sv
+  - core/cvxif_example/* 
+  - verif/env/uvme/cvxif_vseq/*
+  - core/csr_regfile.sv
+  - core/cva6_fifo_v3.sv
+  - core/cvxif_example/compressed_instr_decoder.sv
+  - core/frontend/instr_queue.sv
+  - core/include/config_pkg.sv
+  - core/include/utils_macros.svh
+  - core/issue_read_operands.sv
+  - core/scoreboard.sv
+  - core/cva6_pipeline.sv
+  - core/include/build_config_pkg.sv
+  - core/commit_stage.sv
+  - core/controller.sv_lib
+  - core/decoder.sv
+
+  notes to angela : 
+    id_type in cva6.sv : 35?
+    Probably there is something wrong with ID's.

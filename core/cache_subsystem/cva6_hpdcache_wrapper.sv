@@ -265,15 +265,15 @@ module cva6_hpdcache_wrapper
         .cva6_dcache_flush_i    ('0),
         .cva6_dcache_flush_ack_o(  /* unused */),
 
-        .hpdcache_req_valid_o(dcache_req_valid[MMU_PTW_INDEX]),
-        .hpdcache_req_ready_i(dcache_req_ready[MMU_PTW_INDEX]),
-        .hpdcache_req_o      (dcache_req[MMU_PTW_INDEX]),
-        .hpdcache_req_abort_o(dcache_req_abort[MMU_PTW_INDEX]),
-        .hpdcache_req_tag_o  (dcache_req_tag[MMU_PTW_INDEX]),
-        .hpdcache_req_pma_o  (dcache_req_pma[MMU_PTW_INDEX]),
+        .hpdcache_req_valid_o(dcache_req_valid[ZCMT_INDEX]),
+        .hpdcache_req_ready_i(dcache_req_ready[ZCMT_INDEX]),
+        .hpdcache_req_o      (dcache_req[ZCMT_INDEX]),
+        .hpdcache_req_abort_o(dcache_req_abort[ZCMT_INDEX]),
+        .hpdcache_req_tag_o  (dcache_req_tag[ZCMT_INDEX]),
+        .hpdcache_req_pma_o  (dcache_req_pma[ZCMT_INDEX]),
 
-        .hpdcache_rsp_valid_i(dcache_rsp_valid[MMU_PTW_INDEX]),
-        .hpdcache_rsp_i      (dcache_rsp[MMU_PTW_INDEX])
+        .hpdcache_rsp_valid_i(dcache_rsp_valid[ZCMT_INDEX]),
+        .hpdcache_rsp_i      (dcache_rsp[ZCMT_INDEX])
     );
 
   end

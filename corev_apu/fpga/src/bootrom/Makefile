@@ -8,6 +8,13 @@ CLOCK_FREQUENCY ?= 25000000 #25MHz
 HALF_CLOCK_FREQUENCY ?= 12500000 #12.5MHz
 UART_BITRATE ?= 57600
 HAS_ETHERNET ?= 0
+else ifeq ($(PLATFORM), PLAT_AGILEX)
+DRAM_SIZE_64 ?= 0x40000000 #1GB
+DRAM_SIZE_32 ?= 0x08000000 #128MB
+CLOCK_FREQUENCY ?= 100000000 #100MHz
+HALF_CLOCK_FREQUENCY ?= 50000000 #50MHz
+UART_BITRATE ?= 115200
+HAS_ETHERNET ?= 1
 else
 DRAM_SIZE_64 ?= 0x40000000 #1GB
 DRAM_SIZE_32 ?= 0x08000000 #128MB
@@ -17,10 +24,12 @@ UART_BITRATE ?= 115200
 HAS_ETHERNET ?= 1
 endif
 
-CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
-OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
+ifeq ($(CC),cc)
+  CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
+  OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
+endif
 SED = sed
-PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)
+PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)  -DXLEN=$(XLEN)
 
 ifeq ($(XLEN), 64)
 CFLAGS = $(PLATFORM_DEFINES) -Os -ggdb -march=rv64im_zicsr -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs -ffreestanding
@@ -33,7 +42,7 @@ LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
 
 INCLUDES = -I./ -I./src
 
-SRCS_C = src/main.c src/uart.c src/spi.c src/sd.c src/gpt.c
+SRCS_C = src/main.c src/uart.c src/spi.c src/sd.c src/gpt.c src/dw_mmc.c src/bouncebuf.c
 SRCS_ASM = startup.S
 OBJS_C = $(SRCS_C:.c=.o)
 OBJS_S = $(SRCS_ASM:.S=.o)
@@ -43,7 +52,11 @@ MAIN_BIN = $(MAIN:.elf=.bin)
 MAIN_IMG = $(MAIN:.elf=.img)
 MAIN_SV = $(MAIN:.elf=.sv)
 
+ifeq ($(PLATFORM), PLAT_AGILEX)
+DTB = cv$(XLEN)a6_agilex.dtb
+else
 DTB = cv$(XLEN)a6.dtb
+endif
 
 ifeq ($(HAS_ETHERNET), 1)
 SED_DELETE_OPT = -e "/DELETE_ETH/d"
@@ -65,12 +78,12 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	$(OBJCOPY) -O binary $< $@
 
 %.o: %.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 	@echo "CC    <= $<"
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 %.o: %.S
-	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 	@echo "CC    <= $<"
+	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 
 %.dts: %.dts.in
 	$(SED) -e "s/DRAM_SIZE_64/$(DRAM_SIZE_64)/g" \
@@ -82,11 +95,11 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	cat $@
 
 %.dtb: %.dts
-	dtc -I dts $< -O dtb -o $@
+	dtc -I dts $< -O dtb -o cv$(XLEN)a6.dtb
 
 %.sv: %.img
-	./gen_rom.py $<
 	@echo "PYTHON >= $(MAIN_SV)"
+	./gen_rom.py $<
 
 clean:
 	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) *.dtb *.dts *.sv

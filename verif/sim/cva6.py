@@ -943,7 +943,19 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
     elif base == "cv32a65x":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
@@ -951,10 +963,28 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
     elif base == "cv32a65x_axi":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a65x_noPMP_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+    elif base == "cv32a65x_sv32_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
     elif base == "cv64a6_mmu":
       args.mabi = "lp64"
       args.isa  = "rv64imac_zba_zbb_zbs_zbc"
@@ -962,6 +992,9 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
     elif base == "cv32a6_imac_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac_zbkb"
+    elif base == "cv32a6_imac_sv32_obi":
       args.mabi = "ilp32"
       args.isa  = "rv32imac_zbkb"
     elif base == "cv32a6_imafc_sv32":
@@ -1102,7 +1135,7 @@ def check_spike_version():
 
 
 def check_verilator_version():
-  REQUIRED_VERILATOR_VERSION = "5.008"
+  REQUIRED_VERILATOR_VERSION = "5.024"
 
   verilator_version_string = run_cmd("verilator --version")
   logging.info(f"Verilator Version: {verilator_version_string.strip()}")

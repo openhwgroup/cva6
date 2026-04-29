@@ -278,7 +278,7 @@ module load_unit
     if (valid_i) begin
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
-        ypb_load_req_o.vreq = 1'b1;
+        ypb_load_req_o.vreq = !stall_translation;
         if (!CVA6Cfg.MmuPresent || ypb_load_rsp_i.vgnt) begin
           if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i) begin
             kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
@@ -288,6 +288,8 @@ module load_unit
           end
         end
       end
+    end else begin
+      kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
     end
     // RETIRE LOAD
     // we got an rvalid and it's corresponding request was not flushed
@@ -300,13 +302,13 @@ module load_unit
       trans_id_o = CVA6Cfg.MmuPresent ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id;
       valid_o    = 1'b1;
       ex_o.valid = 1'b1;
-      pop_ld_o = 1'b1; // release lsu_bypass fifo
+      pop_ld_o = !stall_translation;//1'b1; // release lsu_bypass fifo
       // RETIRE EXCEPTION (low priority)
     end else if (CVA6Cfg.MmuPresent && ex_s0) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o    = 1'b1;
       ex_o.valid = 1'b1;
-      pop_ld_o = 1'b1; // release lsu_bypass fifo
+      pop_ld_o = !stall_translation;//1'b1; // release lsu_bypass fifo
     end
 
   end
@@ -372,8 +374,8 @@ module load_unit
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        be_q <= lsu_ctrl_i.be;
-        paddr_is_cacheable_q <= paddr_is_cacheable;
+        if (lsu_ctrl_i.valid) be_q <= lsu_ctrl_i.be;
+        if (lsu_ctrl_i.valid) paddr_is_cacheable_q <= paddr_is_cacheable;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
