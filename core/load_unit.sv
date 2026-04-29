@@ -289,7 +289,7 @@ module load_unit
         end
       end
     end else begin
-      kill_req_d = ldbuf_flushed_q; //if there was a flush, a request might have started s0
+      kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
     end
     // RETIRE LOAD
     // we got an rvalid and it's corresponding request was not flushed

@@ -172,9 +172,9 @@ module cva6_mmu
 
   assign itlb_lu_access = fetch_areq_i.fetch_req;
   assign dtlb_lu_access = lsu_req_i;
-  assign itlb_lu_asid   = v_i ? vs_asid_i : asid_i;
-  assign dtlb_lu_asid   = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
-  
+  assign itlb_lu_asid = v_i ? vs_asid_i : asid_i;
+  assign dtlb_lu_asid = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
+
   assign new_fetch_req = fetch_areq_i.fetch_vaddr == fetch_vaddr_prev ? '0 : '1;
   assign new_ptw_req = shared_tlb_vaddr == shared_tlb_vaddr_prev ? '0 : shared_tlb_access && !shared_tlb_hit;
 
@@ -299,10 +299,10 @@ module cva6_mmu
       .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
-      .clk_i (clk_i),
-      .rst_ni(rst_ni),
+      .clk_i                 (clk_i),
+      .rst_ni                (rst_ni),
       .flush_i,
-      .new_req_i(new_ptw_req),
+      .new_req_i             (new_ptw_req),
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
       .ptw_error_o           (ptw_error),
@@ -741,14 +741,14 @@ module cva6_mmu
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
     end else begin
-      lsu_vaddr_q    <= lsu_vaddr_n;
-      lsu_req_q      <= lsu_req_n;
-      dtlb_pte_q     <= dtlb_pte_n;
-      dtlb_hit_q     <= dtlb_hit_n;
-      lsu_is_store_q <= lsu_is_store_n;
-      dtlb_is_page_q <= dtlb_is_page_n;
+      lsu_vaddr_q           <= lsu_vaddr_n;
+      lsu_req_q             <= lsu_req_n;
+      dtlb_pte_q            <= dtlb_pte_n;
+      dtlb_hit_q            <= dtlb_hit_n;
+      lsu_is_store_q        <= lsu_is_store_n;
+      dtlb_is_page_q        <= dtlb_is_page_n;
       shared_tlb_vaddr_prev <= shared_tlb_vaddr;
-      fetch_vaddr_prev <= fetch_areq_i.fetch_vaddr;
+      fetch_vaddr_prev      <= fetch_areq_i.fetch_vaddr;
 
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
