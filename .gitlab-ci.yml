@@ -227,6 +227,21 @@ smoke-hwconfig:
     - when: manual
       allow_failure: true
 
+it-test:
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Instruction Trace test"
+    DASHBOARD_JOB_DESCRIPTION: "Test to Challenge the Hardware flow of the Instruction Tracer"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    DV_SIMULATORS: "vcs-testharness"
+  script:
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - bash verif/regress/Instr_tracing_test.sh ../tests/custom/ITI/test_iti_asm.o
+    - python3 .gitlab-ci/scripts/report_pass.py
+    - cp -r verif/sim/Instr_tracing_artifact artifacts/
+
 spyglass:
   extends:
     - .synthesis_test

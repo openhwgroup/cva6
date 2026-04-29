@@ -159,7 +159,7 @@ module tb_mem import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*;#(
                     rand_addr_q              <= lval<<3;
 
                     // with the current TB setup, we cannot invalidate a memory location if a write response to the same address is
-                    // in flight, since this could lead to an incosistent state between the real memory and the shadow memory view.
+                    // in flight, since this could lead to an inconsistent state between the real memory and the shadow memory view.
                     // the workaround is not to overwrite shadow memory regions that are still pending in the write buffer
                     // this can be improved.
                     for(int k=0; k<8; k++) begin
@@ -205,7 +205,7 @@ module tb_mem import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*;#(
             infifo_data.rtype = DCACHE_INV_REQ;
 
             // since we do not keep a mirror tag table here,
-            // we allways invalidate all ways of the aliased index.
+            // we always invalidate all ways of the aliased index.
             // this is not entirely correct and will produce
             // too many invalidations
             infifo_data.inv.idx = rand_addr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];

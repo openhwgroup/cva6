@@ -143,7 +143,7 @@ proc do_create_io_pll {} {
 	set_instance_parameter_value iopll_0 {gui_new_mif_file_path} {~/pll.mif}
 	set_instance_parameter_value iopll_0 {gui_number_of_clocks} {5}
 	set_instance_parameter_value iopll_0 {gui_operation_mode} {direct}
-	set_instance_parameter_value iopll_0 {gui_output_clock_frequency0} {200.0}
+	set_instance_parameter_value iopll_0 {gui_output_clock_frequency0} {100.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency1} {125.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency10} {100.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency11} {100.0}
@@ -161,7 +161,7 @@ proc do_create_io_pll {} {
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency7} {100.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency8} {100.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency9} {100.0}
-	set_instance_parameter_value iopll_0 {gui_output_clock_frequency_ps0} {5000.0}
+	set_instance_parameter_value iopll_0 {gui_output_clock_frequency_ps0} {10000.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency_ps1} {8000.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency_ps10} {10000.0}
 	set_instance_parameter_value iopll_0 {gui_output_clock_frequency_ps11} {10000.0}
