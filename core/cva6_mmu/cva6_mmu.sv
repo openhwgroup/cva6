@@ -166,6 +166,7 @@ module cva6_mmu
 
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
+  logic aborted_ptw_req;
 
   // Assignments
 
@@ -351,7 +352,8 @@ module cva6_mmu
       .pmpcfg_i   (pmpcfg_i),
       .pmpaddr_i  (pmpaddr_i),
       .bad_paddr_o(ptw_bad_paddr),
-      .bad_gpaddr_o(ptw_bad_gpaddr)
+      .bad_gpaddr_o(ptw_bad_gpaddr),
+      .aborted_req_o(aborted_ptw_req)
   );
 
   //-----------------------
@@ -442,7 +444,7 @@ module cva6_mmu
             fetch_arsp_o.fetch_exception.gva   = v_i;
           end
         end
-      end else if (ptw_active && walking_instr && !new_fetch_req) begin
+      end else if (ptw_active && walking_instr && !new_fetch_req && !aborted_ptw_req) begin
         // ---------//
         // ITLB Miss
         // ---------//
