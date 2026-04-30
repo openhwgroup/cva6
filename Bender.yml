@@ -95,6 +95,7 @@ sources:
           - core/cva6_mmu/cva6_ptw.sv
 
       # Packages
+      - core/include/dummy_l15_pkg.sv
       - core/include/wt_cache_pkg.sv
       - core/include/std_cache_pkg.sv
       - core/include/aes_pkg.sv
