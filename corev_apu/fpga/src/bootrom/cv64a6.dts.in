@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 DRAM_SIZE_64>;
+    reg = <0x0 0x80000000 DRAM_SIZE_64_HI DRAM_SIZE_64>;
   };
   leds {
     compatible = "gpio-leds";

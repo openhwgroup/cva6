@@ -10,6 +10,12 @@
 #define SECOND_CYCLES   CLOCK_FREQUENCY
 #define WAIT_SECONDS    (10)
 
+#ifdef BOOT_PCIE
+// Sentinel the bootrom writes before polling DRAM. Anything not equal to
+// this marker indicates the host has finished loading the payload via XDMA.
+#define XDMA_READY_MAGIC  0xDEADBEEFCAFEBABEULL
+#endif
+
 static inline uintptr_t get_cycle_count() {
     uintptr_t cycle;
     __asm__ volatile ("csrr %0, cycle" : "=r" (cycle));
@@ -71,10 +77,27 @@ int main()
         print_uart(" updating!\r\n");
         res = update((uint8_t *)0x80000000UL);
     } else {
+#ifdef BOOT_PCIE
+        // No SPI/SD on this platform: the host loads the payload into DRAM
+        // via PCIe XDMA. Seed the first 8 bytes with a sentinel and poll
+        // until the host overwrites it. PCIe writes go straight to DDR4 and
+        // bypass the D-cache, so `fence` (with FlushOnFence/InvalidateOnFlush=1)
+        // is what makes the next read see them.
+        volatile uint64_t *dram_base = (volatile uint64_t *)0x80000000ULL;
+        *dram_base = XDMA_READY_MAGIC;
+        __asm__ volatile ("fence" ::: "memory");
+
+        print_uart(" waiting for PCIe host load...\r\n");
+        while (*dram_base == XDMA_READY_MAGIC) {
+            __asm__ volatile ("fence" ::: "memory");
+        }
+        print_uart(" payload detected, booting!\r\n");
+        res = 0;
+#else
         print_uart(" booting!\r\n");
         #ifndef PLAT_AGILEX
-        res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384); 
-        #else 
+        res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384);
+        #else
             int start_block_fw_payload  = 0x32800; //payload at 100MB
             print_uart("I am Agilex 7! \r\n");
 
@@ -88,7 +111,8 @@ int main()
                     return res;
                 }
 		    }
-        #endif 
+        #endif
+#endif
     }
 
     if (res == 0)

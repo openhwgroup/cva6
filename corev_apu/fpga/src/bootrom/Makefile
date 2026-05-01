@@ -15,6 +15,17 @@ CLOCK_FREQUENCY ?= 100000000 #100MHz
 HALF_CLOCK_FREQUENCY ?= 50000000 #50MHz
 UART_BITRATE ?= 115200
 HAS_ETHERNET ?= 1
+else ifeq ($(BOARD), u200)
+# 16 GB DDR4 = 0x4_00000000. The DTS reg cell-pair only takes a 32-bit half each,
+# so the high half goes through DRAM_SIZE_64_HI and the low half through DRAM_SIZE_64.
+DRAM_SIZE_64_HI ?= 0x4
+DRAM_SIZE_64 ?= 0x00000000
+DRAM_SIZE_32 ?= 0x08000000 #128MB
+CLOCK_FREQUENCY ?= 50000000 #50MHz
+HALF_CLOCK_FREQUENCY ?= 25000000 #25MHz
+UART_BITRATE ?= 115200
+HAS_ETHERNET ?= 0
+BOOTS_PCIE ?= BOOT_PCIE
 else
 DRAM_SIZE_64 ?= 0x40000000 #1GB
 DRAM_SIZE_32 ?= 0x08000000 #128MB
@@ -24,12 +35,16 @@ UART_BITRATE ?= 115200
 HAS_ETHERNET ?= 1
 endif
 
+# Other boards default to a single-cell (low-half) DRAM size; high half is zero.
+DRAM_SIZE_64_HI ?= 0x0
+BOOTS_PCIE ?= NO_BOOT_PCIE
+
 ifeq ($(CC),cc)
   CC = $(RISCV)/bin/${CROSSCOMPILE}gcc
   OBJCOPY = $(RISCV)/bin/$(CROSSCOMPILE)objcopy
 endif
 SED = sed
-PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)  -DXLEN=$(XLEN)
+PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE) -D$(PLATFORM)  -DXLEN=$(XLEN) -D$(BOOTS_PCIE)
 
 ifeq ($(XLEN), 64)
 CFLAGS = $(PLATFORM_DEFINES) -Os -ggdb -march=rv64im_zicsr -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs -ffreestanding
@@ -86,7 +101,8 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 
 %.dts: %.dts.in
-	$(SED) -e "s/DRAM_SIZE_64/$(DRAM_SIZE_64)/g" \
+	$(SED) -e "s/DRAM_SIZE_64_HI/$(DRAM_SIZE_64_HI)/g" \
+	       -e "s/DRAM_SIZE_64/$(DRAM_SIZE_64)/g" \
 	       -e "s/DRAM_SIZE_32/$(DRAM_SIZE_32)/g" \
 	       -e "s/HALF_CLOCK_FREQUENCY/$(HALF_CLOCK_FREQUENCY)/g" \
 	       -e "s/CLOCK_FREQUENCY/$(CLOCK_FREQUENCY)/g" \
