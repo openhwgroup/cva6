@@ -47,6 +47,8 @@ package ariane_soc;
   localparam logic[63:0] HPSLength      = 64'h800000;
 `ifdef NEXYS_VIDEO
   localparam logic[63:0] DRAMLength     = 64'h20000000; // 512MByte of DDR on Nexys video board
+`elsif U200
+  localparam logic[63:0] DRAMLength     = 64'h4_0000_0000; // 16GByte of DDR4 on Alveo U200
 `else
   localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
 `endif
