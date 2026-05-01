@@ -6,6 +6,22 @@ xlnx_axi_dwidth_converter:
     si_id_width: 5
     mi_data_width: 32
 
+xlnx_axi_512_64_dwidth_converter:
+  ip: axi_dwidth_converter
+  vendor: xilinx.com
+  config:
+    si_data_width: 64
+    si_id_width: 5
+    mi_data_width: 512
+
+xlnx_axi_512_64_dwidth_converter_pcie:
+  ip: axi_dwidth_converter
+  vendor: xilinx.com
+  config:
+    si_data_width: 512
+    si_id_width: 4
+    mi_data_width: 64
+
 xlnx_axi_clock_converter:
   ip: axi_clock_converter
   vendor: xilinx.com
@@ -79,6 +95,19 @@ xlnx_mig_7_ddr3:
     reset_board_interface: Custom
     mig_dont_touch_param: Custom
     board_mig_param: Custom
+
+xlnx_ddr4:
+  ip: ddr4
+  vendor: xilinx.com
+  config:
+    xml_input_file: ddr4_a.prj
+    reset_board_interface: Custom
+    mig_dont_touch_param: Custom
+    board_mig_param: Custom
+
+xlnx_xdma:
+  ip: xdma
+  vendor: xilinx.com
 
 xlnx_ila:
   ip: xlnx_ila

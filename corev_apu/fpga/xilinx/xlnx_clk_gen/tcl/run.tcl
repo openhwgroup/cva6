@@ -23,6 +23,25 @@ if {$::env(BOARD) eq "nexys_video"} {
                         CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {200} \
                         CONFIG.CLKIN1_JITTER_PS {50.0} \
                        ] [get_ips $ipName]
+} elseif {$::env(BOARD) eq "u200"} {
+    # U200: SYSCLK1_300 (Bank 64) drives the system PLL via an external IBUFDS
+    # in the RTL, so the wizard must not insert its own input buffer.
+    # 200 MHz output is needed by ariane_peripherals (clk_200MHz_ref).
+    set_property -dict [list CONFIG.CLK_IN1_BOARD_INTERFACE {default_300mhz_clk1} \
+                        CONFIG.PRIM_SOURCE {Differential_clock_capable_pin} \
+                        CONFIG.NUM_OUT_CLKS {5} \
+                        CONFIG.CLKOUT2_USED {true} \
+                        CONFIG.CLKOUT3_USED {true} \
+                        CONFIG.CLKOUT4_USED {true} \
+                        CONFIG.CLKOUT5_USED {true} \
+                        CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50} \
+                        CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {125} \
+                        CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {125} \
+                        CONFIG.CLKOUT3_REQUESTED_PHASE {90.000} \
+                        CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {50} \
+                        CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {200} \
+                        CONFIG.CLKIN1_JITTER_PS {33.330} \
+                       ] [get_ips $ipName]
 } else {
 set_property -dict [list CONFIG.PRIM_IN_FREQ {200.000} \
                         CONFIG.NUM_OUT_CLKS {4} \
