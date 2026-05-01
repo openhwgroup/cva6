@@ -1,6 +1,6 @@
 # COREV-APU FPGA Emulation
 
-We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual) and the [Agilex 7 Development Kit](https://www.intel.la/content/www/xl/es/products/details/fpga/development-kits/agilex/agf014.html).
+We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual), the [Agilex 7 Development Kit](https://www.intel.la/content/www/xl/es/products/details/fpga/development-kits/agilex/agf014.html), and the [Xilinx Alveo U200](https://www.xilinx.com/products/boards-and-kits/alveo/u200.html).
 
 - **Genesys 2**
 
@@ -29,6 +29,17 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
    - GPIOs connected to LEDs
 
 > The ethernet controller and the corresponding network connection, as well as the SD Card connection and the capability to boot linux are still work in progress and not functional at the moment. Expect some updates soon-ish.
+
+- **Alveo U200**
+
+   Tested on Vivado 2022.2. The FPGA currently contains the following peripherals:
+
+   - DDR4 memory controller (16 GB, ECC RDIMM)
+   - PCIe Gen3 x16 endpoint (XDMA in AXI-Bridge mode) used as the boot path
+   - Bootrom containing zero-stage bootloader and device tree
+   - UART (FT4232 USB-UART, microUSB on the front bracket)
+
+> The Alveo U200 has no SD card, ethernet is still work in progress, and on-chip debug is currently stubbed (no `dmi_jtag` instance, see the debugging section). The bootrom waits for the host to load the payload into DDR4 via PCIe (see [Booting Linux on the U200](#booting-linux-on-the-alveo-u200) below)
 
 
 ## Programming the Memory Configuration File or bitstream
@@ -62,7 +73,48 @@ juart-terminal: (Use the IDE stop button or Ctrl-C to terminate)
 Hello World!
 ```
 
+- **Alveo U200**
+
+   The Alveo U200 supports two configuration paths. Both reconfigure the PCIe hard block, so in either case the host must re-enumerate the device after programming via the helper script described at the bottom of this section.
+
+   Common setup, before either path:
+
+   - Connect the U200 to the host via PCIe and connect the microUSB cable for the JTAG/UART FT4232 bridge
+   - Open Vivado 2022.2 (or later)
+   - Open the hardware manager and connect to the U200 (`xcu200_0`)
+
+   **Path A — JTAG bitstream load (volatile, fast for iteration)**
+
+   The bitstream lives in the FPGA fabric until the next power cycle. This method takes a few seconds.
+
+   - Right-click the FPGA device → Program Device
+   - Select `corev_apu/fpga/work-fpga/ariane_xilinx.bit`
+   - Click Program
+
+   **Path B — Quad-SPI flash (persistent, survives power cycles)**
+
+   Use this when you want the bitstream to be persistent across power cycles. This method takes a few minutes.
+
+   - Right-click the FPGA device → Add Configuration Memory Device
+   - Select `mt25qu01g-spi-x1_x2_x4` (the on-board Micron 1 Gb quad-SPI flash)
+   - Add `corev_apu/fpga/work-fpga/ariane_xilinx.mcs` and let Vivado erase/program/verify
+   - Right-click the FPGA device → Boot from Configuration Memory Device (or power-cycle the host)
+
+   **Re-enumerate the PCIe endpoint (both paths)**
+
+   After either Path A or Path B, the FPGA's PCIe hard block resets and the host's stale enumeration is no longer valid. From a host shell:
+
+   ```
+   sudo corev_apu/fpga/scripts/pcie_hot_reset.sh
+   ```
+
+   The script defaults to vendor:device `10ee:903f` (matching the XDMA IP's identifiers). Pass an alternate `vendor:device` on the command line if you have changed the IDs. After it finishes, the device's BAR0 sysfs node is ready for `pcie_load`.
+
 ## Booting Linux
+
+The Linux boot flow depends on the board, because the storage / loader available varies. Pick the subsection that matches your target.
+
+### Booting Linux from an SD card (Genesys 2 / KC705 / VC707 / Nexys Video)
 
 The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/pulp-platform/ariane-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
@@ -74,6 +126,42 @@ screen /dev/ttyUSB0 115200
 Default baudrate set by the bootloader and Linux is `115200`.
 
 After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
+
+### Booting Linux on the Alveo U200
+
+The Alveo U200 has no SD card slot, so its boot flow is different from the other boards. The host loads a single combined payload into DDR4 over PCIe, and the bootrom polls until that payload arrives before jumping to it.
+
+#### Build the payload
+
+Use the [`cva6-sdk`](https://github.com/openhwgroup/cva6-sdk) `BOARD=u200` target. It produces `install64_u200/boot.bin` containing:
+
+| Image |
+| --- |
+| `fw_payload.bin` (OpenSBI + U-Boot) |
+| `fitImage.itb` (kernel + DTB + ramdisk) |
+
+#### Load the payload over PCIe
+
+After the FPGA is programmed and PCIe-enumerated, locate the FPGA's BAR0 sysfs node:
+
+```
+ls -l /sys/bus/pci/devices/<bdf>/resource0
+```
+
+Compile and run the loader (sources in `corev_apu/fpga/scripts/pcie_load.c`):
+
+```
+gcc -O2 -o pcie_load corev_apu/fpga/scripts/pcie_load.c
+sudo ./pcie_load /sys/bus/pci/devices/<bdf>/resource0 0x0 /path/to/cva6-sdk/install64_u200/boot.bin
+```
+
+Connect to the USB-UART (/dev/ttyUSB2 is the typical assignment for FTDI port C; dmesg after plugging the microUSB cable will show the exact node):
+
+```
+screen /dev/ttyUSB2 115200
+```
+
+You should see the bootrom announcement, OpenSBI banner, U-Boot, and the kernel boot to a buildroot login prompt (default username `root`, no password).
 
 ## Booting zephyr RTOS
 
@@ -142,6 +230,16 @@ To clean the project after generating the bitstream, use
 ```
 make clean-altera
 ```
+
+- **Alveo U200**
+
+To generate the FPGA bitstream and configuration-memory file for the Alveo U200, run:
+
+```
+make BOARD=u200 fpga
+```
+
+This produces `corev_apu/fpga/work-fpga/ariane_xilinx.bit` and `ariane_xilinx.mcs`. Flash the `.bit` or `.mcs` to the board using the steps under [Programming the Memory Configuration File or bitstream](#programming-the-memory-configuration-file-or-bitstream) above.
 
 ## Debugging
 
@@ -230,7 +328,11 @@ Info : Listening on port 6666 for tcl connections
 Info : Listening on port 4444 for telnet connections
 ```
 
-- **Common for both boards**
+- **Alveo U200**
+
+The U200 has no JTAG header. The current target stubs `dmi_jtag` out under `` `ifdef U200 `` in `corev_apu/fpga/src/ariane_xilinx.sv`, so on-chip debug is not available. Hart 0 cannot be halted from the host with the present bitstream. A future patch can wire DMI through the existing PCIe XDMA path (host → AXI-Lite → `dmi_*`) — the seam is the `` `ifdef U200 `` block in `ariane_xilinx.sv`.
+
+- **Common for the JTAG-equipped boards**
 
 Then you will be able to either connect through `telnet` or with `gdb`:
 
