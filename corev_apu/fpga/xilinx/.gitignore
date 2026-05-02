@@ -1,3 +1,5 @@
+gig_ethernet_pcs_pma_0/
+!gig_ethernet_pcs_pma_0/tcl
 xlnx*/*
 !xlnx*/tcl
 !Makefile

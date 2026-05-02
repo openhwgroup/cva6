@@ -37,34 +37,29 @@ set_property -dict {PACKAGE_PIN BB31 IOSTANDARD LVCMOS18} [get_ports {sw[7]}]
 set_property -dict {PACKAGE_PIN BA37 IOSTANDARD LVCMOS18} [get_ports fan_pwm]
 #set_property -dict { PACKAGE_PIN V21   IOSTANDARD LVCMOS18 } [get_ports { FAN_TACH }]; #IO_L22P_T3_A05_D21_14 Sch=fan_tac
 
-## Ethernet
-set_property -dict {PACKAGE_PIN N26 IOSTANDARD LVCMOS18} [get_ports eth_rst_n]; #IO_L14N_T2_SRCC_12 Sch=eth_phyrst_n
-set_property -dict {PACKAGE_PIN N25 IOSTANDARD LVCMOS18} [get_ports eth_txck]; #IO_L14P_T2_SRCC_33 Sch=eth_tx_clk
-set_property -dict {PACKAGE_PIN P23 IOSTANDARD LVCMOS18} [get_ports eth_txctl]; #IO_L20P_T3_33 Sch=eth_tx_en
-set_property -dict {PACKAGE_PIN M26 IOSTANDARD LVCMOS18} [get_ports { eth_txd[0] }]; #IO_L22N_T3_33 Sch=eth_tx_d[0]
-set_property -dict {PACKAGE_PIN L27 IOSTANDARD LVCMOS18} [get_ports { eth_txd[1] }]; #IO_L17P_T2_33 Sch=eth_tx_d[1]
-set_property -dict {PACKAGE_PIN M27 IOSTANDARD LVCMOS18} [get_ports { eth_txd[2] }]; #IO_L18N_T2_33 Sch=eth_tx_d[2]
-set_property -dict {PACKAGE_PIN N24 IOSTANDARD LVCMOS18} [get_ports { eth_txd[3] }]; #IO_L17N_T2_33 Sch=eth_tx_d[3]
-set_property -dict {PACKAGE_PIN M21 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[0] }]; #IO_L21N_T3_DQS_33 Sch=eth_rx_d[0]
-set_property -dict {PACKAGE_PIN M24 IOSTANDARD LVCMOS18} [get_ports eth_rxck]; #IO_L13P_T2_MRCC_33 Sch=eth_rx_clk
-set_property -dict {PACKAGE_PIN L25 IOSTANDARD LVCMOS18} [get_ports eth_rxctl]; #IO_L18P_T2_33 Sch=eth_rx_ctl
-set_property -dict {PACKAGE_PIN J22 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[1] }]; #IO_L21P_T3_DQS_33 Sch=eth_rx_d[1]
-set_property -dict {PACKAGE_PIN K22 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[2] }]; #IO_L20N_T3_33 Sch=eth_rx_d[2]
-set_property -dict {PACKAGE_PIN L26 IOSTANDARD LVCMOS18} [get_ports { eth_rxd[3] }]; #IO_L22P_T3_33 Sch=eth_rx_d[3]
-set_property -dict {PACKAGE_PIN N23 IOSTANDARD LVCMOS18} [get_ports eth_mdc ]; #IO_L23P_T3_33 Sch=eth_mdc
-set_property -dict {PACKAGE_PIN L21 IOSTANDARD LVCMOS18} [get_ports eth_mdio]; #IO_L23N_T3_33 Sch=eth_mdio
+## SGMII Ethernet (Marvell 88E1111 PHY)
+## 125 MHz SGMII clock from 88E1111 to MGTREFCLK0 on bank 117
+set_property PACKAGE_PIN AH8 [get_ports sgmii_refclk_p]
+set_property PACKAGE_PIN AH7 [get_ports sgmii_refclk_n]
+create_clock -period 8.000 -name sgmii_refclk [get_ports sgmii_refclk_p]
 
-# set_property -dict {PACKAGE_PIN AK15  IOSTANDARD LVCMOS18} [get_ports { eth_pme_b }]; #IO_L1N_T0_32 Sch=eth_pmeb
-# set_property -dict {PACKAGE_PIN AK16  IOSTANDARD LVCMOS18} [get_ports { eth_int_b }]; #IO_L1P_T0_32 Sch=eth_intb
+## SGMII serial data (GTX in bank 117)
+set_property PACKAGE_PIN AN2 [get_ports sgmii_txp]
+set_property PACKAGE_PIN AN1 [get_ports sgmii_txn]
+set_property PACKAGE_PIN AM8 [get_ports sgmii_rxp]
+set_property PACKAGE_PIN AM7 [get_ports sgmii_rxn]
 
-#############################################
-# Ethernet Constraints for 1Gb/s
-#############################################
-# Modified for 125MHz receive clock
-create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
+## PHY reset
+set_property -dict {PACKAGE_PIN AJ33 IOSTANDARD LVCMOS18} [get_ports eth_rst_n]
+set_false_path -to [get_ports eth_rst_n]
 
-set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
-set_clock_groups -asynchronous -group [get_clocks clk_out2_xlnx_clk_gen]
+## MDIO interface
+set_property -dict {PACKAGE_PIN AH33 IOSTANDARD LVCMOS18} [get_ports eth_mdc]
+set_property -dict {PACKAGE_PIN AK33 IOSTANDARD LVCMOS18} [get_ports eth_mdio]
+set_false_path -to [get_ports eth_mdc]
+
+## CDC: GTX userclk2 (62.5 MHz) is async to sys_clk (50 MHz)
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks sgmii_refclk]
 
 #############################################
 ## SD Card
@@ -125,3 +120,7 @@ set_max_delay -from [get_ports trst ] 20
 # reset signal
 # set_false_path -from [get_ports { trst } ]
 # set_false_path -from [get_pins i_ddr/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/rstdiv0_sync_r1_reg_rep/C]
+
+# Configuration bank voltage
+set_property CFGBVS GND [current_design]
+set_property CONFIG_VOLTAGE 1.8 [current_design]
