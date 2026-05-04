@@ -28,7 +28,8 @@ module load_store_unit
     parameter type lsu_ctrl_t = logic,
     parameter type acc_mmu_req_t = logic,
     parameter type acc_mmu_resp_t = logic,
-    parameter type cbo_t = logic
+    parameter type cbo_t = logic,
+    parameter type bp_resolve_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -50,6 +51,8 @@ module load_store_unit
     output logic lsu_ready_o,
     // Load Store Unit instruction is valid - ISSUE_STAGE
     input logic lsu_valid_i,
+    // Signals speculative loads for non-idempotent load handling - EX_STAGE
+    input logic speculative_load_i,
 
     // Load transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
@@ -75,7 +78,8 @@ module load_store_unit
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-
+    // Result from branch unit - EX_STAGE
+    input bp_resolve_t resolved_branch_i,
     // Enable virtual memory translation - TO_BE_COMPLETED
     input logic enable_translation_i,
     // Enable G-Stage memory translation - TO_BE_COMPLETED
@@ -96,6 +100,8 @@ module load_store_unit
 
     // Current privilege mode - CSR_REGFILE
     input  riscv::priv_lvl_t                          priv_lvl_i,
+    // Data Endian mode - CSR_REGFILE
+    input  logic                                      mbe_i,
     // Current virtualization mode - CSR_REGFILE
     input  logic                                      v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
@@ -293,6 +299,7 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
@@ -523,6 +530,7 @@ module load_store_unit
       .commit_i,
       .commit_ready_o,
       .amo_valid_commit_i,
+      .mbe_i     (mbe_i),
 
       .valid_o              (st_valid),
       .trans_id_o           (st_trans_id),
@@ -570,6 +578,7 @@ module load_store_unit
       .trans_id_o           (ld_trans_id),
       .result_o             (ld_result),
       .ex_o                 (ld_ex),
+      .mbe_i                (mbe_i),
       // MMU port
       .translation_req_o    (ld_translation_req),
       .vaddr_o              (ld_vaddr),
@@ -855,12 +864,15 @@ module load_store_unit
     be_i,
     fu_data_i.fu,
     fu_data_i.operation,
-    fu_data_i.trans_id
+    fu_data_i.trans_id,
+    speculative_load_i,
+    1'b0
   };
 
   lsu_bypass #(
       .CVA6Cfg(CVA6Cfg),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .bp_resolve_t(bp_resolve_t)
   ) lsu_bypass_i (
       .clk_i,
       .rst_ni,
@@ -869,6 +881,7 @@ module load_store_unit
       .lsu_req_valid_i(lsu_valid_i),
       .pop_ld_i       (pop_ld),
       .pop_st_i       (pop_st),
+      .resolved_branch_i,
 
       .lsu_ctrl_o(lsu_ctrl_byp),
       .ready_o   (lsu_ready_o)

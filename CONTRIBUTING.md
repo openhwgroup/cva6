@@ -1,8 +1,15 @@
 # Contributing
-New Contributors are always welcome.
+
+New motivated Contributors are always welcome.
 
 Note that Contributors are required to be covered by an [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
-Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group.
+If a pull request has been open with no ECA for more than 24 hours, we consider it as either an automated pull request, which is not allowed, or an unmotivated pull request, which is rejected.
+Such pull requests will be closed by maintainers.
+So, if you encounter any issues, with the signing process, please tell us!
+We will be glad to help.
+Drop a comment in your pull request so we know about your problem and we do not close your pull request.
+
+Contributors are encouraged, but not required, to be a [member](https://openhwfoundation.org/membership/become-a-member/) of the OpenHW Foundation, part of the Eclipse Foundation.
 
 ## Read this before
 
@@ -20,26 +27,25 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
     * The CVA6 team can provide you recommendations to ease the upcoming contribution.
     * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
-    * If you do not know how to contact us already, get in touch through info@openhwgroup.org or open an issue in GitHub.
+    * If you do not know how to contact us already, get in touch through info@eclipse-foundation.org or open an issue in GitHub.
 
 - Specific recommendations:
     * For instruction set extensions, talk to the team to assess the relevance of including it into the core or as a coprocessor on the CV-X-IF interface.
         -  If the extension is custom (not a RISC-V specified extension), a coprocessor on CV-X-IF is definitely its place.
     * Your contribution shall be optional and fully disabled by default.
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
-    * To configure your contribution, System Verilog top-level parameters are preferred.
-        - Synchronize with CVA6 team if this is not possible and you need other means (`directives, ariane_pkg parameters, templating...)
-        - Synchronize with CVA6 team (again) because this rule is likely to change over time as we are considering templating.
+    * To configure your contribution, System Verilog top-level parameters are strongly advised.
+        - Conditional compiler directives such as <code>`ifdef</code>, etc. are strongly discouraged.
+        - Synchronize with CVA6 team if you do not find an appropriate solution.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
-    * Your complete contribution shall be identifiable with parameters (or `directives / templating if together we decide to go this way).
+    * Your complete contribution shall be identifiable with parameters.
         - If at some point we need to revert it, e.g. if there is no-one maintaining nor using it and it has become a burden to the project.
         - We call this the "parachute" rule: The CVA6 team does not want to use it but is far more comfortable getting one.
         - Also, this allows not to lose code coverage in verification when your contribution is not enabled (with some tweaks in the coverage tool).
         - This rule also applies to CSRs which are specific to your contribution.
     * To ease maintenance, all common code lines shall exist only once.
-        - Counter-example: CVA6 used to have two different MMU modules (Sv32 and Sv39) for CV32A6 and CV64A6.
-        - It took time to refactor both in a joint design to ease maintenance.
+        - Counter-example: CVA6 used to have two different MMU modules (Sv32 and Sv39) for CV32A6 and CV64A6. It took time to refactor both in a joint design to ease maintenance.
         - Related reading for reference: [DRY principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
     * Your contribution shall pass the Continuous Integration (CI) flow
         - When the contribution is disabled: in all cases, to ensure you have not broken the design.
@@ -51,6 +57,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - So that we can detect quickly if future updates break your contribution.
         - To avoid impacting those users who use your contribution in their project.
         - At this point, we do not request a 100%-coverage verification suite.
+    * Please consider adding related documentation in the user's guide and design document.
     * Be kind to the people who process your pull request(s)
         - Explain your contribution in the pull request.
         - If your contribution solves an issue, fill in an issue and cross link it in the pull-request.
@@ -64,7 +71,18 @@ Bug fixing is always welcome. You can issue a GitHub issue. Better: solve the bu
 
 ### Use of AI
 
-We understand that some developers are assisted by large language models to help write code. AI-generated code shall always be reviewed by a human intelligence. However, automated pull requests directly generated by large language models or AI coding assistants are not permitted in this repository.
+We understand that some developers are assisted by large language models to help write code. However, AI-generated code shall always be reviewed and endorsed **by the human contributor** before submitting the pull request.
+The review by the human contributor shall be as thorough as if they had written the code themselves. Notably the human contributor shall understand and explain all generated code and assess the relevance of comments.
+
+Contributions through code/documentation (pull requests) or feedback (issues) are highly appreciated, but keep in mind that each contribution has a cost for the project, as reviewers will spend time discussing the contributions.
+For more information on this topic, see: <https://llvm.org/docs/AIToolPolicy.html#extractive-contributions>
+
+This is why **automated pull requests, directly generated by large language models or AI coding assistants, are not permitted in this repository**.
+Such contributions will be closed without review.
+
+Also, note that the review process implies discussing the contribution between the reviewers and the author.
+We consider that it would be particularly rude if the author lets an AI answer instead of answering themselves.
+We are not expecting long answers with a perfect English. We are expecting *the author's* thoughts on a specific topic.
 
 ## The Mechanics
 1. From GitHub: [fork](https://help.github.com/articles/fork-a-repo/) the [cva6](https://github.com/openhwgroup/cva6) repository
@@ -74,7 +92,7 @@ See the [Git Cheats](https://github.com/openhwgroup/core-v-verif/blob/master/Git
 4. Make your edits...
 5. Commit your changes: `git commit -m 'Add some feature'`
 6. Push feature branch: `git push origin <my_branch>`
-7. From GitHub: submit a pull request
+7. From GitHub: submit a pull request. The description must tell the reviewers why these changes are important for the project. More advice is provided in the pull request template.
 
 Please note that we do not accept outdated pull requests.
 This makes sure the CI flow has run in the to-be version of the master.
@@ -82,12 +100,16 @@ This makes sure the CI flow has run in the to-be version of the master.
 To allow us to update the pull request before merging it, please consider checking the "Allow edits from maintainers" checkbox.
 Note that this can only be done with pull requests from your personal repository (it is impossible from organization repositories).
 
+One last note: use the same email address for your GitHub and Eclipse accounts, to ensure a smooth Eclipse Contributor Agreement
+check for your pull request.
+
 ## Coding Style
 
-For RTL coding, the OpenHW Group has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
+For RTL coding, the OpenHW Foundation has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
 
 ## Git Considerations
 
+- The pull request must be rebased on the master branch to be merged on GitHub. That is why we are requesting permissions on the PR branch to allow the committer to perform the rebasing.
 - Do not push to master, if you want to add a feature do it in your branch.
 - Separate subject from body with a blank line.
 - Limit the subject line to 50 characters.

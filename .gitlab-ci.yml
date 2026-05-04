@@ -271,7 +271,7 @@ spyglass:
     - cp spyglass/reference_summary.rpt artifacts/lint_reports
     - python3 .gitlab-ci/scripts/report_spyglass_lint.py spyglass/reference_summary.rpt artifacts/lint_reports/cva6_lint_lint_rtl/summary.rpt
 
-cvxif-regression:
+.cvxif-regression:
   extends:
     - .synthesis_test
   variables:
@@ -301,7 +301,7 @@ asic-synthesis:
     - echo $DV_TARGET
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 3c0dd72d
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
@@ -365,20 +365,21 @@ benchmarks:
     DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Performance"
     SPIKE_TANDEM: 1
+    RISCV: "${RISCV_GCC15}"
   parallel:
     matrix:
       - BENCH: "dhrystone"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT BPType=config_pkg::PH_BHT"]
       - BENCH: "dhrystone"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT BPType=config_pkg::PH_BHT"]
       - BENCH: "coremark"
         ISSUE: "single"
-        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a60x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT BPType=config_pkg::PH_BHT"]
       - BENCH: "coremark"
         ISSUE: "dual"
-        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT"]
+        DV_HWCONFIG_OPTS: ["cv32a65x IcacheByteSize=16384 IcacheSetAssoc=8 DcacheByteSize=32768 DcacheSetAssoc=8 BHTEntries=128 NrScoreboardEntries=8 DCacheType=config_pkg::WT BPType=config_pkg::PH_BHT"]
   script:
     - bash verif/regress/"$BENCH".sh
     - python3 .gitlab-ci/scripts/report_benchmark.py --"$BENCH"_"$ISSUE" verif/sim/out_*/vcs-uvm_sim/"$BENCH"_main.*.log
@@ -590,7 +591,7 @@ simu-gate:
     - echo $PERIOD
     - source ./verif/sim/setup-env.sh
     - git clone ${SYNTH_SCRIPT} ${SYNTH_SCRIPT_PATH} -b ${SYNTH_SCRIPT_BRANCH}
-    - git -C ${SYNTH_SCRIPT_PATH} checkout cce5ea41
+    - git -C ${SYNTH_SCRIPT_PATH} checkout 3c0dd72d
     - cp -r ${SYNTH_SCRIPT_PATH}/cva6/ ../
     - git apply ${SYNTH_SCRIPT_PATH}/patches/*.patch
     - source verif/regress/install-riscv-tests.sh

@@ -317,7 +317,7 @@ module decoder
                       if (v_i) begin
                         virtual_illegal_instr = 1'b1;
                       end else begin
-                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                       end
                       instruction_o.op = ariane_pkg::HFENCE_VVMA;
                     end else if (instr.instr[31:25] == 7'b110001) begin
@@ -326,7 +326,7 @@ module decoder
                       if (v_i) begin
                         virtual_illegal_instr = 1'b1;
                       end else begin
-                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                       end
                       instruction_o.op = ariane_pkg::HFENCE_GVMA;
                       // check TVM flag and intercept HFENCE.GVMA call if necessary
@@ -1258,9 +1258,9 @@ module decoder
               unique case (instr.itype.funct3)
                 3'b001: begin
                   if (instr.instr[31:25] == 7'b0110000) begin
-                    if (instr.instr[21:20] == 2'b10) instruction_o.op = ariane_pkg::CPOPW;
-                    else if (instr.instr[21:20] == 2'b00) instruction_o.op = ariane_pkg::CLZW;
-                    else if (instr.instr[21:20] == 2'b01) instruction_o.op = ariane_pkg::CTZW;
+                    if (instr.instr[24:20] == 5'b00010) instruction_o.op = ariane_pkg::CPOPW;
+                    else if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::CLZW;
+                    else if (instr.instr[24:20] == 5'b00001) instruction_o.op = ariane_pkg::CTZW;
                     else illegal_instr_bm = 1'b1;
                   end else if (instr.instr[31:26] == 6'b000010) begin
                     instruction_o.op = ariane_pkg::SLLIUW; // Shift Left Logic by Immediate (Unsigned Word)
@@ -1877,6 +1877,7 @@ module decoder
         end else if (priv_lvl_i == riscv::PRIV_LVL_M) begin
           instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
         end
+        if (CVA6Cfg.TvalEn) instruction_o.ex.tval = '0;
       end else if (ebreak) begin
         // this exception is valid
         instruction_o.ex.valid = 1'b1;
@@ -1885,6 +1886,7 @@ module decoder
         // set gva bit
         if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
         else instruction_o.ex.gva = 1'b0;
+        if (CVA6Cfg.TvalEn) instruction_o.ex.tval = pc_i;
       end
       // -----------------
       // Interrupt Control
