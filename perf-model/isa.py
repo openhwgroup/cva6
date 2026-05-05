@@ -534,7 +534,10 @@ class Instr:
 
     def is_muldiv(self):
         """Is it a muldiv instruction?"""
-        return self.base() in ['OP', 'OP-32'] and self.fields().funct7 == 1
+        if self.base() not in ['OP', 'OP-32']:
+            return False
+        f = self.fields()
+        return f.funct7 == 1 or (f.funct7 == 5 and f.funct3 in [1, 3])
 
     def offset(self):
         """Get offset from instr (sometimes it is just 'imm' in RISCV spec)"""
