@@ -156,10 +156,6 @@ module load_unit
     ldbuf_flushed_d = ldbuf_flushed_q;
     ldbuf_valid_d   = ldbuf_valid_q;
 
-    //  In case of flush, raise the flushed flag in all slots.
-    if (flush_i) begin
-      ldbuf_flushed_d = '1;
-    end
     //  Free read entry (in the case of fall-through mode, free the entry
     //  only if there is no pending load)
     if (ldbuf_r && (!LDBUF_FALLTHROUGH || !ldbuf_w)) begin
@@ -169,6 +165,15 @@ module load_unit
     if (ldbuf_w) begin
       ldbuf_flushed_d[ldbuf_windex] = 1'b0;
       ldbuf_valid_d[ldbuf_windex]   = 1'b1;
+    end
+    //  In case of flush, raise the flushed flag in all slots, including any
+    //  slot just allocated by ldbuf_w in the same cycle.  This branch must
+    //  appear after ldbuf_w so that flush_i wins the lexical priority contest
+    //  for the newly written slot; if it appeared before, a simultaneous
+    //  data_gnt would clear flushed_d[windex] back to 0 and the slot would
+    //  survive the flush, later producing a phantom valid_o writeback.
+    if (flush_i) begin
+      ldbuf_flushed_d = '1;
     end
   end
 
