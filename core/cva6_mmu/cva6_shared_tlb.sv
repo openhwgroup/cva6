@@ -18,8 +18,7 @@
 //              shared TLB sv32 developed by Sebastien Jacq (Thales Research & Technology)
 //              to be used with sv32, sv39 and sv39x4.
 
-/* verilator lint_off WIDTH */
-
+/* verilator lint_off WIDTH*/
 module cva6_shared_tlb #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type pte_cva6_t = logic,
@@ -56,6 +55,9 @@ module cva6_shared_tlb #(
 
     input logic shared_tlb_miss_i,
 
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] asid_to_be_flushed_i, //control inputs for flush
+    input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
+
     // to TLBs, update logic
     output tlb_update_cva6_t itlb_update_o,
     output tlb_update_cva6_t dtlb_update_o,
@@ -91,9 +93,20 @@ module cva6_shared_tlb #(
     logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
     logic is_napot_64k;  // Svnapot: Flag indicating a 64KiB NAPOT page
   } shared_tag_t;
-
   shared_tag_t shared_tag_wr;
   shared_tag_t [SHARED_TLB_WAYS-1:0] shared_tag_rd;
+
+  typedef enum logic [1:0]{
+      IDLE,
+      FLUSH_READ,
+      FLUSH_APPLY
+  } flush_state_e; //flushing states
+  flush_state_e flush_state_q, flush_state_d;
+
+  logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] flush_idx_q, flush_idx_d;
+  logic [            CVA6Cfg.ASID_WIDTH-1:0] flush_asid_q, flush_asid_d;
+  logic [                  CVA6Cfg.VLEN-1:0] flush_vaddr_q, flush_vaddr_d;
+  logic [              SHARED_TLB_WAYS-1:0] sfence_match_way;
 
   logic [CVA6Cfg.SharedTlbDepth-1:0][SHARED_TLB_WAYS-1:0] shared_tag_valid_q, shared_tag_valid_d;
 
@@ -240,8 +253,16 @@ module cva6_shared_tlb #(
     pte_rd_addr         = '0;
     i_req_d             = i_req_q;
 
+    //owning read ports while flush walker is active
+    if (flush_state_q == FLUSH_READ) begin
+     tag_rd_en          = '1;
+     pte_rd_en          = '1;
+     tag_rd_addr        = flush_idx_q;
+     pte_rd_addr        = flush_idx_q;
+    end else if ((flush_state_q != IDLE) || flush_i || flush_vvma_i || flush_gvma_i) begin
+     //minimal approach holding lookup quiet during flush
     // if we got an ITLB miss
-    if ((|v_st_enbl[1][HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
+    end else if ((|v_st_enbl[1][HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
       tag_rd_en           = '1;
       tag_rd_addr         = itlb_vaddr_i[12+:$clog2(CVA6Cfg.SharedTlbDepth)];
       pte_rd_en           = '1;
@@ -373,6 +394,11 @@ module cva6_shared_tlb #(
       dtlb_req_q <= '0;
       i_req_q <= 0;
       shared_tag_valid <= '0;
+      flush_state_q <= IDLE;
+      flush_idx_q <= '0;
+      flush_asid_q <= '0;
+      flush_vaddr_q <= '0;
+
     end else begin
       itlb_vpn_q <= itlb_vaddr_i[CVA6Cfg.SV-1:12];
       dtlb_vpn_q <= dtlb_vaddr_i[CVA6Cfg.SV-1:12];
@@ -385,6 +411,10 @@ module cva6_shared_tlb #(
       dtlb_req_q <= dtlb_req_d;
       i_req_q <= i_req_d;
       shared_tag_valid <= shared_tag_valid_q[tag_rd_addr];
+      flush_state_q <=flush_state_d;
+      flush_idx_q <= flush_idx_d;
+      flush_asid_q <= flush_asid_d;
+      flush_vaddr_q <= flush_vaddr_d;
 
     end
   end
@@ -405,6 +435,14 @@ module cva6_shared_tlb #(
 
   logic [CVA6Cfg.VpnLen-1:0] vpn_to_store;
   logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] vpn_index;
+  //flushing signals
+  logic flush_asid_is0;
+  logic flush_vaddr_is0;
+  logic flush_last_set;
+
+  assign flush_asid_is0 = ~(|flush_asid_q);
+  assign flush_vaddr_is0 = ~(|flush_vaddr_q);
+  assign flush_last_set = (flush_idx_q == CVA6Cfg.SharedTlbDepth-1);
 
   // When storing the VPN in the shared TLB, if NAPOT is used, the lower bits of the VPN are zeroed
   // This way, when searching for a match, we can compare the full VPN if NAPOT is not used
@@ -417,21 +455,113 @@ module cva6_shared_tlb #(
       ? {shared_tlb_update_i.vpn[CVA6Cfg.VpnLen-1:4], 4'b0}
       : shared_tlb_update_i.vpn;
 
+  always_comb begin: flush_fsm
+      flush_state_d = flush_state_q;
+      flush_idx_d = flush_idx_q;
+      flush_asid_d = flush_asid_q;
+      flush_vaddr_d = flush_vaddr_q;
+
+      unique case (flush_state_q)
+        IDLE:begin
+            if(flush_i) begin
+                flush_state_d = FLUSH_READ;
+                flush_idx_d = '0;
+                flush_asid_d = asid_to_be_flushed_i;
+                flush_vaddr_d = vaddr_to_be_flushed_i;
+            end
+        end
+
+        FLUSH_READ: begin
+            flush_state_d = FLUSH_APPLY;
+        end
+
+        FLUSH_APPLY: begin
+            if(flush_last_set) begin
+                flush_state_d = IDLE;
+                flush_idx_d = '0;
+            end else begin
+                flush_idx_d = flush_idx_q + 1'b1;
+                flush_state_d = FLUSH_READ;
+            end
+        end
+
+        default: begin
+            flush_state_d = IDLE;
+        end
+      endcase
+  end
+
+  always_comb begin: sfence_match_logic
+    sfence_match_way = '0;
+
+    for(int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
+        logic [CVA6Cfg.PtLevels-1:0] flush_vpn_match;
+        logic [CVA6Cfg.PtLevels-1:0] flush_level_match;
+        logic                        flush_addr_matches;
+        logic                        flush_addr_napot_matches;
+        logic                        upper_levels_match;
+
+        flush_vpn_match          = '0;
+        flush_level_match        = '0;
+        flush_addr_matches       = 1'b0;
+        flush_addr_napot_matches = 1'b0;
+        upper_levels_match       = 1'b0;
+
+        //comparing the flush VA with stored VPN level by level_match
+        for(int unsigned level = 0; level < CVA6Cfg.PtLevels; level++) begin
+            upper_levels_match = 1'b1;
+            for(int unsigned k = level; k < CVA6Cfg.PtLevels; k++) begin
+                upper_levels_match &= flush_vpn_match[k];
+            end
+            flush_level_match[level] = upper_levels_match && ((level==0)? 1'b1: shared_tag_rd[i].is_page[CVA6Cfg.PtLevels-1-level][0]);
+        end
+
+        if(CVA6Cfg.SvnapotEn && shared_tag_rd[i].is_napot_64k) begin
+            //VA matching NAPOT tag
+            flush_addr_napot_matches = ((CVA6Cfg.PtLevels > 1)? (&flush_vpn_match[CVA6Cfg.PtLevels-1:1]): 1'b1) && (flush_vaddr_q[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1: 16] == shared_tag_rd[i].vpn[0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1: 4]);
+        end
+
+        flush_addr_matches = (|flush_level_match) || flush_addr_napot_matches;
+
+        if(shared_tag_valid[i] && ((HYP_EXT == 0) || !shared_tag_rd[i].v_st_enbl[HYP_EXT*2])) begin
+            if(flush_asid_is0 && flush_vaddr_is0) begin //SFENCE.VMA x0, x0
+                sfence_match_way[i] = 1'b1;
+            end else if(flush_asid_is0 && flush_addr_matches && !flush_vaddr_is0) begin //SFENCE.VMA vaddr, x0
+                sfence_match_way[i] = 1'b1;
+            end else if(!pte[i][0].g && flush_addr_matches && (flush_asid_q == shared_tag_rd[i].asid) && !flush_vaddr_is0 && !flush_asid_is0) begin //SFENCE.VMA vaddr, asid
+                sfence_match_way[i] = 1'b1;
+            end else if(!pte[i][0].g && flush_vaddr_is0  &&(flush_asid_q == shared_tag_rd[i].asid) && !flush_asid_is0)begin
+                sfence_match_way[i] = 1'b1;
+            end
+        end
+    end
+  end
+
   always_comb begin : update_flush
     shared_tag_valid_d = shared_tag_valid_q;
     tag_wr_en = '0;
     pte_wr_en = '0;
 
-    if (flush_i || flush_vvma_i || flush_gvma_i) begin
+    if (flush_vvma_i || flush_gvma_i) begin
       shared_tag_valid_d = '0;
-    end else if (shared_tlb_update_i.valid) begin
-      for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
-        if (repl_way_oh_d[i]) begin
-          shared_tag_valid_d[vpn_index][i] = 1'b1;
-          tag_wr_en[i] = 1'b1;
-          pte_wr_en[i] = 1'b1;
+    end else begin
+        if(flush_state_q == FLUSH_APPLY) begin
+            for(int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
+                if(sfence_match_way[i]) begin
+                    shared_tag_valid_d[flush_idx_q][i] = 1'b0;
+                end
+            end
         end
-      end
+
+        if ((flush_state_q == IDLE) && !flush_i && shared_tlb_update_i.valid) begin
+            for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
+                if (repl_way_oh_d[i]) begin
+                    shared_tag_valid_d[vpn_index][i] = 1'b1;
+                    tag_wr_en[i] = 1'b1;
+                    pte_wr_en[i] = 1'b1;
+                end
+            end
+        end
     end
   end  //update_flush
 
@@ -551,5 +681,3 @@ module cva6_shared_tlb #(
     end
   end
 endmodule
-
-/* verilator lint_on WIDTH */
