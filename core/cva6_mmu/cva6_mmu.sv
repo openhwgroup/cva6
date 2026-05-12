@@ -276,6 +276,8 @@ module cva6_mmu
 
       .asid_to_be_flushed_i(asid_to_be_flushed_i),
       .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
+      .vmid_to_be_flushed_i(vmid_to_be_flushed_i),
+      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed_i),
       // to TLBs, update logic
       .itlb_update_o(update_itlb),
       .dtlb_update_o(update_dtlb),
