@@ -295,6 +295,7 @@ module cva6_shared_tlb #(
           itlb_update_o.asid = shared_tlb_update_i.asid;
           itlb_update_o.vmid = shared_tlb_update_i.vmid;
           itlb_update_o.is_napot_64k = shared_tlb_update_i.is_napot_64k;
+          itlb_update_o.pbmt = shared_tlb_update_i.pbmt;
 
         end else if (dtlb_req_q) begin
           dtlb_update_o.valid = 1'b1;
@@ -306,6 +307,7 @@ module cva6_shared_tlb #(
           dtlb_update_o.asid = shared_tlb_update_i.asid;
           dtlb_update_o.vmid = shared_tlb_update_i.vmid;
           dtlb_update_o.is_napot_64k = shared_tlb_update_i.is_napot_64k;
+          dtlb_update_o.pbmt = shared_tlb_update_i.pbmt;
         end
       end
     end else begin
@@ -342,6 +344,7 @@ module cva6_shared_tlb #(
               itlb_update_o.asid = tlb_update_asid_q;
               itlb_update_o.vmid = tlb_update_vmid_q;
               itlb_update_o.is_napot_64k = CVA6Cfg.SvnapotEn ? shared_tag_rd[i].is_napot_64k : 1'b0;
+              itlb_update_o.pbmt = CVA6Cfg.SvpbmtEn ? pte[i][0].pbmt : 2'b00;
             end else if (dtlb_req_q) begin
               dtlb_update_o.valid = 1'b1;
               dtlb_update_o.vpn = dtlb_vpn_q;
@@ -352,6 +355,7 @@ module cva6_shared_tlb #(
               dtlb_update_o.asid = tlb_update_asid_q;
               dtlb_update_o.vmid = tlb_update_vmid_q;
               dtlb_update_o.is_napot_64k = CVA6Cfg.SvnapotEn ? shared_tag_rd[i].is_napot_64k : 1'b0;
+              dtlb_update_o.pbmt = CVA6Cfg.SvpbmtEn ? pte[i][0].pbmt : 2'b00;
             end
           end
         end

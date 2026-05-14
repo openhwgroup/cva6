@@ -53,6 +53,7 @@ module cva6_tlb
     input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
+    output logic [1:0] lu_pbmt_o,  // Svpbmt: page-based memory type from TLB hit
     output logic lu_hit_o
 );
   localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
@@ -70,6 +71,7 @@ module cva6_tlb
     logic [HYP_EXT*2:0] v_st_enbl;  // v_i, g-stage enabled, s-stage enabled
     logic valid;
     logic is_napot_64k;  // Svnapot: Flag indicating a 64KiB NAPOT page
+    logic [1:0] pbmt;  // Svpbmt: page-based memory type (bits [62:61] of PTE)
   } [TLB_ENTRIES-1:0]
       tags_q, tags_n;
 
@@ -190,6 +192,7 @@ module cva6_tlb
     lu_content_o   = '{default: 0};
     lu_g_content_o = '{default: 0};
     lu_is_page_o   = '{default: 0};
+    lu_pbmt_o      = 2'b00;
     match_asid     = '{default: 0};
     match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
     match_stage    = '{default: 0};
@@ -253,6 +256,7 @@ module cva6_tlb
         end
         if (|level_match[i] || napot_tag_match[i]) begin
           lu_is_page_o = is_page_o[i];
+          lu_pbmt_o    = CVA6Cfg.SvpbmtEn ? tags_q[i].pbmt : 2'b00;
           lu_hit_o     = 1'b1;
           lu_hit[i]    = 1'b1;
           // Patch the PPN on every TLB hit if this entry is a 64 KiB Svnapot page
@@ -392,7 +396,8 @@ module cva6_tlb
           update_i.is_page,
           update_i.v_st_enbl,
           1'b1,
-          CVA6Cfg.SvnapotEn ? update_i.is_napot_64k : 1'b0  // Svnapot: Propagate the NAPOT flag into the TLB entry
+          CVA6Cfg.SvnapotEn ? update_i.is_napot_64k : 1'b0,  // Svnapot: Propagate the NAPOT flag
+          CVA6Cfg.SvpbmtEn ? update_i.pbmt : 2'b00  // Svpbmt: Propagate the PBMT field
         };
         // update content as well
         content_n[i].pte = update_i.content;

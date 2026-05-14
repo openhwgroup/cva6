@@ -129,6 +129,7 @@ package cva6_config_pkg;
       DataTlbEntries: int'(16),
       UseSharedTlb: bit'(0),
       SvnapotEn: bit'(0),
+      SvpbmtEn: bit'(0),
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),

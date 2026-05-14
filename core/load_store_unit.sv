@@ -118,6 +118,7 @@ module load_store_unit
     input  logic                                      mxr_i,
     // Make Executable Readable Virtual Supervisor - CSR_REGFILE
     input  logic                                      vmxr_i,
+    input  logic                                      pbmte_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -299,6 +300,7 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .pbmte_i,
         .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),

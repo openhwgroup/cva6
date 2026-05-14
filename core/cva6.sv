@@ -570,6 +570,7 @@ module cva6
   logic vs_sum_csr_ex;
   logic mxr_csr_ex;
   logic vmxr_csr_ex;
+  logic pbmte_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn_csr_ex;
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_csr_ex;
@@ -1085,6 +1086,7 @@ module cva6
       .vs_sum_i                (vs_sum_csr_ex),                  // from CSR
       .mxr_i                   (mxr_csr_ex),                     // from CSR
       .vmxr_i                  (vmxr_csr_ex),                    // from CSR
+      .pbmte_i                 (pbmte_csr_ex),                   // from CSR
       .satp_ppn_i              (satp_ppn_csr_ex),                // from CSR
       .asid_i                  (asid_csr_ex),                    // from CSR
       .vsatp_ppn_i             (vsatp_ppn_csr_ex),               // from CSR
@@ -1215,6 +1217,7 @@ module cva6
       .vs_sum_o                (vs_sum_csr_ex),
       .mxr_o                   (mxr_csr_ex),
       .vmxr_o                  (vmxr_csr_ex),
+      .pbmte_o                 (pbmte_csr_ex),
       .satp_ppn_o              (satp_ppn_csr_ex),
       .asid_o                  (asid_csr_ex),
       .vsatp_ppn_o             (vsatp_ppn_csr_ex),
