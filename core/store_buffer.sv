@@ -184,10 +184,10 @@ module store_buffer
     // there should be no commit when we are flushing
     // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i) begin
-      ypb_store_req_o.preq = pending_rvalid_q ? 1'b0 : 1'b1;
+      ypb_store_req_o.preq = (!CVA6Cfg.PipelineOnly && pending_rvalid_q) ? 1'b0 : 1'b1;
       if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
 
-      if (ypb_store_rsp_i.rvalid) begin
+      if ((!CVA6Cfg.PipelineOnly && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && ypb_store_rsp_i.pgnt)) begin
         pending_rvalid_n = 1'b0;
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
@@ -197,13 +197,16 @@ module store_buffer
       end
     end else if (speculative_queue_q[speculative_read_pointer_q].valid) begin
       if (commit_i && (commit_write_pointer_q == speculative_read_pointer_q) && !stall_st_pending_i) begin
-        ypb_store_req_o.preq = pending_rvalid_q ? '0 : 1'b1;
+        ypb_store_req_o.preq = (!CVA6Cfg.PipelineOnly && pending_rvalid_q) ? '0 : 1'b1;
         direct_req_from_speculative = 1'b1;
       end
     end
 
+    // in PipelineOnly configuration we ignore the rvalid signal for now as we assume that the store
+    // happened if we got a grant, with cache wait for rvalid
+
     // shift the store request from the speculative buffer to the non-speculative
-    if (commit_i && !(ypb_store_rsp_i.rvalid && direct_req_from_speculative)) begin
+    if (commit_i && !(((!CVA6Cfg.PipelineOnly && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && ypb_store_rsp_i.pgnt)) && direct_req_from_speculative)) begin
       commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
       commit_write_pointer_n = commit_write_pointer_n + 1'b1;
       commit_status_cnt++;
