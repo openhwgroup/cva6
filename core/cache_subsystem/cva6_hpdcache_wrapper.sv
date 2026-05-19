@@ -43,7 +43,9 @@ module cva6_hpdcache_wrapper
     parameter type hpdcache_req_t = logic,
     parameter type hpdcache_rsp_t = logic,
     parameter type hpdcache_wbuf_timecnt_t = logic,
-    parameter type hpdcache_data_be_t = logic
+    parameter type hpdcache_data_be_t = logic,
+
+    localparam type hpdcache_nline_t = logic [HPDcacheCfg.nlineWidth-1:0]
 )
 //  }}}
 
@@ -100,6 +102,9 @@ module cva6_hpdcache_wrapper
     output logic                 dcache_mem_resp_read_ready_o,
     input  logic                 dcache_mem_resp_read_valid_i,
     input  hpdcache_mem_resp_r_t dcache_mem_resp_read_i,
+
+    input logic            dcache_mem_resp_read_inval_i,
+    input hpdcache_nline_t dcache_mem_resp_read_inval_nline_i,
 
     input  logic              dcache_mem_req_write_ready_i,
     output logic              dcache_mem_req_write_valid_o,
@@ -383,6 +388,9 @@ module cva6_hpdcache_wrapper
       .mem_resp_read_valid_i(dcache_mem_resp_read_valid_i),
       .mem_resp_read_i      (dcache_mem_resp_read_i),
 
+      .mem_resp_read_inval_i      (dcache_mem_resp_read_inval_i),
+      .mem_resp_read_inval_nline_i(dcache_mem_resp_read_inval_nline_i),
+
       .mem_req_write_ready_i(dcache_mem_req_write_ready_i),
       .mem_req_write_valid_o(dcache_mem_req_write_valid_o),
       .mem_req_write_o      (dcache_mem_req_write_o),
@@ -395,17 +403,22 @@ module cva6_hpdcache_wrapper
       .mem_resp_write_valid_i(dcache_mem_resp_write_valid_i),
       .mem_resp_write_i      (dcache_mem_resp_write_i),
 
-      .evt_cache_write_miss_o(dcache_write_miss),
-      .evt_cache_read_miss_o (dcache_read_miss),
-      .evt_uncached_req_o    (  /* unused */),
-      .evt_cmo_req_o         (  /* unused */),
-      .evt_write_req_o       (  /* unused */),
-      .evt_read_req_o        (  /* unused */),
-      .evt_prefetch_req_o    (  /* unused */),
-      .evt_req_on_hold_o     (  /* unused */),
-      .evt_rtab_rollback_o   (  /* unused */),
-      .evt_stall_refill_o    (  /* unused */),
-      .evt_stall_o           (  /* unused */),
+      .evt_cache_write_miss_o (dcache_write_miss),
+      .evt_cache_read_miss_o  (dcache_read_miss),
+      .evt_cache_dir_unc_err_o(  /* unused */),
+      .evt_cache_dir_cor_err_o(  /* unused */),
+      .evt_cache_dat_unc_err_o(  /* unused */),
+      .evt_cache_dat_cor_err_o(  /* unused */),
+      .evt_scrub_complete_o   (  /* unused */),
+      .evt_uncached_req_o     (  /* unused */),
+      .evt_cmo_req_o          (  /* unused */),
+      .evt_write_req_o        (  /* unused */),
+      .evt_read_req_o         (  /* unused */),
+      .evt_prefetch_req_o     (  /* unused */),
+      .evt_req_on_hold_o      (  /* unused */),
+      .evt_rtab_rollback_o    (  /* unused */),
+      .evt_stall_refill_o     (  /* unused */),
+      .evt_stall_o            (  /* unused */),
 
       .wbuf_empty_o(wbuffer_empty_o),
 
@@ -417,7 +430,10 @@ module cva6_hpdcache_wrapper
       .cfg_prefetch_updt_plru_i           (1'b1),
       .cfg_error_on_cacheable_amo_i       (1'b0),
       .cfg_rtab_single_entry_i            (1'b0),
-      .cfg_default_wb_i                   (1'b0)
+      .cfg_default_wb_i                   (1'b0),
+      .cfg_scrub_enable_i                 (1'b0),
+      .cfg_scrub_period_i                 ('0),
+      .cfg_scrub_restart_i                (1'b0)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
