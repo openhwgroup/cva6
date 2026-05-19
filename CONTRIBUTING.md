@@ -11,7 +11,7 @@ Drop a comment in your pull request so we know about your problem and we do not 
 
 Contributors are encouraged, but not required, to be a [member](https://openhwfoundation.org/membership/become-a-member/) of the OpenHW Foundation, part of the Eclipse Foundation.
 
-## Read this before
+## Read this first
 
 ### Major evolutions
 
@@ -36,6 +36,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
     * To configure your contribution, System Verilog top-level parameters are strongly advised.
         - Conditional compiler directives such as <code>`ifdef</code>, etc. are strongly discouraged.
+        - Please review our wiki on the topic of [Configuring SystemVerilog RTL Models](https://github.com/openhwgroup/cva6/wiki/Configuring-SystemVerilog-RTL-Models), in particular the [CVA6 use case](https://github.com/openhwgroup/cva6/wiki/Configuring-SystemVerilog-RTL-Models#use-case-the-openhw-foundation-cva6).
         - Synchronize with CVA6 team if you do not find an appropriate solution.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
