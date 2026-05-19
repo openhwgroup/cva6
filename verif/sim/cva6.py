@@ -165,14 +165,13 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
   sys.exit(RET_FAIL)
 
 
-def get_iss_cmd(base_cmd, elf, target, log, nr_harts):
+def get_iss_cmd(base_cmd, elf, target, log):
   """Get the ISS simulation command
 
   Args:
     base_cmd : Original command template
     elf      : ELF file to run ISS simualtion
     log      : ISS simulation log name
-    nr_harts : number of harts
 
   Returns:
     cmd      : Command for ISS simulation
@@ -180,7 +179,6 @@ def get_iss_cmd(base_cmd, elf, target, log, nr_harts):
   cmd = re.sub(r"\<elf\>", elf, base_cmd)
   cmd = re.sub(r"\<target\>", target, cmd)
   cmd = re.sub(r"\<log\>", log, cmd)
-  cmd += (" CVA6_NR_HARTS=%d" % nr_harts)
   cmd += (" STDOUT=%s.out 2> %s.iss" % (log, log))
   return cmd
 
@@ -417,11 +415,10 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
 
 
 def tandem_postprocess(tandem_report, target, isa, test_name, log, testlist, iss,
-                       iterations = None, nr_harts=1, exit_on_ecall=True):
+                       iterations = None, exit_on_ecall=True):
   analyze_tandem_report(tandem_report)
-  for n in range(nr_harts):
-    logfile = log + ("_hart_%02g" % n) + ".log"
-    process_verilator_sim_log(logfile, logfile + ".csv", exit_on_ecall=exit_on_ecall)
+  logfile = log + "_hart_00"
+  process_verilator_sim_log(logfile + ".log", logfile + ".csv", exit_on_ecall=exit_on_ecall)
   generate_yaml_report(tandem_report, target, isa, test_name, testlist, iss, False , iterations)
 
 def analyze_tandem_report(yaml_path):
@@ -465,7 +462,7 @@ def generate_yaml_report(yaml_path, target, isa, test, testlist, iss, initial_cr
 
 def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
              setting_dir, debug_cmd, linker, priv, spike_params, test_name=None,
-             iss_timeout=500, testlist="custom", nr_harts=1, compare_outputs=False,
+             iss_timeout=500, testlist="custom", compare_outputs=False,
              output_ref_file="", exit_on_ecall=True):
   """Run a directed test with ISS
 
@@ -487,7 +484,6 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     iss_timeout : Timeout for ISS simulation (default: 500)
     testlist    : Test list identifier (default: "custom")
 
-    nr_harts       : Number of harts to simulate
     compare_outputs: Perform stdout comparison across simulators
     output_ref_file: If set, check simulator output against reference file
     exit_on_ecall  : Use ecalls as an exit marker
@@ -532,7 +528,6 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
         cmd= ("%s %s %s -o %s " % (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, gcc_opts, elf))
     cmd += (" -march=%s" % isa)
     cmd += (" -mabi=%s" % mabi)
-    cmd += (" -DNUM_HARTS=%s" % nr_harts)
     logging.info("Compilation cmd: %s" % cmd)
     run_cmd(cmd, debug_cmd = debug_cmd)
   log_list = []
@@ -548,7 +543,8 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     yaml = ("%s/%s_sim/%s.%s.log.yaml" % (output_dir, iss, test_log_name, target))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spike_params)
-    cmd = get_iss_cmd(base_cmd, elf, target, log, nr_harts)
+    print(elf)
+    cmd = get_iss_cmd(base_cmd, elf, target, log)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "spike" in iss: ratio = 10
     else: ratio = 1
@@ -559,10 +555,10 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
     if tandem_sim:
       tandem_postprocess(yaml, target, isa, test_log_name, log, testlist, iss,
-                         nr_harts=nr_harts, exit_on_ecall=exit_on_ecall)
+                         exit_on_ecall=exit_on_ecall)
 
   if len(iss_list) == 2:
-    compare_iss_log(iss_list, log_list, report, nr_harts=nr_harts, exit_on_ecall=exit_on_ecall)
+    compare_iss_log(iss_list, log_list, report, exit_on_ecall=exit_on_ecall)
     if (compare_outputs):
       compare_output_logs(iss_list, log_list, report)
   if output_ref_file:
@@ -570,8 +566,7 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
 
 def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
-            isa, target, setting_dir, timeout_s, debug_cmd, priv, spike_params,
-            nr_harts):
+            isa, target, setting_dir, timeout_s, debug_cmd, priv, spike_params):
   """Run ISS simulation with the generated test program
 
   Args:
@@ -599,7 +594,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           prefix = ("%s/asm_tests/%s_%d" % (output_dir, test['test'], i))
           elf = prefix + ".o"
           log = ("%s/%s_%d.%s" % (log_dir, test['test'], i, target))
-          cmd = get_iss_cmd(base_cmd, elf, target, log,nr_harts)
+          cmd = get_iss_cmd(base_cmd, elf, target, log)
           yaml = ("%s/%s_%s.%s.log.yaml" % (log_dir, test['test'], i, target))
           if 'iss_opts' in test:
             cmd += ' '
@@ -617,7 +612,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
 
 
 def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_cmd,
-        nr_harts=1, compare_outputs=False, output_ref_file="", exit_on_ecall=True):
+        compare_outputs=False, output_ref_file="", exit_on_ecall=True):
   """Compare ISS simulation reult
 
   Args:
@@ -649,46 +644,37 @@ def iss_cmp(test_list, iss, target, output_dir, stop_on_first_error, exp, debug_
       for iss in iss_list:
         log_list.append("%s/%s_sim/%s_%d.%s" % (output_dir, iss, test['test'], i, target))
       compare_iss_log(iss_list, log_list, report, stop_on_first_error, exp,
-                      nr_harts=nr_harts, exit_on_ecall=exit_on_ecall)
+                      exit_on_ecall=exit_on_ecall)
   save_regr_report(report)
 
 def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False,
-                    nr_harts=1, exit_on_ecall=True):
+                    exit_on_ecall=True):
   if (len(iss_list) != 2 or len(log_list) != 2):
     logging.error("Only support comparing two ISS logs")
     logging.info("len(iss_list) = %s len(log_list) = %s" % (len(iss_list), len(log_list)))
     return
 
-  for n in range(nr_harts):
-    logging.info("[Hart #%02g]" % n)
-
-    csv_list = []
-    for i in range(2):
-      log = log_list[i] + ("_hart_%02g" % n) + ".log"
-      csv = log.replace(".log", ".csv");
-      iss = iss_list[i]
-      csv_list.append(csv)
-      if iss == "spike":
-          if (n == 0):
-              process_spike_sim_log(log, csv, exit_on_ecall=exit_on_ecall)
-          else:
-              pass # Spike log in monocore only
-      elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
-        process_verilator_sim_log(log, csv, exit_on_ecall=exit_on_ecall)
-      elif iss == "ovpsim":
-        process_ovpsim_sim_log(log, csv, stop_on_first_error)
-      elif iss == "sail":
-        process_sail_sim_log(log, csv)
-      elif iss == "whisper":
-        process_whisper_sim_log(log, csv)
-      else:
-        logging.error("Unsupported ISS" % iss)
-        sys.exit(RET_FAIL)
-    if (n == 0 or "spike" not in iss_list):
-      result = compare_trace_csv(csv_list[0], csv_list[1], iss_list[0], iss_list[1], report)
-      logging.info(result)
+  csv_list = []
+  for i in range(2):
+    log = log_list[i] + "_hart_00.log"
+    csv = log.replace(".log", ".csv");
+    iss = iss_list[i]
+    csv_list.append(csv)
+    if iss == "spike":
+      process_spike_sim_log(log, csv, exit_on_ecall=exit_on_ecall)
+    elif "veri" in iss or "vsim" in iss or "vcs" in iss or "questa" in iss:
+      process_verilator_sim_log(log, csv, exit_on_ecall=exit_on_ecall)
+    elif iss == "ovpsim":
+      process_ovpsim_sim_log(log, csv, stop_on_first_error)
+    elif iss == "sail":
+      process_sail_sim_log(log, csv)
+    elif iss == "whisper":
+      process_whisper_sim_log(log, csv)
     else:
-      logging.info("Skipping comparison for hart id > 0 (incompatibility with spike)\n")
+      logging.error("Unsupported ISS" % iss)
+      sys.exit(RET_FAIL)
+  result = compare_trace_csv(csv_list[0], csv_list[1], iss_list[0], iss_list[1], report)
+  logging.info(result)
 
 def compare_output_logs(iss_list, log_list, report):
   logging.info("[Test outputs]")
@@ -849,8 +835,6 @@ def parse_args(cwd):
                       help="Choose additional z, s, x extensions")
   parser.add_argument("--spike_params", type=str, default="",
                       help="Spike command line parameters, run spike --help and spike --print-params to see more")
-  parser.add_argument("--nr_harts", type=int, default=1,
-                      help="Number of simulated harts")
   parser.add_argument("--compare_outputs", action="store_true",
                       default=False, help="Also compares test stdout traces")
   parser.add_argument("--no_ecall_exit", action="store_true",
@@ -958,7 +942,7 @@ def load_config(args, cwd):
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
     elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_hpdcache_wb"):
       args.mabi = "lp64d"
-      args.isa  = "rv64gc_zba_zbb_zbs_zbc_zbkb_zbkx_zkne_zknd_zknh_zicbom"
+      args.isa  = "rv64gc_zba_zbb_zbs_zbc_zbkb_zbkx_zkne_zknd_zknh"
     elif base == "cv32a60x":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
@@ -1251,8 +1235,8 @@ def main():
             run_test(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                   args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
                   args.priv, args.spike_params, iss_timeout=args.iss_timeout,
-                  nr_harts=args.nr_harts, compare_outputs=args.compare_outputs,
-                  output_ref_file=args.output_ref_file, exit_on_ecall=not args.no_ecall_exit)
+                  compare_outputs=args.compare_outputs, output_ref_file=args.output_ref_file,
+                  exit_on_ecall=not args.no_ecall_exit)
           else:
             logging.error('%s does not exist or is not a file' % full_path)
             sys.exit(RET_FAIL)
@@ -1329,9 +1313,8 @@ def main():
                 run_test(path_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                              args.iss, output_dir, args.core_setting_dir, args.debug, args.linker,
                              args.priv, args.spike_params, test_entry['test'], iss_timeout=args.iss_timeout,
-                             testlist=args.testlist, nr_harts=args.nr_harts,
-                             compare_outputs=args.compare_outputs, output_ref_file=args.output_ref_file,
-                             exit_on_ecall=not args.no_ecall_exit)
+                             testlist=args.testlist, compare_outputs=args.compare_outputs,
+                             output_ref_file=args.output_ref_file, exit_on_ecall=not args.no_ecall_exit)
               else:
                 if not args.debug:
                   logging.error('%s does not exist' % path_test)
@@ -1350,12 +1333,12 @@ def main():
         if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
           iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
                   args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug,
-                  args.priv, args.spike_params, args.nr_harts)
+                  args.priv, args.spike_params)
 
         # Compare ISS simulation result
         if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
           iss_cmp(matched_list, args.iss, args.target, output_dir, args.stop_on_first_error,
-                  args.exp, args.debug, args.nr_harts, compare_outputs=args.compare_outputs,
+                  args.exp, args.debug, compare_outputs=args.compare_outputs,
                   output_ref_file=args.output_ref_file, exit_on_ecall=(not args.no_ecall_exit))
 
     sys.exit(RET_SUCCESS)
