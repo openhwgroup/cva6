@@ -19,27 +19,26 @@
 #
 # COVERED CONFIGURATIONS (Green Config subset from Jerome's color-coded figure):
 #   RV32:
-#     - cv32a65x                        (dual-issue, no MMU)    [10 testcases]
-#     - cv32a60x                        (single-issue, no MMU)  [ 6 testcases]
+#     - cv32a65x                        (dual-issue, no MMU)    [ 8 testcases]
+#     - cv32a60x                        (single-issue, no MMU)  [ 4 testcases]
 #   RV64:
-#     - cv64a6_imafdc_sv39_hpdcache_wb  (HPDcache + write-back) [ 6 testcases]
+#     - cv64a6_imafdc_sv39_hpdcache_wb  (HPDcache + write-back) [ 5 testcases]
 #
 # TEST SUITES PER CONFIG:
-#   cv32a65x (10 jobs):
+#   cv32a65x (8 jobs):
 #     smoke-tests, cv32a6_tests, dv-riscv-arch-test, dv-riscv-tests-p,
-#     dv-riscv-compliance, dv-riscv-csr-access-test,
-#     dv-csr-embedded-tests,
-#     hwconfig_tests, coremark, benchmark
+#     dv-riscv-compliance, dv-csr-embedded-tests,
+#     hwconfig_tests, coremark
 #
-#   cv32a60x (6 jobs):
+#   cv32a60x (4 jobs):
 #     cv32a6_tests, dv-riscv-arch-test, dv-riscv-tests-p,
-#     dv-riscv-compliance, dv-riscv-csr-access-test, benchmark
+#     dv-riscv-compliance
 #   (Note: hwconfig/coremark/dv-csr-embedded-tests are cv32a65x-specific)
 #
-#   cv64a6_imafdc_sv39_hpdcache_wb (6 jobs):
+#   cv64a6_imafdc_sv39_hpdcache_wb (5 jobs):
 #     cv64a6_imafdc_tests, dv-riscv-arch-test,
 #     dv-riscv-tests-v [testlist], dv-riscv-tests-p [testlist],
-#     dv-riscv-compliance [testlist], benchmark
+#     dv-riscv-compliance [testlist]
 #
 # NOTES:
 #   - "dv-riscv-tests-v" / "dv-riscv-tests-p" are job label names, not script
@@ -51,6 +50,9 @@
 #   - hwconfig_tests and coremark require DV_HWCONFIG_OPTS, encoded via the
 #     matrix hwconfig_opts field and applied in the run step.
 #   - coremark uses veri-testharness only: spike times out on long benchmark loops.
+#   - benchmark and dv-riscv-csr-access-test are intentionally excluded from
+#     Phase 1 Tier 2 until their legacy regression scripts propagate failures
+#     and produce trustworthy artifacts.
 # ================================================================================
 
 name: openhw-cva6-ci-tier2
@@ -151,16 +153,6 @@ jobs:
             test_name: ""
             linker: ""
 
-          # CSR read/write access verification (~9 tests)
-          - config: cv32a65x
-            testcase: dv-riscv-csr-access-test
-            mode: script
-            simulator: veri-testharness,spike
-            install_script: ""
-            testlist: ""
-            test_name: ""
-            linker: ""
-
           # Embedded CSR behavior (~5 tests); veri-testharness only -
           # spike does not emulate embedded CSR side effects
           - config: cv32a65x
@@ -194,16 +186,6 @@ jobs:
             test_name: ""
             linker: ""
             hwconfig_opts: cv32a65x
-
-          # Performance benchmarks (~12 programs: dhrystone, median, etc.)
-          - config: cv32a65x
-            testcase: benchmark
-            mode: script
-            simulator: veri-testharness,spike
-            install_script: ""
-            testlist: ""
-            test_name: ""
-            linker: ""
 
           # ----------------------------------------------------------
           # cv32a60x - single-issue RV32, no MMU
@@ -249,26 +231,6 @@ jobs:
             test_name: ""
             linker: ""
 
-          # CSR access verification
-          - config: cv32a60x
-            testcase: dv-riscv-csr-access-test
-            mode: script
-            simulator: veri-testharness,spike
-            install_script: ""
-            testlist: ""
-            test_name: ""
-            linker: ""
-
-          # Performance benchmarks
-          - config: cv32a60x
-            testcase: benchmark
-            mode: script
-            simulator: veri-testharness,spike
-            install_script: ""
-            testlist: ""
-            test_name: ""
-            linker: ""
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -282,6 +244,7 @@ jobs:
 
       - name: Run Tier 2 for ${{ matrix.config }} / ${{ matrix.testcase }}
         run: |
+          set -e
           set -x
           mkdir -p ci-results
           echo "1" > ci-results/exit_code
@@ -317,11 +280,25 @@ jobs:
             fi
             DV_SIMULATORS=${{ matrix.simulator }} \
             DV_TARGET=${{ matrix.config }} \
-              bash verif/regress/${{ matrix.testcase }}.sh || rc=$?
+              bash -e verif/regress/${{ matrix.testcase }}.sh || rc=$?
+          fi
+
+          if [ "$rc" -eq 0 ] && ! compgen -G "verif/sim/out*" > /dev/null; then
+            echo "ERROR: Tier 2 job reported success but produced no verif/sim/out* results" >&2
+            rc=1
+          fi
+
+          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
+          if [ "$rc" -eq 0 ]; then
+            failed_reports="$(find verif/sim -name "iss_regr.log" -exec grep -H "\\[FAILED\\]" {} \; 2>/dev/null || true)"
+            if [ -n "$failed_reports" ]; then
+              echo "ERROR: Tier 2 job reported success but iss_regr.log contains failures" >&2
+              echo "$failed_reports" >&2
+              rc=1
+            fi
           fi
 
           echo "$rc" > ci-results/exit_code
-          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
           exit $rc
 
       - name: Upload Results
@@ -402,16 +379,6 @@ jobs:
             test_name: ""
             linker: ""
 
-          # Performance benchmarks (~12 programs)
-          - config: cv64a6_imafdc_sv39_hpdcache_wb
-            testcase: benchmark
-            mode: script
-            simulator: veri-testharness,spike
-            install_script: ""
-            testlist: ""
-            test_name: ""
-            linker: ""
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -425,6 +392,7 @@ jobs:
 
       - name: Run Tier 2 for ${{ matrix.config }} / ${{ matrix.testcase }}
         run: |
+          set -e
           set -x
           mkdir -p ci-results
           echo "1" > ci-results/exit_code
@@ -456,11 +424,25 @@ jobs:
           else
             DV_SIMULATORS=${{ matrix.simulator }} \
             DV_TARGET=${{ matrix.config }} \
-              bash verif/regress/${{ matrix.testcase }}.sh || rc=$?
+              bash -e verif/regress/${{ matrix.testcase }}.sh || rc=$?
+          fi
+
+          if [ "$rc" -eq 0 ] && ! compgen -G "verif/sim/out*" > /dev/null; then
+            echo "ERROR: Tier 2 job reported success but produced no verif/sim/out* results" >&2
+            rc=1
+          fi
+
+          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
+          if [ "$rc" -eq 0 ]; then
+            failed_reports="$(find verif/sim -name "iss_regr.log" -exec grep -H "\\[FAILED\\]" {} \; 2>/dev/null || true)"
+            if [ -n "$failed_reports" ]; then
+              echo "ERROR: Tier 2 job reported success but iss_regr.log contains failures" >&2
+              echo "$failed_reports" >&2
+              rc=1
+            fi
           fi
 
           echo "$rc" > ci-results/exit_code
-          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
           exit $rc
 
       - name: Upload Results
