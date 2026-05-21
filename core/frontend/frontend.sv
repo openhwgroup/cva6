@@ -321,7 +321,7 @@ module frontend
   logic spec_req_non_idempot;
 
   // MMU interface
-  assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
+  assign areq_o.fetch_vaddr = (vaddr_d >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
 
   // CHECK PMA regions
 
@@ -377,7 +377,7 @@ module frontend
   logic ex_s1;
 
 
-  assign fetchbuf_full = &fetchbuf_valid_q && !(FETCHBUF_FALLTHROUGH && fetchbuf_r);
+  assign fetchbuf_full = &fetchbuf_valid_q && !(FETCHBUF_FALLTHROUGH && fetchbuf_r && ypb_a_state_q == TRANSPARENT);
 
 
   //
@@ -411,7 +411,7 @@ module frontend
     end
     //  Free read entry (in the case of fall-through mode, free the entry
     //  only if there is no pending fetch)
-    if (fetchbuf_r && (!FETCHBUF_FALLTHROUGH || !fetchbuf_w)) begin
+    if (fetchbuf_r && ypb_a_state_q == TRANSPARENT && (!FETCHBUF_FALLTHROUGH || !fetchbuf_w)) begin
       fetchbuf_valid_d[fetchbuf_rindex] = 1'b0;
     end
     // Flush on bp_valid
@@ -478,11 +478,11 @@ module frontend
   assign data_rvalid = fetchbuf_r && !fetchbuf_flushed_q[fetchbuf_rindex] && !kill_s2;
 
   //assign ypb_vaddr_d = pop_fetch ?  : ypb_vaddr_qvaddr_d;
-  assign vaddr_d = (pop_fetch || kill_s2) ? npc_fetch_address : vaddr_q;
+  assign vaddr_d = npc_fetch_address;
   assign ypb_fetch_req_o.vaddr = npc_fetch_address;
   assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
 
-  assign data_req = (CVA6Cfg.MmuPresent ? fetchbuf_w_q && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w);
+  assign data_req = (CVA6Cfg.MmuPresent ? (fetchbuf_w || fetchbuf_w_q) && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignmen
@@ -588,7 +588,7 @@ module frontend
       kill_req_q <= '0;
       fetchbuf_windex_q <= '0;
       fetchbuf_w_q <= '0;
-      vaddr_q <= '0;
+      vaddr_q <= vaddr_d;
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
@@ -598,7 +598,7 @@ module frontend
       kill_req_q <= kill_req_d;
       if (!ex_s1) begin
         fetchbuf_windex_q <= fetchbuf_windex;
-        fetchbuf_w_q <= (CVA6Cfg.MmuPresent && arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
+        fetchbuf_w_q <= (CVA6Cfg.MmuPresent && !arsp_i.fetch_valid) ? fetchbuf_w : fetchbuf_w_q;
       end
       vaddr_q <= vaddr_d;
     end
@@ -666,6 +666,7 @@ module frontend
     // 2. Replay instruction fetch
     if (replay) begin
       npc_d = replay_addr;
+      fetch_address = replay_addr;
     end
     // 3. Control flow change request
     if (is_mispredict) begin
