@@ -309,6 +309,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       flush_fsm_t flush_fsm_q, flush_fsm_d;
 
       logic forward_store, forward_amo, forward_flush;
+      logic flush_not_sent;
 
       //  DCACHE flush request
       //  {{{
@@ -317,6 +318,11 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
           flush_fsm_q <= FLUSH_IDLE;
         end else begin
           flush_fsm_q <= flush_fsm_d;
+
+          if (flush_fsm_q == FLUSH_IDLE && cva6_dcache_flush_i && !hpdcache_req_ready_i)
+            flush_not_sent <= '1;
+          else flush_not_sent <= forward_flush;
+
         end
       end
 
@@ -328,7 +334,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
         case (flush_fsm_q)
           FLUSH_IDLE: begin
-            if (cva6_dcache_flush_i) begin
+            if (cva6_dcache_flush_i || flush_not_sent) begin
               forward_flush = 1'b1;
               if (hpdcache_req_ready_i) begin
                 flush_fsm_d = FLUSH_PEND;

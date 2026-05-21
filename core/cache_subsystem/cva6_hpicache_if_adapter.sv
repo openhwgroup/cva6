@@ -88,6 +88,7 @@ module cva6_hpicache_if_adapter
   hpdcache_req_t hpicache_req_fetch;
   hpdcache_req_t hpicache_req_flush;
   logic forward_fetch, forward_flush;
+  logic flush_not_sent;
 
   //  ICACHE flush request
   //  {{{
@@ -98,6 +99,10 @@ module cva6_hpicache_if_adapter
       flush_fsm_q <= FLUSH_IDLE;
     end else begin
       flush_fsm_q <= flush_fsm_d;
+
+      if (flush_fsm_q == FLUSH_IDLE && cva6_icache_flush_i && !hpicache_req_ready_i)
+        flush_not_sent <= '1;
+      else flush_not_sent <= forward_flush;
     end
   end
 
@@ -109,7 +114,7 @@ module cva6_hpicache_if_adapter
 
     case (flush_fsm_q)
       FLUSH_IDLE: begin
-        if (cva6_icache_flush_i) begin
+        if (cva6_icache_flush_i || flush_not_sent) begin
           forward_flush = 1'b1;
           if (hpicache_req_ready_i) begin
             flush_fsm_d = FLUSH_PEND;
@@ -191,7 +196,44 @@ module cva6_hpicache_if_adapter
   assign ypb_fetch_rsp_o.err = '0;
   assign ypb_fetch_rsp_o.rdata = hpicache_rsp_i.rdata;
   //  }}}
+  xlnx_ila ila (
+      .clk(clk_i),
+      .probe0(ypb_fetch_req_i.preq),
+      .probe1(ypb_fetch_req_i.paddr),
+      .probe2(ypb_fetch_req_i.vreq),
+      .probe3(ypb_fetch_req_i.vaddr),
+      .probe4(ypb_fetch_req_i.we),
+      .probe5(ypb_fetch_req_i.wdata),
+      .probe6(ypb_fetch_req_i.aid),
+      .probe7(ypb_fetch_req_i.atop),
+      .probe8(ypb_fetch_req_i.cacheable),
+      .probe9(ypb_fetch_req_i.kill_req),
+      .probe10(ypb_fetch_req_i.rready),
+      .probe11(ypb_fetch_rsp_o.vgnt),
+      .probe12(ypb_fetch_rsp_o.pgnt),
+      .probe13(ypb_fetch_rsp_o.rvalid),
+      .probe14(ypb_fetch_rsp_o.rdata),
+      .probe15(ypb_fetch_rsp_o.rid),
+      .probe16(ypb_fetch_rsp_o.err),
+      .probe17(cva6_icache_flush_i),
+      .probe18(cva6_icache_flush_ack_o),
+      .probe19(hpicache_req_valid_o),
+      .probe20(hpicache_req_ready_i),
+      .probe21(hpicache_req_o.addr_offset),
+      .probe22(hpicache_req_o.wdata),
+      .probe23(hpicache_req_o.op),
+      .probe24(hpicache_req_o.tid),
+      .probe25(hpicache_req_o.need_rsp),
+      .probe26(hpicache_req_o.pma.uncacheable),
+      .probe27(hpicache_req_abort_o),
+      .probe28(hpicache_req_tag_o),
+      .probe29(hpicache_rsp_valid_i),
+      .probe30(hpicache_rsp_i.rdata),
+      .probe31(hpicache_rsp_i.tid),
+      .probe32(forward_flush),
+      .probe33(flush_fsm_q)
 
+  );
   //  Assertions
   //  {{{
 `ifndef HPDCACHE_ASSERT_OFF
