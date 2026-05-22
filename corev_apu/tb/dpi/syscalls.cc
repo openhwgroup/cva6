@@ -8,8 +8,8 @@
 
 uintptr_t SyscallHandler::_mem;
 
-constexpr uint64_t MEM_OFFSET=0x80000000;
-constexpr uint64_t WORDLEN_BYTE=8;
+constexpr uintptr_t MEM_OFFSET=0x80000000;
+constexpr uintptr_t WORDLEN_BYTE=8;
 
 void emulate_syscall (long long tohost, long long fromhost) {
     SyscallHandler::emulate_syscall(tohost, fromhost);
@@ -37,5 +37,5 @@ void SyscallHandler::emulate_syscall(
             break;
         }
     }
-    *((uint64_t*) (_mem + fromhost)) = 1;
+    *((uintptr_t*) (_mem + fromhost)) = 1;
 }
