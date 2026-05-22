@@ -938,10 +938,10 @@ def load_config(args, cwd):
       args.isa  = "rv64gch_zba_zbb_zbs_zbc_zicbom"
     elif base in ("cv64a6_imafdc_sv39_wb",):
       args.mabi = "lp64d"
-      args.isa  = "rv64gc_zba_zbb_zbs_zbc"
+      args.isa  = "rv64gc_zba_zbb_zbs_zbc_zicbom"
     elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_hpdcache_wb"):
       args.mabi = "lp64d"
-      args.isa  = "rv64gc_zba_zbb_zbs_zbc_zbkb_zbkx_zkne_zknd_zknh"
+      args.isa  = "rv64gc_zba_zbb_zbs_zbc_zicbom_zbkb_zbkx_zkne_zknd_zknh"
     elif base == "cv32a60x":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"

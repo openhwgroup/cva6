@@ -91,7 +91,7 @@ static uintptr_t insn_len(uintptr_t pc)
 
 static inline void invalidate_cacheline(volatile void *addr) {
 #ifdef __riscv_cbo
-  __asm__ volatile("cbo.inval (%0)" ::"r"(addr) : "memory");
+  asm volatile("cbo.inval (%0)" ::"r"(addr) : "memory");
 #endif
 }
 

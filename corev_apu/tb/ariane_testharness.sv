@@ -35,8 +35,7 @@ module ariane_testharness #(
     parameter bit InclSimDTM = 1'b1,
     parameter int unsigned NUM_WORDS = 2 ** 25,  // memory size
     parameter bit StallRandomOutput = 1'b0,
-    parameter bit StallRandomInput = 1'b0,
-    parameter int NR_CORES = 1
+    parameter bit StallRandomInput = 1'b0
 ) (
     input  logic        clk_i,
     input  logic        rtc_i,
@@ -255,7 +254,7 @@ module ariane_testharness #(
 
   // debug module
   dm_top #(
-      .NrHarts        (NR_CORES),
+      .NrHarts        (1),
       .BusWidth       (AXI_DATA_WIDTH),
       .SelectableHarts(1'b1)
   ) i_dm_top (
@@ -587,8 +586,8 @@ module ariane_testharness #(
   // ---------------
   // CLINT
   // ---------------
-  logic [NR_CORES-1:0] ipi;
-  logic [NR_CORES-1:0] timer_irq;
+  logic ipi;
+  logic timer_irq;
 
   ariane_axi_soc::req_slv_t axi_clint_req;
   ariane_axi_soc::resp_slv_t axi_clint_resp;
@@ -598,7 +597,7 @@ module ariane_testharness #(
       .AXI_ADDR_WIDTH(AXI_ADDRESS_WIDTH),
       .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
       .AXI_ID_WIDTH  (ariane_axi_soc::IdWidthSlave),
-      .NR_CORES      (NR_CORES),
+      .NR_CORES      (1),
       .axi_req_t     (ariane_axi_soc::req_slv_t),
       .axi_resp_t    (ariane_axi_soc::resp_slv_t)
   ) i_clint (

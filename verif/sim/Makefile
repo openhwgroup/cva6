@@ -20,9 +20,7 @@ ifndef TARGET_CFG
 export TARGET_CFG = $(target)
 endif
 
-CVA6_NR_HARTS ?= 1
 STDOUT        ?= &2
-HART_IDS := $(shell seq -f "%02g" 0 $$(($(CVA6_NR_HARTS)-1)))
 
 HPDCACHE_DIR ?= $(CVA6_REPO_DIR)/core/cache_subsystem/hpdcache
 export HPDCACHE_DIR

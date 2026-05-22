@@ -201,14 +201,16 @@ module rvfi_tracer #(
         if (rvfi_i[i].mem_wmask != 0) begin
           $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
           if (TOHOST_ADDR != '0 && rvfi_i[i].mem_paddr == TOHOST_ADDR) begin
-            case (rvfi_i[i].mem_wdata[0])
+            unique case (rvfi_i[i].mem_wdata[0])
               'b1: begin
                 end_of_test_d = rvfi_i[i].mem_wdata[31:0];
                 $display(
                     "*** [rvfi_tracer %d] INFO: Simulation terminated after %d cycles with value 0x%h!",
                     HART_ID, cycles, rvfi_i[i].mem_wdata[31:0]);
               end
-              'b0: emulate_syscall(rvfi_i[i].mem_wdata, FROMHOST_ADDR);
+              'b0: begin
+                emulate_syscall(rvfi_i[i].mem_wdata, FROMHOST_ADDR);
+              end
             endcase
           end
         end

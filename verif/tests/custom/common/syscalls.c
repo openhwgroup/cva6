@@ -30,7 +30,7 @@ register void *thread_pointer asm("tp");
 static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2)
 {
   // Arguments in magic_mem have XLEN bits each.
-  volatile uintptr_t magic_mem[8] __attribute__((aligned(64)));
+  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
   magic_mem[0] = which;
   magic_mem[1] = arg0;
   magic_mem[2] = arg1;
@@ -46,21 +46,15 @@ static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintpt
   // - the environment acknowledges the env request by writing 0 into tohost.
   // - the completion of the request is signalled by the environment through
   //   a write of a non-zero value into fromhost.
-  tohost = (((uint64_t)((unsigned long int)magic_mem)) << 16) >>
-           16; // clear the DEV and CMD bytes, clip payload.
+  tohost = (((uint64_t)((unsigned long int)magic_mem)) << 16) >> 16; // clear the DEV and CMD bytes, clip payload.
 
- #ifdef __riscv_atomic
   // Required for Verilator consistency, else `fromhost` will
   // be fetched from the cache
   invalidate_cacheline(&fromhost);
-  invalidate_cacheline(&magic_mem);
-#endif
 
   while (fromhost == 0) {
-#ifdef __riscv_atomic
-  // Idem
-  invalidate_cacheline(&fromhost);
-#endif
+    // Idem
+    invalidate_cacheline(&fromhost);
   }
 
   fromhost = 0;
@@ -68,6 +62,7 @@ static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintpt
 #ifdef __riscv_atomic // __sync_synchronize requires A extension
   __sync_synchronize();
 #endif
+  invalidate_cacheline(magic_mem);
   return magic_mem[0];
 }
 
@@ -196,7 +191,7 @@ int putchar(int ch)
 
   buf[buflen++] = ch;
 
-  if (ch == '\n' || ch == ' ' || buflen == sizeof(buf))
+  if (ch == '\n' || buflen == sizeof(buf))
   {
     syscall(SYS_write, 1, (uintptr_t)buf, buflen);
     buflen = 0;
