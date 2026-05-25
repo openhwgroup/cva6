@@ -66,11 +66,11 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigTvalEn = 1;
 
-  localparam CVA6ConfigNrPMPEntries = 0;
+  localparam CVA6ConfigNrPMPEntries = 8;
 
   localparam CVA6ConfigPerfCounterEn = 1;
 
-  localparam CVA6ConfigMmuPresent = 0;
+  localparam CVA6ConfigMmuPresent = 1;
 
   localparam CVA6ConfigRvfiTrace = 1;
 
