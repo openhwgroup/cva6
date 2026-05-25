@@ -256,7 +256,7 @@ module load_unit
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
-  assign ex_s1 = ((CVA6Cfg.MmuPresent ? ldbuf_w_q : valid_i) && ex_i.valid);
+  assign ex_s1 = ((stall_translation ? ldbuf_w_q : valid_i) && ex_i.valid);
   assign kill_s1 = CVA6Cfg.MmuPresent ? ex_s1 : 1'b0;
 
   assign data_rvalid = ypb_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
