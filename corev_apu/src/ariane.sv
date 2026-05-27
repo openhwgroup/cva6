@@ -135,7 +135,14 @@ module ariane import ariane_pkg::*; #(
         .cvxif_resp_o         ( cvxif_resp                     )
       );
     end else begin: gen_COPRO_NONE
-      assign cvxif_resp = '{compressed_ready: 1'b1, issue_ready: 1'b1, register_ready: 1'b1, default: '0};
+      assign cvxif_resp.compressed_resp = '0;
+      assign cvxif_resp.issue_resp = '0;
+      assign cvxif_resp.result_valid = '0;
+      assign cvxif_resp.result = '0;
+      assign cvxif_resp.compressed_ready = 1'b1;
+      assign cvxif_resp.issue_ready = 1'b1;
+      assign cvxif_resp.register_ready = 1'b1;
+      
     end
   end else begin: gen_no_cvxif
     assign cvxif_resp = '0;
