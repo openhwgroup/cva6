@@ -376,6 +376,11 @@ module frontend
   logic kill_req_d, kill_req_q;
   logic ex_s1;
 
+  typedef enum logic [1:0] {
+    TRANSPARENT,
+    REGISTRED
+  } ypb_a_state_e;
+  ypb_a_state_e ypb_a_state_d, ypb_a_state_q;
 
   assign fetchbuf_full = &fetchbuf_valid_q && !(FETCHBUF_FALLTHROUGH && fetchbuf_r && ypb_a_state_q == TRANSPARENT);
 
@@ -447,11 +452,6 @@ module frontend
 
 
 
-  typedef enum logic [1:0] {
-    TRANSPARENT,
-    REGISTRED
-  } ypb_a_state_e;
-  ypb_a_state_e ypb_a_state_d, ypb_a_state_q;
 
 
   logic stall_ni, stall_ypb, stall_translation, stall_instr_queue;
