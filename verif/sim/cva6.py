@@ -1097,7 +1097,8 @@ def check_spike_version():
 
   logging.info(f"Spike Version: {user_spike_stderr_string}")
 
-  if user_spike_stderr_string != spike_version:
+  n = min(len(user_spike_stderr_string), len(spike_version))
+  if user_spike_stderr_string[:n] != spike_version[:n]:
     incorrect_version_exit("Spike", user_spike_stderr_string, spike_version)
 
 
