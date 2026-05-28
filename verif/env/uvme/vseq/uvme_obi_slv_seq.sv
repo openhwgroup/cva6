@@ -48,13 +48,14 @@ endtask : do_response
 
 task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
    bit [31:0] word_aligned_addr;
+   int unsigned align_bits = $clog2(cfg.data_width / 8);
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    `uvm_create(slv_rsp)
    slv_rsp.orig_trn = mon_req;
    slv_rsp.access_type = mon_req.access_type;
 
-   word_aligned_addr = { mon_req.address[31:2], 2'h0 };
+   word_aligned_addr = (mon_req.address >> align_bits) << align_bits;
 
    `uvm_info("SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin

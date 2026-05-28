@@ -34,7 +34,6 @@ covergroup cg_exception(
   option.per_instance = 1;
   option.name = name;
 
-`ifndef QUESTA
   cp_exception: coverpoint instr.cause {
 
     bins BREAKPOINT = {3} iff (instr.trap);
@@ -155,7 +154,6 @@ covergroup cg_exception(
     ignore_bins IGN_EXC = !binsof(cp_exception) intersect{6};
     ignore_bins IGN_ADD =  binsof(cp_add_mem) intersect{0};
   }
-`endif
 
 endgroup : cg_exception
 

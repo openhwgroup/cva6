@@ -103,7 +103,7 @@ package cva6_config_pkg;
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
-      DcacheIdWidth: int'(1),
+      DcacheIdWidth: int'(3),
       ObiVersion: int'(config_pkg::OBI_V1_6),
       PipelineOnly: bit'(0)
   };

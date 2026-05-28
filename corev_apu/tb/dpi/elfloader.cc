@@ -50,7 +50,7 @@ extern "C" char get_section (long long* address, long long* len) {
 }
 
 extern "C" void read_section (long long address, const svOpenArrayHandle buffer) {
-    // get actual poitner
+    // get actual pointer
     void* buf = svGetArrayPtr(buffer);
     // check that the address points to a section
     assert(mems.count(address) > 0);

@@ -81,7 +81,7 @@ module zcmt_decoder #(
     ypb_zcmt_req_o.size     = 2'b10;
     ypb_zcmt_req_o.wdata    = '0;
     ypb_zcmt_req_o.rready   = '1;
-    ypb_zcmt_req_o.aid      = 1'b1;
+    ypb_zcmt_req_o.aid      = 1'b0;
     ypb_zcmt_req_o.kill_req = 1'b0;
     ypb_zcmt_req_o.vreq     = 1'b0;
     ypb_zcmt_req_o.atop     = ariane_pkg::AMO_NONE;
@@ -91,13 +91,15 @@ module zcmt_decoder #(
         ypb_zcmt_req_o.preq = 1'b0;
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.XLEN == 32) begin
-            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
+            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[9:2], 2'b00};
             ypb_zcmt_req_o.paddr = req_addr_d;
             ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
             fetch_stall_o = 1'b1;
           end else illegal_instr_o = 1'b1;
           if (!ypb_zcmt_rsp_i.pgnt) begin
             state_d = TABLE_WAIT_GNT;
+          end else begin
+            state_d = TABLE_WAIT_RVALID;
           end
         end else begin
           illegal_instr_o = illegal_instr_i;

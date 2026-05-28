@@ -2,7 +2,7 @@
 
 This repository contains a RISC-V privilege spec 1.11 (WIP) compatible CLINT for the Ariane Core.
 
-The CLINT plugs into an existing AXI Bus with an AXI 4 Lite interface. The IP mirrors transaction IDs and is fully pin-compatible with the full AXI 4 interface. It does not support burst transfers (as specified in the AMBA 4 Bus specifcation)
+The CLINT plugs into an existing AXI Bus with an AXI 4 Lite interface. The IP mirrors transaction IDs and is fully pin-compatible with the full AXI 4 interface. It does not support burst transfers (as specified in the AMBA 4 Bus specification)
 
 |      Address      | Description |                      Note                      |
 |-------------------|-------------|------------------------------------------------|

@@ -77,9 +77,9 @@ module amo_buffer #(
   assign ypb_amo_req_o.rready = amo_valid_commit_i;
 
 
-  // only flush if we are currently not committing the AMO
+  // only flush if we are currently not committing the AMO, unless respons rvalid just arrived, in that case we do need to flush
   // e.g.: it is not speculative anymore
-  assign flush_amo_buffer = flush_i & !amo_valid_commit_i;
+  assign flush_amo_buffer = flush_i & (!amo_valid_commit_i || ypb_amo_rsp_i.rvalid);
 
   cva6_fifo_v3 #(
       .DEPTH  (1),

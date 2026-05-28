@@ -936,10 +936,14 @@ def load_config(args, cwd):
     elif base in ("cv64a6_imafdc_sv39_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
-    elif base in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_hpdcache_wb"):
+    elif "cv64a6_imafdc_sv39" in base:
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc_zbkb"
     elif base == "cv32a60x":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
@@ -947,7 +951,19 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a65x_noPMP":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
     elif base == "cv32a60x_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a60x_zcmt_pmp_axi":
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
@@ -955,6 +971,20 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imc_zba_zbb_zbs_zbc"
       args.priv  = "m"
+    elif base == "cv32a65x_noPMP_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_noPMP_noSuperScalar_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+      args.priv  = "m"
+    elif base == "cv32a65x_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
+    elif base == "cv32a65x_sv32_axi":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imc_zba_zbb_zbs_zbc"
     elif base == "cv64a6_mmu":
       args.mabi = "lp64"
       args.isa  = "rv64imac_zba_zbb_zbs_zbc"
@@ -962,6 +992,9 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
     elif base == "cv32a6_imac_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac_zbkb"
+    elif base == "cv32a6_imac_sv32_obi":
       args.mabi = "ilp32"
       args.isa  = "rv32imac_zbkb"
     elif base == "cv32a6_imafc_sv32":

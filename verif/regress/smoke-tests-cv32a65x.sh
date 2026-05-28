@@ -46,8 +46,25 @@ CC_OPTS="-static \
 
 cd verif/sim/
 
+
+# 32-bit configurations without MMU
+riscv_tests_list=(
+  rv32ui-p-add
+  rv32ui-p-lw
+  rv32ui-p-sw
+  rv32ui-p-beq
+  rv32ui-p-jal
+)
+
 make -C ../.. clean
 make clean_all
+
+for t in ${riscv_tests_list[@]} ; do
+  python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a65x-p.yaml --test $t --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+done
+
+
 python3 cva6.py --c_tests ../tests/custom/hello_world/hello_world.c --iss_yaml cva6.yaml --target cv32a65x --iss=$DV_SIMULATORS --linker=../../config/gen_from_riscv_config/cv32a65x/linker/link.ld --gcc_opts="$CC_OPTS" $DV_OPTS --sv_seed 1
 make -C ../.. clean
 make clean_all

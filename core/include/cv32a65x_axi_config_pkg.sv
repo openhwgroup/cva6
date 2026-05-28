@@ -50,7 +50,7 @@ package cva6_config_pkg;
       CoproType: config_pkg::COPRO_EXAMPLE,
       RVZiCond: bit'(0),
       RVZicntr: bit'(0),
-      RVZifencei: bit'(0),
+      RVZifencei: bit'(1),
       RVZihpm: bit'(0),
       NrScoreboardEntries: unsigned'(8),
       PerfCounterEn: bit'(0),
@@ -103,7 +103,7 @@ package cva6_config_pkg;
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(0),
       NrStorePipeRegs: int'(0),
-      DcacheIdWidth: int'(1),
+      DcacheIdWidth: int'(3),
       ObiVersion: int'(config_pkg::OBI_V1_6),
       PipelineOnly: bit'(0)
   };
