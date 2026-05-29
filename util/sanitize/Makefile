@@ -22,3 +22,6 @@ all: verilog xlen
 verilog:
 	cd $(root-dir) && \
 	verible-verilog-format --inplace $$(git ls-tree -r HEAD --name-only core | grep '\.sv$$' | grep -v '^core/include/std_cache_pkg.sv$$' | grep -v cvfpu)
+
+xlen:
+	bash $(root-dir)/sanitize/systemverilog/xlen_misuse.sh
