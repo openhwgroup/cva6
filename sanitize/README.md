@@ -11,8 +11,8 @@
 
 # Conform
 
-This directory provid multiples script to apply format and sanitize rules on this project.
+This directory provides multiple scripts to apply format and sanitize rules on this project.
 You can execute all sanitize rules by executing `make`.
-Or execute separatly with `make verilog`.
+Or execute separately with `make verilog`.
 
 - `make verilog` apply RTL format rule from the contributing doc.
