@@ -72,7 +72,7 @@ If you encounter difficulties with these guidelines, get in touch with the team!
 
 ### Bug fixing
 
-Bug fixing is always welcome. You can issue a GitHub issue.
+Bug fixing is always welcome. You can open a GitHub issue.
 Better: in addition to the issue, solve the bug and trigger a pull request.
 Ideally, your pull request will include a testcase that illustrates the bug.
 
