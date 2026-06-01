@@ -20,7 +20,7 @@ At the same time, we'd like to continue integrating some new contributions to ke
 This comes with constraints to ensure that new contributions do not put the industrial project at risk.
 
 Past experience indicates that a workplan shared early with the CVA6 project team and regular synchronization improves the project's ability to integrate major contributions.
-Early discussions with the CVA6 team will help us to development of a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
+Early discussions with the CVA6 team will help us to develop a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
 Here are some guidelines to help the CVA6 team accept new contributions of major features:
 
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
