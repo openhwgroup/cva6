@@ -19,7 +19,9 @@ CVA6 has turned into an industrial project, where the core is being verified to 
 At the same time, we'd like to continue integrating some new contributions to keep CVA6 a vivid and innovative ecosystem.
 This comes with constraints to ensure that new contributions do not put the industrial project at risk.
 
-Therefore here are guidelines to help the CVA6 team accept new contributions of major features:
+Past experience indicates that a workplan shared early with the CVA6 project team and regular synchronization improves the project's ability to integrate major contributions.
+Early discussions with the CVA6 team will help us to development of a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
+Here are some guidelines to help the CVA6 team accept new contributions of major features:
 
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
     * The CVA6 team wants to assess the potential of your contribution.
@@ -28,10 +30,6 @@ Therefore here are guidelines to help the CVA6 team accept new contributions of 
     * This can help save significant review and overhauling effort for you and us when dealing with the pull request review.
     * Together, we can anticipate specific cases that are not addressed here.
     * If you do not know how to contact us already, get in touch through info@eclipse-foundation.org or open an issue in GitHub.
-
-- Early discussions with the CVA6 team may yield one of two possible outcomes:
-    * Development of a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
-    * Recommendation to create a new Eclipse Foundation project that would be a peer to the [OpenHW CVA6 project](https://projects.eclipse.org/projects/openhw.cva6).
 
 - Specific recommendations:
     * For instruction set extensions, talk to the team to assess the relevance of including it into the core or as a coprocessor on the CV-X-IF interface.
