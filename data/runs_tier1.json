@@ -1,5 +1,60 @@
 [
   {
+    "id": 26858348496,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 28,
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/26858348496",
+    "head_branch": "dependabot/submodules/verif/core-v-verif-7d3964e",
+    "head_sha": "68f24e7d",
+    "event": "pull_request",
+    "created_at": "2026-06-03T01:34:18Z",
+    "updated_at": "2026-06-03T01:57:36Z",
+    "run_started_at": "2026-06-03T01:34:18Z",
+    "duration_seconds": 1398,
+    "total_jobs": 3,
+    "passed_jobs": 2,
+    "failed_jobs": 1,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-06-03T01:51:00Z",
+        "completed_at": "2026-06-03T01:52:54Z",
+        "duration_seconds": 114,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/26858348496/job/79207834173",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      },
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-06-03T01:51:00Z",
+        "completed_at": "2026-06-03T01:53:42Z",
+        "duration_seconds": 162,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/26858348496/job/79207834174",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "failure",
+        "started_at": "2026-06-03T01:51:00Z",
+        "completed_at": "2026-06-03T01:57:35Z",
+        "duration_seconds": 395,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/26858348496/job/79207834182",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      }
+    ]
+  },
+  {
     "id": 26837781069,
     "source": "github-actions",
     "simulator": "verilator",
