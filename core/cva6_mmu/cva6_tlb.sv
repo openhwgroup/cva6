@@ -53,7 +53,14 @@ module cva6_tlb
     input logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed_i,
     input logic [CVA6Cfg.GPLEN-1:0] gpaddr_to_be_flushed_i,
     output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
-    output logic lu_hit_o
+    output logic lu_hit_o,
+
+    input logic [CVA6Cfg.VLEN-1:0] pue_tlb_vaddr_i,
+    input logic pue_tlb_update_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] pue_tlb_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] pue_tlb_vmid_i,
+    output logic pue_tlb_ready_o,
+    output logic [CVA6Cfg.PLEN-1:0] pue_pte_paddr_o
 );
   // SV39 defines three levels of page tables
   struct packed {
@@ -97,6 +104,12 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0] napot_tag_match;
   pte_cva6_t patched_pte;
   logic [TLB_ENTRIES-1:0] vpn0_napot_match;
+
+  logic [TLB_ENTRIES-1:0][CVA6Cfg.PLEN-1:0] pptr_q, pptr_n;
+  logic pue_sync_hit, one_pulse_sync, pue_sync_en;
+
+
+
   assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
   //-------------
   // Translation
@@ -140,12 +153,16 @@ module cva6_tlb
           // H-mode: extend the check on last level (Giga page) to include the supplementary bits in
           // GPA (cfg.GPPNW = 29 bits in Sv39x4, compared to 27 bits in Sv39)
           // /!\ Only in cases G-translation is active and not S-translation
-          assign vpn_match[i_gen][x_gen] = lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen]
+          assign vpn_match[i_gen][x_gen] = 
+          (pue_sync_en) ? pue_tlb_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen] 
+              && (s_st_enbl_i || pue_tlb_vaddr_i[12+CVA6Cfg.GPPNW-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))] == tags_q[i_gen].vpn[x_gen+HYP_EXT][(CVA6Cfg.GPPNW%(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels))-1:0])
+          : lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen]
               && (s_st_enbl_i || lu_vaddr_i[12+CVA6Cfg.GPPNW-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))] == tags_q[i_gen].vpn[x_gen+HYP_EXT][(CVA6Cfg.GPPNW%(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels))-1:0]);
 
         end else begin
           // Standard match
-          assign vpn_match[i_gen][x_gen] = lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
+          assign vpn_match[i_gen][x_gen] = (pue_sync_en) ? pue_tlb_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen]
+                : lu_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
         end
 
         // Identify if there is a hit at level `x`: VPN and page length must match
@@ -163,7 +180,8 @@ module cva6_tlb
       end
 
       // Identify if the input virtual address matches a stored NAPOT tag
-      assign vpn0_napot_match[i_gen] = lu_vaddr_i[12 + (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) - 1 : 16] == tags_q[i_gen].vpn[0][(CVA6Cfg.VpnLen / CVA6Cfg.PtLevels)-1 : 4];
+      assign vpn0_napot_match[i_gen] = (pue_sync_en) ? pue_tlb_vaddr_i[12+ (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) - 1 : 16] == tags_q[i_gen].vpn[0][(CVA6Cfg.VpnLen / CVA6Cfg.PtLevels)-1 : 4] 
+          : lu_vaddr_i[12 + (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) - 1 : 16] == tags_q[i_gen].vpn[0][(CVA6Cfg.VpnLen / CVA6Cfg.PtLevels)-1 : 4];
       assign napot_tag_match[i_gen] = (CVA6Cfg.SvnapotEn && tags_q[i_gen].is_napot_64k) ? vpn_match[i_gen][2] && vpn_match[i_gen][1] && vpn0_napot_match[i_gen] : 1'b0;
 
       if (CVA6Cfg.RVH) begin
@@ -181,6 +199,8 @@ module cva6_tlb
     end
   endgenerate
 
+  assign pue_tlb_ready_o = !(lu_access_i && !lu_hit_o); // PTW access or DTLB UPDATE WATING
+
   always_comb begin : translation
 
     // default assignment
@@ -195,13 +215,18 @@ module cva6_tlb
     g_content      = '{default: 0};
     lu_gpaddr_o    = '{default: 0};
 
+    pue_sync_hit       = 1'b0;
+    pue_pte_paddr_o    = '0;
+
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // First level match, this may be a giga page, check the ASID flags as well
       // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
-      match_asid[i] = ((lu_asid_i == tags_q[i].asid || content_q[i].pte.g) && s_st_enbl_i) || !s_st_enbl_i;
+      match_asid[i] = (pue_sync_en) ? ((pue_tlb_asid_i == tags_q[i].asid || content_q[i].pte.g) && s_st_enbl_i) || !s_st_enbl_i
+              : ((lu_asid_i == tags_q[i].asid || content_q[i].pte.g) && s_st_enbl_i) || !s_st_enbl_i;
 
       if (CVA6Cfg.RVH) begin
-        match_vmid[i] = (lu_vmid_i == tags_q[i].vmid && g_st_enbl_i) || !g_st_enbl_i;
+        match_vmid[i] = (pue_sync_en) ? (pue_tlb_vmid_i == tags_q[i].vmid && g_st_enbl_i) || !g_st_enbl_i
+              : (lu_vmid_i == tags_q[i].vmid && g_st_enbl_i) || !g_st_enbl_i;
       end
 
       // Check if that S-stage and G-stage modes corresponds, and that
@@ -215,61 +240,72 @@ module cva6_tlb
       // - virtualisations / S-stage / G-stage matches
       // - there exists a PT level for which and entry exists and corresponding VPN(s) match
       if (tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && (|level_match[i] || napot_tag_match[i])) begin
-        lu_is_page_o = is_page_o[i];
-        lu_content_o = content_q[i].pte;
-        lu_hit_o     = 1'b1;
-        lu_hit[i]    = 1'b1;
-        // Translate S-stage to GPA: use `content_q[i].pte` to get PPN and use offset
-        // from input `lu_vaddr_i`. In case of mega/giga pages, PTE PPN must be aligned,
-        // so we should not overwrite any useful bits.
-        if (CVA6Cfg.RVH) begin
-          if (s_st_enbl_i) begin
-            // S-stage Normal page
-            lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
-            // S-stage Mega page
-            if (tags_q[i].is_page[1][0])
-              lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
-            // S-stage Giga page
-            if (tags_q[i].is_page[0][0])
-              lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
-          end else begin
-            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
-          end
-
-          // G-translation (if requested), depending on `content[i].gpte` page type
-          if (g_st_enbl_i) begin
-            // Compute G-Stage PPN based on the GPA
-            // in case of mega/giga pages, GPTE PPN must be aligned so
-            // here again, we should not overwrite useful bits.
-            lu_g_content_o = content_q[i].gpte;
-            // Mega page
-            if (tags_q[i].is_page[1][HYP_EXT])
-              lu_g_content_o.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
-            // Giga page
-            if (tags_q[i].is_page[0][HYP_EXT])
-              lu_g_content_o.ppn[2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
-          end
-        end
-        if (|level_match[i] || napot_tag_match[i]) begin
-          lu_is_page_o = is_page_o[i];
+        if (pue_sync_en) begin
+          pue_sync_hit = 1'b1;
+        end else begin
+          lu_is_page_o    = is_page_o[i];
+          lu_content_o    = content_q[i].pte;
+          pue_pte_paddr_o = pptr_q[i];
           lu_hit_o     = 1'b1;
           lu_hit[i]    = 1'b1;
-          // Patch the PPN on every TLB hit if this entry is a 64 KiB Svnapot page
-          if (tags_q[i].is_napot_64k && CVA6Cfg.SvnapotEn) begin
-            patched_pte          = content_q[i].pte;
-            patched_pte.ppn[3:0] = lu_vaddr_i[15:12];
-            lu_content_o         = patched_pte;
-          end else begin
-            lu_content_o = content_q[i].pte;
-          end
-
+          // Translate S-stage to GPA: use `content_q[i].pte` to get PPN and use offset
+          // from input `lu_vaddr_i`. In case of mega/giga pages, PTE PPN must be aligned,
+          // so we should not overwrite any useful bits.
           if (CVA6Cfg.RVH) begin
-            // Compute G-Stage PPN based on the gpaddr
-            g_content = content_q[i].gpte;
-            if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
-            if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
-            // Output G-stage and S-stage content
-            lu_g_content_o = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i].gpte : g_content;
+            if (s_st_enbl_i) begin
+              // S-stage Normal page
+              lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
+              // S-stage Mega page
+              if (tags_q[i].is_page[1][0])
+                lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+              // S-stage Giga page
+              if (tags_q[i].is_page[0][0])
+                lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+            end else begin
+              lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.IS_XLEN32 == 32?CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
+            end
+
+            // G-translation (if requested), depending on `content[i].gpte` page type
+            if (g_st_enbl_i) begin
+              // Compute G-Stage PPN based on the GPA
+              // in case of mega/giga pages, GPTE PPN must be aligned so
+              // here again, we should not overwrite useful bits.
+              lu_g_content_o = content_q[i].gpte;
+              // Mega page
+              if (tags_q[i].is_page[1][HYP_EXT])
+                lu_g_content_o.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+              // Giga page
+              if (tags_q[i].is_page[0][HYP_EXT])
+                lu_g_content_o.ppn[2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+            end
+          end
+          if (|level_match[i] || napot_tag_match[i]) begin
+            if (pue_sync_en) begin
+              pue_sync_hit = 1'b1;
+            end else begin
+              lu_is_page_o = is_page_o[i];
+              lu_hit_o     = 1'b1;
+              lu_hit[i]    = 1'b1;
+              // Patch the PPN on every TLB hit if this entry is a 64 KiB Svnapot page
+              if (tags_q[i].is_napot_64k && CVA6Cfg.SvnapotEn) begin
+                patched_pte          = content_q[i].pte;
+                patched_pte.ppn[3:0] = lu_vaddr_i[15:12];
+                lu_content_o         = patched_pte;
+                pue_pte_paddr_o      = pptr_q[i];
+              end else begin
+                lu_content_o = content_q[i].pte;
+                pue_pte_paddr_o      = pptr_q[i];
+              end
+
+              if (CVA6Cfg.RVH) begin
+                // Compute G-Stage PPN based on the gpaddr
+                g_content = content_q[i].gpte;
+                if (tags_q[i].is_page[HYP_EXT][HYP_EXT]) g_content.ppn[8:0] = lu_gpaddr_o[20:12];
+                if (tags_q[i].is_page[0][HYP_EXT]) g_content.ppn[17:0] = lu_gpaddr_o[29:12];
+                // Output G-stage and S-stage content
+                lu_g_content_o = level_match[i][CVA6Cfg.PtLevels-1] ? content_q[i].gpte : g_content;
+              end
+            end
           end
         end
       end
@@ -298,6 +334,8 @@ module cva6_tlb
   always_comb begin : update_flush
     tags_n    = tags_q;
     content_n = content_q;
+
+    if(CVA6Cfg.SvaduEn) pptr_n = pptr_q;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
 
@@ -395,7 +433,22 @@ module cva6_tlb
         };
         // update content as well
         content_n[i].pte = update_i.content;
-        if (CVA6Cfg.RVH) content_n[i].gpte = update_i.g_content;
+        if(CVA6Cfg.SvaduEn) begin
+           pptr_n[i] = update_i.pptr;
+           content_n[i].pte.a = 1'b1;  // Svadu Accessed-bit update
+        end
+        if (CVA6Cfg.RVH) begin
+           content_n[i].gpte = update_i.g_content;
+           if(CVA6Cfg.SvaduEn) begin 
+            pptr_n[i] = update_i.pptr;
+            content_n[i].gpte.a = 1'b1; // Svadu Accessed-bit update
+           end
+        end
+      end else if (CVA6Cfg.SvaduEn && pue_sync_hit && tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && (|level_match[i] || napot_tag_match[i])) begin
+        content_n[i].pte.d = 1;
+        if(CVA6Cfg.RVH) begin
+          content_n[i].gpte.d = 1;
+        end
       end
     end
   end
@@ -484,15 +537,22 @@ module cva6_tlb
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      tags_q      <= '{default: 0};
-      content_q   <= '{default: 0};
-      plru_tree_q <= '{default: 0};
+      tags_q         <= '{default: 0};
+      content_q      <= '{default: 0};
+      plru_tree_q    <= '{default: 0};
+      pptr_q         <= '{default: 0};
+      one_pulse_sync <= 0;
     end else begin
-      tags_q      <= tags_n;
-      content_q   <= content_n;
-      plru_tree_q <= plru_tree_n;
+      tags_q         <= tags_n;
+      content_q      <= content_n;
+      plru_tree_q    <= plru_tree_n;
+      pptr_q         <= pptr_n;
+      one_pulse_sync <= pue_tlb_update_i;
     end
   end
+
+  assign pue_sync_en = (CVA6Cfg.SvaduEn) ? (pue_tlb_update_i && !one_pulse_sync) : 0;
+
   //--------------
   // Sanity checks
   //--------------

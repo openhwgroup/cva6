@@ -1,0 +1,491 @@
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# testlist        : Assembly test list
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+
+common_test_config: &common_test_config
+  path_var: TESTS_PATH
+  asm_tests: <path_var>/custom/Svadu/Svade_individual_test.S
+  base_opts: &base_opts >-
+    -static -mcmodel=medany -fvisibility=hidden
+    -nostdlib -nostartfiles
+    -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+    -I<path_var>/riscv-arch-test/riscv-target/spike/
+
+
+testlist:
+
+########################################
+# FULL TEST : Sv39/Sv39 S/U mode 
+########################################
+
+# --------------------- Sv39 ------------------------- #
+
+# Sv39 | Smode
+  - test: total_test_Sv39_smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_Smode.S
+
+# Sv39 | Umode
+  - test: total_test_Sv39_umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_Umode.S
+
+
+# --------------------- Sv32 ------------------------- #
+
+# Sv32 | Smode
+  - test: total_test_Sv32_smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_Umode.S
+
+# Sv32 | Umode
+  - test: total_test_Sv32_umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_Umode.S
+
+########################################
+# INDIVIDUAL TEST : Sv39/Sv39 S/U mode 
+########################################
+
+# --------------------- Sv39 ------------------------- #
+
+# Sv39 | S mode | LEVEL 0 | A-bit
+  - test: Sv39_LV0_A_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+# Sv39 | S mode | LEVEL 0 | D-bit
+  - test: Sv39_LV0_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+
+# Sv39 | S mode | LEVEL 0 | A/D-bit
+  - test: Sv39_LV0_A_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+
+# Sv39 | S mode | LEVEL 1 | A-bit
+  - test: Sv39_LV1_A_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+# Sv39 | S mode | LEVEL 1 | D-bit
+  - test: Sv39_LV1_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+# Sv39 | S mode | LEVEL 1 | A/D-bit
+  - test: Sv39_LV1_A_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+
+# Sv39 | S mode | LEVEL 2 | A-bit
+  - test: Sv39_LV2_A_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+# Sv39 | S mode | LEVEL 2 | D-bit
+  - test: Sv39_LV2_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+
+# Sv39 | S mode | LEVEL 2 | A/D-bit
+  - test: Sv39_LV2_A_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Smode.S
+
+# Sv39 | U mode | LEVEL 0 | A-bit
+  - test: Sv39_LV0_A_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 0 | D-bit
+  - test: Sv39_LV0_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 0 | A/D-bit
+  - test: Sv39_LV0_A_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+
+# Sv39 | U mode | LEVEL 1 | A-bit
+  - test: Sv39_LV1_A_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 1 | D-bit
+  - test: Sv39_LV1_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 1 | A/D-bit
+  - test: Sv39_LV1_A_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 2 | A/D-bit
+  - test: Sv39_LV2_A_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 2 | D-bit
+  - test: Sv39_LV2_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# Sv39 | U mode | LEVEL 2 | A/D-bit
+  - test: Sv39_LV2_A_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv39_Svadu_indiv_Umode.S
+
+# --------------------- Sv32 ------------------------- #
+
+# Sv32 | S mode | LEVEL 0 | A-bit
+  - test: Sv32_LV0_A_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | S mode | LEVEL 0 | D-bit
+  - test: Sv32_LV0_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | S mode | LEVEL 0 | A/D-bit
+  - test: Sv32_LV0_A_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | S mode | LEVEL 1 | A-bit
+  - test: Sv32_LV1_A_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | S mode | LEVEL 1 | D-bit
+  - test: Sv32_LV1_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | S mode | LEVEL 1 | A/D-bit
+  - test: Sv32_LV1_A_D_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Smode.S
+
+# Sv32 | U mode | LEVEL 0 | A-bit
+  - test: Sv32_LV0_A_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S
+
+# Sv32 | U mode | LEVEL 0 | D-bit
+  - test: Sv32_LV0_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S
+
+# Sv32 | U mode | LEVEL 0 | A/D-bit
+  - test: Sv32_LV0_A_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S
+
+# Sv32 | U mode | LEVEL 1 | A-bit
+  - test: Sv32_LV1_A_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=0
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S
+
+# Sv32 | U mode | LEVEL 1 | D-bit
+  - test: Sv32_LV1_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S
+
+# Sv32 | U mode | LEVEL 1 | A/D-bit
+  - test: Sv32_LV1_A_D_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=32 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_ACCESS=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svadu/Sv32_Svadu_indiv_Umode.S

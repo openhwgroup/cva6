@@ -120,6 +120,10 @@ module load_store_unit
     input  logic                                      mxr_i,
     // Make Executable Readable Virtual Supervisor - CSR_REGFILE
     input  logic                                      vmxr_i,
+    // machine-mode hardware-supported A/D-bit update - CSR_REGFILE
+    input logic                                       madue_i,
+    // hypervisor-mode hardware-supported A/D-bit update - CSR_REGFILE
+    input logic                                       hadue_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -161,6 +165,8 @@ module load_store_unit
     output amo_req_t            amo_req_o,
     // AMO response - CACHE
     input  amo_resp_t           amo_resp_i,
+    // AMO commit - COMMIT STAGE
+    output amo_resp_t           amo_commit_o,
 
     // PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0]                   pmpcfg_i,
@@ -252,6 +258,23 @@ module load_store_unit
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid[2:0], asid_to_be_flushed[1:0];
   logic [CVA6Cfg.VLEN-1:0] vaddr_to_be_flushed[1:0];
 
+
+
+  logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr;
+  logic accessed_req_valid;
+  logic accessed_queue_full;
+
+  logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr, dirty_req_vaddr;
+  logic dirty_req_tlb_sync_i, dirty_req_tlb_sync_o;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_i, dirty_req_tlb_asid_o; 
+  logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_i, dirty_req_tlb_vmid_o;
+  logic dirty_req_tlb_ready;
+  logic dirty_bit_fault_valid;
+
+  logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr;
+  logic lsu_is_store_o;
+
+
   // -------------------
   // MMU e.g.: TLBs/PTW
   // -------------------
@@ -292,6 +315,7 @@ module load_store_unit
         .lsu_valid_o    (pmp_translation_valid),
         .lsu_paddr_o    (lsu_paddr),
         .lsu_exception_o(pmp_exception),
+        .lsu_is_store_o (lsu_is_store_o),
 
         .priv_lvl_i      (priv_lvl_i),
         .v_i,
@@ -301,6 +325,8 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .madue_i,
+        .hadue_i,
         .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
@@ -318,6 +344,25 @@ module load_store_unit
         .flush_tlb_i,
         .flush_tlb_vvma_i,
         .flush_tlb_gvma_i,
+
+        .accessed_req_paddr_o  (accessed_req_paddr),
+        .accessed_req_valid_o  (accessed_req_valid),
+        .accessed_queue_full_i (accessed_queue_full),
+
+        .dirty_req_tlb_ready_o (dirty_req_tlb_ready),
+        .dirty_req_tlb_sync_i  (dirty_req_tlb_sync_o),
+        .dirty_req_tlb_sync_o  (dirty_req_tlb_sync_i),
+        
+        .dirty_req_tlb_vaddr_i (dirty_req_tlb_vaddr),
+        .dirty_req_tlb_vmid_i  (dirty_req_tlb_vmid_o),
+        .dirty_req_tlb_asid_i  (dirty_req_tlb_asid_o),
+        
+        .dirty_req_tlb_vmid_o  (dirty_req_tlb_vmid_i),
+        .dirty_req_tlb_asid_o  (dirty_req_tlb_asid_i),
+        .dirty_req_tlb_vaddr_o (dirty_req_vaddr),
+        .dirty_req_pte_paddr_o (dirty_req_pte_paddr),
+
+        .dirty_bit_fault_valid_o (dirty_bit_fault_valid),
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
@@ -394,7 +439,7 @@ module load_store_unit
       .lsu_paddr_i         (lsu_paddr),
       .lsu_vaddr_i         (mmu_vaddr),
       .lsu_exception_i     (pmp_exception),
-      .lsu_is_store_i      (st_translation_req),
+      .lsu_is_store_i      (lsu_is_store_o),
       .lsu_valid_o         (translation_valid),
       .lsu_paddr_o         (mmu_paddr),
       .lsu_exception_o     (mmu_exception),
@@ -550,12 +595,31 @@ module load_store_unit
       .paddr_i              (cva6_mmu_paddr),
       .ex_i                 (cva6_mmu_exception),
       .dtlb_hit_i           (cva6_dtlb_hit),
+      // PUE prot
+      .accessed_req_paddr_i (accessed_req_paddr),
+      .accessed_req_valid_i (accessed_req_valid),
+      .accessed_queue_full_o(accessed_queue_full),
+
+      .dirty_req_pte_paddr_i    (dirty_req_pte_paddr),
+      .dirty_bit_fault_valid_i  (dirty_bit_fault_valid),
+      .dirty_req_vaddr_i        (dirty_req_vaddr),
+      .dirty_req_asid_i         (dirty_req_tlb_asid_i),
+      .dirty_req_vmid_i         (dirty_req_tlb_vmid_i),
+
+      .dirty_req_tlb_vmid_o     (dirty_req_tlb_vmid_o),
+      .dirty_req_tlb_asid_o     (dirty_req_tlb_asid_o),
+      .dirty_req_tlb_vaddr_o    (dirty_req_tlb_vaddr),
+
+      .dirty_req_tlb_ready_i    (dirty_req_tlb_ready),
+      .dirty_req_tlb_sync_i     (dirty_req_tlb_sync_i),
+      .dirty_req_tlb_sync_o     (dirty_req_tlb_sync_o),
       // Load Unit
       .page_offset_i        (page_offset),
       .page_offset_matches_o(page_offset_matches),
       // AMOs
       .amo_req_o,
       .amo_resp_i,
+      .amo_commit_o,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[2]),
       .req_port_o           (dcache_req_ports_o[2])

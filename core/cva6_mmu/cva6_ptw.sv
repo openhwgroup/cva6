@@ -50,6 +50,12 @@ module cva6_ptw
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
 
     input logic lsu_is_store_i,  // this translation was triggered by a store
+
+    // PUE interface
+    output logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_o,
+    output logic accessed_req_valid_o,
+    input logic accessed_queue_full_i,
+    
     // PTW memory interface
     input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
@@ -78,6 +84,8 @@ module cva6_ptw
     input logic [CVA6Cfg.PPNW-1:0] hgatp_ppn_i,  // ppn from hgatp
     input logic                    mxr_i,
     input logic                    vmxr_i,
+    input logic                    madue_i,
+    input logic                    hadue_i,
     input logic                    mbe_i,
 
     // Performance counters
@@ -151,6 +159,8 @@ module cva6_ptw
   logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
   logic [CVA6Cfg.PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
 
+  logic access_full_q, access_full_n;
+
   // Assignments
   assign update_vaddr_o = vaddr_q;
 
@@ -204,6 +214,7 @@ module cva6_ptw
   always_comb begin : tlb_update
     shared_tlb_update_o.valid = shared_tlb_update_valid;
     shared_tlb_update_o.is_napot_64k = is_napot_64k;
+    shared_tlb_update_o.pptr = CVA6Cfg.SvaduEn ? ptw_pptr_q : '0;
 
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
@@ -318,6 +329,10 @@ module cva6_ptw
     tlb_update_asid_n       = tlb_update_asid_q;
     vaddr_n                 = vaddr_q;
     pptr                    = ptw_pptr_q;
+
+    accessed_req_valid_o = 1'b0;
+    accessed_req_paddr_o = '0;
+    access_full_n = access_full_q;
 
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;
@@ -484,13 +499,40 @@ module cva6_ptw
                 // If page is not executable, we can directly raise an error. This
                 // doesn't put a useless entry into the TLB. The same idea applies
                 // to the access flag since we let the access flag be managed by SW.
-                if ((!pte.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) || !pte.a
-                    || (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte.r)) begin
-                  state_d = PROPAGATE_ERROR;
-                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                end else if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH)
-                  shared_tlb_update_valid = 1'b1;
-
+                if ((!pte.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) ||
+                   (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte.r)) begin
+                    state_d = PROPAGATE_ERROR;
+                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                end 
+                else begin  // G-final stage -> found page (RVH) | RVH x (found page) this for Instruction fetch
+                  // For Host Machince case,
+                  //  madue_i == 1 : Svadu for S-stage
+                  // For Hypervisor case
+                  //  madue_i == 1 ,  hadue_i == 0 : Svadu only for VS-stage
+                  //  madue_i == 1 ,  hadue_i == 1 : Svadu for both VS-stage and G-stage
+                  if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH) begin
+                    if(pte.a) begin
+                      shared_tlb_update_valid = 1'b1;
+                    end else begin
+                      if(((ptw_stage_q == S_STAGE && !enable_g_translation_i) && madue_i) ||  // RVH + S-Stage + MADUE
+                        (ptw_stage_q == G_FINAL_STAGE && hadue_i && madue_i) ||               // RVH + G-final Stage + MADUE + HADUE
+                        (!CVA6Cfg.RVH && madue_i))  begin                                     // !RVH + S-STAGE + MADUE
+                          shared_tlb_update_valid = 1'b1;
+                          if(accessed_queue_full_i) begin
+                            access_full_n = 1; // we need to wait until the PUE is free.
+                          end else begin
+                            accessed_req_valid_o = 1;
+                            accessed_req_paddr_o = ptw_pptr_q;
+                          end
+                        end
+                      else begin
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                      end
+                      // ------------------------ //
+                    end
+                  end
+                end
               end else begin
                 // ------------
                 // Update DTLB
@@ -500,19 +542,59 @@ module cva6_ptw
                 // If page is not readable (there are no write-only pages)
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
+                
                 if (
-                  (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
-                    // Request is a store: perform some additional checks
+                    (((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i ||      
+                    (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))  
+                    // Request is a store: perform some additional checks                
+
                     // If the request was a store and the page is not write-able, raise an error
                     // the same applies if the dirty flag is not set
                     // g-intermediate nodes however never need write-permission
-                    && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
                 ) begin
-                  if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH)
-                    shared_tlb_update_valid = 1'b1;
+                    if(ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH) begin
+                      if(!pte.a) begin // kernel error
+                        state_d = PROPAGATE_ERROR;
+                        if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                      end
+                    // SVADU EXTENSION - SEONGWON // 
+                    end else if(lsu_is_store_i && !pte.w) begin
+                      state_d = PROPAGATE_ERROR;
+                      if(CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                    end else begin
+                      if((!pte.a) || (lsu_is_store_i && !pte.d)) begin
+                        if((ptw_stage_q == S_STAGE && madue_i && !en_ld_st_g_translation_i) // RVH + S-Stage + MADUE
+                        || (ptw_stage_q == G_FINAL_STAGE && madue_i && hadue_i)             // RVH + G-final Stage + MADUE + HADUE
+                        || (!CVA6Cfg.RVH && madue_i)) begin                                 // !RVH + S-STAGE + MADUE
+                          if(!pte.a) begin
+                            if(accessed_queue_full_i) begin
+                              access_full_n = 1'b1;
+                              $display("[%0t] accessed_queue full ",$time);
+                            end else begin
+                              accessed_req_valid_o = 1;
+                              accessed_req_paddr_o = ptw_pptr_q;
+                              $display("[%0t] [PTW-DTLB] access valid | Paddr : %h",$time, ptw_pptr_q);
+                            end
+                          end
+                          shared_tlb_update_valid = 1'b1;
+                        end else begin
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                        end
+                        // access_bit or dirty_bit update 
+                        // Svadu / Svade type
+                      end else begin
+                          if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
+                            shared_tlb_update_valid = 1'b1;
+                            $display("[%0t] [PTW-DTLB] STLB UPDATE valid | Paddr : %h", $time,ptw_pptr_q);
+                          end
+                      end
+                      
+                    end 
+                    // ----------------------- //
                 end else begin
-                  state_d = PROPAGATE_ERROR;
-                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                    state_d = PROPAGATE_ERROR;
+                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
               end
 
@@ -521,6 +603,9 @@ module cva6_ptw
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 shared_tlb_update_valid = 1'b0;
+                accessed_req_valid_o    = '0;
+                accessed_req_paddr_o    = '0;
+                access_full_n           = '0;
               end
 
               // check if 63:41 are all zeros
@@ -597,6 +682,9 @@ module cva6_ptw
           // check if this access was actually allowed from a PMP perspective
           if (!allow_access) begin
             shared_tlb_update_valid = 1'b0;
+            accessed_req_valid_o    = '0;
+            accessed_req_paddr_o    = '0;
+            access_full_n           = '0;
             // we have to return the failed address in bad_addr
             ptw_pptr_n = ptw_pptr_q;
             if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
@@ -623,7 +711,16 @@ module cva6_ptw
         if (data_rvalid_q) state_d = IDLE;
       end
       LATENCY: begin
-        state_d = IDLE;
+        if(access_full_n) begin
+          if(!accessed_queue_full_i) begin
+            accessed_req_paddr_o = ptw_pptr_q;
+            accessed_req_valid_o = 1;
+            access_full_n = 0;
+            state_d = IDLE;
+          end
+          else state_d = LATENCY;
+        end
+        else state_d = IDLE;
       end
       default: begin
         state_d = IDLE;
@@ -668,6 +765,7 @@ module cva6_ptw
       global_mapping_q  <= 1'b0;
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
+      access_full_q   <= 1'b0;
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= '0;
         gptw_pptr_q       <= '0;
@@ -688,6 +786,7 @@ module cva6_ptw
       //data_rdata_q      <= req_port_i.data_rdata;
       data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
+      access_full_q   <= access_full_n;
 
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= gpaddr_n;

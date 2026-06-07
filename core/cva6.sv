@@ -571,6 +571,8 @@ module cva6
   logic vs_sum_csr_ex;
   logic mxr_csr_ex;
   logic vmxr_csr_ex;
+  logic madue_csr_ex;
+  logic hadue_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn_csr_ex;
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_csr_ex;
@@ -651,7 +653,7 @@ module cva6
   icache_drsp_t icache_dreq_cache_if;
 
   amo_req_t amo_req;
-  amo_resp_t amo_resp;
+  amo_resp_t amo_resp, amo_commit;
   logic sb_full;
 
   // ----------------
@@ -1049,6 +1051,7 @@ module cva6
       .amo_valid_commit_i      (amo_valid_commit),
       .amo_req_o               (amo_req),
       .amo_resp_i              (amo_resp),
+      .amo_commit_o            (amo_commit),
       // CoreV-X-Interface
       .x_valid_i               (x_issue_valid_id_ex),
       .x_ready_o               (x_issue_ready_ex_id),
@@ -1088,6 +1091,8 @@ module cva6
       .vs_sum_i                (vs_sum_csr_ex),                  // from CSR
       .mxr_i                   (mxr_csr_ex),                     // from CSR
       .vmxr_i                  (vmxr_csr_ex),                    // from CSR
+      .madue_i                 (madue_csr_ex),                   // from CSR
+      .hadue_i                 (hadue_csr_ex),                   // from CSR
       .satp_ppn_i              (satp_ppn_csr_ex),                // from CSR
       .asid_i                  (asid_csr_ex),                    // from CSR
       .vsatp_ppn_i             (vsatp_ppn_csr_ex),               // from CSR
@@ -1124,40 +1129,39 @@ module cva6
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i                 (halt_ctrl),
-      .flush_dcache_i         (dcache_flush_ctrl_cache),
-      .exception_o            (ex_commit),
-      .dirty_fp_state_o       (dirty_fp_state),
-      .single_step_i          (single_step_csr_commit || single_step_acc_commit),
-      .commit_instr_i         (commit_instr_id_commit),
-      .commit_drop_i          (commit_drop_id_commit),
-      .commit_ack_o           (commit_ack_commit_id),
-      .commit_macro_ack_o     (commit_macro_ack),
-      .waddr_o                (waddr_commit_id),
-      .wdata_o                (wdata_commit_id),
-      .we_gpr_o               (we_gpr_commit_id),
-      .we_fpr_o               (we_fpr_commit_id),
-      .amo_resp_i             (amo_resp),
-      .pc_o                   (pc_commit),
-      .csr_op_o               (csr_op_commit_csr),
-      .csr_wdata_o            (csr_wdata_commit_csr),
-      .csr_rdata_i            (csr_rdata_csr_commit),
-      .csr_write_fflags_o     (csr_write_fflags_commit_cs),
-      .csr_exception_i        (csr_exception_csr_commit),
-      .commit_lsu_o           (lsu_commit_commit_ex),
-      .commit_lsu_ready_i     (lsu_commit_ready_ex_commit),
-      .commit_tran_id_o       (lsu_commit_trans_id),
-      .amo_valid_commit_o     (amo_valid_commit),
-      .no_st_pending_i        (no_st_pending_commit),
-      .shared_tlb_flush_busy_i(shared_tlb_flush_busy_ex),
-      .commit_csr_o           (csr_commit_commit_ex),
-      .fence_i_o              (fence_i_commit_controller),
-      .fence_o                (fence_commit_controller),
-      .flush_commit_o         (flush_commit),
-      .sfence_vma_o           (sfence_vma_commit_controller),
-      .hfence_vvma_o          (hfence_vvma_commit_controller),
-      .hfence_gvma_o          (hfence_gvma_commit_controller),
-      .break_from_trigger_i   (break_from_trigger)
+      .halt_i              (halt_ctrl),
+      .flush_dcache_i      (dcache_flush_ctrl_cache),
+      .exception_o         (ex_commit),
+      .dirty_fp_state_o    (dirty_fp_state),
+      .single_step_i       (single_step_csr_commit || single_step_acc_commit),
+      .commit_instr_i      (commit_instr_id_commit),
+      .commit_drop_i       (commit_drop_id_commit),
+      .commit_ack_o        (commit_ack_commit_id),
+      .commit_macro_ack_o  (commit_macro_ack),
+      .waddr_o             (waddr_commit_id),
+      .wdata_o             (wdata_commit_id),
+      .we_gpr_o            (we_gpr_commit_id),
+      .we_fpr_o            (we_fpr_commit_id),
+      .amo_resp_i          (amo_commit),
+      .pc_o                (pc_commit),
+      .csr_op_o            (csr_op_commit_csr),
+      .csr_wdata_o         (csr_wdata_commit_csr),
+      .csr_rdata_i         (csr_rdata_csr_commit),
+      .csr_write_fflags_o  (csr_write_fflags_commit_cs),
+      .csr_exception_i     (csr_exception_csr_commit),
+      .commit_lsu_o        (lsu_commit_commit_ex),
+      .commit_lsu_ready_i  (lsu_commit_ready_ex_commit),
+      .commit_tran_id_o    (lsu_commit_trans_id),
+      .amo_valid_commit_o  (amo_valid_commit),
+      .no_st_pending_i     (no_st_pending_commit),
+      .commit_csr_o        (csr_commit_commit_ex),
+      .fence_i_o           (fence_i_commit_controller),
+      .fence_o             (fence_commit_controller),
+      .flush_commit_o      (flush_commit),
+      .sfence_vma_o        (sfence_vma_commit_controller),
+      .hfence_vvma_o       (hfence_vvma_commit_controller),
+      .hfence_gvma_o       (hfence_gvma_commit_controller),
+      .break_from_trigger_i(break_from_trigger)
   );
 
   assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
@@ -1219,6 +1223,8 @@ module cva6
       .vs_sum_o                (vs_sum_csr_ex),
       .mxr_o                   (mxr_csr_ex),
       .vmxr_o                  (vmxr_csr_ex),
+      .menvcfg_adue_o          (madue_csr_ex),
+      .henvcfg_adue_o          (hadue_csr_ex),
       .satp_ppn_o              (satp_ppn_csr_ex),
       .asid_o                  (asid_csr_ex),
       .vsatp_ppn_o             (vsatp_ppn_csr_ex),

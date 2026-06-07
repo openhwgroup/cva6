@@ -48,6 +48,10 @@ module store_buffer
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
     input cbo_t cbo_op_i,  // type of cache block operation
 
+    // PUE interface
+    output logic [CVA6Cfg.PLEN-1:0] pue_commit_paddr_o,
+    output logic pue_commit_valid_o,
+
     // D$ interface
     input  dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o
@@ -92,6 +96,11 @@ module store_buffer
     speculative_read_pointer_n  = speculative_read_pointer_q;
     speculative_write_pointer_n = speculative_write_pointer_q;
     speculative_queue_n         = speculative_queue_q;
+
+    // PUE commit tracking
+    pue_commit_paddr_o = '0;
+    pue_commit_valid_o = 1'b0;
+
     // LSU interface
     // we are ready to accept a new entry and the input data is valid
     if (valid_i) begin
@@ -115,6 +124,11 @@ module store_buffer
       // advance the read pointer
       speculative_read_pointer_n = speculative_read_pointer_q + 1'b1;
       speculative_status_cnt--;
+
+      if (CVA6Cfg.SvaduEn) begin
+        pue_commit_paddr_o = speculative_queue_n[speculative_read_pointer_q].address;
+        pue_commit_valid_o = 1'b1;
+      end
     end
 
     speculative_status_cnt_n = speculative_status_cnt;

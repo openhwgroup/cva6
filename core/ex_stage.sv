@@ -207,6 +207,10 @@ module ex_stage
     input logic mxr_i,
     // Make executable readable Virtual Supervisor - CSR_REGFILE
     input logic vmxr_i,
+    // machine-mode hardware-supported A/D-bit update - CSR_REGFILE
+    input logic madue_i,
+    // hypervisor-mode hardware-supported A/D-bit update - CSR_REGFILE
+    input logic hadue_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
@@ -235,6 +239,8 @@ module ex_stage
     output amo_req_t amo_req_o,
     // AMO response - CACHE
     input amo_resp_t amo_resp_i,
+    // AMO commit - COMMIT STAGE
+    output amo_resp_t amo_commit_o,
     // To count the instruction TLB misses - PERF_COUNTERS
     output logic itlb_miss_o,
     // To count the data TLB misses - PERF_COUNTERS
@@ -589,6 +595,8 @@ module ex_stage
       .vs_sum_i,
       .mxr_i,
       .vmxr_i,
+      .madue_i,
+      .hadue_i,
       .satp_ppn_i,
       .vsatp_ppn_i,
       .hgatp_ppn_i,
@@ -611,7 +619,8 @@ module ex_stage
       .amo_valid_commit_i,
       .amo_req_o,
       .amo_resp_i,
-      .tinst_i                (lsu_tinst),
+      .amo_commit_o,
+      .tinst_i               (lsu_tinst),
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,

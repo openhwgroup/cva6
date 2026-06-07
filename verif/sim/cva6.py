@@ -150,6 +150,18 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd, priv, spi
       if m: cmd = re.sub(r"\<xlen\>", m.group('xlen'), cmd)
       if iss == "ovpsim":
         cmd = re.sub(r"\<cfg_path\>", setting_dir, cmd)
+      # Seongwon #
+      elif iss == "spike":
+        spike_isa = isa
+        if spike_extension_list != ['']:
+          priv = "msu"
+          for i in spike_extension_list:
+            if i!="":
+              spike_isa += (f"_{i}")
+        cmd = re.sub(r"\<variant\>", spike_isa, cmd)
+        cmd = re.sub(r"\<priv\>", priv, cmd)
+        cmd = re.sub(r"\<target\>", target, cmd)
+      # Seongwon #
       elif iss == "whisper":
         if m:
           # TODO: Support u/s mode
@@ -793,6 +805,11 @@ def parse_args(cwd):
                       help="Choose additional z, s, x extensions")
   parser.add_argument("--spike_params", type=str, default="",
                       help="Spike command line parameters, run spike --help and spike --print-params to see more")
+  # seongwon #
+  parser.add_argument("--spike_extension", type=str, default="",
+                      help="Additional ISA extensions enabled only for Spike simulation. "
+                          "Use this for extensions not reflected by the GCC toolchain (e.g., Svadu).")
+  # seongwon #
   rsg = parser.add_argument_group('Random seeds',
                                   'To control random seeds, use at most one '
                                   'of the --start_seed, --seed or --seed_yaml '
@@ -966,6 +983,11 @@ def load_config(args, cwd):
   if not "g" in args.isa: # LLVM complains if we add zicsr and zifencei when g is set.
     isa_extension_list.append("zicsr")
     isa_extension_list.append("zifencei")
+
+  # seongwon #
+  global spike_extension_list
+  spike_extension_list = args.spike_extension.split(",")
+  # seongwon #
 
   args.spike_params = get_full_spike_param_args(args.spike_params) if args.spike_params else ""
 

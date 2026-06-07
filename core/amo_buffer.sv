@@ -30,6 +30,9 @@ module amo_buffer #(
     // D$
     output ariane_pkg::amo_req_t amo_req_o,  // request to cache subsystem
     input ariane_pkg::amo_resp_t amo_resp_i,  // response from cache subsystem
+    // PUE
+    output logic [CVA6Cfg.PLEN-1:0] pue_commit_paddr_o, // physical address of AMO for tracking non-speculative dirty-bit update
+    output logic pue_commit_valid_o,                    // commit tracking signal to pue
     // Auxiliary signals
     input logic amo_valid_commit_i,  // We have a valid AMO in the commit stage
     input logic no_st_pending_i  // there is currently no store pending anymore
@@ -79,5 +82,8 @@ module amo_buffer #(
       .data_o    (amo_data_out),
       .pop_i     (amo_resp_i.ack)
   );
+
+  assign pue_commit_paddr_o = (CVA6Cfg.SvaduEn) ? amo_data_out.paddr : '0;
+  assign pue_commit_valid_o = (CVA6Cfg.SvaduEn) ? no_st_pending_i & amo_valid_commit_i & amo_valid : 1'b0;
 
 endmodule

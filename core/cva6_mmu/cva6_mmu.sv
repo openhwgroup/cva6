@@ -63,6 +63,7 @@ module cva6_mmu
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
+    output logic lsu_is_store_o,
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -72,6 +73,8 @@ module cva6_mmu
     input logic vs_sum_i,
     input logic mxr_i,
     input logic vmxr_i,
+    input logic madue_i,
+    input logic hadue_i,
     input logic mbe_i,
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
@@ -92,8 +95,25 @@ module cva6_mmu
     input logic flush_tlb_vvma_i,
     input logic flush_tlb_gvma_i,
 
-    // Shared TLB is busy processing a multi-cycle flush
-    output logic shared_tlb_flush_busy_o,
+    // PUE interface 
+    output logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_o,
+    output logic accessed_req_valid_o,
+    input logic accessed_queue_full_i,
+
+    output logic dirty_req_tlb_ready_o,
+    input logic dirty_req_tlb_sync_i,
+    output logic dirty_req_tlb_sync_o,
+
+    input logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_i,
+    
+    output logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_o,
+    output logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_o,
+    output logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr_o,
+    output logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr_o,
+
+    output logic dirty_bit_fault_valid_o,
 
     // Performance counters
     output logic itlb_miss_o,
@@ -134,6 +154,7 @@ module cva6_mmu
     logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
     pte_cva6_t content;
     pte_cva6_t g_content;
+    logic [CVA6Cfg.PLEN-1:0] pptr;
   };
 
   logic iaccess_err;  // insufficient privilege to access this instruction page
@@ -210,7 +231,14 @@ module cva6_mmu
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
-      .lu_hit_o      (itlb_lu_hit)
+      .lu_hit_o      (itlb_lu_hit),
+
+      .pue_tlb_vaddr_i   ('0),
+      .pue_tlb_update_i  ('0),
+      .pue_tlb_asid_i    ('0),
+      .pue_tlb_vmid_i    ('0),
+      .pue_tlb_ready_o   (),
+      .pue_pte_paddr_o   ()
   );
 
   cva6_tlb #(
@@ -241,7 +269,14 @@ module cva6_mmu
       .vaddr_to_be_flushed_i,
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (dtlb_is_page),
-      .lu_hit_o      (dtlb_lu_hit)
+      .lu_hit_o      (dtlb_lu_hit),
+
+      .pue_tlb_vaddr_i   (dirty_req_tlb_vaddr_i),
+      .pue_tlb_update_i  (dirty_req_tlb_sync_i),
+      .pue_tlb_asid_i    (dirty_req_tlb_asid_i),
+      .pue_tlb_vmid_i    (dirty_req_tlb_vmid_i),
+      .pue_tlb_ready_o   (dirty_req_tlb_ready_o),
+      .pue_pte_paddr_o   (dirty_req_pte_paddr)
   );
 
 
@@ -277,10 +312,13 @@ module cva6_mmu
       .dtlb_hit_i   (dtlb_lu_hit),
       .dtlb_vaddr_i (lsu_vaddr_i),
 
-      .asid_to_be_flushed_i(asid_to_be_flushed_i),
-      .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
-      .vmid_to_be_flushed_i(vmid_to_be_flushed_i),
-      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed_i),
+      // from PUE, PTE synchronization
+      .dtlb_coherence_vaddr_i   (dirty_req_tlb_vaddr_i),
+      .dtlb_coherence_update_i  (dirty_req_tlb_sync_i),
+      .dtlb_coherence_vmid_i    (dirty_req_tlb_vmid_i),
+      .dtlb_coherence_asid_i    (dirty_req_tlb_asid_i),
+      .dtlb_coherence_update_o  (dirty_req_tlb_sync_o),
+
       // to TLBs, update logic
       .itlb_update_o(update_itlb),
       .dtlb_update_o(update_dtlb),
@@ -326,6 +364,12 @@ module cva6_mmu
       .hlvx_inst_i           (hlvx_inst_i),
 
       .lsu_is_store_i(lsu_is_store_i),
+
+      // to PUE, enqueue A-bit update
+      .accessed_req_paddr_o,
+      .accessed_req_valid_o,
+      .accessed_queue_full_i,
+
       // PTW memory interface
       .req_port_i    (req_port_i),
       .req_port_o    (req_port_o),
@@ -352,6 +396,8 @@ module cva6_mmu
       .hgatp_ppn_i,
       .mxr_i,
       .vmxr_i,
+      .madue_i,
+      .hadue_i,
       .mbe_i(mbe_i),
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
@@ -514,6 +560,10 @@ module cva6_mmu
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
 
+  logic [CVA6Cfg.VMID_WIDTH-1:0] lsu_vmid_n, lsu_vmid_q;
+  logic [CVA6Cfg.ASID_WIDTH-1:0] lsu_asid_n, lsu_asid_q; 
+  logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr, dirty_req_pte_paddr_n, dirty_req_pte_paddr_q;
+
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
 
@@ -531,6 +581,13 @@ module cva6_mmu
 
     lsu_valid_o = lsu_req_q;
     lsu_exception_o = misaligned_ex_q;
+    lsu_is_store_o = lsu_is_store_q;
+
+    lsu_vmid_n = vmid_i;
+    lsu_asid_n = dtlb_lu_asid;
+    dirty_bit_fault_valid_o  = 1'b0;
+    dirty_req_tlb_vaddr_o    = 1'b0;
+    dirty_req_pte_paddr_n    = dirty_req_pte_paddr;
 
     // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
     misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
@@ -567,6 +624,8 @@ module cva6_mmu
         lsu_vaddr_q[11:0]
       };
 
+      if (CVA6Cfg.SvaduEn) dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
+
       if (CVA6Cfg.PtLevels == 3 && dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
         // Strange 9+PtLevels to avoid CI errors on (purely syntactic) checks on Sv32, where
         // `PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)` equals `11` and would lead to `lsu_paddr_o[11:12]`
@@ -600,7 +659,7 @@ module cva6_mmu
         if (lsu_is_store_q) begin
           // check if the page is write-able and we are not violating privileges
           // also check if the dirty flag is set
-          if(CVA6Cfg.RVH && en_ld_st_g_translation_i && (!dtlb_gpte_q.w || d_g_st_access_err || !dtlb_gpte_q.d)) begin
+          if(CVA6Cfg.RVH && en_ld_st_g_translation_i && (!dtlb_gpte_q.w || d_g_st_access_err)) begin
             lsu_exception_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -612,7 +671,7 @@ module cva6_mmu
               lsu_exception_o.tinst = '0;
               lsu_exception_o.gva = ld_st_v_i;
             end
-          end else if ((en_ld_st_translation_i || !CVA6Cfg.RVH) && (!dtlb_pte_q.w || daccess_err || canonical_addr_check || !dtlb_pte_q.d)) begin
+          end else if ((en_ld_st_translation_i || !CVA6Cfg.RVH) && (!dtlb_pte_q.w || daccess_err || canonical_addr_check)) begin
             lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -623,6 +682,41 @@ module cva6_mmu
               lsu_exception_o.tval2 = '0;
               lsu_exception_o.tinst = lsu_tinst_q;
               lsu_exception_o.gva   = ld_st_v_i;
+            end
+          end else if((CVA6Cfg.RVH && en_ld_st_g_translation_i && !dtlb_gpte_q.d) 
+                || ((en_ld_st_translation_i || !CVA6Cfg.RVH) && !dtlb_pte_q.d)) begin
+            if (CVA6Cfg.SvaduEn) begin
+              dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
+              dirty_bit_fault_valid_o = 1'b1;
+              dirty_req_tlb_asid_o    = lsu_asid_q;
+              dirty_req_tlb_vmid_o    = lsu_vmid_q;
+              dirty_req_tlb_vaddr_o   = lsu_vaddr_q;
+            end else begin
+              if(CVA6Cfg.RVH && en_ld_st_g_translation_i) begin
+                lsu_exception_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
+                lsu_exception_o.valid = 1'b1;
+                if (CVA6Cfg.TvalEn)
+                  lsu_exception_o.tval = {
+                    {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
+                  };
+                if (CVA6Cfg.RVH) begin
+                  lsu_exception_o.tval2 = CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32 ? CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
+                  lsu_exception_o.tinst = '0;
+                  lsu_exception_o.gva = ld_st_v_i;
+                end
+              end else if ((en_ld_st_translation_i || !CVA6Cfg.RVH)) begin
+                lsu_exception_o.cause = riscv::STORE_PAGE_FAULT;
+                lsu_exception_o.valid = 1'b1;
+                if (CVA6Cfg.TvalEn)
+                  lsu_exception_o.tval = {
+                    {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
+                  };
+                if (CVA6Cfg.RVH) begin
+                  lsu_exception_o.tval2 = '0;
+                  lsu_exception_o.tinst = lsu_tinst_q;
+                  lsu_exception_o.gva   = ld_st_v_i;
+                end
+              end
             end
           end
           // this is a load
@@ -755,31 +849,39 @@ module cva6_mmu
   // ----------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      lsu_vaddr_q     <= '0;
-      lsu_gpaddr_q    <= '0;
-      lsu_req_q       <= '0;
-      dtlb_pte_q      <= '0;
-      dtlb_gpte_q     <= '0;
-      dtlb_hit_q      <= '0;
-      lsu_is_store_q  <= '0;
-      dtlb_is_page_q  <= '0;
-      lsu_tinst_q     <= '0;
-      hs_ld_st_inst_q <= '0;
-      misaligned_ex_q <= '0;
+      lsu_vaddr_q           <= '0;
+      lsu_gpaddr_q          <= '0;
+      lsu_req_q             <= '0;
+      dtlb_pte_q            <= '0;
+      dtlb_gpte_q           <= '0;
+      dtlb_hit_q            <= '0;
+      lsu_is_store_q        <= '0;
+      dtlb_is_page_q        <= '0;
+      lsu_tinst_q           <= '0;
+      hs_ld_st_inst_q       <= '0;
+      misaligned_ex_q       <= '0;
+
+      lsu_vmid_q            <= '0;
+      lsu_asid_q            <= '0;
+      dirty_req_pte_paddr_q <= '0;
     end else begin
-      lsu_vaddr_q     <= lsu_vaddr_n;
-      lsu_req_q       <= lsu_req_n;
-      dtlb_pte_q      <= dtlb_pte_n;
-      dtlb_hit_q      <= dtlb_hit_n;
-      lsu_is_store_q  <= lsu_is_store_n;
-      dtlb_is_page_q  <= dtlb_is_page_n;
-      misaligned_ex_q <= misaligned_ex_n;
+      lsu_vaddr_q           <= lsu_vaddr_n;
+      lsu_req_q             <= lsu_req_n;
+      dtlb_pte_q            <= dtlb_pte_n;
+      dtlb_hit_q            <= dtlb_hit_n;
+      lsu_is_store_q        <= lsu_is_store_n;
+      dtlb_is_page_q        <= dtlb_is_page_n;
+      misaligned_ex_q       <= misaligned_ex_n;
+
+      lsu_asid_q            <= lsu_asid_n;
+      lsu_vmid_q            <= lsu_vmid_n;
+      dirty_req_pte_paddr_q <= dirty_req_pte_paddr_n;
 
       if (CVA6Cfg.RVH) begin
-        lsu_tinst_q     <= lsu_tinst_n;
-        hs_ld_st_inst_q <= hs_ld_st_inst_n;
-        dtlb_gpte_q     <= dtlb_gpte_n;
-        lsu_gpaddr_q    <= lsu_gpaddr_n;
+        lsu_tinst_q         <= lsu_tinst_n;
+        hs_ld_st_inst_q     <= hs_ld_st_inst_n;
+        dtlb_gpte_q         <= dtlb_gpte_n;
+        lsu_gpaddr_q        <= lsu_gpaddr_n;
       end
     end
   end
