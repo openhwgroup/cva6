@@ -152,7 +152,6 @@ module pte_update_unit #(
 
         dirty_queue_write_pointer_d++;
         dirty_queue_entry_status_d++;
-//        $display("[%0t] DIRTY-QUEUE ENQUEUE", $time);
     end
 
     if(commit_valid_i) begin
@@ -160,7 +159,6 @@ module pte_update_unit #(
             dirty_queue_d[dirty_queue_commit_pointer_d].committable = 1;
             dirty_queue_commit_pointer_d++;
             dirty_queue_commit_status_d++;
-         //   $display("[%0t] dirty-req commit", $time);
         end
     end
 
@@ -181,11 +179,9 @@ module pte_update_unit #(
                 if(dirty_req_tlb_ready_i) begin
                     pue_state_d = D_BIT_TLB_SYNC;
                 end
-      //          $display("[%0t] IDLE -> D_BIT_TLB_SYNC | Drity-status: %d | Commit-status: %d", $time, dirty_queue_entry_status_q, dirty_queue_commit_status_q);
             end
             else if((accessed_queue_status_q != 0)) begin
                 pue_state_d = A_BIT_AMO_SEND;
-     //           $display("[%0t] IDLE -> A_BIT_AMO_SEND | Access-status: %d", $time, accessed_queue_status_q);
             end else begin
                 pue_state_d = IDLE;
             end
@@ -198,15 +194,12 @@ module pte_update_unit #(
                 dirty_req_tlb_vmid_o    = dirty_queue_q[dirty_queue_read_pointer_d].vmid;
                 if(dirty_req_tlb_sync_i) begin
                     pue_state_d = D_BIT_AMO_SEND;
-                    $display("[%0t] [PUE] [D_BIT_TLB_SYNC] hit, D_TLB_SYNC -> D_AMO_REQ ", $time);
                 end else begin
                     pue_state_d = D_BIT_TLB_SYNC;
-                    $display("[%0t] [PUE] [D_BIT_TLB_SYNC] hit, D_TLB_SYNC -> D_TLB_SYNC ", $time);
                 end
 
             end else begin
                 pue_state_d = IDLE;
-                $display("[%0t] [PUE] ERROR OCCURS", $time);
             end
         end
         D_BIT_AMO_SEND : begin
@@ -337,13 +330,13 @@ module pte_update_unit #(
 
 // Sanity check 
   // Accessed Queue Enqueue Check
-  ap_accessed_enqueue_error : assert property (
+  AccessedBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (accessed_req_valid_i && !accessed_queue_full_o) |-> !accessed_queue_q[accessed_queue_write_pointer_q].valid
     ) else $fatal(0, "cva6_pue.sv : Accessed-bit Enqueue Overwrite Error!");
 
     // Dirty Queue Enqueue Check 
-  ap_dirty_enqueue_error : assert property (
+  DirtyBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (dirty_req_valid_i && !dirty_queue_full_o) |-> !dirty_queue_q[dirty_queue_write_pointer_q].valid
     ) else $fatal(0, "cva6_pue.sv : Dirty-bit Enqueue Overwrite Error!");

@@ -419,7 +419,7 @@ module cva6_shared_tlb #(
             shared_tlb_hit_d = 1'b1;
             // Prepare PTE with NAPOT patching if needed
             patched_pte      = pte[i][0];  // take the S‑stage PTE only
-            if (shared_tag_rd[i].is_napot_64k && CVA6Cfg.SvnapotEn) begin
+            if (shared_tag_rd[i].is_napot_64k && CVA6Cfg.SvnapotEn && !dtlb_coherence_q) begin
               // replace PPN[3:0] with vaddr[15:12] (equiv. lu_vpn[3:0])
               patched_pte.ppn[3:0] = lu_vpn[3:0];
             end
@@ -799,11 +799,11 @@ module cva6_shared_tlb #(
   end
   //update_flush
 
-  assign shared_tag_wr.asid = shared_tlb_update_i.asid;
-  assign shared_tag_wr.vmid = shared_tlb_update_i.vmid;
-  assign shared_tag_wr.is_page = shared_tlb_update_i.is_page;
-  assign shared_tag_wr.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
-  assign shared_tag_wr.is_napot_64k = shared_tlb_update_i.is_napot_64k;  // Svnapot: Propagate the NAPOT flag from the update packet into the tag structure to be stored
+  assign shared_tag_wr.asid = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.asid : shared_tlb_update_i.asid;
+  assign shared_tag_wr.vmid = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.vmid : shared_tlb_update_i.vmid;
+  assign shared_tag_wr.is_page = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.is_page : shared_tlb_update_i.is_page;
+  assign shared_tag_wr.v_st_enbl = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.v_st_enbl : v_st_enbl[i_req_q][HYP_EXT*2:0];
+  assign shared_tag_wr.is_napot_64k = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.is_napot_64k : shared_tlb_update_i.is_napot_64k;  // Svnapot: Propagate the NAPOT flag from the update packet into the tag structure to be stored
   assign shared_tag_wr.pptr = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.pptr : shared_tlb_update_i.pptr;
 
   genvar z_gen;
