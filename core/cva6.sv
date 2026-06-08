@@ -1466,9 +1466,7 @@ module cva6
         .axi_b_chan_t (b_chan_t),
         .axi_r_chan_t (r_chan_t),
         .noc_req_t (noc_req_t),
-        .noc_resp_t(noc_resp_t),
-        .cmo_req_t (logic  /*FIXME*/),
-        .cmo_rsp_t (logic  /*FIXME*/)
+        .noc_resp_t(noc_resp_t)
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
@@ -1488,9 +1486,6 @@ module cva6
 
         .dcache_amo_req_i (amo_req),
         .dcache_amo_resp_o(amo_resp),
-
-        .dcache_cmo_req_i ('0  /*FIXME*/),
-        .dcache_cmo_resp_o(  /*FIXME*/),
 
         .dcache_req_ports_i(dcache_req_to_cache),
         .dcache_req_ports_o(dcache_req_from_cache),
