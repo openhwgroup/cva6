@@ -588,7 +588,7 @@ module csr_regfile
               csr_rdata[5:4] = hcbie_q;
               csr_rdata[6]   = hcbcfe_q;
             end
-            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) csr_rdata[61] = henvcfg_adue_q;
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) csr_rdata[61] = menvcfg_adue_q ? henvcfg_adue_q : 1'b0;
           end else begin
             read_access_exception = 1'b1;
           end
@@ -1543,7 +1543,7 @@ module csr_regfile
               endcase
               hcbcfe_d = csr_wdata[6];
             end
-            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) henvcfg_adue_d = csr_wdata[61];
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) henvcfg_adue_d = menvcfg_adue_q ? csr_wdata[61] : 1'b0;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -2734,7 +2734,7 @@ module csr_regfile
   assign hcbcfe_o = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
 
   assign menvcfg_adue_o = CVA6Cfg.SvaduEn ? menvcfg_adue_q : 1'b0;
-  assign henvcfg_adue_o = CVA6Cfg.SvaduEn ? henvcfg_adue_q : 1'b0;
+  assign henvcfg_adue_o = CVA6Cfg.SvaduEn ? (menvcfg_adue_q && henvcfg_adue_q) : 1'b0;
 
   // we support bare memory addressing and SV39
   if (CVA6Cfg.RVH) begin

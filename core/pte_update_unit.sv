@@ -4,30 +4,32 @@ module pte_update_unit #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter integer DEPTH = 4
 )(
-    input logic clk_i,     // Clock
-    input logic rst_ni,    // Asynchronous reset active low
+    input logic clk_i,                                          // Clock
+    input logic rst_ni,                                         // Asynchronous reset active low
     input logic pipeline_flush_i,
+
 
     // PTW unit - Accessed-bit Update Request
     input logic [CVA6Cfg.PLEN-1:0] accessed_req_pte_paddr_i,    // PAddr of PTE for Accessed-bit update
-    input logic accessed_req_valid_i,                       // Valid for generation of Accessed-bit update
-    output logic accessed_queue_full_o,                     // Accessed-queue full
+    input logic accessed_req_valid_i,                           // Valid for generation of Accessed-bit update
+    output logic accessed_queue_full_o,                         // Accessed-queue full
 
     // DTLB - Dirty-bit Update Request
-    input logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr_i,   // PAddr of PTE for Dirty-bit update
-    input logic [CVA6Cfg.PLEN-1:0] dirty_req_paddr_i,       // PAddr of Req for tracking committable request
-    input logic [CVA6Cfg.VLEN-1:0] dirty_req_vaddr_i,       // VAddr of Req for synchronizing DTLB 
-    input logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_asid_i,  // ASID of Req for synchronizng DTLB
-    input logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_vmid_i,  // VMID of Req for synchronizing DTLB
-    input logic dirty_req_valid_i,                          // Valid for generation of Dirty-bit update
-    output logic dirty_queue_full_o,                        // Dirty-queue full
+    input logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr_i,       // PAddr of PTE for Dirty-bit update
+    input logic [CVA6Cfg.PLEN-1:0] dirty_req_paddr_i,           // PAddr of Req for tracking committable request
+    input logic [CVA6Cfg.VLEN-1:0] dirty_req_vaddr_i,           // VAddr of Req for synchronizing DTLB 
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_asid_i,      // ASID of Req for synchronizng DTLB
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_vmid_i,      // VMID of Req for synchronizing DTLB
+    input logic dirty_req_valid_i,                              // Valid for generation of Dirty-bit update
+    output logic dirty_queue_full_o,                            // Dirty-queue full
+
 
     // DTLB - synchronization response
-    input logic dirty_req_tlb_sync_i,                       // ACK (Valid) for synchronizing DTLB
-    input logic dirty_req_tlb_ready_i,                      // Ready from DTLB and STLB for synchronizing DTLB
+    input logic dirty_req_tlb_sync_i,                           // ACK (Valid) for synchronizing DTLB
+    input logic dirty_req_tlb_ready_i,                          // Ready from DTLB and STLB for synchronizing DTLB
 
     // DTLB - synchronization request
-    output logic dirty_req_tlb_sync_o,                      // Valid for synchronizing DTLB
+    output logic dirty_req_tlb_sync_o,                          // Valid for synchronizing DTLB
     output logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr_o,      // VAddr of Req for synchronizing DTLB
     output logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_o, // ASID of Req for synchronizing DTLB
     output logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_o, // VMID of Req for synchronizing DTLB
@@ -239,11 +241,8 @@ module pte_update_unit #(
                     accessed_queue_read_pointer_d++;
                     accessed_queue_status_d--;
                     pue_state_d = IDLE;
-
-              //      $display("[%0t] Mode Change A_BIT_AMO_SEND -> IDLE, paddr : %h | op: %b", $time, amo_req_o.operand_a, amo_req_o.amo_op);
                 end else begin
                     pue_state_d = A_BIT_AMO_SEND;
-             //       $display("[%0t] Mode Change A_BIT_AMO_SEND  Waiting, paddr : %h | op: %b", $time, amo_req_o.operand_a, amo_req_o.amo_op);
                 end
             end else begin
                 pue_state_d = IDLE;
@@ -333,12 +332,14 @@ module pte_update_unit #(
   AccessedBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (accessed_req_valid_i && !accessed_queue_full_o) |-> !accessed_queue_q[accessed_queue_write_pointer_q].valid
-    ) else $fatal(0, "cva6_pue.sv : Accessed-bit Enqueue Overwrite Error!");
+    ) else $fatal(0, "pte_update_unit.sv : Accessed-bit Enqueue Overwrite Error!");
 
     // Dirty Queue Enqueue Check 
   DirtyBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (dirty_req_valid_i && !dirty_queue_full_o) |-> !dirty_queue_q[dirty_queue_write_pointer_q].valid
-    ) else $fatal(0, "cva6_pue.sv : Dirty-bit Enqueue Overwrite Error!");
+    ) else $fatal(0, "pte_update_unit.sv : Dirty-bit Enqueue Overwrite Error!");
+
+    //
 
 endmodule

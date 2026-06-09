@@ -104,7 +104,6 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0] napot_tag_match;
   pte_cva6_t patched_pte;
   logic [TLB_ENTRIES-1:0] vpn0_napot_match;
-
   logic [TLB_ENTRIES-1:0][CVA6Cfg.PLEN-1:0] pptr_q, pptr_n;
   logic pue_sync_hit, one_pulse_sync, pue_sync_en;
 

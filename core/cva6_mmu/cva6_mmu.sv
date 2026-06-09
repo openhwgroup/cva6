@@ -63,7 +63,7 @@ module cva6_mmu
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
-    output logic lsu_is_store_o,
+    output logic lsu_is_store_o,  // the translation is requested by a store
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -94,6 +94,7 @@ module cva6_mmu
     input logic flush_tlb_i,
     input logic flush_tlb_vvma_i,
     input logic flush_tlb_gvma_i,
+
 
     // PUE interface 
     output logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_o,
@@ -313,11 +314,11 @@ module cva6_mmu
       .dtlb_vaddr_i (lsu_vaddr_i),
 
       // from PUE, PTE synchronization
-      .dtlb_coherence_vaddr_i   (dirty_req_tlb_vaddr_i),
-      .dtlb_coherence_update_i  (dirty_req_tlb_sync_i),
-      .dtlb_coherence_vmid_i    (dirty_req_tlb_vmid_i),
-      .dtlb_coherence_asid_i    (dirty_req_tlb_asid_i),
-      .dtlb_coherence_update_o  (dirty_req_tlb_sync_o),
+      .stlb_sync_vaddr_i   (dirty_req_tlb_vaddr_i),
+      .stlb_sync_update_i  (dirty_req_tlb_sync_i),
+      .stlb_sync_vmid_i    (dirty_req_tlb_vmid_i),
+      .stlb_sync_asid_i    (dirty_req_tlb_asid_i),
+      .stlb_sync_update_o  (dirty_req_tlb_sync_o),
 
       // to TLBs, update logic
       .itlb_update_o(update_itlb),

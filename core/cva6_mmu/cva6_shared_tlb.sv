@@ -54,11 +54,11 @@ module cva6_shared_tlb #(
     input logic                    dtlb_hit_i,
     input logic [CVA6Cfg.VLEN-1:0] dtlb_vaddr_i,
 
-    input logic dtlb_coherence_update_i,
-    input logic [CVA6Cfg.XLEN-1:0] dtlb_coherence_vaddr_i,
-    input logic [CVA6Cfg.ASID_WIDTH-1:0] dtlb_coherence_asid_i,
-    input logic [CVA6Cfg.VMID_WIDTH-1:0] dtlb_coherence_vmid_i,
-    output logic dtlb_coherence_update_o,
+    input logic stlb_sync_update_i,
+    input logic [CVA6Cfg.XLEN-1:0] stlb_sync_vaddr_i,
+    input logic [CVA6Cfg.ASID_WIDTH-1:0] stlb_sync_asid_i,
+    input logic [CVA6Cfg.VMID_WIDTH-1:0] stlb_sync_vmid_i,
+    output logic stlb_sync_update_o,
 
     input logic shared_tlb_miss_i,
 
@@ -200,13 +200,12 @@ module cva6_shared_tlb #(
 
   logic [1:0][2:0] v_st_enbl;
 
-  logic dtlb_coherence_d, dtlb_coherence_q;
-  tlb_update_cva6_t dtlb_sync_update_d, dtlb_sync_update_q;
-  logic [SHARED_TLB_WAYS-1:0] dtlb_sync_tag_wr_en_q, dtlb_sync_tag_wr_en_d;
-  logic [SHARED_TLB_WAYS-1:0] dtlb_sync_pte_wr_en_q, dtlb_sync_pte_wr_en_d;
-  
-  logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] dtlb_sync_tag_wr_addr_d, dtlb_sync_tag_wr_addr_q;
-  logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] dtlb_sync_pte_wr_addr_d, dtlb_sync_pte_wr_addr_q;
+  logic stlb_sync_d, stlb_sync_q;
+  tlb_update_cva6_t stlb_sync_update_d, stlb_sync_update_q;
+  logic [SHARED_TLB_WAYS-1:0] stlb_sync_tag_wr_en_q, stlb_sync_tag_wr_en_d;
+  logic [SHARED_TLB_WAYS-1:0] stlb_sync_pte_wr_en_q, stlb_sync_pte_wr_en_d;
+  logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] stlb_sync_tag_wr_addr_d, stlb_sync_tag_wr_addr_q;
+  logic [$clog2(CVA6Cfg.SharedTlbDepth)-1:0] stlb_sync_pte_wr_addr_d, stlb_sync_pte_wr_addr_q;
 
   // replacement strategy
   logic [SHARED_TLB_WAYS-1:0] way_valid;
@@ -264,8 +263,8 @@ module cva6_shared_tlb #(
   genvar w_gen;
   generate
     for (w_gen = 0; w_gen < CVA6Cfg.PtLevels; w_gen++) begin
-      assign vpn_d[w_gen]               = ((|v_st_enbl[0][HYP_EXT:0]) && CVA6Cfg.SvaduEn && dtlb_coherence_update_i) ?
-         dtlb_coherence_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(w_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*w_gen)] :
+      assign vpn_d[w_gen]               = ((|v_st_enbl[0][HYP_EXT:0]) && CVA6Cfg.SvaduEn && stlb_sync_update_i) ?
+         stlb_sync_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(w_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*w_gen)] :
           ((|v_st_enbl[1][HYP_EXT:0]) && itlb_access_i && ~itlb_hit_i && ~dtlb_access_i) ? //
           itlb_vaddr_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(w_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*w_gen)] :  //
           (((|v_st_enbl[0][HYP_EXT:0]) && dtlb_access_i && ~dtlb_hit_i) ?  //
@@ -275,8 +274,8 @@ module cva6_shared_tlb #(
   endgenerate
 
   if (CVA6Cfg.RVH)  //THIS UPDATES THE EXTRA BITS OF VPN IN SV39x4
-    assign vpn_d[CVA6Cfg.PtLevels] =  ((|v_st_enbl[0][HYP_EXT:0]) && dtlb_coherence_update_i) ?
-        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, dtlb_coherence_vaddr_i[CVA6Cfg.VpnLen-1: CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} : //    
+    assign vpn_d[CVA6Cfg.PtLevels] =  ((|v_st_enbl[0][HYP_EXT:0]) && stlb_sync_update_i) ?
+        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, stlb_sync_vaddr_i[CVA6Cfg.VpnLen-1: CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} : //    
         ((|v_st_enbl[1][HYP_EXT:0]) && itlb_access_i && ~itlb_hit_i && ~dtlb_access_i) ? //
         {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, itlb_vaddr_i[CVA6Cfg.VpnLen-1:CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} :  //
         ((|v_st_enbl[0][HYP_EXT:0]) && dtlb_access_i && ~dtlb_hit_i) ?  //
@@ -306,22 +305,22 @@ module cva6_shared_tlb #(
     pte_rd_addr         = '0;
     i_req_d             = i_req_q;
 
-    dtlb_coherence_d    = 1'b0;
+    stlb_sync_d    = 1'b0;
 
     // if we got an ITLB miss
-    if (CVA6Cfg.SvaduEn && dtlb_coherence_update_i) begin
-      dtlb_coherence_d = dtlb_coherence_update_i;
+    if (CVA6Cfg.SvaduEn && stlb_sync_update_i) begin
+      stlb_sync_d = stlb_sync_update_i;
       // TLB access
       tag_rd_en = '1;
-      tag_rd_addr = dtlb_coherence_vaddr_i[12+:$clog2(CVA6Cfg.SharedTlbDepth)];
+      tag_rd_addr = stlb_sync_vaddr_i[12+:$clog2(CVA6Cfg.SharedTlbDepth)];
 
       pte_rd_en = '1;
-      pte_rd_addr = dtlb_coherence_vaddr_i[12+:$clog2(CVA6Cfg.SharedTlbDepth)];
+      pte_rd_addr = stlb_sync_vaddr_i[12+:$clog2(CVA6Cfg.SharedTlbDepth)];
 
-      tlb_update_asid_d   = dtlb_coherence_asid_i;
+      tlb_update_asid_d   = stlb_sync_asid_i;
 
-      tlb_update_vmid_d   = dtlb_coherence_vmid_i;
-      shared_tlb_vaddr_d  = dtlb_coherence_vaddr_i;
+      tlb_update_vmid_d   = stlb_sync_vmid_i;
+      shared_tlb_vaddr_d  = stlb_sync_vaddr_i;
       i_req_d = 0;
 
     end else if ((|v_st_enbl[1][HYP_EXT:0]) & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
@@ -364,12 +363,12 @@ module cva6_shared_tlb #(
     match_asid       = '{default: 0};
     match_vmid       = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
 
-    dtlb_sync_update_d      = '0;
-    dtlb_sync_pte_wr_addr_d = '0;
-    dtlb_sync_pte_wr_en_d   = '0;
+    stlb_sync_update_d      = '0;
+    stlb_sync_pte_wr_addr_d = '0;
+    stlb_sync_pte_wr_en_d   = '0;
 
-    dtlb_sync_tag_wr_addr_d = '0;
-    dtlb_sync_tag_wr_en_d   = '0;
+    stlb_sync_tag_wr_addr_d = '0;
+    stlb_sync_tag_wr_en_d   = '0;
 
     if (!CVA6Cfg.UseSharedTlb) begin
       if (shared_tlb_update_i.valid) begin
@@ -419,7 +418,7 @@ module cva6_shared_tlb #(
             shared_tlb_hit_d = 1'b1;
             // Prepare PTE with NAPOT patching if needed
             patched_pte      = pte[i][0];  // take the S‑stage PTE only
-            if (shared_tag_rd[i].is_napot_64k && CVA6Cfg.SvnapotEn && !dtlb_coherence_q) begin
+            if (shared_tag_rd[i].is_napot_64k && CVA6Cfg.SvnapotEn && !stlb_sync_q) begin
               // replace PPN[3:0] with vaddr[15:12] (equiv. lu_vpn[3:0])
               patched_pte.ppn[3:0] = lu_vpn[3:0];
             end
@@ -447,23 +446,23 @@ module cva6_shared_tlb #(
               dtlb_update_o.is_napot_64k = CVA6Cfg.SvnapotEn ? shared_tag_rd[i].is_napot_64k : 1'b0;
               dtlb_update_o.pptr = (CVA6Cfg.SvaduEn) ? shared_tlb_update_i.pptr : '0;
 
-            end else if (dtlb_coherence_q) begin
-              dtlb_sync_update_d.valid = 1'b1;
-              dtlb_sync_update_d.vpn = dtlb_vpn_q;
-              dtlb_sync_update_d.is_page = shared_tag_rd[i].is_page;
-              dtlb_sync_update_d.content = patched_pte;
-              dtlb_sync_update_d.g_content = pte[i][HYP_EXT];
-              dtlb_sync_update_d.v_st_enbl = shared_tag_rd[i].v_st_enbl;
-              dtlb_sync_update_d.asid = tlb_update_asid_q;
-              dtlb_sync_update_d.vmid = tlb_update_vmid_q;
-              dtlb_sync_update_d.is_napot_64k = CVA6Cfg.SvnapotEn ? shared_tag_rd[i].is_napot_64k : 1'b0;
+            end else if (stlb_sync_q) begin
+              stlb_sync_update_d.valid = 1'b1;
+              stlb_sync_update_d.vpn = dtlb_vpn_q;
+              stlb_sync_update_d.is_page = shared_tag_rd[i].is_page;
+              stlb_sync_update_d.content = patched_pte;
+              stlb_sync_update_d.g_content = pte[i][HYP_EXT];
+              stlb_sync_update_d.v_st_enbl = shared_tag_rd[i].v_st_enbl;
+              stlb_sync_update_d.asid = tlb_update_asid_q;
+              stlb_sync_update_d.vmid = tlb_update_vmid_q;
+              stlb_sync_update_d.is_napot_64k = CVA6Cfg.SvnapotEn ? shared_tag_rd[i].is_napot_64k : 1'b0;
 
-              dtlb_sync_update_d.pptr = CVA6Cfg.SvaduEn ? shared_tag_rd[i].pptr : 1'b0;
-              dtlb_sync_pte_wr_addr_d = pte_rd_addr;
-              dtlb_sync_tag_wr_addr_d = tag_rd_addr;
+              stlb_sync_update_d.pptr = CVA6Cfg.SvaduEn ? shared_tag_rd[i].pptr : 1'b0;
+              stlb_sync_pte_wr_addr_d = pte_rd_addr;
+              stlb_sync_tag_wr_addr_d = tag_rd_addr;
 
-              dtlb_sync_pte_wr_en_d[i] = 1'b1;
-              dtlb_sync_tag_wr_en_d[i] = 1'b1;                        
+              stlb_sync_pte_wr_en_d[i] = 1'b1;
+              stlb_sync_tag_wr_en_d[i] = 1'b1;                        
             end
           end
         end
@@ -486,14 +485,14 @@ module cva6_shared_tlb #(
       i_req_q <= 0;
       shared_tag_valid <= '0;
 
-      dtlb_coherence_q        <= 1'b0;
-      dtlb_sync_update_q      <= '0;
+      stlb_sync_q        <= 1'b0;
+      stlb_sync_update_q      <= '0;
 
-      dtlb_sync_pte_wr_addr_q <= '0;
-      dtlb_sync_tag_wr_addr_q <= '0;
+      stlb_sync_pte_wr_addr_q <= '0;
+      stlb_sync_tag_wr_addr_q <= '0;
 
-      dtlb_sync_pte_wr_en_q   <= '0;
-      dtlb_sync_tag_wr_en_q   <= '0;
+      stlb_sync_pte_wr_en_q   <= '0;
+      stlb_sync_tag_wr_en_q   <= '0;
 
     end else begin
       itlb_vpn_q <= itlb_vaddr_i[CVA6Cfg.SV-1:12];
@@ -515,18 +514,18 @@ module cva6_shared_tlb #(
       flush_vmid_q <= flush_vmid_d;
       flush_gpaddr_q <= flush_gpaddr_d;
 
-      dtlb_coherence_q        <= dtlb_coherence_d;
-      dtlb_sync_update_q      <= dtlb_sync_update_d;
+      stlb_sync_q        <= stlb_sync_d;
+      stlb_sync_update_q      <= stlb_sync_update_d;
       
-      dtlb_sync_pte_wr_addr_q <= dtlb_sync_pte_wr_addr_d; 
-      dtlb_sync_tag_wr_addr_q <= dtlb_sync_tag_wr_addr_d;
+      stlb_sync_pte_wr_addr_q <= stlb_sync_pte_wr_addr_d; 
+      stlb_sync_tag_wr_addr_q <= stlb_sync_tag_wr_addr_d;
       
-      dtlb_sync_pte_wr_en_q   <=  dtlb_sync_pte_wr_en_d;
-      dtlb_sync_tag_wr_en_q   <=  dtlb_sync_tag_wr_en_d;
+      stlb_sync_pte_wr_en_q   <=  stlb_sync_pte_wr_en_d;
+      stlb_sync_tag_wr_en_q   <=  stlb_sync_tag_wr_en_d;
     end
   end
 
-  assign dtlb_coherence_update_o = (CVA6Cfg.SvaduEn && CVA6Cfg.UseSharedTlb) ? ((!shared_tlb_hit_d && dtlb_coherence_q) || dtlb_sync_update_q.valid) : 1;
+  assign stlb_sync_update_o = (CVA6Cfg.SvaduEn && CVA6Cfg.UseSharedTlb) ? ((!shared_tlb_hit_d && stlb_sync_q) || stlb_sync_update_q.valid) : 1;
 
   if (CVA6Cfg.RVH) begin
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -790,36 +789,36 @@ module cva6_shared_tlb #(
           pte_wr_en[i] = 1'b1;
         end
       end
-    end else if (dtlb_sync_update_q.valid) begin
+    end else if (stlb_sync_update_q.valid) begin
         for (int unsigned i = 0; i< SHARED_TLB_WAYS; i++) begin
-          tag_wr_en[i] = dtlb_sync_tag_wr_en_q[i];
-          pte_wr_en[i] = dtlb_sync_pte_wr_en_q[i];
+          tag_wr_en[i] = stlb_sync_tag_wr_en_q[i];
+          pte_wr_en[i] = stlb_sync_pte_wr_en_q[i];
         end
     end
   end
   //update_flush
 
-  assign shared_tag_wr.asid = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.asid : shared_tlb_update_i.asid;
-  assign shared_tag_wr.vmid = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.vmid : shared_tlb_update_i.vmid;
-  assign shared_tag_wr.is_page = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.is_page : shared_tlb_update_i.is_page;
-  assign shared_tag_wr.v_st_enbl = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.v_st_enbl : v_st_enbl[i_req_q][HYP_EXT*2:0];
-  assign shared_tag_wr.is_napot_64k = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.is_napot_64k : shared_tlb_update_i.is_napot_64k;  // Svnapot: Propagate the NAPOT flag from the update packet into the tag structure to be stored
-  assign shared_tag_wr.pptr = (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid) ? dtlb_sync_update_q.pptr : shared_tlb_update_i.pptr;
+  assign shared_tag_wr.asid = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.asid : shared_tlb_update_i.asid;
+  assign shared_tag_wr.vmid = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.vmid : shared_tlb_update_i.vmid;
+  assign shared_tag_wr.is_page = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.is_page : shared_tlb_update_i.is_page;
+  assign shared_tag_wr.v_st_enbl = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.v_st_enbl : v_st_enbl[i_req_q][HYP_EXT*2:0];
+  assign shared_tag_wr.is_napot_64k = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.is_napot_64k : shared_tlb_update_i.is_napot_64k;  // Svnapot: Propagate the NAPOT flag from the update packet into the tag structure to be stored
+  assign shared_tag_wr.pptr = (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid) ? stlb_sync_update_q.pptr : shared_tlb_update_i.pptr;
 
   genvar z_gen;
   generate
     for (z_gen = 0; z_gen < CVA6Cfg.PtLevels; z_gen++) begin : gen_shared_tag
       assign shared_tag_wr.vpn[z_gen] =
-        (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid)
-          ? dtlb_sync_update_q.vpn[z_gen]
+        (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid)
+          ? stlb_sync_update_q.vpn[z_gen]
           : vpn_to_store[((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(z_gen+1))-1
                         :((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*z_gen)];
     end
 
     if (CVA6Cfg.RVH) begin : gen_shared_tag_hyp
       assign shared_tag_wr.vpn[CVA6Cfg.PtLevels] =
-        (CVA6Cfg.SvaduEn && dtlb_sync_update_q.valid)
-          ? dtlb_sync_update_q.vpn[CVA6Cfg.PtLevels]
+        (CVA6Cfg.SvaduEn && stlb_sync_update_q.valid)
+          ? stlb_sync_update_q.vpn[CVA6Cfg.PtLevels]
           : {
               {(((CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) -
                 (CVA6Cfg.VpnLen % CVA6Cfg.PtLevels))){1'b0}},
@@ -837,14 +836,14 @@ module cva6_shared_tlb #(
   // derive the set index from bits [4 +: clog2] of the (possibly masked) VPN
   assign vpn_index = shared_tlb_update_i.vpn[$clog2(CVA6Cfg.SharedTlbDepth)-1:0];
   // write the new entry into that set
-  assign tag_wr_addr = (shared_tlb_update_i.valid) ? vpn_index : ((dtlb_sync_update_q.valid) ? dtlb_sync_tag_wr_addr_q : '0);
-  assign pte_wr_addr = (shared_tlb_update_i.valid) ? vpn_index : ((dtlb_sync_update_q.valid) ? dtlb_sync_pte_wr_addr_q : '0);
+  assign tag_wr_addr = (shared_tlb_update_i.valid) ? vpn_index : ((stlb_sync_update_q.valid) ? stlb_sync_tag_wr_addr_q : '0);
+  assign pte_wr_addr = (shared_tlb_update_i.valid) ? vpn_index : ((stlb_sync_update_q.valid) ? stlb_sync_pte_wr_addr_q : '0);
 
-  assign pte_wr_data[0] = (CVA6Cfg.SvaduEn) ?  ((dtlb_sync_update_q.valid) ? (dtlb_sync_update_q.content[CVA6Cfg.XLEN-1:0] | (1'b1 << 7))
+  assign pte_wr_data[0] = (CVA6Cfg.SvaduEn) ?  ((stlb_sync_update_q.valid) ? (stlb_sync_update_q.content[CVA6Cfg.XLEN-1:0] | (1'b1 << 7))
                                             : (shared_tlb_update_i.content[CVA6Cfg.XLEN-1:0] | (1'b1 << 6)))
                                             : shared_tlb_update_i.content[CVA6Cfg.XLEN-1:0];
                                     
-  assign pte_wr_data[1] = (CVA6Cfg.SvaduEn) ?  ((dtlb_sync_update_q.valid) ? (dtlb_sync_update_q.g_content[CVA6Cfg.XLEN-1:0] | (1'b1 << 7))
+  assign pte_wr_data[1] = (CVA6Cfg.SvaduEn) ?  ((stlb_sync_update_q.valid) ? (stlb_sync_update_q.g_content[CVA6Cfg.XLEN-1:0] | (1'b1 << 7))
                                             : (shared_tlb_update_i.g_content[CVA6Cfg.XLEN-1:0] | (1'b1 << 6))) 
                                             : shared_tlb_update_i.g_content[CVA6Cfg.XLEN-1:0];
 
