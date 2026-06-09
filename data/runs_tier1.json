@@ -1,5 +1,60 @@
 [
   {
+    "id": 27190437586,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 42,
+    "status": "completed",
+    "conclusion": "cancelled",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27190437586",
+    "head_branch": "push-wkrlmktzzsnm",
+    "head_sha": "f34b4c1e",
+    "event": "pull_request",
+    "created_at": "2026-06-09T07:20:11Z",
+    "updated_at": "2026-06-09T07:21:42Z",
+    "run_started_at": "2026-06-09T07:20:11Z",
+    "duration_seconds": 91,
+    "total_jobs": 3,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 3,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "cancelled",
+        "started_at": "2026-06-09T07:21:38Z",
+        "completed_at": "2026-06-09T07:21:41Z",
+        "duration_seconds": 3,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27190437586/job/80269318293",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "cancelled",
+        "started_at": "2026-06-09T07:21:38Z",
+        "completed_at": "2026-06-09T07:21:41Z",
+        "duration_seconds": 3,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27190437586/job/80269318313",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "cancelled",
+        "started_at": "2026-06-09T07:21:38Z",
+        "completed_at": "2026-06-09T07:21:40Z",
+        "duration_seconds": 2,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27190437586/job/80269318407",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      }
+    ]
+  },
+  {
     "id": 27156975716,
     "source": "github-actions",
     "simulator": "verilator",
