@@ -38,6 +38,7 @@ module pte_update_unit #(
     input logic commit_valid_i,                                 // Valid for committable dirty-bit update
     input logic [CVA6Cfg.PLEN-1:0] commit_paddr_i,              // PAddr of committable request for committable dirty-bit update
 
+
     // AMO request - CACHES
     input ariane_pkg::amo_resp_t amo_resp_i,                
     // AMO response - CACHES
@@ -67,6 +68,7 @@ module pte_update_unit #(
     logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
     logic committable;
   } dirty_queue_entry_t;
+
 
 
 

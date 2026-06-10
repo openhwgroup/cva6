@@ -138,6 +138,7 @@ module cva6_ptw
   }
       ptw_stage_q, ptw_stage_d;
 
+
   // is this an instruction page table walk?
   logic is_instr_ptw_q, is_instr_ptw_n;
   logic global_mapping_q, global_mapping_n;
@@ -504,33 +505,26 @@ module cva6_ptw
                     state_d = PROPAGATE_ERROR;
                     if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end 
-                else begin  // G-final stage -> found page (RVH) | RVH x (found page) this for Instruction fetch
-                  // For Host Machince case,
-                  //  madue_i == 1 : Svadu for S-stage
-                  // For Hypervisor case
-                  //  madue_i == 1 ,  hadue_i == 0 : Svadu only for VS-stage
-                  //  madue_i == 1 ,  hadue_i == 1 : Svadu for both VS-stage and G-stage
-                  if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH) begin
-                    if(pte.a) begin
-                      shared_tlb_update_valid = 1'b1;
+                else if (!pte.a) begin
+                  if ((ptw_stage_q == S_STAGE && !enable_g_translation_i && madue_i) || 
+                      (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
+                      (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && enable_g_translation_i && hadue_i)) begin
+                    if (accessed_queue_full_i) begin
+                      access_full_n = 1'b1;
                     end else begin
-                      if(((ptw_stage_q == S_STAGE && !enable_g_translation_i) && madue_i) ||  // RVH + S-Stage + MADUE
-                        (ptw_stage_q == G_FINAL_STAGE && hadue_i && madue_i) ||               // RVH + G-final Stage + MADUE + HADUE
-                        (!CVA6Cfg.RVH && madue_i))  begin                                     // !RVH + S-STAGE + MADUE
-                          shared_tlb_update_valid = 1'b1;
-                          if(accessed_queue_full_i) begin
-                            access_full_n = 1; // we need to wait until the PUE is free.
-                          end else begin
-                            accessed_req_valid_o = 1;
-                            accessed_req_paddr_o = ptw_pptr_q;
-                          end
-                        end
-                      else begin
-                          state_d = PROPAGATE_ERROR;
-                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                      end
-                      // ------------------------ //
+                      accessed_req_valid_o = 1'b1;
+                      accessed_req_paddr_o = ptw_pptr_q;
                     end
+                    if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
+                      shared_tlb_update_valid = 1'b1;
+                    end
+                  end else begin
+                    state_d = PROPAGATE_ERROR;
+                    if (CVA6Cfg.RVH)  ptw_stage_d = ptw_stage_q;   
+                  end
+                end else begin
+                  if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
+                    shared_tlb_update_valid = 1'b1;
                   end
                 end
               end else begin
@@ -553,45 +547,39 @@ module cva6_ptw
                     // g-intermediate nodes however never need write-permission
                 ) begin
                     if(ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH) begin
-                      if(!pte.a) begin // kernel error
+                      if(!pte.a) begin 
                         state_d = PROPAGATE_ERROR;
                         if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                       end
-                    // SVADU EXTENSION - SEONGWON // 
                     end else if(lsu_is_store_i && !pte.w) begin
                       state_d = PROPAGATE_ERROR;
                       if(CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                     end else begin
-                      if((!pte.a) || (lsu_is_store_i && !pte.d)) begin
-                        if((ptw_stage_q == S_STAGE && madue_i && !en_ld_st_g_translation_i) // RVH + S-Stage + MADUE
-                        || (ptw_stage_q == G_FINAL_STAGE && madue_i && hadue_i)             // RVH + G-final Stage + MADUE + HADUE
-                        || (!CVA6Cfg.RVH && madue_i)) begin                                 // !RVH + S-STAGE + MADUE
+                      if ((!pte.a) || (lsu_is_store_i && !pte.d)) begin
+                        if ((ptw_stage_q == S_STAGE && !en_ld_st_g_translation_i && madue_i) || 
+                            (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
+                            (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && en_ld_st_g_translation_i && hadue_i)) begin
                           if(!pte.a) begin
                             if(accessed_queue_full_i) begin
                               access_full_n = 1'b1;
-                              $display("[%0t] accessed_queue full ",$time);
                             end else begin
                               accessed_req_valid_o = 1;
                               accessed_req_paddr_o = ptw_pptr_q;
-                              $display("[%0t] [PTW-DTLB] access valid | Paddr : %h",$time, ptw_pptr_q);
                             end
                           end
-                          shared_tlb_update_valid = 1'b1;
+                          if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
+                            shared_tlb_update_valid = 1'b1;
+                          end
                         end else begin
                           state_d = PROPAGATE_ERROR;
                           if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                         end
-                        // access_bit or dirty_bit update 
-                        // Svadu / Svade type
                       end else begin
                           if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
                             shared_tlb_update_valid = 1'b1;
-                            $display("[%0t] [PTW-DTLB] STLB UPDATE valid | Paddr : %h", $time,ptw_pptr_q);
                           end
                       end
-                      
                     end 
-                    // ----------------------- //
                 end else begin
                     state_d = PROPAGATE_ERROR;
                     if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
