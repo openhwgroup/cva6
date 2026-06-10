@@ -1134,7 +1134,7 @@ module decoder
             3'b001: begin
               instruction_o.op = ariane_pkg::SLL;  // Shift Left Logical by Immediate
               if (instr.instr[31:26] != 6'b0) illegal_instr_non_bm = 1'b1;
-              if (instr.instr[25] != 1'b0 && CVA6Cfg.XLEN == 32) illegal_instr_non_bm = 1'b1;
+              if (instr.instr[25] != 1'b0 && CVA6Cfg.IS_XLEN32) illegal_instr_non_bm = 1'b1;
             end
 
             3'b101: begin
@@ -1143,7 +1143,7 @@ module decoder
               else if (instr.instr[31:26] == 6'b010_000)
                 instruction_o.op = ariane_pkg::SRA;  // Shift Right Arithmetically by Immediate
               else illegal_instr_non_bm = 1'b1;
-              if (instr.instr[25] != 1'b0 && CVA6Cfg.XLEN == 32) illegal_instr_non_bm = 1'b1;
+              if (instr.instr[25] != 1'b0 && CVA6Cfg.IS_XLEN32) illegal_instr_non_bm = 1'b1;
             end
           endcase
           if (CVA6Cfg.RVB) begin
@@ -1293,7 +1293,7 @@ module decoder
             3'b001: instruction_o.op = ariane_pkg::SH;
             3'b010: instruction_o.op = ariane_pkg::SW;
             3'b011:
-            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::SD;
+            if (CVA6Cfg.IS_XLEN64) instruction_o.op = ariane_pkg::SD;
             else illegal_instr = 1'b1;
             default: illegal_instr = 1'b1;
           endcase
@@ -1316,10 +1316,10 @@ module decoder
             3'b100: instruction_o.op = ariane_pkg::LBU;
             3'b101: instruction_o.op = ariane_pkg::LHU;
             3'b110:
-            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::LWU;
+            if (CVA6Cfg.IS_XLEN64) instruction_o.op = ariane_pkg::LWU;
             else illegal_instr = 1'b1;
             3'b011:
-            if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::LD;
+            if (CVA6Cfg.IS_XLEN64) instruction_o.op = ariane_pkg::LD;
             else illegal_instr = 1'b1;
             default: illegal_instr = 1'b1;
           endcase

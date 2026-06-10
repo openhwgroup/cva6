@@ -390,7 +390,7 @@ axi2mem #(
     .data_i     ( dm_slave_rdata            )
 );
 
-if (CVA6Cfg.XLEN==32 ) begin
+if (CVA6Cfg.IS_XLEN32) begin
 
     assign master_to_dm[0].aw_user = '0;
     assign master_to_dm[0].w_user = '0;
@@ -549,7 +549,7 @@ end
 
 logic [1:0]    axi_adapter_size;
 
-assign axi_adapter_size = (CVA6Cfg.XLEN == 64) ? 2'b11 : 2'b10;
+assign axi_adapter_size = CVA6Cfg.IS_XLEN64 ? 2'b11 : 2'b10;
 
 axi_adapter #(
     .CVA6Cfg               ( CVA6Cfg                  ),
@@ -578,7 +578,7 @@ axi_adapter #(
     .axi_resp_i            ( dm_axi_m_resp             )
 );
 
-if (CVA6Cfg.XLEN==32 ) begin
+if (CVA6Cfg.IS_XLEN32) begin
     logic [31 : 0] dm_master_m_awaddr;
     logic [31 : 0] dm_master_m_araddr;
 
@@ -771,7 +771,7 @@ axi2mem #(
     .data_i ( rom_rdata               )
 );
 
-if (CVA6Cfg.XLEN==32 ) begin
+if (CVA6Cfg.IS_XLEN32) begin
     bootrom_32 i_bootrom (
         .clk_i   ( clk       ),
         .req_i   ( rom_req   ),
