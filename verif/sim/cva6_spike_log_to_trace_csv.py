@@ -28,7 +28,7 @@ from riscv_trace_csv import *
 from lib import *
 
 RD_RE = re.compile(r"(core\s+\d+:\s+)?(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                   "\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?)\s*0x(?P<val>[a-f0-9]+)")
+                   r"\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?)\s*0x(?P<val>[a-f0-9]+)")
 
 CORE_RE = re.compile(
     r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
@@ -88,7 +88,7 @@ def read_spike_instr(match, full_trace):
     return instr
 
 
-def read_spike_trace(path, full_trace):
+def read_spike_trace(path, full_trace, exit_on_ecall=True):
     """Read a Spike simulation log at <path>, yielding executed instructions.
 
     This assumes that the log was generated with the -l and --log-commits options
@@ -148,7 +148,7 @@ def read_spike_trace(path, full_trace):
                 instr = read_spike_instr(instr_match, full_trace)
 
                 # If instr.instr_str is 'ecall', we should stop.
-                if instr.instr_str == 'ecall':
+                if exit_on_ecall and instr.instr_str == 'ecall':
                     break
 
                 continue
@@ -161,7 +161,7 @@ def read_spike_trace(path, full_trace):
             if instr_match:
                 yield instr, False
                 instr = read_spike_instr(instr_match, full_trace)
-                if instr.instr_str == 'ecall':
+                if exit_on_ecall and instr.instr_str == 'ecall':
                     break
                 continue
 
@@ -186,7 +186,7 @@ def read_spike_trace(path, full_trace):
             yield (instr, False)
 
 
-def process_spike_sim_log(spike_log, csv, full_trace=0):
+def process_spike_sim_log(spike_log, csv, full_trace=0, exit_on_ecall=True):
     """Process SPIKE simulation log.
 
     Extract instruction and affected register information from spike simulation
@@ -202,7 +202,7 @@ def process_spike_sim_log(spike_log, csv, full_trace=0):
         trace_csv = RiscvInstructionTraceCsv(csv_fd)
         trace_csv.start_new_trace()
 
-        for (entry, illegal) in read_spike_trace(spike_log, full_trace):
+        for (entry, illegal) in read_spike_trace(spike_log, full_trace, exit_on_ecall):
             instrs_in += 1
             if illegal and full_trace:
                 logging.debug("Illegal instruction: {}, opcode:{}"

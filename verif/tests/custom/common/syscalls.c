@@ -30,7 +30,7 @@ register void *thread_pointer asm("tp");
 static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2)
 {
   // Arguments in magic_mem have XLEN bits each.
-  volatile uintptr_t magic_mem[8] __attribute__((aligned(64)));
+  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
   magic_mem[0] = which;
   magic_mem[1] = arg0;
   magic_mem[2] = arg1;
@@ -46,14 +46,23 @@ static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintpt
   // - the environment acknowledges the env request by writing 0 into tohost.
   // - the completion of the request is signalled by the environment through
   //   a write of a non-zero value into fromhost.
-  tohost = (((uint64_t) ((unsigned long int) magic_mem)) << 16) >> 16;    // clear the DEV and CMD bytes, clip payload.
-  while (fromhost == 0)
-    ;
+  tohost = (((uint64_t)((unsigned long int)magic_mem)) << 16) >> 16; // clear the DEV and CMD bytes, clip payload.
+
+  // Required for Verilator consistency, else `fromhost` will
+  // be fetched from the cache
+  invalidate_cacheline(&fromhost);
+
+  while (fromhost == 0) {
+    // Idem
+    invalidate_cacheline(&fromhost);
+  }
+
   fromhost = 0;
 
 #ifdef __riscv_atomic // __sync_synchronize requires A extension
   __sync_synchronize();
 #endif
+  invalidate_cacheline(magic_mem);
   return magic_mem[0];
 }
 
@@ -279,7 +288,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     case '-':
       padc = '-';
       goto reswitch;
-      
+
     // flag to pad with 0's instead of spaces
     case '0':
       padc = '0';
@@ -388,7 +397,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     case '%':
       putch(ch, putdat);
       break;
-      
+
     // unrecognized escape sequence - just print it literally
     default:
       putch('%', putdat);
