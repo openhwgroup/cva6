@@ -176,6 +176,9 @@ package build_config_pkg;
     cfg.DcacheFlushOnFenceI = CVA6Cfg.DcacheFlushOnFenceI;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
 
+    cfg.DcacheEccEnable = CVA6Cfg.DcacheEccEnable;
+    cfg.DcacheEccScrubberEnable = CVA6Cfg.DcacheEccScrubberEnable;
+
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
     cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
