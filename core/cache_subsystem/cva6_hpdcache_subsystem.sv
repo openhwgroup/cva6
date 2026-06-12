@@ -229,8 +229,8 @@ module cva6_hpdcache_subsystem
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
         (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
     userCfg.lowLatency = 1'b1;
-    userCfg.eccEn = 1'b0;  /*FIXME add additional CVA6 parameter*/
-    userCfg.eccScrubberEn = 1'b0;  /*FIXME: add additional CVA6 parameter*/
+    userCfg.eccEn = CVA6Cfg.DcacheEccEnable;
+    userCfg.eccScrubberEn = CVA6Cfg.DcacheEccScrubberEnable;
     return userCfg;
   endfunction
 
