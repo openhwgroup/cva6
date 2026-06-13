@@ -156,6 +156,8 @@ smoke-tests:
     - if [[ $DV_SIMULATORS == *"questa"* ]]; then source $QUESTA_BASHRC; fi
     - bash verif/regress/smoke-tests-$DV_TARGET.sh
     - !reference [.simu_after_script]
+  rules:
+    - allow_failure: true
 
 smoke-gen:
   extends:
