@@ -34,9 +34,7 @@ module cva6_hpdcache_subsystem
     parameter type axi_b_chan_t = logic,
     parameter type axi_r_chan_t = logic,
     parameter type noc_req_t = logic,
-    parameter type noc_resp_t = logic,
-    parameter type cmo_req_t = logic,
-    parameter type cmo_rsp_t = logic
+    parameter type noc_resp_t = logic
 )
 //  }}}
 
@@ -91,10 +89,6 @@ module cva6_hpdcache_subsystem
     input  ariane_pkg::amo_req_t                 dcache_amo_req_i,
     // AMO response - EX_STAGE
     output ariane_pkg::amo_resp_t                dcache_amo_resp_o,
-    // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t                             dcache_cmo_req_i,
-    // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t                             dcache_cmo_resp_o,
     // Data cache input request ports - EX_STAGE
     input  dcache_req_i_t         [NumPorts-1:0] dcache_req_ports_i,
     // Data cache output request ports - EX_STAGE
@@ -185,9 +179,8 @@ module cva6_hpdcache_subsystem
   //    .
   //    .
   //    .
-  //    NumPorts: CMO
-  //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
-  localparam int HPDCACHE_NREQUESTERS = NumPorts + 2;
+  //    NumPorts: Hardware Memory Prefetcher (hwpf)
+  localparam int HPDCACHE_NREQUESTERS = NumPorts + 1;
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
     hpdcache_pkg::hpdcache_user_cfg_t userCfg;
@@ -295,8 +288,6 @@ module cva6_hpdcache_subsystem
       .dcache_req_o_t(dcache_req_o_t),
       .NumPorts(NumPorts),
       .NrHwPrefetchers(NrHwPrefetchers),
-      .cmo_req_t(cmo_req_t),
-      .cmo_rsp_t(cmo_rsp_t),
       .hpdcache_mem_addr_t(hpdcache_mem_addr_t),
       .hpdcache_mem_id_t(hpdcache_mem_id_t),
       .hpdcache_mem_data_t(hpdcache_mem_data_t),
@@ -325,8 +316,6 @@ module cva6_hpdcache_subsystem
       .dcache_miss_o(dcache_miss_o),
       .dcache_amo_req_i(dcache_amo_req_i),
       .dcache_amo_resp_o(dcache_amo_resp_o),
-      .dcache_cmo_req_i(dcache_cmo_req_i),
-      .dcache_cmo_resp_o(dcache_cmo_resp_o),
       .dcache_req_ports_i(dcache_req_ports_i),
       .dcache_req_ports_o(dcache_req_ports_o),
       .wbuffer_empty_o(wbuffer_empty_o),
