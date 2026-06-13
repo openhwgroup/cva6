@@ -20,11 +20,11 @@ body:
     value: |
       <!-- Introduction -->
 
-      = Steps to reproduce
+      # Steps to reproduce
 
-      == Expected behavior
+      ## Expected behavior
 
-      == Observed behavior
+      ## Observed behavior
 
   validations:
     required: true
