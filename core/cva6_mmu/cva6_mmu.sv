@@ -100,7 +100,6 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-
     input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0]                   pmpcfg_i,
     input logic           [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
@@ -170,6 +169,7 @@ module cva6_mmu
 
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
+  //logic shared_tlb_lookup_done;
 
   // Assignments
 
@@ -274,6 +274,10 @@ module cva6_mmu
       .dtlb_hit_i   (dtlb_lu_hit),
       .dtlb_vaddr_i (lsu_vaddr_i),
 
+      .asid_to_be_flushed_i(asid_to_be_flushed_i),
+      .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
+      .vmid_to_be_flushed_i(vmid_to_be_flushed_i),
+      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed_i),
       // to TLBs, update logic
       .itlb_update_o(update_itlb),
       .dtlb_update_o(update_dtlb),
