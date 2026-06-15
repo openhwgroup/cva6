@@ -533,12 +533,17 @@ module cva6_ptw
             end else begin
               // pointer to next level of page table
 
-              if (ptw_lvl_q[0] == CVA6Cfg.PtLevels - 1) begin
-                // Should already be the last level page table => Error
+              // Should already be the last level page table => Error
+              automatic logic last_level = ptw_lvl_q[0] == CVA6Cfg.PtLevels - 1;
+              // A, D, and U bits are reserved for non-leaf entries => Error
+              automatic
+              logic
+              reserved_set = pte.a || pte.d || pte.u;
+
+              if (last_level || reserved_set) begin
                 ptw_lvl_n[0] = ptw_lvl_q[0];
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-
 
               end else begin
                 ptw_lvl_n[0] = ptw_lvl_q[0] + 1'b1;

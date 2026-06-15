@@ -14,7 +14,7 @@ all: $(bootrom_img)
 	$(RISCV_OBJCOPY) -O binary $< $@
 
 %.elf: %.S linker.ld $(DTB)
-	$(RISCV_GCC) -Tlinker.ld -march=rv32i -mabi=ilp32 $< -nostdlib -static -Wl,--no-gc-sections -o $@
+	$(RISCV_GCC) -Tlinker.ld -march=rv32izicsr -mabi=ilp32 $< -nostdlib -static -Wl,--no-gc-sections -o $@
 
 %.dtb: %.dts
 	dtc -I dts $< -O dtb -o $@

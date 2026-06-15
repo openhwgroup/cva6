@@ -745,9 +745,8 @@ module ex_stage
       ) aes_i (
           .clk_i,
           .rst_ni,
-          .fu_data_i     (one_cycle_data),
-          .result_o      (aes_result),
-          .orig_instr_aes(orig_instr_aes_i)
+          .fu_data_i(one_cycle_data),
+          .result_o (aes_result)
       );
     end else begin : no_aes_gen
       assign aes_result = '0;

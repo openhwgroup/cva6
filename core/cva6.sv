@@ -178,6 +178,7 @@ module cva6
       logic [CVA6Cfg.XLEN-1:0]          operand_b;
       logic [CVA6Cfg.XLEN-1:0]          imm;
       logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
+      logic [5:0]                       orig_instr_aes_bits;
     },
 
     localparam type icache_req_t = struct packed {
@@ -1165,8 +1166,7 @@ module cva6
       .jvt_t             (jvt_t),
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .rvfi_probes_csr_t (rvfi_probes_csr_t),
-      .MHPMCounterNum    (MHPMCounterNum)
+      .rvfi_probes_csr_t (rvfi_probes_csr_t)
   ) csr_regfile_i (
       .clk_i,
       .rst_ni,

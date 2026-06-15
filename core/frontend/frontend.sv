@@ -438,7 +438,7 @@ module frontend
       speculative_q  <= speculative_d;
       icache_valid_q <= icache_dreq_i.valid;
       if (icache_dreq_i.valid) begin
-        icache_data_q  <= icache_data;
+        icache_data_q  <= icache_dreq_i.ex.valid ? {CVA6Cfg.FETCH_WIDTH{1'b0}} : icache_data;
         icache_vaddr_q <= icache_dreq_i.vaddr;
         if (CVA6Cfg.RVH) begin
           icache_gpaddr_q <= icache_dreq_i.ex.tval2[CVA6Cfg.GPLEN-1:0];

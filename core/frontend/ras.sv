@@ -54,7 +54,7 @@ module ras #(
       stack_d[DEPTH-2:0] = stack_q[DEPTH-1:1];
       // we popped the value so invalidate the end of the stack
       stack_d[DEPTH-1].valid = 1'b0;
-      stack_d[DEPTH-1].ra = 'b0;
+      stack_d[DEPTH-1].ra = 'b1;
     end
     // leave everything untouched and just push the latest value to the
     // top of the stack
@@ -71,7 +71,9 @@ module ras #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      stack_q <= '0;
+      for (int i = 0; i < DEPTH; i += 1) begin
+        stack_q[i] <= 'b1;
+      end
     end else begin
       stack_q <= stack_d;
     end

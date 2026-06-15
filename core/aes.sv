@@ -23,11 +23,13 @@ module aes
     input  logic                        rst_ni,
     // FU data needed to execute instruction - ISSUE_STAGE
     input  fu_data_t                    fu_data_i,
-    // Original instruction bits for aes
-    input  logic     [             5:0] orig_instr_aes,
     // AES result - ISSUE_STAGE
     output logic     [CVA6Cfg.XLEN-1:0] result_o
 );
+
+  logic [             5:0] orig_instr_aes;
+
+  assign orig_instr_aes = fu_data_i.orig_instr_aes_bits;
 
   logic [63:0] sr;
   logic [ 7:0] sbox_in;
