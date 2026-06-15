@@ -28,6 +28,8 @@ package cva6_config_pkg;
   localparam CVA6ConfigVExtEn = 0;
   localparam CVA6ConfigHExtEn = 1;
   localparam CVA6ConfigRVZiCond = 1;
+  localparam CVA6ConfigRVZcheripurecap = 0;
+  localparam CVA6ConfigRVZcherihybrid = 0;
 
   localparam CVA6ConfigAxiIdWidth = 4;
   localparam CVA6ConfigAxiAddrWidth = 64;
@@ -111,6 +113,8 @@ package cva6_config_pkg;
       RVZiCbom: bit'(0),
       RVZicntr: bit'(1),
       RVZihpm: bit'(1),
+      RVZcheripurecap: bit'(0),
+      RVZcherihybrid: bit'(0),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
       MmuPresent: bit'(CVA6ConfigMmuPresent),
@@ -171,7 +175,8 @@ package cva6_config_pkg;
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
-      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth)
+      DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
+      CheriCapTagWidth : int'(1)
   };
 
 endpackage

@@ -59,7 +59,9 @@ package riscv;
 
   typedef struct packed {
     logic sd;  // signal dirty state - read-only
-    logic [62:34] wpri6;  // writes preserved reads ignored
+    logic wpri7;  // writes preserved reads ignored
+    logic ucrg;  // load barrier user mode capability read generation
+    logic [60:34] wpri6;  // writes preserved reads ignored
     xlen_e uxl;  // variable user mode xlen - hardwired to zero
     logic [11:0] wpri5;  // writes preserved reads ignored
     logic mxr;  // make executable readable
@@ -99,7 +101,9 @@ package riscv;
 
   typedef struct packed {
     logic sd;  // signal dirty state - read-only
-    logic [62:40] wpri4;  // writes preserved reads ignored
+    logic wpri5;  // writes preserved reads ignored
+    logic ucrg;
+    logic [60:40] wpri4;  // writes preserved reads ignored
     logic mpv;  // machine previous virtualization mode
     logic gva;  // variable set when trap writes to stval
     logic mbe;  // endianness memory accesses made from M-mode
@@ -129,14 +133,16 @@ package riscv;
   } mstatus_rv_t;
 
   typedef struct packed {
-    logic        stce;   // not implemented - requires Sctc extension
-    logic        pbmte;  // not implemented - requires Svpbmt extension
-    logic [61:8] wpri1;  // writes preserved reads ignored
-    logic        cbze;   // not implemented - requires Zicboz extension
-    logic        cbcfe;  // not implemented - requires Zicbom extension
-    logic [1:0]  cbie;   // not implemented - requires Zicbom extension
-    logic [2:0]  wpri0;  // writes preserved reads ignored
-    logic        fiom;   // fence of I/O implies memory
+    logic         stce;   // not implemented - requires Sctc extension
+    logic         pbmte;  // not implemented - requires Svpbmt extension
+    logic [61:28] wpri2;  // writes preserved reads ignored
+    logic         cheri;  // CHERI extension
+    logic [27:8]  wpri1;  // writes preserved reads ignored
+    logic         cbze;   // not implemented - requires Zicboz extension
+    logic         cbcfe;  // not implemented - requires Zicbom extension
+    logic [1:0]   cbie;   // not implemented - requires Zicbom extension
+    logic [2:0]   wpri0;  // writes preserved reads ignored
+    logic         fiom;   // fence of I/O implies memory
   } envcfg_rv_t;
 
   // --------------------
@@ -304,6 +310,11 @@ package riscv;
   // ----------------------
   // memory management, pte for sv39
   typedef struct packed {
+    logic cw;
+    logic cr;
+    logic cd;
+    logic crm;
+    logic crg;
     logic [9:0] reserved;
     logic [44-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
@@ -330,6 +341,46 @@ package riscv;
     logic r;
     logic v;
   } pte_sv32_t;
+
+  // memory management, pte for sv39 CHERI
+  // capability store bits behavior table
+  // ----------------------------------------------------------------------
+  // | CW | CD | Behavior                                                 |
+  // |----|----|-----------------------------------------------------------
+  // | 0  | X  | Trap on capability stores (exception code 0x1B)          |
+  // | 1  | 0  | Capability stores atomically raise CD or fault (as above)|
+  // | 1  | 1  | Capability stores permitted                              |
+  // ----------------------------------------------------------------------
+  // capability load bits behavior table
+  // ----------------------------------------------------------------------
+  // | CR | CRM | CRG | Behavior                                          |
+  // |----|-----|----------------------------------------------------------
+  // | 0  | 0   |  0  | Capability loads strip tags on loaded result      |
+  // | 0  | 1   |  0  | Capability loads fault (exception code 0x1A)      |
+  // | 0  | X   |  1  | Reserved for future use                           |
+  // | 1  | 0   |  0  | Capability loads are unaltered                    |
+  // | 1  | 0   |  1  | Reserved for future use                           |
+  // | 1  | 1   |  X  | Reserved for generational load barriers           |
+  // ----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic cw;
+    logic cr;
+    logic cd;
+    logic crm;
+    logic crg;
+    logic [4:0] reserved;
+    logic [44-1:0] ppn;  // PPN length for
+    logic [1:0] rsw;
+    logic d;
+    logic a;
+    logic g;
+    logic u;
+    logic x;
+    logic w;
+    logic r;
+    logic v;
+  } pte_sv39_cheri_t;
 
   // ----------------------
   // Exception Cause Codes
@@ -404,6 +455,12 @@ package riscv;
     CSR_VL               = 12'hC20,
     CSR_VTYPE            = 12'hC21,
     CSR_VLENB            = 12'hC22,
+    // CHERI: CSRs
+    CSR_DDC              = 12'h416,
+    CSR_UTID             = 12'h480,
+    CSR_STID             = 12'h580,
+    CSR_VSTID            = 12'hA80,
+    CSR_MTID             = 12'h780,
     // Virtual Supervisor Mode CSRs
     CSR_VSSTATUS         = 12'h200,
     CSR_VSIE             = 12'h204,
@@ -424,6 +481,7 @@ package riscv;
     CSR_SEPC             = 12'h141,
     CSR_SCAUSE           = 12'h142,
     CSR_STVAL            = 12'h143,
+    CSR_STVAL2           = 12'h14B,
     CSR_SIP              = 12'h144,
     CSR_SATP             = 12'h180,
     // Hypervisor-extended Supervisor Mode CSRs
@@ -490,6 +548,8 @@ package riscv;
     CSR_MIP              = 12'h344,
     CSR_MTINST           = 12'h34A,
     CSR_MTVAL2           = 12'h34B,
+    CSR_MSECCFG          = 12'h747,
+    CSR_MSECCFGH         = 12'h757,
     CSR_MENVCFG          = 12'h30A,
     CSR_MENVCFGH         = 12'h31A,
     CSR_PMPCFG0          = 12'h3A0,
@@ -658,6 +718,7 @@ package riscv;
     CSR_DPC              = 12'h7b1,
     CSR_DSCRATCH0        = 12'h7b2,  // optional
     CSR_DSCRATCH1        = 12'h7b3,  // optional
+    CSR_DSCRATCH2        = 12'h7b4,  // optional
     // Counters and Timers from Zicntr extension (User Mode - R/O Shadows)
     CSR_CYCLE            = 12'hC00,
     CSR_CYCLEH           = 12'hC80,
@@ -738,6 +799,7 @@ package riscv;
   localparam logic [63:0] SSTATUS_UXL = 64'h0000000300000000;
   // CSR Bit Implementation Masks
 
+  localparam logic [63:0] SSTATUS_CRG = 64'h2000000000000000;
   function automatic logic [63:0] sstatus_sd(logic IS_XLEN64);
     return {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
   endfunction
@@ -772,6 +834,7 @@ package riscv;
   localparam logic [63:0] MSTATUS_TVM = 'h00100000;
   localparam logic [63:0] MSTATUS_TW = 'h00200000;
   localparam logic [63:0] MSTATUS_TSR = 'h00400000;
+  localparam logic [63:0] MSTATUS_CRG = 64'h2000000000000000;
   function automatic logic [63:0] mstatus_uxl(logic IS_XLEN64);
     return {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
   endfunction

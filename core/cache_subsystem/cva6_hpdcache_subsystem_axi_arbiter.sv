@@ -353,7 +353,8 @@ module cva6_hpdcache_subsystem_axi_arbiter
       .hpdcache_mem_resp_w_t(hpdcache_mem_resp_w_t),
       .aw_chan_t            (axi_aw_chan_t),
       .w_chan_t             (axi_w_chan_t),
-      .b_chan_t             (axi_b_chan_t)
+      .b_chan_t             (axi_b_chan_t),
+      .userEn               (CVA6Cfg.CheriPresent)
   ) i_hpdcache_mem_to_axi_write (
       .req_ready_o(dcache_write_ready_o),
       .req_valid_i(dcache_write_valid_i),
@@ -384,7 +385,8 @@ module cva6_hpdcache_subsystem_axi_arbiter
       .hpdcache_mem_req_t   (hpdcache_mem_req_t),
       .hpdcache_mem_resp_r_t(hpdcache_mem_resp_r_t),
       .ar_chan_t            (axi_ar_chan_t),
-      .r_chan_t             (axi_r_chan_t)
+      .r_chan_t             (axi_r_chan_t),
+      .userEn               (CVA6Cfg.CheriPresent)
   ) i_hpdcache_mem_to_axi_read (
       .req_ready_o(mem_req_read_ready_arb),
       .req_valid_i(mem_req_read_valid_arb),

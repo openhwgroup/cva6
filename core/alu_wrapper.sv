@@ -47,10 +47,10 @@ module alu_wrapper
       fu_data_bypass = fu_data_i[1];
 
       if (alu_bypass_i.rs1_from_rd) begin
-        fu_data_bypass.operand_a = result_o[0];
+        fu_data_bypass.operand_a = x_to_reg(result_o[0]);
       end
       if (alu_bypass_i.rs2_from_rd) begin
-        fu_data_bypass.operand_b = result_o[0];
+        fu_data_bypass.operand_b = x_to_reg(result_o[0]);
       end
     end
 

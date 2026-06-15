@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Bruno Sá and Zero-Day Labs.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -67,6 +68,12 @@ package ariane_soc;
     DRAMBase     = 64'h8000_0000,
     HPSBase      = 64'hFF80_0000
   } soc_bus_start_t;
+
+  localparam int unsigned TagCacheMemLength = DRAMLength >> 7;
+  localparam int unsigned TagCacheMemBase = DRAMBase + DRAMLength - TagCacheMemLength;
+  localparam int unsigned SetAssociativity = 32'd8;
+  localparam int unsigned NumLines = 32'd128;
+  localparam int unsigned NumBlocks = 32'd4;
 
   localparam NrRegion = 1;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};

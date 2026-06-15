@@ -49,7 +49,7 @@ module ariane import ariane_pkg::*; #(
   input  logic                         clk_i,
   input  logic                         rst_ni,
   // Core ID, Cluster ID and boot address are considered more or less static
-  input  logic [CVA6Cfg.VLEN-1:0]       boot_addr_i,  // reset boot address
+  input  logic [CVA6Cfg.PCLEN-1:0]       boot_addr_i,  // reset boot address
   input  logic [CVA6Cfg.XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
 
   // Interrupt inputs

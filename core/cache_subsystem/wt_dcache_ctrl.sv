@@ -33,7 +33,7 @@ module wt_dcache_ctrl
     output logic miss_req_o,
     input logic miss_ack_i,
     output logic miss_we_o,  // unused (set to 0)
-    output logic [CVA6Cfg.XLEN-1:0] miss_wdata_o,  // unused (set to 0)
+    output logic [CVA6Cfg.CLEN-1:0] miss_wdata_o,  // unused (set to 0)
     output logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] miss_wuser_o,  // unused (set to 0)
     output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] miss_vld_bits_o,  // valid bits at the missed index
     output logic [CVA6Cfg.PLEN-1:0] miss_paddr_o,
@@ -51,7 +51,7 @@ module wt_dcache_ctrl
     output logic rd_req_o,  // read the word at offset off_i[:3] in all ways
     output logic rd_tag_only_o,  // set to zero here
     input logic rd_ack_i,
-    input logic [CVA6Cfg.XLEN-1:0] rd_data_i,
+    input logic [CVA6Cfg.CLEN-1:0] rd_data_i,
     input logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] rd_user_i,
     input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_vld_bits_i,
     input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_hit_oh_i
@@ -76,7 +76,7 @@ module wt_dcache_ctrl
   logic [CVA6Cfg.DcacheIdWidth-1:0] id_d, id_q;
   logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] vld_data_d, vld_data_q;
   logic save_tag, rd_req_d, rd_req_q, rd_ack_d, rd_ack_q;
-  logic [1:0] data_size_d, data_size_q;
+  logic [CVA6Cfg.DCACHE_DATA_SIZE_WIDTH-1:0] data_size_d, data_size_q;
 
   ///////////////////////////////////////////////////////
   // misc
@@ -100,7 +100,7 @@ module wt_dcache_ctrl
   // to miss unit
   assign miss_vld_bits_o = vld_data_q;
   assign miss_paddr_o = {address_tag_q, address_idx_q, address_off_q};
-  assign miss_size_o = (miss_nc_o) ? {1'b0, data_size_q} : 3'b111;
+  assign miss_size_o = (miss_nc_o) ? data_size_q : 4'b0111;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
   assign miss_nc_o = (~cache_en_i) | (~config_pkg::is_inside_cacheable_regions(

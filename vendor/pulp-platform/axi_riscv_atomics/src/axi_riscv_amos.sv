@@ -158,7 +158,7 @@ module axi_riscv_amos #(
     ar_state_t   ar_state_d, ar_state_q;
 
     typedef enum logic [1:0] { FEEDTHROUGH_R, WAIT_DATA_R, WAIT_CHANNEL_R, SEND_R } r_state_t;
-    r_state_t    r_state_d, r_state_q;
+     r_state_t    r_state_d, r_state_q;
 
     typedef enum logic [1:0] { NONE, INVALID, LOAD, STORE } atop_req_t;
     atop_req_t   atop_valid_d, atop_valid_q;
@@ -168,7 +168,9 @@ module axi_riscv_amos #(
     logic [AXI_ADDR_WIDTH-1:0]          addr_d,         addr_q;
     logic [AXI_ID_WIDTH-1:0]            id_d,           id_q;
     logic [AXI_STRB_WIDTH-1:0]          strb_d,         strb_q;
+    logic [7:0]                         len_d,          len_q;
     logic [2:0]                         size_d,         size_q;
+    logic [1:0]                         burst_d,        burst_q;
     logic [5:0]                         atop_d,         atop_q;
     logic [3:0]                         cache_d,        cache_q;
     logic [2:0]                         prot_d,         prot_q;
@@ -178,10 +180,15 @@ module axi_riscv_amos #(
     logic [AXI_USER_WIDTH-1:0]          aw_user_d,      aw_user_q,
                                         w_user_d,       w_user_q,
                                         r_user_d,       r_user_q;
+    logic [1:0]                         r_last_d,       r_last_q,
+                                        w_last_d,       w_last_q;
     // Data FF
-    logic [AXI_DATA_WIDTH-1:0]          w_data_d,       w_data_q;       // AMO operand
-    logic [AXI_DATA_WIDTH-1:0]          r_data_d,       r_data_q;       // Data from memory
-    logic [AXI_DATA_WIDTH-1:0]          result_d,       result_q;       // Result of AMO operation
+    logic [1:0] [AXI_DATA_WIDTH-1:0]    w_data_d,       w_data_q;       // AMO operand
+    logic [1:0] [AXI_DATA_WIDTH-1:0]    r_data_d,       r_data_q;       // Data from memory
+    logic                               r_data_cnt_d,   r_data_cnt_q;
+    logic                               w_data_cnt_d,   w_data_cnt_q;
+    logic                               result_cnt_d,   result_cnt_q;
+    logic [1:0] [AXI_DATA_WIDTH-1:0]    result_d,       result_q;       // Result of AMO operation
     logic                               w_d_valid_d,    w_d_valid_q,    // AMO operand valid
                                         r_d_valid_d,    r_d_valid_q;    // Data from memory valid
     // Counters
@@ -278,13 +285,13 @@ module axi_riscv_amos #(
                 end
                 // Invalidate valid request if control signals do not match
                 // Burst or exclusive access
-                if (slv_aw_len_i | slv_aw_lock_i) begin
+                if (slv_aw_len_i > 8'h01 | slv_aw_lock_i) begin
                     atop_valid_d = INVALID;
                 end
                 // Unsupported size
-                if (slv_aw_size_i > $clog2(RISCV_WORD_WIDTH/8)) begin
+                /* if (slv_aw_size_i > $clog2(RISCV_WORD_WIDTH/8)) begin
                     atop_valid_d = INVALID;
-                end
+                end */
             end
         end
     end
@@ -321,7 +328,9 @@ module axi_riscv_amos #(
         // Defaults FF
         addr_d          = addr_q;
         id_d            = id_q;
+        len_d           = len_q;
         size_d          = size_q;
+        burst_d         = burst_q;
         atop_d          = atop_q;
         cache_d         = cache_q;
         prot_d          = prot_q;
@@ -367,7 +376,9 @@ module axi_riscv_amos #(
                     atop_d    = slv_aw_atop_i;
                     addr_d    = slv_aw_addr_i;
                     id_d      = slv_aw_id_i;
+                    len_d     = slv_aw_len_i;
                     size_d    = slv_aw_size_i;
+                    burst_d   = slv_aw_burst_i;
                     cache_d   = slv_aw_cache_i;
                     prot_d    = slv_aw_prot_i;
                     qos_d     = slv_aw_qos_i;
@@ -389,10 +400,10 @@ module axi_riscv_amos #(
                     // Make write request
                     mst_aw_valid_o  = 1'b1;
                     mst_aw_addr_o   = addr_q;
-                    mst_aw_len_o    = 8'h00;
+                    mst_aw_len_o    = len_q;
                     mst_aw_id_o     = id_q;
                     mst_aw_size_o   = size_q;
-                    mst_aw_burst_o  = 2'b00;
+                    mst_aw_burst_o  = burst_q;
                     mst_aw_lock_o   = 1'b0;
                     mst_aw_cache_o  = cache_q;
                     mst_aw_prot_o   = prot_q;
@@ -434,6 +445,9 @@ module axi_riscv_amos #(
         strb_d       = strb_q;
         w_user_d     = w_user_q;
         w_data_d     = w_data_q;
+        w_data_cnt_d = w_data_cnt_q;
+        result_cnt_d = result_cnt_q;
+        w_last_d     = w_last_q;
         result_d     = result_q;
         w_d_valid_d  = w_d_valid_q;
         w_cnt_req_d  = w_cnt_req_q;
@@ -460,6 +474,9 @@ module axi_riscv_amos #(
                     result_d    = '0;
 
                     if (atop_valid_d != NONE) begin
+                        w_data_cnt_d = '0;
+                        w_cnt_req_d = '0;
+                        result_cnt_d = '0;
                         // Check if data is also available and does not belong to previous request
                         if (w_cnt_q == 0) begin
                             // Block downstream
@@ -468,14 +485,16 @@ module axi_riscv_amos #(
                             slv_w_ready_o  = 1'b1;
                             if (slv_w_valid_i) begin
                                 if (atop_valid_d != INVALID) begin
-                                    w_data_d    = slv_w_data_i;
+                                    w_data_cnt_d = slv_w_last_i ? '0 : 1;
+                                    w_data_d[0] = slv_w_data_i;
                                     strb_d      = slv_w_strb_i;
                                     w_user_d    = slv_w_user_i;
-                                    w_d_valid_d = 1'b1;
-                                    w_state_d   = WAIT_RESULT_W;
+                                    w_last_d[0] = slv_w_last_i;
+                                    w_d_valid_d = slv_w_last_i;
+                                    if (slv_w_last_i) w_state_d = WAIT_RESULT_W;
+                                    else w_state_d   = WAIT_DATA_W;
                                 end
                             end else begin
-                                w_cnt_req_d = '0;
                                 w_state_d   = WAIT_DATA_W;
                             end
                         end else begin
@@ -503,11 +522,14 @@ module axi_riscv_amos #(
                         if (atop_valid_q == INVALID) begin
                             w_state_d    = FEEDTHROUGH_W;
                         end else begin
-                            w_data_d    = slv_w_data_i;
+                            w_data_cnt_d = slv_w_last_i ? '0 : w_data_cnt_q + 1;
+                            w_data_d[w_data_cnt_q] = slv_w_data_i;
                             strb_d      = slv_w_strb_i;
                             w_user_d    = slv_w_user_i;
-                            w_d_valid_d = 1'b1;
-                            w_state_d   = WAIT_RESULT_W;
+                            w_last_d[w_data_cnt_q]    = slv_w_last_i;
+                            w_d_valid_d = slv_w_last_i;
+                            if (slv_w_last_i) w_state_d = WAIT_RESULT_W;
+                            else w_state_d   = WAIT_DATA_W;
                         end
                     end
                 end else if (mst_w_valid_o && mst_w_ready_i && mst_w_last_o) begin
@@ -519,23 +541,27 @@ module axi_riscv_amos #(
                 // If the result is ready, try to write it
                 if (r_d_valid_q && w_d_valid_q && aw_free) begin
                     // Check if W channel is free and make sure data is not interleaved
-                    result_d = alu_result_ext;
+                    result_d[result_cnt_q] = alu_result_ext;
+                    result_cnt_d = result_cnt_q + 1;
                     if (w_free && w_cnt_q == 0) begin
                         // Block
                         slv_w_ready_o = 1'b0;
                         // Send write data
                         mst_w_valid_o = 1'b1;
                         mst_w_data_o  = alu_result_ext;
-                        mst_w_last_o  = 1'b1;
+                        mst_w_last_o  = w_last_q[result_cnt_q];
                         mst_w_strb_o  = strb_q;
                         mst_w_user_o  = w_user_q;
                         if (mst_w_ready_i) begin
-                            w_state_d = FEEDTHROUGH_W;
+                            if (w_last_q[result_cnt_q]) w_state_d = FEEDTHROUGH_W;
+                            else w_state_d = WAIT_RESULT_W;
                         end else begin
-                            w_state_d = SEND_W;
+                            if (w_last_q[result_cnt_q]) w_state_d = SEND_W;
+                            else w_state_d = WAIT_RESULT_W;
                         end
                     end else begin
-                        w_state_d = WAIT_CHANNEL_W;
+                        if (w_last_q[result_cnt_q]) w_state_d = WAIT_CHANNEL_W;
+                        else w_state_d = WAIT_RESULT_W;
                     end
                 end
             end // WAIT_RESULT_W
@@ -547,12 +573,16 @@ module axi_riscv_amos #(
                     slv_w_ready_o = 1'b0;
                     // Send write data
                     mst_w_valid_o = 1'b1;
-                    mst_w_data_o  = result_q;
-                    mst_w_last_o  = 1'b1;
+                    mst_w_data_o  = result_q[w_data_cnt_q];
+                    mst_w_last_o  = w_last_q[w_data_cnt_q];
                     mst_w_strb_o  = strb_q;
                     mst_w_user_o  = w_user_q;
                     if (mst_w_ready_i) begin
-                        w_state_d = FEEDTHROUGH_W;
+                        if (w_last_q[w_data_cnt_q]) w_state_d = FEEDTHROUGH_W;
+                        else begin
+                            w_state_d = SEND_W;
+                            w_data_cnt_d = w_data_cnt_q + 1;
+                        end
                     end else begin
                         w_state_d = SEND_W;
                     end
@@ -653,7 +683,9 @@ module axi_riscv_amos #(
             w_cnt_inj_q <= '0;
             addr_q      <= '0;
             id_q        <= '0;
+            len_q       <= '0;
             size_q      <= '0;
+            burst_q     <= '0;
             strb_q      <= '0;
             cache_q     <= '0;
             prot_q      <= '0;
@@ -662,6 +694,9 @@ module axi_riscv_amos #(
             aw_user_q   <= '0;
             w_user_q    <= '0;
             w_data_q    <= '0;
+            w_data_cnt_q <= '0;
+            result_cnt_q <= '0;
+            w_last_q    <= '0;
             result_q    <= '0;
             w_d_valid_q <= '0;
             atop_q      <= 6'b0;
@@ -674,7 +709,9 @@ module axi_riscv_amos #(
             w_cnt_inj_q <= w_cnt_inj_d;
             addr_q      <= addr_d;
             id_q        <= id_d;
+            len_q       <= len_d;
             size_q      <= size_d;
+            burst_q     <= burst_d;
             strb_q      <= strb_d;
             cache_q     <= cache_d;
             prot_q      <= prot_d;
@@ -683,6 +720,9 @@ module axi_riscv_amos #(
             aw_user_q   <= aw_user_d;
             w_user_q    <= w_user_d;
             w_data_q    <= w_data_d;
+            w_data_cnt_q  <= w_data_cnt_d;
+            result_cnt_q <= result_cnt_d;
+            w_last_q    <= w_last_d;
             result_q    <= result_d;
             w_d_valid_q <= w_d_valid_d;
             atop_q      <= atop_d;
@@ -730,9 +770,9 @@ module axi_riscv_amos #(
                             mst_ar_valid_o  = 1'b1;
                             mst_ar_addr_o   = slv_aw_addr_i;
                             mst_ar_id_o     = slv_aw_id_i;
-                            mst_ar_len_o    = 8'h00;
+                            mst_ar_len_o    = slv_aw_len_i;
                             mst_ar_size_o   = slv_aw_size_i;
-                            mst_ar_burst_o  = 2'b00;
+                            mst_ar_burst_o  = slv_aw_burst_i;
                             mst_ar_lock_o   = 1'h0;
                             mst_ar_cache_o  = slv_aw_cache_i;
                             mst_ar_prot_o   = slv_aw_prot_i;
@@ -758,9 +798,9 @@ module axi_riscv_amos #(
                     mst_ar_valid_o  = 1'b1;
                     mst_ar_addr_o   = addr_q;
                     mst_ar_id_o     = id_q;
-                    mst_ar_len_o    = 8'h00;
+                    mst_ar_len_o    = len_q;
                     mst_ar_size_o   = size_q;
-                    mst_ar_burst_o  = 2'b00;
+                    mst_ar_burst_o  = burst_q;
                     mst_ar_lock_o   = 1'h0;
                     mst_ar_cache_o  = cache_q;
                     mst_ar_prot_o   = prot_q;
@@ -802,6 +842,8 @@ module axi_riscv_amos #(
         r_data_d      = r_data_q;
         r_resp_d      = r_resp_q;
         r_user_d      = r_user_q;
+        r_last_d      = r_last_q;
+        r_data_cnt_d  = r_data_cnt_q;
         r_d_valid_d   = r_d_valid_q;
         // State Machine
         r_state_d     = r_state_q;
@@ -814,6 +856,7 @@ module axi_riscv_amos #(
                     r_d_valid_d = 1'b0;
 
                     if (atop_valid_d == LOAD || atop_valid_d == STORE) begin
+                        r_data_cnt_d = '0;
                         // Wait for R response to read data
                         r_state_d = WAIT_DATA_R;
                     end else if (atop_valid_d == INVALID) begin
@@ -847,15 +890,18 @@ module axi_riscv_amos #(
                     mst_r_ready_o = 1'b1;
                     slv_r_valid_o = 1'b0;
                     // Store data
-                    r_data_d    = mst_r_data_i;
-                    r_resp_d    = mst_r_resp_i;
-                    r_user_d    = mst_r_user_i;
-                    r_d_valid_d = 1'b1;
+                    r_data_cnt_d            = mst_r_last_i ? '0 : r_data_cnt_q + 1;
+                    r_data_d[r_data_cnt_q]  = mst_r_data_i;
+                    r_resp_d                = mst_r_resp_i;
+                    r_user_d                = mst_r_user_i;
+                    r_last_d[r_data_cnt_q]  = mst_r_last_i;
+                    r_d_valid_d = mst_r_last_i;
                     if (atop_valid_q == STORE) begin
                         r_state_d = FEEDTHROUGH_R;
                     end else begin
                         // Wait for B resp before injecting R
-                        r_state_d = WAIT_CHANNEL_R;
+                        if (mst_r_last_i) r_state_d = WAIT_CHANNEL_R;
+                        else r_state_d = WAIT_DATA_R;
                     end
                 end
             end // WAIT_DATA_R
@@ -868,9 +914,9 @@ module axi_riscv_amos #(
                     mst_r_ready_o = 1'b0;
                     // Send R response
                     slv_r_valid_o = 1'b1;
-                    slv_r_data_o  = r_data_q;
+                    slv_r_data_o  = r_data_q[r_data_cnt_q];
                     slv_r_id_o    = id_q;
-                    slv_r_last_o  = 1'b1;
+                    slv_r_last_o  = r_last_q[r_data_cnt_q];
                     slv_r_resp_o  = r_resp_q;
                     slv_r_user_o  = r_user_q;
                     if (atop_valid_q == INVALID) begin
@@ -879,7 +925,11 @@ module axi_riscv_amos #(
                         slv_r_user_o = '0;
                     end
                     if (slv_r_ready_i) begin
-                        r_state_d = FEEDTHROUGH_R;
+                        if (r_last_q[r_data_cnt_q]) r_state_d = FEEDTHROUGH_R;
+                        else begin
+                            r_state_d = SEND_R;
+                            r_data_cnt_d = r_data_cnt_q + 1;
+                        end
                     end else begin
                         r_state_d = SEND_R;
                     end
@@ -895,16 +945,20 @@ module axi_riscv_amos #(
         if(~rst_ni) begin
             ar_state_q  <= FEEDTHROUGH_AR;
             r_state_q   <= FEEDTHROUGH_R;
+            r_data_cnt_q <= '0;
             r_data_q    <= '0;
             r_resp_q    <= '0;
             r_user_q    <= '0;
+            r_last_q    <= '0;
             r_d_valid_q <= 1'b0;
         end else begin
             ar_state_q  <= ar_state_d;
             r_state_q   <= r_state_d;
+            r_data_cnt_q <= r_data_cnt_d;
             r_data_q    <= r_data_d;
             r_resp_q    <= r_resp_d;
             r_user_q    <= r_user_d;
+            r_last_q    <= r_last_d;
             r_d_valid_q <= r_d_valid_d;
         end
     end
@@ -913,8 +967,8 @@ module axi_riscv_amos #(
      * ALU
      */
 
-    assign op_a           = r_data_q & strb_ext;
-    assign op_b           = w_data_q & strb_ext;
+    assign op_a           = r_data_q[result_cnt_q] & strb_ext;
+    assign op_b           = w_data_q[result_cnt_q] & strb_ext;
     assign sign_a         = |(op_a & ~(strb_ext >> 1));
     assign sign_b         = |(op_b & ~(strb_ext >> 1));
     assign alu_result_ext = res;

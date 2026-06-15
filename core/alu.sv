@@ -61,8 +61,9 @@ module alu
   logic [CVA6Cfg.XLEN-1:0] xperm8_result;
   logic [CVA6Cfg.XLEN-1:0] xperm4_result;
 
-  assign operand_a = fu_data_i.operand_a;
-  assign operand_b = fu_data_i.operand_b;
+  // Fetch the capability address in case CHERI extension is enabled
+  assign operand_a = reg_to_x(fu_data_i.operand_a);
+  assign operand_b = reg_to_x(fu_data_i.operand_b);
 
   // bit reverse operand_a for left shifts and bit counting
   generate
@@ -85,8 +86,8 @@ module alu
   assign adder_op_b_negate = fu_data_i.operation inside {EQ, NE, SUB, SUBW, ANDN, ORN, XNOR};
 
   always_comb begin
+    operand_a_cpop     = reg_to_x(fu_data_cpop_i.operand_a);
     operand_a_bitmanip = operand_a;
-    operand_a_cpop     = fu_data_cpop_i.operand_a;
 
     if (CVA6Cfg.RVB) begin
       if (CVA6Cfg.IS_XLEN64) begin
@@ -387,6 +388,14 @@ module alu
         result_o = (|operand_b) ? operand_a : '0;  // move zero to rd if rs2 is equal to zero else rs1
         CZERO_NEZ:
         result_o = (|operand_b) ? '0 : operand_a;  // move zero to rd if rs2 is nonzero else rs1
+        default: ;  // default case to suppress unique warning
+      endcase
+    end
+
+    if (CVA6Cfg.CheriPresent) begin
+      unique case (fu_data_i.operation)
+        // AUIPCC capability mode
+        AUIPCC:  result_o = adder_result;
         default: ;  // default case to suppress unique warning
       endcase
     end

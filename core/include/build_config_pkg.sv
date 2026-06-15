@@ -4,6 +4,7 @@ package build_config_pkg;
     bit IS_XLEN32 = (CVA6Cfg.XLEN == 32) ? 1'b1 : 1'b0;
     bit IS_XLEN64 = (CVA6Cfg.XLEN == 32) ? 1'b0 : 1'b1;
     bit FpPresent = CVA6Cfg.RVF | CVA6Cfg.RVD | CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8;
+    bit CheriPresent = CVA6Cfg.RVZcheripurecap;
     bit NSX = CVA6Cfg.XF16 | CVA6Cfg.XF16ALT | CVA6Cfg.XF8 | CVA6Cfg.XFVec;  // Are non-standard extensions present?
     int unsigned FLen = CVA6Cfg.RVD ? 64 :  // D ext.
     CVA6Cfg.RVF ? 32 :  // F ext.
@@ -33,11 +34,15 @@ package build_config_pkg;
 
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
+    cfg.CLEN = CheriPresent ? (CVA6Cfg.XLEN * 2) : CVA6Cfg.XLEN;
     cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
     cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
+    cfg.REGLEN = CheriPresent ? $bits(cva6_cheri_pkg::cap_reg_t) : cfg.XLEN;
+    cfg.PCLEN = CheriPresent ? $bits(cva6_cheri_pkg::cap_reg_t) : cfg.VLEN;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
+    cfg.CLEN_ALIGN_BYTES = $clog2(cfg.CLEN / 8);
     cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
     cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
 
@@ -82,10 +87,13 @@ package build_config_pkg;
     cfg.RVZiCbom = CVA6Cfg.RVZiCbom;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
+    cfg.RVZcheripurecap = CVA6Cfg.RVZcheripurecap;
+    cfg.RVZcherihybrid = CVA6Cfg.RVZcherihybrid;
     cfg.NR_SB_ENTRIES = CVA6Cfg.NrScoreboardEntries;
     cfg.TRANS_ID_BITS = $clog2(CVA6Cfg.NrScoreboardEntries);
 
     cfg.FpPresent = bit'(FpPresent);
+    cfg.CheriPresent = bit'(CheriPresent);
     cfg.NSX = bit'(NSX);
     cfg.FLen = unsigned'(FLen);
     cfg.RVFVec = bit'(RVFVec);
@@ -156,6 +164,7 @@ package build_config_pkg;
     cfg.DCACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.DcacheLineWidth;
     cfg.DCACHE_USER_WIDTH = CVA6Cfg.AxiUserWidth;
     cfg.DCACHE_OFFSET_WIDTH = DCACHE_OFFSET_WIDTH;
+    cfg.DCACHE_DATA_SIZE_WIDTH = (cfg.CheriPresent && cfg.IS_XLEN64) ? 3 : 2;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
 
     cfg.DCACHE_MAX_TX = unsigned'(2 ** CVA6Cfg.MemTidWidth);
@@ -163,6 +172,8 @@ package build_config_pkg;
     cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
     cfg.DcacheFlushOnFenceI = CVA6Cfg.DcacheFlushOnFenceI;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
+
+    cfg.CheriCapTagWidth = CVA6Cfg.CheriCapTagWidth;
 
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;
     cfg.WtDcacheWbufDepth = CVA6Cfg.WtDcacheWbufDepth;

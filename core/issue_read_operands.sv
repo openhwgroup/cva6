@@ -1,4 +1,6 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Bruno Sá and Zero-Day Labs.
+// Copyright 2025 Capabilities Limited.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -18,7 +20,9 @@ module issue_read_operands
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter type bp_resolve_t = logic,
     parameter type branchpredict_sbe_t = logic,
+    parameter type exception_t = logic,
     parameter type fu_data_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type forwarding_t = logic,
@@ -37,6 +41,8 @@ module issue_read_operands
     input logic flush_i,
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
+    // Debug mode state - CSR
+    input logic debug_mode_i,
     // Entry about the instruction to issue - SCOREBOARD
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i,
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] issue_instr_i_prev,
@@ -46,6 +52,12 @@ module issue_read_operands
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_valid_i,
     // Issue stage acknowledge - SCOREBOARD
     output logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack_o,
+    // Int mode flag in PCC register - ID_STAGE
+    output logic int_mode_o,
+    // PCC exception - Execute
+    output exception_t [CVA6Cfg.NrIssuePorts-1:0] issue_pcc_ex_o,
+    // Backend Empty - scoreboard
+    input logic backend_empty_i,
     // Forwarding - SCOREBOARD
     input forwarding_t fwd_i,
     // FU data useful to execute instruction - EX_STAGE
@@ -53,11 +65,13 @@ module issue_read_operands
     // ALU to ALU bypass control - EX_STAGE
     output alu_bypass_t alu_bypass_o,
     // Unregistered version of fu_data_o.operanda - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.REGLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - EX_STAGE
-    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
+    output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.REGLEN-1:0] rs2_forwarding_o,
     // Program Counter - EX_STAGE
-    output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.PCLEN-1:0] pc_o,
+    // Last committed pcc change - EX_STAGE
+    output logic [CVA6Cfg.PCLEN-1:0] commit_pcc_o,
     // Is zcmt - EX_STAGE
     output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
@@ -96,6 +110,8 @@ module issue_read_operands
     output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
     // CVXIF FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_o,
+    // CLU result is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] clu_valid_o,
     // CVXIF is FU ready - EX_STAGE
     input logic cvxif_ready_i,
     // CVXIF offloader instruction value - EX_STAGE
@@ -122,11 +138,25 @@ module issue_read_operands
     // Destination register in the register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // Value to write to register file - COMMIT_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.REGLEN-1:0] wdata_i,
     // GPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // FPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_i,
+    // Program counter capability last committed - TO_BE_COMPLETED
+    input logic [CVA6Cfg.REGLEN-1:0] pcc_commit_i,
+    // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
+    input logic set_pc_commit_i,
+    // Exception event - COMMIT
+    input logic ex_valid_i,
+    // Mispredict event and next PC - EXECUTE
+    input bp_resolve_t resolved_branch_i,
+    // Next PC when jumping into exception - CSR_FILE
+    input logic [CVA6Cfg.REGLEN-1:0] trap_vector_base_i,
+    // Exception PC - CSR_FILE
+    input logic [CVA6Cfg.REGLEN-1:0] epc_i,
+    // ERET now - CSR_FILE
+    input logic eret_i,
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
     // Information dedicated to RVFI - RVFI
@@ -140,7 +170,7 @@ module issue_read_operands
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
 
   typedef struct packed {
-    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel, aes;
+    logic none, load, store, alu, alu2, ctrl_flow, mult, csr, fpu, fpu_vec, cvxif, accel, aes, clu;
   } fus_busy_t;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] stall_raw, stall_rs1, stall_rs2, stall_rs3;
@@ -148,13 +178,13 @@ module issue_read_operands
   fus_busy_t [CVA6Cfg.NrIssuePorts-1:0] fus_busy;  // which functional units are considered busy
   logic [CVA6Cfg.NrIssuePorts-1:0] issue_ack;
   // operands coming from regfile
-  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] operand_a_regfile, operand_b_regfile;
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.REGLEN-1:0] operand_a_regfile, operand_b_regfile;
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
   rs3_len_t [CVA6Cfg.NrIssuePorts-1:0] operand_c_regfile, operand_c_gpr;
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_n, fu_data_q;
-  logic               [        CVA6Cfg.VLEN-1:0]                   pc_n;
+  logic               [       CVA6Cfg.PCLEN-1:0]                   pc_n;
   logic                                                            is_compressed_instr_n;
   branchpredict_sbe_t                                              branch_predict_n;
   logic               [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] imm_forward_rs3;
@@ -169,6 +199,7 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] lsu_valid_n, lsu_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_n, csr_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] branch_valid_n, branch_valid_q;
+  logic [CVA6Cfg.NrIssuePorts-1:0] clu_valid_n, clu_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] cvxif_valid_n, cvxif_valid_q;
   logic [31:0] cvxif_off_instr_n, cvxif_off_instr_q;
   logic                                                            cvxif_instruction_valid;
@@ -195,23 +226,30 @@ module issue_read_operands
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0]                                rd_fpr;
 
   //fwd logic
-  logic [CVA6Cfg.NR_SB_ENTRIES-1:0][             CVA6Cfg.XLEN-1:0] fwd_res;
+  logic [CVA6Cfg.NR_SB_ENTRIES-1:0][           CVA6Cfg.REGLEN-1:0] fwd_res;
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0]                                fwd_res_valid;
 
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0]                                rs1_is_not_csr;
   logic [CVA6Cfg.NR_SB_ENTRIES-1:0]                                rs2_is_not_csr;
 
-  logic [ CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs3;
+  logic [ CVA6Cfg.NrIssuePorts-1:0][           CVA6Cfg.REGLEN-1:0] rs3;
 
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs1_valid;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs2_valid;
   logic [ CVA6Cfg.NrIssuePorts-1:0]                                rs3_valid;
 
-  logic [ CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs1_res;
-  logic [ CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs2_res;
+  logic [ CVA6Cfg.NrIssuePorts-1:0][           CVA6Cfg.REGLEN-1:0] rs1_res;
+  logic [ CVA6Cfg.NrIssuePorts-1:0][           CVA6Cfg.REGLEN-1:0] rs2_res;
   logic [ CVA6Cfg.NrIssuePorts-1:0][             CVA6Cfg.XLEN-1:0] rs3_res;
 
   logic [CVA6Cfg.NrIssuePorts-1:0][31:0] tinst_n, tinst_q;  // transformed instruction
+
+  // PCC signals : we only have one as we only allow one PCC change at a time
+  logic [CVA6Cfg.PCLEN-1:0] pcc_n, pcc_q;
+  logic pcc_jump_change_valid_n, pcc_jump_change_valid_q;
+  logic [CVA6Cfg.PCLEN-1:0] pcc_jump_change_n, pcc_jump_change_q;
+  cva6_cheri_pkg::cap_reg_t pcc[CVA6Cfg.NrIssuePorts-1:0];
+  cva6_cheri_pkg::cap_meta_data_t pcc_meta;
 
   // forwarding signals
   logic [CVA6Cfg.NrIssuePorts-1:0] forward_rs1, forward_rs2, forward_rs3;
@@ -261,10 +299,12 @@ module issue_read_operands
   );
   if (OPERANDS_PER_INSTR == 3) begin
     assign rs_valid = {~stall_rs3[0], ~stall_rs2[0], ~stall_rs1[0]};
-    assign rs = {fu_data_n[0].imm, fu_data_n[0].operand_b, fu_data_n[0].operand_a};
+    assign rs = {
+      fu_data_n[0].imm, reg_to_x(fu_data_n[0].operand_b), reg_to_x(fu_data_n[0].operand_a)
+    };
   end else begin
     assign rs_valid = {~stall_rs2[0], ~stall_rs1[0]};
-    assign rs = {fu_data_n[0].operand_b, fu_data_n[0].operand_a};
+    assign rs = {reg_to_x(fu_data_n[0].operand_b), reg_to_x(fu_data_n[0].operand_a)};
   end
 
   // TODO check only for 1st instruction ??
@@ -279,10 +319,10 @@ module issue_read_operands
   // ID <-> EX registers
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign rs1_forwarding_o[i] = fu_data_n[i].operand_a[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs1 value
-    assign rs2_forwarding_o[i] = fu_data_n[i].operand_b[CVA6Cfg.VLEN-1:0];  //forwarding or unregistered rs2 value
-    assign rvfi_rs1_o[i] = fu_data_n[i].operand_a;
-    assign rvfi_rs2_o[i] = fu_data_n[i].operand_b;
+    assign rs1_forwarding_o[i] = fu_data_n[i].operand_a;  //forwarding or unregistered rs1 value
+    assign rs2_forwarding_o[i] = fu_data_n[i].operand_b;  //forwarding or unregistered rs2 value
+    assign rvfi_rs1_o[i] = reg_to_x(fu_data_n[i].operand_a);
+    assign rvfi_rs2_o[i] = reg_to_x(fu_data_n[i].operand_b);
   end
 
   assign alu_bypass_o = alu_bypass_q;
@@ -291,6 +331,7 @@ module issue_read_operands
   assign aes_valid_o = aes_valid_q;
   assign branch_valid_o = branch_valid_q;
   assign lsu_valid_o = lsu_valid_q;
+  assign clu_valid_o = clu_valid_q;
   assign csr_valid_o = csr_valid_q;
   assign mult_valid_o = mult_valid_q;
   assign fpu_valid_o = fpu_valid_q;
@@ -323,6 +364,8 @@ module issue_read_operands
     assign use_alu2 = '0;
   end
 
+  assign int_mode_o   = cva6_cheri_pkg::get_cap_reg_flags(pcc_q);
+  assign commit_pcc_o = pcc_q;
   // ---------------
   // Issue Stage
   // ---------------
@@ -338,6 +381,7 @@ module issue_read_operands
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
       fus_busy[0].mult = 1'b1;
+      fus_busy[0].clu = 1'b1;
     end
 
     // after a multiplication was issued we can only issue another multiplication
@@ -347,6 +391,7 @@ module issue_read_operands
       fus_busy[0].aes = 1'b1;
       fus_busy[0].ctrl_flow = 1'b1;
       fus_busy[0].csr = 1'b1;
+      fus_busy[0].clu = 1'b1;
     end
 
     if (CVA6Cfg.FpPresent && !fpu_ready_i) begin
@@ -378,6 +423,7 @@ module issue_read_operands
           if (CVA6Cfg.SpeculativeSb) begin
             // Issue speculative instruction, will be removed on BMISS
             fus_busy[1].alu = 1'b1;
+            fus_busy[1].clu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
             fus_busy[1].csr = 1'b1;
             // The store buffer cannot be partially flushed yet
@@ -386,6 +432,7 @@ module issue_read_operands
             // There are no branch misses on a JAL
             if (issue_instr_i[0].op == ariane_pkg::ADD) begin
               fus_busy[1].alu = 1'b1;
+              fus_busy[1].clu = 1'b1;
               fus_busy[1].ctrl_flow = 1'b1;
               fus_busy[1].csr = 1'b1;
             end else begin
@@ -400,6 +447,7 @@ module issue_read_operands
           end else begin
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
+            fus_busy[1].clu = 1'b1;
             fus_busy[1].csr = 1'b1;
           end
         end
@@ -424,9 +472,81 @@ module issue_read_operands
             fus_busy[1].fpu_vec = 1'b1;
           end
         end
+        CLU: begin
+          fus_busy[1].alu = 1'b1;
+          fus_busy[1].clu = 1'b1;
+          fus_busy[1].ctrl_flow = 1'b1;
+          fus_busy[1].csr = 1'b1;
+        end
         CVXIF: ;
         default: ;
       endcase
+    end
+  end
+
+  if (CVA6Cfg.CheriPresent) begin : gen_cheri_pcc_checks
+    // Update PCC with correct int mode
+    always_comb begin : pcc_int_mode
+      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+        pcc[i] = cva6_cheri_pkg::set_cap_reg_flags(pcc_q, issue_instr_i[i].int_mode);
+      end
+    end
+
+    // check PCC bounds
+    always_comb begin : pcc_bounds
+      automatic cva6_cheri_pkg::addrw_t pcc_base;
+      automatic cva6_cheri_pkg::addrwe_t pcc_top;
+      automatic logic pcc_bounds_root;
+      pcc_meta = cva6_cheri_pkg::get_cap_reg_meta_data(pcc_q);
+      pcc_base = cva6_cheri_pkg::get_cap_reg_base(pcc_q, pcc_meta);
+      pcc_top = cva6_cheri_pkg::get_cap_reg_top(pcc_q, pcc_meta);
+      pcc_bounds_root = cva6_cheri_pkg::are_cap_reg_bounds_root(pcc_q, pcc_meta);
+      issue_pcc_ex_o = '0;
+      // Check PCC bounds every instruction
+      for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+        automatic logic [CVA6Cfg.VLEN-1:0] next_pc_off;
+        automatic logic [CVA6Cfg.VLEN-1:0] next_pc_addr;
+        automatic logic next_pc_carry;
+        automatic cva6_cheri_pkg::cap_tval2_t cheri_tval2;
+        automatic logic pc_below_base;
+        automatic logic pc_above_top;
+        automatic logic cheri_fault;
+
+        cheri_tval2 = '0;
+
+        cheri_tval2.fault_type = cva6_cheri_pkg::CAP_INSTR_FETCH_FAULT;
+        next_pc_off = {{CVA6Cfg.VLEN - 3{1'b0}}, issue_instr_i[i].is_compressed ? 3'h2 : 3'h4};
+        {next_pc_carry, next_pc_addr} = {1'b0, issue_instr_i[i].pc} + {1'b0, next_pc_off};
+        pc_below_base = cva6_cheri_pkg::addrw_t'(signed'(issue_instr_i[i].pc)) < pcc_base;
+        pc_above_top = {next_pc_carry, cva6_cheri_pkg::addrw_t'(signed'(next_pc_addr))} > pcc_top;
+        cheri_fault = 1'b0;
+        if (!pcc_bounds_root && (pc_below_base || pc_above_top)) begin
+          cheri_fault = 1'b1;
+          cheri_tval2.fault_cause = cva6_cheri_pkg::CAP_BOUNDS_VIOLATION;
+        end
+        if (issue_instr_i[i].needs_asr && !pcc[i].hperms.access_sys_regs) begin
+          cheri_fault = 1'b1;
+          cheri_tval2.fault_cause = cva6_cheri_pkg::CAP_PERM_VIOLATION;
+        end
+        if (!pcc[i].hperms.permit_execute) begin
+          cheri_fault = 1'b1;
+          cheri_tval2.fault_cause = cva6_cheri_pkg::CAP_PERM_VIOLATION;
+        end
+        if ((pcc[i].otype != cva6_cheri_pkg::UNSEALED_CAP) && pcc[i].tag) begin
+          cheri_fault = 1'b1;
+          cheri_tval2.fault_cause = cva6_cheri_pkg::CAP_SEAL_VIOLATION;
+        end
+        if (!pcc[i].tag) begin
+          cheri_fault = 1'b1;
+          cheri_tval2.fault_cause = cva6_cheri_pkg::CAP_TAG_VIOLATION;
+        end
+        if (cheri_fault) begin
+          issue_pcc_ex_o[i].cause = cva6_cheri_pkg::CAP_EXCEPTION;
+          issue_pcc_ex_o[i].tval2 = CVA6Cfg.GPLEN'(cva6_cheri_pkg::embed_cap_tval2(cheri_tval2));
+          issue_pcc_ex_o[i].valid = 1'b1;
+        end
+        if (!issue_instr_valid_i[i] || debug_mode_i) issue_pcc_ex_o[i].valid = 1'b0;
+      end
     end
   end
 
@@ -448,6 +568,7 @@ module issue_read_operands
         MULT: fu_busy[i] = fus_busy[i].mult;
         LOAD: fu_busy[i] = fus_busy[i].load;
         STORE: fu_busy[i] = fus_busy[i].store;
+        CLU: fu_busy[i] = fus_busy[i].clu;
         CVXIF: fu_busy[i] = fus_busy[i].cvxif;
         AES: fu_busy[i] = fus_busy[i].aes;
         default:
@@ -665,7 +786,14 @@ module issue_read_operands
               issue_instr_i[0].rd == issue_instr_i[1].result[REG_ADDR_SIZE-1:0] : 1'b0) begin
         stall_raw[1] = 1'b1;
       end
+
+      // Stall the second instruction if the first one could change bounds.
+      if (CVA6Cfg.CheriPresent && (issue_instr_i[0].op == ariane_pkg::CJALR)) stall_raw[1] = 1'b1;
     end
+
+    // Stall while there is an outstanding change to bounds.
+    if (CVA6Cfg.CheriPresent && (pcc_jump_change_valid_n || pcc_jump_change_valid_q))
+      stall_raw[0] = 1'b1;
   end
 
   // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
@@ -674,6 +802,32 @@ module issue_read_operands
       assign imm_forward_rs3[i] = rs3_res[i];
     end else begin : gen_fp_rs3
       assign imm_forward_rs3[i] = {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, rs3_res[i]};
+    end
+  end
+
+  // PCC logic
+  if (CVA6Cfg.CheriPresent) begin
+    always_comb begin : pcc_select
+      pcc_jump_change_valid_n = pcc_jump_change_valid_q;
+      pcc_jump_change_n = pcc_jump_change_q;
+      pcc_n = pcc_q;
+
+      if (eret_i) begin
+        pcc_jump_change_valid_n = 1'b0;
+        pcc_n = epc_i;
+      end else if (set_pc_commit_i) begin
+        pcc_jump_change_valid_n = 1'b0;
+        pcc_n = pcc_commit_i;
+      end else if (ex_valid_i) begin
+        pcc_jump_change_valid_n = 1'b0;
+        pcc_n = trap_vector_base_i;
+      end else if (pcc_jump_change_valid_q && backend_empty_i) begin
+        pcc_jump_change_valid_n = 1'b0;
+        pcc_n = pcc_jump_change_q;
+      end else if (resolved_branch_i.valid && resolved_branch_i.is_pcc_change) begin
+        pcc_jump_change_valid_n = 1'b1;
+        pcc_jump_change_n = resolved_branch_i.target_address;
+      end
     end
   end
 
@@ -688,15 +842,20 @@ module issue_read_operands
       // for FP operations, the imm field can also be the third operand from the regfile
       if (OPERANDS_PER_INSTR == 3) begin
         fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
-            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} :
-            issue_instr_i[i].op == OFFLOAD ? operand_c_regfile[i] : issue_instr_i[i].result;
+            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} : issue_instr_i[i].op ==
+            OFFLOAD ? operand_c_regfile[i] : reg_to_x(issue_instr_i[i].result);
       end else begin
         fu_data_n[i].imm = (CVA6Cfg.FpPresent && is_imm_fpr(issue_instr_i[i].op)) ?
-            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} : issue_instr_i[i].result;
+            {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, operand_c_regfile[i]} :
+            reg_to_x(issue_instr_i[i].result);
       end
       fu_data_n[i].trans_id  = issue_instr_i[i].trans_id;
       fu_data_n[i].fu        = issue_instr_i[i].fu;
       fu_data_n[i].operation = issue_instr_i[i].op;
+      fu_data_n[i].rs1       = CVA6Cfg.CheriPresent ? issue_instr_i[i].rs1 : '0;
+      fu_data_n[i].rs2       = CVA6Cfg.CheriPresent ? issue_instr_i[i].rs2 : '0;
+      fu_data_n[i].use_ddc   = CVA6Cfg.CheriPresent ? issue_instr_i[i].use_ddc : '0;
+
       if (CVA6Cfg.ZKN) begin
         fu_data_n[i].orig_instr_aes_bits = {orig_instr_i[i][31:30], orig_instr_i[i][23:20]};
       end else begin
@@ -720,15 +879,21 @@ module issue_read_operands
 
       // use the PC as operand a
       if (issue_instr_i[i].use_pc) begin
-        fu_data_n[i].operand_a = {
-          {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[i].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[i].pc
-        };
+        if (CVA6Cfg.CheriPresent) begin
+          fu_data_n[i].operand_a = cva6_cheri_pkg::set_cap_reg_addr(pcc[i], issue_instr_i[i].pc);
+        end else begin
+          fu_data_n[i].operand_a = {
+            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{issue_instr_i[i].pc[CVA6Cfg.VLEN-1]}}, issue_instr_i[i].pc
+          };
+        end
       end
 
       // use the zimm as operand a
       if (issue_instr_i[i].use_zimm) begin
         // zero extend operand a
-        fu_data_n[i].operand_a = {{CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[i].rs1[4:0]};
+        fu_data_n[i].operand_a[CVA6Cfg.XLEN-1:0] = {
+          {CVA6Cfg.XLEN - 5{1'b0}}, issue_instr_i[i].rs1[4:0]
+        };
       end
       // or is it an immediate (including PC), this is not the case for a store, control flow, and accelerator instructions
       // also make sure operand B is not already used as an FP operand
@@ -751,6 +916,7 @@ module issue_read_operands
     alu2_valid_n   = '0;
     csr_valid_n    = '0;
     branch_valid_n = '0;
+    clu_valid_n    = '0;
     for (int unsigned i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
         case (issue_instr_i[i].fu)
@@ -785,6 +951,8 @@ module issue_read_operands
               fpu_valid_n[i] = 1'b1;
               fpu_fmt_n      = orig_instr[i].rvftype.vfmt;  // vfmt bits from instruction
               fpu_rm_n       = {2'b0, orig_instr[i].rvftype.repl};  // repl bit from instruction
+            end else if (issue_instr_i[i].fu == CLU && CVA6Cfg.CheriPresent) begin
+              clu_valid_n[i] = 1'b1;
             end
           end
         endcase
@@ -801,6 +969,7 @@ module issue_read_operands
       alu2_valid_n   = '0;
       csr_valid_n    = '0;
       branch_valid_n = '0;
+      clu_valid_n    = '0;
     end
   end
   // FU select, assert the correct valid out signal (in the next cycle)
@@ -817,6 +986,7 @@ module issue_read_operands
       alu2_valid_q   <= '0;
       csr_valid_q    <= '0;
       branch_valid_q <= '0;
+      clu_valid_q    <= '0;
     end else begin
       alu_valid_q    <= alu_valid_n;
       aes_valid_q    <= aes_valid_n;
@@ -828,6 +998,7 @@ module issue_read_operands
       alu2_valid_q   <= alu2_valid_n;
       csr_valid_q    <= csr_valid_n;
       branch_valid_q <= branch_valid_n;
+      clu_valid_q    <= clu_valid_n;
     end
   end
 
@@ -875,9 +1046,6 @@ module issue_read_operands
         if (!stall_raw[i]) begin
           issue_ack[i] = 1'b1;
         end
-        if (issue_instr_i[i].ex.valid) begin
-          issue_ack[i] = 1'b1;
-        end
       end
     end
 
@@ -896,13 +1064,13 @@ module issue_read_operands
   // ----------------------
   // Integer Register File
   // ----------------------
-  logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rdata;
-  logic [  CVA6Cfg.NrRgprPorts-1:0][             4:0] raddr_pack;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.REGLEN-1:0] rdata;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][               4:0] raddr_pack;
 
   // pack signals
-  logic [CVA6Cfg.NrCommitPorts-1:0][             4:0] waddr_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
-  logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][               4:0] waddr_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.REGLEN-1:0] wdata_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0]                     we_pack;
 
   //adjust address to read from register file (when synchronous RAM is used reads take one cycle, so we advance the address)
   for (genvar i = 0; i <= CVA6Cfg.NrIssuePorts - 1; i++) begin
@@ -921,7 +1089,7 @@ module issue_read_operands
   if (CVA6Cfg.FpgaEn) begin : gen_fpga_regfile
     ariane_regfile_fpga #(
         .CVA6Cfg      (CVA6Cfg),
-        .DATA_WIDTH   (CVA6Cfg.XLEN),
+        .DATA_WIDTH   (CVA6Cfg.REGLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1)
     ) i_ariane_regfile_fpga (
@@ -937,9 +1105,11 @@ module issue_read_operands
   end else begin : gen_asic_regfile
     ariane_regfile #(
         .CVA6Cfg      (CVA6Cfg),
-        .DATA_WIDTH   (CVA6Cfg.XLEN),
+        .DATA_WIDTH   (CVA6Cfg.REGLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
-        .ZERO_REG_ZERO(1)
+        .ZERO_REG_ZERO(1),
+        .ZERO_VAL     (ariane_pkg::REG_NULL),
+        .INIT_VAL     (ariane_pkg::REG_NULL)
     ) i_ariane_regfile (
         .clk_i,
         .rst_ni,
@@ -1031,10 +1201,10 @@ module issue_read_operands
 
     assign operand_a_regfile[i] = (CVA6Cfg.FpPresent && is_rs1_fpr(
         issue_instr_i[i].op
-    )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[i*OPERANDS_PER_INSTR+0];
+    )) ? {{CVA6Cfg.REGLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[i*OPERANDS_PER_INSTR+0];
     assign operand_b_regfile[i] = (CVA6Cfg.FpPresent && is_rs2_fpr(
         issue_instr_i[i].op
-    )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
+    )) ? {{CVA6Cfg.REGLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
     assign operand_c_regfile[i] = (OPERANDS_PER_INSTR == 3) ? ((CVA6Cfg.FpPresent && is_imm_fpr(
         issue_instr_i[i].op
     )) ? operand_c_fpr : operand_c_gpr[i]) : operand_c_fpr;
@@ -1045,18 +1215,18 @@ module issue_read_operands
   // ----------------------
 
   always_comb begin
-    pc_n = '0;
+    pc_n = pcc_q;
     is_compressed_instr_n = 1'b0;
     branch_predict_n = {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
     if (CVA6Cfg.SuperscalarEn) begin
       if (issue_instr_i[1].fu == CTRL_FLOW) begin
-        pc_n                  = issue_instr_i[1].pc;
+        pc_n = cva6_cheri_pkg::set_cap_reg_address(pcc[1], issue_instr_i[1].pc, pcc_meta);
         is_compressed_instr_n = issue_instr_i[1].is_compressed;
         branch_predict_n      = issue_instr_i[1].bp;
       end
     end
     if (issue_instr_i[0].fu == CTRL_FLOW) begin
-      pc_n                  = issue_instr_i[0].pc;
+      pc_n = cva6_cheri_pkg::set_cap_reg_address(pcc[0], issue_instr_i[0].pc, pcc_meta);
       is_compressed_instr_n = issue_instr_i[0].is_compressed;
       branch_predict_n      = issue_instr_i[0].bp;
     end
@@ -1074,7 +1244,11 @@ module issue_read_operands
       if (CVA6Cfg.RVH) begin
         tinst_q <= '0;
       end
-      pc_o                     <= '0;
+      pc_o <= '0;
+      if (CVA6Cfg.CheriPresent) begin
+        pcc_q <= REG_ROOT;
+        pcc_jump_change_valid_q <= '0;
+      end
       is_zcmt_o                <= '0;
       is_compressed_instr_o    <= 1'b0;
       branch_predict_o         <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
@@ -1089,10 +1263,13 @@ module issue_read_operands
       pc_o <= pc_n;
       is_compressed_instr_o <= is_compressed_instr_n;
       branch_predict_o <= branch_predict_n;
-      if (issue_instr_i[0].fu == CTRL_FLOW) begin
-        if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
-        else is_zcmt_o <= '0;
+      if (CVA6Cfg.CheriPresent) begin
+        pcc_q <= pcc_n;
+        pcc_jump_change_valid_q <= pcc_jump_change_valid_n;
+        pcc_jump_change_q <= pcc_jump_change_n;
       end
+      if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
+      else is_zcmt_o <= '0;
       x_transaction_rejected_o <= x_transaction_rejected_n;
     end
   end

@@ -8,7 +8,7 @@
 {
   upstream:
   {
-    url: https://github.com/pulp-platform/axi_riscv_atomics.git
-    rev: 550881f12e22dfae405612fc1df6368f4c003e68
+    url: https://github.com/ninolomata/axi_riscv_atomics.git
+    rev: 6b4a997cb92148d7d94b4692731dfa1495b4c72d
   }
 }

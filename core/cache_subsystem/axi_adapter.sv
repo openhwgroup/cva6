@@ -87,7 +87,7 @@ module axi_adapter #(
   logic [ADDR_INDEX-1:0] index;
   // save the atomic operation and size
   ariane_pkg::amo_t amo_d, amo_q;
-  logic [1:0] size_d, size_q;
+  logic [CVA6Cfg.DCACHE_DATA_SIZE_WIDTH-1:0] size_d, size_q;
   // outstanding write transactions counter
   outstanding_aw_cnt_t outstanding_aw_cnt_q, outstanding_aw_cnt_d;
   logic any_outstanding_aw;

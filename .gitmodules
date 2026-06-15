@@ -39,7 +39,7 @@
 	url = https://github.com/openhwgroup/cvfpu.git
 [submodule "core/cache_subsystem/hpdcache"]
 	path = core/cache_subsystem/hpdcache
-	url = https://github.com/openhwgroup/cv-hpdcache.git
+	url = https://github.com/Capabilities-Limited/cv-hpdcache.git
 [submodule "verif/sim/dv"]
 	path = verif/sim/dv
 	url = https://github.com/google/riscv-dv.git
@@ -52,3 +52,6 @@
 [submodule "corev_apu/fpga/src/gpio"]
 	path = corev_apu/fpga/src/gpio
 	url = https://github.com/pulp-platform/gpio.git
+[submodule "vendor/zero-day/axi_tagcontroller"]
+	path = vendor/zero-day/axi_tagcontroller
+	url = https://github.com/Capabilities-Limited/axi_cheri_tagcontroller.git

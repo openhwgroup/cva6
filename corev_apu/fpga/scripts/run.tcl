@@ -45,6 +45,7 @@ set_property include_dirs { \
 	"src/axi_sd_bridge/include" \
 	"../../vendor/pulp-platform/common_cells/include" \
 	"../../vendor/pulp-platform/axi/include" \
+      "../../vendor/zero-day/axi_tagcontroller/src/axi_llc/include/" \
 	"../../core/cache_subsystem/hpdcache/rtl/include" \
 	"../register_interface/include" \
       "../instr_tracing/ITI/include" \

@@ -83,6 +83,8 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    RVZiCond: bit'(1),
    RVZicntr: bit'(1),
    RVZihpm: bit'(1),
+   RVZcheripurecap: bit'(0),
+   RVZcherihybrid: bit'(0),
    NrScoreboardEntries: unsigned'(8),
    PerfCounterEn: bit'(1),
    MmuPresent: bit'(1),
@@ -143,7 +145,8 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    SharedTlbDepth: int'(64),
    NrLoadPipeRegs: int'(0),
    NrStorePipeRegs: int'(0),
-   DcacheIdWidth: int'(3)
+   DcacheIdWidth: int'(3),
+   CheriCapTagWidth : int'(1)
 };
 
 endpackage

@@ -217,7 +217,7 @@ module axi_riscv_lrsc #(
             R_IDLE: begin
                 if (slv_ar_valid_i) begin
                     if (slv_ar_addr_i >= ADDR_BEGIN && slv_ar_addr_i <= ADDR_END && slv_ar_lock_i &&
-                            slv_ar_len_i == 8'h00) begin
+                            slv_ar_len_i <= 8'h01) begin
                         // Inside exclusively-accessible address range and exclusive access and no
                         // burst
                         art_set_addr    = slv_ar_addr_i;
@@ -330,7 +330,7 @@ module axi_riscv_lrsc #(
                     // New AW, and W channel is idle
                     if (slv_aw_addr_i >= ADDR_BEGIN && slv_aw_addr_i <= ADDR_END) begin
                         // Inside exclusively-accessible address range
-                        if (slv_aw_lock_i && slv_aw_len_i == 8'h00) begin
+                        if (slv_aw_lock_i && slv_aw_len_i <= 8'h01) begin
                             // Exclusive access and no burst, so check if reservation exists
                             art_check_addr  = slv_aw_addr_i;
                             art_check_id    = slv_aw_id_i;

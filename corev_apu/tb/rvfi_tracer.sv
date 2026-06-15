@@ -149,9 +149,9 @@ module rvfi_tracer #(
         end
 
         if (dest_is_fp) begin
-          $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata[CVA6Cfg.XLEN-1:0]);
         end else if (rvfi_i[i].rd_addr != 0) begin
-          $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata[CVA6Cfg.XLEN-1:0]);
           if (rvfi_i[i].mem_rmask != 0) begin
             $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
           end

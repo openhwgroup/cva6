@@ -1,4 +1,5 @@
 /* Copyright 2018 ETH Zurich and University of Bologna.
+ * Copyright 2025 Bruno Sá and Zero-Day Labs.
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the “License”); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
@@ -28,6 +29,12 @@
 /// moved out to favour a fully parameterizable core.
 package ariane_pkg;
 
+  localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
+  localparam CheriPresent = cva6_config_pkg::CVA6ConfigRVZcheripurecap;
+  localparam CLEN = CheriPresent ? 2 * XLEN : XLEN;
+  localparam REGLEN = CheriPresent ? $bits(cva6_cheri_pkg::cap_reg_t) : XLEN;
+  localparam logic [REGLEN-1:0] REG_NULL = CheriPresent ? cva6_cheri_pkg::REG_NULL_CAP : '0;
+  localparam logic [REGLEN-1:0] REG_ROOT = CheriPresent ? cva6_cheri_pkg::REG_ROOT_CAP : '0;
   // TODO: Slowly move those parameters to the new system.
   localparam BITS_SATURATION_COUNTER = 2;
 
@@ -122,15 +129,19 @@ package ariane_pkg;
     | riscv::SSTATUS_UPIE
     | riscv::SSTATUS_SPIE
     | riscv::SSTATUS_UXL
+    | (Cfg.CheriPresent ? riscv::SSTATUS_CRG : '0)
     | riscv::sstatus_sd(Cfg.IS_XLEN64);
   endfunction
 
-  localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
-                                                    | riscv::SSTATUS_SPIE
-                                                    | riscv::SSTATUS_SPP
-                                                    | riscv::SSTATUS_FS
-                                                    | riscv::SSTATUS_SUM
-                                                    | riscv::SSTATUS_MXR;
+  function automatic logic [63:0] smode_status_write_mask(config_pkg::cva6_cfg_t Cfg);
+    return riscv::SSTATUS_SIE
+    | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_SPP
+    | riscv::SSTATUS_FS
+    | riscv::SSTATUS_SUM
+    | (Cfg.CheriPresent ? riscv::SSTATUS_CRG : '0)
+    | riscv::SSTATUS_MXR;
+  endfunction
 
   localparam logic [63:0] HSTATUS_WRITE_MASK      = riscv::HSTATUS_VSBE
                                                     | riscv::HSTATUS_GVA
@@ -198,7 +209,8 @@ package ariane_pkg;
     FPU_VEC,    // 8
     CVXIF,      // 9
     ACCEL,      // 10
-    AES         // 11
+    AES,        // 11
+    CLU         // 12 - CHERI Logic Unit
   } fu_t;
 
   // Index of writeback ports
@@ -270,7 +282,7 @@ package ariane_pkg;
   // EX Stage
   // ---------------
 
-  typedef enum logic [7:0] {  // basic ALU op
+  typedef enum logic [8:0] {  // basic ALU op
     ADD,
     SUB,
     ADDW,
@@ -295,7 +307,9 @@ package ariane_pkg;
     NE,
     // jumps
     JALR,
+    JAL,
     BRANCH,
+    AUIPCC,
     // set lower than operations
     SLTS,
     SLTU,
@@ -314,7 +328,39 @@ package ariane_pkg;
     CSR_READ,
     CSR_SET,
     CSR_CLEAR,
+    // CLU functions
+    // Capability-Inspection Instructions
+    GCPERM,
+    GCTYPE,
+    GCBASE,
+    GCLEN,
+    GCTAG,
+    GCMODE,
+    GCHI,
+    // Capability-Modification Instructions
+    ACPERM,
+    SCMODE,
+    SCHI,
+    SCADDR,
+    CADD,
+    SCBNDSR,
+    SCBNDS,
+    CBLD,
+    SENTRY,
+    CMV,
+    // Pointer-Comparison Instructions
+    SCSS,
+    SCEQ,
+    // Control-Flow Instructions
+    MODESW_CAP,
+    MODESW_INT,
+    CJAL,
+    CJALR,
+    // Adjusting to Compressed Capability Precision Instructions
+    CRAM,
     // LSU functions
+    LC,
+    SC,
     LD,
     SD,
     LW,
@@ -341,10 +387,16 @@ package ariane_pkg;
     HLV_D,
     HSV_D,
     // Atomic Memory Operations
+    AMO_LRB,
+    AMO_LRH,
     AMO_LRW,
     AMO_LRD,
+    AMO_LRC,
+    AMO_SCB,
+    AMO_SCH,
     AMO_SCW,
     AMO_SCD,
+    AMO_SCC,
     AMO_SWAPW,
     AMO_ADDW,
     AMO_ANDW,
@@ -363,6 +415,7 @@ package ariane_pkg;
     AMO_MAXDU,
     AMO_MIND,
     AMO_MINDU,
+    AMO_SWAPC,
     // cache block operations (CBO)
     CBO_CLEAN,
     CBO_FLUSH,
@@ -550,6 +603,13 @@ package ariane_pkg;
     endcase
   endfunction
 
+  function automatic logic op_is_jump(input fu_op op);
+    unique case (op) inside
+      JALR, CJAL, CJALR, JAL: return 1'b1;
+      default:                return 1'b0;  // all other ops
+    endcase
+  endfunction
+
   // -------------------------------
   // Extract Src/Dst FP Reg from Op
   // -------------------------------
@@ -631,7 +691,16 @@ package ariane_pkg;
 
   function automatic logic is_amo(fu_op op);
     case (op) inside
-      [AMO_LRW : AMO_MINDU]: begin
+      [AMO_LRB : AMO_SWAPC]: begin
+        return 1'b1;
+      end
+      default: return 1'b0;
+    endcase
+  endfunction
+
+  function automatic logic is_amo_sc(fu_op op);
+    case (op) inside
+      [AMO_SCB : AMO_SCC]: begin
         return 1'b1;
       end
       default: return 1'b0;
@@ -675,11 +744,12 @@ package ariane_pkg;
     riscv::pte_sv32_t content;
   } tlb_update_sv32_t;
 
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     FE_NONE,
     FE_INSTR_ACCESS_FAULT,
     FE_INSTR_PAGE_FAULT,
-    FE_INSTR_GUEST_PAGE_FAULT
+    FE_INSTR_GUEST_PAGE_FAULT,
+    FE_INSTR_CHERI_FAULT
   } frontend_exception_t;
 
   // AMO request going to cache. this request is unconditionally valid as soon
@@ -687,21 +757,31 @@ package ariane_pkg;
   // Furthermore, those signals are kept stable until the response indicates
   // completion by asserting ack.
   typedef struct packed {
-    logic        req;        // this request is valid
-    amo_t        amo_op;     // atomic memory operation to perform
-    logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
-    logic [63:0] operand_a;  // address
-    logic [63:0] operand_b;  // data as layouted in the register
+    logic            req;        // this request is valid
+    amo_t            amo_op;     // atomic memory operation to perform
+    logic [2:0]      size;       // 2'b10 --> word operation, 2'b11 --> double word operation
+    logic [63:0]     operand_a;  // address
+    logic [CLEN-1:0] operand_b;  // data as layouted in the register
+    logic            cap_vld;
   } amo_req_t;
 
   // AMO response coming from cache.
   typedef struct packed {
-    logic        ack;     // response is valid
-    logic [63:0] result;  // sign-extended, result
+    logic            ack;      // response is valid
+    logic [CLEN-1:0] result;   // sign-extended, result
+    logic            cap_vld;
   } amo_resp_t;
 
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 
+  function automatic logic is_cap(fu_op op);
+    case (op) inside
+      LC, SC, AMO_LRC, AMO_SCC, AMO_SWAPC: begin
+        return 1'b1;
+      end
+      default: return 1'b0;
+    endcase
+  endfunction
   // ----------------------
   // Arithmetic Functions
   // ----------------------
@@ -713,6 +793,93 @@ package ariane_pkg;
   // LSU Functions
   // ----------------------
   // generate byte enable mask
+  function automatic logic [15:0] be_gen_128(logic [3:0] addr, logic [2:0] size);
+    case (size)
+      // 16-bytes size
+      3'b100: begin
+        return 16'b1111_1111_1111_1111;
+      end
+      // 8-bytes size
+      3'b011: begin
+        case (addr[3:0])
+          4'b0000: return 16'b0000_0000_1111_1111;
+          4'b0001: return 16'b0000_0001_1111_1110;
+          4'b0010: return 16'b0000_0011_1111_1100;
+          4'b0011: return 16'b0000_0111_1111_1000;
+          4'b0100: return 16'b0000_1111_1111_0000;
+          4'b0101: return 16'b0001_1111_1110_0000;
+          4'b0110: return 16'b0011_1111_1100_0000;
+          4'b0111: return 16'b0111_1111_1000_0000;
+          4'b1000: return 16'b1111_1111_0000_0000;
+          default: ;  // Do nothing
+        endcase
+      end
+      // 4-bytes size
+      3'b010: begin
+        case (addr[3:0])
+          4'b0000: return 16'b0000_0000_0000_1111;
+          4'b0001: return 16'b0000_0000_0001_1110;
+          4'b0010: return 16'b0000_0000_0011_1100;
+          4'b0011: return 16'b0000_0000_0111_1000;
+          4'b0100: return 16'b0000_0000_1111_0000;
+          4'b0101: return 16'b0000_0001_1110_0000;
+          4'b0110: return 16'b0000_0011_1100_0000;
+          4'b0111: return 16'b0000_0111_1000_0000;
+          4'b1000: return 16'b0000_1111_0000_0000;
+          4'b1001: return 16'b0001_1110_0000_0000;
+          4'b1010: return 16'b0011_1100_0000_0000;
+          4'b1011: return 16'b0111_1000_0000_0000;
+          4'b1100: return 16'b1111_0000_0000_0000;
+          default: ;  // Do nothing
+        endcase
+      end
+      // 2-bytes size
+      3'b001: begin
+        case (addr[3:0])
+          4'b0000: return 16'b0000_0000_0000_0011;
+          4'b0001: return 16'b0000_0000_0000_0110;
+          4'b0010: return 16'b0000_0000_0000_1100;
+          4'b0011: return 16'b0000_0000_0001_1000;
+          4'b0100: return 16'b0000_0000_0011_0000;
+          4'b0101: return 16'b0000_0000_0110_0000;
+          4'b0110: return 16'b0000_0000_1100_0000;
+          4'b0111: return 16'b0000_0001_1000_0000;
+          4'b1000: return 16'b0000_0011_0000_0000;
+          4'b1001: return 16'b0000_0110_0000_0000;
+          4'b1010: return 16'b0000_1100_0000_0000;
+          4'b1011: return 16'b0001_1000_0000_0000;
+          4'b1100: return 16'b0011_0000_0000_0000;
+          4'b1101: return 16'b0110_0000_0000_0000;
+          4'b1110: return 16'b1100_0000_0000_0000;
+          default: ;  // Do nothing
+        endcase
+      end
+      // 1-byte size
+      3'b000: begin
+        case (addr[3:0])
+          4'b0000: return 16'b0000_0000_0000_0001;
+          4'b0001: return 16'b0000_0000_0000_0010;
+          4'b0010: return 16'b0000_0000_0000_0100;
+          4'b0011: return 16'b0000_0000_0000_1000;
+          4'b0100: return 16'b0000_0000_0001_0000;
+          4'b0101: return 16'b0000_0000_0010_0000;
+          4'b0110: return 16'b0000_0000_0100_0000;
+          4'b0111: return 16'b0000_0000_1000_0000;
+          4'b1000: return 16'b0000_0001_0000_0000;
+          4'b1001: return 16'b0000_0010_0000_0000;
+          4'b1010: return 16'b0000_0100_0000_0000;
+          4'b1011: return 16'b0000_1000_0000_0000;
+          4'b1100: return 16'b0001_0000_0000_0000;
+          4'b1101: return 16'b0010_0000_0000_0000;
+          4'b1110: return 16'b0100_0000_0000_0000;
+          4'b1111: return 16'b1000_0000_0000_0000;
+          default: ;  // Do nothing
+        endcase
+      end
+    endcase
+    return 16'b0;
+  endfunction
+
   function automatic logic [7:0] be_gen(logic [2:0] addr, logic [1:0] size);
     case (size)
       2'b11: begin
@@ -785,31 +952,34 @@ package ariane_pkg;
   // ----------------------
   // Extract Bytes from Op
   // ----------------------
-  function automatic logic [1:0] extract_transfer_size(fu_op op);
+  function automatic logic [2:0] extract_transfer_size(fu_op op);
     case (op)
+      AMO_LRC, AMO_SCC, LC, SC, AMO_SWAPC: begin
+        return 3'b100;
+      end
       LD, HLV_D, SD, HSV_D, FLD, FSD,
-            AMO_LRD,   AMO_SCD,
-            AMO_SWAPD, AMO_ADDD,
-            AMO_ANDD,  AMO_ORD,
-            AMO_XORD,  AMO_MAXD,
-            AMO_MAXDU, AMO_MIND,
-            AMO_MINDU: begin
-        return 2'b11;
+      AMO_LRD,   AMO_SCD,
+      AMO_SWAPD, AMO_ADDD,
+      AMO_ANDD,  AMO_ORD,
+      AMO_XORD,  AMO_MAXD,
+      AMO_MAXDU, AMO_MIND,
+      AMO_MINDU: begin
+        return 3'b011;
       end
       LW, LWU, HLV_W, HLV_WU, HLVX_WU,
-            SW, HSV_W, FLW, FSW,
-            AMO_LRW,   AMO_SCW,
-            AMO_SWAPW, AMO_ADDW,
-            AMO_ANDW,  AMO_ORW,
-            AMO_XORW,  AMO_MAXW,
-            AMO_MAXWU, AMO_MINW,
-            AMO_MINWU: begin
-        return 2'b10;
+      SW, HSV_W, FLW, FSW,
+      AMO_LRW,   AMO_SCW,
+      AMO_SWAPW, AMO_ADDW,
+      AMO_ANDW,  AMO_ORW,
+      AMO_XORW,  AMO_MAXW,
+      AMO_MAXWU, AMO_MINW,
+      AMO_MINWU: begin
+        return 3'b010;
       end
-      LH, LHU, HLV_H, HLV_HU, HLVX_HU, SH, HSV_H, FLH, FSH: return 2'b01;
-      LB, LBU, HLV_B, HLV_BU, SB, HSV_B, FLB, FSB:          return 2'b00;
-      CBO_CLEAN, CBO_FLUSH, CBO_INVAL:                      return 2'b00;
-      default:                                              return 2'b11;
+      LH, LHU, HLV_H, HLV_HU, HLVX_HU, SH, HSV_H, FLH, FSH, AMO_LRH, AMO_SCH: return 3'b001;
+      LB, LBU, HLV_B, HLV_BU, SB, HSV_B, FLB, FSB, AMO_LRB, AMO_SCB:          return 3'b000;
+      CBO_CLEAN, CBO_FLUSH, CBO_INVAL:                                        return 3'b000;
+      default:                                                                return 3'b000;
     endcase
   endfunction
   // ----------------------
@@ -870,5 +1040,23 @@ package ariane_pkg;
   function automatic int unsigned avoid_neg(int n);
     return (n < 0) ? 0 : n;
   endfunction : avoid_neg
+
+  // Convert XLENs to registers (which are capabilities with CHERI)
+  function automatic logic [REGLEN-1:0] x_to_reg(logic [XLEN-1:0] x_val);
+    if (CheriPresent) begin
+      return cva6_cheri_pkg::set_cap_reg_addr(REG_NULL, x_val);
+    end else begin
+      return x_val;
+    end
+  endfunction
+
+  // Convert registers (which are capabilities with CHERI) to XLENs
+  function automatic logic [XLEN-1:0] reg_to_x(logic [REGLEN-1:0] reg_val);
+    if (CheriPresent) begin
+      return reg_val[XLEN-1:0];
+    end else begin
+      return reg_val;
+    end
+  endfunction
 
 endpackage

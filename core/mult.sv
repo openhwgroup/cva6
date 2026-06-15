@@ -62,8 +62,8 @@ module mult
       .rst_ni,
       .trans_id_i     (fu_data_i.trans_id),
       .operation_i    (fu_data_i.operation),
-      .operand_a_i    (fu_data_i.operand_a),
-      .operand_b_i    (fu_data_i.operand_b),
+      .operand_a_i    (reg_to_x(fu_data_i.operand_a)),
+      .operand_b_i    (reg_to_x(fu_data_i.operand_b)),
       .result_o       (mul_result),
       .mult_valid_i   (mul_valid_op),
       .mult_valid_o   (mul_valid),
@@ -97,23 +97,23 @@ module mult
 
     // we've go a new division operation
     if (mult_valid_i && fu_data_i.operation inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
+      operand_a = reg_to_x(fu_data_i.operand_a);
+      operand_b = reg_to_x(fu_data_i.operand_b);
       // is this a word operation?
       if (CVA6Cfg.IS_XLEN64 && (fu_data_i.operation == DIVW || fu_data_i.operation == DIVUW || fu_data_i.operation == REMW || fu_data_i.operation == REMUW)) begin
         // yes so check if we should sign extend this is only done for a signed operation
         if (div_signed) begin
-          operand_a = sext32to64(fu_data_i.operand_a[31:0]);
-          operand_b = sext32to64(fu_data_i.operand_b[31:0]);
+          operand_a = sext32to64(operand_a[31:0]);
+          operand_b = sext32to64(operand_b[31:0]);
         end else begin
-          operand_a = fu_data_i.operand_a[31:0];
-          operand_b = fu_data_i.operand_b[31:0];
+          operand_a = {32'b0, operand_a[31:0]};
+          operand_b = {32'b0, operand_b[31:0]};
         end
 
         // save whether we want sign extend the result or not, this is done for all word operations
         word_op_d = 1'b1;
       end else begin
         // regular op
-        operand_a = fu_data_i.operand_a;
-        operand_b = fu_data_i.operand_b;
         word_op_d = 1'b0;
       end
     end
@@ -143,7 +143,7 @@ module mult
 
   // Result multiplexer
   // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-  assign div_result = (CVA6Cfg.IS_XLEN64 && word_op_q) ? sext32to64(result) : result;
+  assign div_result = (CVA6Cfg.IS_XLEN64 && word_op_q) ? sext32to64(result[31:0]) : result;
 
   // ---------------------
   // Registers

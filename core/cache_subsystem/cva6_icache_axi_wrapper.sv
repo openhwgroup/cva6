@@ -24,6 +24,7 @@ module cva6_icache_axi_wrapper
     parameter type icache_drsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
+    parameter type exception_t = logic,
     parameter type axi_req_t = logic,
     parameter type axi_rsp_t = logic
 ) (
@@ -67,6 +68,7 @@ module cva6_icache_axi_wrapper
   logic         [CVA6Cfg.AxiDataWidth-1:0] axi_rd_data;
   logic         [  CVA6Cfg.AxiIdWidth-1:0] axi_rd_id_out;
   logic                                    axi_rd_exokay;
+  logic         [CVA6Cfg.AxiUserWidth-1:0] axi_rd_user;
 
   logic req_valid_d, req_valid_q;
   icache_req_t req_data_d, req_data_q;
@@ -114,6 +116,7 @@ module cva6_icache_axi_wrapper
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
+      .exception_t(exception_t),
       .RdTxId(0)
   ) i_cva6_icache (
       .clk_i         (clk_i),
@@ -154,7 +157,7 @@ module cva6_icache_axi_wrapper
       .rd_last_o  (axi_rd_last),
       .rd_valid_o (axi_rd_valid),
       .rd_data_o  (axi_rd_data),
-      .rd_user_o  (),
+      .rd_user_o  (axi_rd_user),
       .rd_id_o    (axi_rd_id_out),
       .rd_exokay_o(axi_rd_exokay),
       .wr_req_i   ('0),

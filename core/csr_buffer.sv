@@ -33,7 +33,7 @@ module csr_buffer
     // CSR instruction is valid - ISSUE_STAGE
     input logic csr_valid_i,
     // CSR buffer result - ISSUE_STAGE
-    output logic [CVA6Cfg.XLEN-1:0] csr_result_o,
+    output logic [CVA6Cfg.REGLEN-1:0] csr_result_o,
     // commit the pending CSR OP - TO_BE_COMPLETED
     input logic csr_commit_i,
     // CSR address to write - COMMIT_STAGE
@@ -61,8 +61,8 @@ module csr_buffer
     // if we got a valid from the scoreboard
     // store the CSR address
     if (csr_valid_i) begin
-      csr_reg_n.csr_address = fu_data_i.operand_b[11:0];
-      csr_reg_n.valid       = 1'b1;
+      csr_reg_n.csr_address = (CVA6Cfg.CheriPresent) ? fu_data_i.operand_b[11:0] : fu_data_i.operand_b[11:0];
+      csr_reg_n.valid = 1'b1;
     end
     // if we get a commit and no new valid instruction -> clear the valid bit
     if (csr_commit_i && ~csr_valid_i) begin

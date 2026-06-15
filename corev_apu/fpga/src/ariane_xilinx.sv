@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Bruno Sá and Zero-Day Labs.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -222,6 +223,15 @@ localparam type rvfi_probes_t = struct packed {
 
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
+
+localparam int unsigned CapSize = 128;
+localparam int unsigned DRAMMemBase = {64'h80000000};
+localparam int unsigned DRAMMemLength = {64'h40000000};
+localparam int unsigned TagCacheMemLength = DRAMMemLength >> 7;
+localparam int unsigned TagCacheMemBase = DRAMMemBase + DRAMMemLength - TagCacheMemLength;
+localparam int unsigned SetAssociativity = 32'd8;
+localparam int unsigned NumLines = 32'd128;
+localparam int unsigned NumBlocks = 32'd4;
   
 // WARNING: If NBSlave is modified, Xilinx's IPs under fpga/xilinx need to be updated with the new AXI id width and regenerated.
 // Otherwise reads and writes to DRAM may be returned to the wrong master and the crossbar will freeze. See issue #568.
@@ -231,6 +241,7 @@ localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
 localparam AxiUserWidth = CVA6Cfg.AxiUserWidth;
+localparam AxiCheriExtraIdBits = CVA6Cfg.CheriPresent ? 1 : 0;
 
 `AXI_TYPEDEF_ALL(axi_slave,
                  logic [    AxiAddrWidth-1:0],
@@ -772,6 +783,12 @@ rvfi_probes_t rvfi_probes;
 rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
 rvfi_to_iti_t rvfi_to_iti;
 iti_to_encoder_t iti_to_encoder;
+cva6_cheri_pkg::cap_reg_t boot_cap;
+  always_comb begin : gen_boot_cap
+    boot_cap = ariane_pkg::REG_ROOT;
+    boot_cap.addr = ariane_soc::ROMBase;
+    boot_cap.flags.int_mode = 1'b1;
+  end
 
 ariane #(
     .CVA6Cfg ( CVA6Cfg ),
@@ -781,7 +798,7 @@ ariane #(
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
-    .boot_addr_i  ( ariane_soc::ROMBase ), // start fetching from ROM
+    .boot_addr_i  ( CVA6Cfg.CheriPresent ? boot_cap : ariane_soc::ROMBase ), // start fetching from ROM
     .hart_id_i    ( '0                  ),
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
@@ -1136,7 +1153,7 @@ ariane_peripherals #(
 // ---------------
 // DDR
 // ---------------
-logic [AxiIdWidthSlaves-1:0] s_axi_awid;
+logic [AxiIdWidthSlaves:0] s_axi_awid;
 logic [AxiAddrWidth-1:0]     s_axi_awaddr;
 logic [7:0]                  s_axi_awlen;
 logic [2:0]                  s_axi_awsize;
@@ -1153,11 +1170,11 @@ logic [AxiDataWidth/8-1:0]   s_axi_wstrb;
 logic                        s_axi_wlast;
 logic                        s_axi_wvalid;
 logic                        s_axi_wready;
-logic [AxiIdWidthSlaves-1:0] s_axi_bid;
+logic [AxiIdWidthSlaves:0] s_axi_bid;
 logic [1:0]                  s_axi_bresp;
 logic                        s_axi_bvalid;
 logic                        s_axi_bready;
-logic [AxiIdWidthSlaves-1:0] s_axi_arid;
+logic [AxiIdWidthSlaves:0] s_axi_arid;
 logic [AxiAddrWidth-1:0]     s_axi_araddr;
 logic [7:0]                  s_axi_arlen;
 logic [2:0]                  s_axi_arsize;
@@ -1169,7 +1186,7 @@ logic [3:0]                  s_axi_arregion;
 logic [3:0]                  s_axi_arqos;
 logic                        s_axi_arvalid;
 logic                        s_axi_arready;
-logic [AxiIdWidthSlaves-1:0] s_axi_rid;
+logic [AxiIdWidthSlaves:0] s_axi_rid;
 logic [AxiDataWidth-1:0]     s_axi_rdata;
 logic [1:0]                  s_axi_rresp;
 logic                        s_axi_rlast;
@@ -1182,6 +1199,13 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) dram();
+
+AXI_BUS #(
+  .AXI_ADDR_WIDTH ( AxiAddrWidth                           ),
+  .AXI_DATA_WIDTH ( AxiDataWidth                           ),
+  .AXI_ID_WIDTH   ( AxiIdWidthSlaves + AxiCheriExtraIdBits ),
+  .AXI_USER_WIDTH ( AxiUserWidth                           )
+) tag_mst();
 
 axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
@@ -1197,6 +1221,78 @@ axi_riscv_atomics_wrap #(
     .mst    ( dram                     )
 );
 
+  typedef logic [AxiAddrWidth-1:0]  axi_addr_t;
+
+  typedef struct packed {
+    int unsigned idx;
+    axi_addr_t   start_addr;
+    axi_addr_t   end_addr;
+  } rule_full_t;
+
+localparam int unsigned AxiStrbWidth = AxiDataWidth / 32'd8;
+  typedef logic [(AxiIdWidthSlaves+AxiCheriExtraIdBits)-1:0] axi_mst_id_t;
+  typedef logic [AxiDataWidth-1:0] axi_data_t;
+  typedef logic [AxiStrbWidth-1:0] axi_strb_t;
+  typedef logic axi_user_t;
+  typedef logic [7:0] byte_t;
+
+  `AXI_TYPEDEF_AW_CHAN_T(axi_mst_aw_t, axi_addr_t, axi_mst_id_t, axi_user_t)
+  `AXI_TYPEDEF_W_CHAN_T(axi_w_t, axi_data_t, axi_strb_t, axi_user_t)
+  `AXI_TYPEDEF_B_CHAN_T(axi_mst_b_t, axi_mst_id_t, axi_user_t)
+  `AXI_TYPEDEF_AR_CHAN_T(axi_mst_ar_t, axi_addr_t, axi_mst_id_t, axi_user_t)
+  `AXI_TYPEDEF_R_CHAN_T(axi_mst_r_t, axi_data_t, axi_mst_id_t, axi_user_t)
+
+  `AXI_TYPEDEF_REQ_T(axi_mst_req_t, axi_mst_aw_t, axi_w_t, axi_mst_ar_t)
+  `AXI_TYPEDEF_RESP_T(axi_mst_resp_t, axi_mst_b_t, axi_mst_r_t)
+
+  ariane_axi_soc::req_slv_t  dram_req;
+  ariane_axi_soc::resp_slv_t dram_resp;
+  axi_mst_req_t axi_tag_req;
+  axi_mst_resp_t axi_tag_resp;
+  `AXI_ASSIGN_TO_REQ(dram_req, dram)
+  `AXI_ASSIGN_FROM_RESP(dram, dram_resp)
+  `AXI_ASSIGN_FROM_REQ(tag_mst, axi_tag_req)
+  `AXI_ASSIGN_TO_RESP(axi_tag_resp, tag_mst)
+  `REG_BUS_TYPEDEF_ALL(conf, logic [31:0], logic [31:0], logic [3:0])
+
+  if (CVA6Cfg.CheriPresent) begin
+    axi_tagctrl_reg_wrap #(
+        .DRAMMemBase     (DRAMMemBase),
+        .CapSize         (CapSize),
+        .TagCacheMemBase (TagCacheMemBase),
+        .SetAssociativity(SetAssociativity),
+        .NumLines        (NumLines),
+        .NumBlocks       (NumBlocks),
+        .AxiIdWidth      (ariane_axi_soc::IdWidthSlave),
+        .AxiAddrWidth    (AxiAddrWidth),
+        .AxiDataWidth    (AxiDataWidth),
+        .AxiUserWidth    (AxiUserWidth),
+        .slv_req_t       (ariane_axi_soc::req_slv_t),
+        .slv_resp_t      (ariane_axi_soc::resp_slv_t),
+        .mst_req_t       (axi_mst_req_t),
+        .mst_resp_t      (axi_mst_resp_t),
+        .reg_req_t       (conf_req_t),
+        .reg_resp_t      (conf_rsp_t),
+        .rule_full_t     (rule_full_t),
+        .PrintSramCfg    (1'b0)
+    ) i_axi_tagctrl_reg_wrap_raw (
+        .clk_i              (clk),
+        .rst_ni             (ndmreset_n),
+        .test_i             (1'b0),
+        .slv_req_i          (dram_req),
+        .slv_resp_o         (dram_resp),
+        .mst_req_o          (axi_tag_req),
+        .mst_resp_i         (axi_tag_resp),
+        .conf_req_i         (  /* not used */),
+        .conf_resp_o        (  /* not used */),
+        .cached_start_addr_i(DRAMBase),
+        .cached_end_addr_i  (TagCacheMemBase)
+    );
+  end else begin
+    assign axi_tag_req = dram_req;
+    assign dram_resp = axi_tag_resp;
+  end
+
 `ifdef PROTOCOL_CHECKER
 logic pc_status;
 
@@ -1205,98 +1301,98 @@ xlnx_protocol_checker i_xlnx_protocol_checker (
   .pc_asserted(pc_status),
   .aclk(clk),
   .aresetn(ndmreset_n),
-  .pc_axi_awid     (dram.aw_id),
-  .pc_axi_awaddr   (dram.aw_addr),
-  .pc_axi_awlen    (dram.aw_len),
-  .pc_axi_awsize   (dram.aw_size),
-  .pc_axi_awburst  (dram.aw_burst),
-  .pc_axi_awlock   (dram.aw_lock),
-  .pc_axi_awcache  (dram.aw_cache),
-  .pc_axi_awprot   (dram.aw_prot),
-  .pc_axi_awqos    (dram.aw_qos),
-  .pc_axi_awregion (dram.aw_region),
-  .pc_axi_awuser   (dram.aw_user),
-  .pc_axi_awvalid  (dram.aw_valid),
-  .pc_axi_awready  (dram.aw_ready),
-  .pc_axi_wlast    (dram.w_last),
-  .pc_axi_wdata    (dram.w_data),
-  .pc_axi_wstrb    (dram.w_strb),
-  .pc_axi_wuser    (dram.w_user),
-  .pc_axi_wvalid   (dram.w_valid),
-  .pc_axi_wready   (dram.w_ready),
-  .pc_axi_bid      (dram.b_id),
-  .pc_axi_bresp    (dram.b_resp),
-  .pc_axi_buser    (dram.b_user),
-  .pc_axi_bvalid   (dram.b_valid),
-  .pc_axi_bready   (dram.b_ready),
-  .pc_axi_arid     (dram.ar_id),
-  .pc_axi_araddr   (dram.ar_addr),
-  .pc_axi_arlen    (dram.ar_len),
-  .pc_axi_arsize   (dram.ar_size),
-  .pc_axi_arburst  (dram.ar_burst),
-  .pc_axi_arlock   (dram.ar_lock),
-  .pc_axi_arcache  (dram.ar_cache),
-  .pc_axi_arprot   (dram.ar_prot),
-  .pc_axi_arqos    (dram.ar_qos),
-  .pc_axi_arregion (dram.ar_region),
-  .pc_axi_aruser   (dram.ar_user),
-  .pc_axi_arvalid  (dram.ar_valid),
-  .pc_axi_arready  (dram.ar_ready),
-  .pc_axi_rid      (dram.r_id),
-  .pc_axi_rlast    (dram.r_last),
-  .pc_axi_rdata    (dram.r_data),
-  .pc_axi_rresp    (dram.r_resp),
-  .pc_axi_ruser    (dram.r_user),
-  .pc_axi_rvalid   (dram.r_valid),
-  .pc_axi_rready   (dram.r_ready)
+  .pc_axi_awid     (tag_mst.aw_id),
+  .pc_axi_awaddr   (tag_mst.aw_addr),
+  .pc_axi_awlen    (tag_mst.aw_len),
+  .pc_axi_awsize   (tag_mst.aw_size),
+  .pc_axi_awburst  (tag_mst.aw_burst),
+  .pc_axi_awlock   (tag_mst.aw_lock),
+  .pc_axi_awcache  (tag_mst.aw_cache),
+  .pc_axi_awprot   (tag_mst.aw_prot),
+  .pc_axi_awqos    (tag_mst.aw_qos),
+  .pc_axi_awregion (tag_mst.aw_region),
+  .pc_axi_awuser   (tag_mst.aw_user),
+  .pc_axi_awvalid  (tag_mst.aw_valid),
+  .pc_axi_awready  (tag_mst.aw_ready),
+  .pc_axi_wlast    (tag_mst.w_last),
+  .pc_axi_wdata    (tag_mst.w_data),
+  .pc_axi_wstrb    (tag_mst.w_strb),
+  .pc_axi_wuser    (tag_mst.w_user),
+  .pc_axi_wvalid   (tag_mst.w_valid),
+  .pc_axi_wready   (tag_mst.w_ready),
+  .pc_axi_bid      (tag_mst.b_id),
+  .pc_axi_bresp    (tag_mst.b_resp),
+  .pc_axi_buser    (tag_mst.b_user),
+  .pc_axi_bvalid   (tag_mst.b_valid),
+  .pc_axi_bready   (tag_mst.b_ready),
+  .pc_axi_arid     (tag_mst.ar_id),
+  .pc_axi_araddr   (tag_mst.ar_addr),
+  .pc_axi_arlen    (tag_mst.ar_len),
+  .pc_axi_arsize   (tag_mst.ar_size),
+  .pc_axi_arburst  (tag_mst.ar_burst),
+  .pc_axi_arlock   (tag_mst.ar_lock),
+  .pc_axi_arcache  (tag_mst.ar_cache),
+  .pc_axi_arprot   (tag_mst.ar_prot),
+  .pc_axi_arqos    (tag_mst.ar_qos),
+  .pc_axi_arregion (tag_mst.ar_region),
+  .pc_axi_aruser   (tag_mst.ar_user),
+  .pc_axi_arvalid  (tag_mst.ar_valid),
+  .pc_axi_arready  (tag_mst.ar_ready),
+  .pc_axi_rid      (tag_mst.r_id),
+  .pc_axi_rlast    (tag_mst.r_last),
+  .pc_axi_rdata    (tag_mst.r_data),
+  .pc_axi_rresp    (tag_mst.r_resp),
+  .pc_axi_ruser    (tag_mst.r_user),
+  .pc_axi_rvalid   (tag_mst.r_valid),
+  .pc_axi_rready   (tag_mst.r_ready)
 );
 `endif
 
-assign dram.r_user = '0;
-assign dram.b_user = '0;
+assign tag_mst.r_user = '0;
+assign tag_mst.b_user = '0;
 
 xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
   .s_axi_aclk     ( clk              ),
   .s_axi_aresetn  ( ndmreset_n       ),
-  .s_axi_awid     ( dram.aw_id       ),
-  .s_axi_awaddr   ( dram.aw_addr     ),
-  .s_axi_awlen    ( dram.aw_len      ),
-  .s_axi_awsize   ( dram.aw_size     ),
-  .s_axi_awburst  ( dram.aw_burst    ),
-  .s_axi_awlock   ( dram.aw_lock     ),
-  .s_axi_awcache  ( dram.aw_cache    ),
-  .s_axi_awprot   ( dram.aw_prot     ),
-  .s_axi_awregion ( dram.aw_region   ),
-  .s_axi_awqos    ( dram.aw_qos      ),
-  .s_axi_awvalid  ( dram.aw_valid    ),
-  .s_axi_awready  ( dram.aw_ready    ),
-  .s_axi_wdata    ( dram.w_data      ),
-  .s_axi_wstrb    ( dram.w_strb      ),
-  .s_axi_wlast    ( dram.w_last      ),
-  .s_axi_wvalid   ( dram.w_valid     ),
-  .s_axi_wready   ( dram.w_ready     ),
-  .s_axi_bid      ( dram.b_id        ),
-  .s_axi_bresp    ( dram.b_resp      ),
-  .s_axi_bvalid   ( dram.b_valid     ),
-  .s_axi_bready   ( dram.b_ready     ),
-  .s_axi_arid     ( dram.ar_id       ),
-  .s_axi_araddr   ( dram.ar_addr     ),
-  .s_axi_arlen    ( dram.ar_len      ),
-  .s_axi_arsize   ( dram.ar_size     ),
-  .s_axi_arburst  ( dram.ar_burst    ),
-  .s_axi_arlock   ( dram.ar_lock     ),
-  .s_axi_arcache  ( dram.ar_cache    ),
-  .s_axi_arprot   ( dram.ar_prot     ),
-  .s_axi_arregion ( dram.ar_region   ),
-  .s_axi_arqos    ( dram.ar_qos      ),
-  .s_axi_arvalid  ( dram.ar_valid    ),
-  .s_axi_arready  ( dram.ar_ready    ),
-  .s_axi_rid      ( dram.r_id        ),
-  .s_axi_rdata    ( dram.r_data      ),
-  .s_axi_rresp    ( dram.r_resp      ),
-  .s_axi_rlast    ( dram.r_last      ),
-  .s_axi_rvalid   ( dram.r_valid     ),
-  .s_axi_rready   ( dram.r_ready     ),
+  .s_axi_awid     ( tag_mst.aw_id       ),
+  .s_axi_awaddr   ( tag_mst.aw_addr     ),
+  .s_axi_awlen    ( tag_mst.aw_len      ),
+  .s_axi_awsize   ( tag_mst.aw_size     ),
+  .s_axi_awburst  ( tag_mst.aw_burst    ),
+  .s_axi_awlock   ( tag_mst.aw_lock     ),
+  .s_axi_awcache  ( tag_mst.aw_cache    ),
+  .s_axi_awprot   ( tag_mst.aw_prot     ),
+  .s_axi_awregion ( tag_mst.aw_region   ),
+  .s_axi_awqos    ( tag_mst.aw_qos      ),
+  .s_axi_awvalid  ( tag_mst.aw_valid    ),
+  .s_axi_awready  ( tag_mst.aw_ready    ),
+  .s_axi_wdata    ( tag_mst.w_data      ),
+  .s_axi_wstrb    ( tag_mst.w_strb      ),
+  .s_axi_wlast    ( tag_mst.w_last      ),
+  .s_axi_wvalid   ( tag_mst.w_valid     ),
+  .s_axi_wready   ( tag_mst.w_ready     ),
+  .s_axi_bid      ( tag_mst.b_id        ),
+  .s_axi_bresp    ( tag_mst.b_resp      ),
+  .s_axi_bvalid   ( tag_mst.b_valid     ),
+  .s_axi_bready   ( tag_mst.b_ready     ),
+  .s_axi_arid     ( tag_mst.ar_id       ),
+  .s_axi_araddr   ( tag_mst.ar_addr     ),
+  .s_axi_arlen    ( tag_mst.ar_len      ),
+  .s_axi_arsize   ( tag_mst.ar_size     ),
+  .s_axi_arburst  ( tag_mst.ar_burst    ),
+  .s_axi_arlock   ( tag_mst.ar_lock     ),
+  .s_axi_arcache  ( tag_mst.ar_cache    ),
+  .s_axi_arprot   ( tag_mst.ar_prot     ),
+  .s_axi_arregion ( tag_mst.ar_region   ),
+  .s_axi_arqos    ( tag_mst.ar_qos      ),
+  .s_axi_arvalid  ( tag_mst.ar_valid    ),
+  .s_axi_arready  ( tag_mst.ar_ready    ),
+  .s_axi_rid      ( tag_mst.r_id        ),
+  .s_axi_rdata    ( tag_mst.r_data      ),
+  .s_axi_rresp    ( tag_mst.r_resp      ),
+  .s_axi_rlast    ( tag_mst.r_last      ),
+  .s_axi_rvalid   ( tag_mst.r_valid     ),
+  .s_axi_rready   ( tag_mst.r_ready     ),
   // to size converter
   .m_axi_aclk     ( ddr_clock_out    ),
   .m_axi_aresetn  ( ndmreset_n       ),

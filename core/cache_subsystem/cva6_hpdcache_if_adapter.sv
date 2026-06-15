@@ -90,6 +90,7 @@ module cva6_hpdcache_if_adapter
       //    Request forwarding
       assign hpdcache_req_valid_o = cva6_req_i.data_req;
       assign hpdcache_req.addr_offset = cva6_req_i.address_index;
+      assign hpdcache_req.wuser = '0;
       assign hpdcache_req.wdata = '0;
       assign hpdcache_req.op = hpdcache_pkg::HPDCACHE_REQ_LOAD;
       assign hpdcache_req.be = cva6_req_i.data_be;
@@ -111,6 +112,7 @@ module cva6_hpdcache_if_adapter
 
       //    Response forwarding
       assign cva6_req_o.data_rvalid = hpdcache_rsp_valid_i;
+      assign cva6_req_o.data_ruser = hpdcache_rsp_i.ruser;
       assign cva6_req_o.data_rdata = hpdcache_rsp_i.rdata;
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
       assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
@@ -128,19 +130,20 @@ module cva6_hpdcache_if_adapter
          //  {{{
     else begin : store_amo_gen
       //  STORE/AMO request
-      logic                 [63:0] amo_addr;
-      hpdcache_req_offset_t        amo_addr_offset;
-      hpdcache_tag_t               amo_tag;
-      logic amo_is_word, amo_is_word_hi;
-      logic                           [63:0] amo_data;
-      logic                           [ 7:0] amo_data_be;
-      hpdcache_pkg::hpdcache_req_op_t        amo_op;
-      logic                           [31:0] amo_resp_word;
-      logic                                  amo_pending_q;
+      logic                           [ 63:0] amo_addr;
+      hpdcache_req_offset_t                   amo_addr_offset;
+      hpdcache_tag_t                          amo_tag;
+      logic                           [127:0] amo_data;
+      logic                                   amo_user;
+      logic                           [ 15:0] amo_data_be;
+      hpdcache_pkg::hpdcache_req_op_t         amo_op;
+      logic                           [127:0] amo_resp;
+      logic                                   amo_resp_cap_vld;
+      logic                                   amo_pending_q;
 
-      hpdcache_req_t                         hpdcache_req_amo;
-      hpdcache_req_t                         hpdcache_req_store;
-      hpdcache_req_t                         hpdcache_req_flush;
+      hpdcache_req_t                          hpdcache_req_amo;
+      hpdcache_req_t                          hpdcache_req_store;
+      hpdcache_req_t                          hpdcache_req_flush;
 
       flush_fsm_t flush_fsm_q, flush_fsm_d;
 
@@ -237,19 +240,45 @@ module cva6_hpdcache_if_adapter
           }
       );
 
-      assign amo_is_word = (cva6_amo_req_i.size == 2'b10);
-      assign amo_is_word_hi = cva6_amo_req_i.operand_a[2];
-      if (CVA6Cfg.XLEN == 64) begin : amo_data_64_gen
-        assign amo_data    = amo_is_word ? {2{cva6_amo_req_i.operand_b[0+:32]}} : cva6_amo_req_i.operand_b;
-        assign amo_data_be = amo_is_word_hi ? 8'hf0 : amo_is_word ? 8'h0f : 8'hff;
-      end else begin : amo_data_32_gen
-        assign amo_data    = {32'b0, cva6_amo_req_i.operand_b};
-        assign amo_data_be = 8'h0f;
+      always_comb begin : generate_amo_inputs
+        amo_data = '0;
+        amo_data_be = '0;
+        if (cva6_amo_req_i.size == 3'b000) begin
+          amo_data = {{120{1'b0}}, cva6_amo_req_i.operand_b[0+:8]};
+          amo_data_be = 16'h0001;
+        end
+        if (cva6_amo_req_i.size == 3'b001) begin
+          amo_data = {{112{1'b0}}, cva6_amo_req_i.operand_b[0+:16]};
+          amo_data_be = 16'h0003;
+        end else begin
+          amo_data = {{112{1'b0}}, {2{amo_data[0+:8]}}};
+        end
+        if (cva6_amo_req_i.size == 3'b010) begin
+          amo_data = {{96{1'b0}}, cva6_amo_req_i.operand_b[0+:32]};
+          amo_data_be = 16'h000f;
+        end else begin
+          amo_data = {{96{1'b0}}, {2{amo_data[0+:16]}}};
+        end
+        if (cva6_amo_req_i.size == 3'b011) begin
+          amo_data = {{64{1'b0}}, cva6_amo_req_i.operand_b[0+:64]};
+          amo_data_be = 16'h00ff;
+        end else begin
+          amo_data = {{64{1'b0}}, {2{amo_data[0+:32]}}};
+        end
+        if (CVA6Cfg.CheriPresent && cva6_amo_req_i.size == 3'b100) begin
+          amo_data = cva6_amo_req_i.operand_b[0+:128];
+          amo_data_be = 16'hffff;
+        end else begin
+          amo_data = {{2{amo_data[0+:64]}}};
+        end
+        amo_data_be = amo_data_be << (CVA6Cfg.CheriPresent ? cva6_amo_req_i.operand_a[3:0] : cva6_amo_req_i.operand_a[2:0]);
+        amo_user = cva6_amo_req_i.size == 3'b100 && cva6_amo_req_i.cap_vld;
       end
 
       assign hpdcache_req_amo = '{
               addr_offset: amo_addr_offset,
               wdata: amo_data,
+              wuser: amo_user,
               op: amo_op,
               be: amo_data_be,
               size: cva6_amo_req_i.size,
@@ -268,6 +297,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_store = '{
               addr_offset: cva6_req_i.address_index,
               wdata: cva6_req_i.data_wdata,
+              wuser: cva6_req_i.data_wuser,
               op: store_op,
               be: cva6_req_i.data_be,
               size: cva6_req_i.data_size,
@@ -290,6 +320,7 @@ module cva6_hpdcache_if_adapter
               addr_offset: '0,
               addr_tag: '0,
               wdata: '0,
+              wuser: '0,
               op:
               InvalidateOnFlush
               ?
@@ -326,22 +357,45 @@ module cva6_hpdcache_if_adapter
 
       //  Response forwarding
       //  {{{
-      if (CVA6Cfg.XLEN == 64) begin : amo_resp_64_gen
-        assign amo_resp_word = amo_is_word_hi
-                             ? hpdcache_rsp_i.rdata[0][32 +: 32]
-                             : hpdcache_rsp_i.rdata[0][0  +: 32];
-      end else begin : amo_resp_32_gen
-        assign amo_resp_word = hpdcache_rsp_i.rdata[0];
+      always_comb begin
+        amo_resp = hpdcache_rsp_i.rdata[0];
+        amo_resp_cap_vld = hpdcache_rsp_i.ruser;
+        if (cva6_amo_req_i.size <= 3'b011) begin
+          if (CVA6Cfg.CheriPresent && amo_addr[3] == 1'b1) begin
+            amo_resp[63:0] = amo_resp[127:64];
+          end
+          amo_resp[127:64] = 64'b0;
+          amo_resp_cap_vld = 1'b0;
+        end
+        if (cva6_amo_req_i.size <= 3'b010) begin
+          if (amo_addr[2] == 1'b1) begin
+            amo_resp[31:0] = amo_resp[63:32];
+          end
+          amo_resp[63:32] = {32{amo_resp[31]}};
+        end
+        if (cva6_amo_req_i.size <= 3'b001) begin
+          if (amo_addr[1] == 1'b1) begin
+            amo_resp[15:0] = amo_resp[31:16];
+          end
+          amo_resp[63:16] = {48{amo_resp[15]}};
+        end
+        if (cva6_amo_req_i.size == 3'b000) begin
+          if (amo_addr[0] == 1'b1) begin
+            amo_resp[7:0] = amo_resp[15:8];
+          end
+          amo_resp[63:8] = {56{amo_resp[7]}};
+        end
       end
 
       assign cva6_req_o.data_rvalid = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid != '1);
       assign cva6_req_o.data_rdata = hpdcache_rsp_i.rdata;
+      assign cva6_req_o.data_ruser = hpdcache_rsp_i.ruser;
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
       assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
 
       assign cva6_amo_resp_o.ack = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid == '1);
-      assign cva6_amo_resp_o.result = amo_is_word ? {{32{amo_resp_word[31]}}, amo_resp_word}
-                                                        : hpdcache_rsp_i.rdata[0];
+      assign cva6_amo_resp_o.result = amo_resp;
+      assign cva6_amo_resp_o.cap_vld = amo_resp_cap_vld;
       //  }}}
 
       always_ff @(posedge clk_i or negedge rst_ni) begin : amo_pending_ff

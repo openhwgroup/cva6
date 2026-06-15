@@ -33,7 +33,8 @@ module std_cache_subsystem
     parameter type axi_aw_chan_t = logic,
     parameter type axi_w_chan_t = logic,
     parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic
+    parameter type axi_rsp_t = logic,
+    parameter type exception_t = logic
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -83,6 +84,7 @@ module std_cache_subsystem
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
+      .exception_t(exception_t),
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t)
   ) i_cva6_icache_axi_wrapper (

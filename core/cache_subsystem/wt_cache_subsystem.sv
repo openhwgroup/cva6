@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Capabilities Limited.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -24,6 +25,7 @@ module wt_cache_subsystem
   import wt_cache_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg        = config_pkg::cva6_cfg_empty,
+    parameter type                   exception_t    = logic,
     parameter type                   icache_areq_t  = logic,
     parameter type                   icache_arsp_t  = logic,
     parameter type                   icache_dreq_t  = logic,
@@ -88,7 +90,7 @@ module wt_cache_subsystem
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] way;  // way to replace
     logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
-    logic [CVA6Cfg.XLEN-1:0] data;  // word width of processor (no block stores at the moment)
+    logic [CVA6Cfg.CLEN-1:0] data;  // word width of processor (no block stores at the moment)
     logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic nc;  // noncacheable
     logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // thread id (used as transaction id in Ariane)

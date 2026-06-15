@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Capabilities Limited.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -41,6 +42,8 @@ module issue_stage
     input logic flush_i,
     // Stall inserted by Acc dispatcher - ACC_DISPATCHER
     input logic stall_i,
+    // Debug mode state - CSR
+    input logic debug_mode_i,
     // Handshake's data with decode stage - ID_STAGE
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_i,
     input scoreboard_entry_t [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_i_prev,
@@ -52,16 +55,20 @@ module issue_stage
     input logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_i,
     // Handshake's acknowledge with decode stage - ID_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] decoded_instr_ack_o,
+    // Int mode flag in PCC register - ID_STAGE
+    output logic int_mode_o,
     // rs1 forwarding - EX_STAGE
-    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
+    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.REGLEN-1:0] rs1_forwarding_o,
     // rs2 forwarding - EX_STAGE
-    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_o,
+    output [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.REGLEN-1:0] rs2_forwarding_o,
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
     // ALU to ALU bypass control - EX_STAGE
     output alu_bypass_t alu_bypass_o,
     // Program Counter - EX_STAGE
-    output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.REGLEN-1:0] pc_o,
+    // Program Counter Capability - EX_STAGE
+    output logic [CVA6Cfg.REGLEN-1:0] commit_pcc_o,
     // Is zcmt instruction - EX_STAGE
     output logic is_zcmt_o,
     // Is compressed instruction - EX_STAGE
@@ -100,6 +107,8 @@ module issue_stage
     output logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_o,
     // CSR is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_o,
+    // CLU is valid - EX_STAGE
+    output logic [CVA6Cfg.NrIssuePorts-1:0] clu_valid_o,
     // CVXIF FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] xfu_valid_o,
     // CVXIF is FU ready - EX_STAGE
@@ -137,7 +146,7 @@ module issue_stage
     // Result from branch unit - EX_STAGE
     input bp_resolve_t resolved_branch_i,
     // Results to write back - EX_STAGE
-    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
+    input logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.REGLEN-1:0] wbdata_i,
     // exception from execute stage or CVXIF - EX_STAGE
     input exception_t [CVA6Cfg.NrWbPorts-1:0] ex_ex_i,
     // Indicates valid results - EX_STAGE
@@ -149,7 +158,7 @@ module issue_stage
     // Destination register in register file - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
     // Value to write to register file - COMMIT_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.REGLEN-1:0] wdata_i,
     // GPR write enable - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_i,
     // FPR write enable - COMMIT_STAGE
@@ -160,6 +169,18 @@ module issue_stage
     output logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_o,
     // Commit acknowledge - COMMIT_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
+    // Exception event - COMMIT
+    input logic ex_valid_i,
+    // Program counter capability last committed - TO_BE_COMPLETED
+    input logic [CVA6Cfg.REGLEN-1:0] pcc_commit_i,
+    // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
+    input logic set_pc_commit_i,
+    // Next PC when jumping into exception - CSR_FILE
+    input logic [CVA6Cfg.REGLEN-1:0] trap_vector_base_i,
+    // Exception PC - CSR_FILE
+    input logic [CVA6Cfg.REGLEN-1:0] epc_i,
+    // ERET now - CSR_FILE
+    input logic eret_i,
     // Issue stall - PERF_COUNTERS
     output logic stall_issue_o,
     // Information dedicated to RVFI - RVFI
@@ -190,8 +211,12 @@ module issue_stage
   logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_valid_sb_iro;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       issue_ack_iro_sb;
 
-  assign issue_instr_o    = issue_instr_sb_iro[0];
+  logic                                               backend_empty;
+
+  exception_t        [CVA6Cfg.NrIssuePorts-1:0]       issue_pcc_ex;
+
   assign issue_instr_hs_o = issue_instr_valid_sb_iro[0] & issue_ack_iro_sb[0];
+  assign issue_instr_o = issue_instr_sb_iro;
 
   logic x_transaction_accepted_iro_sb, x_issue_writeback_iro_sb;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_id_iro_sb;
@@ -227,6 +252,8 @@ module issue_stage
       .orig_instr_o            (orig_instr_sb_iro),
       .issue_instr_valid_o     (issue_instr_valid_sb_iro),
       .issue_ack_i             (issue_ack_iro_sb),
+      .issue_pcc_ex_i          (issue_pcc_ex),
+      .backend_empty_o         (backend_empty),
       .fwd_o                   (fwd),
       .resolved_branch_i       (resolved_branch_i),
       .trans_id_i              (trans_id_i),
@@ -244,7 +271,9 @@ module issue_stage
   // ---------------------------------------------------------
   issue_read_operands #(
       .CVA6Cfg(CVA6Cfg),
+      .bp_resolve_t(bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
+      .exception_t(exception_t),
       .fu_data_t(fu_data_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rs3_len_t(rs3_len_t),
@@ -259,17 +288,22 @@ module issue_stage
       .rst_ni,
       .flush_i                 (flush_unissued_instr_i),
       .stall_i,
+      .debug_mode_i,
       .issue_instr_i           (issue_instr_sb_iro),
       .issue_instr_i_prev      (decoded_instr_i_prev),
       .orig_instr_i            (orig_instr_sb_iro),
       .issue_instr_valid_i     (issue_instr_valid_sb_iro),
       .issue_ack_o             (issue_ack_iro_sb),
       .fwd_i                   (fwd),
+      .int_mode_o,
+      .issue_pcc_ex_o          (issue_pcc_ex),
+      .backend_empty_i         (backend_empty),
       .fu_data_o               (fu_data_o),
       .alu_bypass_o            (alu_bypass_o),
       .rs1_forwarding_o        (rs1_forwarding_o),
       .rs2_forwarding_o        (rs2_forwarding_o),
       .pc_o,
+      .commit_pcc_o,
       .is_zcmt_o,
       .is_compressed_instr_o,
       .flu_ready_i             (flu_ready_i),
@@ -292,6 +326,7 @@ module issue_stage
       .cvxif_ready_i           (xfu_ready_i),
       .cvxif_off_instr_o       (x_off_instr_o),
       .hart_id_i               (hart_id_i),
+      .clu_valid_o             (clu_valid_o),
       .x_issue_ready_i         (x_issue_ready_i),
       .x_issue_resp_i          (x_issue_resp_i),
       .x_issue_valid_o         (x_issue_valid_o),
@@ -309,6 +344,13 @@ module issue_stage
       .wdata_i,
       .we_gpr_i,
       .we_fpr_i,
+      .pcc_commit_i,
+      .set_pc_commit_i,
+      .ex_valid_i,
+      .resolved_branch_i,
+      .trap_vector_base_i,
+      .epc_i,
+      .eret_i,
       .stall_issue_o,
       .rvfi_rs1_o              (rvfi_rs1_o),
       .rvfi_rs2_o              (rvfi_rs2_o),

@@ -14,25 +14,25 @@
   logic [config_pkg::NRET*2-1:0]                ixl; \
   logic [config_pkg::NRET*5-1:0]                rs1_addr; \
   logic [config_pkg::NRET*5-1:0]                rs2_addr; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      rs1_rdata; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      rs2_rdata; \
+  logic [config_pkg::NRET*Cfg.REGLEN-1:0]      rs1_rdata; \
+  logic [config_pkg::NRET*Cfg.REGLEN-1:0]      rs2_rdata; \
   logic [config_pkg::NRET*5-1:0]                rd_addr; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      rd_wdata; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      pc_rdata; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      pc_wdata; \
+  logic [config_pkg::NRET*Cfg.REGLEN-1:0]      rd_wdata; \
+  logic [config_pkg::NRET*Cfg.PCLEN-1:0]      pc_rdata; \
+  logic [config_pkg::NRET*Cfg.PCLEN-1:0]      pc_wdata; \
   logic [config_pkg::NRET*Cfg.VLEN-1:0]      mem_addr; \
   logic [config_pkg::NRET*Cfg.PLEN-1:0]      mem_paddr; \
-  logic [config_pkg::NRET*(Cfg.XLEN/8)-1:0]  mem_rmask; \
-  logic [config_pkg::NRET*(Cfg.XLEN/8)-1:0]  mem_wmask; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      mem_rdata; \
-  logic [config_pkg::NRET*Cfg.XLEN-1:0]      mem_wdata; \
+  logic [config_pkg::NRET*(Cfg.CLEN/8)-1:0]  mem_rmask; \
+  logic [config_pkg::NRET*(Cfg.CLEN/8)-1:0]  mem_wmask; \
+  logic [config_pkg::NRET*Cfg.CLEN-1:0]      mem_rdata; \
+  logic [config_pkg::NRET*Cfg.CLEN-1:0]      mem_wdata; \
 }
 
 `define RVFI_CSR_ELMT_T(Cfg) struct packed { \
-  logic [Cfg.XLEN-1:0] rdata; \
-  logic [Cfg.XLEN-1:0] rmask; \
-  logic [Cfg.XLEN-1:0] wdata; \
-  logic [Cfg.XLEN-1:0] wmask; \
+  logic [Cfg.REGLEN-1:0] rdata; \
+  logic [Cfg.REGLEN-1:0] rmask; \
+  logic [Cfg.REGLEN-1:0] wdata; \
+  logic [Cfg.REGLEN-1:0] wmask; \
 }
 
 `define RVFI_CSR_T(Cfg, rvfi_csr_elmt_t) struct packed { \
@@ -119,9 +119,9 @@
   riscv::priv_lvl_t priv_lvl; \
   logic [Cfg.VLEN-1:0] lsu_ctrl_vaddr; \
   ariane_pkg::fu_t lsu_ctrl_fu; \
-  logic [(Cfg.XLEN/8)-1:0] lsu_ctrl_be; \
+  logic [(Cfg.CLEN/8)-1:0] lsu_ctrl_be; \
   logic [Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id; \
-  logic [Cfg.NrWbPorts-1:0][Cfg.XLEN-1:0] wbdata; \
+  logic [Cfg.NrWbPorts-1:0][Cfg.REGLEN-1:0] wbdata; \
   logic [Cfg.NrCommitPorts-1:0] commit_ack; \
   logic [Cfg.PLEN-1:0] mem_paddr; \
   logic debug_mode; \
@@ -166,6 +166,7 @@
   logic [Cfg.XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [63:0] pmpcfg_q; \
   logic [63:0][Cfg.PLEN-3:0] pmpaddr_q; \
+  logic [Cfg.REGLEN-1:0] ddc_q; \
 }
 
 `define RVFI_TO_ITI_T(Cfg) struct packed { \

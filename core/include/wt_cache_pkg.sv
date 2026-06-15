@@ -150,5 +150,35 @@ package wt_cache_pkg;
     endcase  // be
     return size;
   endfunction : toSize32
+  function automatic logic [2:0] toSize128(input logic [15:0] be);
+    logic [2:0] size;
+    unique case (be)
+      16'b1111_1111_1111_1111: size = 3'b100;
+      16'b0000_0000_1111_1111, 16'b1111_1111_0000_0000: size = 3'b011;  // dword
+      16'b0000_0000_0000_1111, 16'b0000_0000_1111_0000,
+      16'b0000_1111_0000_0000, 16'b1111_0000_0000_0000:
+      size = 3'b010;  // word
+      16'b0000_0000_1100_0000, 16'b0000_0000_0011_0000,
+      16'b0000_0000_0000_1100, 16'b0000_0000_0000_0011,
+      16'b1100_0000_0000_0000, 16'b0011_0000_0000_0000,
+      16'b0000_1100_0000_0000, 16'b0000_0011_0000_0000:
+      size = 3'b001;  // hword
+      default: size = 3'b000;  // individual bytes
+    endcase  // be
+    return size;
+  endfunction : toSize128
+  // openpiton requires the data to be replicated in case of smaller sizes than dwords
+  function automatic logic [127:0] repData128(input logic [127:0] data, input logic [3:0] offset,
+                                              input logic [2:0] size);
+    logic [127:0] out;
+    unique case (size)
+      3'b000:  for (int k = 0; k < 16; k++) out[k*8+:8] = data[offset*8+:8];  // byte
+      3'b001:  for (int k = 0; k < 8; k++) out[k*16+:16] = data[offset*8+:16];  // hword
+      3'b010:  for (int k = 0; k < 4; k++) out[k*32+:32] = data[offset*8+:32];  // word
+      3'b011:  for (int k = 0; k < 2; k++) out[k*64+:64] = data[offset*8+:64];  // dword
+      default: out = data;  // dword
+    endcase  // size
+    return out;
+  endfunction : repData128
 
 endpackage

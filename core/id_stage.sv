@@ -1,4 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Capabilities Limited.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -108,7 +109,15 @@ module id_stage #(
     // Data cache request ouput - CACHE
     input dcache_req_o_t dcache_req_ports_i,
     // Data cache request input - CACHE
-    output dcache_req_i_t dcache_req_ports_o
+    output dcache_req_i_t dcache_req_ports_o,
+    // PCC is being redirected from commit - COMMIT_STAGE
+    input logic commit_redirect_i,
+    // Current int_mode flag in last-written PCC - ISSUE_STAGE
+    input logic int_mode_issue_i,
+    // int_mode flag in redirected PCC - EXECUTE
+    input logic int_mode_resolved_branch_i,
+    // PCC is being redirected due to a misprediction - EXECUTE
+    input logic mispredict_redirect_i
 );
   // ID/ISSUE register stage
   typedef struct packed {
@@ -164,6 +173,16 @@ module id_stage #(
   logic              [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction_deco;
   logic              [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_deco;
 
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       int_mode_prev;
+  logic              [CVA6Cfg.NrIssuePorts-1:0]       int_mode_next;
+  logic                                               int_mode_d;
+  logic                                               int_mode_q;
+  logic                                               commit_redirect_q;
+
+  assign int_mode_prev[0] = int_mode_q;
+  for (genvar i = 1; i < CVA6Cfg.NrIssuePorts; i++) begin
+    assign int_mode_prev[i] = int_mode_next[i-1];
+  end
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -174,6 +193,7 @@ module id_stage #(
           .CVA6Cfg(CVA6Cfg)
       ) compressed_decoder_i (
           .instr_i         (fetch_entry_i[i].instruction),
+          .int_mode_i      ((CVA6Cfg.CheriPresent) ? int_mode_prev[i] : 1'b0),
           .instr_o         (instruction_rvc[i]),
           .illegal_instr_o (is_illegal_rvc[i]),
           .is_compressed_o (is_compressed_rvc[i]),
@@ -330,6 +350,7 @@ module id_stage #(
         .irq_ctrl_i,
         .irq_i,
         .pc_i                      (fetch_entry_i[i].address),
+        .int_mode_i                ((CVA6Cfg.CheriPresent) ? int_mode_prev[i] : 1'b0),
         .is_compressed_i           (is_compressed_deco[i]),
         .is_macro_instr_i          (is_macro_instr[i]),
         .is_zcmt_i                 (is_zcmt_instr[i]),
@@ -362,7 +383,8 @@ module id_stage #(
         .instruction_o             (decoded_instruction[i]),
         .orig_instr_o              (orig_instr[i]),
         .is_control_flow_instr_o   (is_control_flow_instr[i]),
-        .debug_from_trigger_i      (debug_from_trigger_i)
+        .debug_from_trigger_i      (debug_from_trigger_i),
+        .int_mode_o                (int_mode_next[i])
     );
   end
 
@@ -467,14 +489,32 @@ module id_stage #(
       if (flush_i) issue_n[0].valid = 1'b0;
     end
   end
+  always_comb begin
+    int_mode_d = int_mode_q;
+    if (commit_redirect_q) int_mode_d = int_mode_issue_i;
+    else if (mispredict_redirect_i) int_mode_d = int_mode_resolved_branch_i;
+    else begin
+      for (int i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+        if (fetch_entry_valid_i[i] && fetch_entry_ready_o[i]) begin
+          int_mode_d = int_mode_next[i];
+        end
+      end
+    end
+  end
   // -------------------------
   // Registers (ID <-> Issue)
   // -------------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       issue_q <= '0;
+      int_mode_q <= '1;
+      commit_redirect_q <= '0;
     end else begin
       issue_q <= issue_n;
+      if (CVA6Cfg.CheriPresent) begin
+        int_mode_q <= int_mode_d;
+        commit_redirect_q <= commit_redirect_i; // Delay by one cycle so that we pick up the update to PCC from the issue stage.
+      end
     end
   end
 

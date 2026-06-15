@@ -1,4 +1,6 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2025 Bruno Sá and Zero-Day Labs.
+// Copyright 2025 Capabilities Limited.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -49,21 +51,25 @@ module commit_stage
     // Register file write address - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_o,
     // Register file write data - ISSUE_STAGE
-    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_o,
+    output logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.REGLEN-1:0] wdata_o,
     // Register file write enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_gpr_o,
     // Floating point register enable - ISSUE_STAGE
     output logic [CVA6Cfg.NrCommitPorts-1:0] we_fpr_o,
     // Result of AMO operation - CACHE
     input amo_resp_t amo_resp_i,
+    // Current PCC - ISSUE_STAGE
+    input logic [CVA6Cfg.PCLEN-1:0] pcc_i,
     // TO_BE_COMPLETED - FRONTEND_CSR_REGFILE
-    output logic [CVA6Cfg.VLEN-1:0] pc_o,
+    output logic [CVA6Cfg.PCLEN-1:0] pc_o,
     // Decoded CSR operation - CSR_REGFILE
     output fu_op csr_op_o,
+    // Whether the CSR operation is immediate-based - CSR_REGFILE
+    output logic csr_op_is_imm_o,
     // Data to write to CSR - CSR_REGFILE
-    output logic [CVA6Cfg.XLEN-1:0] csr_wdata_o,
+    output logic [CVA6Cfg.REGLEN-1:0] csr_wdata_o,
     // Data to read from CSR - CSR_REGFILE
-    input logic [CVA6Cfg.XLEN-1:0] csr_rdata_i,
+    input logic [CVA6Cfg.REGLEN-1:0] csr_rdata_i,
     // Write the fflags CSR - CSR_REGFILE
     output logic csr_write_fflags_o,
     // Exception or interrupt occurred in CSR stage (the same as commit) - CSR_REGFILE
@@ -114,7 +120,16 @@ module commit_stage
     assign waddr_o[i] = commit_instr_i[i].rd;
   end
 
-  assign pc_o = commit_instr_i[0].pc;
+  always_comb begin : prepare_pc_o
+    // Recalculate the PCC with correct address. Representability check not required because this was in-bounds at issue.
+    automatic
+    cva6_cheri_pkg::cap_reg_t
+    pcc_o = cva6_cheri_pkg::set_cap_reg_addr(
+        pcc_i, commit_instr_i[0].pc
+    );
+    pcc_o = cva6_cheri_pkg::set_cap_reg_flags(pcc_o, commit_instr_i[0].int_mode);
+    pc_o  = pcc_o;
+  end
   // Dirty the FP state if we are committing anything related to the FPU
   always_comb begin : dirty_fp_state
     dirty_fp_state_o = 1'b0;
@@ -129,6 +144,7 @@ module commit_stage
   end
 
   assign commit_tran_id_o = commit_instr_i[0].trans_id;
+  assign csr_op_is_imm_o = commit_instr_i[0].use_zimm;
 
   assign commit_single_step_o = commit_instr_i[0].valid && halt_for_single_step_i;
 
@@ -151,9 +167,11 @@ module commit_stage
     commit_lsu_o = 1'b0;
     commit_csr_o = 1'b0;
     // amos will commit on port 0
-    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_i.ack) ? amo_resp_i.result[CVA6Cfg.XLEN-1:0] : commit_instr_i[0].result;
+    wdata_o[0] = (CVA6Cfg.RVA && amo_resp_i.ack) ? cva6_cheri_pkg::cap_mem_to_cap_reg(
+        {amo_resp_i.cap_vld, amo_resp_i.result[CVA6Cfg.CLEN-1:0]}) : commit_instr_i[0].result;
+
     csr_op_o = ADD;  // this corresponds to a CSR NOP
-    csr_wdata_o = {CVA6Cfg.XLEN{1'b0}};
+    csr_wdata_o = {CVA6Cfg.REGLEN{1'b0}};
     fence_i_o = 1'b0;
     fence_o = 1'b0;
     sfence_vma_o = 1'b0;
@@ -204,7 +222,9 @@ module commit_stage
           if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
             if (!commit_drop_i[0]) begin
               // write the CSR with potential exception flags from retiring floating point instruction
-              csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]};
+              csr_wdata_o[CVA6Cfg.XLEN-1:0] = {
+                {CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[0].ex.cause[4:0]
+              };
               csr_write_fflags_o = 1'b1;
             end
           end
@@ -332,7 +352,7 @@ module commit_stage
                                 && !single_step_i) begin
         // only if the first instruction didn't throw an exception and this instruction won't throw an exception
         // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
-        if (!commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+        if (!commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC, CLU})) begin
 
           if (CVA6Cfg.RVZCMP && commit_instr_i[1].is_macro_instr && commit_instr_i[1].is_last_macro_instr)
             commit_macro_ack[1] = 1'b1;
@@ -350,11 +370,14 @@ module commit_stage
             if (CVA6Cfg.FpPresent) begin
               if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
                 if (csr_write_fflags_o)
-                  csr_wdata_o = {
+                  csr_wdata_o[CVA6Cfg.XLEN-1:0] = {
                     {CVA6Cfg.XLEN - 5{1'b0}},
                     (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])
                   };
-                else csr_wdata_o = {{CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]};
+                else
+                  csr_wdata_o[CVA6Cfg.XLEN-1:0] = {
+                    {CVA6Cfg.XLEN - 5{1'b0}}, commit_instr_i[1].ex.cause[4:0]
+                  };
                 csr_write_fflags_o = 1'b1;
               end
             end
@@ -390,15 +413,17 @@ module commit_stage
       // check for CSR exception
       // ------------------------
       if (csr_exception_i.valid) begin
-        exception_o      = csr_exception_i;
-        // if no earlier exception happened the commit instruction will still contain
-        // the instruction bits from the ID stage. If a earlier exception happened we don't care
-        // as we will overwrite it anyway in the next IF bl
-        exception_o.tval = commit_instr_i[0].ex.tval;
-        if (CVA6Cfg.RVH) begin
-          exception_o.tinst = commit_instr_i[0].ex.tinst;
-          exception_o.tval2 = commit_instr_i[0].ex.tval2;
-          exception_o.gva   = commit_instr_i[0].ex.gva;
+        exception_o = csr_exception_i;
+        if (!CVA6Cfg.CheriPresent || csr_exception_i.cause != cva6_cheri_pkg::CAP_EXCEPTION) begin
+          // if no earlier exception happened the commit instruction will still contain
+          // the instruction bits from the ID stage. If a earlier exception happened we don't care
+          // as we will overwrite it anyway in the next IF bl
+          exception_o.tval = commit_instr_i[0].ex.tval;
+          if (CVA6Cfg.RVH) begin
+            exception_o.tinst = commit_instr_i[0].ex.tinst;
+            exception_o.tval2 = commit_instr_i[0].ex.tval2;
+            exception_o.gva   = commit_instr_i[0].ex.gva;
+          end
         end
       end
       // ------------------------

@@ -36,6 +36,7 @@ module cva6_icache
     parameter type icache_drsp_t = logic,
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
+    parameter type exception_t = logic,
     /// ID to be used for read transactions
     parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0
 ) (
@@ -148,6 +149,7 @@ module cva6_icache
   // make sure this is 32bit aligned
   assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
   assign areq_o.fetch_vaddr = (vaddr_q >> CVA6Cfg.FETCH_ALIGN_BITS) << CVA6Cfg.FETCH_ALIGN_BITS;
+  assign areq_o.fetch_exception = '0;
 
   // split virtual address into index and offset to address cache arrays
   assign cl_index = vaddr_d[CVA6Cfg.ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
