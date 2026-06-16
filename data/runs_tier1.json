@@ -1,5 +1,26 @@
 [
   {
+    "id": 27610045169,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 80,
+    "status": "completed",
+    "conclusion": "action_required",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27610045169",
+    "head_branch": "fix/3136-flush-bp-config",
+    "head_sha": "9879b46e",
+    "event": "pull_request",
+    "created_at": "2026-06-16T10:06:31Z",
+    "updated_at": "2026-06-16T10:06:31Z",
+    "run_started_at": "2026-06-16T10:06:31Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 27606460166,
     "source": "github-actions",
     "simulator": "verilator",
@@ -1911,26 +1932,5 @@
         "testcase": "smoke-tests-cv32a65x"
       }
     ]
-  },
-  {
-    "id": 27124242503,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 30,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27124242503",
-    "head_branch": "uga_wincent_260528",
-    "head_sha": "239ad86f",
-    "event": "pull_request",
-    "created_at": "2026-06-08T08:06:03Z",
-    "updated_at": "2026-06-08T08:06:03Z",
-    "run_started_at": "2026-06-08T08:06:03Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
