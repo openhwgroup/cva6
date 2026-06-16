@@ -1,0 +1,16 @@
+diff --git a/lib/uvm_agents/uvma_core_cntrl/uvma_core_cntrl_utils.sv b/lib/uvm_agents/uvma_core_cntrl/uvma_core_cntrl_utils.sv
+index 4aba4b5c..5db17138 100644
+--- a/lib/uvm_agents/uvma_core_cntrl/uvma_core_cntrl_utils.sv
++++ b/lib/uvm_agents/uvma_core_cntrl/uvma_core_cntrl_utils.sv
+@@ -34,6 +34,11 @@ function automatic string get_isa_str(st_core_cntrl_cfg cfg);
+     if (cfg.ext_zbc_supported)     rtl_isa_plus = {rtl_isa_plus, "_zbc"};
+     if (cfg.ext_zbs_supported)     rtl_isa_plus = {rtl_isa_plus, "_zbs"};
+     if (cfg.ext_zcb_supported)     rtl_isa_plus = {rtl_isa_plus, "_zcb"};
++
++    // XXX UVM testbench doesn't seem to detect scalar crypto extensions currently.
++    // Always enable them for now
++    rtl_isa_plus = {rtl_isa_plus, "_zbkb_zbkx_zkne_zknd_zknh"};
++
+     if (cfg.ext_zicsr_supported)     rtl_isa_plus = {rtl_isa_plus, "_zicsr"};
+     if (cfg.ext_zicntr_supported)    rtl_isa_plus = {rtl_isa_plus, "_zicntr"};
+ 

@@ -19,6 +19,8 @@ source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
 source verif/regress/install-riscv-arch-test.sh
 
+git -C verif/core-v-verif apply ../regress/core-v-verif.patch
+
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
