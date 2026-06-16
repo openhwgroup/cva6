@@ -15,6 +15,8 @@ module pmp_data_if
 ) (
     input logic clk_i,
     input logic rst_ni,
+    // Debug mode - CSR_REGFILE
+    input logic debug_mode_i,
     // IF interface
     input icache_areq_t icache_areq_i,
     output icache_areq_t icache_areq_o,
@@ -83,7 +85,10 @@ module pmp_data_if
     // exception
     if (icache_areq_i.fetch_valid) begin
       if (icache_areq_o.fetch_exception.cause != riscv::INSTR_PAGE_FAULT) begin
-        if (!match_any_execute_region || !pmp_if_allow) begin
+        if (!match_any_execute_region || !pmp_if_allow
+            || (CVA6Cfg.DebugEn && !debug_mode_i
+                && icache_areq_i.fetch_paddr >= CVA6Cfg.DmBaseAddress[CVA6Cfg.PLEN-1:0]
+                && icache_areq_i.fetch_paddr < (CVA6Cfg.DmBaseAddress[CVA6Cfg.PLEN-1:0] + CVA6Cfg.PLEN'('h1000)))) begin
           icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
           icache_areq_o.fetch_exception.valid = 1'b1;
           // For exception, the virtual address is required for tval, if no MMU is
@@ -126,7 +131,10 @@ module pmp_data_if
     pmp_access_type = lsu_is_store_i ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
 
     // If translation is not enabled, check the paddr immediately against PMPs
-    if (lsu_valid_i && !data_allow_o) begin
+    if (lsu_valid_i && (!data_allow_o
+        || (CVA6Cfg.DebugEn && !debug_mode_i
+            && lsu_paddr_i >= CVA6Cfg.DmBaseAddress[CVA6Cfg.PLEN-1:0]
+            && lsu_paddr_i < (CVA6Cfg.DmBaseAddress[CVA6Cfg.PLEN-1:0] + CVA6Cfg.PLEN'('h1000))))) begin
       lsu_exception_o.valid = 1'b1;
 
       if (CVA6Cfg.TvalEn) begin

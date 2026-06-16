@@ -160,6 +160,9 @@ module load_store_unit
     // AMO response - CACHE
     input  amo_resp_t           amo_resp_i,
 
+    // Debug mode - CSR_REGFILE
+    input logic debug_mode_i,
+
     // PMP configuration - CSR_REGFILE
     input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0]                   pmpcfg_i,
     // PMP address - CSR_REGFILE
@@ -383,6 +386,7 @@ module load_store_unit
   ) i_pmp_data_if (
       .clk_i               (clk_i),
       .rst_ni              (rst_ni),
+      .debug_mode_i        (debug_mode_i),
       .icache_areq_i       (pmp_icache_areq_i),
       .icache_areq_o       (icache_areq_o),
       .icache_fetch_vaddr_i(icache_areq_i.fetch_vaddr),
