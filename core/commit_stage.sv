@@ -34,6 +34,10 @@ module commit_stage
     output logic dirty_fp_state_o,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic single_step_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    input logic halt_for_single_step_i,
+    // TO_BE_COMPLETED - CSR_REGFILE
+    output logic commit_single_step_o,
     // The instruction we want to commit - ISSUE_STAGE
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // The instruction is cancelled - ISSUE_STAGE
@@ -126,6 +130,8 @@ module commit_stage
 
   assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
+  assign commit_single_step_o = commit_instr_i[0].valid && halt_for_single_step_i;
+
   logic instr_0_is_amo;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
@@ -157,7 +163,7 @@ module commit_stage
     flush_commit_o = 1'b0;
 
     // we do not commit the instruction yet if we requested a halt
-    if (commit_instr_i[0].valid && !halt_i) begin
+    if (commit_instr_i[0].valid && !halt_i && !halt_for_single_step_i) begin
       // we will not commit the instruction if we took an exception
       if (commit_instr_i[0].ex.valid || break_from_trigger_i) begin
         // However we can drop it (with its exception)
@@ -302,6 +308,9 @@ module commit_stage
           we_gpr_o[0] = amo_resp_i.ack;
         end
       end
+      if (halt_i || halt_for_single_step_i) begin
+        flush_commit_o = 1'b1;
+      end
     end
 
     if (CVA6Cfg.NrCommitPorts > 1) begin
@@ -403,7 +412,8 @@ module commit_stage
     end
     // Don't take any exceptions iff:
     // - If we halted the processor
-    if (halt_i) begin
+    // - We completed a single step
+    if (halt_i || halt_for_single_step_i) begin
       exception_o.valid = 1'b0;
     end
 

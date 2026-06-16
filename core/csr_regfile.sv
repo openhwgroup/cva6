@@ -159,6 +159,10 @@ module csr_regfile
     output logic debug_mode_o,
     // we are in single-step mode - COMMIT_STAGE
     output logic single_step_o,
+    // Don't commit the next instruction as we've already done the single step - COMMIT_STAGE
+    output logic halt_for_single_step_o,
+    // We've caught the instruction after a single step - COMMIT_STAGE
+    input logic commit_single_step_i,
     // L1 ICache Enable - CACHE
     output logic icache_en_o,
     // L1 DCache Enable - CACHE
@@ -291,6 +295,9 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] acc_cons_q, acc_cons_d;
 
   logic wfi_d, wfi_q;
+
+  logic single_step_done_d, single_step_done_q;
+  assign halt_for_single_step_o = single_step_done_q;
 
   logic [63:0] cycle_q, cycle_d;
   logic [63:0] instret_q, instret_d;
@@ -1016,10 +1023,11 @@ module csr_regfile
     debug_mode_d = debug_mode_q;
 
     if (CVA6Cfg.DebugEn) begin
-      dcsr_d      = dcsr_q;
-      dpc_d       = dpc_q;
-      dscratch0_d = dscratch0_q;
-      dscratch1_d = dscratch1_q;
+      dcsr_d             = dcsr_q;
+      dpc_d              = dpc_q;
+      dscratch0_d        = dscratch0_q;
+      dscratch1_d        = dscratch1_q;
+      single_step_done_d = single_step_done_q;
     end
     mstatus_d = mstatus_q;
     if (CVA6Cfg.RVH) begin
@@ -2194,36 +2202,27 @@ module csr_regfile
         // save the PC
         dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // enter debug mode
-        debug_mode_d = 1'b1;
+        debug_mode_d   = 1'b1;
         // jump to the base address
         set_debug_pc_o = 1'b1;
         // save the cause as external debug request
-        dcsr_d.cause = ariane_pkg::CauseRequest;
+        dcsr_d.cause   = ariane_pkg::CauseRequest;
       end
 
       // single step enable and we just retired an instruction
       if (dcsr_q.step && commit_ack_i[0]) begin
+        single_step_done_d = 1'b1;
+      end
+
+      if (CVA6Cfg.DebugEn && commit_single_step_i) begin
+        single_step_done_d = 1'b0;
         dcsr_d.prv = priv_lvl_o;
-        dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
-        // valid CTRL flow change
-        if (commit_instr_i.fu == CTRL_FLOW) begin
-          // we saved the correct target address during execute
-          dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.bp.predict_address[CVA6Cfg.VLEN-1]}},
-            commit_instr_i.bp.predict_address
-          };
-          // exception valid
-        end else if (ex_i.valid) begin
-          dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, trap_vector_base_o};
-          // return from environment
-        end else if (eret_o) begin
-          dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, epc_o};
-          // consecutive PC
+        dcsr_d.v = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
+        // save the PC
+        if (CVA6Cfg.CheriPresent) begin
+          dpc_d = pcc;
         end else begin
-          dpc_d = {
-            {CVA6Cfg.XLEN - CVA6Cfg.VLEN{commit_instr_i.pc[CVA6Cfg.VLEN-1]}},
-            commit_instr_i.pc + (commit_instr_i.is_compressed ? 'h2 : 'h4)
-          };
+          dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i[CVA6Cfg.VLEN-1:0]};
         end
         debug_mode_d   = 1'b1;
         set_debug_pc_o = 1'b1;
@@ -2745,11 +2744,12 @@ module csr_regfile
       end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
-        debug_mode_q <= 1'b0;
-        dcsr_q       <= '{xdebugver: 4'h4, prv: riscv::PRIV_LVL_M, default: '0};
-        dpc_q        <= '0;
-        dscratch0_q  <= {CVA6Cfg.XLEN{1'b0}};
-        dscratch1_q  <= {CVA6Cfg.XLEN{1'b0}};
+        debug_mode_q       <= 1'b0;
+        dcsr_q             <= '{xdebugver: 4'h4, prv: riscv::PRIV_LVL_M, default: '0};
+        dpc_q              <= REG_ROOT;
+        dscratch0_q        <= {CVA6Cfg.XLEN{1'b0}};
+        dscratch1_q        <= {CVA6Cfg.XLEN{1'b0}};
+        single_step_done_q <= 1'b0;
       end
       // machine mode registers
       mstatus_q        <= 64'b0;
@@ -2846,11 +2846,12 @@ module csr_regfile
       end
       // debug signals
       if (CVA6Cfg.DebugEn) begin
-        debug_mode_q <= debug_mode_d;
-        dcsr_q       <= dcsr_d;
-        dpc_q        <= dpc_d;
-        dscratch0_q  <= dscratch0_d;
-        dscratch1_q  <= dscratch1_d;
+        debug_mode_q       <= debug_mode_d;
+        dcsr_q             <= dcsr_d;
+        dpc_q              <= dpc_d;
+        dscratch0_q        <= dscratch0_d;
+        dscratch1_q        <= dscratch1_d;
+        single_step_done_q <= single_step_done_d;
       end
       // machine mode registers
       mstatus_q        <= mstatus_d;
