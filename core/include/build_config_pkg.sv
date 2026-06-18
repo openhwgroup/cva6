@@ -26,20 +26,20 @@ package build_config_pkg;
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     // MMU
-    int unsigned VpnLen = (CVA6Cfg.XLEN == 64) ? (CVA6Cfg.RVH ? 29 : 27) : 20;
-    int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
+    int unsigned VpnLen = IS_XLEN64 ? (CVA6Cfg.RVH ? 29 : 27) : 20;
+    int unsigned PtLevels = IS_XLEN64 ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;
 
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
-    cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
-    cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
+    cfg.PLEN = IS_XLEN32 ? 34 : 56;
+    cfg.GPLEN = IS_XLEN32 ? 34 : 41;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
-    cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
-    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
+    cfg.ASID_WIDTH = IS_XLEN64 ? 16 : 1;
+    cfg.VMID_WIDTH = IS_XLEN64 ? 14 : 1;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
@@ -175,12 +175,12 @@ package build_config_pkg;
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
-    cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
-    cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
-    cfg.VMIDW = (CVA6Cfg.XLEN == 32) ? 7 : 14;
-    cfg.PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
-    cfg.GPPNW = (CVA6Cfg.XLEN == 32) ? 22 : 29;
-    cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
+    cfg.ModeW = IS_XLEN32 ? 1 : 4;
+    cfg.ASIDW = IS_XLEN32 ? 9 : 16;
+    cfg.VMIDW = IS_XLEN32 ? 7 : 14;
+    cfg.PPNW = IS_XLEN32 ? 22 : 44;
+    cfg.GPPNW = IS_XLEN32 ? 22 : 29;
+    cfg.MODE_SV = IS_XLEN32 ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
     cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;
