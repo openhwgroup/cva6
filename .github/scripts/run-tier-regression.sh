@@ -68,19 +68,50 @@ scan_for_failures() {
     scan_files+=("${file_path}")
   done < <(
     find verif/sim -type f \
-      \( -name "*.log" -o -name "*.iss" -o -name "*.txt" -o -name "iss_regr.log" \) \
+      \( -name "*.log" -o -name "*.txt" -o -name "iss_regr.log" \) \
       -print0 2>/dev/null || true
   )
 
   matches="$(
     grep -HnE \
-      "\\[FAILED\\]|\\*\\*\\*[[:space:]]+FAILED[[:space:]]+\\*\\*\\*|SIMULATION FAILED|(^|[^0-9])[1-9][0-9]* FAILED|ERROR return code:|bad syscall|unrecognized opcode|extension .* required|make(\\[[0-9]+\\])?: \\*\\*\\*.*Error|terminate called|Traceback \\(most recent call last\\)" \
+      "\\[FAILED\\]|SIMULATION FAILED|(^|[^0-9])[1-9][0-9]* FAILED|ERROR return code:|bad syscall|unrecognized opcode|extension .* required|make(\\[[0-9]+\\])?: \\*\\*\\*.*Error|terminate called|Traceback \\(most recent call last\\)" \
       "${scan_files[@]}" 2>/dev/null || true
   )"
 
   if [ -n "${matches}" ]; then
     append_failure "ERROR: ${TIER_NAME} job reported success, but failure patterns were found in logs."
     echo "${matches}" | tee -a "${FAILURE_SUMMARY}" >&2
+    return 1
+  fi
+
+  return 0
+}
+
+scan_iss_traces() {
+  local matches=""
+  local critical_patterns
+  critical_patterns="ERROR return code:|bad syscall|unrecognized opcode|extension .* required|terminate called|Traceback \\(most recent call last\\)"
+
+  while IFS= read -r -d '' file_path; do
+    local critical_matches
+    local last_status
+
+    critical_matches="$(grep -HnE "${critical_patterns}" "${file_path}" 2>/dev/null || true)"
+    if [ -n "${critical_matches}" ]; then
+      matches+="${critical_matches}"$'\n'
+    fi
+
+    last_status="$(
+      grep -nE "\\*\\*\\*[[:space:]]+(FAILED|SUCCESS)[[:space:]]+\\*\\*\\*|SIMULATION FAILED" "${file_path}" 2>/dev/null | tail -n 1 || true
+    )"
+    if [[ -n "${last_status}" && "${last_status}" != *"SUCCESS"* ]]; then
+      matches+="${file_path}:${last_status}"$'\n'
+    fi
+  done < <(find verif/sim -type f -name "*.iss" -print0 2>/dev/null || true)
+
+  if [ -n "${matches}" ]; then
+    append_failure "ERROR: ${TIER_NAME} job reported success, but ISS trace failure patterns were found."
+    printf "%s" "${matches}" | tee -a "${FAILURE_SUMMARY}" >&2
     return 1
   fi
 
@@ -157,6 +188,10 @@ if [ "${rc}" -eq 0 ] && ! compgen -G "verif/sim/out*" > /dev/null; then
 fi
 
 if [ "${rc}" -eq 0 ] && ! scan_for_failures; then
+  rc=1
+fi
+
+if [ "${rc}" -eq 0 ] && ! scan_iss_traces; then
   rc=1
 fi
 
