@@ -68,13 +68,13 @@ scan_for_failures() {
     scan_files+=("${file_path}")
   done < <(
     find verif/sim -type f \
-      \( -name "*.log" -o -name "*.txt" -o -name "iss_regr.log" \) \
+      \( -name "*.log" -o -name "*.iss" -o -name "*.txt" -o -name "iss_regr.log" \) \
       -print0 2>/dev/null || true
   )
 
   matches="$(
     grep -HnE \
-      "\\[FAILED\\]|(^|[^0-9])[1-9][0-9]* FAILED|ERROR return code:|bad syscall|unrecognized opcode|extension .* required|make(\\[[0-9]+\\])?: \\*\\*\\*.*Error|terminate called|Traceback \\(most recent call last\\)" \
+      "\\[FAILED\\]|\\*\\*\\*[[:space:]]+FAILED[[:space:]]+\\*\\*\\*|SIMULATION FAILED|(^|[^0-9])[1-9][0-9]* FAILED|ERROR return code:|bad syscall|unrecognized opcode|extension .* required|make(\\[[0-9]+\\])?: \\*\\*\\*.*Error|terminate called|Traceback \\(most recent call last\\)" \
       "${scan_files[@]}" 2>/dev/null || true
   )"
 
