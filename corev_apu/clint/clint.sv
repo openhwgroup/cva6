@@ -102,7 +102,7 @@ module clint #(
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    if (CVA6Cfg.XLEN == 32) begin
+                    if (CVA6Cfg.IS_XLEN32) begin
                         if (be[3:0] == 4'hf)
                             mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])][31:0] = wdata[31:0];
                         else
@@ -114,7 +114,7 @@ module clint #(
                 end              
 
                 [MTIME_BASE:MTIME_BASE+4]: begin
-                    if (CVA6Cfg.XLEN == 32) begin
+                    if (CVA6Cfg.IS_XLEN32) begin
                         if (address[2:0] == 3'h0)
                             mtime_n[31:0] = wdata[31:0];
                         else begin
@@ -137,14 +137,14 @@ module clint #(
         if (en && !we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
-                    if (CVA6Cfg.XLEN == 32)
+                    if (CVA6Cfg.IS_XLEN32)
                         rdata[31:0] =  msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                     else
                         rdata = msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    if (CVA6Cfg.XLEN == 32) begin
+                    if (CVA6Cfg.IS_XLEN32) begin
                         if (address[2:0] == 3'h0)
                             rdata[31:0] = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])][31:0];
                         else begin
@@ -158,7 +158,7 @@ module clint #(
                 end
 
                 [MTIME_BASE:MTIME_BASE+4]: begin
-                    if (CVA6Cfg.XLEN == 32) begin
+                    if (CVA6Cfg.IS_XLEN32) begin
                         if (address[2:0] == 3'h0)
                             rdata[31:0] = mtime_q[31:0];
                         else begin

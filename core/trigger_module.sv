@@ -92,9 +92,9 @@ module trigger_module
     end
     if (tdata1_we) begin
       if ((tdata1_i[31:28] == 4'd3 && CVA6Cfg.IS_XLEN32) || (CVA6Cfg.IS_XLEN64 && tdata1_i_64[63:60] == 4'd3)) begin
-        trigger_type_d[tselect_q] = (CVA6Cfg.IS_XLEN32) ? tdata1_i[31:28] : tdata1_i_64[63:60];
-        icount32_tdata1_d[tselect_q].t_type  = (CVA6Cfg.IS_XLEN32) ? ((tdata1_i[31:28] == 4'd3 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd3 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
-        icount32_tdata1_d[tselect_q].dmode = (CVA6Cfg.IS_XLEN32) ? tdata1_i[27] : tdata1_i_64[59];
+        trigger_type_d[tselect_q] = CVA6Cfg.IS_XLEN32 ? tdata1_i[31:28] : tdata1_i_64[63:60];
+        icount32_tdata1_d[tselect_q].t_type  = CVA6Cfg.IS_XLEN32 ? ((tdata1_i[31:28] == 4'd3 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd3 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
+        icount32_tdata1_d[tselect_q].dmode = CVA6Cfg.IS_XLEN32 ? tdata1_i[27] : tdata1_i_64[59];
         icount32_tdata1_d[tselect_q].vs = 0;
         icount32_tdata1_d[tselect_q].vu = 0;
         icount32_tdata1_d[tselect_q].hit = tdata1_i[24];
@@ -105,10 +105,11 @@ module trigger_module
         icount32_tdata1_d[tselect_q].u = tdata1_i[6];
         icount32_tdata1_d[tselect_q].action = tdata1_i[5:0];
         flush_o = 1'b1;
+
       end else if ((CVA6Cfg.IS_XLEN32 && tdata1_i[31:28] == 4'd6) || (CVA6Cfg.IS_XLEN64 && tdata1_i_64[63:60] == 4'd6)) begin
-        trigger_type_d[tselect_q] = (CVA6Cfg.IS_XLEN32) ? tdata1_i[31:28] : tdata1_i_64[63:60];
-        mcontrol6_32_tdata1_d[tselect_q].t_type  = (CVA6Cfg.IS_XLEN32) ? ((tdata1_i[31:28] == 4'd6 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd6 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
-        mcontrol6_32_tdata1_d[tselect_q].dmode = (CVA6Cfg.IS_XLEN32) ? tdata1_i[27] : tdata1_i_64[59];
+        trigger_type_d[tselect_q] = CVA6Cfg.IS_XLEN32 ? tdata1_i[31:28] : tdata1_i_64[63:60];
+        mcontrol6_32_tdata1_d[tselect_q].t_type  = CVA6Cfg.IS_XLEN32 ? ((tdata1_i[31:28] == 4'd6 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd6 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
+        mcontrol6_32_tdata1_d[tselect_q].dmode = CVA6Cfg.IS_XLEN32 ? tdata1_i[27] : tdata1_i_64[59];
         mcontrol6_32_tdata1_d[tselect_q].uncertain = 0;
         mcontrol6_32_tdata1_d[tselect_q].hit1 = tdata1_i[25];
         mcontrol6_32_tdata1_d[tselect_q].vs = 0;
@@ -128,11 +129,12 @@ module trigger_module
         mcontrol6_32_tdata1_d[tselect_q].store = tdata1_i[1];
         mcontrol6_32_tdata1_d[tselect_q].load = tdata1_i[0];
         flush_o = 1'b1;
+
       end else if ((tdata1_i[31:28] == 4'd5 && CVA6Cfg.IS_XLEN32) || (tdata1_i_64[63:60] == 4'd5 && CVA6Cfg.IS_XLEN64)) begin
-        trigger_type_d[tselect_q] = (CVA6Cfg.IS_XLEN32) ? tdata1_i[31:28] : tdata1_i_64[63:60];
-        etrigger32_tdata1_d[tselect_q].t_type  = (CVA6Cfg.IS_XLEN32) ? ((tdata1_i[31:28] == 4'd5 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd5 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
-        etrigger32_tdata1_d[tselect_q].dmode = (CVA6Cfg.IS_XLEN32) ? tdata1_i[27] : tdata1_i_64[59];
-        etrigger32_tdata1_d[tselect_q].hit = (CVA6Cfg.IS_XLEN32) ? tdata1_i[26] : tdata1_i_64[58];
+        trigger_type_d[tselect_q] = CVA6Cfg.IS_XLEN32 ? tdata1_i[31:28] : tdata1_i_64[63:60];
+        etrigger32_tdata1_d[tselect_q].t_type  = CVA6Cfg.IS_XLEN32 ? ((tdata1_i[31:28] == 4'd5 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd5 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
+        etrigger32_tdata1_d[tselect_q].dmode = CVA6Cfg.IS_XLEN32 ? tdata1_i[27] : tdata1_i_64[59];
+        etrigger32_tdata1_d[tselect_q].hit = CVA6Cfg.IS_XLEN32 ? tdata1_i[26] : tdata1_i_64[58];
         etrigger32_tdata1_d[tselect_q].zeroes = '0;
         etrigger32_tdata1_d[tselect_q].vs = 0;
         etrigger32_tdata1_d[tselect_q].vu = 0;
@@ -142,11 +144,12 @@ module trigger_module
         etrigger32_tdata1_d[tselect_q].s = tdata1_i[7];
         etrigger32_tdata1_d[tselect_q].u = tdata1_i[6];
         etrigger32_tdata1_d[tselect_q].action = tdata1_i[5:0];
+
       end else if ((tdata1_i[31:28] == 4'd4 && CVA6Cfg.IS_XLEN32) || (tdata1_i_64[63:60] == 4'd4 && CVA6Cfg.IS_XLEN64)) begin
-        trigger_type_d[tselect_q] = (CVA6Cfg.IS_XLEN32) ? tdata1_i[31:28] : tdata1_i_64[63:60];
-        itrigger32_tdata1_d[tselect_q].t_type  = (CVA6Cfg.IS_XLEN32) ? ((tdata1_i[31:28] == 4'd4 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd4 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
-        itrigger32_tdata1_d[tselect_q].dmode = (CVA6Cfg.IS_XLEN32) ? tdata1_i[27] : tdata1_i_64[59];
-        itrigger32_tdata1_d[tselect_q].hit = (CVA6Cfg.IS_XLEN32) ? tdata1_i[26] : tdata1_i_64[58];
+        trigger_type_d[tselect_q] = CVA6Cfg.IS_XLEN32 ? tdata1_i[31:28] : tdata1_i_64[63:60];
+        itrigger32_tdata1_d[tselect_q].t_type  = CVA6Cfg.IS_XLEN32 ? ((tdata1_i[31:28] == 4'd4 || tdata1_i[31:28] == 4'd15) ? tdata1_i[31:28] : trigger_type_q[tselect_q]) : ((tdata1_i_64[63:60] == 4'd4 || tdata1_i_64[63:60] == 4'd15) ? tdata1_i_64[63:60] : trigger_type_q[tselect_q]);
+        itrigger32_tdata1_d[tselect_q].dmode = CVA6Cfg.IS_XLEN32 ? tdata1_i[27] : tdata1_i_64[59];
+        itrigger32_tdata1_d[tselect_q].hit = CVA6Cfg.IS_XLEN32 ? tdata1_i[26] : tdata1_i_64[58];
         itrigger32_tdata1_d[tselect_q].zeroed = '0;
         itrigger32_tdata1_d[tselect_q].vs = 0;
         itrigger32_tdata1_d[tselect_q].vu = 0;
