@@ -55,7 +55,7 @@ module cva6_tlb
     output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
-  localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
+  localparam GPPN2 = CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN - 33 : 10;
   // SV39 defines three levels of page tables
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
@@ -234,7 +234,7 @@ module cva6_tlb
             if (tags_q[i].is_page[0][0])
               lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end else begin
-            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32?CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
+            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
           end
 
           // G-translation (if requested), depending on `content[i].gpte` page type
