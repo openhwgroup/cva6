@@ -690,7 +690,8 @@ module cva6
       .rst_ni,
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
       .flush_bp_i         ((CVA6Cfg.RVU || CVA6Cfg.RVS) ? flush_ctrl_bp : 1'b0),
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
+      // below line is not entirely correct
+      .flush_i            (flush_ctrl_if),
       .halt_i             (halt_ctrl),
       .halt_frontend_i    (halt_frontend),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
