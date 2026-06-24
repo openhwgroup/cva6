@@ -1,0 +1,329 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# testlist        : Assembly test list
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+common_test_config: &common_test_config
+  path_var: TESTS_PATH
+  gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+
+testlist:
+
+########################################
+# FULL TEST : Sv39 S/U mode 
+########################################
+
+# --------------------- Sv39 Non-leaf Svpbmt ---------------------- #
+
+# Sv39 | Non-leaf | Smode
+  - test: Sv39_Svpbmt_nonleaf_Smode
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_nonleaf_Smode.S
+
+
+# Sv39 | Non-leaf | Umode
+  - test: Sv39_Svpbmt_nonleaf_Umode
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_nonleaf_Umode.S
+
+# ------------------------ Sv39 leaf Svpbmt ------------------------- #
+
+# Sv39 | leaf | Smode
+  - test: Sv39_Svpbmt_Smode
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_Smode.S
+
+
+# Sv39 | leaf | Umode
+  - test: Sv39_Svpbmt_Umode
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 2 | PBMT = NC | S mode 
+  - test: Sv39_LV2_PBMT_1_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 2 | PBMT = I/O | S mode 
+  - test: Sv39_LV2_PBMT_2_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 2 | PBMT = Reserved | S mode 
+  - test: Sv39_LV2_PBMT_3_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = NC | S mode 
+  - test: Sv39_LV1_PBMT_1_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = I/O | S mode 
+  - test: Sv39_LV1_PBMT_2_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = Reserved | S mode 
+  - test: Sv39_LV1_PBMT_3_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = NC | S mode 
+  - test: Sv39_LV0_PBMT_1_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = I/O | S mode 
+  - test: Sv39_LV0_PBMT_2_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = Reserved | S mode 
+  - test: Sv39_LV0_PBMT_3_Smode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Smode.S
+
+  
+# Sv39 | leaf |  LEVEL 2 | PBMT = NC | U mode 
+  - test: Sv39_LV2_PBMT_1_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 2 | PBMT = I/O | U mode 
+  - test: Sv39_LV2_PBMT_2_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 2 | PBMT = Reserved | U mode 
+  - test: Sv39_LV2_PBMT_3_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=2 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = NC | U mode 
+  - test: Sv39_LV1_PBMT_1_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = I/O | U mode 
+  - test: Sv39_LV1_PBMT_2_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 1 | PBMT = Reserved | U mode 
+  - test: Sv39_LV1_PBMT_3_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=1 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = NC | U mode 
+  - test: Sv39_LV0_PBMT_1_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=1
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = I/O | U mode 
+  - test: Sv39_LV0_PBMT_2_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=2
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
+
+
+# Sv39 | leaf |  LEVEL 0 | PBMT = Reserved | U mode 
+  - test: Sv39_LV0_PBMT_3_Umode
+    iterations: 1
+    <<: *common_test_config
+    gcc_opts: >-
+      -DXLEN=64 -DTEST_CASE_1=True
+      -DTEST_LEVEL=0 -DTEST_PBMT=3
+      -static -mcmodel=medany -fvisibility=hidden
+      -nostdlib -nostartfiles
+      -I<path_var>/riscv-arch-test/riscv-test-suite/env/
+      -I<path_var>/riscv-arch-test/riscv-target/spike/
+    asm_tests: <path_var>/custom/Svpbmt/Sv39_Svpbmt_indiv_Umode.S
