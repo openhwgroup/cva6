@@ -28,7 +28,7 @@ char            Ch_1_Glob,
 int             Arr_1_Glob [50];
 int             Arr_2_Glob [50] [50];
 
-Enumeration     Func_1 ();
+Enumeration Func_1 (Capital_Letter, Capital_Letter);
   /* forward declaration necessary since Enumeration may not simply be int */
 
 #ifndef REG

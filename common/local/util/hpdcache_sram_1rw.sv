@@ -12,22 +12,23 @@ module hpdcache_sram_1rw
 #(
     parameter int unsigned ADDR_SIZE = 0,
     parameter int unsigned DATA_SIZE = 0,
-    parameter int unsigned DEPTH = 2**ADDR_SIZE
+    parameter int unsigned DEPTH = 2**ADDR_SIZE,
+    parameter int unsigned NDATA = 1
 )
 (
-    input  logic                  clk,
-    input  logic                  rst_n,
-    input  logic                  cs,
-    input  logic                  we,
-    input  logic [ADDR_SIZE-1:0]  addr,
-    input  logic [DATA_SIZE-1:0]  wdata,
-    output logic [DATA_SIZE-1:0]  rdata
+    input  logic                            clk,
+    input  logic                            rst_n,
+    input  logic                            cs,
+    input  logic                            we,
+    input  logic [ADDR_SIZE-1:0]            addr,
+    input  logic [NDATA-1:0][DATA_SIZE-1:0] wdata,
+    output logic [NDATA-1:0][DATA_SIZE-1:0] rdata
 );
 
     SyncSpRam #(
       .ADDR_WIDTH(ADDR_SIZE),
       .DATA_DEPTH(DEPTH), // usually 2**ADDR_WIDTH, but can be lower
-      .DATA_WIDTH(DATA_SIZE),
+      .DATA_WIDTH(NDATA*DATA_SIZE),
       .OUT_REGS  (0),
       .SIM_INIT  (1)     // for simulation only, will not be synthesized
                                    // 0: no init, 1: zero init, 2: random init
