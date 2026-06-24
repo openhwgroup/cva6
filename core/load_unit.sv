@@ -67,6 +67,8 @@ module load_unit
     input logic dtlb_hit_i,
     // Physical page number from the DTLB - MMU
     input logic [CVA6Cfg.PPNW-1:0] dtlb_ppn_i,
+    // Mmemory attributes of load request - MMU
+    input logic [1:0] dtlb_pbmt_i,
     // Page offset for address checking - STORE_UNIT
     output logic [11:0] page_offset_o,
     // Indicates if the page offset matches a store unit entry - STORE_UNIT
@@ -220,6 +222,8 @@ module load_unit
   assign req_port_o.data_id = ldbuf_windex;
   // user field not used
   assign req_port_o.data_wuser = '0;
+  // physical memory attributes 
+  assign req_port_o.pma = dtlb_pbmt_i;
   // directly forward exception fields (valid bit is set below)
   assign ex_o.cause = ex_i.cause;
   assign ex_o.tval = ex_i.tval;

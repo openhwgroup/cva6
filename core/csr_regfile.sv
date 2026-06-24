@@ -129,9 +129,13 @@ module csr_regfile
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_o,
     // machine-mode hardware-assisted A/D-bit Update - EX_STAGE
-    output logic menvcfg_adue_o, 
+    output logic madue_o, 
     // hypervisor-mode hardware-assisted A/D-bit Update - EX_STAGE
-    output logic henvcfg_adue_o, 
+    output logic hadue_o, 
+    // machine-mode page-based memory attributes - EX_STAGE
+    output logic mpbmt_o,
+    // hypervisor-mode page-based memory attributes - EX_STAGE
+    output logic hpbmt_o,
     // machine-mode cache block invalidate enable - ID_STAGE
     output riscv::cbie_t mcbie_o,
     // supervisor-mode cache block invalidate enable - ID_STAGE
@@ -325,9 +329,13 @@ module csr_regfile
   riscv::cbie_t mcbie_q, mcbie_d, scbie_q, scbie_d, hcbie_q, hcbie_d;
   logic mcbcfe_q, mcbcfe_d, scbcfe_q, scbcfe_d, hcbcfe_q, hcbcfe_d;
 
-  // Svadu enable falgs from menvcfg/henvcfg
-  logic menvcfg_adue_d, menvcfg_adue_q;
-  logic henvcfg_adue_d, henvcfg_adue_q;
+  // Svadu enable flags from menvcfg/henvcfg
+  logic madue_d, madue_q;
+  logic hadue_d, hadue_q;
+
+  // Svpbmt enable flags from menvcfg/henvcfg
+  logic mpbmt_d, mpbmt_q;
+  logic hpbmt_d, hpbmt_q;
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -588,7 +596,8 @@ module csr_regfile
               csr_rdata[5:4] = hcbie_q;
               csr_rdata[6]   = hcbcfe_q;
             end
-            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) csr_rdata[61] = menvcfg_adue_q ? henvcfg_adue_q : 1'b0;
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) csr_rdata[61] = madue_q ? hadue_q : 1'b0;
+            if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) csr_rdata[62] = mpbmt_q ? hpbmt_q : 1'b0;
           end else begin
             read_access_exception = 1'b1;
           end
@@ -648,15 +657,18 @@ module csr_regfile
           if (!CVA6Cfg.RVU && !CVA6Cfg.RVZiCbom) begin
             read_access_exception = 1'b1;
           end
-          if(CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) begin
-            csr_rdata[61] = menvcfg_adue_q;
+          if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) begin
+            csr_rdata[61] = madue_q;
+          end
+          if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) begin
+            csr_rdata[62] = mpbmt_q;
           end
         end
         riscv::CSR_MENVCFGH: begin
           if (CVA6Cfg.RVU && CVA6Cfg.IS_XLEN32) begin 
             csr_rdata = '0;
               if(CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN32) begin
-                csr_rdata[29] = menvcfg_adue_q;
+                csr_rdata[29] = madue_q;
               end
           end else read_access_exception = 1'b1;
         end
@@ -995,8 +1007,11 @@ module csr_regfile
       vsatp = vsatp_q;
     end
 
-    menvcfg_adue_d = menvcfg_adue_q;
-    henvcfg_adue_d = henvcfg_adue_q;
+    madue_d = madue_q;
+    hadue_d = hadue_q;
+
+    mpbmt_d = mpbmt_q;
+    hpbmt_d = hpbmt_q;
 
     instret         = instret_q;
 
@@ -1543,7 +1558,8 @@ module csr_regfile
               endcase
               hcbcfe_d = csr_wdata[6];
             end
-            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) henvcfg_adue_d = menvcfg_adue_q ? csr_wdata[61] : 1'b0;
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) hadue_d = madue_q ? csr_wdata[61] : 1'b0;
+            if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) hpbmt_d = mpbmt_q ? csr_wdata[62] : 1'b0;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1727,15 +1743,18 @@ module csr_regfile
             mcbcfe_d = csr_wdata[6];
           end
           if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64)  begin
-            menvcfg_adue_d = csr_wdata[61];
+            madue_d = csr_wdata[61];
           end 
+          if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) begin
+            mpbmt_d = csr_wdata[62];
+          end
         end
         riscv::CSR_MENVCFGH: begin
           if (!CVA6Cfg.RVU || !CVA6Cfg.IS_XLEN32) begin
              update_access_exception = 1'b1;
           end else begin
-            if (CVA6Cfg.SvaduEn && (CVA6Cfg.IS_XLEN32)) begin
-                menvcfg_adue_d = csr_wdata[29];
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN32) begin
+                madue_d = csr_wdata[29];
             end
           end
         end
@@ -2733,8 +2752,11 @@ module csr_regfile
   assign scbcfe_o = CVA6Cfg.RVZiCbom ? scbcfe_q : 1'b0;
   assign hcbcfe_o = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
 
-  assign menvcfg_adue_o = CVA6Cfg.SvaduEn ? menvcfg_adue_q : 1'b0;
-  assign henvcfg_adue_o = CVA6Cfg.SvaduEn ? (menvcfg_adue_q && henvcfg_adue_q) : 1'b0;
+  assign madue_o = CVA6Cfg.SvaduEn ? madue_q : 1'b0;
+  assign hadue_o = CVA6Cfg.SvaduEn ? (madue_q && hadue_q) : 1'b0;
+
+  assign mpbmt_o = CVA6Cfg.SvpbmtEn ? mpbmt_q : 1'b0;
+  assign hpbmt_o = CVA6Cfg.SvpbmtEn ? (mpbmt_q && hpbmt_q) : 1'b0;
 
   // we support bare memory addressing and SV39
   if (CVA6Cfg.RVH) begin
@@ -2820,8 +2842,13 @@ module csr_regfile
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
 
       if (CVA6Cfg.SvaduEn) begin
-        menvcfg_adue_q <= 1'b0; 
-        henvcfg_adue_q <= 1'b0;
+        madue_q <= 1'b0; 
+        hadue_q <= 1'b0;
+      end
+
+      if (CVA6Cfg.SvpbmtEn) begin
+        mpbmt_q <= 1'b0;
+        hpbmt_q <= 1'b0;
       end
 
       if (CVA6Cfg.RVZiCbom) begin
@@ -2927,8 +2954,12 @@ module csr_regfile
         mcbcfe_q <= mcbcfe_d;
       end
       if (CVA6Cfg.SvaduEn) begin
-        menvcfg_adue_q <= menvcfg_adue_d;
-        henvcfg_adue_q <= henvcfg_adue_d;
+        madue_q <= madue_d;
+        hadue_q <= hadue_d;
+      end
+      if (CVA6Cfg.SvpbmtEn) begin
+        mpbmt_q <= mpbmt_d;
+        hpbmt_q <= hpbmt_d;
       end
 
       // supervisor mode registers

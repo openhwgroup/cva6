@@ -64,6 +64,7 @@ module cva6_mmu
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
     output logic lsu_is_store_o,  // the translation is requested by a store
+    output logic [1:0] lsu_pbmt_o, // memory attributes of translated address
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -75,6 +76,8 @@ module cva6_mmu
     input logic vmxr_i,
     input logic madue_i,
     input logic hadue_i,
+    input logic mpbmt_i,
+    input logic hpbmt_i,
     input logic mbe_i,
     input logic hlvx_inst_i,
     input logic hs_ld_st_inst_i,
@@ -94,7 +97,6 @@ module cva6_mmu
     input logic flush_tlb_i,
     input logic flush_tlb_vvma_i,
     input logic flush_tlb_gvma_i,
-
 
     // PUE interface 
     output logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_o,
@@ -124,7 +126,6 @@ module cva6_mmu
     output dcache_req_i_t req_port_o,
 
     // PMP
-
     input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0]                   pmpcfg_i,
     input logic           [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
@@ -132,7 +133,8 @@ module cva6_mmu
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
     logic n;
-    logic [8:0] reserved;
+    logic [1:0] pbmt;
+    logic [6:0] reserved;
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
@@ -233,7 +235,8 @@ module cva6_mmu
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
       .lu_hit_o      (itlb_lu_hit),
-
+      
+      // PUE-side TLB update path is unused for the ITLB.
       .pue_tlb_vaddr_i   ('0),
       .pue_tlb_update_i  ('0),
       .pue_tlb_asid_i    ('0),
@@ -399,6 +402,8 @@ module cva6_mmu
       .vmxr_i,
       .madue_i,
       .hadue_i,
+      .mpbmt_i,
+      .hpbmt_i,
       .mbe_i(mbe_i),
       // Performance counters
       .shared_tlb_miss_o(shared_tlb_miss),  //open for now
@@ -422,7 +427,8 @@ module cva6_mmu
   always_comb begin : instr_interface
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
-    icache_areq_o.fetch_paddr = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0]);
+    icache_areq_o.fetch_paddr  = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0]);
+    icache_areq_o.fetch_pma    = 2'b00;
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -460,6 +466,7 @@ module cva6_mmu
 
       final_fetch_ppn = (enable_g_translation_i && CVA6Cfg.RVH)? itlb_g_content.ppn : itlb_content.ppn;
       icache_areq_o.fetch_paddr = {final_fetch_ppn, icache_areq_i.fetch_vaddr[11:0]};
+      icache_areq_o.fetch_pma   = (CVA6Cfg.SvpbmtEn) ? ((enable_g_translation_i && CVA6Cfg.RVH) ? itlb_g_content.pbmt : itlb_content.pbmt) : 2'b00;
 
       if (CVA6Cfg.PtLevels == 3 && itlb_is_page[CVA6Cfg.PtLevels-2]) begin
 
@@ -844,6 +851,8 @@ module cva6_mmu
       end
     end
   end
+
+  assign lsu_pbmt_o = (CVA6Cfg.SvpbmtEn && lsu_valid_o) ? ((en_ld_st_g_translation_i && CVA6Cfg.RVH) ? dtlb_gpte_q.pbmt : dtlb_pte_q.pbmt) : 2'b00;
 
   // ----------
   // Registers

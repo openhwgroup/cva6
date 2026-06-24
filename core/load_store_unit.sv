@@ -124,6 +124,10 @@ module load_store_unit
     input logic                                       madue_i,
     // hypervisor-mode hardware-supported A/D-bit update - CSR_REGFILE
     input logic                                       hadue_i,
+    // machine-mode page-based memory attributes - CSR_REGFILE
+    input logic                                       mpbmt_i,
+    // hypervisor-mode page-based memory attributes - CSR_REGFILE
+    input logic                                       hpbmt_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -227,6 +231,7 @@ module load_store_unit
   logic translation_valid, cva6_translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr, cva6_mmu_vaddr, acc_mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, cva6_mmu_paddr, acc_mmu_paddr, lsu_paddr;
+  logic [1:0] lsu_pbmt, cva6_lsu_pbmt;
   logic [31:0] mmu_tinst;
   logic        mmu_hs_ld_st_inst;
   logic        mmu_hlvx_inst;
@@ -316,6 +321,7 @@ module load_store_unit
         .lsu_paddr_o    (lsu_paddr),
         .lsu_exception_o(pmp_exception),
         .lsu_is_store_o (lsu_is_store_o),
+        .lsu_pbmt_o     (lsu_pbmt),
 
         .priv_lvl_i      (priv_lvl_i),
         .v_i,
@@ -327,6 +333,8 @@ module load_store_unit
         .vmxr_i,
         .madue_i,
         .hadue_i,
+        .mpbmt_i,
+        .hpbmt_i,
         .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
@@ -380,8 +388,10 @@ module load_store_unit
     assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
+      assign pmp_icache_areq_i.fetch_pma   = 2'b00;
     end else begin : gen_virtual_physical_address_instruction_plen_greater
       assign pmp_icache_areq_i.fetch_paddr = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr);
+      assign pmp_icache_areq_i.fetch_pma   = 2'b00;
     end
     assign pmp_icache_areq_i.fetch_exception = 'h0;
     // dcache request without mmu for load or store,
@@ -389,6 +399,7 @@ module load_store_unit
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         lsu_paddr <= '0;
+        lsu_pbmt  <= '0;
         pmp_exception <= '0;
         pmp_translation_valid <= 1'b0;
       end else begin
@@ -413,6 +424,7 @@ module load_store_unit
     assign dcache_req_ports_o[0].data_wuser    = '0;
     assign dcache_req_ports_o[0].kill_req      = '0;
     assign dcache_req_ports_o[0].tag_valid     = 1'b0;
+    assign dcache_req_ports_o[0].pma           = 2'b00;
 
     assign itlb_miss_o                         = 1'b0;
     assign dtlb_miss_o                         = 1'b0;
@@ -486,11 +498,13 @@ module load_store_unit
       cva6_mmu_exception               = mmu_exception;
       cva6_dtlb_hit                    = dtlb_hit;
       cva6_dtlb_ppn                    = dtlb_ppn;
+      cva6_lsu_pbmt                    = lsu_pbmt;
       acc_mmu_resp_o.acc_mmu_valid     = '0;
       acc_mmu_resp_o.acc_mmu_paddr     = '0;
       acc_mmu_resp_o.acc_mmu_exception = '0;
       acc_mmu_resp_o.acc_mmu_dtlb_hit  = '0;
       acc_mmu_resp_o.acc_mmu_dtlb_ppn  = '0;
+      acc_mmu_resp_o.acc_mmu_pma       = '0;
       unique case (mmu_state_q)
         CVA6: begin
           // Only the accelerator is requesting, and the lsu bypass queue is empty.
@@ -518,11 +532,13 @@ module load_store_unit
           acc_mmu_resp_o.acc_mmu_exception = mmu_exception;
           acc_mmu_resp_o.acc_mmu_dtlb_hit  = dtlb_hit;
           acc_mmu_resp_o.acc_mmu_dtlb_ppn  = dtlb_ppn;
+          acc_mmu_resp_o.acc_mmu_pma       = lsu_pbmt;
           cva6_translation_valid           = '0;
           cva6_mmu_paddr                   = '0;
           cva6_mmu_exception               = '0;
           cva6_dtlb_hit                    = '0;
           cva6_dtlb_ppn                    = '0;
+          cva6_lsu_pbmt                    = '0;
           // Get back to CVA6 after the translation
           if (translation_valid) mmu_state_d = CVA6;
         end
@@ -548,6 +564,7 @@ module load_store_unit
     assign cva6_mmu_exception     = mmu_exception;
     assign cva6_dtlb_hit          = dtlb_hit;
     assign cva6_dtlb_ppn          = dtlb_ppn;
+    assign cva6_lsu_pbmt          = lsu_pbmt;
     // No accelerator
     assign acc_mmu_resp_o         = '0;
     // Feed forward the lsu_ctrl bypass
@@ -595,6 +612,7 @@ module load_store_unit
       .paddr_i              (cva6_mmu_paddr),
       .ex_i                 (cva6_mmu_exception),
       .dtlb_hit_i           (cva6_dtlb_hit),
+      .dtlb_pbmt_i          (cva6_lsu_pbmt),
       // PUE prot
       .accessed_req_paddr_i (accessed_req_paddr),
       .accessed_req_valid_i (accessed_req_valid),
@@ -657,6 +675,7 @@ module load_store_unit
       .ex_i                 (cva6_mmu_exception),
       .dtlb_hit_i           (cva6_dtlb_hit),
       .dtlb_ppn_i           (cva6_dtlb_ppn),
+      .dtlb_pbmt_i          (cva6_lsu_pbmt),
       // to store unit
       .page_offset_o        (page_offset),
       .page_offset_matches_i(page_offset_matches),

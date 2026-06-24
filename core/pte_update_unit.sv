@@ -1,4 +1,7 @@
-// seongwon
+// Author: Seongwon Jo, KAIST
+// Date: 10.06.2026
+// Description: Hardware-assisted Page Table Entry A/D-bit Update (Svadu extension)
+
 
 module pte_update_unit #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
@@ -7,7 +10,6 @@ module pte_update_unit #(
     input logic clk_i,                                          // Clock
     input logic rst_ni,                                         // Asynchronous reset active low
     input logic pipeline_flush_i,
-
 
     // PTW unit - Accessed-bit Update Request
     input logic [CVA6Cfg.PLEN-1:0] accessed_req_pte_paddr_i,    // PAddr of PTE for Accessed-bit update
@@ -23,7 +25,6 @@ module pte_update_unit #(
     input logic dirty_req_valid_i,                              // Valid for generation of Dirty-bit update
     output logic dirty_queue_full_o,                            // Dirty-queue full
 
-
     // DTLB - synchronization response
     input logic dirty_req_tlb_sync_i,                           // ACK (Valid) for synchronizing DTLB
     input logic dirty_req_tlb_ready_i,                          // Ready from DTLB and STLB for synchronizing DTLB
@@ -38,13 +39,11 @@ module pte_update_unit #(
     input logic commit_valid_i,                                 // Valid for committable dirty-bit update
     input logic [CVA6Cfg.PLEN-1:0] commit_paddr_i,              // PAddr of committable request for committable dirty-bit update
 
-
     // AMO request - CACHES
     input ariane_pkg::amo_resp_t amo_resp_i,                
     // AMO response - CACHES
     output ariane_pkg::amo_req_t amo_req_o
 );
-
 
   typedef struct packed {
     ariane_pkg::amo_t        op;
@@ -61,7 +60,6 @@ module pte_update_unit #(
   typedef struct packed {
     amo_op_t amo_req;
     logic valid;
-
     logic [CVA6Cfg.PLEN-1:0] paddr;
     logic [CVA6Cfg.VLEN-1:0] vaddr;
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
@@ -69,24 +67,18 @@ module pte_update_unit #(
     logic committable;
   } dirty_queue_entry_t;
 
-
-
-
   localparam int PTE_A_BIT = 6;
   localparam int PTE_D_BIT = 7;
   localparam logic [CVA6Cfg.XLEN-1:0] ACCESSED_UPDATE_MASK  = ({{CVA6Cfg.XLEN-1{1'b0}}, 1'b1} << PTE_A_BIT);
   localparam logic [CVA6Cfg.XLEN-1:0] DIRTY_UPDATE_MASK     = ({{CVA6Cfg.XLEN-1{1'b0}}, 1'b1} << PTE_D_BIT);
-
   localparam logic [1:0] PUE_SIZE_MASK = (CVA6Cfg.XLEN == 64) ? 2'b11 : 2'b10;
   
-
   accessed_queue_entry_t [DEPTH-1:0] accessed_queue_d, accessed_queue_q;
   dirty_queue_entry_t    [DEPTH-1:0] dirty_queue_d, dirty_queue_q;
   
   logic [$clog2(DEPTH)-1:0] accessed_queue_read_pointer_d, accessed_queue_read_pointer_q; 
   logic [$clog2(DEPTH)-1:0] accessed_queue_write_pointer_d, accessed_queue_write_pointer_q; 
   logic [$clog2(DEPTH)  :0] accessed_queue_status_d, accessed_queue_status_q;
-
 
   logic [$clog2(DEPTH)-1:0] dirty_queue_read_pointer_d, dirty_queue_read_pointer_q; 
   logic [$clog2(DEPTH)-1:0] dirty_queue_write_pointer_d, dirty_queue_write_pointer_q;
@@ -104,11 +96,10 @@ module pte_update_unit #(
   
   pue_state_t pue_state_d, pue_state_q;
 
-  // PUE QUEUE MANAGEMENT
   always_comb begin  : PUEQueueManagement
     amo_req_o   = '0;
     pue_state_d = pue_state_q;
-    // Enqueue process 
+
     accessed_queue_d               = accessed_queue_q;
     dirty_queue_d                  = dirty_queue_q;
 
@@ -123,7 +114,6 @@ module pte_update_unit #(
     dirty_queue_commit_pointer_d = dirty_queue_commit_pointer_q;
     dirty_queue_commit_status_d  = dirty_queue_commit_status_q;
 
-    // DTLB-side
     dirty_req_tlb_sync_o = 1'b0;
     dirty_req_tlb_vaddr_o = '0;
     dirty_req_tlb_vmid_o = '0;
@@ -161,6 +151,7 @@ module pte_update_unit #(
     if(commit_valid_i) begin
         if(dirty_queue_q[dirty_queue_commit_pointer_d].paddr == commit_paddr_i) begin
             dirty_queue_d[dirty_queue_commit_pointer_d].committable = 1;
+
             dirty_queue_commit_pointer_d++;
             dirty_queue_commit_status_d++;
         end
@@ -170,6 +161,7 @@ module pte_update_unit #(
         for (int unsigned i = 0; i < DEPTH; i++) begin
             if(dirty_queue_q[i].valid && !dirty_queue_q[i].committable) begin
                 dirty_queue_d[i].valid = 1'b0;
+
                 dirty_queue_entry_status_d--;
             end
         end
@@ -213,6 +205,7 @@ module pte_update_unit #(
                 amo_req_o.size      = dirty_queue_q[dirty_queue_read_pointer_d].amo_req.size;
                 amo_req_o.operand_a = {{64 - CVA6Cfg.PLEN{1'b0}}, dirty_queue_q[dirty_queue_read_pointer_d].amo_req.pte_paddr};
                 amo_req_o.operand_b = {{64 - CVA6Cfg.PLEN{1'b0}}, dirty_queue_q[dirty_queue_read_pointer_d].amo_req.data};
+                amo_req_o.pma       = 2'b00; // follow the PMA of the page-table entry
 
                 if(amo_resp_i.ack) begin
                     dirty_queue_d[dirty_queue_read_pointer_d].valid = 1'b0;
@@ -223,7 +216,6 @@ module pte_update_unit #(
                     dirty_queue_commit_status_d--;   
                     
                     pue_state_d = IDLE;       
-
                 end else begin
                     pue_state_d = D_BIT_AMO_SEND;
                 end
@@ -238,10 +230,14 @@ module pte_update_unit #(
                 amo_req_o.size = accessed_queue_q[accessed_queue_read_pointer_d].amo_req.size;
                 amo_req_o.operand_a = {{64 - CVA6Cfg.PLEN{1'b0}}, accessed_queue_q[accessed_queue_read_pointer_d].amo_req.pte_paddr};
                 amo_req_o.operand_b = {{64 - CVA6Cfg.PLEN{1'b0}}, accessed_queue_q[accessed_queue_read_pointer_d].amo_req.data};
+                amo_req_o.pma       = 2'b00; // follow the PMA of the page-table entry
+                
                 if(amo_resp_i.ack) begin
                     accessed_queue_d[accessed_queue_read_pointer_d].valid = 1'b0;
+                    
                     accessed_queue_read_pointer_d++;
                     accessed_queue_status_d--;
+                    
                     pue_state_d = IDLE;
                 end else begin
                     pue_state_d = A_BIT_AMO_SEND;
@@ -254,14 +250,11 @@ module pte_update_unit #(
   end
 
   always_ff@(posedge clk_i or negedge rst_ni) begin
-    
-
     if(!rst_ni) begin
         for(int i = 0; i < DEPTH; i++) begin
             accessed_queue_q[i] <= '0;
             dirty_queue_q[i]    <= '0;
         end
-
         accessed_queue_read_pointer_q   <= 0;
         accessed_queue_write_pointer_q  <= 0;
         accessed_queue_status_q         <= 0;
@@ -290,39 +283,6 @@ module pte_update_unit #(
         dirty_queue_commit_status_q     <= dirty_queue_commit_status_d;
                 
         pue_state_q                     <= pue_state_d;
-
-        if(dirty_req_valid_i && !dirty_queue_full_o) begin
-            $display("[%0t] [PUE] DIRTY-QUEUE ENQUEUE | PTE-PAddr : %h | REQ-PAddr : %h | REQ-VAddr : %h | (ASID, VMID : %d, %d)", $time, dirty_req_pte_paddr_i,
-                                dirty_req_paddr_i, dirty_req_vaddr_i, dirty_req_asid_i, dirty_req_vmid_i);
-        end
-        if(accessed_req_valid_i && !accessed_queue_full_o) begin
-            $display("[%0t] [PUE] ACCESSED-QUEUE ENQUEUE | PTE-PAddr : %h", $time, accessed_req_pte_paddr_i);
-        end
-        if(commit_valid_i) begin
-            if(dirty_queue_q[dirty_queue_commit_pointer_q].paddr == commit_paddr_i) begin
-                 $display("[%0t] [PUE] DIRTY-QUEUE COMMIT | Commit-Pointer: %d | PAddr : %h", $time,dirty_queue_commit_pointer_q,  commit_paddr_i);
-            end
-        end
-        if(pue_state_q == IDLE) begin
-            if(dirty_queue_entry_status_q != 0 && dirty_queue_commit_status_q != 0) begin
-                $display("[%0t] [PUE] IDLE -> D_BIT_TLB_SYNC | Dirty-status: %d | Commit-status: %d", $time, dirty_queue_entry_status_q, dirty_queue_commit_status_q);
-            end
-            else if((accessed_queue_status_q != 0)) begin
-                $display("[%0t] [PUE] IDLE -> A_BIT_AMO_SEND | Access-status: %d", $time, accessed_queue_status_q);
-            end    
-        end
-        if(pue_state_q == D_BIT_TLB_SYNC) begin
-            if(dirty_req_tlb_sync_i) begin
-                $display("[%0t] [PUE] D_BIT_TLB_SYNC -> D_BIT_AMO_SEND", $time);
-            end 
-        end
-        if(pue_state_q == A_BIT_AMO_SEND) begin
-            if(amo_resp_i.ack) $display("[%0t] [PUE] A_BIT_AMO_SEND -> IDLE | PTE-PAddr: %h ", $time, accessed_queue_q[accessed_queue_read_pointer_q].amo_req.pte_paddr);
-        end
-        if(pue_state_q == D_BIT_AMO_SEND) begin
-            if(amo_resp_i.ack) $display("[%0t] [PUE] D_BIT_AMO_SEND -> IDLE | PTE-PAddr: %h | REQ-PAddr: %h | REQ-VAddr: %h",$time,  dirty_queue_q[dirty_queue_read_pointer_q].amo_req.pte_paddr,
-                         dirty_queue_q[dirty_queue_read_pointer_q].paddr,  dirty_queue_q[dirty_queue_read_pointer_q].vaddr);
-        end
     end
   end
 
@@ -330,18 +290,13 @@ module pte_update_unit #(
   assign accessed_queue_full_o = (accessed_queue_status_q == DEPTH);
 
 // Sanity check 
-  // Accessed Queue Enqueue Check
   AccessedBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (accessed_req_valid_i && !accessed_queue_full_o) |-> !accessed_queue_q[accessed_queue_write_pointer_q].valid
     ) else $fatal(0, "pte_update_unit.sv : Accessed-bit Enqueue Overwrite Error!");
 
-    // Dirty Queue Enqueue Check 
   DirtyBit_Enqueue_Error : assert property (
         @(posedge clk_i) disable iff (!rst_ni || pipeline_flush_i)
         (dirty_req_valid_i && !dirty_queue_full_o) |-> !dirty_queue_q[dirty_queue_write_pointer_q].valid
     ) else $fatal(0, "pte_update_unit.sv : Dirty-bit Enqueue Overwrite Error!");
-
-    //
-
 endmodule

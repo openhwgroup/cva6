@@ -75,6 +75,8 @@ module store_unit
     input exception_t ex_i,
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
+    // Physical memory attributes - MMU
+    input logic dtlb_pbmt_i,
     // Physical address of PTE for A-bit - MMU
     input logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_i,
     // PTE A-bit update valid - MMU
@@ -213,7 +215,7 @@ module store_unit
             pop_st_o = 1'b0;
           end
 
-          if (!st_ready) begin
+          if (!st_ready || (CVA6Cfg.SvaduEn && dirty_bit_fault_valid_i && dirty_queue_full_o)) begin
             state_d  = WAIT_STORE_READY;
             pop_st_o = 1'b0;
           end
@@ -225,7 +227,7 @@ module store_unit
         // post this store to the store buffer if we are not flushing
         if (!flush_i) begin
           st_valid = 1'b1;
-          if (dirty_bit_fault_q && CVA6Cfg.SvaduEn && !dirty_queue_full_o) begin
+          if (CVA6Cfg.SvaduEn && dirty_bit_fault_q && !dirty_queue_full_o) begin
             dirty_bit_fault_d = 1'b0;
             dirty_req_valid = 1'b1;
           end
@@ -250,7 +252,7 @@ module store_unit
             pop_st_o = 1'b0;
           end
 
-          if (CVA6Cfg.SvaduEn && dirty_queue_full_o) begin
+          if (CVA6Cfg.SvaduEn && dirty_queue_full_o && dirty_bit_fault_valid_i) begin
             state_d = WAIT_STORE_READY;
             pop_st_o = 1'b0;
           end
@@ -406,6 +408,7 @@ module store_unit
       .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .data_i               (st_data_q),
       .cbo_op_i             (cbo_op_q),
+      .st_pbmt_i            (dtlb_pbmt_i),
       .be_i                 (st_be_q),
       .data_size_i          (st_data_size_q),
       .pue_commit_valid_o   (store_buffer_pue_commit),
@@ -427,6 +430,7 @@ module store_unit
         .amo_op_i          (amo_op_q),
         .data_i            (st_data_q),
         .data_size_i       (st_data_size_q),
+        .amo_pbmt_i        (dtlb_pbmt_i),
         .amo_req_o         (amo_req_o),
         .amo_resp_i        (amo_resp_i),
         .pue_commit_valid_o(amo_buffer_pue_commit),
@@ -456,6 +460,7 @@ module store_unit
           .amo_op_i          (amo_op_q),
           .data_i            (st_data_q),
           .data_size_i       (st_data_size_q),
+          .amo_pbmt_i        (dtlb_pbmt_i),
           .amo_req_o         (shared_amo_req_o[0]),
           .amo_resp_i        (shared_amo_resp_i[0]),
           .pue_commit_valid_o(amo_buffer_pue_commit),

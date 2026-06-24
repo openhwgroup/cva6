@@ -211,6 +211,10 @@ module ex_stage
     input logic madue_i,
     // hypervisor-mode hardware-supported A/D-bit update - CSR_REGFILE
     input logic hadue_i,
+    // machine-mode page-based memory attributes - CSR_REGFILE
+    input logic mpbmt_i,
+    // hypervisor-mode page-based memory attributes - CSR_REGFILE
+    input logic hpbmt_i,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic [CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - CSR_REGFILE
@@ -597,6 +601,8 @@ module ex_stage
       .vmxr_i,
       .madue_i,
       .hadue_i,
+      .mpbmt_i,
+      .hpbmt_i,
       .satp_ppn_i,
       .vsatp_ppn_i,
       .hgatp_ppn_i,

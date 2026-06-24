@@ -86,6 +86,8 @@ module cva6_ptw
     input logic                    vmxr_i,
     input logic                    madue_i,
     input logic                    hadue_i,
+    input logic                    mpbmt_i,
+    input logic                    hpbmt_i,
     input logic                    mbe_i,
 
     // Performance counters
@@ -159,8 +161,10 @@ module cva6_ptw
   // 4 byte aligned physical pointer
   logic [CVA6Cfg.PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
   logic [CVA6Cfg.PLEN-1:0] gptw_pptr_q, gptw_pptr_n;
+  // memory attributes for page table walk
 
   logic access_full_q, access_full_n;
+  logic [1:0] pbmt_attr_q, pbmt_attr_n;
 
   // Assignments
   assign update_vaddr_o = vaddr_q;
@@ -170,6 +174,7 @@ module cva6_ptw
   // directly output the correct physical address
   assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
+  assign req_port_o.pma           = 2'b00;  // follow the PMA of the page-table entry
   // we are never going to write with the HPTW
   assign req_port_o.data_wdata = '0;
   // we only issue one single request at a time
@@ -335,6 +340,8 @@ module cva6_ptw
     accessed_req_paddr_o = '0;
     access_full_n = access_full_q;
 
+    pbmt_attr_n = pbmt_attr_q;
+
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;
       gptw_pptr_n = gptw_pptr_q;
@@ -352,6 +359,8 @@ module cva6_ptw
         ptw_lvl_n        = '0;
         global_mapping_n = 1'b0;
         is_instr_ptw_n   = 1'b0;
+
+        pbmt_attr_n      = 2'b00;
 
 
         if (CVA6Cfg.RVH) begin
@@ -467,17 +476,43 @@ module cva6_ptw
                 case (ptw_stage_q)
                   S_STAGE: begin
                     if ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i)) begin
-                      state_d = WAIT_GRANT;
-                      ptw_stage_d = G_FINAL_STAGE;
-                      if (CVA6Cfg.RVH) gpte_d = pte;
-                      ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
-                      gpaddr_n = gpaddr[ptw_lvl_q[0]];
-                      ptw_pptr_n = {
-                        hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
-                        gpaddr[ptw_lvl_q[0]][CVA6Cfg.GPLEN-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
-                        (CVA6Cfg.PtLevels)'(0)
-                      };
-                      ptw_lvl_n[0] = '0;
+                      if (CVA6Cfg.SvpbmtEn) begin
+                        if ((hpbmt_i && (pte.pbmt == 2'b11)) || (!hpbmt_i && (pte.pbmt != 2'b00))) begin 
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                        end else begin
+                          state_d = WAIT_GRANT;
+                          ptw_stage_d = G_FINAL_STAGE;
+                          if (CVA6Cfg.RVH) gpte_d = pte;
+                          ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
+                          gpaddr_n = gpaddr[ptw_lvl_q[0]];
+                          ptw_pptr_n = {
+                            hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
+                            gpaddr[ptw_lvl_q[0]][CVA6Cfg.GPLEN-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+                            (CVA6Cfg.PtLevels)'(0)
+                          };
+                          ptw_lvl_n[0] = '0;
+
+                          if(pte.pbmt != 2'b00) pbmt_attr_n = pte.pbmt;
+                        end
+                      end else begin
+                        if (pte.pbmt != 2'b00) begin
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                        end else begin
+                          state_d = WAIT_GRANT;
+                          ptw_stage_d = G_FINAL_STAGE;
+                          if (CVA6Cfg.RVH) gpte_d = pte;
+                          ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
+                          gpaddr_n = gpaddr[ptw_lvl_q[0]];
+                          ptw_pptr_n = {
+                            hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
+                            gpaddr[ptw_lvl_q[0]][CVA6Cfg.GPLEN-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+                            (CVA6Cfg.PtLevels)'(0)
+                          };
+                          ptw_lvl_n[0] = '0;
+                        end
+                      end
                     end
                   end
                   G_INTERMED_STAGE: begin
@@ -516,15 +551,47 @@ module cva6_ptw
                       accessed_req_paddr_o = ptw_pptr_q;
                     end
                     if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
-                      shared_tlb_update_valid = 1'b1;
+                      if (CVA6Cfg.SvpbmtEn) begin
+                        if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                        end else begin
+                          shared_tlb_update_valid = 1'b1;
+                          if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
+                          
+                        end
+                      end else begin
+                        if (pte.pbmt != 2'b00) begin
+                          state_d = PROPAGATE_ERROR;
+                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                        end else begin
+                          shared_tlb_update_valid = 1'b1;
+                        end
+                      end
                     end
                   end else begin
                     state_d = PROPAGATE_ERROR;
-                    if (CVA6Cfg.RVH)  ptw_stage_d = ptw_stage_q;   
+                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                   end
                 end else begin
                   if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
-                    shared_tlb_update_valid = 1'b1;
+                    if (CVA6Cfg.SvpbmtEn) begin
+                      if((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                        state_d = PROPAGATE_ERROR;
+                        if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                      end else begin
+                        shared_tlb_update_valid = 1'b1;
+                        if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
+                      end
+                    end else begin
+                       if (pte.pbmt != 2'b00) begin
+                        state_d = PROPAGATE_ERROR;
+                        if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                       end
+                       else begin 
+                        shared_tlb_update_valid = 1'b1;
+                       end
+                    end
                   end
                 end
               end else begin
@@ -553,13 +620,13 @@ module cva6_ptw
                       end
                     end else if(lsu_is_store_i && !pte.w) begin
                       state_d = PROPAGATE_ERROR;
-                      if(CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                      if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                     end else begin
                       if ((!pte.a) || (lsu_is_store_i && !pte.d)) begin
                         if ((ptw_stage_q == S_STAGE && !en_ld_st_g_translation_i && madue_i) || 
                             (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
                             (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && en_ld_st_g_translation_i && hadue_i)) begin
-                          if(!pte.a) begin
+                          if (!pte.a) begin
                             if(accessed_queue_full_i) begin
                               access_full_n = 1'b1;
                             end else begin
@@ -568,7 +635,23 @@ module cva6_ptw
                             end
                           end
                           if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
-                            shared_tlb_update_valid = 1'b1;
+                            if (CVA6Cfg.SvpbmtEn) begin
+                              if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                                state_d = PROPAGATE_ERROR;
+                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                              end else begin
+                                shared_tlb_update_valid = 1'b1;
+                                if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
+                              end
+                            end else begin
+                              if (pte.pbmt != 2'b00) begin
+                                state_d = PROPAGATE_ERROR;
+                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                              end
+                              else begin
+                                 shared_tlb_update_valid = 1'b1;
+                              end
+                            end
                           end
                         end else begin
                           state_d = PROPAGATE_ERROR;
@@ -576,7 +659,22 @@ module cva6_ptw
                         end
                       end else begin
                           if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
-                            shared_tlb_update_valid = 1'b1;
+                            if (CVA6Cfg.SvpbmtEn) begin
+                              if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                                state_d = PROPAGATE_ERROR;
+                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;   
+                              end else begin
+                                shared_tlb_update_valid = 1'b1;
+                                if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
+                              end
+                            end else begin
+                              if (pte.pbmt != 2'b00) begin
+                                state_d = PROPAGATE_ERROR;
+                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                              end else begin
+                                 shared_tlb_update_valid = 1'b1;
+                              end
+                            end
                           end
                       end
                     end 
@@ -663,6 +761,12 @@ module cva6_ptw
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = ptw_stage_q;
                 end
+              end
+              
+              // check if 62:61 (pbmt) are all zeros in PTE
+              if (pte.pbmt != 2'b00) begin
+                state_d = PROPAGATE_ERROR;
+                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
               end
             end
           end
@@ -753,7 +857,8 @@ module cva6_ptw
       global_mapping_q  <= 1'b0;
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
-      access_full_q   <= 1'b0;
+      access_full_q     <= 1'b0;
+      pbmt_attr_q       <= '0;
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= '0;
         gptw_pptr_q       <= '0;
@@ -774,7 +879,8 @@ module cva6_ptw
       //data_rdata_q      <= req_port_i.data_rdata;
       data_rdata_q      <= endian_data;
       data_rvalid_q     <= req_port_i.data_rvalid;
-      access_full_q   <= access_full_n;
+      access_full_q     <= access_full_n;
+      pbmt_attr_q       <= pbmt_attr_n;
 
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= gpaddr_n;

@@ -54,6 +54,7 @@ module cva6
     localparam type icache_areq_t = struct packed {
       logic                    fetch_valid;      // address translation valid
       logic [CVA6Cfg.PLEN-1:0] fetch_paddr;      // physical address in
+      logic [1:0]              fetch_pma;
       exception_t              fetch_exception;  // exception occurred during fetch
     },
     localparam type icache_arsp_t = struct packed {
@@ -185,6 +186,7 @@ module cva6
       logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // thread id (used as transaction id in Ariane)
+      logic pma; // seongwon fix
     },
     localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
@@ -213,6 +215,7 @@ module cva6
       logic                                  kill_req;
       logic                                  tag_valid;
       cbo_t                                  cbo_op;
+      logic [1:0]                            pma;
     },
 
     localparam type dcache_req_o_t = struct packed {
@@ -573,6 +576,8 @@ module cva6
   logic vmxr_csr_ex;
   logic madue_csr_ex;
   logic hadue_csr_ex;
+  logic mpbmt_csr_ex;
+  logic hpbmt_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] satp_ppn_csr_ex;
   logic [CVA6Cfg.ASID_WIDTH-1:0] asid_csr_ex;
   logic [CVA6Cfg.PPNW-1:0] vsatp_ppn_csr_ex;
@@ -1093,6 +1098,8 @@ module cva6
       .vmxr_i                  (vmxr_csr_ex),                    // from CSR
       .madue_i                 (madue_csr_ex),                   // from CSR
       .hadue_i                 (hadue_csr_ex),                   // from CSR
+      .mpbmt_i                 (mpbmt_csr_ex),                   // from CSR  
+      .hpbmt_i                 (hpbmt_csr_ex),                   // from CSR
       .satp_ppn_i              (satp_ppn_csr_ex),                // from CSR
       .asid_i                  (asid_csr_ex),                    // from CSR
       .vsatp_ppn_i             (vsatp_ppn_csr_ex),               // from CSR
@@ -1223,8 +1230,10 @@ module cva6
       .vs_sum_o                (vs_sum_csr_ex),
       .mxr_o                   (mxr_csr_ex),
       .vmxr_o                  (vmxr_csr_ex),
-      .menvcfg_adue_o          (madue_csr_ex),
-      .henvcfg_adue_o          (hadue_csr_ex),
+      .madue_o                 (madue_csr_ex),
+      .hadue_o                 (hadue_csr_ex),
+      .mpbmt_o                 (mpbmt_csr_ex),
+      .hpbmt_o                 (hpbmt_csr_ex),
       .satp_ppn_o              (satp_ppn_csr_ex),
       .asid_o                  (asid_csr_ex),
       .vsatp_ppn_o             (vsatp_ppn_csr_ex),

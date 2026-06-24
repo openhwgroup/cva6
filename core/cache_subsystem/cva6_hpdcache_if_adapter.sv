@@ -105,8 +105,8 @@ module cva6_hpdcache_if_adapter
 
       assign hpdcache_req_abort_o = cva6_req_i.kill_req;
       assign hpdcache_req_tag_o = cva6_req_i.address_tag;
-      assign hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable;
-      assign hpdcache_req_pma_o.io = 1'b0;
+      assign hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable | (CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01));
+      assign hpdcache_req_pma_o.io = CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b10);
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
       //    Response forwarding
@@ -115,6 +115,12 @@ module cva6_hpdcache_if_adapter
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
       assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
 
+
+      always_ff @(posedge clk_i) begin
+        if(hpdcache_req_valid_o) begin
+          $display("[%0t] load HPDACAHCE pma : %b", $time, hpdcache_req_pma_o);
+        end
+      end
       //  Assertions
       //  {{{
       //    pragma translate_off
@@ -137,6 +143,7 @@ module cva6_hpdcache_if_adapter
       hpdcache_pkg::hpdcache_req_op_t        amo_op;
       logic                           [31:0] amo_resp_word;
       logic                                  amo_pending_q;
+      logic                           [1:0]  amo_pma;
 
       hpdcache_req_t                         hpdcache_req_amo;
       hpdcache_req_t                         hpdcache_req_store;
@@ -209,6 +216,7 @@ module cva6_hpdcache_if_adapter
         amo_addr = cva6_amo_req_i.operand_a;
         amo_addr_offset = amo_addr[0+:HPDcacheCfg.reqOffsetWidth];
         amo_tag = amo_addr[HPDcacheCfg.reqOffsetWidth+:HPDcacheCfg.tagWidth];
+        amo_pma = cva6_amo_req_i.pma;
         unique case (cva6_amo_req_i.amo_op)
           ariane_pkg::AMO_LR:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_LR;
           ariane_pkg::AMO_SC:   amo_op = hpdcache_pkg::HPDCACHE_REQ_AMO_SC;
@@ -259,8 +267,9 @@ module cva6_hpdcache_if_adapter
               phys_indexed: 1'b1,
               addr_tag: amo_tag,
               pma: '{
-                  uncacheable: hpdcache_req_is_uncacheable,
-                  io: 1'b0,
+                  uncacheable: hpdcache_req_is_uncacheable |
+                                (CVA6Cfg.SvpbmtEn && (amo_pma == 2'b01)),
+                  io: CVA6Cfg.SvpbmtEn && (amo_pma == 2'b10),
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }
           };
@@ -280,8 +289,9 @@ module cva6_hpdcache_if_adapter
               phys_indexed: 1'b1,
               addr_tag: cva6_req_i.address_tag,
               pma: '{
-                  uncacheable: hpdcache_req_is_uncacheable,
-                  io: 1'b0,
+                  uncacheable: hpdcache_req_is_uncacheable |
+                                (CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01)),
+                  io: CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b10),
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }
           };
