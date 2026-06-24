@@ -694,6 +694,7 @@ package ariane_pkg;
     logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
     logic [63:0] operand_a;  // address
     logic [63:0] operand_b;  // data as layouted in the register
+    logic [1:0]  pma;       //  physical memory attributes
   } amo_req_t;
 
   // AMO response coming from cache.
