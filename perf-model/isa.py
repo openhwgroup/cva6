@@ -385,8 +385,8 @@ class CBtype:
                 | (((i >> 3) & 3) << 1) \
                 | (((i >> 2) & 1) << 5)
             , 8)
-        if base in CBtype.regimm:
-            if base == 'C.ANDI':
+        else:
+            if (instr.bin >> 10) & 3 == 2:
                 self.shamt = sign_ext(CItype.imm(i), 5)
             else:
                 self.shamt = CItype.imm(i)
@@ -470,7 +470,7 @@ class Instr:
         'C.ADDIW': CItype,
         'C.ADDI4SPN': CIWtype,
         'C.SLLI': CItype,
-        'MISC-ALU': CAtype,
+        'MISC-ALU': lambda instr: CAtype(instr) if (instr.bin >> 10) & 3 == 3 else CBtype(instr),
     }
     iloads = ['C.LW', 'C.LWSP', 'LOAD']
     floads = ['C.FLD', 'C.FLW', 'C.FLDSP', 'C.FLWSP', 'LOAD-FP']
@@ -534,7 +534,10 @@ class Instr:
 
     def is_muldiv(self):
         """Is it a muldiv instruction?"""
-        return self.base() in ['OP', 'OP-32'] and self.fields().funct7 == 1
+        if self.base() not in ['OP', 'OP-32']:
+            return False
+        f = self.fields()
+        return f.funct7 == 1 or (f.funct7 == 5 and f.funct3 in [1, 3])
 
     def offset(self):
         """Get offset from instr (sometimes it is just 'imm' in RISCV spec)"""

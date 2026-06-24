@@ -260,7 +260,7 @@ Fu = Enum('Fu', ['ALU', 'MUL', 'BRANCH', 'LDU', 'STU'])
 # This way we do not have more write-back ports than currently with F
 
 def to_fu(instr):
-    if instr.is_branch() or instr.is_regjump():
+    if instr.is_branch() or instr.is_jump() or instr.is_regjump():
         return Fu.BRANCH
     if instr.is_muldiv():
         return Fu.MUL

@@ -11,15 +11,17 @@ Drop a comment in your pull request so we know about your problem and we do not 
 
 Contributors are encouraged, but not required, to be a [member](https://openhwfoundation.org/membership/become-a-member/) of the OpenHW Foundation, part of the Eclipse Foundation.
 
-## Read this before
+## Read this first
 
 ### Major evolutions
 
 CVA6 has turned into an industrial project, where the core is being verified to be integrated in production ICs.
-In the same time, we'd like to continue integrating some new contributions to keep CVA6 a vivid and innovative ecosystem.
-But this comes with constraints to ensure that new contributions do not put the industrial project at risk.
+At the same time, we'd like to continue integrating some new contributions to keep CVA6 a vivid and innovative ecosystem.
+This comes with constraints to ensure that new contributions do not put the industrial project at risk.
 
-Therefore here are guidelines to help the CVA6 team accept new contributions:
+Past experience indicates that a workplan shared early with the CVA6 project team and regular synchronization improves the project's ability to integrate major contributions.
+Early discussions with the CVA6 team will help us to develop a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
+Here are some guidelines to help the CVA6 team accept new contributions of major features:
 
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
     * The CVA6 team wants to assess the potential of your contribution.
@@ -36,6 +38,7 @@ Therefore here are guidelines to help the CVA6 team accept new contributions:
         - so that projects already using CVA6 are not impacted (no functionality change, no extra silicon...).
     * To configure your contribution, System Verilog top-level parameters are strongly advised.
         - Conditional compiler directives such as <code>`ifdef</code>, etc. are strongly discouraged.
+        - Please review our wiki on the topic of [Configuring SystemVerilog RTL Models](https://github.com/openhwgroup/cva6/wiki/Configuring-SystemVerilog-RTL-Models), in particular the [CVA6 use case](https://github.com/openhwgroup/cva6/wiki/Configuring-SystemVerilog-RTL-Models#use-case-the-openhw-foundation-cva6).
         - Synchronize with CVA6 team if you do not find an appropriate solution.
     * Commit to maintain your contribution 2 years after the pull request
         - We know it's not always possible, so refer to the next rule.
@@ -67,7 +70,9 @@ If you encounter difficulties with these guidelines, get in touch with the team!
 
 ### Bug fixing
 
-Bug fixing is always welcome. You can issue a GitHub issue. Better: solve the bug and trigger a pull request.
+Bug fixing is always welcome. You can open a GitHub issue.
+Better: in addition to the issue, solve the bug and trigger a pull request.
+Ideally, your pull request will include a testcase that illustrates the bug.
 
 ### Use of AI
 
