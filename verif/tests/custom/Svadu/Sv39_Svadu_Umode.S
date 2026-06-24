@@ -126,11 +126,6 @@ RVTEST_CODE_BEGIN
     /* Virtual address used to map the test code itself */
     .set va_rvtest_code_begin,  0x80000000
     
-    /* ============================================================
-     * Map the test code region as an executable supervisor page.
-     * A and D are already set so instruction fetch from the test code
-     * does not participate in the Svadu A/D-bit update check.
-     * ============================================================ */
     SUPERPAGE_PTE_SETUP_SV39(rvtest_code_begin, (PTE_D | PTE_A | PTE_U | PTE_X | PTE_R | PTE_V), va_rvtest_code_begin, LEVEL2)
 
     // ================================================ Sv39 & Svadu SETUP ============================================== //

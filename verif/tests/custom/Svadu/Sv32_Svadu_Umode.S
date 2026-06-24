@@ -21,7 +21,7 @@
  *   1. Clear MPP field in mstatus
  *   2. Set MPP = 00 (User mode)
  *   3. Set mepc to "rwax_test" entry point
- *   4. Execute mret to enter S-mode
+ *   4. Execute mret to enter U-mode
  *
  *  Result:
  *    - CPU transitions from M-mode -> U-mode

@@ -62,7 +62,7 @@
     LI( a0, ((\VA_W >> VA_SHIFT) << VA_SHIFT))
     LI( a1, ((\VA_R >> VA_SHIFT) << VA_SHIFT))
     LI( a5, ((\VA_X >> VA_SHIFT) << VA_SHIFT))
-    LI( a7, ((\VA_X >> VA_SHIFT) << VA_SHIFT))
+    LI( a7, ((\VA_A >> VA_SHIFT) << VA_SHIFT))
 
 
     /* Extract the page offset of rvtest_data within the selected page size */

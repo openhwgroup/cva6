@@ -5,11 +5,6 @@
 #define sv32 0x00
 #define sv39 0x01
 
-
-
-
-
-
 #define INIT_SIGNATURE(SIG_LBL) ;\
     LA x2, SIG_LBL
 
@@ -102,9 +97,6 @@
     csrw pmpcfg0, t0
 
 
-
-
-
 #define PTE_SETUP_SV32(PA_LBL, PERMS, VA, level)            ;\
     LA(a0, PA_LBL)                                          ;\
     LI(a1, PERMS)                                           ;\
@@ -132,38 +124,6 @@
     slli a0, a0, PA_SHIFT                                       ;\
     LI(a1, PERMS)                                               ;\
     PTE_SETUP_RV64(a0, a1, t0, t1, VA, PTE_LEVEL, sv39)         ;
-
-#define ENTER_SMODE(TEST_LBL)         ;\
-    csrr t0, mstatus                  ;\
-    li   t1, ~(3 << 11)               ;\
-    and  t0, t0, t1                   ;\
-    li   t1, (1 << 11)                ;\
-    or   t0, t0, t1                   ;\
-    csrw mstatus, t0                  ;\
-    LA   t0, TEST_LBL                 ;\
-    csrw mepc, t0                     ;\
-    mret
-
-#define ENTER_UMODE(TEST_LBL)         ;\
-    csrr t0, mstatus                  ;\
-    li   t1, ~(3 << 11)               ;\
-    and  t0, t0, t1                   ;\
-    csrw mstatus, t0                  ;\
-    LA   t0, TEST_LBL                 ;\
-    csrw mepc, t0                     ;\
-    mret
-
-#define RETURN_TO_MMODE(RETURN_LBL)   ;\
-    LA   t0, RETURN_LBL               ;\
-    csrw mepc, t0                     ;\
-    csrr t0, mstatus                  ;\
-    li   t1, ~(3 << 11)               ;\
-    and  t0, t0, t1                   ;\
-    li   t1, (3 << 11)                ;\
-    or   t0, t0, t1                   ;\
-    csrw mstatus, t0                  ;\
-    mret
-
 
 
 #if XLEN == 64
@@ -195,6 +155,7 @@
     add   t0, t0, t1                                    ;\
     lw    REG, 0(t0)                                    
 #endif
+
 
 #define SIG_UPDATE_PTE(VA_R, VA_W, VA_X, VA_A, PTE_LEVEL)   ;\
     READ_PTE(a4, (VA_R), (PTE_LEVEL))                 ;\
