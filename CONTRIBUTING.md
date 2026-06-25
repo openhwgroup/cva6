@@ -16,10 +16,12 @@ Contributors are encouraged, but not required, to be a [member](https://openhwfo
 ### Major evolutions
 
 CVA6 has turned into an industrial project, where the core is being verified to be integrated in production ICs.
-In the same time, we'd like to continue integrating some new contributions to keep CVA6 a vivid and innovative ecosystem.
-But this comes with constraints to ensure that new contributions do not put the industrial project at risk.
+At the same time, we'd like to continue integrating some new contributions to keep CVA6 a vivid and innovative ecosystem.
+This comes with constraints to ensure that new contributions do not put the industrial project at risk.
 
-Therefore here are guidelines to help the CVA6 team accept new contributions:
+Past experience indicates that a workplan shared early with the CVA6 project team and regular synchronization improves the project's ability to integrate major contributions.
+Early discussions with the CVA6 team will help us to develop a strategy to integrate your contribution onto a specific development branch, with the goal of upstreaming to the master branch.
+Here are some guidelines to help the CVA6 team accept new contributions of major features:
 
 - Get in touch early with the CVA6 team, present your initiative, get feedback, synchronize with the team...
     * The CVA6 team wants to assess the potential of your contribution.
@@ -68,7 +70,9 @@ If you encounter difficulties with these guidelines, get in touch with the team!
 
 ### Bug fixing
 
-Bug fixing is always welcome. You can issue a GitHub issue. Better: solve the bug and trigger a pull request.
+Bug fixing is always welcome. You can open a GitHub issue.
+Better: in addition to the issue, solve the bug and trigger a pull request.
+Ideally, your pull request will include a testcase that illustrates the bug.
 
 ### Use of AI
 

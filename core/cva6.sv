@@ -689,8 +689,9 @@ module cva6
       .clk_i,
       .rst_ni,
       .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .flush_bp_i         (1'b0),
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
+      .flush_bp_i         ((CVA6Cfg.RVU || CVA6Cfg.RVS) ? flush_ctrl_bp : 1'b0),
+      // below line is not entirely correct
+      .flush_i            (flush_ctrl_if),
       .halt_i             (halt_ctrl),
       .halt_frontend_i    (halt_frontend),
       .set_pc_commit_i    (set_pc_ctrl_pcgen),
@@ -1466,9 +1467,7 @@ module cva6
         .axi_b_chan_t (b_chan_t),
         .axi_r_chan_t (r_chan_t),
         .noc_req_t (noc_req_t),
-        .noc_resp_t(noc_resp_t),
-        .cmo_req_t (logic  /*FIXME*/),
-        .cmo_rsp_t (logic  /*FIXME*/)
+        .noc_resp_t(noc_resp_t)
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
@@ -1488,9 +1487,6 @@ module cva6
 
         .dcache_amo_req_i (amo_req),
         .dcache_amo_resp_o(amo_resp),
-
-        .dcache_cmo_req_i ('0  /*FIXME*/),
-        .dcache_cmo_resp_o(  /*FIXME*/),
 
         .dcache_req_ports_i(dcache_req_to_cache),
         .dcache_req_ports_o(dcache_req_from_cache),
