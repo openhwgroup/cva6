@@ -68,6 +68,8 @@ module cva6_shared_tlb #(
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
 
+    output logic flush_busy_o,
+
     output logic                    shared_tlb_access_o,
     output logic                    shared_tlb_hit_o,
     output logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_o,
@@ -718,6 +720,7 @@ module cva6_shared_tlb #(
   assign flush_asid_is0 = ~(|flush_asid_q);
   assign flush_vaddr_is0 = ~(|flush_vaddr_q);
   assign flush_last_set = (flush_idx_q == CVA6Cfg.SharedTlbDepth - 1);
+  assign flush_busy_o = (CVA6Cfg.UseSharedTlb) && (flush_state_q != IDLE);
 
   assign shared_tag_wr.is_napot_64k = shared_tlb_update_i.is_napot_64k;  // Svnapot: Propagate the NAPOT flag from the update packet into the tag structure to be stored
   genvar z_gen;
