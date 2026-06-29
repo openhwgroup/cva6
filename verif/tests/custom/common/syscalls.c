@@ -192,7 +192,7 @@ int putchar(int ch)
 
   buf[buflen++] = ch;
 
-  if (ch == '\n' || ch == ' ' || buflen == sizeof(buf))
+  if (ch == '\n' || buflen == sizeof(buf))
   {
     syscall(SYS_write, 1, (uintptr_t)buf, buflen);
     buflen = 0;
