@@ -278,7 +278,7 @@ module load_unit
     if (valid_i) begin
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
-        ypb_load_req_o.vreq = !stall_translation;
+        ypb_load_req_o.vreq = !stall_translation && !stall_ni;
         if (!CVA6Cfg.MmuPresent || ypb_load_rsp_i.vgnt) begin
           if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i) begin
             kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
