@@ -48,10 +48,10 @@
 //           https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf
 //
 
-
 module wt_l15_adapter
   import ariane_pkg::*;
   import wt_cache_pkg::*;
+  import l15_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type icache_req_t = logic,
@@ -82,51 +82,6 @@ module wt_l15_adapter
     output l15_req_t  l15_req_o,
     input  l15_rtrn_t l15_rtrn_i
 );
-
-  localparam type l15_req_t = struct packed {
-    logic l15_val;  // valid signal, asserted with request
-    logic l15_req_ack;  // ack for response
-    wt_cache_pkg::l15_reqtypes_t l15_rqtype;  // see below for encoding
-    logic l15_nc;  // non-cacheable bit
-    logic [2:0]                        l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
-    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] l15_threadid;  // currently 0 or 1
-    logic l15_prefetch;  // unused in openpiton
-    logic l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
-    logic l15_blockstore;  // unused in openpiton
-    logic l15_blockinitstore;  // unused in openpiton
-    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_l1rplway;  // way to replace
-    logic [39:0] l15_address;  // physical address
-    logic [63:0] l15_data;  // word to write
-    logic [63:0] l15_data_next_entry;  // unused in Ariane (only used for CAS atomic requests)
-    logic [wt_cache_pkg::L15_TLB_CSM_WIDTH-1:0] l15_csm_data;  // unused in Ariane
-    logic [3:0] l15_amo_op;  // atomic operation type
-  };
-  localparam type l15_rtrn_t = struct packed {
-    logic l15_ack;  // ack for request struct
-    logic l15_header_ack;  // ack for request struct
-    logic l15_val;  // valid signal for return struct
-    wt_l15_adapter::l15_rtrntypes_t l15_returntype;  // see below for encoding
-    logic l15_l2miss;  // unused in Ariane
-    logic [1:0] l15_error;  // unused in openpiton
-    logic l15_noncacheable;  // non-cacheable bit
-    logic l15_atomic;  // asserted in load return and store ack packets of atomic tx
-    logic [CVA6Cfg.MEM_TID_WIDTH-1:0] l15_threadid;  // used as transaction ID
-    logic l15_prefetch;  // unused in openpiton
-    logic l15_f4b;  // 4byte instruction fill from I/O space (nc).
-    logic [63:0] l15_data_0;  // used for both caches
-    logic [63:0] l15_data_1;  // used for both caches
-    logic [63:0] l15_data_2;  // currently only used for I$
-    logic [63:0] l15_data_3;  // currently only used for I$
-    logic l15_inval_icache_all_way;  // invalidate all ways
-    logic l15_inval_dcache_all_way;  // unused in openpiton
-    logic [15:4] l15_inval_address_15_4;  // invalidate selected cacheline
-    logic l15_cross_invalidate;  // unused in openpiton
-    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_cross_invalidate_way;  // unused in openpiton
-    logic l15_inval_dcache_inval;  // invalidate selected cacheline and way
-    logic l15_inval_icache_inval;  // unused in openpiton
-    logic [CVA6Cfg.DCACHE_SET_ASSOC_WIDTH-1:0] l15_inval_way;  // way to invalidate
-    logic l15_blockinitstore;  // unused in openpiton
-  };
 
   // request path
   icache_req_t icache_data;
@@ -166,7 +121,10 @@ module wt_l15_adapter
   // data mux
   assign l15_req_o.l15_nc = (arb_idx) ? dcache_data.nc : icache_data.nc;
   // icache fills are either cachelines or 4byte fills, depending on whether they go to the Piton I/O space or not.
-  assign l15_req_o.l15_size = (arb_idx) ? dcache_data.size : (icache_data.nc) ? 3'b010 : 3'b111;
+  assign l15_req_o.l15_size                 = (arb_idx)        ? (dcache_data.size == 3'b111) ?  ((CVA6Cfg.DCACHE_OFFSET_WIDTH == 3'b100) ? 3'b101  : 
+                                                                                                  (CVA6Cfg.DCACHE_OFFSET_WIDTH == 3'b101) ? 3'b110  : 3'b111) : 
+                                                                                                  dcache_data.size + 1 :                 
+                                                                 (icache_data.nc) ? 3'b011 : 3'b110;
   assign l15_req_o.l15_threadid = (arb_idx) ? dcache_data.tid : icache_data.tid;
   assign l15_req_o.l15_prefetch = '0;  // unused in openpiton
   assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no ECC at the moment
@@ -178,7 +136,8 @@ module wt_l15_adapter
 
   assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
   assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
-  assign l15_req_o.l15_amo_op = dcache_data.amo_op;
+  assign l15_req_o.l15_amo_op = l15_pkg::l15_amo_e'(logic'(dcache_data.amo_op));
+  assign l15_req_o.l15_be = '0;  // Not supported by WT cache
 
 
   // openpiton is big endian
@@ -345,7 +304,7 @@ module wt_l15_adapter
   end
 
   // openpiton is big endian
-  if (SwapEndianess) begin : gen_swap
+  if (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_L15_BIG_ENDIAN) begin : gen_swap
     assign dcache_rtrn_o.data = {
       swendian64(rtrn_fifo_data.l15_data_1), swendian64(rtrn_fifo_data.l15_data_0)
     };
@@ -372,10 +331,10 @@ module wt_l15_adapter
   assign dcache_rtrn_o.tid     = rtrn_fifo_data.l15_threadid;
 
   // invalidation signal mapping
-  assign icache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
+  assign icache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address[15:4], 4'b0000};
   assign icache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
 
-  assign dcache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
+  assign dcache_rtrn_o.inv.idx = {rtrn_fifo_data.l15_inval_address[15:4], 4'b0000};
   assign dcache_rtrn_o.inv.way = rtrn_fifo_data.l15_inval_way;
 
   fifo_v2 #(
