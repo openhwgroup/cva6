@@ -97,14 +97,28 @@ package triggers_pkg;
     return (value & mask) == (base & mask);
   endfunction
 
-  function automatic logic match_scontext(input logic [31:0] scontext, input logic [1:0] sselect,
-                                          input logic [3:0] sbytemask, input logic [31:0] svalue,
-                                          input bit flag);
+  // textra32: sbytemask is 2-bit, svalue is 16-bit, max 2 bytes compared
+  function automatic logic match_scontext32(input logic [31:0] scontext, input logic [1:0] sselect,
+                                            input logic [1:0] sbytemask, input logic [15:0] svalue);
     logic match;
     match = 1'b1;
     if (sselect == 2'd1) begin
-      int max_bytes = flag ? 4 : 2;
-      for (int b = 0; b < max_bytes; b++) begin
+      for (int b = 0; b < 2; b++) begin
+        if (!sbytemask[b]) begin
+          if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
+        end
+      end
+    end else match = 1'b0;
+    return match;
+  endfunction
+
+  // textra64: sbytemask is 4-bit, svalue is 32-bit, max 4 bytes compared
+  function automatic logic match_scontext64(input logic [31:0] scontext, input logic [1:0] sselect,
+                                            input logic [3:0] sbytemask, input logic [31:0] svalue);
+    logic match;
+    match = 1'b1;
+    if (sselect == 2'd1) begin
+      for (int b = 0; b < 4; b++) begin
         if (!sbytemask[b]) begin
           if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
         end
