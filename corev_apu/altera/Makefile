@@ -147,27 +147,27 @@ generate_ips:
 	$(QSYS_PATH)qsys-script --script=ip/iobuf.tcl
 	$(QSYS_PATH)qsys-script --script=ip/oddr_intel.tcl
 	$(QSYS_PATH)qsys-script --script=ip/vJTAG.tcl
-	$(QUARTUS_PATH)quartus_ipgenerate --generate_project_ip_files $(PROJECT) 
+	quartus_ipgenerate --generate_project_ip_files $(PROJECT) 
 
 map:
 	@echo "Running Quartus Map"
-	$(QUARTUS_PATH)quartus_syn $(PROJECT)
+	quartus_syn $(PROJECT)
 
 fit: map
 	@echo "Running Quartus Fit"
-	$(QUARTUS_PATH)quartus_fit $(PROJECT)
+	quartus_fit $(PROJECT)
 
 asm: fit
 	@echo "Running Quartus Assembly"
-	$(QUARTUS_PATH)quartus_asm $(PROJECT)
+	quartus_asm $(PROJECT)
 
 sta: asm
 	@echo "Running Quartus Timing Analysis"
-	$(QUARTUS_PATH)quartus_sta $(PROJECT) --do_report_timing
+	quartus_sta $(PROJECT) --do_report_timing
 
 rbf: sta
 	@echo "Running Quartus Prime Programming File Generator"
-	$(QUARTUS_PATH)/quartus_pfg -c output_files/*.sof output_files/cva6-hps.rbf -o hps_path=u-boot-spl-dtb.hex
+	quartus_pfg -c output_files/*.sof output_files/cva6-hps.rbf -o hps_path=u-boot-spl-dtb.hex
 
 
 clean:
@@ -203,6 +203,6 @@ clean:
 	rm -rf iobuf
 	rm -rf system
 
-	$(QUARTUS_PATH)quartus_ipgenerate --clean $(PROJECT) 
+	quartus_ipgenerate --clean $(PROJECT) 
 
 .PHONY: all write_search_paths write_source_files map fit asm sta clean
