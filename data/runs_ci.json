@@ -1,5 +1,26 @@
 [
   {
+    "id": 28523492794,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 6017,
+    "status": "completed",
+    "conclusion": "action_required",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/28523492794",
+    "head_branch": "master_candidate_pr",
+    "head_sha": "d81f135b",
+    "event": "pull_request",
+    "created_at": "2026-07-01T14:05:30Z",
+    "updated_at": "2026-07-01T14:05:30Z",
+    "run_started_at": "2026-07-01T14:05:30Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 28506267048,
     "source": "github-actions",
     "simulator": "verilator",
@@ -4640,26 +4661,5 @@
         "simulator": "veri-testharness"
       }
     ]
-  },
-  {
-    "id": 27606460169,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 5967,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27606460169",
-    "head_branch": "fix/amo_l15_adapter",
-    "head_sha": "a8c38590",
-    "event": "pull_request",
-    "created_at": "2026-06-16T09:01:21Z",
-    "updated_at": "2026-06-16T09:01:21Z",
-    "run_started_at": "2026-06-16T09:01:21Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
