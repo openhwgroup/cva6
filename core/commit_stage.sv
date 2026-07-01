@@ -88,6 +88,8 @@ module commit_stage
     output logic hfence_vvma_o,
     // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_gvma_o,
+    // Shared TLB is still processing a multi-cycle flush
+    input logic shared_tlb_flush_busy_i,
     // Breakpoint exception from trigger module
     input logic break_from_trigger_i
 );
@@ -132,6 +134,8 @@ module commit_stage
   // -------------------
   // Commit Instruction
   // -------------------
+  logic tlb_flush_can_commit;
+  assign tlb_flush_can_commit = no_st_pending_i && !shared_tlb_flush_busy_i;
   // write register file or commit instruction in LSU or CSR Buffer
   always_comb begin : commit
     // default assignments
@@ -231,9 +235,9 @@ module commit_stage
         if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_VMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            sfence_vma_o = no_st_pending_i;
+            sfence_vma_o = tlb_flush_can_commit; //Only retire the fence when stores are drained and the shared TLB
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = no_st_pending_i;
+            commit_ack_o[0] = tlb_flush_can_commit;
           end
         end
         // ------------------
@@ -245,9 +249,9 @@ module commit_stage
         if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_VVMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            hfence_vvma_o   = no_st_pending_i;
+            hfence_vvma_o   = tlb_flush_can_commit;
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = no_st_pending_i;
+            commit_ack_o[0] = tlb_flush_can_commit;
           end
         end
         // ------------------
@@ -259,9 +263,9 @@ module commit_stage
         if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_GVMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            hfence_gvma_o   = no_st_pending_i;
+            hfence_gvma_o   = tlb_flush_can_commit;
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = no_st_pending_i;
+            commit_ack_o[0] = tlb_flush_can_commit;
           end
         end
         // ------------------
