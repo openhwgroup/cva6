@@ -189,7 +189,7 @@ module cva6_hpicache_if_adapter
   //  {{{
   logic ypb_fetch_valid;
   assign ypb_fetch_valid = hpicache_rsp_valid_i && (hpicache_rsp_i.tid != '1);
-  assign ypb_fetch_rsp_o.pgnt = hpicache_req_ready_i & ypb_fetch_req_i.preq & !cva6_icache_flush_i;
+  assign ypb_fetch_rsp_o.pgnt = hpicache_req_ready_i & ypb_fetch_req_i.preq & !forward_flush;
   assign ypb_fetch_rsp_o.vgnt = ypb_fetch_req_i.vreq;
   assign ypb_fetch_rsp_o.rvalid = ypb_fetch_valid;
   assign ypb_fetch_rsp_o.rid = hpicache_rsp_i.tid;
