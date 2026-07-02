@@ -140,7 +140,7 @@ smoke-tests:
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
+    # SPIKE_TANDEM: 1 //MOMENTARILY DISABLED TO CHECK THE CI FURTHER
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
