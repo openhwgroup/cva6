@@ -77,9 +77,8 @@
 <nav class="navbar navbar-expand-lg top-navbar shadow-sm">
   <div class="container-fluid">
     <span class="navbar-brand">
-      <img src="https://openhwfoundation.org/images/openhw-landscape.png"
-           alt="OpenHW Group" height="32"
-           onerror="this.onerror=null; this.src='https://avatars.githubusercontent.com/u/51096416?s=64&v=4';">
+      <img src="assets/openhw-landscape.svg"
+           alt="OpenHW Foundation" height="32">
       CVA6 Tier CI Dashboard
     </span>
     <span class="navbar-text text-muted" style="font-size:0.85rem">
@@ -169,7 +168,7 @@
         <span class="text-muted">Legend:</span>
         <span><span class="matrix-icon pass" style="width:16px;height:16px;font-size:0.65rem">&#10003;</span> Pass</span>
         <span><span class="matrix-icon fail" style="width:16px;height:16px;font-size:0.65rem">&#10007;</span> Fail</span>
-        <span><span class="matrix-icon na" style="width:16px;height:16px;font-size:0.65rem">&ndash;</span> Not covered</span>
+        <span><span class="matrix-icon na" style="width:16px;height:16px;font-size:0.65rem">&ndash;</span> Not in matrix</span>
       </div>
       <div class="table-responsive">
         <table class="table table-sm matrix-table mb-0" id="matrixTable">
@@ -392,7 +391,7 @@ function renderMatrix(wfKey) {
           bodyHtml += '<td class="matrix-td"><span class="matrix-icon na" title="' + cfg + ' / ' + suite + ': ' + c + '">?</span></td>';
         }
       } else {
-        bodyHtml += '<td class="matrix-td"><span class="matrix-icon na" title="' + cfg + ' / ' + suite + ': N/A">&ndash;</span></td>';
+        bodyHtml += '<td class="matrix-td"><span class="matrix-icon na" title="' + cfg + ' / ' + suite + ': not in matrix">&ndash;</span></td>';
       }
     });
     bodyHtml += '</tr>';
