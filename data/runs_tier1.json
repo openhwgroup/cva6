@@ -1,5 +1,60 @@
 [
   {
+    "id": 28586647106,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 116,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/28586647106",
+    "head_branch": "ci/harden-tier-flow-clean",
+    "head_sha": "939b3580",
+    "event": "pull_request",
+    "created_at": "2026-07-02T11:30:27Z",
+    "updated_at": "2026-07-02T11:37:25Z",
+    "run_started_at": "2026-07-02T11:30:27Z",
+    "duration_seconds": 418,
+    "total_jobs": 3,
+    "passed_jobs": 3,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "success",
+        "started_at": "2026-07-02T11:31:38Z",
+        "completed_at": "2026-07-02T11:37:24Z",
+        "duration_seconds": 346,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/28586647106/job/84760021777",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-07-02T11:31:38Z",
+        "completed_at": "2026-07-02T11:33:52Z",
+        "duration_seconds": 134,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/28586647106/job/84760021800",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      },
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-07-02T11:31:38Z",
+        "completed_at": "2026-07-02T11:35:02Z",
+        "duration_seconds": 204,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/28586647106/job/84760021821",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      }
+    ]
+  },
+  {
     "id": 28533271889,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2217,26 +2272,5 @@
         "testcase": "cv32a6_tests"
       }
     ]
-  },
-  {
-    "id": 27476272944,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 66,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/27476272944",
-    "head_branch": "fix/dtlb-ppn-mmu",
-    "head_sha": "ff9ae325",
-    "event": "pull_request",
-    "created_at": "2026-06-13T19:07:57Z",
-    "updated_at": "2026-06-13T19:07:57Z",
-    "run_started_at": "2026-06-13T19:07:57Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
