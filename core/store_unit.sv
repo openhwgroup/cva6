@@ -205,12 +205,11 @@ module store_unit
         trans_id_o = trans_id_q;
         valid_o    = 1'b1;
         ex_o.valid = ex_s1;
-      end
-      if (ex_s0) begin
+      end else if (ex_s0) begin
         trans_id_o = lsu_ctrl_i.trans_id;
         valid_o    = 1'b1;
         ex_o.valid = 1'b1;
-        pop_st_o = 1'b1;
+        pop_st_o = dtlb_hit_i;
       end
     end
   end

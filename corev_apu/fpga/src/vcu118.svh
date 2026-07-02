@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Description: Set global FPGA degines
+// Description: Set global FPGA defines
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `define VCU118

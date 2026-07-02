@@ -2,7 +2,7 @@
 
 `define ARIANE_DATA_WIDTH 64
 
-// Instantiate protocl checker
+// Instantiate protocol checker
 // `define PROTOCOL_CHECKER
 
 // write-back cache

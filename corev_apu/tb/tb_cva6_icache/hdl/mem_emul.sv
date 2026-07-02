@@ -151,7 +151,7 @@ module mem_emul import ariane_pkg::*; import wt_cache_pkg::*; #(
       infifo_data.rtype = ICACHE_INV_REQ;
 
       // since we do not keep a mirror tag table here,
-      // we allways invalidate all ways of the aliased index.
+      // we always invalidate all ways of the aliased index.
       // this is not entirely correct and will produce
       // too many invalidations
       infifo_data.inv.idx = rand_addr_q[CVA6Cfg.ICACHE_INDEX_WIDTH-1:0];

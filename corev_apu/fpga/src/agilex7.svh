@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Description: Set global FPGA degines
+// Description: Set global FPGA defines
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `define AGILEX7
@@ -17,5 +17,5 @@
 
 `define ARIANE_DATA_WIDTH 64
 
-// Instantiate protocl checker
+// Instantiate protocol checker
 // `define PROTOCOL_CHECKER

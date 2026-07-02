@@ -21,7 +21,7 @@ module ariane_verilog_wrap
   parameter int unsigned               BHTEntries            = 128,
   // debug module base address
   parameter logic [63:0]               DmBaseAddress         = 64'h0,
-  // swap endianess in l15 adapter
+  // swap endianness in l15 adapter
   parameter bit                        SwapEndianess         = 1,
   // PMA configuration
   // idempotent region

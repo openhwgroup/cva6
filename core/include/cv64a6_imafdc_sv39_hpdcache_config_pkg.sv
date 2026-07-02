@@ -35,7 +35,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigHExtEn = 0;
   localparam CVA6ConfigRVZiCond = 1;
 
-  localparam CVA6ConfigAxiIdWidth = 4;
+  localparam CVA6ConfigAxiIdWidth = 5;
   localparam CVA6ConfigAxiAddrWidth = 64;
   localparam CVA6ConfigAxiDataWidth = 64;
   localparam CVA6ConfigFetchUserEn = 0;
@@ -49,9 +49,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigDcacheByteSize = 32768;
   localparam CVA6ConfigDcacheSetAssoc = 8;
   localparam CVA6ConfigDcacheLineWidth = 128;
-
-  localparam CVA6ConfigDcacheFlushOnFence = 1'b0;
-  localparam CVA6ConfigDcacheInvalidateOnFlush = 1'b0;
 
   localparam CVA6ConfigDcacheIdWidth = 3;
 
@@ -81,7 +78,7 @@ package cva6_config_pkg;
       XLEN: unsigned'(CVA6ConfigXlen),
       VLEN: unsigned'(64),
       FpgaEn: bit'(0),  // for Xilinx and Altera
-      FpgaAlteraEn: bit'(0),  // for Altera (only)
+      FpgaAlteraEn: bit'(0),  // for Altera only
       TechnoCut: bit'(0),
       SuperscalarEn: bit'(0),
       NrCommitPorts: unsigned'(2),
@@ -150,8 +147,8 @@ package cva6_config_pkg;
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
-      DcacheFlushOnFence: bit'(CVA6ConfigDcacheFlushOnFence),
-      DcacheInvalidateOnFlush: bit'(CVA6ConfigDcacheInvalidateOnFlush),
+      DcacheFlushOnFence: bit'(0),
+      DcacheInvalidateOnFlush: bit'(0),
       DataUserEn: bit'(CVA6ConfigDataUserEn),
       WtDcacheWbufDepth: int'(CVA6ConfigWtDcacheWbufDepth),
       FetchUserWidth: unsigned'(CVA6ConfigFetchUserWidth),

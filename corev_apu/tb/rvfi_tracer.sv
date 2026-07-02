@@ -69,6 +69,39 @@ module rvfi_tracer #(
   logic[31:0] end_of_test_q;
   logic[31:0] end_of_test_d;
 
+  function automatic logic fp_instr_writes_gpr(logic [31:0] insn);
+    logic [6:0] opcode;
+    logic [4:0] funct5;
+    logic [2:0] rm;
+
+    opcode = insn[6:0];
+    funct5 = insn[31:27];
+    rm = insn[14:12];
+
+    if (opcode != riscv::OpcodeOpFp) begin
+      return 1'b0;
+    end
+
+    if (funct5 == 5'b11000) begin
+      return 1'b1;
+    end
+
+    if (funct5 == 5'b10100) begin
+      return 1'b1;
+    end
+
+    if (funct5 == 5'b11100) begin
+      if ((rm == 3'b000) || (rm == 3'b001)) begin
+        return 1'b1;
+      end
+      if (CVA6Cfg.XF16ALT && ((rm == 3'b100) || (rm == 3'b101))) begin
+        return 1'b1;
+      end
+    end
+
+    return 1'b0;
+  endfunction
+
   assign end_of_test_o = end_of_test_d;
 
   always_ff @(posedge clk_i) begin
@@ -77,6 +110,7 @@ module rvfi_tracer #(
       pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
+        logic dest_is_fp;
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
            $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
@@ -96,6 +130,7 @@ module rvfi_tracer #(
         end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
+        dest_is_fp = 1'b0;
         if ( rvfi_i[i].insn[6:0] == 7'b1001111 ||
              rvfi_i[i].insn[6:0] == 7'b1001011 ||
              rvfi_i[i].insn[6:0] == 7'b1000111 ||
@@ -106,21 +141,29 @@ module rvfi_tracer #(
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
             (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.XLEN == 64) ||
                                            (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.XLEN == 32) ))) begin
+          if (fp_instr_writes_gpr(rvfi_i[i].insn)) begin
+            dest_is_fp = 1'b0;
+          end else begin
+            dest_is_fp = 1'b1;
+          end
+        end
+
+        if (dest_is_fp) begin
           $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
         end else if (rvfi_i[i].rd_addr != 0) begin
           $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
           if (rvfi_i[i].mem_rmask != 0) begin
             $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
           end
-        end else begin
-          if (rvfi_i[i].mem_wmask != 0) begin
-            $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
-            if (TOHOST_ADDR != '0 &&
-                rvfi_i[i].mem_paddr == TOHOST_ADDR &&
-                rvfi_i[i].mem_wdata[0] == 1'b1) begin
-              end_of_test_q <= rvfi_i[i].mem_wdata[31:0];
-              $display("*** [rvfi_tracer] INFO: Simulation terminated after %d cycles!\n", cycles);
-            end
+        end
+        // Handle memory writes (including for AMO instructions which have both rd and mem_wmask)
+        if (rvfi_i[i].mem_wmask != 0) begin
+          $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+          if (TOHOST_ADDR != '0 &&
+              rvfi_i[i].mem_paddr == TOHOST_ADDR &&
+              rvfi_i[i].mem_wdata[0] == 1'b1) begin
+            end_of_test_q <= rvfi_i[i].mem_wdata[31:0];
+            $display("*** [rvfi_tracer] INFO: Simulation terminated after %d cycles!\n", cycles);
           end
         end
         $fwrite(f, "\n");

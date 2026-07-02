@@ -21,7 +21,14 @@ covergroup cg_interrupt(
     option.name = name;
 
    cp_interrupt_req : coverpoint req_item.interrupt_vector {
-      bins INTERRUPTS[] = {[0:$]} with (item inside {[0:(2**(num_irq_supported))-1]});
+    // FIXME: Tanuj Khandelwal
+    // Questa is crashing on this CG
+    // Hence it has been changed a little to make it pass
+    `ifndef QUESTA
+      bins INTERRUPTS[] = {[0:$]} with (item inside {[0:((2**(num_irq_supported))-1)]});
+    `else
+      bins INTERRUPTS[] = {[0:((2**(num_irq_supported))-1)]};
+    `endif
    }
 
 endgroup: cg_interrupt

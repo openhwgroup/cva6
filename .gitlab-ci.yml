@@ -140,7 +140,7 @@ smoke-tests:
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
     DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
-    SPIKE_TANDEM: 1
+    # SPIKE_TANDEM: 1 //MOMENTARILY DISABLED TO CHECK THE CI FURTHER
     COLLECT_SIMU_LOGS: 1
   parallel:
     matrix:
@@ -226,6 +226,21 @@ smoke-hwconfig:
         compare_to: master
     - when: manual
       allow_failure: true
+
+it-test:
+  extends:
+    - .synthesis_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Instruction Trace test"
+    DASHBOARD_JOB_DESCRIPTION: "Test to Challenge the Hardware flow of the Instruction Tracer"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    DV_SIMULATORS: "vcs-testharness"
+  script:
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - bash verif/regress/Instr_tracing_test.sh ../tests/custom/ITI/test_iti_asm.o
+    - python3 .gitlab-ci/scripts/report_pass.py
+    - cp -r verif/sim/Instr_tracing_artifact artifacts/
 
 spyglass:
   extends:

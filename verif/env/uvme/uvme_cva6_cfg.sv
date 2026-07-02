@@ -49,7 +49,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_obi_memory_cfg_c       obi_memory_amo_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_load_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_zcmt_cfg;
-   //rand uvma_obi_memory_cfg_c       obi_memory_mmu_ptw_cfg;
+   rand uvma_obi_memory_cfg_c       obi_memory_mmu_ptw_cfg;
 
    rand uvma_rvfi_cfg_c#(ILEN,XLEN)       rvfi_cfg;
    rand uvma_isacov_cfg_c                 isacov_cfg;
@@ -104,7 +104,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(obi_memory_amo_cfg, UVM_DEFAULT)
       `uvm_field_object(obi_memory_load_cfg, UVM_DEFAULT)
       `uvm_field_object(obi_memory_zcmt_cfg, UVM_DEFAULT)
-      //`uvm_field_object(obi_memory_mmu_ptw_cfg, UVM_DEFAULT)
+      `uvm_field_object(obi_memory_mmu_ptw_cfg, UVM_DEFAULT)
 
       // TODO:`uvm_field_object(obi_memory_data_cfg, UVM_DEFAULT)
 
@@ -222,8 +222,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_zcmt_cfg.drv_slv_gnt_mode     == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
          obi_memory_zcmt_cfg.drv_slv_rvalid_mode  == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
          
-         //obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         //obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
       }
      else {
          obi_memory_instr_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
@@ -241,8 +241,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_zcmt_cfg.drv_slv_gnt_mode     != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
          obi_memory_zcmt_cfg.drv_slv_rvalid_mode  != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
 
-         //obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
-         //obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
+         obi_memory_mmu_ptw_cfg.drv_slv_gnt_mode    != UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+         obi_memory_mmu_ptw_cfg.drv_slv_rvalid_mode != UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT;
       }
    }
 
@@ -321,16 +321,16 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       obi_memory_load_cfg.achk_width                    == RTLCVA6Cfg.ObiLoadbusCfg.OptionalCfg.AChkWidth ;
       obi_memory_load_cfg.rchk_width                    == RTLCVA6Cfg.ObiLoadbusCfg.OptionalCfg.RChkWidth ;
 
-      //obi_memory_mmu_ptw_cfg.drv_mode                   == UVMA_OBI_MEMORY_MODE_SLV;
-      //obi_memory_mmu_ptw_cfg.version                    == UVMA_OBI_MEMORY_VERSION_1P2;
-      //obi_memory_mmu_ptw_cfg.auser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth;
-      //obi_memory_mmu_ptw_cfg.wuser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth;
-      //obi_memory_mmu_ptw_cfg.ruser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth;
-      //obi_memory_mmu_ptw_cfg.addr_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.AddrWidth ;
-      //obi_memory_mmu_ptw_cfg.data_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.DataWidth ;
-      //obi_memory_mmu_ptw_cfg.id_width                   == RTLCVA6Cfg.ObiMmuPtwbusCfg.IdWidth   ;
-      //obi_memory_mmu_ptw_cfg.achk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth ;
-      //obi_memory_mmu_ptw_cfg.rchk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth ;
+      obi_memory_mmu_ptw_cfg.drv_mode                   == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_memory_mmu_ptw_cfg.version                    == UVMA_OBI_MEMORY_VERSION_1P2;
+      obi_memory_mmu_ptw_cfg.auser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AUserWidth;
+      obi_memory_mmu_ptw_cfg.wuser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.WUserWidth;
+      obi_memory_mmu_ptw_cfg.ruser_width                == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RUserWidth;
+      obi_memory_mmu_ptw_cfg.addr_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.AddrWidth ;
+      obi_memory_mmu_ptw_cfg.data_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.DataWidth ;
+      obi_memory_mmu_ptw_cfg.id_width                   == RTLCVA6Cfg.ObiMmuPtwbusCfg.IdWidth   ;
+      obi_memory_mmu_ptw_cfg.achk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.AChkWidth ;
+      obi_memory_mmu_ptw_cfg.rchk_width                 == RTLCVA6Cfg.ObiMmuPtwbusCfg.OptionalCfg.RChkWidth ;
 
       soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_min     == 2;
       soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max     == 5;
@@ -367,12 +367,12 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       soft obi_memory_zcmt_cfg.drv_slv_rvalid_random_latency_min   == 2;
       soft obi_memory_zcmt_cfg.drv_slv_rvalid_random_latency_max   == 5;
       soft obi_memory_zcmt_cfg.drv_slv_rvalid_fixed_latency        <= 5;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_min      <= 0;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max      <= 10;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_fixed_latency          <= 2;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_min   <= 0;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_max   <= 10;
-      //soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_fixed_latency       <= 3;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_min      <= 0;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_random_latency_max      <= 10;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_gnt_fixed_latency          <= 2;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_min   <= 0;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_random_latency_max   <= 10;
+      soft obi_memory_mmu_ptw_cfg.drv_slv_rvalid_fixed_latency       <= 3;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active        == UVM_ACTIVE;
@@ -386,14 +386,14 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
             obi_memory_amo_cfg.is_active == UVM_ACTIVE;
             obi_memory_load_cfg.is_active == UVM_ACTIVE;
             obi_memory_zcmt_cfg.is_active == UVM_ACTIVE;
-            //obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE;
+            obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE;
          } else {
             obi_memory_instr_cfg.is_active == UVM_PASSIVE;
             obi_memory_store_cfg.is_active == UVM_PASSIVE;
             obi_memory_amo_cfg.is_active  == UVM_PASSIVE;
             obi_memory_zcmt_cfg.is_active == UVM_PASSIVE;
             obi_memory_load_cfg.is_active == UVM_PASSIVE;
-            //obi_memory_mmu_ptw_cfg.is_active == UVM_PASSIVE;
+            obi_memory_mmu_ptw_cfg.is_active == UVM_PASSIVE;
          }
       }
 
@@ -405,8 +405,8 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_zcmt_cfg.trn_log_enabled      == 1;
          obi_memory_amo_cfg.trn_log_enabled       == 1;
          obi_memory_load_cfg.trn_log_enabled      == 1;
-         //obi_memory_mmu_ptw_cfg.trn_log_enabled   == 1;
-         //obi_memory_mmu_ptw_cfg.trn_log_enabled   == 1;
+         obi_memory_mmu_ptw_cfg.trn_log_enabled   == 1;
+         obi_memory_mmu_ptw_cfg.trn_log_enabled   == 1;
          rvfi_cfg.trn_log_enabled      == 1;
          isacov_cfg.trn_log_enabled    == 1;
       } else {
@@ -417,7 +417,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_amo_cfg.trn_log_enabled       == 0;
          obi_memory_zcmt_cfg.trn_log_enabled      == 0;
          obi_memory_load_cfg.trn_log_enabled      == 0;
-         //obi_memory_mmu_ptw_cfg.trn_log_enabled   == 0;
+         obi_memory_mmu_ptw_cfg.trn_log_enabled   == 0;
          rvfi_cfg.trn_log_enabled      == 0;
          isacov_cfg.trn_log_enabled    == 0;
       }
@@ -438,7 +438,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
         //    obi_memory_zcmt_cfg.cov_model_enabled == 0;
         // }
          obi_memory_load_cfg.cov_model_enabled == 1;
-         //obi_memory_mmu_ptw_cfg.cov_model_enabled == 1;
+         obi_memory_mmu_ptw_cfg.cov_model_enabled == 1;
          interrupt_cfg.cov_model_enabled == 1;
       } else {
          isacov_cfg.cov_model_enabled    == 0;
@@ -447,7 +447,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_store_cfg.cov_model_enabled == 0;
          obi_memory_amo_cfg.cov_model_enabled == 0;
          obi_memory_load_cfg.cov_model_enabled == 0;
-         //obi_memory_mmu_ptw_cfg.cov_model_enabled == 0;
+         obi_memory_mmu_ptw_cfg.cov_model_enabled == 0;
          interrupt_cfg.cov_model_enabled == 0;
       }
 
@@ -489,7 +489,7 @@ function uvme_cva6_cfg_c::new(string name="uvme_cva6_cfg");
    obi_memory_amo_cfg       = uvma_obi_memory_cfg_c::type_id::create("obi_memory_amo_cfg");
    obi_memory_zcmt_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_zcmt_cfg");
    obi_memory_load_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_load_cfg");
-   //obi_memory_mmu_ptw_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_mmu_ptw_cfg");
+   obi_memory_mmu_ptw_cfg      = uvma_obi_memory_cfg_c::type_id::create("obi_memory_mmu_ptw_cfg");
    rvfi_cfg     = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    isacov_cfg   = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    interrupt_cfg   = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
