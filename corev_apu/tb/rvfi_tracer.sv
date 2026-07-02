@@ -139,8 +139,8 @@ module rvfi_tracer #(
             (rvfi_i[i].insn[6:0] == 7'b1010011 && rvfi_i[i].insn[31:26] != 6'b111000
                                                && rvfi_i[i].insn[31:26] != 6'b101000
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
-            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.XLEN == 64) ||
-                                           (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.XLEN == 32) ))) begin
+            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.IS_XLEN64) ||
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.IS_XLEN32) ))) begin
           if (fp_instr_writes_gpr(rvfi_i[i].insn)) begin
             dest_is_fp = 1'b0;
           end else begin
