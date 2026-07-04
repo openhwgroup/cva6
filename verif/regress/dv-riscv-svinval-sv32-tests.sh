@@ -22,10 +22,10 @@ if ! [ -n "$DV_TARGET" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness,spike
+  DV_SIMULATORS=spike,veri-testharness
 fi
 
 
 cd verif/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-svadu-sv32-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --spike_extension=svadu
+python3 cva6.py --testlist=../tests/testlist_riscv-svinval-sv32-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --spike_extension=svinval
 cd -

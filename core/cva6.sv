@@ -186,7 +186,7 @@ module cva6
       logic [CVA6Cfg.PLEN-1:0] paddr;  // physical address
       logic nc;  // noncacheable
       logic [CVA6Cfg.MEM_TID_WIDTH-1:0] tid;  // thread id (used as transaction id in Ariane)
-      logic pma; // seongwon fix
+      logic pma;  // seongwon fix
     },
     localparam type icache_rtrn_t = struct packed {
       wt_cache_pkg::icache_in_t rtype;  // see definitions above
@@ -526,8 +526,9 @@ module cva6
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic stall_st_pending_ex;
   logic no_st_pending_ex;
-  logic no_st_pending_commit;
   logic shared_tlb_flush_busy_ex;
+  logic no_st_pending_commit;
+  logic no_tlb_flush_pending_commit;
   logic amo_valid_commit;
   // ACCEL Commit
   logic acc_valid_acc_ex;
@@ -641,8 +642,11 @@ module cva6
   logic fence_i_commit_controller;
   logic fence_commit_controller;
   logic sfence_vma_commit_controller;
+  logic sinval_vma_commit_controller;
   logic hfence_vvma_commit_controller;
+  logic hinval_vvma_commit_controller;
   logic hfence_gvma_commit_controller;
+  logic hinval_gvma_commit_controller;
   logic halt_ctrl;
   logic halt_frontend;
   logic halt_csr_ctrl;
@@ -1039,6 +1043,7 @@ module cva6
       .stall_st_pending_i      (stall_st_pending_ex),
       .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       .no_st_pending_o         (no_st_pending_ex),
+      .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       // FPU
       .fpu_ready_o             (fpu_ready_ex_id),
       .fpu_valid_i             (fpu_valid_id_ex),
@@ -1125,9 +1130,11 @@ module cva6
   // Commit
   // ---------
 
+
   // we have to make sure that the whole write buffer path is empty before
   // used e.g. for fence instructions.
-  assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
+  assign no_st_pending_commit        = no_st_pending_ex & dcache_commit_wbuffer_empty;
+  assign no_tlb_flush_pending_commit = !(shared_tlb_flush_busy_ex);
 
   commit_stage #(
       .CVA6Cfg(CVA6Cfg),
@@ -1136,39 +1143,43 @@ module cva6
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i              (halt_ctrl),
-      .flush_dcache_i      (dcache_flush_ctrl_cache),
-      .exception_o         (ex_commit),
-      .dirty_fp_state_o    (dirty_fp_state),
-      .single_step_i       (single_step_csr_commit || single_step_acc_commit),
-      .commit_instr_i      (commit_instr_id_commit),
-      .commit_drop_i       (commit_drop_id_commit),
-      .commit_ack_o        (commit_ack_commit_id),
-      .commit_macro_ack_o  (commit_macro_ack),
-      .waddr_o             (waddr_commit_id),
-      .wdata_o             (wdata_commit_id),
-      .we_gpr_o            (we_gpr_commit_id),
-      .we_fpr_o            (we_fpr_commit_id),
-      .amo_resp_i          (amo_commit),
-      .pc_o                (pc_commit),
-      .csr_op_o            (csr_op_commit_csr),
-      .csr_wdata_o         (csr_wdata_commit_csr),
-      .csr_rdata_i         (csr_rdata_csr_commit),
-      .csr_write_fflags_o  (csr_write_fflags_commit_cs),
-      .csr_exception_i     (csr_exception_csr_commit),
-      .commit_lsu_o        (lsu_commit_commit_ex),
-      .commit_lsu_ready_i  (lsu_commit_ready_ex_commit),
-      .commit_tran_id_o    (lsu_commit_trans_id),
-      .amo_valid_commit_o  (amo_valid_commit),
-      .no_st_pending_i     (no_st_pending_commit),
-      .commit_csr_o        (csr_commit_commit_ex),
-      .fence_i_o           (fence_i_commit_controller),
-      .fence_o             (fence_commit_controller),
-      .flush_commit_o      (flush_commit),
-      .sfence_vma_o        (sfence_vma_commit_controller),
-      .hfence_vvma_o       (hfence_vvma_commit_controller),
-      .hfence_gvma_o       (hfence_gvma_commit_controller),
-      .break_from_trigger_i(break_from_trigger)
+      .halt_i                (halt_ctrl),
+      .flush_dcache_i        (dcache_flush_ctrl_cache),
+      .exception_o           (ex_commit),
+      .dirty_fp_state_o      (dirty_fp_state),
+      .single_step_i         (single_step_csr_commit || single_step_acc_commit),
+      .commit_instr_i        (commit_instr_id_commit),
+      .commit_drop_i         (commit_drop_id_commit),
+      .commit_ack_o          (commit_ack_commit_id),
+      .commit_macro_ack_o    (commit_macro_ack),
+      .waddr_o               (waddr_commit_id),
+      .wdata_o               (wdata_commit_id),
+      .we_gpr_o              (we_gpr_commit_id),
+      .we_fpr_o              (we_fpr_commit_id),
+      .amo_resp_i            (amo_commit),
+      .pc_o                  (pc_commit),
+      .csr_op_o              (csr_op_commit_csr),
+      .csr_wdata_o           (csr_wdata_commit_csr),
+      .csr_rdata_i           (csr_rdata_csr_commit),
+      .csr_write_fflags_o    (csr_write_fflags_commit_cs),
+      .csr_exception_i       (csr_exception_csr_commit),
+      .commit_lsu_o          (lsu_commit_commit_ex),
+      .commit_lsu_ready_i    (lsu_commit_ready_ex_commit),
+      .commit_tran_id_o      (lsu_commit_trans_id),
+      .amo_valid_commit_o    (amo_valid_commit),
+      .no_st_pending_i       (no_st_pending_commit),
+      .no_tlb_flush_pending_i(no_tlb_flush_pending_commit),
+      .commit_csr_o          (csr_commit_commit_ex),
+      .fence_i_o             (fence_i_commit_controller),
+      .fence_o               (fence_commit_controller),
+      .flush_commit_o        (flush_commit),
+      .sfence_vma_o          (sfence_vma_commit_controller),
+      .sinval_vma_o          (sinval_vma_commit_controller),
+      .hfence_vvma_o         (hfence_vvma_commit_controller),
+      .hinval_vvma_o         (hinval_vvma_commit_controller),
+      .hfence_gvma_o         (hfence_gvma_commit_controller),
+      .hinval_gvma_o         (hinval_gvma_commit_controller),
+      .break_from_trigger_i  (break_from_trigger)
   );
 
   assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
@@ -1363,8 +1374,11 @@ module cva6
       .fence_i_i             (fence_i_commit_controller),
       .fence_i               (fence_commit_controller),
       .sfence_vma_i          (sfence_vma_commit_controller),
+      .sinval_vma_i          (sinval_vma_commit_controller),
       .hfence_vvma_i         (hfence_vvma_commit_controller),
+      .hinval_vvma_i         (hinval_vvma_commit_controller),
       .hfence_gvma_i         (hfence_gvma_commit_controller),
+      .hinval_gvma_i         (hinval_gvma_commit_controller),
       .flush_commit_i        (flush_commit),
       .flush_acc_i           (flush_acc)
   );

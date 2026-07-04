@@ -13,6 +13,7 @@ if ! [ -n "$RISCV" ]; then
 fi
 source ./verif/regress/install-verilator.sh
 source ./verif/regress/install-spike.sh
+source verif/regress/install-riscv-arch-test.sh
 source ./verif/sim/setup-env.sh
 
 if ! [ -n "$DV_TARGET" ]; then
@@ -25,5 +26,5 @@ fi
 
 
 cd verif/sim
-python3 cva6.py --testlist=../tests/testlist_riscv-svpbmt-sv39-$DV_TARGET --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --spike_extension=svpbmt
+python3 cva6.py --testlist=../tests/testlist_riscv-svpbmt-sv39-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --spike_extension=svpbmt
 cd -

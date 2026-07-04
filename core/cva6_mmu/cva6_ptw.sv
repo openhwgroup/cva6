@@ -55,9 +55,9 @@ module cva6_ptw
     output logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_o,
     output logic accessed_req_valid_o,
     input logic accessed_queue_full_i,
-    
+
     // PTW memory interface
-    input dcache_req_o_t req_port_i,
+    input  dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
 
 
@@ -105,6 +105,7 @@ module cva6_ptw
   logic [CVA6Cfg.XLEN-1:0] data_rdata_q;
 
   pte_cva6_t pte;
+  pte_cva6_t pte_tlb;
   // register to perform context switch between stages
   pte_cva6_t gpte_q, gpte_d;
 
@@ -174,7 +175,7 @@ module cva6_ptw
   // directly output the correct physical address
   assign req_port_o.address_index = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   assign req_port_o.address_tag   = ptw_pptr_q[CVA6Cfg.DCACHE_INDEX_WIDTH+CVA6Cfg.DCACHE_TAG_WIDTH-1:CVA6Cfg.DCACHE_INDEX_WIDTH];
-  assign req_port_o.pma           = 2'b00;  // follow the PMA of the page-table entry
+  assign req_port_o.pma = 2'b00;  // follow the PMA of the page-table entry
   // we are never going to write with the HPTW
   assign req_port_o.data_wdata = '0;
   // we only issue one single request at a time
@@ -188,7 +189,7 @@ module cva6_ptw
   // TLB Update
   // -----------
 
-  assign gpaddr_base = {pte.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
+  assign gpaddr_base = {pte_tlb.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
   assign gpaddr[CVA6Cfg.PtLevels-1] = gpaddr_base;
 
   genvar z, w;
@@ -198,7 +199,7 @@ module cva6_ptw
       // check if the ppn is correctly aligned:
       // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
       // exception.
-      assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-1-z)-1:0] != '0);
+      assign misaligned_page[z] = (ptw_lvl_q[0] == (z)) && (pte_tlb.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(CVA6Cfg.PtLevels-1-z)-1:0] != '0);
 
       // record the vaddr corresponding to each level
       for (w = 0; w < HYP_EXT * 2 + 1; w++) begin
@@ -241,9 +242,9 @@ module cva6_ptw
     // set the global mapping bit
     if ((enable_g_translation_i || en_ld_st_g_translation_i) && CVA6Cfg.RVH) begin
       shared_tlb_update_o.content   = (gpte_q | (global_mapping_q << 5));
-      shared_tlb_update_o.g_content = pte;
+      shared_tlb_update_o.g_content = pte_tlb;
     end else begin
-      shared_tlb_update_o.content   = (pte | (global_mapping_q << 5));
+      shared_tlb_update_o.content   = (pte_tlb | (global_mapping_q << 5));
       shared_tlb_update_o.g_content = '0;
     end
 
@@ -335,12 +336,14 @@ module cva6_ptw
     tlb_update_asid_n       = tlb_update_asid_q;
     vaddr_n                 = vaddr_q;
     pptr                    = ptw_pptr_q;
+    pte_tlb                 = pte;
 
-    accessed_req_valid_o = 1'b0;
-    accessed_req_paddr_o = '0;
-    access_full_n = access_full_q;
+    accessed_req_valid_o    = 1'b0;
+    accessed_req_paddr_o    = '0;
+    access_full_n           = access_full_q;
 
-    pbmt_attr_n = pbmt_attr_q;
+    pbmt_attr_n             = pbmt_attr_q;
+
 
     if (CVA6Cfg.RVH) begin
       gpaddr_n    = gpaddr_q;
@@ -446,13 +449,13 @@ module cva6_ptw
         if (data_rvalid_q) begin
 
           // check if the global mapping bit is set
-          if (pte.g && (ptw_stage_q == S_STAGE || !CVA6Cfg.RVH)) global_mapping_n = 1'b1;
+          if (pte_tlb.g && (ptw_stage_q == S_STAGE || !CVA6Cfg.RVH)) global_mapping_n = 1'b1;
 
           // -------------
           // Invalid PTE
           // -------------
           // If pte.v = 0, or if pte.r = 0 and pte.w = 1, or if pte.reserved !=0 in sv39 and sv39x4, stop and raise a page-fault exception.
-          if (!pte.v || (!pte.r && pte.w) || (|pte.reserved && CVA6Cfg.IS_XLEN64) || (!CVA6Cfg.SvnapotEn && pte.n) || (CVA6Cfg.SvnapotEn && !(pte.r || pte.x) && pte.n))
+          if (!pte_tlb.v || (!pte_tlb.r && pte_tlb.w) || (|pte_tlb.reserved && CVA6Cfg.IS_XLEN64) || (!CVA6Cfg.SvnapotEn && pte_tlb.n) || (CVA6Cfg.SvnapotEn && !(pte_tlb.r || pte_tlb.x) && pte_tlb.n))
             state_d = PROPAGATE_ERROR;
           // -----------
           // Valid PTE
@@ -460,11 +463,11 @@ module cva6_ptw
           else begin
             state_d = LATENCY;
             // if pte.r = 1 or pte.x = 1 it is a valid leaf PTE
-            if (pte.r || pte.x) begin
+            if (pte_tlb.r || pte_tlb.x) begin
               // A 64KiB NAPOT page is identified by the N-bit being set and PPN[3:0] encoding '1000'
-              if (CVA6Cfg.SvnapotEn && pte.n) begin
+              if (CVA6Cfg.SvnapotEn && pte_tlb.n) begin
                 // Svnapot: Check if the leaf PTE represents a 64KiB NAPOT page
-                is_napot_64k = (pte.ppn[3:0] == 4'b1000) && (ptw_lvl_q[0] == 2);
+                is_napot_64k = (pte_tlb.ppn[3:0] == 4'b1000) && (ptw_lvl_q[0] == 2);
                 // Svnapot: Any other encoding with the N-bit set is a reserved format and must cause a page fault
                 // Additionally, fault if N is set on a megapage or gigapage
                 if (!is_napot_64k) begin
@@ -477,13 +480,13 @@ module cva6_ptw
                   S_STAGE: begin
                     if ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i)) begin
                       if (CVA6Cfg.SvpbmtEn) begin
-                        if ((hpbmt_i && (pte.pbmt == 2'b11)) || (!hpbmt_i && (pte.pbmt != 2'b00))) begin 
+                        if ((hpbmt_i && (pte_tlb.pbmt == 2'b11)) || (!hpbmt_i && (pte_tlb.pbmt != 2'b00))) begin
                           state_d = PROPAGATE_ERROR;
                           if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                         end else begin
                           state_d = WAIT_GRANT;
                           ptw_stage_d = G_FINAL_STAGE;
-                          if (CVA6Cfg.RVH) gpte_d = pte;
+                          if (CVA6Cfg.RVH) gpte_d = pte_tlb;
                           ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                           gpaddr_n = gpaddr[ptw_lvl_q[0]];
                           ptw_pptr_n = {
@@ -493,16 +496,16 @@ module cva6_ptw
                           };
                           ptw_lvl_n[0] = '0;
 
-                          if(pte.pbmt != 2'b00) pbmt_attr_n = pte.pbmt;
+                          if (pte_tlb.pbmt != 2'b00) pbmt_attr_n = pte_tlb.pbmt;
                         end
                       end else begin
-                        if (pte.pbmt != 2'b00) begin
+                        if (pte_tlb.pbmt != 2'b00) begin
                           state_d = PROPAGATE_ERROR;
                           if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                         end else begin
                           state_d = WAIT_GRANT;
                           ptw_stage_d = G_FINAL_STAGE;
-                          if (CVA6Cfg.RVH) gpte_d = pte;
+                          if (CVA6Cfg.RVH) gpte_d = pte_tlb;
                           ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0];
                           gpaddr_n = gpaddr[ptw_lvl_q[0]];
                           ptw_pptr_n = {
@@ -519,7 +522,7 @@ module cva6_ptw
                     state_d = WAIT_GRANT;
                     ptw_stage_d = S_STAGE;
                     ptw_lvl_n[0] = ptw_lvl_q[HYP_EXT];
-                    pptr = {pte.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
+                    pptr = {pte_tlb.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
                     if (ptw_lvl_q[0] == 1) pptr[20:0] = gptw_pptr_q[20:0];
                     if (ptw_lvl_q[0] == 0) pptr[29:0] = gptw_pptr_q[29:0];
                     ptw_pptr_n = pptr;
@@ -535,12 +538,11 @@ module cva6_ptw
                 // If page is not executable, we can directly raise an error. This
                 // doesn't put a useless entry into the TLB. The same idea applies
                 // to the access flag since we let the access flag be managed by SW.
-                if ((!pte.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) ||
-                   (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte.r)) begin
-                    state_d = PROPAGATE_ERROR;
-                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                end 
-                else if (!pte.a) begin
+                if ((!pte_tlb.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) ||
+                   (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte_tlb.r)) begin
+                  state_d = PROPAGATE_ERROR;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                end else if (!pte_tlb.a) begin
                   if ((ptw_stage_q == S_STAGE && !enable_g_translation_i && madue_i) || 
                       (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
                       (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && enable_g_translation_i && hadue_i)) begin
@@ -552,16 +554,16 @@ module cva6_ptw
                     end
                     if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
                       if (CVA6Cfg.SvpbmtEn) begin
-                        if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                        if ((mpbmt_i && (pte_tlb.pbmt == 2'b11)) || (!mpbmt_i && (pte_tlb.pbmt != 2'b00))) begin
                           state_d = PROPAGATE_ERROR;
                           if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                         end else begin
                           shared_tlb_update_valid = 1'b1;
-                          if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
-                          
+                          if (pbmt_attr_q != 2'b00) pte_tlb.pbmt = pbmt_attr_q;
+
                         end
                       end else begin
-                        if (pte.pbmt != 2'b00) begin
+                        if (pte_tlb.pbmt != 2'b00) begin
                           state_d = PROPAGATE_ERROR;
                           if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                         end else begin
@@ -576,21 +578,20 @@ module cva6_ptw
                 end else begin
                   if (!CVA6Cfg.RVH || (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i))) begin
                     if (CVA6Cfg.SvpbmtEn) begin
-                      if((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
+                      if((mpbmt_i && (pte_tlb.pbmt == 2'b11)) || (!mpbmt_i && (pte_tlb.pbmt != 2'b00))) begin
                         state_d = PROPAGATE_ERROR;
                         if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                       end else begin
                         shared_tlb_update_valid = 1'b1;
-                        if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
+                        if (pbmt_attr_q != 2'b00) pte_tlb.pbmt = pbmt_attr_q;
                       end
                     end else begin
-                       if (pte.pbmt != 2'b00) begin
+                      if (pte_tlb.pbmt != 2'b00) begin
                         state_d = PROPAGATE_ERROR;
                         if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                       end
-                       else begin 
+                      end else begin
                         shared_tlb_update_valid = 1'b1;
-                       end
+                      end
                     end
                   end
                 end
@@ -603,84 +604,83 @@ module cva6_ptw
                 // If page is not readable (there are no write-only pages)
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
-                
+
                 if (
-                    (((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i ||      
-                    (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))  
+                    (((pte_tlb.r && !hlvx_inst_i) || (pte_tlb.x && (mxr_i || hlvx_inst_i ||      
+                    (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
                     // Request is a store: perform some additional checks                
 
                     // If the request was a store and the page is not write-able, raise an error
                     // the same applies if the dirty flag is not set
                     // g-intermediate nodes however never need write-permission
-                ) begin
-                    if(ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH) begin
-                      if(!pte.a) begin 
+                    ) begin
+                  if (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH) begin
+                    if (!pte_tlb.a) begin
+                      state_d = PROPAGATE_ERROR;
+                      if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                    end
+                  end else if (lsu_is_store_i && !pte_tlb.w) begin
+                    state_d = PROPAGATE_ERROR;
+                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                  end else begin
+                    if ((!pte_tlb.a) || (lsu_is_store_i && !pte_tlb.d)) begin
+                      if ((ptw_stage_q == S_STAGE && !en_ld_st_g_translation_i && madue_i) || 
+                            (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
+                            (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && en_ld_st_g_translation_i && hadue_i)) begin
+                        if (!pte_tlb.a) begin
+                          if (accessed_queue_full_i) begin
+                            access_full_n = 1'b1;
+                          end else begin
+                            accessed_req_valid_o = 1;
+                            accessed_req_paddr_o = ptw_pptr_q;
+                          end
+                        end
+                        if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
+                          if (CVA6Cfg.SvpbmtEn) begin
+                            if ((mpbmt_i && (pte_tlb.pbmt == 2'b11)) || (!mpbmt_i && (pte_tlb.pbmt != 2'b00))) begin
+                              state_d = PROPAGATE_ERROR;
+                              if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                            end else begin
+                              shared_tlb_update_valid = 1'b1;
+                              if (pbmt_attr_q != 2'b00) pte_tlb.pbmt = pbmt_attr_q;
+                            end
+                          end else begin
+                            if (pte_tlb.pbmt != 2'b00) begin
+                              state_d = PROPAGATE_ERROR;
+                              if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                            end else begin
+                              shared_tlb_update_valid = 1'b1;
+                            end
+                          end
+                        end
+                      end else begin
                         state_d = PROPAGATE_ERROR;
                         if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                       end
-                    end else if(lsu_is_store_i && !pte.w) begin
-                      state_d = PROPAGATE_ERROR;
-                      if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                     end else begin
-                      if ((!pte.a) || (lsu_is_store_i && !pte.d)) begin
-                        if ((ptw_stage_q == S_STAGE && !en_ld_st_g_translation_i && madue_i) || 
-                            (CVA6Cfg.RVH && (ptw_stage_q == G_FINAL_STAGE) && madue_i) ||
-                            (CVA6Cfg.RVH && ptw_stage_q == S_STAGE && en_ld_st_g_translation_i && hadue_i)) begin
-                          if (!pte.a) begin
-                            if(accessed_queue_full_i) begin
-                              access_full_n = 1'b1;
-                            end else begin
-                              accessed_req_valid_o = 1;
-                              accessed_req_paddr_o = ptw_pptr_q;
-                            end
-                          end
-                          if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
-                            if (CVA6Cfg.SvpbmtEn) begin
-                              if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
-                                state_d = PROPAGATE_ERROR;
-                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                              end else begin
-                                shared_tlb_update_valid = 1'b1;
-                                if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
-                              end
-                            end else begin
-                              if (pte.pbmt != 2'b00) begin
-                                state_d = PROPAGATE_ERROR;
-                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                              end
-                              else begin
-                                 shared_tlb_update_valid = 1'b1;
-                              end
-                            end
+                      if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
+                        if (CVA6Cfg.SvpbmtEn) begin
+                          if ((mpbmt_i && (pte_tlb.pbmt == 2'b11)) || (!mpbmt_i && (pte_tlb.pbmt != 2'b00))) begin
+                            state_d = PROPAGATE_ERROR;
+                            if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                          end else begin
+                            shared_tlb_update_valid = 1'b1;
+                            if (pbmt_attr_q != 2'b00) pte_tlb.pbmt = pbmt_attr_q;
                           end
                         end else begin
-                          state_d = PROPAGATE_ERROR;
-                          if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                        end
-                      end else begin
-                          if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH) begin
-                            if (CVA6Cfg.SvpbmtEn) begin
-                              if ((mpbmt_i && (pte.pbmt == 2'b11)) || (!mpbmt_i && (pte.pbmt != 2'b00))) begin
-                                state_d = PROPAGATE_ERROR;
-                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;   
-                              end else begin
-                                shared_tlb_update_valid = 1'b1;
-                                if(pbmt_attr_q != 2'b00) pte.pbmt = pbmt_attr_q;
-                              end
-                            end else begin
-                              if (pte.pbmt != 2'b00) begin
-                                state_d = PROPAGATE_ERROR;
-                                if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                              end else begin
-                                 shared_tlb_update_valid = 1'b1;
-                              end
-                            end
+                          if (pte_tlb.pbmt != 2'b00) begin
+                            state_d = PROPAGATE_ERROR;
+                            if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                          end else begin
+                            shared_tlb_update_valid = 1'b1;
                           end
+                        end
                       end
-                    end 
+                    end
+                  end
                 end else begin
-                    state_d = PROPAGATE_ERROR;
-                    if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
+                  state_d = PROPAGATE_ERROR;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
               end
 
@@ -696,7 +696,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte_tlb.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
@@ -722,7 +722,7 @@ module cva6_ptw
                       if (CVA6Cfg.RVH && ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i))) begin
                         ptw_stage_d = G_INTERMED_STAGE;
                         ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0] + 1;
-                        pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
+                        pptr = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                         gptw_pptr_n = pptr;
                         ptw_pptr_n = {
                           hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
@@ -731,24 +731,24 @@ module cva6_ptw
                         };
                         ptw_lvl_n[0] = '0;
                       end else begin
-                        ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
+                        ptw_pptr_n = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                       end
                     end
                     G_INTERMED_STAGE: begin
                       ptw_pptr_n = {
-                        pte.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
+                        pte_tlb.ppn, vaddr_lvl[HYP_EXT][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
                       };
                     end
                     G_FINAL_STAGE: begin
                       ptw_pptr_n = {
-                        pte.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
+                        pte_tlb.ppn, vaddr_lvl[HYP_EXT*2][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
                       };
                     end
                     default: ;
                   endcase
-                end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
+                end else ptw_pptr_n = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
-                if (CVA6Cfg.RVH && (pte.a || pte.d || pte.u)) begin
+                if (CVA6Cfg.RVH && (pte_tlb.a || pte_tlb.d || pte_tlb.u)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = ptw_stage_q;
                 end
@@ -757,14 +757,14 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte_tlb.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = ptw_stage_q;
                 end
               end
-              
+
               // check if 62:61 (pbmt) are all zeros in PTE
-              if (pte.pbmt != 2'b00) begin
+              if (pte_tlb.pbmt != 2'b00) begin
                 state_d = PROPAGATE_ERROR;
                 if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
               end
@@ -778,7 +778,7 @@ module cva6_ptw
             accessed_req_paddr_o    = '0;
             access_full_n           = '0;
             // we have to return the failed address in bad_addr
-            ptw_pptr_n = ptw_pptr_q;
+            ptw_pptr_n              = ptw_pptr_q;
             if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
             state_d = PROPAGATE_ACCESS_ERROR;
           end
@@ -803,16 +803,14 @@ module cva6_ptw
         if (data_rvalid_q) state_d = IDLE;
       end
       LATENCY: begin
-        if(access_full_n) begin
-          if(!accessed_queue_full_i) begin
+        if (access_full_n) begin
+          if (!accessed_queue_full_i) begin
             accessed_req_paddr_o = ptw_pptr_q;
             accessed_req_valid_o = 1;
             access_full_n = 0;
             state_d = IDLE;
-          end
-          else state_d = LATENCY;
-        end
-        else state_d = IDLE;
+          end else state_d = LATENCY;
+        end else state_d = IDLE;
       end
       default: begin
         state_d = IDLE;

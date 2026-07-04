@@ -122,6 +122,7 @@ module decoder
   // --------------------
   // Immediate select
   // --------------------
+  
   enum logic [3:0] {
     NOIMM,
     IIMM,
@@ -300,7 +301,7 @@ module decoder
                     // only if S mode is supported
                     // otherwise decode an illegal instruction
                     if (CVA6Cfg.RVH && v_i) begin
-                      virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
+                      virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                     end else begin
                       illegal_instr    = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                     end
@@ -310,6 +311,41 @@ module decoder
                       if (CVA6Cfg.RVH && v_i) virtual_illegal_instr = 1'b1;
                       else illegal_instr = 1'b1;
                     end
+                  end  // SINVAL.VMA
+                  else if (instr.instr[31:25] == 7'b1011) begin
+                    if (CVA6Cfg.RVH && v_i) begin
+                      virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                    end else begin
+                      illegal_instr = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                    end
+                    instruction_o.op = ariane_pkg::SINVAL_VMA;
+                    // check TVM flag and intercept SINVAL.VMA call if necessary
+                    if (CVA6Cfg.RVS && priv_lvl_i == riscv::PRIV_LVL_S && tvm_i) begin
+                      if (CVA6Cfg.RVH && v_i) virtual_illegal_instr = 1'b1;
+                      else illegal_instr = 1'b1;
+                    end
+                  end  // SFENCE.W.INVAL / SFENCE.INVAL.IR
+                  else if (instr.instr[31:25] == 7'b0001100) begin
+                    if (instr.itype.rd != '0 || instr.itype.rs1 != '0) begin
+                      if (CVA6Cfg.RVH && v_i) virtual_illegal_instr = 1'b1;
+                      else illegal_instr = 1'b1;
+                      // SFENCE.W.INVAL
+                    end else if (instr.rtype.rs2 == 5'b00000) begin
+                      if (CVA6Cfg.RVH && v_i) begin
+                        virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
+                      end else begin
+                        illegal_instr = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                      end
+                      instruction_o.op = ariane_pkg::SFENCE_W_INVAL;
+                      // SFENCE.INVAL.IR
+                    end else if (instr.rtype.rs2 == 5'b00001) begin
+                      if (CVA6Cfg.RVH && v_i) begin
+                        virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
+                      end else begin
+                        illegal_instr = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                      end
+                      instruction_o.op = ariane_pkg::SFENCE_INVAL_IR;
+                    end else illegal_instr = 1'b1;
                   end else if (CVA6Cfg.RVH) begin
                     if (instr.instr[31:25] == 7'b10001) begin
                       // check privilege level, HFENCE.VVMA can only be executed in M/S mode
@@ -331,6 +367,27 @@ module decoder
                       instruction_o.op = ariane_pkg::HFENCE_GVMA;
                       // check TVM flag and intercept HFENCE.GVMA call if necessary
                       if (priv_lvl_i == riscv::PRIV_LVL_S && !v_i && tvm_i) illegal_instr = 1'b1;
+
+                      // HINVAL.VVMA
+                    end else if (instr.instr[31:25] == 7'b0011011) begin
+                      if (v_i) begin
+                        virtual_illegal_instr = 1'b1;
+                      end else begin
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                      end
+                      instruction_o.op = ariane_pkg::HINVAL_VVMA;
+
+                      // HINVAL.GVMA
+                    end else if (instr.instr[31:25] == 7'b0111011) begin
+                      if (v_i) begin
+                        virtual_illegal_instr = 1'b1;
+                      end else begin
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
+                      end
+                      instruction_o.op = ariane_pkg::HINVAL_GVMA;
+                      // check TVM flag and intercept HINVAL.GVMA call if necessary
+                      if (priv_lvl_i == riscv::PRIV_LVL_S && !v_i && tvm_i) illegal_instr = 1'b1;
+
                     end else begin
                       illegal_instr = 1'b1;
                     end

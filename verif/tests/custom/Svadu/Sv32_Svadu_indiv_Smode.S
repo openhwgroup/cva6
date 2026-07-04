@@ -262,7 +262,7 @@ rwax_test:
     /* AMO access -> checks/updates A/D-bits */
     addi t0, a7, 20         
     li t1, 1
-    amoadd.w t2, t1, (t0)   
+    amoadd.w t2, t1, (t0)
 
     /* Fetch access -> checks/updates A-bits   */
     jalr ra, a5, 0   

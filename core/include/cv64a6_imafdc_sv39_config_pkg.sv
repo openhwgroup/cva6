@@ -170,6 +170,7 @@ package cva6_config_pkg;
       SvnapotEn: bit'(1),
       SvaduEn: bit'(0),
       SvpbmtEn: bit'(0),
+      SvinvalEn: bit'(0),
       SharedTlbDepth: int'(64),
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),

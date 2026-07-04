@@ -64,7 +64,7 @@ module cva6_mmu
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
     output logic lsu_is_store_o,  // the translation is requested by a store
-    output logic [1:0] lsu_pbmt_o, // memory attributes of translated address
+    output logic [1:0] lsu_pbmt_o,  // memory attributes of translated address
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -104,13 +104,13 @@ module cva6_mmu
     input logic accessed_queue_full_i,
 
     output logic dirty_req_tlb_ready_o,
-    input logic dirty_req_tlb_sync_i,
+    input  logic dirty_req_tlb_sync_i,
     output logic dirty_req_tlb_sync_o,
 
     input logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr_i,
     input logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_i,
     input logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_i,
-    
+
     output logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_o,
     output logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_o,
     output logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr_o,
@@ -121,6 +121,8 @@ module cva6_mmu
     // Performance counters
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
+
+    output logic shared_tlb_flush_busy_o,
     // PTW memory interface
     input dcache_req_o_t req_port_i,
     output dcache_req_i_t req_port_o,
@@ -198,13 +200,16 @@ module cva6_mmu
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
 
+  logic pue_dtlb_ready;
+
   // Assignments
 
   assign itlb_lu_access = icache_areq_i.fetch_req;
   assign dtlb_lu_access = lsu_req_i & !misaligned_ex_i.valid;
-  assign itlb_lu_asid   = v_i ? vs_asid_i : asid_i;
-  assign dtlb_lu_asid   = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
+  assign itlb_lu_asid = v_i ? vs_asid_i : asid_i;
+  assign dtlb_lu_asid = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
 
+  assign dirty_req_tlb_ready_o = pue_dtlb_ready && !shared_tlb_flush_busy_o;
 
   cva6_tlb #(
       .CVA6Cfg          (CVA6Cfg),
@@ -235,14 +240,14 @@ module cva6_mmu
       .gpaddr_to_be_flushed_i,
       .lu_is_page_o  (itlb_is_page),
       .lu_hit_o      (itlb_lu_hit),
-      
+
       // PUE-side TLB update path is unused for the ITLB.
-      .pue_tlb_vaddr_i   ('0),
-      .pue_tlb_update_i  ('0),
-      .pue_tlb_asid_i    ('0),
-      .pue_tlb_vmid_i    ('0),
-      .pue_tlb_ready_o   (),
-      .pue_pte_paddr_o   ()
+      .pue_tlb_vaddr_i ('0),
+      .pue_tlb_update_i('0),
+      .pue_tlb_asid_i  ('0),
+      .pue_tlb_vmid_i  ('0),
+      .pue_tlb_ready_o (),
+      .pue_pte_paddr_o ()
   );
 
   cva6_tlb #(
@@ -275,12 +280,12 @@ module cva6_mmu
       .lu_is_page_o  (dtlb_is_page),
       .lu_hit_o      (dtlb_lu_hit),
 
-      .pue_tlb_vaddr_i   (dirty_req_tlb_vaddr_i),
-      .pue_tlb_update_i  (dirty_req_tlb_sync_i),
-      .pue_tlb_asid_i    (dirty_req_tlb_asid_i),
-      .pue_tlb_vmid_i    (dirty_req_tlb_vmid_i),
-      .pue_tlb_ready_o   (dirty_req_tlb_ready_o),
-      .pue_pte_paddr_o   (dirty_req_pte_paddr)
+      .pue_tlb_vaddr_i (dirty_req_tlb_vaddr_i),
+      .pue_tlb_update_i(dirty_req_tlb_sync_i),
+      .pue_tlb_asid_i  (dirty_req_tlb_asid_i),
+      .pue_tlb_vmid_i  (dirty_req_tlb_vmid_i),
+      .pue_tlb_ready_o (pue_dtlb_ready),
+      .pue_pte_paddr_o (dirty_req_pte_paddr)
   );
 
 
@@ -317,20 +322,26 @@ module cva6_mmu
       .dtlb_vaddr_i (lsu_vaddr_i),
 
       // from PUE, PTE synchronization
-      .stlb_sync_vaddr_i   (dirty_req_tlb_vaddr_i),
-      .stlb_sync_update_i  (dirty_req_tlb_sync_i),
-      .stlb_sync_vmid_i    (dirty_req_tlb_vmid_i),
-      .stlb_sync_asid_i    (dirty_req_tlb_asid_i),
-      .stlb_sync_update_o  (dirty_req_tlb_sync_o),
+      .stlb_sync_vaddr_i (dirty_req_tlb_vaddr_i),
+      .stlb_sync_update_i(dirty_req_tlb_sync_i),
+      .stlb_sync_vmid_i  (dirty_req_tlb_vmid_i),
+      .stlb_sync_asid_i  (dirty_req_tlb_asid_i),
+      .stlb_sync_update_o(dirty_req_tlb_sync_o),
 
       // to TLBs, update logic
       .itlb_update_o(update_itlb),
       .dtlb_update_o(update_dtlb),
+
       .flush_busy_o(shared_tlb_flush_busy_o),
+
       // Performance counters
       .itlb_miss_o(itlb_miss_o),
       .dtlb_miss_o(dtlb_miss_o),
       .shared_tlb_miss_i(shared_tlb_miss),
+      .asid_to_be_flushed_i,
+      .vaddr_to_be_flushed_i,
+      .vmid_to_be_flushed_i,
+      .gpaddr_to_be_flushed_i,
 
       .shared_tlb_access_o(shared_tlb_access),
       .shared_tlb_hit_o   (shared_tlb_hit),
@@ -375,8 +386,8 @@ module cva6_mmu
       .accessed_queue_full_i,
 
       // PTW memory interface
-      .req_port_i    (req_port_i),
-      .req_port_o    (req_port_o),
+      .req_port_i(req_port_i),
+      .req_port_o(req_port_o),
 
       // to Shared TLB, update logic
       .shared_tlb_update_o(update_shared_tlb),
@@ -428,7 +439,7 @@ module cva6_mmu
     // MMU disabled: just pass through
     icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
     icache_areq_o.fetch_paddr  = CVA6Cfg.PLEN'(icache_areq_i.fetch_vaddr[((CVA6Cfg.PLEN > CVA6Cfg.VLEN) ? CVA6Cfg.VLEN -1: CVA6Cfg.PLEN -1 ):0]);
-    icache_areq_o.fetch_pma    = 2'b00;
+    icache_areq_o.fetch_pma = 2'b00;
     // two potential exception sources:
     // 1. HPTW threw an exception -> signal with a page fault exception
     // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -568,13 +579,20 @@ module cva6_mmu
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
 
+  logic pte_is_vs_stage;
+  logic pte_dirty_update_en;
+  logic gpte_dirty_update_en;
+
   logic [CVA6Cfg.VMID_WIDTH-1:0] lsu_vmid_n, lsu_vmid_q;
-  logic [CVA6Cfg.ASID_WIDTH-1:0] lsu_asid_n, lsu_asid_q; 
+  logic [CVA6Cfg.ASID_WIDTH-1:0] lsu_asid_n, lsu_asid_q;
   logic [CVA6Cfg.PLEN-1:0] dirty_req_pte_paddr, dirty_req_pte_paddr_n, dirty_req_pte_paddr_q;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
 
+  assign pte_is_vs_stage = CVA6Cfg.RVH && ld_st_v_i && en_ld_st_translation_i;
+  assign pte_dirty_update_en = (en_ld_st_translation_i || !CVA6Cfg.RVH) && !dtlb_pte_q.d && (pte_is_vs_stage ? hadue_i : madue_i);
+  assign gpte_dirty_update_en = CVA6Cfg.RVH && en_ld_st_g_translation_i && !dtlb_gpte_q.d && madue_i;
 
   // The data interface is simpler and only consists of a request/response interface
   always_comb begin : data_interface
@@ -593,9 +611,9 @@ module cva6_mmu
 
     lsu_vmid_n = vmid_i;
     lsu_asid_n = dtlb_lu_asid;
-    dirty_bit_fault_valid_o  = 1'b0;
-    dirty_req_tlb_vaddr_o    = 1'b0;
-    dirty_req_pte_paddr_n    = dirty_req_pte_paddr;
+    dirty_bit_fault_valid_o = 1'b0;
+    dirty_req_tlb_vaddr_o = 1'b0;
+    dirty_req_pte_paddr_n = dirty_req_pte_paddr;
 
     // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
     misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
@@ -632,7 +650,7 @@ module cva6_mmu
         lsu_vaddr_q[11:0]
       };
 
-      if (CVA6Cfg.SvaduEn) dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
+      if (CVA6Cfg.SvaduEn && (gpte_dirty_update_en || pte_dirty_update_en)) dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
 
       if (CVA6Cfg.PtLevels == 3 && dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
         // Strange 9+PtLevels to avoid CI errors on (purely syntactic) checks on Sv32, where
@@ -693,14 +711,14 @@ module cva6_mmu
             end
           end else if((CVA6Cfg.RVH && en_ld_st_g_translation_i && !dtlb_gpte_q.d) 
                 || ((en_ld_st_translation_i || !CVA6Cfg.RVH) && !dtlb_pte_q.d)) begin
-            if (CVA6Cfg.SvaduEn) begin
+            if (CVA6Cfg.SvaduEn && (pte_dirty_update_en || gpte_dirty_update_en)) begin
               dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
               dirty_bit_fault_valid_o = 1'b1;
               dirty_req_tlb_asid_o    = lsu_asid_q;
               dirty_req_tlb_vmid_o    = lsu_vmid_q;
               dirty_req_tlb_vaddr_o   = lsu_vaddr_q;
             end else begin
-              if(CVA6Cfg.RVH && en_ld_st_g_translation_i) begin
+              if (CVA6Cfg.RVH && en_ld_st_g_translation_i) begin
                 lsu_exception_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
                 lsu_exception_o.valid = 1'b1;
                 if (CVA6Cfg.TvalEn)
@@ -888,10 +906,10 @@ module cva6_mmu
       dirty_req_pte_paddr_q <= dirty_req_pte_paddr_n;
 
       if (CVA6Cfg.RVH) begin
-        lsu_tinst_q         <= lsu_tinst_n;
-        hs_ld_st_inst_q     <= hs_ld_st_inst_n;
-        dtlb_gpte_q         <= dtlb_gpte_n;
-        lsu_gpaddr_q        <= lsu_gpaddr_n;
+        lsu_tinst_q     <= lsu_tinst_n;
+        hs_ld_st_inst_q <= hs_ld_st_inst_n;
+        dtlb_gpte_q     <= dtlb_gpte_n;
+        lsu_gpaddr_q    <= lsu_gpaddr_n;
       end
     end
   end

@@ -74,6 +74,8 @@ module commit_stage
     output logic amo_valid_commit_o,
     // No store is pending - EX_STAGE
     input logic no_st_pending_i,
+    // FLUSH TLBs is finished - EX_STAGE
+    input logic no_tlb_flush_pending_i,
     // Commit the pending CSR instruction - EX_STAGE
     output logic commit_csr_o,
     // Flush I$ and pipeline - CONTROLLER
@@ -84,12 +86,16 @@ module commit_stage
     output logic flush_commit_o,
     // Flush TLBs and pipeline - CONTROLLER
     output logic sfence_vma_o,
+    // Flush TLBs and pipeline - CONTROLLER
+    output logic sinval_vma_o,
     // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_vvma_o,
+    // Flush TLBs and pipeline - CONTROLLER
+    output logic hinval_vvma_o,
     // TO_BE_COMPLETED - CONTROLLER
     output logic hfence_gvma_o,
-    // Shared TLB is still processing a multi-cycle flush
-    input logic shared_tlb_flush_busy_i,
+    // Flush TLBs and pipeline - CONTROLLER
+    output logic hinval_gvma_o,
     // Breakpoint exception from trigger module
     input logic break_from_trigger_i
 );
@@ -155,8 +161,11 @@ module commit_stage
     fence_i_o = 1'b0;
     fence_o = 1'b0;
     sfence_vma_o = 1'b0;
+    sinval_vma_o = 1'b0;
     hfence_vvma_o = 1'b0;
+    hinval_vvma_o = 1'b0;
     hfence_gvma_o = 1'b0;
+    hinval_gvma_o = 1'b0;
     csr_write_fflags_o = 1'b0;
     flush_commit_o = 1'b0;
 
@@ -235,11 +244,44 @@ module commit_stage
         if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_VMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            sfence_vma_o = tlb_flush_can_commit; //Only retire the fence when stores are drained and the shared TLB
+            sfence_vma_o = no_st_pending_i && no_tlb_flush_pending_i;
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = tlb_flush_can_commit;
+            commit_ack_o[0] = no_st_pending_i && no_tlb_flush_pending_i;
           end
         end
+
+        // ------------------
+        // SINVAL.VMA Logic
+        // ------------------
+        if (CVA6Cfg.RVS && commit_instr_i[0].op == SINVAL_VMA) begin
+          if (!commit_drop_i[0]) begin
+            sinval_vma_o    = no_tlb_flush_pending_i;
+            commit_ack_o[0] = no_tlb_flush_pending_i;
+          end
+        end
+
+        // ------------------
+        // SFENCE.W.INVAL Logic
+        // ------------------
+        // sfence.w.inval is idempotent so we can safely re-execute it after returning
+        // from interrupt service routine
+        // check if this instruction was a SFENCE_W_INVAL
+        if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_W_INVAL) begin
+          if (!commit_drop_i[0]) begin
+            // wait for the store buffer to drain until flushing the pipeline
+            commit_ack_o[0] = no_st_pending_i && no_tlb_flush_pending_i;
+          end
+        end
+
+        // ------------------
+        // SFENCE.INVAL.IR Logic
+        // ------------------
+        if (CVA6Cfg.RVS && commit_instr_i[0].op == SFENCE_INVAL_IR) begin
+          if (!commit_drop_i[0]) begin
+            commit_ack_o[0] = no_tlb_flush_pending_i;
+          end
+        end
+
         // ------------------
         // HFENCE.VVMA Logic
         // ------------------
@@ -249,11 +291,23 @@ module commit_stage
         if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_VVMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            hfence_vvma_o   = tlb_flush_can_commit;
+            hfence_vvma_o   = no_st_pending_i && no_tlb_flush_pending_i;
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = tlb_flush_can_commit;
+            commit_ack_o[0] = no_st_pending_i && no_tlb_flush_pending_i;
           end
         end
+
+
+        // ------------------
+        // HINVAL.VVMA Logic
+        // ------------------
+        if (CVA6Cfg.RVH && commit_instr_i[0].op == HINVAL_VVMA) begin
+          if (!commit_drop_i[0]) begin
+            hinval_vvma_o   = no_tlb_flush_pending_i;
+            commit_ack_o[0] = no_tlb_flush_pending_i;
+          end
+        end
+
         // ------------------
         // HFENCE.GVMA Logic
         // ------------------
@@ -263,11 +317,23 @@ module commit_stage
         if (CVA6Cfg.RVH && commit_instr_i[0].op == HFENCE_GVMA) begin
           if (!commit_drop_i[0]) begin
             // no store pending so we can flush the TLBs and pipeline
-            hfence_gvma_o   = tlb_flush_can_commit;
+            hfence_gvma_o   = no_st_pending_i && no_tlb_flush_pending_i;
             // wait for the store buffer to drain until flushing the pipeline
-            commit_ack_o[0] = tlb_flush_can_commit;
+            commit_ack_o[0] = no_st_pending_i && no_tlb_flush_pending_i;
           end
         end
+
+        // ------------------
+        // HINVAL.GVMA Logic
+        // ------------------
+        if (CVA6Cfg.RVH && commit_instr_i[0].op == HINVAL_GVMA) begin
+          if (!commit_drop_i[0]) begin
+            hinval_gvma_o   = no_tlb_flush_pending_i;
+            commit_ack_o[0] = no_tlb_flush_pending_i;
+          end
+        end
+
+
         // ------------------
         // FENCE.I Logic
         // ------------------

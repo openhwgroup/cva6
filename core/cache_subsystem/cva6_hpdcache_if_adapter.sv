@@ -105,7 +105,7 @@ module cva6_hpdcache_if_adapter
 
       assign hpdcache_req_abort_o = cva6_req_i.kill_req;
       assign hpdcache_req_tag_o = cva6_req_i.address_tag;
-      assign hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable | (CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01));
+      assign hpdcache_req_pma_o.uncacheable = hpdcache_req_is_uncacheable | (CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01 || cva6_req_i.pma == 2'b10));
       assign hpdcache_req_pma_o.io = CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b10);
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -115,12 +115,6 @@ module cva6_hpdcache_if_adapter
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
       assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
 
-
-      always_ff @(posedge clk_i) begin
-        if(hpdcache_req_valid_o) begin
-          $display("[%0t] load HPDACAHCE pma : %b", $time, hpdcache_req_pma_o);
-        end
-      end
       //  Assertions
       //  {{{
       //    pragma translate_off
@@ -143,7 +137,11 @@ module cva6_hpdcache_if_adapter
       hpdcache_pkg::hpdcache_req_op_t        amo_op;
       logic                           [31:0] amo_resp_word;
       logic                                  amo_pending_q;
-      logic                           [1:0]  amo_pma;
+      logic                           [ 1:0] amo_pma;
+
+      logic                                  select_amo;
+      logic                                  select_store;
+      logic                                  select_flush;
 
       hpdcache_req_t                         hpdcache_req_amo;
       hpdcache_req_t                         hpdcache_req_store;
@@ -267,8 +265,11 @@ module cva6_hpdcache_if_adapter
               phys_indexed: 1'b1,
               addr_tag: amo_tag,
               pma: '{
-                  uncacheable: hpdcache_req_is_uncacheable |
-                                (CVA6Cfg.SvpbmtEn && (amo_pma == 2'b01)),
+                  uncacheable:
+                  hpdcache_req_is_uncacheable
+                  | (
+                  CVA6Cfg.SvpbmtEn && (amo_pma == 2'b01 || amo_pma == 2'b10)
+                  ),
                   io: CVA6Cfg.SvpbmtEn && (amo_pma == 2'b10),
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }
@@ -289,8 +290,11 @@ module cva6_hpdcache_if_adapter
               phys_indexed: 1'b1,
               addr_tag: cva6_req_i.address_tag,
               pma: '{
-                  uncacheable: hpdcache_req_is_uncacheable |
-                                (CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01)),
+                  uncacheable:
+                  hpdcache_req_is_uncacheable
+                  | (
+                  CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b01 || cva6_req_i.pma == 2'b10)
+                  ),
                   io: CVA6Cfg.SvpbmtEn && (cva6_req_i.pma == 2'b10),
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
               }
@@ -322,10 +326,14 @@ module cva6_hpdcache_if_adapter
       assign forward_store = cva6_req_i.data_req;
       assign forward_amo = cva6_amo_req_i.req;
 
-      assign hpdcache_req_valid_o = (forward_amo & ~amo_pending_q) | forward_store | forward_flush;
+      assign select_amo   = forward_amo & ~amo_pending_q;
+      assign select_store = forward_store & ~select_amo;
+      assign select_flush = forward_flush & ~select_amo & ~select_store;
 
-      assign hpdcache_req = forward_amo   ? hpdcache_req_amo :
-                            forward_store ? hpdcache_req_store : hpdcache_req_flush;
+      assign hpdcache_req_valid_o = select_amo | select_store | select_flush; 
+      
+      assign hpdcache_req = select_amo   ? hpdcache_req_amo :
+                            select_store ? hpdcache_req_store : hpdcache_req_flush;
 
       assign hpdcache_req_abort_o = 1'b0;  // unused on physically indexed requests
       assign hpdcache_req_tag_o = '0;  // unused on physically indexed requests
@@ -333,7 +341,6 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
       //  }}}
-
       //  Response forwarding
       //  {{{
       ariane_pkg::amo_resp_t cva6_amo_resp;
@@ -348,7 +355,7 @@ module cva6_hpdcache_if_adapter
       assign cva6_req_o.data_rvalid = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid != '1);
       assign cva6_req_o.data_rdata = hpdcache_rsp_i.rdata;
       assign cva6_req_o.data_rid = hpdcache_rsp_i.tid;
-      assign cva6_req_o.data_gnt = hpdcache_req_ready_i;
+      assign cva6_req_o.data_gnt = select_store & hpdcache_req_ready_i;
 
       assign cva6_amo_resp.ack = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid == '1);
       assign cva6_amo_resp.result = amo_is_word ? {{32{amo_resp_word[31]}}, amo_resp_word}

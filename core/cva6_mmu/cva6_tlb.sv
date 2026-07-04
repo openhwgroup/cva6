@@ -198,24 +198,24 @@ module cva6_tlb
     end
   endgenerate
 
-  assign pue_tlb_ready_o = !(lu_access_i && !lu_hit_o); // PTW access or DTLB UPDATE WATING
+  assign pue_tlb_ready_o = !(lu_access_i && !lu_hit_o) && !flush_i; // PTW access or DTLB UPDATE WATING
 
   always_comb begin : translation
 
     // default assignment
-    lu_hit         = '{default: 0};
-    lu_hit_o       = 1'b0;
-    lu_content_o   = '{default: 0};
-    lu_g_content_o = '{default: 0};
-    lu_is_page_o   = '{default: 0};
-    match_asid     = '{default: 0};
-    match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
-    match_stage    = '{default: 0};
-    g_content      = '{default: 0};
-    lu_gpaddr_o    = '{default: 0};
+    lu_hit          = '{default: 0};
+    lu_hit_o        = 1'b0;
+    lu_content_o    = '{default: 0};
+    lu_g_content_o  = '{default: 0};
+    lu_is_page_o    = '{default: 0};
+    match_asid      = '{default: 0};
+    match_vmid      = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
+    match_stage     = '{default: 0};
+    g_content       = '{default: 0};
+    lu_gpaddr_o     = '{default: 0};
 
-    pue_sync_hit       = 1'b0;
-    pue_pte_paddr_o    = '0;
+    pue_sync_hit    = 1'b0;
+    pue_pte_paddr_o = '0;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
       // First level match, this may be a giga page, check the ASID flags as well
@@ -245,8 +245,8 @@ module cva6_tlb
           lu_is_page_o    = is_page_o[i];
           lu_content_o    = content_q[i].pte;
           pue_pte_paddr_o = pptr_q[i];
-          lu_hit_o     = 1'b1;
-          lu_hit[i]    = 1'b1;
+          lu_hit_o        = 1'b1;
+          lu_hit[i]       = 1'b1;
           // Translate S-stage to GPA: use `content_q[i].pte` to get PPN and use offset
           // from input `lu_vaddr_i`. In case of mega/giga pages, PTE PPN must be aligned,
           // so we should not overwrite any useful bits.
@@ -292,8 +292,8 @@ module cva6_tlb
                 lu_content_o         = patched_pte;
                 pue_pte_paddr_o      = pptr_q[i];
               end else begin
-                lu_content_o = content_q[i].pte;
-                pue_pte_paddr_o      = pptr_q[i];
+                lu_content_o    = content_q[i].pte;
+                pue_pte_paddr_o = pptr_q[i];
               end
 
               if (CVA6Cfg.RVH) begin
@@ -311,8 +311,8 @@ module cva6_tlb
     end
   end
 
-  logic [HYP_EXT:0] asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
-  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
+  logic asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
+  logic vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
   logic vmid_to_be_flushed_is0;  // indicates that the VMID provided is 0, active high
   logic gpaddr_to_be_flushed_is0;  // indicates that the GPADDR provided is 0, active high
   logic flush_addr_napot_match;
@@ -334,7 +334,7 @@ module cva6_tlb
     tags_n    = tags_q;
     content_n = content_q;
 
-    if(CVA6Cfg.SvaduEn) pptr_n = pptr_q;
+    if (CVA6Cfg.SvaduEn) pptr_n = pptr_q;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
 
@@ -432,20 +432,20 @@ module cva6_tlb
         };
         // update content as well
         content_n[i].pte = update_i.content;
-        if(CVA6Cfg.SvaduEn) begin
-           pptr_n[i] = update_i.pptr;
-           content_n[i].pte.a = 1'b1;  // Svadu Accessed-bit update
+        if (CVA6Cfg.SvaduEn) begin
+          pptr_n[i] = update_i.pptr;
+          content_n[i].pte.a = 1'b1;  // Svadu Accessed-bit update
         end
         if (CVA6Cfg.RVH) begin
-           content_n[i].gpte = update_i.g_content;
-           if(CVA6Cfg.SvaduEn) begin 
+          content_n[i].gpte = update_i.g_content;
+          if (CVA6Cfg.SvaduEn) begin
             pptr_n[i] = update_i.pptr;
-            content_n[i].gpte.a = 1'b1; // Svadu Accessed-bit update
-           end
+            content_n[i].gpte.a = 1'b1;  // Svadu Accessed-bit update
+          end
         end
       end else if (CVA6Cfg.SvaduEn && pue_sync_hit && tags_q[i].valid && match_asid[i] && match_vmid[i] && match_stage[i] && (|level_match[i] || napot_tag_match[i])) begin
         content_n[i].pte.d = 1;
-        if(CVA6Cfg.RVH) begin
+        if (CVA6Cfg.RVH) begin
           content_n[i].gpte.d = 1;
         end
       end

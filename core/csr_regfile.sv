@@ -129,9 +129,9 @@ module csr_regfile
     // TO_BE_COMPLETED - EX_STAGE
     output logic [CVA6Cfg.VMID_WIDTH-1:0] vmid_o,
     // machine-mode hardware-assisted A/D-bit Update - EX_STAGE
-    output logic madue_o, 
+    output logic madue_o,
     // hypervisor-mode hardware-assisted A/D-bit Update - EX_STAGE
-    output logic hadue_o, 
+    output logic hadue_o,
     // machine-mode page-based memory attributes - EX_STAGE
     output logic mpbmt_o,
     // hypervisor-mode page-based memory attributes - EX_STAGE
@@ -665,11 +665,11 @@ module csr_regfile
           end
         end
         riscv::CSR_MENVCFGH: begin
-          if (CVA6Cfg.RVU && CVA6Cfg.IS_XLEN32) begin 
+          if (CVA6Cfg.RVU && CVA6Cfg.IS_XLEN32) begin
             csr_rdata = '0;
-              if(CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN32) begin
-                csr_rdata[29] = madue_q;
-              end
+            if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN32) begin
+              csr_rdata[29] = madue_q;
+            end
           end else read_access_exception = 1'b1;
         end
         riscv::CSR_MVENDORID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, OPENHWGROUP_MVENDORID};
@@ -1007,11 +1007,11 @@ module csr_regfile
       vsatp = vsatp_q;
     end
 
-    madue_d = madue_q;
-    hadue_d = hadue_q;
+    madue_d         = madue_q;
+    hadue_d         = hadue_q;
 
-    mpbmt_d = mpbmt_q;
-    hpbmt_d = hpbmt_q;
+    mpbmt_d         = mpbmt_q;
+    hpbmt_d         = hpbmt_q;
 
     instret         = instret_q;
 
@@ -1742,19 +1742,19 @@ module csr_regfile
             endcase
             mcbcfe_d = csr_wdata[6];
           end
-          if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64)  begin
+          if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN64) begin
             madue_d = csr_wdata[61];
-          end 
+          end
           if (CVA6Cfg.SvpbmtEn && CVA6Cfg.IS_XLEN64) begin
             mpbmt_d = csr_wdata[62];
           end
         end
         riscv::CSR_MENVCFGH: begin
           if (!CVA6Cfg.RVU || !CVA6Cfg.IS_XLEN32) begin
-             update_access_exception = 1'b1;
+            update_access_exception = 1'b1;
           end else begin
             if (CVA6Cfg.SvaduEn && CVA6Cfg.IS_XLEN32) begin
-                madue_d = csr_wdata[29];
+              madue_d = csr_wdata[29];
             end
           end
         end
@@ -2842,7 +2842,7 @@ module csr_regfile
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
 
       if (CVA6Cfg.SvaduEn) begin
-        madue_q <= 1'b0; 
+        madue_q <= 1'b0;
         hadue_q <= 1'b0;
       end
 

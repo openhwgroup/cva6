@@ -303,11 +303,12 @@ rwax_test:
     li a2, 0x800     
     sw a2, 20(a0)    
 
+
     /* AMO access -> checks/updates A/D-bits */
     addi t0, a7, 20         
     li t1, 1
-    amoadd.w t2, t1, (t0)   
-
+    amoadd.w t2, t1, (t0)
+    
     /* Fetch access -> checks/updates A-bits   */
     jalr ra, a5, 0   
     .align 2         /* align ecall to avoid RVC halfword issue */

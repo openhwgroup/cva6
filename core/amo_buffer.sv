@@ -27,13 +27,13 @@ module amo_buffer #(
     input  logic [CVA6Cfg.PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
     input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
-    input logic [1:0] amo_pbmt_i,   // page-based memory attributes
+    input logic [1:0] amo_pbmt_i,  // page-based memory attributes
     // D$
     output ariane_pkg::amo_req_t amo_req_o,  // request to cache subsystem
     input ariane_pkg::amo_resp_t amo_resp_i,  // response from cache subsystem
     // PUE
     output logic [CVA6Cfg.PLEN-1:0] pue_commit_paddr_o, // physical address of AMO for tracking non-speculative dirty-bit update
-    output logic pue_commit_valid_o,                    // commit tracking signal to pue
+    output logic pue_commit_valid_o,  // commit tracking signal to pue
     // Auxiliary signals
     input logic amo_valid_commit_i,  // We have a valid AMO in the commit stage
     input logic no_st_pending_i  // there is currently no store pending anymore

@@ -73,10 +73,16 @@ module controller
     input logic fence_i,
     // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
     input logic sfence_vma_i,
+    // We got an instruction to flush the TLBs and pipeline - COMMIT_STAGE
+    input logic sinval_vma_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic hfence_vvma_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic hinval_vvma_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic hfence_gvma_i,
+    // TO_BE_COMPLETED - TO_BE_COMPLETED
+    input logic hinval_gvma_i,
     // Flush request from commit stage - COMMIT_STAGE
     input logic flush_commit_i,
     // Flush request from accelerator - ACC_DISPATCHER
@@ -172,9 +178,9 @@ module controller
       end
     end
     // ---------------------------------
-    // SFENCE.VMA
+    // SFENCE.VMA & SINVAL.VMA
     // ---------------------------------
-    if (CVA6Cfg.RVS && sfence_vma_i) begin
+    if (CVA6Cfg.RVS && (sfence_vma_i || sinval_vma_i)) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;
@@ -186,9 +192,9 @@ module controller
     end
 
     // ---------------------------------
-    // HFENCE.VVMA
+    // HFENCE.VVMA & HINVAL.VVMA
     // ---------------------------------
-    if (CVA6Cfg.RVH && hfence_vvma_i) begin
+    if (CVA6Cfg.RVH && (hfence_vvma_i || hinval_vvma_i)) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;
@@ -199,9 +205,9 @@ module controller
     end
 
     // ---------------------------------
-    // HFENCE.GVMA
+    // HFENCE.GVMA & HINVAL.GVMA
     // ---------------------------------
-    if (CVA6Cfg.RVH && hfence_gvma_i) begin
+    if (CVA6Cfg.RVH && (hfence_gvma_i || hinval_gvma_i)) begin
       set_pc_commit_o        = 1'b1;
       flush_if_o             = 1'b1;
       flush_unissued_instr_o = 1'b1;

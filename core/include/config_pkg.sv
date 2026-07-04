@@ -267,6 +267,8 @@ package config_pkg;
     bit          SvaduEn;
     // Option to enable Svpbmt extension
     bit          SvpbmtEn;
+    // Option to enable Svinval extension
+    bit          SvinvalEn;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -355,6 +357,7 @@ package config_pkg;
     bit SvnapotEn;
     bit SvaduEn;
     bit SvpbmtEn;
+    bit SvinvalEn;
     int unsigned SharedTlbDepth;
     int unsigned VpnLen;
     int unsigned PtLevels;

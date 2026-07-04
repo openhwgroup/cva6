@@ -310,8 +310,13 @@ package ariane_pkg;
     FENCE,
     FENCE_I,
     SFENCE_VMA,
+    SINVAL_VMA,
+    SFENCE_W_INVAL,
+    SFENCE_INVAL_IR,
     HFENCE_VVMA,
+    HINVAL_VVMA,
     HFENCE_GVMA,
+    HINVAL_GVMA,
     CSR_WRITE,
     CSR_READ,
     CSR_SET,
@@ -694,7 +699,7 @@ package ariane_pkg;
     logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
     logic [63:0] operand_a;  // address
     logic [63:0] operand_b;  // data as layouted in the register
-    logic [1:0]  pma;       //  physical memory attributes
+    logic [1:0]  pma;        //  physical memory attributes
   } amo_req_t;
 
   // AMO response coming from cache.

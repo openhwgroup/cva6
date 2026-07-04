@@ -121,13 +121,13 @@ module load_store_unit
     // Make Executable Readable Virtual Supervisor - CSR_REGFILE
     input  logic                                      vmxr_i,
     // machine-mode hardware-supported A/D-bit update - CSR_REGFILE
-    input logic                                       madue_i,
+    input  logic                                      madue_i,
     // hypervisor-mode hardware-supported A/D-bit update - CSR_REGFILE
-    input logic                                       hadue_i,
+    input  logic                                      hadue_i,
     // machine-mode page-based memory attributes - CSR_REGFILE
-    input logic                                       mpbmt_i,
+    input  logic                                      mpbmt_i,
     // hypervisor-mode page-based memory attributes - CSR_REGFILE
-    input logic                                       hpbmt_i,
+    input  logic                                      hpbmt_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input  logic             [      CVA6Cfg.PPNW-1:0] satp_ppn_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -271,7 +271,7 @@ module load_store_unit
 
   logic [CVA6Cfg.VLEN-1:0] dirty_req_tlb_vaddr, dirty_req_vaddr;
   logic dirty_req_tlb_sync_i, dirty_req_tlb_sync_o;
-  logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_i, dirty_req_tlb_asid_o; 
+  logic [CVA6Cfg.ASID_WIDTH-1:0] dirty_req_tlb_asid_i, dirty_req_tlb_asid_o;
   logic [CVA6Cfg.VMID_WIDTH-1:0] dirty_req_tlb_vmid_i, dirty_req_tlb_vmid_o;
   logic dirty_req_tlb_ready;
   logic dirty_bit_fault_valid;
@@ -353,27 +353,29 @@ module load_store_unit
         .flush_tlb_vvma_i,
         .flush_tlb_gvma_i,
 
-        .accessed_req_paddr_o  (accessed_req_paddr),
-        .accessed_req_valid_o  (accessed_req_valid),
-        .accessed_queue_full_i (accessed_queue_full),
+        .accessed_req_paddr_o (accessed_req_paddr),
+        .accessed_req_valid_o (accessed_req_valid),
+        .accessed_queue_full_i(accessed_queue_full),
 
-        .dirty_req_tlb_ready_o (dirty_req_tlb_ready),
-        .dirty_req_tlb_sync_i  (dirty_req_tlb_sync_o),
-        .dirty_req_tlb_sync_o  (dirty_req_tlb_sync_i),
-        
-        .dirty_req_tlb_vaddr_i (dirty_req_tlb_vaddr),
-        .dirty_req_tlb_vmid_i  (dirty_req_tlb_vmid_o),
-        .dirty_req_tlb_asid_i  (dirty_req_tlb_asid_o),
-        
-        .dirty_req_tlb_vmid_o  (dirty_req_tlb_vmid_i),
-        .dirty_req_tlb_asid_o  (dirty_req_tlb_asid_i),
-        .dirty_req_tlb_vaddr_o (dirty_req_vaddr),
-        .dirty_req_pte_paddr_o (dirty_req_pte_paddr),
+        .dirty_req_tlb_ready_o(dirty_req_tlb_ready),
+        .dirty_req_tlb_sync_i (dirty_req_tlb_sync_o),
+        .dirty_req_tlb_sync_o (dirty_req_tlb_sync_i),
 
-        .dirty_bit_fault_valid_o (dirty_bit_fault_valid),
+        .dirty_req_tlb_vaddr_i(dirty_req_tlb_vaddr),
+        .dirty_req_tlb_vmid_i (dirty_req_tlb_vmid_o),
+        .dirty_req_tlb_asid_i (dirty_req_tlb_asid_o),
+
+        .dirty_req_tlb_vmid_o (dirty_req_tlb_vmid_i),
+        .dirty_req_tlb_asid_o (dirty_req_tlb_asid_i),
+        .dirty_req_tlb_vaddr_o(dirty_req_vaddr),
+        .dirty_req_pte_paddr_o(dirty_req_pte_paddr),
+
+        .dirty_bit_fault_valid_o(dirty_bit_fault_valid),
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
+        .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
+
         .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
 
         .req_port_i(dcache_req_ports_i[0]),
@@ -385,7 +387,7 @@ module load_store_unit
   end else begin : gen_no_mmu
     // icache request without MMU, virtual and physical address are identical
     assign pmp_icache_areq_i.fetch_valid = icache_areq_i.fetch_req;
-    assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
+    assign shared_tlb_flush_busy_o = 1'b0;
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
       assign pmp_icache_areq_i.fetch_pma   = 2'b00;
@@ -399,7 +401,7 @@ module load_store_unit
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         lsu_paddr <= '0;
-        lsu_pbmt  <= '0;
+        lsu_pbmt <= '0;
         pmp_exception <= '0;
         pmp_translation_valid <= 1'b0;
       end else begin
@@ -618,19 +620,19 @@ module load_store_unit
       .accessed_req_valid_i (accessed_req_valid),
       .accessed_queue_full_o(accessed_queue_full),
 
-      .dirty_req_pte_paddr_i    (dirty_req_pte_paddr),
-      .dirty_bit_fault_valid_i  (dirty_bit_fault_valid),
-      .dirty_req_vaddr_i        (dirty_req_vaddr),
-      .dirty_req_asid_i         (dirty_req_tlb_asid_i),
-      .dirty_req_vmid_i         (dirty_req_tlb_vmid_i),
+      .dirty_req_pte_paddr_i  (dirty_req_pte_paddr),
+      .dirty_bit_fault_valid_i(dirty_bit_fault_valid),
+      .dirty_req_vaddr_i      (dirty_req_vaddr),
+      .dirty_req_asid_i       (dirty_req_tlb_asid_i),
+      .dirty_req_vmid_i       (dirty_req_tlb_vmid_i),
 
-      .dirty_req_tlb_vmid_o     (dirty_req_tlb_vmid_o),
-      .dirty_req_tlb_asid_o     (dirty_req_tlb_asid_o),
-      .dirty_req_tlb_vaddr_o    (dirty_req_tlb_vaddr),
+      .dirty_req_tlb_vmid_o (dirty_req_tlb_vmid_o),
+      .dirty_req_tlb_asid_o (dirty_req_tlb_asid_o),
+      .dirty_req_tlb_vaddr_o(dirty_req_tlb_vaddr),
 
-      .dirty_req_tlb_ready_i    (dirty_req_tlb_ready),
-      .dirty_req_tlb_sync_i     (dirty_req_tlb_sync_i),
-      .dirty_req_tlb_sync_o     (dirty_req_tlb_sync_o),
+      .dirty_req_tlb_ready_i(dirty_req_tlb_ready),
+      .dirty_req_tlb_sync_i (dirty_req_tlb_sync_i),
+      .dirty_req_tlb_sync_o (dirty_req_tlb_sync_o),
       // Load Unit
       .page_offset_i        (page_offset),
       .page_offset_matches_o(page_offset_matches),

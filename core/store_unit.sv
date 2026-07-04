@@ -194,9 +194,9 @@ module store_unit
     ex_o                   = ex_i;
     trans_id_n             = lsu_ctrl_i.trans_id;
     state_d                = state_q;
-    
-    dirty_bit_fault_d = dirty_bit_fault_q;
-    dirty_req_valid = 1'b0;
+
+    dirty_bit_fault_d      = dirty_bit_fault_q;
+    dirty_req_valid        = 1'b0;
 
     case (state_q)
       // we got a valid store
@@ -205,7 +205,7 @@ module store_unit
           state_d = VALID_STORE;
           translation_req_o = 1'b1;
           pop_st_o = 1'b1;
-          
+
           dirty_bit_fault_d = dirty_bit_fault_valid_i;
 
           // check if translation was valid and we have space in the store buffer
@@ -229,7 +229,7 @@ module store_unit
           st_valid = 1'b1;
           if (CVA6Cfg.SvaduEn && dirty_bit_fault_q && !dirty_queue_full_o) begin
             dirty_bit_fault_d = 1'b0;
-            dirty_req_valid = 1'b1;
+            dirty_req_valid   = 1'b1;
           end
         end
 
@@ -253,7 +253,7 @@ module store_unit
           end
 
           if (CVA6Cfg.SvaduEn && dirty_queue_full_o && dirty_bit_fault_valid_i) begin
-            state_d = WAIT_STORE_READY;
+            state_d  = WAIT_STORE_READY;
             pop_st_o = 1'b0;
           end
           // if we do not have another request go back to idle
@@ -294,8 +294,8 @@ module store_unit
       // the only difference is that we do not want to store this request
       pop_st_o = 1'b1;
       st_valid = 1'b0;
-      state_d  = IDLE;
-      valid_o  = 1'b1;
+      state_d = IDLE;
+      valid_o = 1'b1;
       dirty_req_valid = 1'b0;
     end
 
@@ -438,99 +438,99 @@ module store_unit
         .amo_valid_commit_i(amo_valid_commit_i),
         .no_st_pending_i   (no_st_pending_o)
     );
-    
+
     assign amo_commit_o = amo_resp_i;
 
   end else if (CVA6Cfg.RVA && CVA6Cfg.SvaduEn) begin
 
-      // Shared AMO port arbitration 
-      amo_req_t  shared_amo_req_o [1:0];
-      amo_resp_t shared_amo_resp_i [1:0];
-      logic bus_owner, bus_busy;
+    // Shared AMO port arbitration 
+    amo_req_t  shared_amo_req_o [1:0];
+    amo_resp_t shared_amo_resp_i[1:0];
+    logic bus_owner, bus_busy;
 
-      amo_buffer #(
-          .CVA6Cfg(CVA6Cfg)
-      ) i_amo_buffer (
-          .clk_i,
-          .rst_ni,
-          .flush_i,
-          .valid_i           (amo_buffer_valid),
-          .ready_o           (amo_buffer_ready),
-          .paddr_i           (paddr_i),
-          .amo_op_i          (amo_op_q),
-          .data_i            (st_data_q),
-          .data_size_i       (st_data_size_q),
-          .amo_pbmt_i        (dtlb_pbmt_i),
-          .amo_req_o         (shared_amo_req_o[0]),
-          .amo_resp_i        (shared_amo_resp_i[0]),
-          .pue_commit_valid_o(amo_buffer_pue_commit),
-          .pue_commit_paddr_o(amo_buffer_pue_paddr),
-          .amo_valid_commit_i(amo_valid_commit_i),
-          .no_st_pending_i   (no_st_pending_o)
-      );
-
-      pte_update_unit #(
-        .CVA6Cfg(CVA6Cfg),
-        .DEPTH(8)
-      ) i_cva6_pue (
+    amo_buffer #(
+        .CVA6Cfg(CVA6Cfg)
+    ) i_amo_buffer (
         .clk_i,
         .rst_ni,
-        .pipeline_flush_i      (flush_i),
+        .flush_i,
+        .valid_i           (amo_buffer_valid),
+        .ready_o           (amo_buffer_ready),
+        .paddr_i           (paddr_i),
+        .amo_op_i          (amo_op_q),
+        .data_i            (st_data_q),
+        .data_size_i       (st_data_size_q),
+        .amo_pbmt_i        (dtlb_pbmt_i),
+        .amo_req_o         (shared_amo_req_o[0]),
+        .amo_resp_i        (shared_amo_resp_i[0]),
+        .pue_commit_valid_o(amo_buffer_pue_commit),
+        .pue_commit_paddr_o(amo_buffer_pue_paddr),
+        .amo_valid_commit_i(amo_valid_commit_i),
+        .no_st_pending_i   (no_st_pending_o)
+    );
 
-        .accessed_req_pte_paddr_i  (accessed_req_paddr_i),
-        .accessed_req_valid_i      (accessed_req_valid_i),
-        .accessed_queue_full_o     (accessed_queue_full_o),
-        
-        .dirty_req_pte_paddr_i (dirty_req_pte_paddr_i),
-        .dirty_req_paddr_i     (paddr_i),
-        .dirty_req_vaddr_i     (dirty_req_vaddr_i),
-        .dirty_req_asid_i      (dirty_req_asid_i),
-        .dirty_req_vmid_i      (dirty_req_vmid_i),
-        .dirty_req_valid_i     (dirty_req_valid),
-        .dirty_queue_full_o    (dirty_queue_full_o),
+    pte_update_unit #(
+        .CVA6Cfg(CVA6Cfg),
+        .DEPTH  (8)
+    ) i_cva6_pue (
+        .clk_i,
+        .rst_ni,
+        .pipeline_flush_i(flush_i),
 
-        .dirty_req_tlb_sync_i  (dirty_req_tlb_sync_i),
-        .dirty_req_tlb_ready_i (dirty_req_tlb_ready_i),
+        .accessed_req_pte_paddr_i(accessed_req_paddr_i),
+        .accessed_req_valid_i    (accessed_req_valid_i),
+        .accessed_queue_full_o   (accessed_queue_full_o),
 
-        .dirty_req_tlb_sync_o  (dirty_req_tlb_sync_o),
-        .dirty_req_tlb_vaddr_o (dirty_req_tlb_vaddr_o),
-        .dirty_req_tlb_asid_o  (dirty_req_tlb_asid_o),
-        .dirty_req_tlb_vmid_o  (dirty_req_tlb_vmid_o),
+        .dirty_req_pte_paddr_i(dirty_req_pte_paddr_i),
+        .dirty_req_paddr_i    (paddr_i),
+        .dirty_req_vaddr_i    (dirty_req_vaddr_i),
+        .dirty_req_asid_i     (dirty_req_asid_i),
+        .dirty_req_vmid_i     (dirty_req_vmid_i),
+        .dirty_req_valid_i    (dirty_req_valid),
+        .dirty_queue_full_o   (dirty_queue_full_o),
 
-        .commit_valid_i        (pue_commit_valid),
-        .commit_paddr_i        (pue_commit_paddr),
+        .dirty_req_tlb_sync_i (dirty_req_tlb_sync_i),
+        .dirty_req_tlb_ready_i(dirty_req_tlb_ready_i),
 
-        .amo_req_o             (shared_amo_req_o[1]),
-        .amo_resp_i            (shared_amo_resp_i[1])
-      );
+        .dirty_req_tlb_sync_o (dirty_req_tlb_sync_o),
+        .dirty_req_tlb_vaddr_o(dirty_req_tlb_vaddr_o),
+        .dirty_req_tlb_asid_o (dirty_req_tlb_asid_o),
+        .dirty_req_tlb_vmid_o (dirty_req_tlb_vmid_o),
 
-      always_ff@(posedge clk_i or negedge rst_ni) begin
-        if(!rst_ni) begin
-          bus_owner <= 0;
+        .commit_valid_i(pue_commit_valid),
+        .commit_paddr_i(pue_commit_paddr),
+
+        .amo_req_o (shared_amo_req_o[1]),
+        .amo_resp_i(shared_amo_resp_i[1])
+    );
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        bus_owner <= 0;
+        bus_busy  <= 0;
+      end else begin
+        if (amo_resp_i.ack) begin
           bus_busy  <= 0;
-        end else begin
-          if(amo_resp_i.ack) begin
-            bus_busy  <= 0;
-            bus_owner <= 0;
-          end else if(shared_amo_req_o[0].req && !bus_busy) begin
-            bus_busy  <= 1;
-            bus_owner <= 0;
-          end else if(shared_amo_req_o[1].req && !bus_busy) begin
-            bus_busy  <= 1;
-            bus_owner <= 1;
-          end
+          bus_owner <= 0;
+        end else if (shared_amo_req_o[0].req && !bus_busy) begin
+          bus_busy  <= 1;
+          bus_owner <= 0;
+        end else if (shared_amo_req_o[1].req && !bus_busy) begin
+          bus_busy  <= 1;
+          bus_owner <= 1;
         end
       end
+    end
 
-      assign amo_req_o            = (bus_owner) ? shared_amo_req_o[1] : shared_amo_req_o[0];
-      assign shared_amo_resp_i[0] = (bus_busy && !bus_owner) ? amo_resp_i : '0;
-      assign shared_amo_resp_i[1] = (bus_busy && bus_owner)  ? amo_resp_i : '0;
+    assign amo_req_o = (bus_owner) ? shared_amo_req_o[1] : shared_amo_req_o[0];
+    assign shared_amo_resp_i[0] = (bus_busy && !bus_owner) ? amo_resp_i : '0;
+    assign shared_amo_resp_i[1] = (bus_busy && bus_owner) ? amo_resp_i : '0;
 
-      assign amo_commit_o         = shared_amo_resp_i[0];
+    assign amo_commit_o = shared_amo_resp_i[0];
 
-      assign pue_commit_valid = amo_buffer_pue_commit || store_buffer_pue_commit;
-      assign pue_commit_paddr = (amo_buffer_pue_commit) ? amo_buffer_pue_paddr : 
-                                  ((store_buffer_pue_commit) ? store_buffer_pue_paddr : '0); 
+    assign pue_commit_valid = amo_buffer_pue_commit || store_buffer_pue_commit;
+    assign pue_commit_paddr = (amo_buffer_pue_commit) ? amo_buffer_pue_paddr : 
+                                  ((store_buffer_pue_commit) ? store_buffer_pue_paddr : '0);
 
   end else begin
     assign amo_buffer_ready = 1'b1;

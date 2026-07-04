@@ -47,7 +47,7 @@ module store_buffer
     input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
     input cbo_t cbo_op_i,  // type of cache block operation
-    input logic [1:0] st_pbmt_i, // page-based memory attributes
+    input logic [1:0] st_pbmt_i,  // page-based memory attributes
 
     // PUE interface
     output logic [CVA6Cfg.PLEN-1:0] pue_commit_paddr_o,
@@ -100,8 +100,8 @@ module store_buffer
     speculative_queue_n         = speculative_queue_q;
 
     // PUE commit tracking
-    pue_commit_paddr_o = '0;
-    pue_commit_valid_o = 1'b0;
+    pue_commit_paddr_o          = '0;
+    pue_commit_valid_o          = 1'b0;
 
     // LSU interface
     // we are ready to accept a new entry and the input data is valid
@@ -292,6 +292,7 @@ module store_buffer
       speculative_status_cnt_q    <= speculative_status_cnt_n;
     end
   end
+
 
   // registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_commit

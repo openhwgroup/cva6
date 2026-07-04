@@ -67,7 +67,7 @@ package build_config_pkg;
     cfg.XF16ALT = CVA6Cfg.XF16ALT;
     cfg.XF8 = CVA6Cfg.XF8;
     cfg.RVA = CVA6Cfg.RVA;
-    cfg.RVB = CVA6Cfg.RVB || CVA6Cfg.ZKN; // ZKN requires RVB
+    cfg.RVB = CVA6Cfg.RVB || CVA6Cfg.ZKN;  // ZKN requires RVB
     cfg.ZKN = CVA6Cfg.ZKN;
     cfg.RVV = CVA6Cfg.RVV;
     cfg.RVC = CVA6Cfg.RVC;
@@ -189,6 +189,7 @@ package build_config_pkg;
     cfg.SvnapotEn = CVA6Cfg.SvnapotEn;
     cfg.SvaduEn = CVA6Cfg.SvaduEn;
     cfg.SvpbmtEn = CVA6Cfg.SvpbmtEn;
+    cfg.SvinvalEn = CVA6Cfg.SvinvalEn;
     cfg.SharedTlbDepth = CVA6Cfg.SharedTlbDepth;
     cfg.VpnLen = VpnLen;
     cfg.PtLevels = PtLevels;

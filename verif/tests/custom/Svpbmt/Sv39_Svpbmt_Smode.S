@@ -8,24 +8,24 @@
 /* ===================================================================================================================
  * TEST CASE  (S-mode)
  *
- * 1. Setup a PTE at level 2 with PBMT=1, RWX permissions given:
+ * 1. Setup a PTE at level 2 with PBMT=1, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 2. Setup a PTE at level 2 with PBMT=2, RWX permissions given:
+ * 2. Setup a PTE at level 2 with PBMT=2, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 3. Setup a PTE at level 2 with PBMT=3 (reserved encoding), RWX permissions given:
- *         Then, in S-Mode, the page is accessed --> required: Store, load & fetch page fault
- * 4. Setup a PTE at level 1 with PBMT=1, RWX permissions given:
+ * 3. Setup a PTE at level 2 with PBMT=3 (reserved encoding), RWAX permissions given:
+ *         Then, in S-Mode, the page is accessed --> required: Store, AMO, load & fetch page fault
+ * 4. Setup a PTE at level 1 with PBMT=1, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 5. Setup a PTE at level 1 with PBMT=2, RWX permissions given:
+ * 5. Setup a PTE at level 1 with PBMT=2, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 6. Setup a PTE at level 1 with PBMT=3 (reserved encoding), RWX permissions given:
- *         Then, in S-Mode, the page is accessed --> required: Store, load & fetch page fault
- * 7. Setup a PTE at level 0 with PBMT=1, RWX permissions given:
+ * 6. Setup a PTE at level 1 with PBMT=3 (reserved encoding), RWAX permissions given:
+ *         Then, in S-Mode, the page is accessed --> required: Store, AMO, load & fetch page fault
+ * 7. Setup a PTE at level 0 with PBMT=1, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 8. Setup a PTE at level 0 with PBMT=2, RWX permissions given:
+ * 8. Setup a PTE at level 0 with PBMT=2, RWAX permissions given:
  *         Then, in S-Mode, the page is accessed --> required: No fault
- * 9. Setup a PTE at level 0 with PBMT=3 (reserved encoding), RWX permissions given:
- *         Then, in S-Mode, the page is accessed --> required: Store, load & fetch page fault
+ * 9. Setup a PTE at level 0 with PBMT=3 (reserved encoding), RWAX permissions given:
+ *         Then, in S-Mode, the page is accessed --> required: Store, AMO, load & fetch page fault
  * =================================================================================================================== */
 
 /* ======================================================
