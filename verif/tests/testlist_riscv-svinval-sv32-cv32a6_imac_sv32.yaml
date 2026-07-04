@@ -41,13 +41,6 @@ common_test_config: &common_test_config
       -I<path_var>/riscv-arch-test/riscv-target/spike/
 
 testlist:
-
-
-########################################
-# FULL TEST : Sv32 M/S/U mode 
-########################################
-
-
   - test: Svinval_TVM_privilege
     iterations: 1
     <<: *common_test_config
