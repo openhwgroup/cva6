@@ -731,7 +731,9 @@ module cva6_ptw
                         };
                         ptw_lvl_n[0] = '0;
                       end else begin
-                        ptw_pptr_n = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
+                        ptw_pptr_n = {
+                          pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)
+                        };
                       end
                     end
                     G_INTERMED_STAGE: begin
@@ -746,7 +748,8 @@ module cva6_ptw
                     end
                     default: ;
                   endcase
-                end else ptw_pptr_n = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
+                end else
+                  ptw_pptr_n = {pte_tlb.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
                 if (CVA6Cfg.RVH && (pte_tlb.a || pte_tlb.d || pte_tlb.u)) begin
                   state_d = PROPAGATE_ERROR;

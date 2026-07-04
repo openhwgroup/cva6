@@ -122,7 +122,7 @@ module decoder
   // --------------------
   // Immediate select
   // --------------------
-  
+
   enum logic [3:0] {
     NOIMM,
     IIMM,

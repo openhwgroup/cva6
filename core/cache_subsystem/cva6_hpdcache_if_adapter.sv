@@ -326,12 +326,12 @@ module cva6_hpdcache_if_adapter
       assign forward_store = cva6_req_i.data_req;
       assign forward_amo = cva6_amo_req_i.req;
 
-      assign select_amo   = forward_amo & ~amo_pending_q;
+      assign select_amo = forward_amo & ~amo_pending_q;
       assign select_store = forward_store & ~select_amo;
       assign select_flush = forward_flush & ~select_amo & ~select_store;
 
-      assign hpdcache_req_valid_o = select_amo | select_store | select_flush; 
-      
+      assign hpdcache_req_valid_o = select_amo | select_store | select_flush;
+
       assign hpdcache_req = select_amo   ? hpdcache_req_amo :
                             select_store ? hpdcache_req_store : hpdcache_req_flush;
 

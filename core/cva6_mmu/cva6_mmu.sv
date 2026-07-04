@@ -650,7 +650,8 @@ module cva6_mmu
         lsu_vaddr_q[11:0]
       };
 
-      if (CVA6Cfg.SvaduEn && (gpte_dirty_update_en || pte_dirty_update_en)) dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
+      if (CVA6Cfg.SvaduEn && (gpte_dirty_update_en || pte_dirty_update_en))
+        dirty_req_pte_paddr_o = dirty_req_pte_paddr_q;
 
       if (CVA6Cfg.PtLevels == 3 && dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
         // Strange 9+PtLevels to avoid CI errors on (purely syntactic) checks on Sv32, where
