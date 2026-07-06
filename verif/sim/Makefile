@@ -398,6 +398,9 @@ xrun_clean_all:
 ###############################################################################
 # testharness specific commands, variables
 ###############################################################################
+PK_INSTALL_DIR ?= $(CVA6_REPO_DIR)/tools/pk
+PK_BIN ?= $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk
+
 vcs-testharness:
 	make -C $(path_var) vcs_build target=$(target) gate=$(gate) top_level=$(th_top_level) flist=$(FLIST_CORE) defines=$(subst +define+,,$(isscomp_opts))$(if $(spike-tandem),SPIKE_TANDEM=1)
 	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/util/$(do_file).do,) +permissive \
@@ -415,10 +418,11 @@ vcs-testharness:
 veri-testharness-pk:
 	rm -rf $(path_var)/work-ver
 	@echo "Trace compact value $(TRACE_COMPACT)"
+	@test -f "$(PK_BIN)" || { echo "Error: PK binary not found at '$(PK_BIN)'. Run verif/regress/install-pk.sh first."; exit 1; }
 	make -C $(path_var) verilate verilator="verilator --no-timing" target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) \
-		$(PK_INSTALL_DIR)/riscv-none-elf/bin/pk $(elf) \
-		+tohost_addr=$(shell $$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_INSTALL_DIR)/riscv-none-elf/bin/pk | grep -w tohost | cut -d' ' -f1) \
+		$(PK_BIN) $(elf) \
+		+tohost_addr=$$($$RISCV/bin/$(CV_SW_PREFIX)nm -B $(PK_BIN) | grep -w tohost | cut -d' ' -f1) \
 		$(issrun_opts)
 	# If present, move default waveform files to log directory.
 	# Keep track of target in waveform file name.

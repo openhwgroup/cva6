@@ -17,7 +17,7 @@ PK_ARCH=$1
 PK_MABI=$2
 PK_REPO="https://github.com/riscv-software-src/riscv-pk.git"
 PK_BRANCH="master"
-PK_COMMIT_HASH="e5563d1044bd6790325c4602c49f89e1182fa91a"
+PK_COMMIT_HASH="0239d921a2b06c931736e55462ba50233763ee33"
 
 if ! [ -n "$RISCV" ]; then
   echo "Error: RISCV variable undefined"
@@ -27,6 +27,20 @@ fi
 PATH=$RISCV/bin:$PATH
 # Customise this to a fast local disk
 ROOT_PROJECT=$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../../)
+
+# Check if PK_INSTALL_DIR is defined, otherwise set it to <top>/tools/pk
+if [ -z "$PK_INSTALL_DIR" -o "$PK_INSTALL_DIR" = "__local__" ]; then
+  export PK_INSTALL_DIR="$ROOT_PROJECT/tools/pk"
+  echo "Setting PK_INSTALL_DIR to '$PK_INSTALL_DIR'..."
+fi
+# Confirm that RISCV gcc exists
+if [ ! -x "$RISCV/bin/riscv-none-elf-gcc" ]; then
+  echo "Error: '$RISCV/bin/riscv-none-elf-gcc' is not executable."
+  return 1
+fi
+
+# PK_BIN will be the path to access the proxy kernel
+export PK_BIN="$PK_INSTALL_DIR/riscv-none-elf/bin/pk"
 
 if [ -z "$NUM_JOBS" ]; then
     NUM_JOBS=1
@@ -40,17 +54,7 @@ fi
 echo "[install-pk.sh] Entry values:"
 echo "    PK_BUILD_DIR='$PK_BUILD_DIR'"
 echo "    PK_INSTALL_DIR='$PK_INSTALL_DIR'"
-
-# If not set, define the installation location of pk to the local path
-#
-#    <top>/tools/pk
-#
-# Continuous Integration may need to override this particular variable
-# to use a preinstalled build of Verilator.
-if [ -z "$PK_INSTALL_DIR" ]; then
-  export PK_INSTALL_DIR="$ROOT_PROJECT/tools/pk"
-  echo "Setting PK_INSTALL_DIR to '$PK_INSTALL_DIR'..."
-fi
+echo "    PK_BIN='$PK_BIN'"
 
 # Define the default src+build location of pk in case it needs to be (re)built.
 # No need to force this location in Continuous Integration scripts.
@@ -65,7 +69,7 @@ rm -rf "$PK_INSTALL_DIR"
 
 # Build and install pk only if the final binary is not present.
 # Note: The script now always rebuilds due to the rm -rf above.
-if [ ! -f "$PK_INSTALL_DIR/riscv-none-elf/bin/pk" ]; then
+if [ ! -f "$PK_BIN" ]; then
     echo "Building pk in '$PK_BUILD_DIR'..."
     echo "pk will be installed in '$PK_INSTALL_DIR'"
     echo "PK_REPO=$PK_REPO"
@@ -91,13 +95,26 @@ if [ ! -f "$PK_INSTALL_DIR/riscv-none-elf/bin/pk" ]; then
     # Proceed with the build
     mkdir -p build
     pushd build
-    ../configure --prefix="$PK_INSTALL_DIR" --host=riscv-none-elf --with-arch="$PK_ARCH"
+    CONFIGURE_ARGS=(
+      "--prefix=$PK_INSTALL_DIR"
+      "--host=riscv-none-elf"
+      "--with-arch=$PK_ARCH"
+    )
+    if [ -n "$PK_MABI" ]; then
+      CONFIGURE_ARGS+=("--with-abi=$PK_MABI")
+    fi
+    ../configure "${CONFIGURE_ARGS[@]}"
     make -j${NUM_JOBS}
     make install
     popd # build
     popd # $PK_BUILD_DIR
 else
     echo "pk already installed in '$PK_INSTALL_DIR'."
+fi
+
+if [ ! -f "$PK_BIN" ]; then
+  echo "Error: PK build completed, but expected binary was not found at '$PK_BIN'."
+  return 1
 fi
 
 # Add pk bin directory to PATH if not already present.
