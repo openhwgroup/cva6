@@ -168,7 +168,7 @@ module cva6_mmu
   logic shared_tlb_hit, itlb_req;
   logic aborted_ptw_req;
 
-   exception_t misaligned_ex_q;
+  exception_t misaligned_ex_q;
 
   // Assignments
 
