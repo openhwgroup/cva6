@@ -1222,7 +1222,7 @@ module issue_read_operands
       if (issue_instr_i[1].fu == CTRL_FLOW) begin
         pc_n = cva6_cheri_pkg::set_cap_reg_address(pcc[1], issue_instr_i[1].pc, pcc_meta);
         is_compressed_instr_n = issue_instr_i[1].is_compressed;
-        branch_predict_n      = issue_instr_i[1].bp;
+        branch_predict_n = issue_instr_i[1].bp;
       end
     end
     if (issue_instr_i[0].fu == CTRL_FLOW) begin
