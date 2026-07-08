@@ -76,7 +76,7 @@ module store_unit
     // Data TLB hit - lsu
     input logic dtlb_hit_i,
     // Physical memory attributes - MMU
-    input logic dtlb_pbmt_i,
+    input logic [1:0] dtlb_pbmt_i,
     // Physical address of PTE for A-bit - MMU
     input logic [CVA6Cfg.PLEN-1:0] accessed_req_paddr_i,
     // PTE A-bit update valid - MMU
