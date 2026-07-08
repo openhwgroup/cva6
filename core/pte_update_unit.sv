@@ -71,7 +71,7 @@ module pte_update_unit #(
   localparam int PTE_D_BIT = 7;
   localparam logic [CVA6Cfg.XLEN-1:0] ACCESSED_UPDATE_MASK  = ({{CVA6Cfg.XLEN-1{1'b0}}, 1'b1} << PTE_A_BIT);
   localparam logic [CVA6Cfg.XLEN-1:0] DIRTY_UPDATE_MASK     = ({{CVA6Cfg.XLEN-1{1'b0}}, 1'b1} << PTE_D_BIT);
-  localparam logic [1:0] PUE_SIZE_MASK = (CVA6Cfg.XLEN == 64) ? 2'b11 : 2'b10;
+  localparam logic [1:0] PUE_SIZE_MASK = (CVA6Cfg.IS_XLEN64) ? 2'b11 : 2'b10;
 
   accessed_queue_entry_t [DEPTH-1:0] accessed_queue_d, accessed_queue_q;
   dirty_queue_entry_t [DEPTH-1:0] dirty_queue_d, dirty_queue_q;

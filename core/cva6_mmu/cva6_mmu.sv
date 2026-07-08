@@ -727,7 +727,7 @@ module cva6_mmu
                     {CVA6Cfg.XLEN - CVA6Cfg.VLEN{lsu_vaddr_q[CVA6Cfg.VLEN-1]}}, lsu_vaddr_q
                   };
                 if (CVA6Cfg.RVH) begin
-                  lsu_exception_o.tval2 = CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.XLEN==32 ? CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
+                  lsu_exception_o.tval2 = CVA6Cfg.GPLEN'(lsu_gpaddr_q[(CVA6Cfg.IS_XLEN32 ==32 ? CVA6Cfg.VLEN : CVA6Cfg.GPLEN)-1:0]);
                   lsu_exception_o.tinst = '0;
                   lsu_exception_o.gva = ld_st_v_i;
                 end
