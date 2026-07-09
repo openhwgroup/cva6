@@ -92,6 +92,9 @@ module cva6_mmu
     input logic flush_tlb_vvma_i,
     input logic flush_tlb_gvma_i,
 
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
+
     // Performance counters
     output logic itlb_miss_o,
     output logic dtlb_miss_o,
@@ -274,10 +277,14 @@ module cva6_mmu
       .dtlb_hit_i   (dtlb_lu_hit),
       .dtlb_vaddr_i (lsu_vaddr_i),
 
+      .asid_to_be_flushed_i(asid_to_be_flushed_i),
+      .vaddr_to_be_flushed_i(vaddr_to_be_flushed_i),
+      .vmid_to_be_flushed_i(vmid_to_be_flushed_i),
+      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed_i),
       // to TLBs, update logic
       .itlb_update_o(update_itlb),
       .dtlb_update_o(update_dtlb),
-
+      .flush_busy_o(shared_tlb_flush_busy_o),
       // Performance counters
       .itlb_miss_o(itlb_miss_o),
       .dtlb_miss_o(dtlb_miss_o),
