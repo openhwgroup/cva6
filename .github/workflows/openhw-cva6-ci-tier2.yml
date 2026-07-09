@@ -243,63 +243,18 @@ jobs:
         run: source ci/install-prereq.sh
 
       - name: Run Tier 2 for ${{ matrix.config }} / ${{ matrix.testcase }}
-        run: |
-          set -e
-          set -x
-          mkdir -p ci-results
-          echo "1" > ci-results/exit_code
-          source verif/sim/setup-env.sh
-          rc=0
-
-          if [ "${{ matrix.mode }}" = "testlist" ]; then
-            if [[ "${{ matrix.simulator }}" == *"veri-testharness"* ]]; then
-              source verif/regress/install-verilator.sh
-            fi
-            source verif/regress/install-spike.sh
-            if [ -n "${{ matrix.install_script }}" ]; then
-              source verif/regress/${{ matrix.install_script }}.sh
-            fi
-            LINKER_OPT=""
-            if [ -n "${{ matrix.linker }}" ]; then
-              LINKER_OPT="--linker=${{ matrix.linker }}"
-            fi
-            cd verif/sim
-            python3 cva6.py \
-              --testlist=${{ matrix.testlist }} \
-              --target ${{ matrix.config }} \
-              --iss_yaml=cva6.yaml \
-              --iss=${{ matrix.simulator }} \
-              --issrun_opts="+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=UVM_NONE" \
-              $LINKER_OPT \
-              || rc=$?
-            cd -
-          else
-            # hwconfig_opts is set for hwconfig_tests and coremark only
-            if [ -n "${{ matrix.hwconfig_opts }}" ]; then
-              export DV_HWCONFIG_OPTS="${{ matrix.hwconfig_opts }}"
-            fi
-            DV_SIMULATORS=${{ matrix.simulator }} \
-            DV_TARGET=${{ matrix.config }} \
-              bash -e verif/regress/${{ matrix.testcase }}.sh || rc=$?
-          fi
-
-          if [ "$rc" -eq 0 ] && ! compgen -G "verif/sim/out*" > /dev/null; then
-            echo "ERROR: Tier 2 job reported success but produced no verif/sim/out* results" >&2
-            rc=1
-          fi
-
-          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
-          if [ "$rc" -eq 0 ]; then
-            failed_reports="$(find verif/sim -name "iss_regr.log" -exec grep -H "\\[FAILED\\]" {} \; 2>/dev/null || true)"
-            if [ -n "$failed_reports" ]; then
-              echo "ERROR: Tier 2 job reported success but iss_regr.log contains failures" >&2
-              echo "$failed_reports" >&2
-              rc=1
-            fi
-          fi
-
-          echo "$rc" > ci-results/exit_code
-          exit $rc
+        env:
+          TIER_NAME: Tier 2
+          TIER_MODE: ${{ matrix.mode }}
+          TIER_CONFIG: ${{ matrix.config }}
+          TIER_TESTCASE: ${{ matrix.testcase }}
+          TIER_SIMULATOR: ${{ matrix.simulator }}
+          TIER_INSTALL_SCRIPT: ${{ matrix.install_script }}
+          TIER_TESTLIST: ${{ matrix.testlist }}
+          TIER_TEST_NAME: ${{ matrix.test_name }}
+          TIER_LINKER: ${{ matrix.linker }}
+          TIER_HWCONFIG_OPTS: ${{ matrix.hwconfig_opts }}
+        run: bash .github/scripts/run-tier-regression.sh
 
       - name: Upload Results
         if: always()
@@ -391,59 +346,18 @@ jobs:
         run: source ci/install-prereq.sh
 
       - name: Run Tier 2 for ${{ matrix.config }} / ${{ matrix.testcase }}
-        run: |
-          set -e
-          set -x
-          mkdir -p ci-results
-          echo "1" > ci-results/exit_code
-          source verif/sim/setup-env.sh
-          rc=0
-
-          if [ "${{ matrix.mode }}" = "testlist" ]; then
-            if [[ "${{ matrix.simulator }}" == *"veri-testharness"* ]]; then
-              source verif/regress/install-verilator.sh
-            fi
-            source verif/regress/install-spike.sh
-            if [ -n "${{ matrix.install_script }}" ]; then
-              source verif/regress/${{ matrix.install_script }}.sh
-            fi
-            LINKER_OPT=""
-            if [ -n "${{ matrix.linker }}" ]; then
-              LINKER_OPT="--linker=${{ matrix.linker }}"
-            fi
-            cd verif/sim
-            python3 cva6.py \
-              --testlist=${{ matrix.testlist }} \
-              --target ${{ matrix.config }} \
-              --iss_yaml=cva6.yaml \
-              --iss=${{ matrix.simulator }} \
-              --issrun_opts="+tb_performance_mode+debug_disable=1+UVM_VERBOSITY=UVM_NONE" \
-              $LINKER_OPT \
-              || rc=$?
-            cd -
-          else
-            DV_SIMULATORS=${{ matrix.simulator }} \
-            DV_TARGET=${{ matrix.config }} \
-              bash -e verif/regress/${{ matrix.testcase }}.sh || rc=$?
-          fi
-
-          if [ "$rc" -eq 0 ] && ! compgen -G "verif/sim/out*" > /dev/null; then
-            echo "ERROR: Tier 2 job reported success but produced no verif/sim/out* results" >&2
-            rc=1
-          fi
-
-          find verif/sim -name "iss_regr.log" -exec cp {} ci-results/ \; 2>/dev/null || true
-          if [ "$rc" -eq 0 ]; then
-            failed_reports="$(find verif/sim -name "iss_regr.log" -exec grep -H "\\[FAILED\\]" {} \; 2>/dev/null || true)"
-            if [ -n "$failed_reports" ]; then
-              echo "ERROR: Tier 2 job reported success but iss_regr.log contains failures" >&2
-              echo "$failed_reports" >&2
-              rc=1
-            fi
-          fi
-
-          echo "$rc" > ci-results/exit_code
-          exit $rc
+        env:
+          TIER_NAME: Tier 2
+          TIER_MODE: ${{ matrix.mode }}
+          TIER_CONFIG: ${{ matrix.config }}
+          TIER_TESTCASE: ${{ matrix.testcase }}
+          TIER_SIMULATOR: ${{ matrix.simulator }}
+          TIER_INSTALL_SCRIPT: ${{ matrix.install_script }}
+          TIER_TESTLIST: ${{ matrix.testlist }}
+          TIER_TEST_NAME: ${{ matrix.test_name }}
+          TIER_LINKER: ${{ matrix.linker }}
+          TIER_HWCONFIG_OPTS: ${{ matrix.hwconfig_opts }}
+        run: bash .github/scripts/run-tier-regression.sh
 
       - name: Upload Results
         if: always()

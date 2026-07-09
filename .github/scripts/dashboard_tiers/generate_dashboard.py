@@ -10,6 +10,7 @@ a self-contained static HTML file.
 import argparse
 import json
 import os
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -309,6 +310,14 @@ def main():
     output_file = output_dir / "index.html"
     with open(output_file, "w") as f:
         f.write(html)
+
+    # Copy static dashboard assets, such as the local OpenHW logo.
+    static_dir = Path(__file__).parent / "static"
+    if static_dir.exists():
+        assets_dir = output_dir / "assets"
+        if assets_dir.exists():
+            shutil.rmtree(assets_dir)
+        shutil.copytree(static_dir, assets_dir)
 
     print(f"Dashboard generated: {output_file}")
     print(f"  Workflows: {len(workflows)}")

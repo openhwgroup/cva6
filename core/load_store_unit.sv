@@ -41,6 +41,8 @@ module load_store_unit
     input logic stall_st_pending_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -319,6 +321,7 @@ module load_store_unit
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
+        .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
 
         .req_port_i(dcache_req_ports_i[0]),
         .req_port_o(dcache_req_ports_o[0]),
@@ -329,6 +332,7 @@ module load_store_unit
   end else begin : gen_no_mmu
     // icache request without MMU, virtual and physical address are identical
     assign pmp_icache_areq_i.fetch_valid = icache_areq_i.fetch_req;
+    assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin : gen_virtual_physical_address_instruction_plen_greater
