@@ -51,6 +51,7 @@ CVA6 User Manual
    RVZicsr <RISCV_Instructions_RVZicsr>
    RVZifencei <RISCV_Instructions_RVZifencei>
    RVZicond <RISCV_Instructions_RVZicond>
+   CV32A6_Control_Status_Registers
    CV32A60X CSR List <CSR_CV32A60X_list>
    CV32A60X CSR Details <CSR_CV32A60X>
    CV32A60AX CSR List <CSR_CV32A60AX_list>

@@ -802,17 +802,69 @@ Machine Exception Delegation (``medeleg``)
 :Width (bits): 32
 :Access Type: RW
 :Reset Value: 0x00000000
-:Description: Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level.
+:Description: Provides individual read/write bits to indicate that certain exceptions should be processed directly by a lower privilege level. Only the bits listed below are writable; all other bits are hardwired to 0 and read-only.
 
 .. csv-table::
    :widths: auto
    :align: left
    :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``Synchronous_Exceptions``", "Synchronous Exceptions", "RW", "0b0"
+   "[31:24]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[23]", "``STORE_GUEST_PAGE_FAULT``", "Store/AMO Guest-Page Fault", "RW (H only)", "0b0"
+   "[22]", "``VIRTUAL_INSTRUCTION``", "Virtual Instruction", "RW (H only)", "0b0"
+   "[21]", "``LOAD_GUEST_PAGE_FAULT``", "Load Guest-Page Fault", "RW (H only)", "0b0"
+   "[20]", "``INSTR_GUEST_PAGE_FAULT``", "Instruction Guest-Page Fault", "RW (H only)", "0b0"
+   "[19:16]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[15]", "``STORE_PAGE_FAULT``", "Store/AMO Page Fault", "RW", "0b0"
+   "[14]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[13]", "``LOAD_PAGE_FAULT``", "Load Page Fault", "RW", "0b0"
+   "[12]", "``INSTR_PAGE_FAULT``", "Instruction Page Fault", "RW", "0b0"
+   "[11]", "``reserved_3``", "Reserved", "RO", "0b0"
+   "[10]", "``ENV_CALL_VSMODE``", "Environment Call from Virtual Supervisor Mode", "RW (H only)", "0b0"
+   "[9]", "``reserved_4``", "Reserved", "RO", "0b0"
+   "[8]", "``ENV_CALL_UMODE``", "Environment Call from U-mode", "RW", "0b0"
+   "[7]", "``ST_ACCESS_FAULT``", "Store/AMO Access Fault", "RW", "0b0"
+   "[6]", "``ST_ADDR_MISALIGNED``", "Store/AMO Address Misaligned", "RW", "0b0"
+   "[5]", "``LD_ACCESS_FAULT``", "Load Access Fault", "RW", "0b0"
+   "[4]", "``LD_ADDR_MISALIGNED``", "Load Address Misaligned", "RW", "0b0"
+   "[3]", "``BREAKPOINT``", "Breakpoint", "RW", "0b0"
+   "[2]", "``ILLEGAL_INSTR``", "Illegal Instruction", "RW", "0b0"
+   "[1]", "``INSTR_ACCESS_FAULT``", "Instruction Access Fault", "RW", "0b0"
+   "[0]", "``INSTR_ADDR_MISALIGNED``", "Instruction Address Misaligned", "RW", "0b0"
 
-:Synchronous Exceptions (``Synchronous_Exceptions``): There is a bit position allocated for every synchronous exception,
-    with the index of the bit position equal to the value returned in the ``mcause`` register.
+:Store/AMO Guest-Page Fault (``STORE_GUEST_PAGE_FAULT``): Delegates store/AMO guest-page faults to S/HS/VS-mode. RW only when ``RVH`` is configured; otherwise hardwired to 0.
+
+:Virtual Instruction (``VIRTUAL_INSTRUCTION``): Delegates virtual instruction exceptions to S/HS/VS-mode. RW only when ``RVH`` is configured; otherwise hardwired to 0.
+
+:Load Guest-Page Fault (``LOAD_GUEST_PAGE_FAULT``): Delegates load guest-page faults to S/HS/VS-mode. RW only when ``RVH`` is configured; otherwise hardwired to 0.
+
+:Instruction Guest-Page Fault (``INSTR_GUEST_PAGE_FAULT``): Delegates instruction guest-page faults to S/HS/VS-mode. RW only when ``RVH`` is configured; otherwise hardwired to 0.
+
+:Store/AMO Page Fault (``STORE_PAGE_FAULT``): Delegates store/AMO page faults to S-mode.
+
+:Load Page Fault (``LOAD_PAGE_FAULT``): Delegates load page faults to S-mode.
+
+:Instruction Page Fault (``INSTR_PAGE_FAULT``): Delegates instruction page faults to S-mode.
+
+:Environment Call from Virtual Supervisor Mode (``ENV_CALL_VSMODE``): Delegates environment calls from VS-mode to HS-mode. RW only when ``RVH`` is configured; otherwise hardwired to 0.
+
+:Environment Call from U-mode (``ENV_CALL_UMODE``): Delegates environment calls from U-mode to S-mode.
+
+:Store/AMO Access Fault (``ST_ACCESS_FAULT``): Delegates store/AMO access faults to S-mode.
+
+:Store/AMO Address Misaligned (``ST_ADDR_MISALIGNED``): Delegates store/AMO address-misaligned exceptions to S-mode.
+
+:Load Access Fault (``LD_ACCESS_FAULT``): Delegates load access faults to S-mode.
+
+:Load Address Misaligned (``LD_ADDR_MISALIGNED``): Delegates load address-misaligned exceptions to S-mode.
+
+:Breakpoint (``BREAKPOINT``): Delegates breakpoint exceptions to S-mode.
+
+:Illegal Instruction (``ILLEGAL_INSTR``): Delegates illegal-instruction exceptions to S-mode.
+
+:Instruction Access Fault (``INSTR_ACCESS_FAULT``): Delegates instruction access faults to S-mode.
+
+:Instruction Address Misaligned (``INSTR_ADDR_MISALIGNED``): Delegates instruction address-misaligned exceptions to S-mode.
 
 
 Machine Interrupt Delegation (``mideleg``)
@@ -822,16 +874,27 @@ Machine Interrupt Delegation (``mideleg``)
 :Width (bits): 32
 :Access Type: RW
 :Reset Value: 0x00000000
-:Description: Provides individual read/write bits to indicate that certain interrupts should be processed directly by a lower privilege level.
+:Description: Provides individual read/write bits to indicate that certain interrupts should be processed directly by a lower privilege level. Only the bits listed below are writable; all other bits are hardwired to 0 and read-only, since CVA6 does not implement user-mode (N extension) interrupts.
 
 .. csv-table::
    :widths: auto
    :align: left
    :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``Interrupts``", "Interrupts", "RW", "0b0"
+   "[31:10]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[9]", "``SEIP``", "S-mode External Interrupt Pending", "RW", "0b0"
+   "[8:6]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[5]", "``STIP``", "S-mode Timer Interrupt Pending", "RW", "0b0"
+   "[4:2]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[1]", "``SSIP``", "S-mode Software Interrupt Pending", "RW", "0b0"
+   "[0]", "``reserved_3``", "Reserved", "RO", "0b0"
 
-:Interrupts (``Interrupts``): This bitfield holds trap delegation bits for individual interrupts, with the layout of bits matching those in the ``mip`` register.
+:S-mode External Interrupt Pending (``SEIP``): Delegates the S-mode external interrupt to S-mode.
+
+:S-mode Timer Interrupt Pending (``STIP``): Delegates the S-mode timer interrupt to S-mode.
+
+:S-mode Software Interrupt Pending (``SSIP``): Delegates the S-mode software interrupt to S-mode.
+
 
 
 Machine Interrupt Enable (``mie``)
