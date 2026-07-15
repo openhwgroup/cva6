@@ -253,10 +253,10 @@ module load_unit
 
     if (CVA6Cfg.SvpbmtEn) begin
       unique case (dtlb_pbmt_i)
-        2'b00: effective_ni = paddr_ni; // Use physical PMA
-        2'b01: effective_ni = 1'b0;     // NC: idempotent
-        2'b10: effective_ni = 1'b1;     // IO: non-idempotent
-        2'b11: effective_ni = 1'b1;     // Reserved, defensive
+        2'b00:   effective_ni = paddr_ni;  // Use physical PMA
+        2'b01:   effective_ni = 1'b0;  // NC: idempotent
+        2'b10:   effective_ni = 1'b1;  // IO: non-idempotent
+        2'b11:   effective_ni = 1'b1;  // Reserved, defensive
         default: effective_ni = paddr_ni;
       endcase
     end
@@ -444,11 +444,11 @@ module load_unit
           req_port_o.tag_valid = 1'b1;
           // re-do the request
           state_d = WAIT_WB_EMPTY;
-        end else if (state_q == WAIT_WB_EMPTY && NI_HANDLING_EN  && dcache_wbuffer_not_ni_i) begin
+        end else if (state_q == WAIT_WB_EMPTY && NI_HANDLING_EN && dcache_wbuffer_not_ni_i) begin
           // Wait until the write-back buffer is empty in the data cache.
           // the write buffer is empty, so let's go and re-do the translation.
           state_d = WAIT_TRANSLATION;
-        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || NI_HANDLING_EN )) begin
+        end else if (state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || NI_HANDLING_EN)) begin
           translation_req_o = 1'b1;
           // we've got a hit and we can continue with the request process
           if (dtlb_hit_i) state_d = WAIT_GNT;

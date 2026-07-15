@@ -209,7 +209,7 @@ module cva6_mmu
   assign dtlb_lu_asid = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
 
   assign dirty_req_tlb_ready_o = !(dtlb_lu_access && !dtlb_lu_hit) && !flush_tlb_i && !shared_tlb_flush_busy_o;
-  
+
 
 
   cva6_tlb #(
