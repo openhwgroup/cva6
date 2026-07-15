@@ -116,6 +116,9 @@ module load_unit
       CVA6Cfg.NrLoadBufEntries
   ) : 1;
 
+  localparam logic NI_HANDLING_EN = CVA6Cfg.SvpbmtEn || CVA6Cfg.NonIdemPotenceEn;
+
+
   typedef logic [REQ_ID_BITS-1:0] ldbuf_id_t;
 
   logic [CVA6Cfg.NrLoadBufEntries-1:0] ldbuf_valid_q, ldbuf_valid_d;
@@ -236,12 +239,28 @@ module load_unit
   logic not_commit_time;
   logic inflight_stores;
   logic stall_ni;
+  logic effective_ni;
+
   assign paddr_ni = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
   );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni = (inflight_stores || not_commit_time) && effective_ni && NI_HANDLING_EN;
+
+  always_comb begin
+    effective_ni = paddr_ni;
+
+    if (CVA6Cfg.SvpbmtEn) begin
+      unique case (dtlb_pbmt_i)
+        2'b00: effective_ni = paddr_ni; // Use physical PMA
+        2'b01: effective_ni = 1'b0;     // NC: idempotent
+        2'b10: effective_ni = 1'b1;     // IO: non-idempotent
+        2'b11: effective_ni = 1'b1;     // Reserved, defensive
+        default: effective_ni = paddr_ni;
+      endcase
+    end
+  end
 
   // ---------------
   // Load Control
@@ -272,7 +291,7 @@ module load_unit
           // don't start the translation for speculative loads that miss on tlb
           translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
           // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !effective_ni)) begin
             // check if the page offset matches with a store, if it does then stall and wait
             if (!page_offset_matches_i) begin
               // make a load request to memory
@@ -289,7 +308,7 @@ module load_unit
                     state_d  = SEND_TAG;
                     pop_ld_o = 1'b1;
                     // translation valid but this is to NC and the WB is not yet empty.
-                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                  end else begin
                     state_d = ABORT_TRANSACTION_NI;
                   end
                 end
@@ -343,7 +362,7 @@ module load_unit
               state_d  = SEND_TAG;
               pop_ld_o = 1'b1;
               // translation valid but this is to NC and the WB is not yet empty.
-            end else if (CVA6Cfg.NonIdemPotenceEn) begin
+            end else begin
               state_d = ABORT_TRANSACTION_NI;
             end
           end
@@ -361,7 +380,7 @@ module load_unit
           // don't start the translation for speculative loads that miss on tlb
           translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
           // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !effective_ni)) begin
             // check if the page offset matches with a store, if it does stall and wait
             if (!page_offset_matches_i) begin
               // make a load request to memory
@@ -379,7 +398,7 @@ module load_unit
                     state_d  = SEND_TAG;
                     pop_ld_o = 1'b1;
                     // translation valid but this is to NC and the WB is not yet empty.
-                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                  end else begin
                     state_d = ABORT_TRANSACTION_NI;
                   end
                 end
@@ -420,16 +439,16 @@ module load_unit
           req_port_o.tag_valid = 1'b1;
           // wait until the WB is empty
           state_d = WAIT_TRANSLATION;
-        end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
+        end else if (state_q == ABORT_TRANSACTION_NI && NI_HANDLING_EN) begin
           req_port_o.kill_req = 1'b1;
           req_port_o.tag_valid = 1'b1;
           // re-do the request
           state_d = WAIT_WB_EMPTY;
-        end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
+        end else if (state_q == WAIT_WB_EMPTY && NI_HANDLING_EN  && dcache_wbuffer_not_ni_i) begin
           // Wait until the write-back buffer is empty in the data cache.
           // the write buffer is empty, so let's go and re-do the translation.
           state_d = WAIT_TRANSLATION;
-        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
+        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || NI_HANDLING_EN )) begin
           translation_req_o = 1'b1;
           // we've got a hit and we can continue with the request process
           if (dtlb_hit_i) state_d = WAIT_GNT;
@@ -487,7 +506,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if ((CVA6Cfg.MmuPresent || NI_HANDLING_EN) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;

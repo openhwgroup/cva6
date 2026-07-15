@@ -59,7 +59,6 @@ module cva6_tlb
     input logic pue_tlb_update_i,
     input logic [CVA6Cfg.ASID_WIDTH-1:0] pue_tlb_asid_i,
     input logic [CVA6Cfg.VMID_WIDTH-1:0] pue_tlb_vmid_i,
-    output logic pue_tlb_ready_o,
     output logic [CVA6Cfg.PLEN-1:0] pue_pte_paddr_o
 );
   // SV39 defines three levels of page tables
@@ -197,8 +196,6 @@ module cva6_tlb
       end
     end
   endgenerate
-
-  assign pue_tlb_ready_o = !(lu_access_i && !lu_hit_o) && !flush_i; // PTW access or DTLB UPDATE WATING
 
   always_comb begin : translation
 

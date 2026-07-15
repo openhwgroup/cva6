@@ -200,7 +200,6 @@ module cva6_mmu
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
 
-  logic pue_dtlb_ready;
 
   // Assignments
 
@@ -209,7 +208,9 @@ module cva6_mmu
   assign itlb_lu_asid = v_i ? vs_asid_i : asid_i;
   assign dtlb_lu_asid = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
 
-  assign dirty_req_tlb_ready_o = pue_dtlb_ready && !shared_tlb_flush_busy_o;
+  assign dirty_req_tlb_ready_o = !(dtlb_lu_access && !dtlb_lu_hit) && !flush_tlb_i && !shared_tlb_flush_busy_o;
+  
+
 
   cva6_tlb #(
       .CVA6Cfg          (CVA6Cfg),
@@ -246,7 +247,6 @@ module cva6_mmu
       .pue_tlb_update_i('0),
       .pue_tlb_asid_i  ('0),
       .pue_tlb_vmid_i  ('0),
-      .pue_tlb_ready_o (),
       .pue_pte_paddr_o ()
   );
 
@@ -284,7 +284,6 @@ module cva6_mmu
       .pue_tlb_update_i(dirty_req_tlb_sync_i),
       .pue_tlb_asid_i  (dirty_req_tlb_asid_i),
       .pue_tlb_vmid_i  (dirty_req_tlb_vmid_i),
-      .pue_tlb_ready_o (pue_dtlb_ready),
       .pue_pte_paddr_o (dirty_req_pte_paddr)
   );
 
