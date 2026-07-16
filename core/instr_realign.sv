@@ -137,7 +137,6 @@ module instr_realign
           unaligned_d = unaligned_q;
 
           // last instruction was unaligned
-          // TODO how are jumps + unaligned managed?
           if (unaligned_q) begin
             // for 64 bit there exist the following options:
             //     64  48  32  16  0
@@ -250,7 +249,6 @@ module instr_realign
         end
         // this means the previous instruction was either compressed or unaligned
         // in any case we don't care
-        // TODO input is actually right-shifted so the code below is wrong
         2'b01: begin
           // 64  48  32  16  0
           // | 3 | 2 | 1 | 0 | <- instruction slot
