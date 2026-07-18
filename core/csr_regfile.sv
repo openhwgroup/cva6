@@ -1179,6 +1179,9 @@ module csr_regfile
             if (!CVA6Cfg.RVH) dcsr_d.v = 1'b0;
             // dcsr.cause is written by hardware only, preserve on a software write
             dcsr_d.cause = dcsr_q.cause;
+            // reserved fields are hardwired to zero
+            dcsr_d.zero1 = 1'b0;
+            dcsr_d.zero2 = '0;
           end else begin
             update_access_exception = 1'b1;
           end
