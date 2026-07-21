@@ -25,6 +25,18 @@ export HPDCACHE_DIR
 HPDCACHE_TARGET_CFG ?= ${CVA6_REPO_DIR}/core/include/cva6_hpdcache_default_config_pkg.sv
 export HPDCACHE_TARGET_CFG
 
+# Resolve Questa tools from QUESTASIM_HOME so the simulator that RUNS and the
+# UVM/tandem DPI that is COMPILED (see -sv_lib in questa_uvm_run) always come
+# from the same install. A bare `vsim`/`vlog`/`vopt` would instead take whatever
+# PATH finds first, which is how a user with an older Questa on PATH silently ran
+# the wrong simulator against a DPI built for another version. The QUESTASIM_HOME
+# check is per-recipe (see check_questa_home) so non-Questa flows are unaffected.
+QUESTA_BIN := $(QUESTASIM_HOME)/linux_x86_64
+
+.PHONY: check_questa_home
+check_questa_home:
+	@test -n "$(QUESTASIM_HOME)" || { echo "Error: QUESTASIM_HOME is not set"; exit 1; }
+
 .DEFAULT_GOAL := help
 
 FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
@@ -338,11 +350,11 @@ xrun-uvm: xrun_uvm_comp xrun_uvm_run
 
 
 ### QUESTA UVM rules
-questa_uvm_comp:
+questa_uvm_comp: check_questa_home
 	@echo "[QUESTA] Building Model"
 	mkdir -p $(VSIM_WORK_DIR)
-	vlib $(VSIM_WORK_DIR)
-	vlog -sv -sv17compat -64 $(COMMON_COMP_UVM_FLAGS) \
+	$(QUESTA_BIN)/vlib $(VSIM_WORK_DIR)
+	$(QUESTA_BIN)/vlog -sv -sv17compat -64 $(COMMON_COMP_UVM_FLAGS) \
 	  +incdir+$(QUESTASIM_HOME)/verilog_src/uvm-1.2/src/ \
 	  $(QUESTASIM_HOME)/verilog_src/uvm-1.2/src/uvm_pkg.sv \
 	  -timescale "1ns / 1ns" +acc=+rb \
@@ -356,12 +368,12 @@ questa_uvm_comp:
 	  -suppress vlog-8607 \
 	  +define+UNSUPPORTED_WITH+ \
 		+define+QUESTA
-	vopt -work $(VSIM_WORK_DIR) \
+	$(QUESTA_BIN)/vopt -work $(VSIM_WORK_DIR) \
 	    -64 +acc uvmt_cva6_tb -o uvmt_cva6_tb_opt
 
-questa_uvm_run:
+questa_uvm_run: check_questa_home
 	@echo "[QUESTA] Running Model"
-	vsim -64  \
+	$(QUESTA_BIN)/vsim -64  \
 	  $(COMMON_RUN_UVM_FLAGS) \
 		$(COMMON_RUN_ARGS) \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \

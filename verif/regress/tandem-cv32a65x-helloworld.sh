@@ -15,15 +15,7 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-# Pin the QuestaSim toolchain. Both selectors must agree, else tandem silently
-# no-ops: QUESTASIM_HOME (via vsim.mk's `?=`) sets the version the UVM/tandem
-# DPI is COMPILED against; PATH (`which vsim`) sets the version that RUNS it.
-# If a user's login env points these at different installs (e.g. QUESTASIM_HOME
-# 2023.4 but PATH vsim 2022.3), the DPI ABI skew makes tandem never engage.
-export QUESTASIM_HOME=/opt/questasim2023.4/questasim
-export PATH="$QUESTASIM_HOME/linux_x86_64:$PATH"
-
-echo ">>> vsim in use: $(command -v vsim)"
+echo ">>> vsim in use: $QUESTASIM_HOME/linux_x86_64/vsim"
 vsim -version
 
 DV_SIMULATORS=questa-uvm
