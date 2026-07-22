@@ -1175,8 +1175,8 @@ module csr_regfile
                 !(CVA6Cfg.RVU && dcsr_d.prv == riscv::PRIV_LVL_U)) begin
               dcsr_d.prv = riscv::PRIV_LVL_M;
             end
-            // dcsr.v is hardwired 0 without the hypervisor extension
-            if (!CVA6Cfg.RVH) dcsr_d.v = 1'b0;
+            // dcsr.v is WARL: clear it without H or when DRET returns to M-mode
+            if (!CVA6Cfg.RVH || dcsr_d.prv == riscv::PRIV_LVL_M) dcsr_d.v = 1'b0;
             // dcsr.cause is written by hardware only, preserve on a software write
             dcsr_d.cause = dcsr_q.cause;
             // reserved fields are hardwired to zero
@@ -2387,7 +2387,7 @@ module csr_regfile
         priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
         if (CVA6Cfg.RVH) begin
           // restore the previous virtualization mode
-          v_d = dcsr_q.v;
+          v_d = (dcsr_q.prv == riscv::PRIV_LVL_M) ? 1'b0 : dcsr_q.v;
         end
         // actually return from debug mode
         debug_mode_d = 1'b0;
