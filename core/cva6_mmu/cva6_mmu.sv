@@ -145,6 +145,9 @@ module cva6_mmu
 
   tlb_update_cva6_t update_itlb, update_dtlb, update_shared_tlb;
 
+  logic [CVA6Cfg.VLEN-1:0] shared_tlb_vaddr_prev, fetch_vaddr_prev;
+  logic new_fetch_req, new_ptw_req;
+
   logic                               itlb_lu_access;
   pte_cva6_t                          itlb_content;
   pte_cva6_t                          itlb_g_content;
@@ -163,14 +166,19 @@ module cva6_mmu
 
   logic shared_tlb_access, shared_tlb_miss;
   logic shared_tlb_hit, itlb_req;
+  logic aborted_ptw_req;
+
+  exception_t misaligned_ex_q;
 
   // Assignments
 
   assign itlb_lu_access = fetch_areq_i.fetch_req;
   assign dtlb_lu_access = lsu_req_i;
-  assign itlb_lu_asid   = v_i ? vs_asid_i : asid_i;
-  assign dtlb_lu_asid   = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
+  assign itlb_lu_asid = v_i ? vs_asid_i : asid_i;
+  assign dtlb_lu_asid = (ld_st_v_i || flush_tlb_vvma_i) ? vs_asid_i : asid_i;
 
+  assign new_fetch_req = fetch_areq_i.fetch_vaddr == fetch_vaddr_prev ? '0 : '1;
+  assign new_ptw_req = shared_tlb_vaddr == shared_tlb_vaddr_prev ? '0 : shared_tlb_access && !shared_tlb_hit;
 
   cva6_tlb #(
       .CVA6Cfg          (CVA6Cfg),
@@ -293,10 +301,10 @@ module cva6_mmu
       .ypb_mmu_ptw_rsp_t(ypb_mmu_ptw_rsp_t),
       .HYP_EXT          (HYP_EXT)
   ) i_ptw (
-      .clk_i (clk_i),
-      .rst_ni(rst_ni),
+      .clk_i                 (clk_i),
+      .rst_ni                (rst_ni),
       .flush_i,
-
+      .new_req_i             (new_ptw_req),
       .ptw_active_o          (ptw_active),
       .walking_instr_o       (walking_instr),
       .ptw_error_o           (ptw_error),
@@ -346,7 +354,8 @@ module cva6_mmu
       .pmpcfg_i   (pmpcfg_i),
       .pmpaddr_i  (pmpaddr_i),
       .bad_paddr_o(ptw_bad_paddr),
-      .bad_gpaddr_o(ptw_bad_gpaddr)
+      .bad_gpaddr_o(ptw_bad_gpaddr),
+      .aborted_req_o(aborted_ptw_req)
   );
 
   //-----------------------
@@ -437,7 +446,7 @@ module cva6_mmu
             fetch_arsp_o.fetch_exception.gva   = v_i;
           end
         end
-      end else if (ptw_active && walking_instr) begin
+      end else if (ptw_active && walking_instr && !new_fetch_req && !aborted_ptw_req) begin
         // ---------//
         // ITLB Miss
         // ---------//
@@ -508,7 +517,7 @@ module cva6_mmu
     dtlb_is_page_n = dtlb_is_page;
 
     lsu_valid_o = lsu_req_q;
-    lsu_exception_o = misaligned_ex_i;
+    lsu_exception_o = misaligned_ex_q;
 
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal to bit [CVA6Cfg.SV]
     canonical_addr_check = (lsu_req_i && en_ld_st_translation_i &&
@@ -733,13 +742,17 @@ module cva6_mmu
       dtlb_is_page_q  <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
+      misaligned_ex_q <= '0;
     end else begin
-      lsu_vaddr_q    <= lsu_vaddr_n;
-      lsu_req_q      <= lsu_req_n;
-      dtlb_pte_q     <= dtlb_pte_n;
-      dtlb_hit_q     <= dtlb_hit_n;
-      lsu_is_store_q <= lsu_is_store_n;
-      dtlb_is_page_q <= dtlb_is_page_n;
+      lsu_vaddr_q           <= lsu_vaddr_n;
+      lsu_req_q             <= lsu_req_n;
+      dtlb_pte_q            <= dtlb_pte_n;
+      dtlb_hit_q            <= dtlb_hit_n;
+      lsu_is_store_q        <= lsu_is_store_n;
+      dtlb_is_page_q        <= dtlb_is_page_n;
+      shared_tlb_vaddr_prev <= shared_tlb_vaddr;
+      fetch_vaddr_prev      <= fetch_areq_i.fetch_vaddr;
+      misaligned_ex_q       <= misaligned_ex_i;
 
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;

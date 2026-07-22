@@ -267,6 +267,7 @@ package config_pkg;
     int unsigned AxiIdWidth;
     int unsigned AxiUserWidth;
     int unsigned NrFetchBufEntries;
+    int unsigned MEM_TID_WIDTH;
     int unsigned NrLoadBufEntries;
     bit          RVF;
     bit          RVD;
@@ -441,7 +442,7 @@ package config_pkg;
     else `ASSERT_FATAL("");
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
     else `ASSERT_FATAL("");
-    assert ((Cfg.RVZCMT && ~Cfg.MmuPresent))
+    assert (!(Cfg.RVZCMT && Cfg.MmuPresent))
     else `ASSERT_FATAL("");
     // pragma translate_on
   endfunction

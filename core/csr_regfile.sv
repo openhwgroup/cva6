@@ -2536,7 +2536,7 @@ module csr_regfile
   // in debug mode we execute with privilege level M
   assign priv_lvl_o = debug_mode ? riscv::PRIV_LVL_M : priv_lvl_q;
   assign v_o = CVA6Cfg.RVH ? v_q : 1'b0;
-  assign virtualization_off = CVA6Cfg.RVH ? !v_q : 1'b0;
+  assign virtualization_off = CVA6Cfg.RVH ? !v_q : 1'b1;
   // FPU outputs
   assign fflags_o = fcsr_q.fflags;
   assign frm_o = fcsr_q.frm;

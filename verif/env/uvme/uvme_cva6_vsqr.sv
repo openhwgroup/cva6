@@ -44,7 +44,7 @@ class uvme_cva6_vsqr_c extends uvm_sequencer#(
    uvma_obi_memory_sqr_c  obi_memory_amo_sequencer;
    uvma_obi_memory_sqr_c  obi_memory_zcmt_sequencer;
    uvma_obi_memory_sqr_c  obi_memory_load_sequencer;
-   //uvma_obi_memory_sqr_c  obi_memory_mmu_ptw_sequencer;
+   uvma_obi_memory_sqr_c  obi_memory_mmu_ptw_sequencer;
 
 
 

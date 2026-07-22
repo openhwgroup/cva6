@@ -15,6 +15,11 @@ uint8_t read_reg_u8(uintptr_t addr)
     return *(volatile uint8_t *)addr;
 }
 
+uint32_t read_reg_u32(uintptr_t addr)
+{
+    return *(volatile uint32_t *)addr;
+}
+
 int is_transmit_empty()
 {
     return read_reg_u8(UART_LINE_STATUS) & 0x20;
@@ -22,7 +27,7 @@ int is_transmit_empty()
 
 char is_transmit_empty_altera()
 {
-    return read_reg_u8(UART_THR+6);
+    return ((read_reg_u8(UART_THR+7) << 8 ) + read_reg_u8(UART_THR+6));
 }
 
 int is_receive_empty()
@@ -30,7 +35,7 @@ int is_receive_empty()
     #ifndef PLAT_AGILEX
         return !(read_reg_u8(UART_LINE_STATUS) & 0x1);
     #else
-        return !(read_reg_u8(UART_THR+1) & 0x8);
+        return (read_reg_u8(UART_THR) == 0);
     #endif
 }
 

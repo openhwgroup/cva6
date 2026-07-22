@@ -1,0 +1,40 @@
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software including rights to use, copy, redistribute, and/or sublicense the
+Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The Software is only to be used with Digilent Inc. hardware directly or with
+Digilent Inc. hardware included in an OEM device.
+
+The Software may be used for the development of custom programs by the
+licensee, for use ONLY with Digilent Inc. hardware. This includes, but is not
+limited to, all Dynamic Link Libraries (DLLs), Shared Libraries, documentation,
+header files, and Applications Programming Interfaces (APIs).
+
+You agree that you will not modify, adapt, decompile, reverse engineer,
+translate, or otherwise attempt to discover the source code for the Software.
+
+Digilent Inc. maintains all its rights under all applicable laws, including but
+not limited to pertinent intellectual property laws.
+
+The above copyright notice and this permission notice shall be included in all
+copies of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright (c) 2022 Digilent Inc.
+
+Contact:  
+1300 NE Henley Ct. Suite 3
+Pullman, WA 99163
+United States of America
+
+digilent.com/support
+ 

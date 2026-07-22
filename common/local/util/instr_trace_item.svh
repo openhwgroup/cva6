@@ -41,6 +41,8 @@ class instr_trace_item #(
     logic              result_fpr [$];
     logic [63:0]       imm;
     logic [63:0]       result;
+    logic              dest_we_valid;
+    logic              dest_is_fp;
     logic [CVA6Cfg.PLEN-1:0]       paddr;
     string             priv_lvl;
     bp_resolve_t       bp;
@@ -49,7 +51,7 @@ class instr_trace_item #(
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
     function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic dest_we_valid, logic dest_is_fp, logic [CVA6Cfg.PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -57,6 +59,8 @@ class instr_trace_item #(
         this.gp_reg_file = gp_reg_file;
         this.fp_reg_file = fp_reg_file;
         this.result   = result;
+        this.dest_we_valid = dest_we_valid;
+        this.dest_is_fp = dest_is_fp;
         this.paddr    = paddr;
         this.bp       = bp;
         this.priv_lvl = (debug_mode) ? "D" : getPrivLevel(priv_lvl);
@@ -193,6 +197,68 @@ class instr_trace_item #(
 
             default:        return $sformatf("%0h", addr);
         endcase
+    endfunction
+
+    function logic scoreboardDestIsFp();
+        if (sbe.fu inside {ariane_pkg::FPU, ariane_pkg::FPU_VEC}) begin
+            return ariane_pkg::fd_changes_rd_state(sbe.op);
+        end
+        return ariane_pkg::is_rd_fpr(sbe.op);
+    endfunction
+
+    function logic rawDestIsFp();
+        if (dest_we_valid) begin
+            return dest_is_fp;
+        end
+        return scoreboardDestIsFp();
+    endfunction
+
+    function logic fpInstrForcesGprDest();
+        logic [6:0] opcode = instr[6:0];
+        logic [4:0] funct5 = instr[31:27];
+        logic [2:0] rm     = instr[14:12];
+
+        if (opcode == riscv::OpcodeOpFp) begin
+            if (funct5 == 5'b11000) begin
+                // fcvt.*.* instructions that target an integer register
+                return 1'b1;
+            end
+
+            if (funct5 == 5'b10100) begin
+                // fle.*, flt.*, feq.* comparisons produce integer results.
+                return 1'b1;
+            end
+
+            if (funct5 == 5'b11100) begin
+                // fmv.x.* (rm == 000) and fclass (rm == 001) always write GPRs.
+                if ((rm == 3'b000) || (rm == 3'b001)) begin
+                    return 1'b1;
+                end
+                // Alternate encodings when FP16ALT is enabled mirror rm encodings.
+                if (CVA6Cfg.XF16ALT && ((rm == 3'b100) || (rm == 3'b101))) begin
+                    return 1'b1;
+                end
+            end
+        end
+
+        return 1'b0;
+    endfunction
+
+    function logic effectiveDestIsFp();
+        logic dest_is_fp_raw = rawDestIsFp();
+
+        if (fpInstrForcesGprDest()) begin
+            return 1'b0;
+        end
+
+        return dest_is_fp_raw;
+    endfunction
+
+    function void adjustResultRegKinds();
+        logic final_dest_is_fp = effectiveDestIsFp();
+        foreach (result_fpr[i]) begin
+            result_fpr[i] = final_dest_is_fp;
+        end
     endfunction
 
     function string printInstr();
@@ -379,6 +445,8 @@ class instr_trace_item #(
         //                                      instr,
         //                                      s);
 
+        adjustResultRegKinds();
+
         foreach (result_regs[i]) begin
             if (result_fpr[i])
                 s = $sformatf("%s %-4s:%16x", s, fpRegAddrToStr(result_regs[i]), this.result);
@@ -466,45 +534,48 @@ class instr_trace_item #(
 
     function string printRFBCInstr(input string mnemonic, input bit use_rnd);
 
+        logic dest_fp = effectiveDestIsFp();
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(dest_fp);
         read_regs.push_back(rs2);
         read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
         read_regs.push_back(sbe.result[4:0]);
         read_fpr.push_back(ariane_pkg::is_imm_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
     endfunction // printRFInstr
 
     function string printRFInstr(input string mnemonic, input bit use_rnd);
 
+        logic dest_fp = effectiveDestIsFp();
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(dest_fp);
         read_regs.push_back(rs1);
         read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
         read_regs.push_back(rs2);
         read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
     endfunction // printRFInstr
 
     function string printRFInstr1Op(input string mnemonic, input bit use_rnd);
 
+        logic dest_fp = effectiveDestIsFp();
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(dest_fp);
         read_regs.push_back(rs1);
         read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
+            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), dest_fp?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
     endfunction // printRFInstr1Op
 
     function string printR4Instr(input string mnemonic);
@@ -523,8 +594,9 @@ class instr_trace_item #(
 
     function string printFpSpecialInstr();
 
+        logic dest_fp = effectiveDestIsFp();
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(dest_fp);
         read_regs.push_back(rs1);
         read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
 
@@ -634,8 +706,9 @@ class instr_trace_item #(
     endfunction // printCSRInstr
 
     function string printLoadInstr(input string mnemonic);
+        logic dest_fp = effectiveDestIsFp();
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(dest_fp);
         read_regs.push_back(rs1);
         read_fpr.push_back(1'b0);
         // save the immediate for calculating the virtual address

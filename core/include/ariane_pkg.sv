@@ -196,7 +196,8 @@ package ariane_pkg;
     FPU,        // 7
     FPU_VEC,    // 8
     CVXIF,      // 9
-    ACCEL       // 10
+    ACCEL,      // 10
+    AES         // 11
   } fu_t;
 
   // Index of writeback ports
@@ -496,7 +497,39 @@ package ariane_pkg;
     BREV8,
     // Zip instructions
     UNZIP,
-    ZIP
+    ZIP,
+    // Xperm instructions
+    XPERM8,
+    XPERM4,
+    // AES Encryption instructions
+    AES32ESI,
+    AES32ESMI,
+    AES64ES,
+    AES64ESM,
+    // AES Decryption instructions
+    AES32DSI,
+    AES32DSMI,
+    AES64DS,
+    AES64DSM,
+    AES64IM,
+    // AES Key-Schedule instructions
+    AES64KS1I,
+    AES64KS2,
+    // Hashing instructions
+    SHA256SIG0,
+    SHA256SIG1,
+    SHA256SUM0,
+    SHA256SUM1,
+    SHA512SIG0H,
+    SHA512SIG0L,
+    SHA512SIG1H,
+    SHA512SIG1L,
+    SHA512SUM0R,
+    SHA512SUM1R,
+    SHA512SIG0,
+    SHA512SIG1,
+    SHA512SUM0,
+    SHA512SUM1
   } fu_op;
 
   function automatic logic op_is_branch(input fu_op op);
@@ -574,6 +607,17 @@ package ariane_pkg;
     endcase
   endfunction
 
+  function automatic logic fd_changes_rd_state(input fu_op op);
+    unique case (op) inside
+      FSD, FSW, FSH, FSB,  // stores
+      FCVT_F2I,  // conversion to int
+      FMV_F2X,  // move as-is to int
+      FCLASS:  // classification (writes output to integer register)
+      return 1'b0;  // floating-point registers are only read
+      default: return 1'b1;  // other ops - floating-point registers are written as well
+    endcase
+  endfunction
+
   function automatic logic is_amo(fu_op op);
     case (op) inside
       [AMO_LRW : AMO_MINDU]: begin
@@ -627,6 +671,23 @@ package ariane_pkg;
     FE_INSTR_GUEST_PAGE_FAULT
   } frontend_exception_t;
 
+  // AMO request going to cache. this request is unconditionally valid as soon
+  // as request goes high.
+  // Furthermore, those signals are kept stable until the response indicates
+  // completion by asserting ack.
+  typedef struct packed {
+    logic        req;        // this request is valid
+    amo_t        amo_op;     // atomic memory operation to perform
+    logic [1:0]  size;       // 2'b10 --> word operation, 2'b11 --> double word operation
+    logic [63:0] operand_a;  // address
+    logic [63:0] operand_b;  // data as layouted in the register
+  } amo_req_t;
+
+  // AMO response coming from cache.
+  typedef struct packed {
+    logic        ack;     // response is valid
+    logic [63:0] result;  // sign-extended, result
+  } amo_resp_t;
 
   localparam RVFI = cva6_config_pkg::CVA6ConfigRvfiTrace;
 

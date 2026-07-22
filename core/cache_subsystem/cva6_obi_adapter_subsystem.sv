@@ -164,8 +164,8 @@ module cva6_obi_adapter_subsystem
   assign noc_req_o.obi_store_req = obi_store_req;
   assign noc_req_o.obi_amo_req = obi_amo_req;
   assign noc_req_o.obi_load_req = obi_load_req;
-  assign noc_req_o.obi_mmu_ptw_req = '0;  //obi_mmu_ptw_req; TODO
-  assign noc_req_o.obi_zcmt_req = '0;  //obi_zcmt_req; TODO
+  assign noc_req_o.obi_mmu_ptw_req = obi_mmu_ptw_req;
+  assign noc_req_o.obi_zcmt_req = obi_zcmt_req;
 
   assign obi_fetch_req.req = ypb_fetch_req_i.preq;
   assign obi_fetch_req.reqpar = !ypb_fetch_req_i.preq;

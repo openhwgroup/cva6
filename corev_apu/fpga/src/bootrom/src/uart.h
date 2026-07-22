@@ -20,7 +20,7 @@
 #define UART_DLAB_LSB UART_BASE + 0
 #define UART_DLAB_MSB UART_BASE + 4
 
-void init_uart();
+void init_uart(uint32_t freq, uint32_t baud);
 
 int read_serial(uint8_t *res);
 

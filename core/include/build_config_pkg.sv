@@ -57,7 +57,7 @@ package build_config_pkg;
     cfg.AxiIdWidth = CVA6Cfg.AxiIdWidth;
     cfg.AxiUserWidth = CVA6Cfg.AxiUserWidth;
     cfg.NrLoadBufEntries = cfg.ObiVersion == config_pkg::OBI_NOT_COMPLIANT ? CVA6Cfg.NrLoadBufEntries : 1;  //FIXME: To fix in order response 
-    cfg.NrFetchBufEntries = 1;  //cfg.ObiVersion == 0 ? CVA6Cfg.NrFetchBufEntries : 1;
+    cfg.NrFetchBufEntries = 1;
     cfg.RVF = CVA6Cfg.RVF;
     cfg.RVD = CVA6Cfg.RVD;
     cfg.XF16 = CVA6Cfg.XF16;

@@ -35,9 +35,9 @@ module dmi_vjtag_tap #(
   input   logic                testmode_i,
   input   logic[IrLength-1:0]  ir_in_i,            // Virtual IR in
   input   logic                jtag_state_tlr_i,     // Test logic reset
-  input   logic                virtual_state_cdr_i,  // Virtual Captude DR
+  input   logic                virtual_state_cdr_i,  // Virtual Capture DR
   input   logic                virtual_state_sdr_i,  // Virtual Shift DR
-  input   logic                virtual_state_udr_i,  // Virutal Update DR
+  input   logic                virtual_state_udr_i,  // Virtual Update DR
 
   // we want to access DMI register
   output logic        dmi_access_o,

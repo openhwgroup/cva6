@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 28/09/2018
-// Description: Mock replacement for UART in testbench (not synthesiesable!)
+// Description: Mock replacement for UART in testbench (not synthesizable!)
 
 module mock_uart (
     input  logic          clk_i,

@@ -184,7 +184,7 @@ module cva6_hpdcache_if_adapter
 
       //    Response forwarding ypb channel R
 
-      assign ypb_load_rsp_o.rvalid = hpdcache_rsp_valid_i;
+      assign ypb_load_rsp_o.rvalid = hpdcache_rsp_valid_i && !hpdcache_rsp_i.aborted;
       assign ypb_load_rsp_o.rid = hpdcache_rsp_i.tid;
       assign ypb_load_rsp_o.err = '0;
       assign ypb_load_rsp_o.rdata = hpdcache_rsp_i.rdata;
@@ -233,6 +233,7 @@ module cva6_hpdcache_if_adapter
       assign ypb_mmu_ptw_rsp_o.rdata = hpdcache_rsp_i.rdata;
       assign ypb_mmu_ptw_rsp_o.rid = hpdcache_rsp_i.tid;
       assign ypb_mmu_ptw_rsp_o.vgnt = hpdcache_req_ready_i;
+      assign ypb_mmu_ptw_rsp_o.pgnt = hpdcache_req_ready_i;
 
       //  Assertions
       //  {{{
@@ -276,6 +277,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign ypb_zcmt_rsp_o.rdata = hpdcache_rsp_i.rdata;
       assign ypb_zcmt_rsp_o.rid = hpdcache_rsp_i.tid;
       assign ypb_zcmt_rsp_o.vgnt = hpdcache_req_ready_i;
+      assign ypb_zcmt_rsp_o.pgnt = hpdcache_req_ready_i;
 
       //  Assertions
       //  {{{
@@ -307,6 +309,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       flush_fsm_t flush_fsm_q, flush_fsm_d;
 
       logic forward_store, forward_amo, forward_flush;
+      logic flush_not_sent;
 
       //  DCACHE flush request
       //  {{{
@@ -315,6 +318,11 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
           flush_fsm_q <= FLUSH_IDLE;
         end else begin
           flush_fsm_q <= flush_fsm_d;
+
+          if (flush_fsm_q == FLUSH_IDLE && cva6_dcache_flush_i && !hpdcache_req_ready_i)
+            flush_not_sent <= '1;
+          else flush_not_sent <= forward_flush;
+
         end
       end
 
@@ -326,7 +334,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
         case (flush_fsm_q)
           FLUSH_IDLE: begin
-            if (cva6_dcache_flush_i) begin
+            if (cva6_dcache_flush_i || flush_not_sent) begin
               forward_flush = 1'b1;
               if (hpdcache_req_ready_i) begin
                 flush_fsm_d = FLUSH_PEND;
@@ -370,6 +378,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
       //  Request forwarding
       //  {{{
+      assign amo_data_size = ypb_amo_req_i.size;
       assign amo_is_word = (amo_data_size == 2'b10);
       assign amo_is_word_hi = ypb_amo_req_i.paddr[2];
       if (CVA6Cfg.XLEN == 64) begin : amo_data_64_gen
@@ -406,7 +415,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               size: ypb_store_req_i.size,
               sid: hpdcache_req_sid_i,
               tid: '0,
-              need_rsp: 1'b0,
+              need_rsp: 1'b1,
               phys_indexed: 1'b1,
               addr_tag: get_paddr_tag(ypb_store_req_i.paddr),
               pma: '{
@@ -471,7 +480,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign ypb_amo_valid = hpdcache_rsp_valid_i && (hpdcache_rsp_i.tid == '1);
 
       //ypb
-      assign ypb_store_rsp_o.pgnt = hpdcache_req_ready_i & ypb_store_req_i.preq;
+      assign ypb_store_rsp_o.pgnt = ypb_store_req_i.preq & hpdcache_req_ready_i;
       assign ypb_store_rsp_o.rvalid = ypb_store_valid;
       assign ypb_store_rsp_o.rid = '0;
       assign ypb_store_rsp_o.err = '0;

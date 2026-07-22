@@ -16,6 +16,7 @@ module cva6_rvfi_probes
     parameter type exception_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type lsu_ctrl_t = logic,
+    parameter type bp_resolve_t = logic,
     parameter type rvfi_probes_instr_t = logic,
     parameter type rvfi_probes_csr_t = logic,
     parameter type rvfi_probes_t = logic
@@ -24,9 +25,9 @@ module cva6_rvfi_probes
 
     input logic                                  flush_i,
     input logic [CVA6Cfg.NrIssuePorts-1:0]       issue_instr_ack_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0]       fetch_entry_valid_i,
     input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] instruction_i,
-    input fu_t  [CVA6Cfg.NrIssuePorts-1:0]       decoded_fu_i,
-    input logic [CVA6Cfg.NrIssuePorts-1:0]       was_compressed_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0]       is_compressed_i,
 
     input logic [CVA6Cfg.NrIssuePorts-1 : 0][CVA6Cfg.TRANS_ID_BITS-1:0] issue_pointer_i,
     input logic [ CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] commit_pointer_i,
@@ -52,6 +53,8 @@ module cva6_rvfi_probes
 
     input rvfi_probes_csr_t csr_i,
     input logic [1:0] irq_i,
+    input bp_resolve_t resolved_branch_i,
+    input [CVA6Cfg.TRANS_ID_BITS-1:0] flu_trans_id_ex_id_i,
 
     output rvfi_probes_t rvfi_probes_o
 );
@@ -66,9 +69,9 @@ module cva6_rvfi_probes
 
     instr.flush = flush_i;
     instr.issue_instr_ack = issue_instr_ack_i;
+    instr.fetch_entry_valid = fetch_entry_valid_i;
     instr.instruction = instruction_i;
-    instr.decoded_fu = decoded_fu_i;
-    instr.was_compressed = was_compressed_i;
+    instr.is_compressed = is_compressed_i;
 
     instr.issue_pointer = issue_pointer_i;
 
@@ -81,6 +84,11 @@ module cva6_rvfi_probes
 
     instr.ex_commit_cause = ex_commit_i.cause;
     instr.ex_commit_valid = ex_commit_i.valid;
+    if (CVA6Cfg.TvalEn) begin
+      instr.tval = ex_commit_i.tval;
+    end else begin
+      instr.tval = '0;
+    end
 
     instr.priv_lvl = priv_lvl_i;
 
@@ -109,6 +117,10 @@ module cva6_rvfi_probes
     instr.commit_ack = commit_ack_i;
     instr.wdata = wdata_i;
 
+    instr.branch_valid = resolved_branch_i.valid;
+    instr.is_taken = resolved_branch_i.is_taken;
+    instr.branch_trans_id = flu_trans_id_ex_id_i;
+
     csr = csr_i;
     csr.mip_q = csr_i.mip_q | ({{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.RVS && irq_i[1]} << riscv::IRQ_S_EXT);
 
@@ -130,4 +142,3 @@ module cva6_rvfi_probes
 
 
 endmodule
-

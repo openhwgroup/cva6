@@ -31,3 +31,15 @@ fi
 cd verif/sim
 python3 cva6.py --testlist=../tests/testlist_riscv-mmu-sv32-arch-test-$DV_TARGET.yaml --target $DV_TARGET --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
 cd -
+
+cd verif/sim
+python3 cva6.py --testlist=../tests/testlist_riscv-mmu-sv32-arch-test-$DV_TARGET.yaml --target cv32a6_imac_sv32_obi --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
+cd -
+
+cd verif/sim
+python3 cva6.py --testlist=../tests/testlist_riscv-mmu-sv32-arch-test-$DV_TARGET.yaml --target cv32a65x_sv32 --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
+cd -
+
+cd verif/sim
+python3 cva6.py --testlist=../tests/testlist_riscv-mmu-sv32-arch-test-$DV_TARGET.yaml --target cv32a65x_sv32_axi --iss_yaml=cva6.yaml --iss=$DV_SIMULATORS $DV_OPTS --linker=../tests/riscv-arch-test/riscv-target/spike/link.ld
+cd -

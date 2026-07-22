@@ -60,55 +60,10 @@ bash verif/regress/smoke-tests.sh
 
 Simulating the CVA6 is done by using `verif/sim/cva6.py`.
 
-The environment variable `DV_SIMULATORS` allows you to specify which simulator to use.
-
-Four simulation types are supported:
-- **veri-testharness**: verilator with corev_apu/testharness testbench
-- **vcs-testharness**: vcs with corev_apu/testharness testbench
-- **vcs-uvm**: vcs with UVM testbench
-- **Spike** ISS 
-
-You can set several simulators, such as :
-
-```sh
-export DV_SIMULATORS=veri-testharness,vcs-testharness,vcs_uvm
-```
-
-If exactly 2 simulators are given, their trace is compared ([see the Regression tests section](#running-regression-tests-simulations)).
-
-Here is how you can run the hello world C program with the Verilator model: 
-
-```sh
-# Make sure to source this script from the root directory 
-# to correctly set the environment variables related to the tools
-source verif/sim/setup-env.sh
-
-# Set the NUM_JOBS variable to increase the number of parallel make jobs
-# export NUM_JOBS=
-
-export DV_SIMULATORS=veri-testharness
-
-cd ./verif/sim
-
-python3 cva6.py --target cv32a60x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
---c_tests ../tests/custom/hello_world/hello_world.c \
---linker=../../config/gen_from_riscv_config/linker/link.ld \
---gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib \
--nostartfiles -g ../tests/custom/common/syscalls.c \
-../tests/custom/common/crt.S -lgcc \
--I../tests/custom/env -I../tests/custom/common"
-```
-
-You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more informations on the available parameters.
-
-## Simulating with VCS and Verdi
-
-You can set the environment variable `VERDI` as such if you want to launch Verdi while simulating with VCS:
-
-```sh
-export VERDI=1
-```
-
+* **[Running Simulations](tutorials/running_sim.md)**
+* **[ASIC Implementation](tutorials/asic.md)**
+* **[FPGA Implementation and running an OS](tutorials/fpga.md)**
+* **[Instruction Tracing](corev_apu/instr_tracing/README.md)**
 
 # Running regression tests simulations
 

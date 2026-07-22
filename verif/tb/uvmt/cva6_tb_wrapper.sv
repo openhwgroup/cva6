@@ -47,49 +47,44 @@ import "DPI-C" function byte get_section(
   output longint address,
   output longint len
 );
-import "DPI-C" context function read_section_sv(
+import "DPI-C" context function void read_section_sv(
   input longint address,
   inout byte buffer[]
 );
 `endif
 
-module cva6_tb_wrapper
-  import uvmt_cva6_pkg::*;
-#(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type rvfi_instr_t = logic,
-    parameter type rvfi_csr_elmt_t = logic,
-    parameter type rvfi_csr_t = logic,
-    parameter type rvfi_probes_instr_t = logic,
-    parameter type rvfi_probes_csr_t = logic,
-    parameter type rvfi_probes_t = logic,
-
-    // CVXIF Types
-    localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
-    localparam type writeregflags_t = `WRITEREGFLAGS_T(CVA6Cfg),
-    localparam type id_t = `ID_T(CVA6Cfg),
-    localparam type hartid_t = `HARTID_T(CVA6Cfg),
-    localparam type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
-    localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
-    localparam type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
-    localparam type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
-    localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
-    localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
-    localparam type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
-    localparam type cvxif_resp_t =
-    `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_store, CVA6Cfg.ObiStorebusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_load, CVA6Cfg.ObiLoadbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_amo, CVA6Cfg.ObiAmobusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg),
-    `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg),
-    //
-
-    parameter int unsigned AXI_USER_EN = 0,
-    parameter int unsigned NUM_WORDS   = 2 ** 25
+module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
+  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+  parameter type rvfi_instr_t = logic,
+  parameter type rvfi_csr_elmt_t = logic,
+  parameter type rvfi_csr_t = logic,
+  parameter type rvfi_probes_instr_t = logic,
+  parameter type rvfi_probes_csr_t = logic,
+  parameter type rvfi_probes_t = logic,
+  parameter type rvfi_to_iti_t = logic,
+  // CVXIF Types
+  localparam type readregflags_t      = `READREGFLAGS_T(CVA6Cfg),
+  localparam type writeregflags_t     = `WRITEREGFLAGS_T(CVA6Cfg),
+  localparam type id_t                = `ID_T(CVA6Cfg),
+  localparam type hartid_t            = `HARTID_T(CVA6Cfg),
+  localparam type x_compressed_req_t  = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
+  localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
+  localparam type x_issue_req_t       = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+  localparam type x_issue_resp_t      = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
+  localparam type x_register_t        = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
+  localparam type x_commit_t          = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
+  localparam type x_result_t          = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
+  localparam type cvxif_req_t         = `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+  localparam type cvxif_resp_t        = `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t),
+  //
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_fetch, CVA6Cfg.ObiFetchbusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_store, CVA6Cfg.ObiStorebusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_load, CVA6Cfg.ObiLoadbusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_amo, CVA6Cfg.ObiAmobusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_mmu_ptw, CVA6Cfg.ObiMmuPtwbusCfg),
+  `OBI_LOCALPARAM_TYPE_GLOBAL_ALL(obi_zcmt, CVA6Cfg.ObiZcmtbusCfg),
+  parameter int unsigned AXI_USER_EN       = 0,
+  parameter int unsigned NUM_WORDS         = 2**25
 ) (
     input  logic                                                clk_i,
     input  logic                                                rst_ni,
@@ -149,6 +144,7 @@ module cva6_tb_wrapper
 
   rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0]  rvfi_instr;
   rvfi_probes_t rvfi_probes;
+  rvfi_to_iti_t rvfi_to_iti;
   rvfi_csr_t rvfi_csr;
   assign rvfi_o = rvfi_instr;
   assign rvfi_csr_o = rvfi_csr;
@@ -431,31 +427,31 @@ module cva6_tb_wrapper
     assign obi_load_rsp.r.r_optional.rchk   = obi_load_slave.rchk;
 
     if (CVA6Cfg.MmuPresent) begin
-      //assign obi_mmu_ptw_slave.req        = i_cva6.obi_fetch_req.req;
-      //assign obi_mmu_ptw_slave.addr       = i_cva6.obi_fetch_req.a.addr;
-      //assign obi_mmu_ptw_slave.we         = i_cva6.obi_fetch_req.a.we;
-      //assign obi_mmu_ptw_slave.be         = i_cva6.obi_fetch_req.a.be;
-      //assign obi_mmu_ptw_slave.wdata      = i_cva6.obi_fetch_req.a.wdata;
-      //assign obi_mmu_ptw_slave.auser      = i_cva6.obi_fetch_req.a.a_optional.auser;
-      //assign obi_mmu_ptw_slave.wuser      = i_cva6.obi_fetch_req.a.a_optional.wuser;
-      //assign obi_mmu_ptw_slave.aid        = i_cva6.obi_fetch_req.a.aid;
-      //assign obi_mmu_ptw_slave.atop       = i_cva6.obi_fetch_req.a.a_optional.atop;
-      //assign obi_mmu_ptw_slave.memtype    = i_cva6.obi_fetch_req.a.a_optional.memtype;
-      //assign obi_mmu_ptw_slave.prot       = i_cva6.obi_fetch_req.a.a_optional.prot;
-      //assign obi_mmu_ptw_slave.reqpar     = i_cva6.obi_fetch_req.reqpar;
-      //assign obi_mmu_ptw_slave.achk       = i_cva6.obi_fetch_req.a.a_optional.achk;
-      //assign obi_mmu_ptw_slave.rready     = i_cva6.obi_fetch_req.rready;
-      //assign obi_mmu_ptw_slave.rreadypar  = i_cva6.obi_fetch_req.rreadypar;
-      //assign i_cva6.obi_fetch_rsp.gnt                  = obi_mmu_ptw_slave.gnt;
-      //assign i_cva6.obi_fetch_rsp.gntpar               = obi_mmu_ptw_slave.gntpar;
-      //assign i_cva6.obi_fetch_rsp.rvalid               = obi_mmu_ptw_slave.rvalid;
-      //assign i_cva6.obi_fetch_rsp.r.rdata              = obi_mmu_ptw_slave.rdata;
-      //assign i_cva6.obi_fetch_rsp.r.err                = obi_mmu_ptw_slave.err;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.ruser   = obi_mmu_ptw_slave.ruser;
-      //assign i_cva6.obi_fetch_rsp.r.rid                = obi_mmu_ptw_slave.rid;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.exokay  = obi_mmu_ptw_slave.exokay;
-      //assign i_cva6.obi_fetch_rsp.rvalidpar            = obi_mmu_ptw_slave.rvalidpar;
-      //assign i_cva6.obi_fetch_rsp.r.r_optional.rchk    = obi_mmu_ptw_slave.rchk;
+      assign obi_mmu_ptw_slave.req        = obi_mmu_ptw_req.req;
+      assign obi_mmu_ptw_slave.addr       = obi_mmu_ptw_req.a.addr;
+      assign obi_mmu_ptw_slave.we         = obi_mmu_ptw_req.a.we;
+      assign obi_mmu_ptw_slave.be         = obi_mmu_ptw_req.a.be;
+      assign obi_mmu_ptw_slave.wdata      = obi_mmu_ptw_req.a.wdata;
+      assign obi_mmu_ptw_slave.auser      = obi_mmu_ptw_req.a.a_optional.auser;
+      assign obi_mmu_ptw_slave.wuser      = obi_mmu_ptw_req.a.a_optional.wuser;
+      assign obi_mmu_ptw_slave.aid        = obi_mmu_ptw_req.a.aid;
+      assign obi_mmu_ptw_slave.atop       = obi_mmu_ptw_req.a.a_optional.atop;
+      assign obi_mmu_ptw_slave.memtype    = obi_mmu_ptw_req.a.a_optional.memtype;
+      assign obi_mmu_ptw_slave.prot       = obi_mmu_ptw_req.a.a_optional.prot;
+      assign obi_mmu_ptw_slave.reqpar     = obi_mmu_ptw_req.reqpar;
+      assign obi_mmu_ptw_slave.achk       = obi_mmu_ptw_req.a.a_optional.achk;
+      assign obi_mmu_ptw_slave.rready     = obi_mmu_ptw_req.rready;
+      assign obi_mmu_ptw_slave.rreadypar  = obi_mmu_ptw_req.rreadypar;
+      assign obi_mmu_ptw_rsp.gnt                  = obi_mmu_ptw_slave.gnt;
+      assign obi_mmu_ptw_rsp.gntpar               = obi_mmu_ptw_slave.gntpar;
+      assign obi_mmu_ptw_rsp.rvalid               = obi_mmu_ptw_slave.rvalid;
+      assign obi_mmu_ptw_rsp.r.rdata              = obi_mmu_ptw_slave.rdata;
+      assign obi_mmu_ptw_rsp.r.err                = obi_mmu_ptw_slave.err;
+      assign obi_mmu_ptw_rsp.r.r_optional.ruser   = obi_mmu_ptw_slave.ruser;
+      assign obi_mmu_ptw_rsp.r.rid                = obi_mmu_ptw_slave.rid;
+      assign obi_mmu_ptw_rsp.r.r_optional.exokay  = obi_mmu_ptw_slave.exokay;
+      assign obi_mmu_ptw_rsp.rvalidpar            = obi_mmu_ptw_slave.rvalidpar;
+      assign obi_mmu_ptw_rsp.r.r_optional.rchk    = obi_mmu_ptw_slave.rchk;
     end
 
       if (CVA6Cfg.RVZCMT) begin
@@ -494,13 +490,17 @@ module cva6_tb_wrapper
       .CVA6Cfg   (CVA6Cfg),
       .rvfi_instr_t(rvfi_instr_t),
       .rvfi_csr_t(rvfi_csr_t),
-      .rvfi_probes_t(rvfi_probes_t)
+      .rvfi_probes_instr_t(rvfi_probes_instr_t),
+      .rvfi_probes_csr_t(rvfi_probes_csr_t),
+      .rvfi_probes_t(rvfi_probes_t),
+      .rvfi_to_iti_t(rvfi_to_iti_t)
   ) i_cva6_rvfi (
       .clk_i        (clk_i),
       .rst_ni       (rst_ni),
       .rvfi_probes_i(rvfi_probes),
-      .rvfi_instr_o (rvfi_instr),
-      .rvfi_csr_o   (rvfi_csr)
+      .rvfi_instr_o(rvfi_instr),
+      .rvfi_to_iti_o   (rvfi_to_iti),
+      .rvfi_csr_o(rvfi_csr)
   );
 
   rvfi_tracer #(
@@ -558,7 +558,7 @@ module cva6_tb_wrapper
   AXI_BUS #(
       .AXI_ADDR_WIDTH(CVA6Cfg.AxiAddrWidth),
       .AXI_DATA_WIDTH(CVA6Cfg.AxiDataWidth),
-      .AXI_ID_WIDTH  (ariane_axi_soc::IdWidthSlave),
+      .AXI_ID_WIDTH  (CVA6Cfg.AxiIdWidth),
       .AXI_USER_WIDTH(CVA6Cfg.AxiUserWidth)
   ) cva6_axi_bus ();
 
@@ -569,7 +569,7 @@ module cva6_tb_wrapper
   );
 
   axi2mem #(
-      .AXI_ID_WIDTH  (ariane_axi_soc::IdWidthSlave),
+      .AXI_ID_WIDTH  (CVA6Cfg.AxiIdWidth),
       .AXI_ADDR_WIDTH(CVA6Cfg.AxiAddrWidth),
       .AXI_DATA_WIDTH(CVA6Cfg.AxiDataWidth),
       .AXI_USER_WIDTH(CVA6Cfg.AxiUserWidth)
