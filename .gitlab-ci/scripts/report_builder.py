@@ -14,7 +14,9 @@ Helpers to build CI reports
 import os
 import re
 from datetime import datetime as dt
+from pathlib import Path
 import yaml
+
 
 class Metric:
     "A metric is a part of the body of the report"
@@ -28,11 +30,11 @@ class Metric:
     def to_doc(self):
         "Transform to a dictionary"
         return {
-            'display_name': self.name,
-            'sort_index': self.sort_index,
-            'type': self._t(),
-            'status': "fail" if self.failed else "pass",
-            'value': self._values_to_doc(),
+            "display_name": self.name,
+            "sort_index": self.sort_index,
+            "type": self._t(),
+            "status": "fail" if self.failed else "pass",
+            "value": self._values_to_doc(),
         }
 
     def fail(self):
@@ -45,6 +47,7 @@ class Metric:
     def _t(self):
         raise NotImplementedError()
 
+
 class LogMetric(Metric):
     "Log lines"
 
@@ -56,7 +59,8 @@ class LogMetric(Metric):
         return self.values
 
     def _t(self):
-        return 'log'
+        return "log"
+
 
 class TableMetric(Metric):
     "Table"
@@ -66,21 +70,22 @@ class TableMetric(Metric):
         self.values.append(list(col))
 
     def _values_to_doc(self):
-        return [{'col': v} for v in self.values]
+        return [{"col": v} for v in self.values]
 
     def _t(self):
-        return 'table'
+        return "table"
+
 
 class TableStatusMetric(Metric):
     "Table with status label for each line"
 
-    class _TableStatusMetricColumn():
+    class _TableStatusMetricColumn:
         def __init__(self, title, col_type):
             self.title = title
             self.col_type = col_type
 
         def to_doc(self):
-            return { "title": self.title, "col_type": self.col_type }
+            return {"title": self.title, "col_type": self.col_type}
 
     def __init__(self, name):
         super().__init__(name)
@@ -92,11 +97,11 @@ class TableStatusMetric(Metric):
 
     def add_pass_label(self, label, *col):
         "Insert a 'pass' line with given label in the table"
-        self._add_value('pass', label, *col)
+        self._add_value("pass", label, *col)
 
     def add_fail_label(self, label, *col):
         "Insert a 'fail' line with given label in the table"
-        self._add_value('fail', label, *col)
+        self._add_value("fail", label, *col)
         self.fail()
 
     def add_pass(self, *col):
@@ -110,17 +115,18 @@ class TableStatusMetric(Metric):
     def to_doc(self):
         doc = super().to_doc()
         if len(self.columns) > 0:
-            doc['columns'] = list(map(lambda col: col.to_doc(), self.columns))
+            doc["columns"] = list(map(lambda col: col.to_doc(), self.columns))
         return doc
 
     def _add_value(self, status, label, *col):
         self.values.append((status, label, list(col)))
 
     def _values_to_doc(self):
-        return [{'status': s, 'label': l, 'col': c} for (s,l,c) in self.values]
+        return [{"status": s, "label": l, "col": c} for (s, l, c) in self.values]
 
     def _t(self):
-        return 'table_status'
+        return "table_status"
+
 
 class Report:
     "A report is the top level entity of the document"
@@ -149,26 +155,38 @@ class Report:
     def to_doc(self):
         "Transform to a dictionary"
         assert len(self.metrics) > 0, "A report must have at least one metric"
-        start = os.environ['CI_JOB_STARTED_AT']
-        start_fmt = '%Y-%m-%dT%H:%M:%S%z'
-        start = dt.strptime(start, start_fmt).timestamp()
+
         pass_label = "FAIL" if self.failed else "PASS"
         label = pass_label if self.label is None else self.label
-        return {
-            'title': os.environ["DASHBOARD_JOB_TITLE"],
-            'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
-            'category': os.environ["DASHBOARD_JOB_CATEGORY"],
-            'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
-            'job_id': os.environ["CI_JOB_ID"],
-            'job_url': os.environ["CI_JOB_URL"],
-            'job_stage_name': os.environ["CI_JOB_STAGE"],
-            'job_started_at': int(start),
-            'job_end_at': int(dt.now().timestamp()),
-            'token': 'YC' + str(dt.now().timestamp()).replace('.', ''),
-            'status': "fail" if self.failed else "pass",
-            'metrics': [m.to_doc() for m in self.metrics],
-            'label': label,
+
+        doc = {
+            "job_end_at": int(dt.now().timestamp()),
+            "token": "YC" + str(dt.now().timestamp()).replace(".", ""),
+            "status": "fail" if self.failed else "pass",
+            "metrics": [m.to_doc() for m in self.metrics],
+            "label": label,
         }
+
+        doc["title"] = os.environ.get("DASHBOARD_JOB_TITLE")
+        doc["description"] = os.environ.get("DASHBOARD_JOB_DESCRIPTION")
+        doc["category"] = os.environ.get("DASHBOARD_JOB_CATEGORY")
+        doc["sort_index"] = os.environ.get("DASHBOARD_JOB_SORT_INDEX")
+        doc["job_id"] = os.environ.get("CI_JOB_ID")
+        doc["job_url"] = os.environ.get("CI_JOB_URL")
+        doc["job_stage_name"] = os.environ.get("CI_JOB_STAGE")
+
+        try:
+            start_str = os.environ.get("CI_JOB_STARTED_AT")
+            if start_str:
+                start_fmt = "%Y-%m-%dT%H:%M:%S%z"
+                start = dt.strptime(start_str, start_fmt).timestamp()
+                doc["job_started_at"] = int(start)
+            else:
+                doc["job_started_at"] = None
+        except (ValueError, TypeError):
+            doc["job_started_at"] = None
+
+        return doc
 
     def dump(self, path=None):
         """
@@ -176,15 +194,19 @@ class Report:
 
         By default the output path is build from $CI_JOB_NAME
         """
-        for metric in self.metrics:
-            print(metric.values)
-
         if path is None:
             ci_job_name = os.environ.get("CI_JOB_NAME")
             if ci_job_name is not None:
-                filename = re.sub(r'[^\w\.\\\/]', '_', ci_job_name)
-                path = 'artifacts/reports/'+filename+'.yml'
+                filename = re.sub(r"[^\w\.\\\/]", "_", ci_job_name)
+            else:
+                filename = "noname"
+            path = "artifacts/reports/report_" + filename + ".yml"
+        # create dir just in case
+        repo_dir = Path.cwd()
+        report_dir = repo_dir / path
+        report_dir.parent.mkdir(parents=True, exist_ok=True)
 
         if path is not None:
-            with open(path, 'w') as f:
+            print(path)
+            with open(path, "w", encoding="utf-8") as f:
                 yaml.dump(self.to_doc(), f)

@@ -56,11 +56,6 @@ pub_<name>:
   extends:
     - .verif_test
     - .template_job_short_ci
-  variables:
-    DASHBOARD_JOB_TITLE: "<title for dashboard>"
-    DASHBOARD_JOB_DESCRIPTION: "<description for dashboard>"
-    DASHBOARD_SORT_INDEX: <index to sort jobs in dashboard>
-    DASHBOARD_JOB_CATEGORY: "<job category for dashboard>"
   script:
     - source verif/regress/<my-script>.sh
     - python3 .gitlab-ci/scripts/report_<kind>.py <args...>

@@ -1,0 +1,9 @@
+pandas
+plotly
+matplotlib
+pycryptodome
+scipy
+tqdm
+rich
+typer
+pyyaml

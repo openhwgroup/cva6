@@ -25,8 +25,13 @@ module cva6_example_obi
     localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg),
     localparam type rvfi_probes_csr_t = `RVFI_PROBES_CSR_T(CVA6Cfg),
     parameter type rvfi_probes_t = struct packed {
-      rvfi_probes_csr_t   csr;
+`ifdef RVFI_ENABLE  // Allow to perform IP level CVA6 elab without RVFI ports (>1000)
+      rvfi_probes_csr_t csr;
       rvfi_probes_instr_t instr;
+`else
+      logic csr;
+      logic instr;
+`endif
     },
 
     // NOC Types AXI bus or several OBI bus
@@ -121,7 +126,7 @@ module cva6_example_obi
     localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
     localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
     localparam type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_t, x_commit_t),
     localparam type cvxif_resp_t =
     `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t)
 ) (

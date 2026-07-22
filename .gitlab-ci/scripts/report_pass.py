@@ -9,8 +9,8 @@
 
 import report_builder as rb
 
-metric = rb.TableStatusMetric('')
-metric.add_pass('Job completed without error. No metric extraction is configured')
+metric = rb.TableStatusMetric("")
+metric.add_pass("Job completed without error. No metric extraction is configured")
 
 report = rb.Report()
 report.add_metric(metric)

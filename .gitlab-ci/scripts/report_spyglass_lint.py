@@ -14,12 +14,12 @@ import sys
 import report_builder as rb
 
 
-def extract_info(summary_ref_results):
+def extract_info(summary_ref_file):
     pattern = re.compile(r"(WARNING|ERROR|INFO)\s+(\S+)\s+(\d+)\s+(.+)$")
     pattern2 = re.compile(r"^ +(.*)")
     info_list = []
 
-    with open(summary_ref_results, "r", encoding="utf-8") as f:
+    with open(summary_ref_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     for line in lines:
@@ -41,14 +41,14 @@ def extract_info(summary_ref_results):
     return info_list
 
 
-def compare_summaries(baseline_info, new_info):
+def compare_summaries(baseline_summary, new_summary):
     baseline_dict = {
         (severity, rule_name): (count, short_help)
-        for severity, rule_name, count, short_help in baseline_info
+        for severity, rule_name, count, short_help in baseline_summary
     }
     new_dict = {
         (severity, rule_name): (count, short_help)
-        for severity, rule_name, count, short_help in new_info
+        for severity, rule_name, count, short_help in new_summary
     }
 
     comparison_results = []
@@ -110,9 +110,9 @@ if __name__ == "__main__":
 
     baseline_info = extract_info(summary_ref_results)
     new_info = extract_info(summary_rpt)
-    comparison_results = compare_summaries(baseline_info, new_info)
-    report = generate_spyglass_lint_report(comparison_results)
-    print(report.failed)
-    report.dump()
-    if report.failed:
+    comparison_res = compare_summaries(baseline_info, new_info)
+    spyglass_report = generate_spyglass_lint_report(comparison_res)
+    print(spyglass_report.failed)
+    spyglass_report.dump()
+    if spyglass_report.failed:
         sys.exit(1)

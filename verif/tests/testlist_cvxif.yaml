@@ -28,14 +28,10 @@
 
 common_test_config: &common_test_config
   path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common"
-
-common_test_config_lgcc: &common_test_config_lgcc
-  path_var: TESTS_PATH
-  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostartfiles -g <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/tests/custom/common "
 
 testlist:
   - test: cvxif_add_nop
-    <<: *common_test_config_lgcc
+    <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/custom/cv_xif/cvxif_add_nop.S
