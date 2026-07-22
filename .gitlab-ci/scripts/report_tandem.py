@@ -7,27 +7,29 @@
 #
 # Original Author: Valentin Thomazic (valentin.thomazic@thalesgroup.com)
 
-import sys
-import report_builder
 import os
 import glob
+import sys
+import report_builder
 import yaml
 
 
 def main():
-    with_logs = os.environ.get("COLLECT_SIMU_LOGS") != None
-    metrics_table = report_builder.TableStatusMetric('')
+    with_logs = os.environ.get("COLLECT_SIMU_LOGS") is not None
+    metrics_table = report_builder.TableStatusMetric("")
 
     check_provided_args()
     add_table_legend(metrics_table, with_logs)
-    passed_tests_count, total_tests_count = fill_table(sys.argv[1], metrics_table, with_logs)
+    passed_tests_count, total_tests_count = fill_table(
+        sys.argv[1], metrics_table, with_logs
+    )
 
-    if not report(metrics_table, passed_tests_count, total_tests_count):
+    if not create_report(metrics_table, passed_tests_count, total_tests_count):
         sys.exit(1)
 
 
 def check_provided_args():
-    if len(sys.argv) != 2: 
+    if len(sys.argv) != 2:
         sys.exit("Usage : python report_tandem.py path/to/log/dir")
 
     if not os.path.exists(sys.argv[1]):
@@ -67,20 +69,39 @@ def fill_table(reports_dir, metrics_table, with_logs):
 
 def add_test_row(report_file, metrics_table, with_logs):
     try:
-        with open(report_file) as f:
+        with open(report_file, encoding="utf-8") as f:
             report = yaml.safe_load(f)
-        mismatches_count = str(report["mismatches_count"]) if "mismatches_count" in report else "Not found"
+        mismatches_count = (
+            str(report["mismatches_count"])
+            if "mismatches_count" in report
+            else "Not found"
+        )
 
-        row = [report["target"], report["isa"], report["test"], report["testlist"], report["simulator"], mismatches_count]
+        row = [
+            report["target"],
+            report["isa"],
+            report["test"],
+            report["testlist"],
+            report["simulator"],
+            mismatches_count,
+        ]
 
         if with_logs:
             logs_path = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
             output_log = logs_path + "logfile.log"
-            log_prefix = logs_path + report['test'] + "_" + str(report["iteration"]) + "." + report["target"] \
-                if "iteration" in report else logs_path + report['test'] + "." + report["target"]
-            tb_log = log_prefix + '.log.iss'
-            disassembly = log_prefix + '.log.csv'
-            tandem_report = log_prefix + '.log.yaml'
+            log_prefix = (
+                logs_path
+                + report["test"]
+                + "_"
+                + str(report["iteration"])
+                + "."
+                + report["target"]
+                if "iteration" in report
+                else logs_path + report["test"] + "." + report["target"]
+            )
+            tb_log = log_prefix + ".log.iss"
+            disassembly = log_prefix + ".log.csv"
+            tandem_report = log_prefix + ".log.yaml"
 
             row.append(output_log)
             row.append(tandem_report)
@@ -96,8 +117,9 @@ def add_test_row(report_file, metrics_table, with_logs):
     except (TypeError, KeyError):
         sys.exit("Invalid yaml file in log directory! Is the log directory correct?")
 
-def report(metrics_table, passed_test_count, total_test_count):
-    report = report_builder.Report(f'{passed_test_count}/{total_test_count}')
+
+def create_report(metrics_table, passed_test_count, total_test_count):
+    report = report_builder.Report(f"{passed_test_count}/{total_test_count}")
     report.add_metric(metrics_table)
     report.dump()
     return not report.failed

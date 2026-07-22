@@ -9,8 +9,8 @@
 
 import report_builder as rb
 
-metric = rb.TableStatusMetric('')
-metric.add_fail('Environment failure detected. Some reports might be missing')
+metric = rb.TableStatusMetric("")
+metric.add_fail("Environment failure detected. Some reports might be missing")
 
 report = rb.Report()
 report.add_metric(metric)

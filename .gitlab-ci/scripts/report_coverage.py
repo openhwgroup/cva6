@@ -9,72 +9,48 @@
 
 import re
 import sys
-import yaml
-import report_builder as rb
 from pprint import pprint
+import report_builder as rb
 
 log_cc_path = str(sys.argv[1])
-with open(log_cc_path, 'r') as f:
+with open(log_cc_path, "r", encoding="utf-8") as f:
     cc_log = f.read()
 
-log_fc_path = str(sys.argv[2])
-with open(log_fc_path, 'r') as f:
-    fc_log = f.read()
+pattern = re.compile(r"\S{2,}")
 
-pattern = re.compile(r'\S{2,}')
 
-def get_cc_scores(component):
-	for l in cc_log.splitlines():
-		if re.search(r'\b'+component+r'\b', l):
-			line = l
-	scores = pattern.findall(line)
-	return [float(score) for score in scores[0:3]]
+def get_cc_scores(comp):
+    line = ""
+    for l in cc_log.splitlines():
+        if re.search(r"\b" + comp + r"\b", l):
+            line = l
+    scores = pattern.findall(line)
+    return [float(score) for score in scores[0:3]]
 
-def get_fc_scores(component):
-	for l in fc_log.splitlines():
-		if re.search(r'\b'+component+r'\b', l):
-			line = l
-	scores = pattern.findall(line)
-	return [float(scores[0])]
 
 cc_components = [
-	"i_cva6_pipeline",
-	"commit_stage_i",
-	"controller_i",
-	"csr_regfile_i",
-	"ex_stage_i",
-	"i_frontend",
-	"id_stage_i",
-	"issue_stage_i",
+    "i_cva6_pipeline",
+    "commit_stage_i",
+    "controller_i",
+    "csr_regfile_i",
+    "ex_stage_i",
+    "i_frontend",
+    "i_issue_read_operands",
+    "i_scoreboard",
+    "id_stage_i",
 ]
 
-fc_components = [
-	"ISA",
-	"CSR access",
-	"TRAPs",
-]
-
-cc_score_metric = rb.TableMetric('Coverage results')
+cc_score_metric = rb.TableMetric("Coverage results")
 cc_score_metric.add_value("COMPONENT", "SCORE", "LINE", "COND")
 for component in cc_components:
-	cc_scores = get_cc_scores(component)
-	cc_score_metric.add_value(component, *cc_scores)
-
-fc_score_metric = rb.TableMetric('Functional results')
-fc_score_metric.add_value("FEATURE", "SCORE")
-for component in fc_components:
-	fc_scores = get_fc_scores(component)
-	fc_score_metric.add_value(component, *fc_scores)
+    cc_scores = get_cc_scores(component)
+    cc_score_metric.add_value(component, *cc_scores)
 
 coverage_score = int(get_cc_scores("i_cva6_pipeline")[0])
-report = rb.Report(f'{coverage_score}%')
+report = rb.Report(f"{coverage_score}%")
 report.add_metric(cc_score_metric)
-report.add_metric(fc_score_metric)
 
 report.dump()
 
 print("Code Coverage Results :\n")
 pprint(cc_score_metric.values)
-print("\nFunctional Coverage Results :\n")
-for i in range(0, 4):
-	pprint(fc_score_metric.values[i])

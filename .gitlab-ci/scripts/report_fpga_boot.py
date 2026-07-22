@@ -10,13 +10,13 @@
 import sys
 import report_builder as rb
 
-with open(str(sys.argv[1]), "r") as f:
+with open(str(sys.argv[1]), "r", encoding="utf-8") as f:
     lastline = f.readlines()[-1]
 
-with open(str(sys.argv[1]), "r") as f:
+with open(str(sys.argv[1]), "r", encoding="utf-8") as f:
     log = f.read()
 
-metric = rb.TableStatusMetric('Linux boot log')
+metric = rb.TableStatusMetric("Linux boot log")
 if not ("Linux buildroot" in lastline and "riscv" in lastline):
     metric.add_fail(lastline)
 else:
