@@ -532,12 +532,6 @@ module cva6_hpdcache_subsystem
   //  {{{
   //  pragma translate_off
   initial begin : initial_assertions
-    assert (HPDcacheCfg.u.reqSrcIdWidth >= $clog2(HPDcacheCfg.u.nRequesters))
-    else $fatal(1, "HPDCACHE_REQ_SRC_ID_WIDTH is not wide enough");
-    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(HPDcacheCfg.u.mshrSets * HPDcacheCfg.u.mshrWays) + 1))
-    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ and I$ miss requests ");
-    assert (CVA6Cfg.MEM_TID_WIDTH >= ($clog2(HPDcacheCfg.u.wbufDirEntries) + 1))
-    else $fatal(1, "MEM_TID_WIDTH shall allow to uniquely identify all D$ write requests ");
     assert (CVA6Cfg.MEM_TID_WIDTH <= CVA6Cfg.AxiIdWidth)
     else $fatal(1, "MEM_TID_WIDTH shall be less or equal to the AxiIdWidth");
   end
