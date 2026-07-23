@@ -164,6 +164,9 @@ module cva6_hpicache_wrapper
       .mem_resp_read_valid_i(icache_mem_resp_read_valid_i),
       .mem_resp_read_i      (icache_mem_resp_read_i),
 
+      .mem_resp_read_inval_i      (1'b0),
+      .mem_resp_read_inval_nline_i('0),
+
       .mem_req_write_ready_i(1'b1),
       .mem_req_write_valid_o(),
       .mem_req_write_o      (),
@@ -178,15 +181,20 @@ module cva6_hpicache_wrapper
 
       .evt_cache_write_miss_o(  /* unused */),
       .evt_cache_read_miss_o (icache_read_miss),
-      .evt_uncached_req_o    (  /* unused */),
-      .evt_cmo_req_o         (  /* unused */),
-      .evt_write_req_o       (  /* unused */),
-      .evt_read_req_o        (  /* unused */),
-      .evt_prefetch_req_o    (  /* unused */),
-      .evt_req_on_hold_o     (  /* unused */),
-      .evt_rtab_rollback_o   (  /* unused */),
-      .evt_stall_refill_o    (  /* unused */),
-      .evt_stall_o           (  /* unused */),
+      .evt_cache_dir_unc_err_o(  /* unused */),
+      .evt_cache_dir_cor_err_o(  /* unused */),
+      .evt_cache_dat_unc_err_o(  /* unused */),
+      .evt_cache_dat_cor_err_o(  /* unused */),
+      .evt_scrub_complete_o   (  /* unused */),
+      .evt_uncached_req_o     (  /* unused */),
+      .evt_cmo_req_o          (  /* unused */),
+      .evt_write_req_o        (  /* unused */),
+      .evt_read_req_o         (  /* unused */),
+      .evt_prefetch_req_o     (  /* unused */),
+      .evt_req_on_hold_o      (  /* unused */),
+      .evt_rtab_rollback_o    (  /* unused */),
+      .evt_stall_refill_o     (  /* unused */),
+      .evt_stall_o            (  /* unused */),
 
       .wbuf_empty_o(),
 
@@ -198,7 +206,10 @@ module cva6_hpicache_wrapper
       .cfg_prefetch_updt_plru_i           (1'b1),
       .cfg_error_on_cacheable_amo_i       (1'b0),
       .cfg_rtab_single_entry_i            (1'b0),
-      .cfg_default_wb_i                   (1'b0)
+      .cfg_default_wb_i                   (1'b0),
+      .cfg_scrub_enable_i                 (1'b0),
+      .cfg_scrub_period_i                 ('0),
+      .cfg_scrub_restart_i                (1'b0)
   );
 
   assign icache_miss_o = icache_read_miss;
