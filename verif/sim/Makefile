@@ -278,9 +278,11 @@ endif
 ifneq ($(SPIKE_TANDEM),)
 ALL_SIMV_UVM_FLAGS += +tandem_enabled=1
 ALL_XRUN_SIMV_UVM_FLAGS += +tandem_enabled=1
+QUESTA_TANDEM_ARGS = +tandem_enabled=1
 else
 ALL_SIMV_UVM_FLAGS += +tandem_enabled=0
 ALL_XRUN_SIMV_UVM_FLAGS += +tandem_enabled=0
+QUESTA_TANDEM_ARGS = +tandem_enabled=0
 endif
 
 ### VCS UVM rules
@@ -373,7 +375,7 @@ questa_uvm_comp: check_questa_home
 
 questa_uvm_run: check_questa_home
 	@echo "[QUESTA] Running Model"
-	$(QUESTA_BIN)/vsim -64  \
+	$(if $(spike-tandem),LD_PRELOAD="$(SPIKE_INSTALL_DIR)/lib/libyaml-cpp.so:$(SPIKE_INSTALL_DIR)/lib/libriscv.so$${LD_PRELOAD:+:$$LD_PRELOAD}" )$(QUESTA_BIN)/vsim -64  \
 	  $(COMMON_RUN_UVM_FLAGS) \
 		$(COMMON_RUN_ARGS) \
 	  -sv_lib $(QUESTASIM_HOME)/uvm-1.2/linux_x86_64/uvm_dpi \
@@ -386,6 +388,7 @@ questa_uvm_run: check_questa_home
 	  -noautoldlibpath \
 	  +define+UNSUPPORTED_WITH+ \
 		$(issrun_opts) \
+		$(QUESTA_TANDEM_ARGS) \
 	  uvmt_cva6_tb_opt
 		$(tool_path)/spike-dasm --isa=$(variant) < ./trace_rvfi_hart_00.dasm > $(log)
 	  grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
