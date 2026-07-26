@@ -84,7 +84,9 @@ def uvm_run_testlist(
     tandem_enabled: bool = typer.Option(False, help="Enable spike tandem"),
     tb_performance_mode: bool = typer.Option(False, help="Enable tb perf mode"),
     stats: bool = typer.Option(False, help="Enable RTL perf tracer"),
-    sim_profile: bool = typer.Option(False, help="Enable simulation profiling (VCS only)"),
+    sim_profile: bool = typer.Option(
+        False, help="Enable simulation profiling (VCS only)"
+    ),
     interactive_gui: bool = typer.Option(
         False, help="Launch GUI for interactive simulation"
     ),
@@ -92,13 +94,18 @@ def uvm_run_testlist(
     uvm_seed: str = typer.Option(
         str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     UVM run testlist simulation flow (multi-simulator)
     """
     code = 0
 
-    print_recipe_title(f"{simulator.value.upper()} DESIGN RUN SIMULATION TESTLIST")
+    print_recipe_title(
+        f"{simulator.value.upper()} DESIGN RUN SIMULATION TESTLIST", quiet=quiet
+    )
 
     # Select the appropriate run function based on simulator
     if simulator == Simulator.vcs:
@@ -108,12 +115,12 @@ def uvm_run_testlist(
     elif simulator == Simulator.questa:
         run_function = questa_uvm_run
     else:
-        print_error(f"Unknown simulator: {simulator}")
+        print_error(f"Unknown simulator: {simulator}", quiet=quiet)
         raise typer.Exit(code=1)
 
     repo_dir = Path.cwd()
     data = {"testlist": []}
-    
+
     # Special handling for cvxif testlist
     if testlist and "cvxif" in testlist:
         run_opts = list(run_opts) + ["+enabled_cvxif"]
@@ -125,18 +132,18 @@ def uvm_run_testlist(
             with testlist_file.open("r") as f:
                 data = yaml.safe_load(f)
         except FileNotFoundError as e:
-            print_error(f"testlist: File not found: {testlist_file}")
+            print_error(f"testlist: File not found: {testlist_file}", quiet=quiet)
             raise typer.Exit(code=1) from e
 
         if "testlist" in data:
-            print_success(f"testlist: Found in file {testlist}")
+            print_success(f"testlist: Found in file {testlist}", quiet=quiet)
         else:
-            print_error(f"testlist: Not found in file {testlist}")
+            print_error(f"testlist: Not found in file {testlist}", quiet=quiet)
             raise typer.Exit(code=1)
     elif test_name:
         data["testlist"] = [{"test": name, "iterations": 1} for name in test_name]
     else:
-        print_error("Error: You must provide --testlist or --testname")
+        print_error("Error: You must provide --testlist or --testname", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Run tests
@@ -150,7 +157,7 @@ def uvm_run_testlist(
         # Skip disabled tests (iterations == 0)
         if iterations == 0:
             continue
-            
+
         for i in range(iterations):
             iter_test_name = f"{test['test']}_{i}"
             try:
@@ -170,6 +177,7 @@ def uvm_run_testlist(
                         sim_profile=sim_profile,
                         run_opts=run_opts,
                         uvm_seed=uvm_seed,
+                        quiet=quiet,
                     )
                 else:
                     # Xcelium and Questa don't have sim_profile
@@ -185,9 +193,10 @@ def uvm_run_testlist(
                         stats=stats,
                         run_opts=run_opts,
                         uvm_seed=uvm_seed,
+                        quiet=quiet,
                     )
             except typer.Exit:
-                print_error(f"{test['test']}: Returned error")
+                print_error(f"{test['test']}: Returned error", quiet=quiet)
                 code = 1
 
     if code != 0:

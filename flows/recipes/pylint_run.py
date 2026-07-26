@@ -21,12 +21,16 @@ app = typer.Typer()
 
 
 @app.command()
-def pylint_run():
+def pylint_run(
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
+):
     """
     Pylint static code analyzer
     """
-    print_recipe_title("Pylint")
-    print_step("Launch Pylint")
+    print_recipe_title("Pylint", quiet=quiet)
+    print_step("Launch Pylint", quiet=quiet)
     dir_list = [".gitlab-ci", "flows"]
     get_files_cmd = [
         "git",
@@ -46,6 +50,7 @@ def pylint_run():
         timeout=300,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
     pylint_options = [
         "-d=duplicate-code",
@@ -84,6 +89,7 @@ def pylint_run():
         timeout=300,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
     if (
         "************* Module" in result
@@ -91,4 +97,4 @@ def pylint_run():
     ):
         raise typer.Exit("Pylint failed")
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

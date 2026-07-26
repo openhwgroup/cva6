@@ -67,7 +67,7 @@ def parse_area_log(log_content: str) -> List[Dict[str, str]]:
     return dict_data
 
 
-def generate_area_csv(dict_data: List[Dict], csv_name: str):
+def generate_area_csv(dict_data: List[Dict], csv_name: str, quiet: bool = False):
     try:
         with open(csv_name, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=CSV_COLUMNS_AREA)
@@ -75,7 +75,7 @@ def generate_area_csv(dict_data: List[Dict], csv_name: str):
             for data in dict_data:
                 writer.writerow(data)
     except IOError as e:
-        print_error(f"I/O error generating CSV: {e}")
+        print_error(f"I/O error generating CSV: {e}", quiet=quiet)
 
 
 # ==========================================
@@ -99,6 +99,9 @@ def report_dc_shell_graph_area(
         None, "--config", help="Path to the YAML config file."
     ),
     top: str = typer.Option("cva6_example_obi", "--top", help="Top module to analyze"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """Analyze synthesis area reports and generate Sunburst charts."""
 
@@ -109,11 +112,11 @@ def report_dc_shell_graph_area(
         config = Path(f"build/{target}/synthesis/build_config.yaml")
 
     if not in_report.exists() or not in_report.is_file():
-        print_error(f"Error: Area report file not found at '{in_report}'")
+        print_error(f"Error: Area report file not found at '{in_report}'", quiet=quiet)
         raise typer.Exit(code=1)
 
     if not config.exists() or not config.is_file():
-        print_error(f"Error: Area report file not found at '{config}'")
+        print_error(f"Error: Area report file not found at '{config}'", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Report Path
@@ -126,14 +129,15 @@ def report_dc_shell_graph_area(
 
     nand2area = float(config_data["NAND2_AREA"])
 
-    print_recipe_title("Process Area Graph")
+    print_recipe_title("Process Area Graph", quiet=quiet)
 
     # Print entry files
-    print_step("Used files")
+    print_step("Used files", quiet=quiet)
     print_info(
         f"report:                   {in_report}\n"
         f"config file:              {config}\n"
-        f"NAND2 Area ratio loaded:  {nand2area}"
+        f"NAND2 Area ratio loaded:  {nand2area}",
+        quiet=quiet,
     )
 
     with open(in_report, "r", encoding="utf-8") as f:
@@ -141,7 +145,7 @@ def report_dc_shell_graph_area(
 
     csv_name = report_path / f"{in_report.stem}.csv"
     dict_data = parse_area_log(log_content)
-    generate_area_csv(dict_data, csv_name)
+    generate_area_csv(dict_data, csv_name, quiet=quiet)
 
     labels, values, parents, ids = [], [], [], []
 
@@ -186,9 +190,10 @@ def report_dc_shell_graph_area(
     html_name = report_path / f"{in_report.stem}.html"
     fig.write_html(html_name)
     # Print files
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     print_info(
         f"CSV file for {in_report.name}:    {csv_name}\n"
-        f"HTML file for {in_report.name}:   {html_name}\n"
+        f"HTML file for {in_report.name}:   {html_name}\n",
+        quiet=quiet,
     )
-    print_success("Success")
+    print_success("Success", quiet=quiet)

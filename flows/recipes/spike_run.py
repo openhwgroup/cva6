@@ -50,6 +50,9 @@ def spike_run(
         help="Test name (compiled from list or not)",
         autocompletion=autocompletion_testname_compiled,
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     VCS UVM run simulation flow
@@ -57,7 +60,7 @@ def spike_run(
     # Init code
     code = 0
 
-    print_recipe_title("SPIKE SIMULATION")
+    print_recipe_title("SPIKE SIMULATION", quiet=quiet)
 
     print_param_table(
         {
@@ -65,6 +68,7 @@ def spike_run(
             "Test name": test_name,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -83,17 +87,17 @@ def spike_run(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if simulation_dir.exists():
             shutil.rmtree(simulation_dir)
-            print_info(f"remove {simulation_dir}")
+            print_info(f"remove {simulation_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error: {e}")
+        print_error(f"Clean error: {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     simulation_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {simulation_dir}")
+    print_info(f"create {simulation_dir}", quiet=quiet)
 
     # ==========================================================
     # OPTIONS
@@ -123,7 +127,7 @@ def spike_run(
     # ==========================================================
     # LAUNCH SIMV
     # ==========================================================
-    print_step("Run SPIKE simulation")
+    print_step("Run SPIKE simulation", quiet=quiet)
 
     log_file = simulation_dir / "simulation.log"
 
@@ -138,6 +142,7 @@ def spike_run(
         timeout=3000,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
@@ -145,7 +150,7 @@ def spike_run(
     # ==========================================================
 
     # Tail log
-    tail_file(log_file, n=20)
+    tail_file(log_file, n=20, quiet=quiet)
 
     file_add_tohost = compile_dir / f"{test_name}.add_tohost"
     found = 0
@@ -161,41 +166,44 @@ def spike_run(
             if tohost[2:] == add_tohost:
                 if return_val[2:] == "00000001":
                     print_success(
-                        f"Spike ended with value {return_val[2:]} in tohost ({add_tohost})"
+                        f"Spike ended with value {return_val[2:]} in tohost ({add_tohost})",
+                        quiet=quiet,
                     )
                     found = 1
                 else:
                     print_error(
-                        f"Spike ended with value {return_val[2:]} in tohost ({add_tohost})"
+                        f"Spike ended with value {return_val[2:]} in tohost ({add_tohost})",
+                        quiet=quiet,
                     )
                     found = 1
             else:
                 print_error(
-                    f"Spike did not end with write in tohost ({add_tohost}): {tohost[2:]}"
+                    f"Spike did not end with write in tohost ({add_tohost}): {tohost[2:]}",
+                    quiet=quiet,
                 )
                 found = 1
         except Exception as e:
-            print_error(f"Error process log: {e}")
+            print_error(f"Error process log: {e}", quiet=quiet)
     else:
-        print_error(f"Missing {file_add_tohost}")
+        print_error(f"Missing {file_add_tohost}", quiet=quiet)
 
     if found == 0:
-        print_error("Simulation status unknown")
+        print_error("Simulation status unknown", quiet=quiet)
         code = 1
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [
         simulation_dir / "simulation.log",
     ]
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)

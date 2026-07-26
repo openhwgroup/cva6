@@ -34,22 +34,25 @@ def verible_rtl_formating(
         "-t",
         help="CVA6 user configuration",
         autocompletion=autocompletion_target,
-    )
+    ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Format CVA6 RTL files with Verible (mandatory for submit PR)
     """
 
     # Title
-    print_recipe_title("Verible RTL formating")
+    print_recipe_title("Verible RTL formating", quiet=quiet)
 
     repo_dir = Path.cwd()
 
     verible_path = shutil.which("verible-verilog-format")
     if verible_path is not None:
-        print_success(f"verible-verilog-format: {verible_path}")
+        print_success(f"verible-verilog-format: {verible_path}", quiet=quiet)
     else:
-        print_error("verible-verilog-format: Not found")
+        print_error("verible-verilog-format: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     verible_dir = repo_dir / "build" / target / "verible"
@@ -57,17 +60,17 @@ def verible_rtl_formating(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if verible_dir.exists():
             shutil.rmtree(verible_dir)
-            print_info(f"remove {verible_dir}")
+            print_info(f"remove {verible_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     verible_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {verible_dir}")
+    print_info(f"create {verible_dir}", quiet=quiet)
 
     # ==========================================================
     # GET FILE LIST TO FORMAT
@@ -125,7 +128,7 @@ def verible_rtl_formating(
     # ==========================================================
     # LAUNCH VERIBLE
     # ==========================================================
-    print_step("Launch Verible")
+    print_step("Launch Verible", quiet=quiet)
 
     log_file = verible_dir / "verible-cmd.log"
 
@@ -140,6 +143,7 @@ def verible_rtl_formating(
         timeout=300,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
@@ -148,9 +152,9 @@ def verible_rtl_formating(
 
     gen_files = [log_file]
 
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

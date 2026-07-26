@@ -52,11 +52,14 @@ def hwconfig_forge(
         help="Individual parameters to override with value <parameter=newvalue>",
         autocompletion=autocompletion_param_config,
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Hardware config modify/overwrite
     """
-    print_recipe_title("HWCONFIG : Forging new config")
+    print_recipe_title("HWCONFIG : Forging new config", quiet=quiet)
 
     # ==========================================================
     # GENERATE MODIFICATIONS DICTIONARY
@@ -69,7 +72,8 @@ def hwconfig_forge(
             arg_replace_str += f"{key}: {value}\n"
     except Exception as e:
         print_error(
-            f'\033[1mThe list of arguments to overwrite is incorrect, please use ./cook.py hwconfig-forge TARGET "PARAMETER=VALUE" "PARAMETER=VALUE"...\033[0m{e}'
+            f'\033[1mThe list of arguments to overwrite is incorrect, please use ./cook.py hwconfig-forge TARGET "PARAMETER=VALUE" "PARAMETER=VALUE"...\033[0m{e}',
+            quiet=quiet,
         )
         raise typer.Exit(code=1)
 
@@ -80,13 +84,14 @@ def hwconfig_forge(
             "Values to overwrite": arg_replace_str,
         },
         "Options",
+        quiet=quiet,
     )
 
     # ==========================================================
     # FETCH TEMPLATE (ORIGINAL TARGET CONFIG PKG)
     # ==========================================================
 
-    print_step("Target config package fetch")
+    print_step("Target config package fetch", quiet=quiet)
     repo_dir = Path.cwd()
     config_pkg_dir = repo_dir / "core" / "include"
     config_pkg = config_pkg_dir / f"{target}_config_pkg.sv"
@@ -110,13 +115,17 @@ def hwconfig_forge(
         / "spike.yaml"
     )
     if config_pkg.exists():
-        print_info(f"{config_pkg_dir}/{target}_config_pkg.sv exists and found")
+        print_info(
+            f"{config_pkg_dir}/{target}_config_pkg.sv exists and found", quiet=quiet
+        )
         config_pkg = config_pkg.open()
     else:
-        print_error(f"{config_pkg_dir}/{target}_config_pkg.sv does not exist")
+        print_error(
+            f"{config_pkg_dir}/{target}_config_pkg.sv does not exist", quiet=quiet
+        )
         raise typer.Exit(code=1)
 
-    print_step("Target config package forge")
+    print_step("Target config package forge", quiet=quiet)
 
     # ==========================================================
     # FORGE MODIFIED CONFIG PKG
@@ -167,24 +176,27 @@ def hwconfig_forge(
         title="Updated config values",
         column_name=titles_l,
         style=style_l,
+        quiet=quiet,
     )
 
-    print_step(f"New target '{new_target_name}' generation")
+    print_step(f"New target '{new_target_name}' generation", quiet=quiet)
 
     with forged_config_pkg.open("w") as f:
         for line in forged_config_content:
             f.write(f"{line}\n")
-        print_info(f"create {new_target_name}_config_pkg.sv")
+        print_info(f"create {new_target_name}_config_pkg.sv", quiet=quiet)
 
     # Create parents dir and do not raise error if directories already exists
     if not forged_config_linker.exists():
         forged_config_linker.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(config_linker, forged_config_linker)
-        print_info(f"Copy {config_linker} -> {forged_config_linker}")
+        print_info(f"Copy {config_linker} -> {forged_config_linker}", quiet=quiet)
     if not forged_config_spike_file.exists():
         forged_config_spike_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(config_spike_file, forged_config_spike_file)
-        print_info(f"Copy {config_spike_file} -> {forged_config_spike_file}")
+        print_info(
+            f"Copy {config_spike_file} -> {forged_config_spike_file}", quiet=quiet
+        )
 
     # ==========================================================
     # List
@@ -196,11 +208,11 @@ def hwconfig_forge(
         forged_config_spike_file,
     ]
 
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
         else:
-            print_error(f"> Missing: {genfile}")
+            print_error(f"> Missing: {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

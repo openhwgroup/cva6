@@ -46,13 +46,16 @@ def vcs_generator_run_testlist(
     ),
     seed: int = typer.Option(None, help="randomized if not provided"),
     batch_size: int = typer.Option(1, help="Number of tests to generate per run batch"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     VCS UVM generator run testlist simulation flow
     """
     code = 0
 
-    print_recipe_title("VCS DESIGN RUN GENERATOR TESTLIST")
+    print_recipe_title("VCS DESIGN RUN GENERATOR TESTLIST", quiet=quiet)
 
     repo_dir = Path.cwd()
     data = {"testlist": []}
@@ -67,11 +70,11 @@ def vcs_generator_run_testlist(
             elif isinstance(raw, dict) and "testlist" in raw:
                 data = raw
             else:
-                print_error(f"YAML format error in {testlist_file}")
+                print_error(f"YAML format error in {testlist_file}", quiet=quiet)
                 raise typer.Exit(code=1)
 
     except FileNotFoundError as e:
-        print_error(f"File Not found in file {testlist_file}")
+        print_error(f"File Not found in file {testlist_file}", quiet=quiet)
         raise typer.Exit(code=1) from e
 
     for test in data["testlist"]:
@@ -82,7 +85,7 @@ def vcs_generator_run_testlist(
 
         # Skip disabled tests
         if "iterations" not in test:
-            print_error("Iterations not found in the TestList")
+            print_error("Iterations not found in the TestList", quiet=quiet)
             raise typer.Exit(code=1)
 
         iterations = test["iterations"]
@@ -115,13 +118,14 @@ def vcs_generator_run_testlist(
                 illegal_instr_ratio=0,
                 instr_cnt=300,
                 opts=opts,
+                quiet=quiet,
             )
 
         except typer.Exit:
-            print_error(f"{test['test']}: Return Error")
+            print_error(f"{test['test']}: Return Error", quiet=quiet)
             code = 1
 
     if code != 0:
         raise typer.Exit(code=1)
 
-    print_success("Sucess")
+    print_success("Sucess", quiet=quiet)

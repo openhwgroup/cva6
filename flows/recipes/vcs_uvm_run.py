@@ -73,6 +73,9 @@ def vcs_uvm_run(
     uvm_seed: str = typer.Option(
         default=str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     VCS UVM run simulation flow
@@ -83,19 +86,19 @@ def vcs_uvm_run(
     # Test tools in path
     vcs_path = shutil.which("vcs")
     if vcs_path is not None:
-        print_success(f"VCS: {vcs_path}")
+        print_success(f"VCS: {vcs_path}", quiet=quiet)
     else:
         print_error("vcs: Not found")
         raise typer.Exit(code=1)
     if trace_mode != TraceMode.notrace:
         verdi_path = shutil.which("verdi")
         if verdi_path is not None:
-            print_success(f"verdi : {verdi_path}")
+            print_success(f"verdi : {verdi_path}", quiet=quiet)
         else:
             print_error("VERDI: Not found")
             raise typer.Exit(code=1)
 
-    print_recipe_title("VCS DESIGN RUN SIMULATION")
+    print_recipe_title("VCS DESIGN RUN SIMULATION", quiet=quiet)
 
     print_param_table(
         {
@@ -113,6 +116,7 @@ def vcs_uvm_run(
             "UVM seed": uvm_seed,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -149,17 +153,17 @@ def vcs_uvm_run(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if simulation_dir.exists():
             shutil.rmtree(simulation_dir)
-            print_info(f"remove {simulation_dir}")
+            print_info(f"remove {simulation_dir}", quiet=quiet)
     except Exception as e:
         print_error(f"Clean error : {e}")
         raise typer.Exit(code=1)
 
     simulation_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {simulation_dir}")
+    print_info(f"create {simulation_dir}", quiet=quiet)
 
     # ==========================================================
     # OPTIONS
@@ -175,13 +179,13 @@ def vcs_uvm_run(
     if file_add_GLOBAL_PATTERN_start.exists():
         add_start_window = file_add_GLOBAL_PATTERN_start.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}", quiet=quiet)
         add_start_window = 0
 
     if file_add_GLOBAL_PATTERN_end.exists():
         add_end_window = file_add_GLOBAL_PATTERN_end.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}", quiet=quiet)
         add_end_window = 0
 
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
@@ -252,7 +256,7 @@ def vcs_uvm_run(
     # ==========================================================
     # RUN.DO GENERATION
     # ==========================================================
-    print_step("Generate run.do instructions")
+    print_step("Generate run.do instructions", quiet=quiet)
 
     if trace_mode == TraceMode.gui:
         run_do_content = f"""fsdbDumpfile {simulation_dir / "trace.fsdb"}; fsdbDumpvars 0 "uvmt_cva6_tb" +all +trace_process; run"""
@@ -264,8 +268,8 @@ def vcs_uvm_run(
         run_do_content = """run"""
 
     run_do_path.write_text(run_do_content)
-    print_info(f"run.do generated at {run_do_path}")
-    print_info(f'run.do content: "{run_do_content}"')
+    print_info(f"run.do generated at {run_do_path}", quiet=quiet)
+    print_info(f'run.do content: "{run_do_content}"', quiet=quiet)
 
     # ==========================================================
     # BUILD SIMV COMMAND
@@ -277,7 +281,7 @@ def vcs_uvm_run(
     # ==========================================================
     # LAUNCH SIMV
     # ==========================================================
-    print_step("Run VCS simulation")
+    print_step("Run VCS simulation", quiet=quiet)
 
     log_file = simulation_dir / "simulation.log"
 
@@ -292,6 +296,7 @@ def vcs_uvm_run(
         timeout=3000,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
@@ -299,7 +304,7 @@ def vcs_uvm_run(
     # ==========================================================
 
     # Tail log
-    tail_file(log_file, n=20)
+    tail_file(log_file, n=20, quiet=quiet)
 
     status_passed = re.compile(r"^\s+SIMULATION PASSED")
     status_failed = re.compile(r"^\s+SIMULATION FAILED")
@@ -309,7 +314,7 @@ def vcs_uvm_run(
         with log_file.open("r") as f_in:
             for line in f_in:
                 if status_passed.search(line):
-                    print_success("Simulation PASSED")
+                    print_success("Simulation PASSED", quiet=quiet)
                     found = 1
                     break
                 if status_failed.search(line):
@@ -327,7 +332,7 @@ def vcs_uvm_run(
     # ==========================================================
     # POST PROCESS TIMING
     # ==========================================================
-    print_step("Post-process timing info")
+    print_step("Post-process timing info", quiet=quiet)
 
     def extract_pattern_to_file(
         log_file, grep_pattern, awk_idx, dest_file, label_begin, label_end
@@ -340,7 +345,8 @@ def vcs_uvm_run(
                         if len(fields) >= awk_idx + 1:
                             dest_file.write_text(fields[awk_idx])
                             print_success(
-                                f"{label_begin} detected at {fields[awk_idx]} {label_end}"
+                                f"{label_begin} detected at {fields[awk_idx]} {label_end}",
+                                quiet=quiet,
                             )
                             break
         except Exception as e:
@@ -402,7 +408,7 @@ def vcs_uvm_run(
     # ==========================================================
     # Disassemble rvfi trace with spike_dasm
     # ==========================================================
-    print_step("Disassemble rvfi trace")
+    print_step("Disassemble rvfi trace", quiet=quiet)
 
     spike_dasm_log_file = simulation_dir / "spike_dasm.log"
     isa = (compile_dir / "isa_string").read_text()
@@ -410,7 +416,7 @@ def vcs_uvm_run(
     trace_rvfi_file = elab_dir / "trace_rvfi_hart_00.dasm"
 
     if trace_rvfi_file.exists():
-        print_step("Disassemble rvfi trace")
+        print_step("Disassemble rvfi trace", quiet=quiet)
 
         env_vars = {"LD_LIBRARY_PATH": f"{spike_lib}"}
 
@@ -430,14 +436,18 @@ def vcs_uvm_run(
                 timeout=30,
                 check=False,
                 capture_output=False,
+                quiet=quiet,
             )
     else:
-        print_info("Trace RVFI not found, if rvfi interface is disabled it's normal")
+        print_info(
+            "Trace RVFI not found, if rvfi interface is disabled it's normal",
+            quiet=quiet,
+        )
 
     # ==========================================================
     # MOVE LOGS / TRACES
     # ==========================================================
-    print_step("Move files")
+    print_step("Move files", quiet=quiet)
 
     for pattern in [
         elab_dir / "tandem.log",
@@ -446,7 +456,7 @@ def vcs_uvm_run(
         for file_path in glob.glob(str(pattern)):
             try:
                 shutil.move(file_path, str(simulation_dir))
-                print_info(f"Moved {file_path} -> {simulation_dir}")
+                print_info(f"Moved {file_path} -> {simulation_dir}", quiet=quiet)
             except FileNotFoundError:
                 print_error(f"No file matched: {file_path}")
             except Exception as e:
@@ -456,7 +466,7 @@ def vcs_uvm_run(
     # Stats
     # ==========================================================
     if stats:
-        print_step("Analysis Stats")
+        print_step("Analysis Stats", quiet=quiet)
 
         path_script = (
             repo_dir / "perf-model" / "rtl_models_trace" / "scripts" / "main_stats.py"
@@ -500,12 +510,12 @@ def vcs_uvm_run(
         simulation_dir / f"analysis_{test_name}_{target}.txt",
     ]
 
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)

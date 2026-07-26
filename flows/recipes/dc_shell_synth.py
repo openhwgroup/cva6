@@ -62,6 +62,9 @@ def dc_shell_synth(
         [PreProcOption.HPDCACHE_ASSERT_OFF], "--define", help="Preprocessor directives"
     ),
     clean: bool = typer.Option(True, help="Clean working dir before"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     DC Shell Synthesis flow
@@ -70,7 +73,7 @@ def dc_shell_synth(
         "{ " + reduce(lambda a, b: f"{a}, {b}", preprocessor_defines) + " }"
     )
 
-    print_recipe_title("Dc shell synthesis flow")
+    print_recipe_title("Dc shell synthesis flow", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -92,6 +95,7 @@ def dc_shell_synth(
             "Clean": clean,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Get config
@@ -101,14 +105,15 @@ def dc_shell_synth(
     print_param_table(
         techno,
         "Techno parameters",
+        quiet=quiet,
     )
 
     # Test tools in path
     dc_shell_path = shutil.which("dc_shell")
     if dc_shell_path is not None:
-        print_success(f"dc_shell: {dc_shell_path}")
+        print_success(f"dc_shell: {dc_shell_path}", quiet=quiet)
     else:
-        print_error("dc_shell: Not found")
+        print_error("dc_shell: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -118,20 +123,20 @@ def dc_shell_synth(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     if clean:
         try:
             if synth_dir.exists():
                 shutil.rmtree(synth_dir)
-                print_info(f"remove {synth_dir}")
+                print_info(f"remove {synth_dir}", quiet=quiet)
         except Exception as e:
-            print_error(f"Clean error : {e}")
+            print_error(f"Clean error : {e}", quiet=quiet)
             raise typer.Exit(code=1)
     else:
-        print_info(f"Skip cleaning {synth_dir}")
+        print_info(f"Skip cleaning {synth_dir}", quiet=quiet)
 
     synth_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {synth_dir}")
+    print_info(f"create {synth_dir}", quiet=quiet)
 
     # print config in synth_dir
     with open(synth_dir / "build_config.yaml", "w", encoding="utf-8") as f:
@@ -148,7 +153,7 @@ def dc_shell_synth(
     elif cva6_hier == Cva6Hier.axi:
         top_elaborate = "cva6_example_axi"
     else:
-        print_error("Unknown cva6_hier")
+        print_error("Unknown cva6_hier", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
@@ -182,7 +187,7 @@ def dc_shell_synth(
     # ==========================================================
     # GENERATE FLIST FOR DC_SHELL
     # ==========================================================
-    print_step("Generate Flist.cva6_synth")
+    print_step("Generate Flist.cva6_synth", quiet=quiet)
 
     def parse_flist(flist_path, patterns, collected=None):
 
@@ -253,7 +258,7 @@ def dc_shell_synth(
     # ==========================================================
     # LAUNCH DC_SHELL COMMAND
     # ==========================================================
-    print_step("Launch dc_shell")
+    print_step("Launch dc_shell", quiet=quiet)
 
     log_file = synth_dir / "synthesis.log"
 
@@ -268,12 +273,13 @@ def dc_shell_synth(
         timeout=6000,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
     # Post-process netlist/sdf/spef
     # ==========================================================
-    print_step("Post-process netlist/reports")
+    print_step("Post-process netlist/reports", quiet=quiet)
 
     top = env_vars["TOP"]
     TARGET = env_vars["TARGET"]
@@ -319,7 +325,7 @@ def dc_shell_synth(
                     f_out.write(re.sub(rf"{top}__\d+", top, line))
 
         else:
-            print_error(f"{src} missing")
+            print_error(f"{src} missing", quiet=quiet)
 
     # Write Flist.libverilog to help compile step
     (synth_dir / "Flist.libverilog").write_text(env_vars["LIB_VERILOG"])
@@ -327,7 +333,7 @@ def dc_shell_synth(
     # ==========================================================
     # Reporting area
     # ==========================================================
-    print_step("Area reporting")
+    print_step("Area reporting", quiet=quiet)
 
     NAND2_AREA = int(env_vars["NAND2_AREA"])
 
@@ -346,7 +352,7 @@ def dc_shell_synth(
             global_val = pattern_global_val.findall(log)
             hier = pattern_hier.findall(log)
     except Exception as e:
-        print_error(f"Error process log: {e}")
+        print_error(f"Error process log: {e}", quiet=quiet)
 
     total_area = float(hier[0][1])
     kgates = total_area / NAND2_AREA
@@ -359,6 +365,7 @@ def dc_shell_synth(
     print_param_table(
         result_metric,
         "Global results",
+        quiet=quiet,
     )
 
     result_metric = {}
@@ -370,12 +377,13 @@ def dc_shell_synth(
     print_param_table(
         result_metric,
         "Hierarchies details",
+        quiet=quiet,
     )
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [
         log_file,
         synth_dir / "warnings.log",
@@ -389,6 +397,6 @@ def dc_shell_synth(
     ]
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

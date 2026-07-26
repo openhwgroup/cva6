@@ -29,18 +29,22 @@ app = typer.Typer()
 
 
 @app.command()
-def vcs_generator_comp():
+def vcs_generator_comp(
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    )
+):
     """
     VCS UVM compilation / elaboration flow
     """
-    print_recipe_title("VCS DESIGN ELABORATION")
+    print_recipe_title("VCS DESIGN ELABORATION", quiet=quiet)
 
     # Test tools in path
     vcs_path = shutil.which("vcs")
     if vcs_path is not None:
-        print_success(f"VCS: {vcs_path}")
+        print_success(f"VCS: {vcs_path}", quiet=quiet)
     else:
-        print_error("vcs: Not found")
+        print_error("vcs: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -51,17 +55,17 @@ def vcs_generator_comp():
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if elab_dir.exists():
             shutil.rmtree(elab_dir)
-            print_info(f"remove {elab_dir}")
+            print_info(f"remove {elab_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     elab_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {elab_dir}")
+    print_info(f"create {elab_dir}", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES
@@ -130,7 +134,7 @@ def vcs_generator_comp():
     # ==============================================================================
     # COPY CUSTOM INSTRUCTIONS
     # ==============================================================================
-    print_step("Copy custom instructions")
+    print_step("Copy custom instructions", quiet=quiet)
     try:
         src_file = (
             repo_dir
@@ -146,16 +150,16 @@ def vcs_generator_comp():
 
         # cp verif/env/corev-dv/custom/riscv_custom_instr_enum.sv ./verif/sim/dv/src/isa/custom/ :
         shutil.copy2(src_file, dest_dir)
-        print_info(f"copy {src_file.name} to {dest_dir}")
+        print_info(f"copy {src_file.name} to {dest_dir}", quiet=quiet)
 
     except Exception as e:
-        print_error(f"Copy error : {e}")
+        print_error(f"Copy error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
     # LAUNCH VCS COMMAND
     # ==========================================================
-    print_step("LAUNCH VCS")
+    print_step("LAUNCH VCS", quiet=quiet)
 
     log_file = elab_dir / "compilation.log"
 
@@ -170,25 +174,26 @@ def vcs_generator_comp():
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     simv = elab_dir / "simv"
 
     if not simv.exists():
-        print_error("SIMV not generated")
+        print_error("SIMV not generated", quiet=quiet)
         raise typer.Exit(code=1)
 
     if not log_file.exists():
-        print_error("Compilation log missing")
+        print_error("Compilation log missing", quiet=quiet)
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [simv, log_file]
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

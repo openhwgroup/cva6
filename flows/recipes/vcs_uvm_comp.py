@@ -50,11 +50,14 @@ def vcs_uvm_comp(
     tandem_enabled: bool = typer.Option(False, help="Enable spike tandem"),
     stats: bool = typer.Option(False, help="Enable RTL perf tracer"),
     sim_profile: bool = typer.Option(False, help="Enable simulation profiling"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     VCS UVM compilation / elaboration flow
     """
-    print_recipe_title("VCS DESIGN ELABORATION")
+    print_recipe_title("VCS DESIGN ELABORATION", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -76,6 +79,7 @@ def vcs_uvm_comp(
             "SimProfile enable": sim_profile,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -94,14 +98,14 @@ def vcs_uvm_comp(
     # Test tools in path
     vcs_path = shutil.which("vcs")
     if vcs_path is not None:
-        print_success(f"VCS: {vcs_path}")
+        print_success(f"VCS: {vcs_path}", quiet=quiet)
     else:
         print_error("vcs: Not found")
         raise typer.Exit(code=1)
     if trace_mode != TraceMode.notrace:
         verdi_path = shutil.which("verdi")
         if verdi_path is not None:
-            print_success(f"verdi: {verdi_path}")
+            print_success(f"verdi: {verdi_path}", quiet=quiet)
         else:
             print_error("VERDI: Not found")
             raise typer.Exit(code=1)
@@ -113,17 +117,17 @@ def vcs_uvm_comp(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if elab_dir.exists():
             shutil.rmtree(elab_dir)
-            print_info(f"remove {elab_dir}")
+            print_info(f"remove {elab_dir}", quiet=quiet)
     except Exception as e:
         print_error(f"Clean error : {e}")
         raise typer.Exit(code=1)
 
     elab_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {elab_dir}")
+    print_info(f"create {elab_dir}", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES (passed to run_cmd only)
@@ -317,7 +321,7 @@ def vcs_uvm_comp(
     # ==========================================================
     # LAUNCH VCS COMMAND
     # ==========================================================
-    print_step("LAUNCH VCS")
+    print_step("LAUNCH VCS", quiet=quiet)
 
     log_file = elab_dir / "compilation.log"
 
@@ -332,6 +336,7 @@ def vcs_uvm_comp(
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     simv = elab_dir / "simv"
@@ -346,11 +351,11 @@ def vcs_uvm_comp(
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [simv, log_file]
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
