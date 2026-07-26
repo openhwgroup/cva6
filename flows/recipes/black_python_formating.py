@@ -21,12 +21,16 @@ app = typer.Typer()
 
 
 @app.command()
-def black_python_formating():
+def black_python_formating(
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
+):
     """
     Format Python files with black
     """
-    print_recipe_title("Black Python formating")
-    print_step("Launch Black")
+    print_recipe_title("Black Python formating", quiet=quiet)
+    print_step("Launch Black", quiet=quiet)
     dir_list = [".gitlab-ci", "docs/scripts", "flows", "pd", "perf-model"]
     get_files_cmd = [
         "git",
@@ -46,6 +50,7 @@ def black_python_formating():
         timeout=300,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
     py_files = ["cook.py"]
     for f in files.split():
@@ -64,6 +69,7 @@ def black_python_formating():
         timeout=300,
         check=True,
         capture_output=False,
+        quiet=quiet,
     )
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

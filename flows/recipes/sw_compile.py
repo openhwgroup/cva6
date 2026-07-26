@@ -64,11 +64,14 @@ def sw_compile(
     test_name: str = typer.Option(
         ..., "--out", help="Test name (used in rest of flow)"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Compile software and generate ELF + reports.
     """
-    print_recipe_title("Software compilation")
+    print_recipe_title("Software compilation", quiet=quiet)
 
     print_param_table(
         {
@@ -84,6 +87,7 @@ def sw_compile(
             "test_name": test_name,
         },
         "Options",
+        quiet=quiet,
     )
 
     repo_dir = Path.cwd()
@@ -94,13 +98,14 @@ def sw_compile(
     print_param_table(
         compiler_data,
         "Compiler parameters",
+        quiet=quiet,
     )
 
     if compiler_data["CLANG"] is not None:
-        print_info("LLVM mode")
+        print_info("LLVM mode", quiet=quiet)
         compiler = compiler_data["CLANG"]
     else:
-        print_info("GCC mode")
+        print_info("GCC mode", quiet=quiet)
         compiler = compiler_data["GCC"]
 
     tools_path = compiler_data["TOOLS_PATH"]
@@ -125,23 +130,23 @@ def sw_compile(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if compile_dir.exists():
             shutil.rmtree(compile_dir)
-            print_info(f"remove {compile_dir}")
+            print_info(f"remove {compile_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     compile_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {compile_dir}")
+    print_info(f"create {compile_dir}", quiet=quiet)
 
     # ==========================================================
     # ISA STRING SELECTION
     # ==========================================================
 
-    print_step("ISA string selection")
+    print_step("ISA string selection", quiet=quiet)
 
     if mabi is None or march is None:
         # If not provided (standard case), take ISA string in target config directory
@@ -156,11 +161,12 @@ def sw_compile(
                     march = isa_config["march"]
             except KeyError as e:
                 print_error(
-                    f"Error: Keys '{mabi}' or '{march}' missing in {isa_config_file}"
+                    f"Error: Keys '{mabi}' or '{march}' missing in {isa_config_file}",
+                    quiet=quiet,
                 )
                 raise typer.Exit(code=1) from e
         else:
-            print_error(f"Missing {isa_config_file}")
+            print_error(f"Missing {isa_config_file}", quiet=quiet)
             raise typer.Exit(code=1)
 
     if linker_file is None:
@@ -173,12 +179,13 @@ def sw_compile(
             "linker_file": linker_file,
         },
         "ISA and Linker file",
+        quiet=quiet,
     )
 
     # ==========================================================
     # LAUNCH COMPILER COMMAND
     # ==========================================================
-    print_step("Compilation")
+    print_step("Compilation", quiet=quiet)
 
     compile_cmd = [
         f"{tools_path}/bin/{compiler}",
@@ -208,12 +215,13 @@ def sw_compile(
         timeout=90,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     if elf_file.exists():
-        print_success("Compilation successful")
+        print_success("Compilation successful", quiet=quiet)
     else:
-        print_error("Compilation failed")
+        print_error("Compilation failed", quiet=quiet)
         raise typer.Exit(code=1)
 
     isa_string_file.write_text(march)
@@ -221,7 +229,7 @@ def sw_compile(
     # ==========================================================
     # Objdump
     # ==========================================================
-    print_step("Objdump")
+    print_step("Objdump", quiet=quiet)
 
     compile_cmd = [f"{tools_path}/bin/{objdump}", "-D", str(elf_file)]
 
@@ -236,18 +244,19 @@ def sw_compile(
         timeout=90,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     if objdump_file.exists():
-        print_success("Objdump generated")
+        print_success("Objdump generated", quiet=quiet)
     else:
-        print_error("Objdump failed")
+        print_error("Objdump failed", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
     # Section size report
     # ==========================================================
-    print_step("Sections size reporting")
+    print_step("Sections size reporting", quiet=quiet)
 
     compile_cmd = ["size", "-A", str(elf_file)]
 
@@ -262,18 +271,19 @@ def sw_compile(
         timeout=90,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     if size_file.exists():
-        print_success("Size report generated")
+        print_success("Size report generated", quiet=quiet)
     else:
-        print_error("Size report failed")
+        print_error("Size report failed", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
     # Symbols extraction
     # ==========================================================
-    print_step("Symbols extraction")
+    print_step("Symbols extraction", quiet=quiet)
 
     def extract_symbol(symbol_name: str, output_file: Path):
 
@@ -290,6 +300,7 @@ def sw_compile(
             timeout=90,
             check=False,
             capture_output=True,
+            quiet=quiet,
         )
 
         for line in result.splitlines():
@@ -299,12 +310,14 @@ def sw_compile(
                 output_path = output_file
                 output_path.write_text(addr)
                 if output_file.exists():
-                    print_success(f"{symbol_name}: {addr}")
+                    print_success(f"{symbol_name}: {addr}", quiet=quiet)
                 else:
-                    print_error(f"Write file failed; {symbol_name}: {addr}")
+                    print_error(
+                        f"Write file failed; {symbol_name}: {addr}", quiet=quiet
+                    )
                 return
 
-        print_error(f"{symbol_name} not found")
+        print_error(f"{symbol_name} not found", quiet=quiet)
         return
 
     extract_symbol("tohost", add_tohost_file)
@@ -314,7 +327,7 @@ def sw_compile(
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [
         add_tohost_file,
         objdump_file,
@@ -326,6 +339,6 @@ def sw_compile(
     ]
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

@@ -81,25 +81,29 @@ def macro_vcs_generator_testlist(
     uvm_seed: str = typer.Option(
         str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Macro : VCS Generator -> SW Compile -> UVM Run from a testlist
     """
-    print_recipe_title("MACRO: VCS GENERATOR -> COMPILATION -> SIMULATION")
+    print_recipe_title("MACRO: VCS GENERATOR -> COMPILATION -> SIMULATION", quiet=quiet)
 
     # ==========================================
     # STEP 1 : GENERATOR
     # ==========================================
     try:
-        print_step("\n=== STEP 1: RUN GENERATOR ===")
+        print_step("\n=== STEP 1: RUN GENERATOR ===", quiet=quiet)
         vcs_generator_run_testlist(
             testlist=testlist,
             test_name=test_name,
             seed=seed,
             batch_size=batch_size,
+            quiet=quiet,
         )
     except typer.Exit as e:
-        print_error("Macro Error: Run Generator")
+        print_error("Macro Error: Run Generator", quiet=quiet)
         raise e
 
     # ==========================================
@@ -107,7 +111,7 @@ def macro_vcs_generator_testlist(
     # ==========================================
 
     try:
-        print_step("\n=== STEP 2: SW COMPILE ===")
+        print_step("\n=== STEP 2: SW COMPILE ===", quiet=quiet)
         sw_compile_testlist(
             target=target,
             toolchain=toolchain,
@@ -115,16 +119,17 @@ def macro_vcs_generator_testlist(
             test_name=test_name,
             march=march,
             mabi=mabi,
+            quiet=quiet,
         )
     except typer.Exit as e:
-        print_error("Macro Error: Sw Compile")
+        print_error("Macro Error: Sw Compile", quiet=quiet)
         raise e
 
     # ==========================================
     # STEP 3 : UVM SIMULATION RUN
     # ==========================================
     try:
-        print_step("\n=== STEP 3: UVM RUN ===")
+        print_step("\n=== STEP 3: UVM RUN ===", quiet=quiet)
         uvm_run_testlist(
             simulator="vcs",
             target=target,
@@ -139,9 +144,10 @@ def macro_vcs_generator_testlist(
             sim_profile=sim_profile,
             run_opts=run_opts,
             uvm_seed=uvm_seed,
+            quiet=quiet,
         )
     except typer.Exit as e:
-        print_error("Macro Error: UVM run")
+        print_error("Macro Error: UVM run", quiet=quiet)
         raise e
 
-    print_success("\nSuccess Macro")
+    print_success("\nSuccess Macro", quiet=quiet)

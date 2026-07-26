@@ -35,6 +35,9 @@ def coremark(
     mabi: str = typer.Option(
         None, help="mabi custom instead of default one from config/target"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Build COREMARK pattern.
@@ -98,4 +101,5 @@ def coremark(
         mabi=mabi,
         preprocessor_directives=preprocessor_directives,
         test_name=test_name,
+        quiet=quiet,
     )

@@ -49,11 +49,14 @@ def questa_uvm_comp(
     trace_mode: TraceMode = typer.Option(TraceMode.notrace, help="Trace mode"),
     tandem_enabled: bool = typer.Option(False, help="Enable spike tandem"),
     stats: bool = typer.Option(False, help="Enable RTL perf tracer"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Questa UVM compilation / elaboration flow
     """
-    print_recipe_title("QUESTA DESIGN ELABORATION")
+    print_recipe_title("QUESTA DESIGN ELABORATION", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -74,6 +77,7 @@ def questa_uvm_comp(
             "Perf tracer RTL enable": stats,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -86,20 +90,20 @@ def questa_uvm_comp(
     elif comp_mode == CompMode.gate_wc_power:
         inout_dir = "sim_gate_wc_power"
     else:
-        print_error("Unknown comp_mode")
+        print_error("Unknown comp_mode", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Test tools in path
     vlog_path = shutil.which("vlog")
     vopt_path = shutil.which("vopt")
     if vlog_path is not None and vopt_path is not None:
-        print_success(f"vlog: {vlog_path}")
-        print_success(f"vopt: {vopt_path}")
+        print_success(f"vlog: {vlog_path}", quiet=quiet)
+        print_success(f"vopt: {vopt_path}", quiet=quiet)
     else:
         if vlog_path is None:
-            print_error("vlog: Not found")
+            print_error("vlog: Not found", quiet=quiet)
         if vopt_path is None:
-            print_error("vopt: Not found")
+            print_error("vopt: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -110,17 +114,17 @@ def questa_uvm_comp(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if elab_dir.exists():
             shutil.rmtree(elab_dir)
-            print_info(f"remove {elab_dir}")
+            print_info(f"remove {elab_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     elab_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {elab_dir}")
+    print_info(f"create {elab_dir}", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES (passed to run_cmd only)
@@ -201,9 +205,9 @@ def questa_uvm_comp(
         # Get the parent directory (bin) then the parent of that
         questasim_home = Path(questasim_home).parent.parent
         env_vars["QUESTASIM_HOME"] = str(questasim_home)
-        print_info(f"QUESTASIM_HOME: {questasim_home}")
+        print_info(f"QUESTASIM_HOME: {questasim_home}", quiet=quiet)
     else:
-        print_error("Cannot determine QUESTASIM_HOME")
+        print_error("Cannot determine QUESTASIM_HOME", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
@@ -248,7 +252,7 @@ def questa_uvm_comp(
     # ==========================================================
     # STEP 1: CREATE LIBRARY (vlib)
     # ==========================================================
-    print_step("Create Questa work library")
+    print_step("Create Questa work library", quiet=quiet)
 
     vlib_cmd = ["vlib", str(work_dir)]
 
@@ -263,18 +267,19 @@ def questa_uvm_comp(
         timeout=30,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     if not work_dir.exists():
-        print_error("Work library not created")
+        print_error("Work library not created", quiet=quiet)
         raise typer.Exit(code=1)
 
-    print_success(f"Work library created: {work_dir}")
+    print_success(f"Work library created: {work_dir}", quiet=quiet)
 
     # ==========================================================
     # STEP 2: COMPILE (vlog)
     # ==========================================================
-    print_step("Compile with vlog")
+    print_step("Compile with vlog", quiet=quiet)
 
     vlog_cmd = ["vlog"]
 
@@ -352,7 +357,7 @@ def questa_uvm_comp(
         # Create SDF file for vsim to use
         sdf_file = elab_dir / "sdf.do"
         sdf_file.write_text(f'sdf load -file "{sdf}" {sdf_hier}')
-        print_info(f"Created SDF file: {sdf_file}")
+        print_info(f"Created SDF file: {sdf_file}", quiet=quiet)
 
     log_file = elab_dir / "vlog.log"
 
@@ -367,12 +372,13 @@ def questa_uvm_comp(
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     # ==========================================================
     # STEP 3: OPTIMIZE (vopt)
     # ==========================================================
-    print_step("Optimize with vopt")
+    print_step("Optimize with vopt", quiet=quiet)
 
     vopt_cmd = [
         "vopt",
@@ -409,20 +415,21 @@ def questa_uvm_comp(
         timeout=600,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     # Check if optimization succeeded
     if not log_file.exists():
-        print_error("Compilation log missing")
+        print_error("Compilation log missing", quiet=quiet)
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [work_dir, log_file, elab_dir / "vopt.log"]
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

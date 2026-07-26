@@ -49,11 +49,14 @@ def xcelium_uvm_comp(
     trace_mode: TraceMode = typer.Option(TraceMode.notrace, help="Trace mode"),
     tandem_enabled: bool = typer.Option(False, help="Enable spike tandem"),
     stats: bool = typer.Option(False, help="Enable RTL perf tracer"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Xcelium UVM compilation / elaboration flow
     """
-    print_recipe_title("XCELIUM DESIGN ELABORATION")
+    print_recipe_title("XCELIUM DESIGN ELABORATION", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -74,6 +77,7 @@ def xcelium_uvm_comp(
             "Perf tracer RTL enable": stats,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -92,7 +96,7 @@ def xcelium_uvm_comp(
     # Test tools in path
     xrun_path = shutil.which("xrun")
     if xrun_path is not None:
-        print_success(f"xrun: {xrun_path}")
+        print_success(f"xrun: {xrun_path}", quiet=quiet)
     else:
         print_error("xrun: Not found")
         raise typer.Exit(code=1)
@@ -105,17 +109,17 @@ def xcelium_uvm_comp(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if elab_dir.exists():
             shutil.rmtree(elab_dir)
-            print_info(f"remove {elab_dir}")
+            print_info(f"remove {elab_dir}", quiet=quiet)
     except Exception as e:
         print_error(f"Clean error : {e}")
         raise typer.Exit(code=1)
 
     elab_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {elab_dir}")
+    print_info(f"create {elab_dir}", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES (passed to run_cmd only)
@@ -196,7 +200,7 @@ def xcelium_uvm_comp(
         # Get the parent directory (bin) then the parent of that
         xcelium_home = Path(xcelium_home).parent.parent
         env_vars["XCELIUM_HOME"] = str(xcelium_home)
-        print_info(f"XCELIUM_HOME: {xcelium_home}")
+        print_info(f"XCELIUM_HOME: {xcelium_home}", quiet=quiet)
     else:
         print_error("Cannot determine XCELIUM_HOME")
         raise typer.Exit(code=1)
@@ -306,7 +310,7 @@ def xcelium_uvm_comp(
         sdf_cmd_file.write_text(
             f'COMPILED_SDF_FILE = "{sdf}",\nSCOPE = :{sdf_hier},\nMTM_CONTROL = "MAXIMUM";'
         )
-        print_info(f"Created SDF command file: {sdf_cmd_file}")
+        print_info(f"Created SDF command file: {sdf_cmd_file}", quiet=quiet)
     elif comp_mode == CompMode.gate_wc_power:
         sdf = repo_dir / "build" / target / "synthesis" / "netlist" / "wc_power.sdf"
         if cva6_hier == Cva6Hier.obi:
@@ -324,7 +328,7 @@ def xcelium_uvm_comp(
         sdf_cmd_file.write_text(
             f'COMPILED_SDF_FILE = "{sdf}",\nSCOPE = :{sdf_hier},\nMTM_CONTROL = "MAXIMUM";'
         )
-        print_info(f"Created SDF command file: {sdf_cmd_file}")
+        print_info(f"Created SDF command file: {sdf_cmd_file}", quiet=quiet)
 
     # ==========================================================
     # BUILD XRUN COMMAND
@@ -354,7 +358,7 @@ def xcelium_uvm_comp(
     # ==========================================================
     # LAUNCH XRUN COMMAND
     # ==========================================================
-    print_step("LAUNCH XRUN")
+    print_step("LAUNCH XRUN", quiet=quiet)
 
     log_file = elab_dir / "compilation.log"
 
@@ -369,6 +373,7 @@ def xcelium_uvm_comp(
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     # Check if elaboration was successful by looking for snapshot directory
@@ -384,11 +389,11 @@ def xcelium_uvm_comp(
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [snapshot_dir, log_file]
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

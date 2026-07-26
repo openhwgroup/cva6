@@ -57,17 +57,21 @@ def vcs_uvm_gui(
         "-s",
         help="Verdi session file(saved by user)",
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Verdi open simulation trace (fsdb only)
     """
 
     # Title
-    print_recipe_title("VCS Simulation open trace")
+    print_recipe_title("VCS Simulation open trace", quiet=quiet)
 
     print_param_table(
         {"Target": target, "Test name": test_name, "Compilation mode": comp_mode.value},
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -80,15 +84,15 @@ def vcs_uvm_gui(
     elif comp_mode == CompMode.gate_wc_power:
         inout_dir = "sim_gate_wc_power"
     else:
-        print_error("Unknown comp_mode")
+        print_error("Unknown comp_mode", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Test tools in path
     verdi_path = shutil.which("verdi")
     if verdi_path is not None:
-        print_success(f"verdi: {verdi_path}")
+        print_success(f"verdi: {verdi_path}", quiet=quiet)
     else:
-        print_error("VERDI: Not found")
+        print_error("VERDI: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -100,7 +104,7 @@ def vcs_uvm_gui(
     # ==========================================================
     # BUILD VERDI COMMAND
     # ==========================================================
-    print_step("Build verdi command")
+    print_step("Build verdi command", quiet=quiet)
 
     verdi_cmd = ["verdi"]
     verdi_cmd += ["-ssf", f"{simulation_dir / 'trace.fsdb'}"]
@@ -112,19 +116,21 @@ def vcs_uvm_gui(
     if session is not None:
         session_file = Path(session)
         if session_file.exists():
-            print_step("Saved session found, session restoring configuration")
+            print_step(
+                "Saved session found, session restoring configuration", quiet=quiet
+            )
             verdiRestoreTCL = Path("flows/utils/verdiRestore.tcl")
             verdi_cmd += ["-play", f"{verdiRestoreTCL}"]
             with verdiRestoreTCL.open("w", encoding="utf-8") as f:
                 f.write(f"set session_file {session_file}\n")
                 f.write("debRestoreSession $session_file\n")
         else:
-            print_step("Session file is none, skipping session restoring")
+            print_step("Session file is none, skipping session restoring", quiet=quiet)
 
     # ==========================================================
     # LAUNCH VERDI
     # ==========================================================
-    print_step("Launch Verdi")
+    print_step("Launch Verdi", quiet=quiet)
 
     log_file = simulation_dir / "verdi.log"
 
@@ -139,6 +145,7 @@ def vcs_uvm_gui(
         timeout=3600,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

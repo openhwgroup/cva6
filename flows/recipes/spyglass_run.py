@@ -52,11 +52,14 @@ def spyglass_run(
         autocompletion=autocompletion_target,
     ),
     run_type: RunType = typer.Option(RunType.run_cli, help="Run mode"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Spyglass run
     """
-    print_recipe_title("Spyglass run")
+    print_recipe_title("Spyglass run", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -70,14 +73,15 @@ def spyglass_run(
     print_param_table(
         {"Target": target, "Testbench hier": cva6_hier.value, "Run": run_type.value},
         "Options",
+        quiet=quiet,
     )
 
     # Test tools in path
     aipk_run_path = shutil.which("aipk_run")
     if aipk_run_path is not None:
-        print_success(f"aipk_run: {aipk_run_path}")
+        print_success(f"aipk_run: {aipk_run_path}", quiet=quiet)
     else:
-        print_error("aipk_run: Not found")
+        print_error("aipk_run: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Testbench selection
@@ -86,7 +90,7 @@ def spyglass_run(
     elif cva6_hier == Cva6Hier.axi:
         top_elaborate = "cva6_example_axi"
     else:
-        print_error("Unknown cva6_hier")
+        print_error("Unknown cva6_hier", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -96,17 +100,17 @@ def spyglass_run(
     tmp_dir = spyglass_dir / "tmp"
 
     if sg_setup_dir.exists():
-        print_info(f"sg_setup found: {spyglass_dir}")
+        print_info(f"sg_setup found: {spyglass_dir}", quiet=quiet)
     else:
-        print_error(f"sg_setup not found: {spyglass_dir}")
-        print_error("Run design read first")
+        print_error(f"sg_setup not found: {spyglass_dir}", quiet=quiet)
+        print_error("Run design read first", quiet=quiet)
         raise typer.Exit(code=1)
 
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
-    print_info("None")
+    print_step("Clean", quiet=quiet)
+    print_info("None", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES (passed to run_cmd only)
@@ -138,7 +142,7 @@ def spyglass_run(
     # ==========================================================
     # LAUNCH SPYGLASS DESIGN READ COMMAND
     # ==========================================================
-    print_step("LAUNCH SPYGLASS DESIGN READ")
+    print_step("LAUNCH SPYGLASS DESIGN READ", quiet=quiet)
 
     log_file = spyglass_dir / "run.log"
 
@@ -153,13 +157,14 @@ def spyglass_run(
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     # ==========================================================
     # Results processing
     # ==========================================================
 
-    print_step("Results processing")
+    print_step("Results processing", quiet=quiet)
 
     print_file_regex(
         spyglass_dir
@@ -173,12 +178,13 @@ def spyglass_run(
         None,
         None,
         ["Error|Fatal|Warning"],
+        quiet=quiet,
     )
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [
         log_file,
         spyglass_dir
@@ -218,6 +224,6 @@ def spyglass_run(
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

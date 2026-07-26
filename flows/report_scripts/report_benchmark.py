@@ -48,13 +48,16 @@ def report_benchmark(
         autocompletion=autocompletion_testname_compiled,
     ),
     comp_mode: CompMode = typer.Option(CompMode.rtl, help="Hardware compilation mode"),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """Analyze performance benchmark logs and validate cycles against expected values."""
 
     # Init code
     code = 0
 
-    print_recipe_title("Check benchmark KPI")
+    print_recipe_title("Check benchmark KPI", quiet=quiet)
 
     print_param_table(
         {
@@ -63,6 +66,7 @@ def report_benchmark(
             "Compilation mode": comp_mode.value,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -75,7 +79,7 @@ def report_benchmark(
     elif comp_mode == CompMode.gate_wc_power:
         inout_dir = "sim_gate_wc_power"
     else:
-        print_error("Unknown comp_mode")
+        print_error("Unknown comp_mode", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -93,12 +97,12 @@ def report_benchmark(
     if file_GLOBAL_PATTERN_start_cycle.exists():
         start_cycle = int(file_GLOBAL_PATTERN_start_cycle.read_text().strip())
     else:
-        print_error(f"Missing {file_GLOBAL_PATTERN_start_cycle}")
+        print_error(f"Missing {file_GLOBAL_PATTERN_start_cycle}", quiet=quiet)
         raise typer.Exit(code=1)
     if file_GLOBAL_PATTERN_end_cycle.exists():
         end_cycle = int(file_GLOBAL_PATTERN_end_cycle.read_text().strip())
     else:
-        print_error(f"Missing {file_GLOBAL_PATTERN_end_cycle}")
+        print_error(f"Missing {file_GLOBAL_PATTERN_end_cycle}", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Extract reference values
@@ -113,15 +117,18 @@ def report_benchmark(
         iterations = int(expected[iters_key])
     except KeyError as e:
         print_error(
-            f"Error: Keys '{cycle_key}' or '{iters_key}' missing in {expected_values_path}"
+            f"Error: Keys '{cycle_key}' or '{iters_key}' missing in {expected_values_path}",
+            quiet=quiet,
         )
         raise typer.Exit(code=1) from e
 
     print_info(
-        f"Read expected from {expected_values_path}\n- {iterations} iterations\n- {valid_cycles} expected cycles."
+        f"Read expected from {expected_values_path}\n- {iterations} iterations\n- {valid_cycles} expected cycles.",
+        quiet=quiet,
     )
     print_info(
-        f"Read measured from\n- {file_GLOBAL_PATTERN_start_cycle}\n- {file_GLOBAL_PATTERN_end_cycle}"
+        f"Read measured from\n- {file_GLOBAL_PATTERN_start_cycle}\n- {file_GLOBAL_PATTERN_end_cycle}",
+        quiet=quiet,
     )
 
     cycles = end_cycle - start_cycle
@@ -147,21 +154,22 @@ def report_benchmark(
             "Perf": f"{ipmhz:.2f} Iters/MHz",
         },
         "Results",
+        quiet=quiet,
     )
 
     if diff != 0:
         score_metric.fail()
         score_metric.add_value("Cycles diff", diff)
         code = 1
-        print_error("FAIL: Cycle count deviation detected!")
+        print_error("FAIL: Cycle count deviation detected!", quiet=quiet)
     else:
-        print_success("PASS: Cycle count matchs!")
+        print_success("PASS: Cycle count matchs!", quiet=quiet)
 
     report = rb.Report(f"{cycles / 1000:.2f} kCycles")
     report.add_metric(score_metric)
     report.dump()
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)

@@ -33,15 +33,19 @@ app = typer.Typer()
 
 
 @app.command()
-def self_check():
+def self_check(
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
+):
     """
     Self check
     """
 
     # Title
-    print_recipe_title("Self check")
+    print_recipe_title("Self check", quiet=quiet)
 
-    print_step("Tools in path")
+    print_step("Tools in path", quiet=quiet)
 
     tools = [
         ("vcs", "VCS - Synopsys simulator"),
@@ -62,11 +66,11 @@ def self_check():
     for tool_name, description in tools:
         tool_path = shutil.which(tool_name)
         if tool_path is not None:
-            print_success(f"{tool_name} ({description}): {tool_path}")
+            print_success(f"{tool_name} ({description}): {tool_path}", quiet=quiet)
         else:
-            print_error(f"{tool_name} ({description}): Not found")
+            print_error(f"{tool_name} ({description}): Not found", quiet=quiet)
 
-    print_step("Spike installation (mandatory for tandem verification)")
+    print_step("Spike installation (mandatory for tandem verification)", quiet=quiet)
 
     path = [
         "./tools/spike/bin",
@@ -75,12 +79,15 @@ def self_check():
 
     for p in path:
         if Path(p).exists():
-            print_success(f"{p}: exist")
+            print_success(f"{p}: exist", quiet=quiet)
         else:
-            print_error(f"{p}: Not found see verif/regress/install-spike (MANDATORY)")
+            print_error(
+                f"{p}: Not found see verif/regress/install-spike (MANDATORY)",
+                quiet=quiet,
+            )
 
     # Submodules
-    print_step("Submodules of CVA6 repositoy")
+    print_step("Submodules of CVA6 repositoy", quiet=quiet)
 
     result = run_cmd(
         cmd=["git", "submodule", "status", "--recursive"],
@@ -93,16 +100,17 @@ def self_check():
         timeout=90,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     for line in result.split("\n"):
         if line.startswith("-"):
-            print_error(f"{line}: Submodule not initialised")
+            print_error(f"{line}: Submodule not initialised", quiet=quiet)
         else:
-            print_success(f"{line}: Submodule initialised")
+            print_success(f"{line}: Submodule initialised", quiet=quiet)
 
     # riscv-tests
-    print_step("riscv-tests installation")
+    print_step("riscv-tests installation", quiet=quiet)
 
     path = [
         "./verif/tests/riscv-tests",
@@ -110,14 +118,15 @@ def self_check():
 
     for p in path:
         if Path(p).exists():
-            print_success(f"{p}: exist")
+            print_success(f"{p}: exist", quiet=quiet)
         else:
             print_error(
-                f"{p}: Not found, see verif/regress/install-riscv-tests (MANDATORY)"
+                f"{p}: Not found, see verif/regress/install-riscv-tests (MANDATORY)",
+                quiet=quiet,
             )
 
     # riscv-compliance
-    print_step("riscv-compliance installation")
+    print_step("riscv-compliance installation", quiet=quiet)
 
     path = [
         "./verif/tests/riscv-compliance",
@@ -125,11 +134,13 @@ def self_check():
 
     for p in path:
         if Path(p).exists():
-            print_success(f"{p}: exist")
+            print_success(f"{p}: exist", quiet=quiet)
         else:
-            print_warning(f"{p}: Not found, see verif/regress/install-compliance")
+            print_warning(
+                f"{p}: Not found, see verif/regress/install-compliance", quiet=quiet
+            )
 
-    print_step("riscv-arch-test installation")
+    print_step("riscv-arch-test installation", quiet=quiet)
 
     # riscv-arch-test
     path = [
@@ -138,11 +149,13 @@ def self_check():
 
     for p in path:
         if Path(p).exists():
-            print_success(f"{p}: exist")
+            print_success(f"{p}: exist", quiet=quiet)
         else:
-            print_warning(f"{p}: Not found, see verif/regress/install-arch-test")
+            print_warning(
+                f"{p}: Not found, see verif/regress/install-arch-test", quiet=quiet
+            )
 
-    print_step("Specific organisation configuration files")
+    print_step("Specific organisation configuration files", quiet=quiet)
 
     # Get organisation techno config (asic)
     techno_data = TECHNO_DATA
@@ -150,6 +163,7 @@ def self_check():
     print_param_table(
         techno_data,
         "Techno parameters",
+        quiet=quiet,
     )
 
     # Get organisation compiler config
@@ -158,6 +172,7 @@ def self_check():
     print_param_table(
         compiler_data,
         "Compiler parameters",
+        quiet=quiet,
     )
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

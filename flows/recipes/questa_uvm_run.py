@@ -72,6 +72,9 @@ def questa_uvm_run(
     uvm_seed: str = typer.Option(
         default=str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Questa UVM run simulation flow
@@ -82,12 +85,12 @@ def questa_uvm_run(
     # Test tools in path
     vsim_path = shutil.which("vsim")
     if vsim_path is not None:
-        print_success(f"vsim: {vsim_path}")
+        print_success(f"vsim: {vsim_path}", quiet=quiet)
     else:
-        print_error("vsim: Not found")
+        print_error("vsim: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
-    print_recipe_title("QUESTA DESIGN RUN SIMULATION")
+    print_recipe_title("QUESTA DESIGN RUN SIMULATION", quiet=quiet)
 
     print_param_table(
         {
@@ -104,6 +107,7 @@ def questa_uvm_run(
             "UVM seed": uvm_seed,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -116,7 +120,7 @@ def questa_uvm_run(
     elif comp_mode == CompMode.gate_wc_power:
         inout_dir = "sim_gate_wc_power"
     else:
-        print_error("Unknown comp_mode")
+        print_error("Unknown comp_mode", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -140,17 +144,17 @@ def questa_uvm_run(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if simulation_dir.exists():
             shutil.rmtree(simulation_dir)
-            print_info(f"remove {simulation_dir}")
+            print_info(f"remove {simulation_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     simulation_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {simulation_dir}")
+    print_info(f"create {simulation_dir}", quiet=quiet)
 
     # ==========================================================
     # OPTIONS
@@ -160,19 +164,19 @@ def questa_uvm_run(
     if file_add_tohost.exists():
         add_tohost = file_add_tohost.read_text().strip()
     else:
-        print_error(f"Missing {file_add_tohost}")
+        print_error(f"Missing {file_add_tohost}", quiet=quiet)
         raise typer.Exit(code=1)
 
     if file_add_GLOBAL_PATTERN_start.exists():
         add_start_window = file_add_GLOBAL_PATTERN_start.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}", quiet=quiet)
         add_start_window = 0
 
     if file_add_GLOBAL_PATTERN_end.exists():
         add_end_window = file_add_GLOBAL_PATTERN_end.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}", quiet=quiet)
         add_end_window = 0
 
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
@@ -186,7 +190,7 @@ def questa_uvm_run(
     if questasim_home:
         questasim_home = Path(questasim_home).parent.parent
     else:
-        print_error("Cannot determine QUESTASIM_HOME")
+        print_error("Cannot determine QUESTASIM_HOME", quiet=quiet)
         raise typer.Exit(code=1)
 
     # VSIM options
@@ -331,7 +335,7 @@ def questa_uvm_run(
     # ==========================================================
     # LAUNCH VSIM
     # ==========================================================
-    print_step("Run Questa simulation")
+    print_step("Run Questa simulation", quiet=quiet)
 
     log_file = simulation_dir / "simulation.log"
 
@@ -351,6 +355,7 @@ def questa_uvm_run(
         timeout=3000,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
@@ -358,7 +363,7 @@ def questa_uvm_run(
     # ==========================================================
 
     # Tail log
-    tail_file(log_file, n=20)
+    tail_file(log_file, n=20, quiet=quiet)
 
     status_passed = re.compile(r"^\s+SIMULATION PASSED")
     status_failed = re.compile(r"^\s+SIMULATION FAILED")
@@ -368,25 +373,25 @@ def questa_uvm_run(
         with log_file.open("r") as f_in:
             for line in f_in:
                 if status_passed.search(line):
-                    print_success("Simulation PASSED")
+                    print_success("Simulation PASSED", quiet=quiet)
                     found = 1
                     break
                 if status_failed.search(line):
-                    print_error("Simulation FAILED")
+                    print_error("Simulation FAILED", quiet=quiet)
                     code = 1
                     found = 1
                     break
     except Exception as e:
-        print_error(f"Error process log: {e}")
+        print_error(f"Error process log: {e}", quiet=quiet)
 
     if found == 0:
-        print_error("Simulation status unknown")
+        print_error("Simulation status unknown", quiet=quiet)
         code = 1
 
     # ==========================================================
     # POST PROCESS TIMING
     # ==========================================================
-    print_step("Post-process timing info")
+    print_step("Post-process timing info", quiet=quiet)
 
     def extract_pattern_to_file(
         log_file, grep_pattern, awk_idx, dest_file, label_begin, label_end
@@ -399,11 +404,12 @@ def questa_uvm_run(
                         if len(fields) >= awk_idx + 1:
                             dest_file.write_text(fields[awk_idx])
                             print_success(
-                                f"{label_begin} detected at {fields[awk_idx]} {label_end}"
+                                f"{label_begin} detected at {fields[awk_idx]} {label_end}",
+                                quiet=quiet,
                             )
                             break
         except Exception as e:
-            print_error(f"Error extraction pattern: {e}")
+            print_error(f"Error extraction pattern: {e}", quiet=quiet)
 
     # Fallback : windows is 0 to end of simu
     (simulation_dir / "timing_GLOBAL_PATTERN_start").write_text("0")
@@ -461,7 +467,7 @@ def questa_uvm_run(
     # ==========================================================
     # Disassemble rvfi trace with spike_dasm
     # ==========================================================
-    print_step("Disassemble rvfi trace")
+    print_step("Disassemble rvfi trace", quiet=quiet)
 
     spike_dasm_log_file = simulation_dir / "spike_dasm.log"
     isa = (compile_dir / "isa_string").read_text()
@@ -469,7 +475,7 @@ def questa_uvm_run(
     trace_rvfi_file = elab_dir / "trace_rvfi_hart_00.dasm"
 
     if trace_rvfi_file.exists():
-        print_step("Disassemble rvfi trace")
+        print_step("Disassemble rvfi trace", quiet=quiet)
 
         env_vars_dasm = {"LD_LIBRARY_PATH": f"{spike_lib}"}
 
@@ -489,14 +495,18 @@ def questa_uvm_run(
                 timeout=30,
                 check=False,
                 capture_output=False,
+                quiet=quiet,
             )
     else:
-        print_info("Trace RVFI not found, if rvfi interface is disabled it's normal")
+        print_info(
+            "Trace RVFI not found, if rvfi interface is disabled it's normal",
+            quiet=quiet,
+        )
 
     # ==========================================================
     # MOVE LOGS / TRACES
     # ==========================================================
-    print_step("Move files")
+    print_step("Move files", quiet=quiet)
 
     for pattern in [
         elab_dir / "tandem.log",
@@ -505,17 +515,17 @@ def questa_uvm_run(
         for file_path in glob.glob(str(pattern)):
             try:
                 shutil.move(file_path, str(simulation_dir))
-                print_info(f"Moved {file_path} -> {simulation_dir}")
+                print_info(f"Moved {file_path} -> {simulation_dir}", quiet=quiet)
             except FileNotFoundError:
-                print_error(f"No file matched: {file_path}")
+                print_error(f"No file matched: {file_path}", quiet=quiet)
             except Exception as e:
-                print_error(f"Failed to move {file_path}: {e}")
+                print_error(f"Failed to move {file_path}: {e}", quiet=quiet)
 
     # ==========================================================
     # Stats
     # ==========================================================
     if stats:
-        print_step("Analysis Stats")
+        print_step("Analysis Stats", quiet=quiet)
 
         path_script = (
             repo_dir / "perf-model" / "rtl_models_trace" / "scripts" / "main_stats.py"
@@ -559,12 +569,12 @@ def questa_uvm_run(
         simulation_dir / f"analysis_{test_name}_{target}.txt",
     ]
 
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)

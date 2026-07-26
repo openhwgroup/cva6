@@ -72,6 +72,9 @@ def xcelium_uvm_run(
     uvm_seed: str = typer.Option(
         default=str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Xcelium UVM run simulation flow
@@ -82,12 +85,12 @@ def xcelium_uvm_run(
     # Test tools in path
     xrun_path = shutil.which("xrun")
     if xrun_path is not None:
-        print_success(f"xrun: {xrun_path}")
+        print_success(f"xrun: {xrun_path}", quiet=quiet)
     else:
         print_error("xrun: Not found")
         raise typer.Exit(code=1)
 
-    print_recipe_title("XCELIUM DESIGN RUN SIMULATION")
+    print_recipe_title("XCELIUM DESIGN RUN SIMULATION", quiet=quiet)
 
     print_param_table(
         {
@@ -104,6 +107,7 @@ def xcelium_uvm_run(
             "UVM seed": uvm_seed,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Mode dir
@@ -139,17 +143,17 @@ def xcelium_uvm_run(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if simulation_dir.exists():
             shutil.rmtree(simulation_dir)
-            print_info(f"remove {simulation_dir}")
+            print_info(f"remove {simulation_dir}", quiet=quiet)
     except Exception as e:
         print_error(f"Clean error : {e}")
         raise typer.Exit(code=1)
 
     simulation_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {simulation_dir}")
+    print_info(f"create {simulation_dir}", quiet=quiet)
 
     # ==========================================================
     # OPTIONS
@@ -165,13 +169,13 @@ def xcelium_uvm_run(
     if file_add_GLOBAL_PATTERN_start.exists():
         add_start_window = file_add_GLOBAL_PATTERN_start.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_start}", quiet=quiet)
         add_start_window = 0
 
     if file_add_GLOBAL_PATTERN_end.exists():
         add_end_window = file_add_GLOBAL_PATTERN_end.read_text().strip()
     else:
-        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}")
+        print_info(f"Missing {file_add_GLOBAL_PATTERN_end}", quiet=quiet)
         add_end_window = 0
 
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
@@ -258,7 +262,7 @@ def xcelium_uvm_run(
             "probe -create -all -depth all -database waves\n"
             "run\n"
         )
-        print_info(f"Created trace TCL file: {tcl_file}")
+        print_info(f"Created trace TCL file: {tcl_file}", quiet=quiet)
     elif trace_mode == TraceMode.compact:
         options += [
             "-input",
@@ -271,7 +275,7 @@ def xcelium_uvm_run(
             "probe -create -all -depth all -database waves\n"
             "run\n"
         )
-        print_info(f"Created trace TCL file: {tcl_file}")
+        print_info(f"Created trace TCL file: {tcl_file}", quiet=quiet)
 
     # ==========================================================
     # BUILD XRUN COMMAND
@@ -283,7 +287,7 @@ def xcelium_uvm_run(
     # ==========================================================
     # LAUNCH XRUN
     # ==========================================================
-    print_step("Run Xcelium simulation")
+    print_step("Run Xcelium simulation", quiet=quiet)
 
     log_file = simulation_dir / "simulation.log"
 
@@ -311,6 +315,7 @@ def xcelium_uvm_run(
         timeout=3000,
         check=False,
         capture_output=False,
+        quiet=quiet,
     )
 
     # ==========================================================
@@ -328,7 +333,7 @@ def xcelium_uvm_run(
         with log_file.open("r") as f_in:
             for line in f_in:
                 if status_passed.search(line):
-                    print_success("Simulation PASSED")
+                    print_success("Simulation PASSED", quiet=quiet)
                     found = 1
                     break
                 if status_failed.search(line):
@@ -346,7 +351,7 @@ def xcelium_uvm_run(
     # ==========================================================
     # POST PROCESS TIMING
     # ==========================================================
-    print_step("Post-process timing info")
+    print_step("Post-process timing info", quiet=quiet)
 
     def extract_pattern_to_file(
         log_file, grep_pattern, awk_idx, dest_file, label_begin, label_end
@@ -359,7 +364,8 @@ def xcelium_uvm_run(
                         if len(fields) >= awk_idx + 1:
                             dest_file.write_text(fields[awk_idx])
                             print_success(
-                                f"{label_begin} detected at {fields[awk_idx]} {label_end}"
+                                f"{label_begin} detected at {fields[awk_idx]} {label_end}",
+                                quiet=quiet,
                             )
                             break
         except Exception as e:
@@ -421,7 +427,7 @@ def xcelium_uvm_run(
     # ==========================================================
     # Disassemble rvfi trace with spike_dasm
     # ==========================================================
-    print_step("Disassemble rvfi trace")
+    print_step("Disassemble rvfi trace", quiet=quiet)
 
     spike_dasm_log_file = simulation_dir / "spike_dasm.log"
     isa = (compile_dir / "isa_string").read_text()
@@ -429,7 +435,7 @@ def xcelium_uvm_run(
     trace_rvfi_file = elab_dir / "trace_rvfi_hart_00.dasm"
 
     if trace_rvfi_file.exists():
-        print_step("Disassemble rvfi trace")
+        print_step("Disassemble rvfi trace", quiet=quiet)
 
         env_vars_dasm = {"LD_LIBRARY_PATH": f"{spike_lib}"}
 
@@ -449,14 +455,18 @@ def xcelium_uvm_run(
                 timeout=30,
                 check=False,
                 capture_output=False,
+                quiet=quiet,
             )
     else:
-        print_info("Trace RVFI not found, if rvfi interface is disabled it's normal")
+        print_info(
+            "Trace RVFI not found, if rvfi interface is disabled it's normal",
+            quiet=quiet,
+        )
 
     # ==========================================================
     # MOVE LOGS / TRACES
     # ==========================================================
-    print_step("Move files")
+    print_step("Move files", quiet=quiet)
 
     for pattern in [
         elab_dir / "tandem.log",
@@ -465,7 +475,7 @@ def xcelium_uvm_run(
         for file_path in glob.glob(str(pattern)):
             try:
                 shutil.move(file_path, str(simulation_dir))
-                print_info(f"Moved {file_path} -> {simulation_dir}")
+                print_info(f"Moved {file_path} -> {simulation_dir}", quiet=quiet)
             except FileNotFoundError:
                 print_error(f"No file matched: {file_path}")
             except Exception as e:
@@ -475,7 +485,7 @@ def xcelium_uvm_run(
     # Stats
     # ==========================================================
     if stats:
-        print_step("Analysis Stats")
+        print_step("Analysis Stats", quiet=quiet)
 
         path_script = (
             repo_dir / "perf-model" / "rtl_models_trace" / "scripts" / "main_stats.py"
@@ -518,12 +528,12 @@ def xcelium_uvm_run(
         simulation_dir / f"analysis_{test_name}_{target}.txt",
     ]
 
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)

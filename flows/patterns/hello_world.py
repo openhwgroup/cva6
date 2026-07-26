@@ -35,6 +35,9 @@ def hello_world(
     mabi: str = typer.Option(
         None, help="mabi custom instead of default one from config/target"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Build Hello world pattern.
@@ -78,4 +81,5 @@ def hello_world(
         mabi=mabi,
         preprocessor_directives=preprocessor_directives,
         test_name=test_name,
+        quiet=quiet,
     )

@@ -44,11 +44,14 @@ def spyglass_design_read(
         help="CVA6 user configuration",
         autocompletion=autocompletion_target,
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Spyglass design read
     """
-    print_recipe_title("Spyglass design read")
+    print_recipe_title("Spyglass design read", quiet=quiet)
 
     # Get testbench config
     repo_dir = Path.cwd()
@@ -65,14 +68,15 @@ def spyglass_design_read(
             "Testbench hier": cva6_hier.value,
         },
         "Options",
+        quiet=quiet,
     )
 
     # Test tools in path
     aipk_read_path = shutil.which("aipk_read")
     if aipk_read_path is not None:
-        print_success(f"aipk_read: {aipk_read_path}")
+        print_success(f"aipk_read: {aipk_read_path}", quiet=quiet)
     else:
-        print_error("aipk_read: Not found")
+        print_error("aipk_read: Not found", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Testbench selection
@@ -81,7 +85,7 @@ def spyglass_design_read(
     elif cva6_hier == Cva6Hier.axi:
         top_elaborate = "cva6_example_axi"
     else:
-        print_error("Unknown cva6_hier")
+        print_error("Unknown cva6_hier", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Create files and folder paths
@@ -98,20 +102,20 @@ def spyglass_design_read(
     # ==========================================================
     # CLEAN
     # ==========================================================
-    print_step("Clean")
+    print_step("Clean", quiet=quiet)
     try:
         if spyglass_dir.exists():
             shutil.rmtree(spyglass_dir)
-            print_info(f"remove {spyglass_dir}")
+            print_info(f"remove {spyglass_dir}", quiet=quiet)
     except Exception as e:
-        print_error(f"Clean error : {e}")
+        print_error(f"Clean error : {e}", quiet=quiet)
         raise typer.Exit(code=1)
 
     sg_setup_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {sg_setup_dir}")
+    print_info(f"create {sg_setup_dir}", quiet=quiet)
 
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    print_info(f"create {tmp_dir}")
+    print_info(f"create {tmp_dir}", quiet=quiet)
 
     # ==========================================================
     # ENV VARIABLES (passed to run_cmd only)
@@ -137,7 +141,7 @@ def spyglass_design_read(
     # ==========================================================
     # GENERATE OPTIONS FILE
     # ==========================================================
-    print_step("Generate options file")
+    print_step("Generate options file", quiet=quiet)
 
     options_content = """## File Name : Option File
 set_option enableSV no
@@ -146,13 +150,13 @@ set_option enableSV09 yes
 
     options_file.write_text(options_content)
 
-    print_info(f"File generated at {options_file}")
-    print_code(options_content, "tcl")
+    print_info(f"File generated at {options_file}", quiet=quiet)
+    print_code(options_content, "tcl", quiet=quiet)
 
     # ==========================================================
     # GENERATE GOALS SETUP
     # ==========================================================
-    print_step("Generate goals setup file")
+    print_step("Generate goals setup file", quiet=quiet)
 
     goals_content = """## File Name : SpyGlass Goal Setup File
 set_parameter ignore_bitwiseor_assignment yes
@@ -173,13 +177,13 @@ current_goal none
 
     goals_file.write_text(goals_content)
 
-    print_info(f"File generated at {goals_file}")
-    print_code(goals_content, "tcl")
+    print_info(f"File generated at {goals_file}", quiet=quiet)
+    print_code(goals_content, "tcl", quiet=quiet)
 
     # ==========================================================
     # GENERATE WAIVER
     # ==========================================================
-    print_step("Generate waiver file")
+    print_step("Generate waiver file", quiet=quiet)
 
     waiver_content = """## File Name : Local Waiver File(.awl)
 waive -file_line {$CVA6_REPO_DIR/common/local/util/sram_cache.sv}  {55}  -severity {  {ERROR}  }  -rule {  {ErrorAnalyzeBBox}  }
@@ -197,13 +201,13 @@ waive -rule {  {W528}  }  -comment {Remove 'Set but not read' warning as it happ
 
     waiver_file.write_text(waiver_content)
 
-    print_info(f"File generated at {waiver_file}")
-    print_code(waiver_content, "tcl")
+    print_info(f"File generated at {waiver_file}", quiet=quiet)
+    print_code(waiver_content, "tcl", quiet=quiet)
 
     # ==========================================================
     # GENERATE CONSTRAINTS FILE
     # ==========================================================
-    print_step("Generate onstraints file")
+    print_step("Generate onstraints file", quiet=quiet)
 
     sgdc_content = f"""## File Name : SpyGlass Constraints File (sgdc file)
 current_design {top_elaborate}
@@ -214,8 +218,8 @@ test_mode -scanshift -name "{top_elaborate}.rst_ni" -value 1
 
     sgdc_file.write_text(sgdc_content)
 
-    print_info(f"File generated at {sgdc_file}")
-    print_code(sgdc_content, "tcl")
+    print_info(f"File generated at {sgdc_file}", quiet=quiet)
+    print_code(sgdc_content, "tcl", quiet=quiet)
 
     # ==========================================================
     # BUILD SPYGLASS DESIGN READ COMMAND
@@ -228,7 +232,7 @@ test_mode -scanshift -name "{top_elaborate}.rst_ni" -value 1
     # ==========================================================
     # LAUNCH SPYGLASS DESIGN READ COMMAND
     # ==========================================================
-    print_step("LAUNCH SPYGLASS DESIGN READ")
+    print_step("LAUNCH SPYGLASS DESIGN READ", quiet=quiet)
 
     log_file = spyglass_dir / "design_read.log"
 
@@ -243,12 +247,13 @@ test_mode -scanshift -name "{top_elaborate}.rst_ni" -value 1
         timeout=1800,
         check=False,
         capture_output=True,
+        quiet=quiet,
     )
 
     # ==========================================================
     # List
     # ==========================================================
-    print_step("Generated files")
+    print_step("Generated files", quiet=quiet)
     gen_files = [
         log_file,
         spyglass_dir
@@ -288,6 +293,6 @@ test_mode -scanshift -name "{top_elaborate}.rst_ni" -value 1
 
     for genfile in gen_files:
         if genfile.exists():
-            print_info(f"> {genfile}")
+            print_info(f"> {genfile}", quiet=quiet)
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)

@@ -35,53 +35,82 @@ from flows.utils.config_loader import TECHNO_DATA, COMPILER_DATA
 console = Console()
 
 
-def print_recipe_title(title):
-    console.print(
-        Panel(
-            title,
-            expand=True,
-            style="bold",
-            border_style="blue",
+def print_recipe_title(title, quiet=False):
+    if not quiet:
+        console.print(
+            Panel(
+                title,
+                expand=True,
+                style="bold",
+                border_style="blue",
+            )
         )
-    )
 
 
-def print_recipe_end(msg):
-    console.print(msg, style="bold cyan")
+def print_recipe_end(msg, quiet=False):
+    if not quiet:
+        console.print(msg, style="bold cyan")
 
 
-def print_step(msg):
-    console.print(Rule(msg, style="bold cyan"))
+def print_step(msg, quiet=False):
+    if not quiet:
+        console.print(Rule(msg, style="bold cyan"))
 
 
-def print_info(msg, end="\n", highlight=False):
-    console.print(f"{msg}", style="white", end=end, highlight=highlight)
+def print_info(msg, end="\n", highlight=False, quiet=False):
+    if not quiet:
+        console.print(f"{msg}", style="white", end=end, highlight=highlight)
 
 
-def print_success(msg, end="\n", highlight=False):
-    # pylint: disable-next=anomalous-backslash-in-string
-    console.print(f"\[{msg}]", style="green", end=end, highlight=highlight)
+def print_success(msg, end="\n", highlight=False, quiet=False):
+    if not quiet:
+        # pylint: disable-next=anomalous-backslash-in-string
+        console.print(f"\[{msg}]", style="green", end=end, highlight=highlight)
 
 
-def print_error(msg, end="\n", highlight=False):
-    console.print(f"{msg}", style="red", end=end, highlight=highlight)
+def print_error(msg, end="\n", highlight=False, quiet=False):
+    if not quiet:
+        console.print(f"{msg}", style="red", end=end, highlight=highlight)
 
 
-def print_warning(msg, end="\n", highlight=False):
-    console.print(f"{msg}", style="yellow", end=end, highlight=highlight)
+def print_warning(msg, end="\n", highlight=False, quiet=False):
+    if not quiet:
+        console.print(f"{msg}", style="yellow", end=end, highlight=highlight)
 
 
-def print_cmd(msg, end="\n", highlight=False):
-    console.print(f"[CMD] {msg}", style="cyan", end=end, highlight=highlight)
+def print_cmd(msg, end="\n", highlight=False, quiet=False):
+    if not quiet:
+        console.print(f"[CMD] {msg}", style="cyan", end=end, highlight=highlight)
 
 
-def print_param_table(params, title):
-    table = Table(show_header=False, box=None)
-    table.add_column("Name")
-    table.add_column("Value")
-    if isinstance(params, dict):
-        for n, v in params.items():
-            table.add_row(n, str(v))
+def print_param_table(params, title, quiet=False):
+    if not quiet:
+        table = Table(show_header=False, box=None)
+        table.add_column("Name")
+        table.add_column("Value")
+        if isinstance(params, dict):
+            for n, v in params.items():
+                table.add_row(n, str(v))
+            console.print(
+                Panel(
+                    table,
+                    title=title,
+                    title_align="left",
+                    border_style="white",
+                    expand=False,
+                )
+            )
+
+
+def print_table(params, title, column_name, style, quiet=False):
+    if not quiet:
+        table = Table(show_header=False, box=None)
+        for i, name in enumerate(column_name):
+            table.add_column(name, style=style[i])
+        table.add_row(*column_name)
+        for k, v in params.items():
+            table.add_row(k, *v)
+
         console.print(
             Panel(
                 table,
@@ -93,58 +122,46 @@ def print_param_table(params, title):
         )
 
 
-def print_table(params, title, column_name, style):
-    table = Table(show_header=False, box=None)
-    for i, name in enumerate(column_name):
-        table.add_column(name, style=style[i])
-    table.add_row(*column_name)
-    for k, v in params.items():
-        table.add_row(k, *v)
-
-    console.print(
-        Panel(
-            table,
-            title=title,
-            title_align="left",
-            border_style="white",
-            expand=False,
-        )
-    )
+def print_code(file, lang, quiet=False):
+    if not quiet:
+        console.print(Padding(Syntax(file, lang, word_wrap=True), (0, 2)))
 
 
-def print_code(file, lang):
-    console.print(Padding(Syntax(file, lang, word_wrap=True), (0, 2)))
-
-
-def tail_file(file_path, n=20):
-    try:
-        with file_path.open("r") as f:
-            lines = f.readlines()
-        last_lines = lines[-n:] if len(lines) >= n else lines
-        for line in last_lines:
-            print(line, end="")
-    except Exception as e:
-        print_error(f"Error tail: {e}")
+def tail_file(file_path, n=20, quiet=False):
+    if not quiet:
+        try:
+            with file_path.open("r") as f:
+                lines = f.readlines()
+            last_lines = lines[-n:] if len(lines) >= n else lines
+            for line in last_lines:
+                print(line, end="")
+        except Exception as e:
+            print_error(f"Error tail: {e}")
 
 
 def print_file_regex(
-    file_path, error_patterns=None, warning_patterns=None, highlight_patterns=None
+    file_path,
+    error_patterns=None,
+    warning_patterns=None,
+    highlight_patterns=None,
+    quiet=False,
 ):
-    err = [re.compile(p, re.I) for p in (error_patterns or [])]
-    warn = [re.compile(p, re.I) for p in (warning_patterns or [])]
-    high = [re.compile(p, re.I) for p in (highlight_patterns or [])]
-    try:
-        with file_path.open("r") as f:
-            lines = f.readlines()
-        for line in lines:
-            if any(p.search(line) for p in err):
-                console.print(Text(line), style="bold white on red", end="")
-            elif any(p.search(line) for p in warn):
-                console.print(Text(line), style="black on yellow", end="")
-            elif any(p.search(line) for p in high):
-                console.print(Text(line), end="")
-    except Exception as e:
-        print_error(f"Error print results: {e}")
+    if not quiet:
+        err = [re.compile(p, re.I) for p in (error_patterns or [])]
+        warn = [re.compile(p, re.I) for p in (warning_patterns or [])]
+        high = [re.compile(p, re.I) for p in (highlight_patterns or [])]
+        try:
+            with file_path.open("r") as f:
+                lines = f.readlines()
+            for line in lines:
+                if any(p.search(line) for p in err):
+                    console.print(Text(line), style="bold white on red", end="")
+                elif any(p.search(line) for p in warn):
+                    console.print(Text(line), style="black on yellow", end="")
+                elif any(p.search(line) for p in high):
+                    console.print(Text(line), end="")
+        except Exception as e:
+            print_error(f"Error print results: {e}")
 
 
 # ==========================================================
@@ -165,6 +182,7 @@ def run_cmd(
     timeout=None,
     check=True,
     capture_output=True,
+    quiet=False,
 ):
     """
     Robust command runner
@@ -198,27 +216,27 @@ def run_cmd(
     else:
         popen_kwargs["start_new_session"] = True
 
-    print_info("Set current working directory:")
-    print_code(str(cwd), "bash")
+    print_info("Set current working directory:", quiet=quiet)
+    print_code(str(cwd), "bash", quiet=quiet)
 
-    print_info("Command launched:")
+    print_info("Command launched:", quiet=quiet)
     if isinstance(cmd, list):
-        print_code(" ".join(cmd), "bash")
+        print_code(" ".join(cmd), "bash", quiet=quiet)
     else:
-        print_code(cmd, "bash")
+        print_code(cmd, "bash", quiet=quiet)
 
-    print_param_table(env, "Environment variables")
+    print_param_table(env, "Environment variables", quiet=quiet)
 
     if stdin is None:
-        print_info("Stdin: Not used")
+        print_info("Stdin: Not used", quiet=quiet)
     else:
-        print_info("Stdin: Used")
+        print_info("Stdin: Used", quiet=quiet)
 
     process = subprocess.Popen(cmd, **popen_kwargs)
 
     logfile = log_file.open("w") if log_file else None
     collected_output = []
-    print_info("[Begin]")
+    print_info("[Begin]", quiet=quiet)
     try:
         for line in iter(process.stdout.readline, ""):
 
@@ -229,12 +247,13 @@ def run_cmd(
                 logfile.write(line)
                 logfile.flush()
 
-            if any(p.search(line) for p in err):
-                console.print(Text(line), style="bold white on red", end="")
-            elif any(p.search(line) for p in warn):
-                console.print(Text(line), style="black on yellow", end="")
-            elif any(p.search(line) for p in high):
-                console.print(Text(line), style="black on green", end="")
+            if not quiet:
+                if any(p.search(line) for p in err):
+                    console.print(Text(line), style="bold white on red", end="")
+                elif any(p.search(line) for p in warn):
+                    console.print(Text(line), style="black on yellow", end="")
+                elif any(p.search(line) for p in high):
+                    console.print(Text(line), style="black on green", end="")
 
         process.stdout.close()
         process.wait(timeout=timeout)
@@ -257,7 +276,7 @@ def run_cmd(
     finally:
         if logfile:
             logfile.close()
-        print_info("[End]")
+        print_info("[End]", quiet=quiet)
 
     if check and process.returncode != 0:
         raise RuntimeError(f"Command failed ({process.returncode})")

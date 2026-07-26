@@ -34,10 +34,12 @@ DIFF_GATES = 250
 
 
 # --- Functions ---
-def load_yaml(file_path: Path) -> Dict[str, Any]:
+def load_yaml(file_path: Path, quiet: bool = False) -> Dict[str, Any]:
     """Upload Yaml file"""
     if not file_path.exists():
-        print_error(f"Error: YAML configuration file '{file_path}' not found.")
+        print_error(
+            f"Error: YAML configuration file '{file_path}' not found.", quiet=quiet
+        )
         raise typer.Exit(code=1)
     with open(file_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -64,6 +66,9 @@ def report_dc_shell_check_area(
     config: Optional[Path] = typer.Option(
         None, "--config", help="Path to the YAML config file."
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """Analyze synthesis area (gate count) and parse logs for errors or warnings."""
 
@@ -78,11 +83,13 @@ def report_dc_shell_check_area(
         config = Path(f"build/{target}/synthesis/build_config.yaml")
 
     if not log.exists() or not log.is_file():
-        print_error(f"Error: Area log file not found at '{log}'")
+        print_error(f"Error: Area log file not found at '{log}'", quiet=quiet)
         raise typer.Exit(code=1)
 
     if not synthesis_log.exists() or not synthesis_log.is_file():
-        print_error(f"Error: Synthesis log file not found at '{synthesis_log}'")
+        print_error(
+            f"Error: Synthesis log file not found at '{synthesis_log}'", quiet=quiet
+        )
         raise typer.Exit(code=1)
 
     # Report Path
@@ -96,25 +103,29 @@ def report_dc_shell_check_area(
     # nand2area
     nand2area = float(config_data["NAND2_AREA"])
     if nand2area is None:
-        print_error("Error: config file with NAND2_AREA must be provided via --config.")
+        print_error(
+            "Error: config file with NAND2_AREA must be provided via --config.",
+            quiet=quiet,
+        )
         raise typer.Exit(code=1)
 
     # Expected Values Path
     path_expected_values = Path("config", "target", target, "expected_values.yml")
 
-    print_recipe_title("Process Area Check")
-    print_step("Used files")
+    print_recipe_title("Process Area Check", quiet=quiet)
+    print_step("Used files", quiet=quiet)
     print_info(
         f"log :                     {log}\n"
         f"synthesis log :           {synthesis_log}\n"
         f"config file :             {config}\n"
-        f"NAND2 Area ratio loaded:  {nand2area}"
+        f"NAND2 Area ratio loaded:  {nand2area}",
+        quiet=quiet,
     )
 
     # Upload files
     log_content = read_log(log)
     synthesis_log_content = read_log(synthesis_log)
-    expected = load_yaml(Path(path_expected_values))
+    expected = load_yaml(Path(path_expected_values), quiet=quiet)
 
     ignored_warnings = {
         "RM-Error",
@@ -159,7 +170,7 @@ def report_dc_shell_check_area(
     hier = hier_pattern.findall(log_content)
 
     if not hier:
-        print_error("Error: Hierarchical area data could not be parsed.")
+        print_error("Error: Hierarchical area data could not be parsed.", quiet=quiet)
         raise typer.Exit(code=1)
 
     # Define values
@@ -180,7 +191,9 @@ def report_dc_shell_check_area(
         if path_re:
             target = path_re.group(1)
         else:
-            print_error(f"Error: Target could not be inferred from path: {log}")
+            print_error(
+                f"Error: Target could not be inferred from path: {log}", quiet=quiet
+            )
             raise typer.Exit(code=1)
 
     diff = gates - expected.get("gates", 0)
@@ -201,7 +214,7 @@ def report_dc_shell_check_area(
     # Exit file
     report.dump()
 
-    print_step("Result")
+    print_step("Result", quiet=quiet)
     # Display Rich
     if report.failed:
         print_info(
@@ -209,12 +222,14 @@ def report_dc_shell_check_area(
             f"Target:    {target}\n"
             f"Expected:  {expected.get('gates', 0)} gates\n"
             f"Observed:  {gates} gates\n"
-            f"Delta:     {diff} gates"
+            f"Delta:     {diff} gates",
+            quiet=quiet,
         )
 
     else:
         print_success(
             f"Gate count validation passed successfully.\n\n"
             f"Target:    {target}\n"
-            f"Total:     {gates} Gates ({kgates:.2f} kGates)"
+            f"Total:     {gates} Gates ({kgates:.2f} kGates)",
+            quiet=quiet,
         )

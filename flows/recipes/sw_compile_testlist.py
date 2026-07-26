@@ -67,11 +67,14 @@ def sw_compile_testlist(
     mabi: str = typer.Option(
         None, help="mabi custom instead of default one from config/target"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output (errors only)"
+    ),
 ):
     """
     Build Test lists.
     """
-    print_recipe_title("Software compilation of testlist")
+    print_recipe_title("Software compilation of testlist", quiet=quiet)
 
     code = 0
 
@@ -83,13 +86,13 @@ def sw_compile_testlist(
         with testlist_file.open("r") as f:
             data = yaml.safe_load(f)
     except FileNotFoundError as e:
-        print_error(f"testlist: File Not found in file {testlist_file}")
+        print_error(f"testlist: File Not found in file {testlist_file}", quiet=quiet)
         raise typer.Exit(code=1) from e
 
     if "testlist" in data:
-        print_success(f"testlist: Found in file {testlist}")
+        print_success(f"testlist: Found in file {testlist}", quiet=quiet)
     else:
-        print_error(f"testlist: Not found in file {testlist}")
+        print_error(f"testlist: Not found in file {testlist}", quiet=quiet)
         raise typer.Exit(code=1)
 
     for test in data["testlist"]:
@@ -108,7 +111,7 @@ def sw_compile_testlist(
             elif test["path_var"] == "TESTS_GEN_PATH":
                 test["path_var"] = f"build/{target}/dv_generated"
             else:
-                print_warning(f"Check {test['path_var']} is a valid path")
+                print_warning(f"Check {test['path_var']} is a valid path", quiet=quiet)
             test["asm_tests"] = test["asm_tests"].replace(
                 "<path_var>", test["path_var"]
             )
@@ -133,6 +136,7 @@ def sw_compile_testlist(
                 "mabi": test["mabi"],
             },
             "Test parameters",
+            quiet=quiet,
         )
         linker_file = None
         inc_dirs = []
@@ -168,12 +172,13 @@ def sw_compile_testlist(
                     mabi=test["mabi"],
                     preprocessor_directives=preprocessor_directives,
                     test_name=test_file_name,
+                    quiet=quiet,
                 )
             except typer.Exit:
-                print_error(f"{test['test']}: Return Error")
+                print_error(f"{test['test']}: Return Error", quiet=quiet)
                 code = 1
 
-    print_recipe_end("Completed")
+    print_recipe_end("Completed", quiet=quiet)
 
     if code != 0:
         raise typer.Exit(code=1)
