@@ -6,37 +6,64 @@ It has a configurable size, separate TLBs, a hardware PTW and branch-prediction 
 
 <img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
-# New Quick setup
+# CVA6 Target Configurations
+
+CVA6 supports multiple processor variants (targets), each defining a specific configuration with ISA extensions, memory maps, and RTL parameters. Each target is located in `config/target/<target_name>/` and contains configuration files for compilation, simulation, and verification.
+
+For detailed information on available targets, configuration file formats, and how to create new targets, see [config/README.md](config/README.md).
+
+# Quick Start
 
 #### cook.py
 
-- [Overview](flows/README.md#overview)
-- [Prerequisites](flows/README.md#prerequisites)
-- [Installation](flows/README.md#installation)
-- [Configuration](flows/README.md#configuration)
-- [Build Directory Organization](flows/README.md#build-directory-organization)
-- [Project Architecture](flows/README.md#project-architecture)
-- [Recipe Reference](flows/README.md#recipe-reference)
-  - [Test Patterns](flows/README.md#test-patterns)
-  - [Software Compilation](flows/README.md#software-compilation)
-  - [RTL Simulation](flows/README.md#rtl-simulation)
-  - [Random Test Generation](flows/README.md#random-test-generation)
-  - [Synthesis](flows/README.md#synthesis)
-  - [Static Analysis](flows/README.md#static-analysis)
-  - [Reports](flows/README.md#reports)
-  - [Macros](flows/README.md#macros)
-  - [Utilities](flows/README.md#utilities)
-- [Complete Flow Examples](flows/README.md#complete-flow-examples)
-- [Troubleshooting](flows/README.md#troubleshooting)
+`cook.py` is a Python-based command runner that provides a unified interface for CVA6 workflows including software compilation, RTL simulation with multiple simulators (VCS, Xcelium, Questa), synthesis, and analysis.
 
-#### Manage CVA6 variant (target configuration)
+**Quick Start Example:**
+```bash
+# Clone the repository
+git clone https://github.com/openhwgroup/cva6.git
+cd cva6
 
-- [Overview](config/README.md#overview)
-- [Available Targets](config/README.md#available-targets)
-- [Target Directory Structure](config/README.md#target-directory-structure)
-- [Configuration Files Reference](config/README.md#configuration-files-reference)
-- [Creating a New Target](config/README.md#creating-a-new-target)
-- [Validation and CI](config/README.md#validation-and-ci)
+# Install Python dependencies
+pip install -r flows/requirements.txt
+
+# Initialize submodules
+git submodule update --init --recursive
+
+# Install Spike ISA simulator (requires: gcc, g++, device-tree-compiler, libboost-dev)
+# See verif/regress/install-spike.sh for details
+(cd verif/regress && source ./install-spike.sh)
+
+# Configure your environment (adapt to your setup)
+# Edit flows/config/setenv.sh - Set paths to your CAD tools (VCS, Xcelium, Questa, etc.)
+# Edit flows/config/compiler.yml - Set your RISC-V toolchain paths (GCC or LLVM)
+# Edit flows/config/techno.yml - Set your ASIC library paths (optional, for synthesis)
+source flows/config/setenv.sh
+
+# Optional: Verify your setup
+./cook.py self-check
+# Optional: Enable shell autocompletion for cook.py commands
+./cook.py --install-completion
+# Optional: Get help on available commands
+./cook.py --help
+
+# Compile a test program
+./cook.py hello-world --target cv32a60x --compiler llvm-20-1-8
+
+# Compile RTL and run simulation with VCS
+./cook.py vcs-uvm-comp --target cv32a60x          #
+./cook.py vcs-uvm-run --target cv32a60x --testname hello-world
+
+# Or with Xcelium
+./cook.py xcelium-uvm-comp --target cv32a60x
+./cook.py xcelium-uvm-run --target cv32a60x --testname hello-world
+
+# Or with Questa
+./cook.py questa-uvm-comp --target cv32a60x
+./cook.py questa-uvm-run --target cv32a60x --testname hello-world
+```
+
+**For complete documentation**, see [flows/README.md](flows/README.md)
 
 # Old Quick setup
 

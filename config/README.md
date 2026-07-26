@@ -498,7 +498,7 @@ Run benchmarks to establish baseline metrics:
 ```bash
 # Run ISA tests
 ./cook.py sw-compile-testlist -t <new_target> -c <toolchain> -l <testlist>
-./cook.py vcs-uvm-run-testlist -t <new_target> -l <testlist>
+./cook.py uvm-run-testlist --simulator vcs -t <new_target> -l <testlist>
 ```
 
 ## Validation and CI

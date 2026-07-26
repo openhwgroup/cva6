@@ -39,6 +39,7 @@ variables:
   TERM: xterm-256color
   FORCE_COLOR: "1"
   COLUMNS: 180
+  MY_SIMULATOR: vcs
   #PYTHONUNBEFFERED: "1"
 
 stages:
@@ -654,7 +655,7 @@ testlist_run_sim_rtl:
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
-    - ./cook.py vcs-uvm-run-testlist -t $MY_TARGET -l verif/tests/${MY_TESTLIST}.yaml --comp-mode rtl
+    - ./cook.py uvm-run-testlist --simulator ${MY_SIMULATOR} -t $MY_TARGET -l verif/tests/${MY_TESTLIST}.yaml --comp-mode rtl
       --tandem-enabled --tb-performance-mode --trace-mode notrace
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
