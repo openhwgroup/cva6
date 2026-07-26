@@ -11,9 +11,12 @@
 
 from pathlib import Path
 import random
+from enum import Enum
 import yaml
 import typer
 from flows.recipes.vcs_uvm_run import vcs_uvm_run
+from flows.recipes.xcelium_uvm_run import xcelium_uvm_run
+from flows.recipes.questa_uvm_run import questa_uvm_run
 from flows.utils.utils import (
     CompMode,
     TraceMode,
@@ -31,12 +34,29 @@ app = typer.Typer()
 
 
 # ==========================================================
+# SIMULATOR ENUM
+# ==========================================================
+
+
+class Simulator(str, Enum):
+    vcs = "vcs"
+    xcelium = "xcelium"
+    questa = "questa"
+
+
+# ==========================================================
 # RECIPE
 # ==========================================================
 
 
 @app.command()
-def vcs_uvm_run_testlist(
+def uvm_run_testlist(
+    simulator: Simulator = typer.Option(
+        ...,
+        "--simulator",
+        "-s",
+        help="Simulator to use (vcs, xcelium, questa)",
+    ),
     target: str = typer.Option(
         ...,
         "--target",
@@ -64,9 +84,9 @@ def vcs_uvm_run_testlist(
     tandem_enabled: bool = typer.Option(False, help="Enable spike tandem"),
     tb_performance_mode: bool = typer.Option(False, help="Enable tb perf mode"),
     stats: bool = typer.Option(False, help="Enable RTL perf tracer"),
-    sim_profile: bool = typer.Option(False, help="Enable simulation profiling"),
+    sim_profile: bool = typer.Option(False, help="Enable simulation profiling (VCS only)"),
     interactive_gui: bool = typer.Option(
-        False, help="Launch VERDI for interactive simulation"
+        False, help="Launch GUI for interactive simulation"
     ),
     run_opts: list[str] = typer.Option([], "--run_opts", help="Simulation run options"),
     uvm_seed: str = typer.Option(
@@ -74,17 +94,30 @@ def vcs_uvm_run_testlist(
     ),
 ):
     """
-    VCS UVM run testlist simulation flow
+    UVM run testlist simulation flow (multi-simulator)
     """
     code = 0
 
-    print_recipe_title("VCS DESIGN RUN SIMULATION TESTLIST")
+    print_recipe_title(f"{simulator.value.upper()} DESIGN RUN SIMULATION TESTLIST")
+
+    # Select the appropriate run function based on simulator
+    if simulator == Simulator.vcs:
+        run_function = vcs_uvm_run
+    elif simulator == Simulator.xcelium:
+        run_function = xcelium_uvm_run
+    elif simulator == Simulator.questa:
+        run_function = questa_uvm_run
+    else:
+        print_error(f"Unknown simulator: {simulator}")
+        raise typer.Exit(code=1)
 
     repo_dir = Path.cwd()
     data = {"testlist": []}
-    if "cvxif" in testlist:
-        run_opts = ["+enabled_cvxif"]
-    print(run_opts)
+    
+    # Special handling for cvxif testlist
+    if testlist and "cvxif" in testlist:
+        run_opts = list(run_opts) + ["+enabled_cvxif"]
+        print("Detected cvxif testlist, adding run option: +enabled_cvxif")
 
     if testlist:
         testlist_file = repo_dir / testlist
@@ -92,7 +125,7 @@ def vcs_uvm_run_testlist(
             with testlist_file.open("r") as f:
                 data = yaml.safe_load(f)
         except FileNotFoundError as e:
-            print_error(f"testlist: File Not found in file {testlist_file}")
+            print_error(f"testlist: File not found: {testlist_file}")
             raise typer.Exit(code=1) from e
 
         if "testlist" in data:
@@ -106,35 +139,55 @@ def vcs_uvm_run_testlist(
         print_error("Error: You must provide --testlist or --testname")
         raise typer.Exit(code=1)
 
+    # Run tests
     for test in data["testlist"]:
-        # Single test mode
+        # Single test mode - skip tests not in test_name list
         if testlist and test_name:
             if test["test"] not in test_name:
                 continue
 
         iterations = test.get("iterations", 1)
-        # Skip disables tests
+        # Skip disabled tests (iterations == 0)
         if iterations == 0:
             continue
+            
         for i in range(iterations):
             iter_test_name = f"{test['test']}_{i}"
             try:
-                vcs_uvm_run(
-                    target=target,
-                    test_name=iter_test_name,
-                    comp_mode=comp_mode,
-                    trace_mode=trace_mode,
-                    uvm_verbosity=uvm_verbosity,
-                    tandem_enabled=tandem_enabled,
-                    tb_performance_mode=tb_performance_mode,
-                    interactive_gui=interactive_gui,
-                    stats=stats,
-                    sim_profile=sim_profile,
-                    run_opts=run_opts,
-                    uvm_seed=uvm_seed,
-                )
+                # Call the appropriate simulator run function
+                # Note: sim_profile only supported by VCS
+                if simulator == Simulator.vcs:
+                    run_function(
+                        target=target,
+                        test_name=iter_test_name,
+                        comp_mode=comp_mode,
+                        trace_mode=trace_mode,
+                        uvm_verbosity=uvm_verbosity,
+                        tandem_enabled=tandem_enabled,
+                        tb_performance_mode=tb_performance_mode,
+                        interactive_gui=interactive_gui,
+                        stats=stats,
+                        sim_profile=sim_profile,
+                        run_opts=run_opts,
+                        uvm_seed=uvm_seed,
+                    )
+                else:
+                    # Xcelium and Questa don't have sim_profile
+                    run_function(
+                        target=target,
+                        test_name=iter_test_name,
+                        comp_mode=comp_mode,
+                        trace_mode=trace_mode,
+                        uvm_verbosity=uvm_verbosity,
+                        tandem_enabled=tandem_enabled,
+                        tb_performance_mode=tb_performance_mode,
+                        interactive_gui=interactive_gui,
+                        stats=stats,
+                        run_opts=run_opts,
+                        uvm_seed=uvm_seed,
+                    )
             except typer.Exit:
-                print_error(f"{test['test']}: Return Error")
+                print_error(f"{test['test']}: Returned error")
                 code = 1
 
     if code != 0:

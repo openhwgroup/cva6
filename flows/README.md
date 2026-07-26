@@ -491,7 +491,7 @@ Build tests from a YAML testlist file.
 
 ### RTL Simulation
 
-VCS-based RTL simulation with UVM testbench.
+RTL simulation with UVM testbench. Supports multiple simulators: VCS (Synopsys), Xcelium (Cadence), and Questa (Siemens).
 
 #### `vcs-uvm-comp`
 
@@ -573,20 +573,88 @@ Run a single test on the elaborated simulation.
 
 **Output:** `build/<target>/simulation/sim_rtl/<test>/`
 
-#### `vcs-uvm-run-testlist`
+#### `xcelium-uvm-comp`
 
-Run all tests (or a single test) from a testlist.
+Compile and elaborate the Xcelium (Cadence) UVM simulation.
 
 ```bash
-./cook.py vcs-uvm-run-testlist [OPTIONS]
+./cook.py xcelium-uvm-comp [OPTIONS]
+```
+
+**Options:** Same as `vcs-uvm-comp` (see above)
+
+**Example:**
+```bash
+./cook.py xcelium-uvm-comp -t cv32a60x --trace-mode fast
+```
+
+**Output:** `build/<target>/elab/sim_rtl/xcelium.d/` (snapshot)
+
+#### `xcelium-uvm-run`
+
+Run a single test with Xcelium simulator.
+
+```bash
+./cook.py xcelium-uvm-run [OPTIONS]
+```
+
+**Options:** Same as `vcs-uvm-run` (see above)
+
+**Example:**
+```bash
+./cook.py xcelium-uvm-run -t cv32a60x -n hello-world --trace-mode fast
+```
+
+**Output:** `build/<target>/simulation/sim_rtl/<test>/` (waveforms in `.shm` format)
+
+#### `questa-uvm-comp`
+
+Compile and elaborate the Questa/ModelSim (Siemens) UVM simulation.
+
+```bash
+./cook.py questa-uvm-comp [OPTIONS]
+```
+
+**Options:** Same as `vcs-uvm-comp` (see above, except `--sim-profile` not supported)
+
+**Example:**
+```bash
+./cook.py questa-uvm-comp -t cv32a60x --trace-mode fast
+```
+
+**Output:** `build/<target>/elab/sim_rtl/work/` (library)
+
+#### `questa-uvm-run`
+
+Run a single test with Questa/ModelSim simulator.
+
+```bash
+./cook.py questa-uvm-run [OPTIONS]
+```
+
+**Options:** Same as `vcs-uvm-run` (see above, except `--sim-profile` not supported)
+
+**Example:**
+```bash
+./cook.py questa-uvm-run -t cv32a60x -n hello-world --trace-mode fast
+```
+
+**Output:** `build/<target>/simulation/sim_rtl/<test>/` (waveforms in `.wlf` format)
+
+#### `uvm-run-testlist`
+
+Run all tests (or a single test) from a testlist with any simulator.
+
+```bash
+./cook.py uvm-run-testlist [OPTIONS]
 ```
 
 **Required Options:**
+- `-s, --simulator [vcs|xcelium|questa]` - Simulator to use
 - `-t, --target TEXT` - CVA6 user configuration
 
 **Optional:**
 - `-l, --testlist TEXT` - Testlist YAML file in `verif/tests`
-- `-tl, --target-testlist TEXT` - Testlist YAML file in `config/target/<target>/verif`
 - `-n, --testname TEXT` - Test in the testlist or already compiled (multiple allowed)
 - `--comp-mode [rtl|gate_wc_power|gate_wc_timing|coverage]` - Hardware compilation mode (default: `rtl`)
 - `--trace-mode [gui|fast|compact|notrace]` - Trace mode (default: `notrace`)
@@ -594,26 +662,35 @@ Run all tests (or a single test) from a testlist.
 - `--tandem-enabled / --no-tandem-enabled` - Enable SPIKE tandem (default: disabled)
 - `--tb-performance-mode / --no-tb-performance-mode` - Enable TB perf mode (default: disabled)
 - `--stats / --no-stats` - Enable RTL perf tracer (default: disabled)
-- `--sim-profile / --no-sim-profile` - Enable simulation profiling (default: disabled)
-- `--interactive-gui / --no-interactive-gui` - Launch Verdi interactively (default: disabled)
+- `--sim-profile / --no-sim-profile` - Enable simulation profiling (VCS only, default: disabled)
+- `--interactive-gui / --no-interactive-gui` - Launch GUI interactively (default: disabled)
 - `--run_opts TEXT` - Additional simulation run options
 - `--uvm-seed TEXT` - UVM randomization seed
 
 **Example:**
 ```bash
-# Run entire testlist
-./cook.py vcs-uvm-run-testlist \
+# Run entire testlist with VCS
+./cook.py uvm-run-testlist \
+  -s vcs \
   -t cv32a60x \
   -l custom/regression.yml \
   --trace-mode compact
 
-# Run one test from testlist with tandem verification
-./cook.py vcs-uvm-run-testlist \
+# Run with Xcelium
+./cook.py uvm-run-testlist \
+  -s xcelium \
   -t cv32a60x \
   -l custom/regression.yml \
-  -n test_mul \
   --tandem-enabled
+
+# Run with Questa
+./cook.py uvm-run-testlist \
+  -s questa \
+  -t cv32a60x \
+  -n test_mul \
+  --stats
 ```
+
 
 #### `vcs-uvm-gui`
 
@@ -1123,7 +1200,7 @@ No options required.
 ./cook.py vcs-uvm-comp -t cv32a60x
 
 # 3. Run all tests (no traces for speed)
-./cook.py vcs-uvm-run-testlist -t cv32a60x -l custom/regression.yml --trace-mode notrace
+./cook.py uvm-run-testlist --simulator vcs -t cv32a60x -l custom/regression.yml --trace-mode notrace
 ```
 
 ### Example 3: Performance Benchmark

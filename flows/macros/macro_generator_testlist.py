@@ -12,7 +12,7 @@ import typer
 
 from flows.recipes.sw_compile_testlist import sw_compile_testlist
 from flows.recipes.vcs_generator_run_testlist import vcs_generator_run_testlist
-from flows.recipes.vcs_uvm_run_testlist import vcs_uvm_run_testlist
+from flows.recipes.uvm_run_testlist import uvm_run_testlist
 from flows.utils.utils import (
     CompMode,
     ToolchainOption,
@@ -125,7 +125,8 @@ def macro_vcs_generator_testlist(
     # ==========================================
     try:
         print_step("\n=== STEP 3: UVM RUN ===")
-        vcs_uvm_run_testlist(
+        uvm_run_testlist(
+            simulator="vcs",
             target=target,
             testlist=testlist,
             test_name=test_name,
