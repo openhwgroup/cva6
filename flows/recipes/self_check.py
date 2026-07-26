@@ -43,24 +43,30 @@ def self_check():
 
     print_step("Tools in path")
 
-    tool = [
-        "vcs",
-        "verdi",
-        "dc_shell",
-        "pt_shell",
-        "aipk_read",
-        "aipk_run",
-        "verible-verilog-format",
+    tools = [
+        ("vcs", "VCS - Synopsys simulator"),
+        ("verdi", "Verdi - Synopsys debug"),
+        ("xrun", "Xcelium - Cadence simulator"),
+        ("vsim", "Questa/ModelSim - Siemens simulator"),
+        ("vlog", "Questa/ModelSim - Verilog compiler"),
+        ("vopt", "Questa/ModelSim - Optimizer"),
+        ("dc_shell", "Design Compiler - Synopsys synthesis"),
+        ("pt_shell", "PrimeTime - Synopsys STA"),
+        ("aipk_read", "Spyglass - Synopsys static analysis"),
+        ("aipk_run", "Spyglass - Synopsys static analysis"),
+        ("verible-verilog-format", "Verible - RTL formatter"),
+        ("black", "Black - Python formatter"),
+        ("pylint", "Pylint - Python linter"),
     ]
 
-    for t in tool:
-        tool_path = shutil.which(t)
+    for tool_name, description in tools:
+        tool_path = shutil.which(tool_name)
         if tool_path is not None:
-            print_success(f"{t}: {tool_path}")
+            print_success(f"{tool_name} ({description}): {tool_path}")
         else:
-            print_error(f"{t}: Not found")
+            print_error(f"{tool_name} ({description}): Not found")
 
-    print_step("Spike installation")
+    print_step("Spike installation (mandatory for tandem verification)")
 
     path = [
         "./tools/spike/bin",
