@@ -682,4 +682,4 @@ merge reports:
   artifacts:
     when: always
     paths:
-      - "build/pipeline_report_${CI_PIPELINE_ID}.yml"
+      - artifacts/reports/pipeline_report_${CI_PIPELINE_ID}.yml
