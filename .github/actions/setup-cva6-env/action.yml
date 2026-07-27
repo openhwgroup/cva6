@@ -38,7 +38,7 @@ runs:
     # Step 2: Cache RISC-V Toolchain
     - name: Cache RISC-V Toolchain
       id: cache-toolchain
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: tools/riscv-toolchain/
         key: ${{ runner.os }}-toolchain-${{ hashFiles('ci/install-toolchain.sh') }}
@@ -48,7 +48,7 @@ runs:
     # Step 3: Cache Verilator
     - name: Cache Verilator
       id: cache-verilator
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: tools/verilator/
         key: ${{ runner.os }}-verilator-${{ hashFiles('verif/regress/install-verilator.sh') }}
@@ -58,7 +58,7 @@ runs:
     # Step 4: Cache Spike
     - name: Cache Spike
       id: cache-spike
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: tools/spike/
         key: ${{ runner.os }}-spike-${{ hashFiles('verif/regress/install-spike.sh') }}-${{ steps.submodule-hash.outputs.hash }}
