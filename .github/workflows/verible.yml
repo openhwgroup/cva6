@@ -4,19 +4,13 @@
 
 name: Verible
 on:
-  pull_request_target:
+  pull_request:
 
 jobs:
   format:
     runs-on: ubuntu-latest
-    permissions:
-      checks: write
-      contents: read
-      pull-requests: write
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/checkout@v7
       - uses: chipsalliance/verible-formatter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
