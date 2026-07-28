@@ -577,9 +577,9 @@ module cva6_ptw
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
-                if (CVA6Cfg.RVH && (pte.a || pte.d || pte.u)) begin
+                if (pte.a || pte.d || pte.u) begin
                   state_d = PROPAGATE_ERROR;
-                  ptw_stage_d = ptw_stage_q;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
 
               end
