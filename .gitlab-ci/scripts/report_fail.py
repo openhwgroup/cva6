@@ -9,8 +9,8 @@
 
 import report_builder as rb
 
-metric = rb.TableStatusMetric('')
-metric.add_fail('Job has failed before end of script')
+metric = rb.TableStatusMetric("")
+metric.add_fail("Job has failed before end of script")
 
 report = rb.Report()
 report.add_metric(metric)

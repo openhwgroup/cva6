@@ -19,6 +19,7 @@ from classes import Parameter
 sys.path.append(os.getcwd() + "/../util")
 from user_config import get_config
 
+
 def parameters_extractor(target):
 
     parameters = {}
@@ -80,6 +81,7 @@ def writeout_parameter_table(fileout, parameters, module):
             fout.write(f"     - {parameters[name].description}\n")
             fout.write(f"     - {parameters[name].value}\n")
 
+
 def writeout_parameter_table_adoc(fileout, parameters, module):
 
     with open(fileout, "w") as fout:
@@ -103,5 +105,7 @@ def writeout_parameter_table_adoc(fileout, parameters, module):
         fout.write("|===\n")
         fout.write("|Name | description | description\n\n")
         for name in parameters:
-            fout.write(f"|{name} | {parameters[name].description} | {parameters[name].value}\n")
+            fout.write(
+                f"|{name} | {parameters[name].description} | {parameters[name].value}\n"
+            )
         fout.write("|===\n")

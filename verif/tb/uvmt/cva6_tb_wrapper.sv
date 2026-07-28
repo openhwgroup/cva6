@@ -261,10 +261,6 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     assign axi_slave.ar_region = noc_axi_req.ar.region;
     assign axi_slave.ar_user = 0;
 
-    //YPB IN PASSIVE MODE (RTL only)
-    if (uvmt_workflow_pkg::gate_simulation == 0) begin
-      // ADD YPB monitoring agents
-    end
 
   end else begin : cva6_only_pipeline
 

@@ -7,22 +7,23 @@
 #
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
+import os
 import sys
 import re
 import report_builder as rb
-import os
 
-with open(str(sys.argv[1]), 'r') as f:
+with open(str(sys.argv[1]), "r", encoding="utf-8") as f:
     log = f.read()
 
-with_logs = os.environ.get("COLLECT_SIMU_LOGS") != None
+with_logs = os.environ.get("COLLECT_SIMU_LOGS") is not None
 
 pattern = re.compile(
-    r'(?:.*Compiling test: (.*))$[\s\S]*?(?:^.*Target: (.*)$)$[\s\S]*?(?:^.*ISA (.*)$)[\s\S]*?(?:^.*Found matching ISS: (.*)$)[\s\S]*?(?:^.*\[(PASSED|FAILED)\].*$)',
-    re.MULTILINE)
+    r"(?:.*Compiling test: (.*))$[\s\S]*?(?:^.*Target: (.*)$)$[\s\S]*?(?:^.*ISA (.*)$)[\s\S]*?(?:^.*Found matching ISS: (.*)$)[\s\S]*?(?:^.*\[(PASSED|FAILED)\].*$)",
+    re.MULTILINE,
+)
 list_of_tests = pattern.findall(log)
 
-metric = rb.TableStatusMetric('')
+metric = rb.TableStatusMetric("")
 
 metric.add_column("TARGET", "text")
 metric.add_column("ISA", "text")
@@ -41,13 +42,13 @@ for i in list_of_tests:
 
     target = i[1]
     isa = i[2]
-    test = i[0] 
+    test = i[0]
 
     if with_logs:
         logsPath = "logs/" + os.environ.get("CI_JOB_ID") + "/artifacts/logs/"
-        output_log = logsPath + 'logfile.log'
-        tb_log = logsPath + test + "." + target + '.log.iss'
-        disassembly = logsPath + test + "." + target + '.csv'
+        output_log = logsPath + "logfile.log"
+        tb_log = logsPath + test + "." + target + ".log.iss"
+        disassembly = logsPath + test + "." + target + ".csv"
         col = [target, isa, test, output_log, tb_log, disassembly]
     else:
         col = [target, isa, test]
@@ -58,10 +59,10 @@ for i in list_of_tests:
     else:
         metric.add_fail(*col)
 
-if re.search("ERROR", log) != None or job_test_total == 0:
+if re.search("ERROR", log) is not None or job_test_total == 0:
     metric.fail()
 
-report = rb.Report(f'{job_test_pass}/{job_test_total}')
+report = rb.Report(f"{job_test_pass}/{job_test_total}")
 report.add_metric(metric)
 report.dump()
 

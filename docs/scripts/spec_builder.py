@@ -46,40 +46,42 @@ HEADER_ADOC = """\
 """
 
 DEFAULT_PARAMS = {
-    'RVE': False,
-    'RVQ': False,
-    'RVZabha': False,
-    'RVZacas': False,
-    'RVZawrs': False,
-    'RVZcmop': False,
-    'RVZfa': False,
-    'RVZfbf-RZvfbf': False,
-    'RVZfh': False,
-    'RVZfinx': False,
-    'RVZicbo': False,
-    'RVZicfilp': False,
-    'RVZifencei': False,
-    'RVZihintntl': False,
-    'RVZihintpause': False,
-    'RVZimop': False,
-    'RVZk': False,
-    'RVZpm': False,
-    'RVZsmcdeleg': False,
-    'RVZsmcntrpmf': False,
-    'RVZsmcsrind-RVZsscsrind': False,
-    'RVZsmctr': False,
-    'RVZsmdbltrp': False,
-    'RVZsmepmp': False,
-    'RVZsmmpm': False,
-    'RVZsmrnmi': False,
-    'RVZsmstateen': False,
-    'RVZsscofpmf': False,
-    'RVZssdbltrp': False,
-    'RVZsstc': False,
-    'RVZtso': False,
-    'RVZvk': False,
-    'SV': 'SV0'
+    "RVE": False,
+    "RVQ": False,
+    "RVZabha": False,
+    "RVZacas": False,
+    "RVZawrs": False,
+    "RVZcmop": False,
+    "RVZfa": False,
+    "RVZfbf-RZvfbf": False,
+    "RVZfh": False,
+    "RVZfinx": False,
+    "RVZicbo": False,
+    "RVZicfilp": False,
+    "RVZifencei": False,
+    "RVZihintntl": False,
+    "RVZihintpause": False,
+    "RVZilsd": False,
+    "RVZimop": False,
+    "RVZk": False,
+    "RVZpm": False,
+    "RVZsmcdeleg": False,
+    "RVZsmcntrpmf": False,
+    "RVZsmcsrind-RVZsscsrind": False,
+    "RVZsmctr": False,
+    "RVZsmdbltrp": False,
+    "RVZsmepmp": False,
+    "RVZsmmpm": False,
+    "RVZsmrnmi": False,
+    "RVZsmstateen": False,
+    "RVZsscofpmf": False,
+    "RVZssdbltrp": False,
+    "RVZsstc": False,
+    "RVZtso": False,
+    "RVZvk": False,
+    "SV": "SV0",
 }
+
 
 def print_to_rst(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.rst"
@@ -113,6 +115,7 @@ def print_to_rst(pathout, target, module, ports, comments):
                 fout.write(f"| {comment[0]},\n|   {comment[1]}\n")
         fout.write("\n")
 
+
 def print_to_adoc(pathout, target, module, ports, comments):
     fileout = f"{pathout}/port_{module}.adoc"
     print("Output file " + fileout)
@@ -120,8 +123,8 @@ def print_to_adoc(pathout, target, module, ports, comments):
     # format comments
     for comment in comments:
         for i in range(len(comment)):
-            comment[i] = comment[i].replace('``', '`')
-            comment[i] = comment[i].replace('|', '*')
+            comment[i] = comment[i].replace("``", "`")
+            comment[i] = comment[i].replace("|", "*")
 
     with open(fileout, "w", encoding="utf-8") as fout:
         fout.write(HEADER_ADOC)
@@ -133,7 +136,9 @@ def print_to_adoc(pathout, target, module, ports, comments):
         fout.write("|Signal | IO | Description | connexion | Type\n\n")
 
         for port in ports:
-            fout.write(f"|`{port.name}` | {port.direction} | {port.description} | {port.connexion} | {port.data_type}\n\n")
+            fout.write(
+                f"|`{port.name}` | {port.direction} | {port.description} | {port.connexion} | {port.data_type}\n\n"
+            )
         fout.write("|===\n")
 
         if len(comments) != 0:
@@ -144,6 +149,7 @@ def print_to_adoc(pathout, target, module, ports, comments):
                 fout.write(f"{comment[0]},::\n*   {comment[1]}\n")
         fout.write("\n")
 
+
 def _format_parameter_adoc(name, value):
     if type(value) is bool:
         ret = str(value).lower()
@@ -151,12 +157,15 @@ def _format_parameter_adoc(name, value):
         ret = str(value)
     return f":{name}: {ret}\n"
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", required=True)
-    parser.add_argument("--gen-config", help="Generate target variables documentation file")
+    parser.add_argument(
+        "--gen-config", help="Generate target variables documentation file"
+    )
     parser.add_argument("--gen-parameters", help="Generate target parameters files")
     parser.add_argument("--gen-ports-folder", help="Generate target ports files")
     args = parser.parse_args()
@@ -232,7 +241,9 @@ def main():
                 description = "none"
                 connexion = "none"
                 for line in fin:
-                    e = re.match(r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line)
+                    e = re.match(
+                        r"^ +(?:(in|out))put +([\S]*(?: +.* *|)) ([\S]*)\n", line
+                    )
                     d = re.match(r"^ +\/\/ (.*) - ([\S]*)\n", line)
                     if d:
                         description = d.group(1)
@@ -276,7 +287,11 @@ def main():
                             else:
                                 ports.append(
                                     PortIO(
-                                        name, e.group(1), data_type, description, connexion
+                                        name,
+                                        e.group(1),
+                                        data_type,
+                                        description,
+                                        connexion,
                                     )
                                 )
                         description = "none"
@@ -284,10 +299,12 @@ def main():
 
             print_to_adoc(args.gen_ports_folder, target, module, ports, comments)
 
+
 def export_user_cfg_doc(out_path, params):
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(HEADER_RST)
-        f.write("""\
+        f.write(
+            """\
 .. _cva6_user_cfg_doc:
 
 .. list-table:: ``cva6_user_cfg_t`` parameters
@@ -296,12 +313,14 @@ def export_user_cfg_doc(out_path, params):
    * - Name
      - Type
      - Description
-""")
+"""
+        )
         for name, param in params.items():
             f.write("\n")
             f.write(f"   * - ``{name}``\n")
             f.write(f"     - ``{param.datatype.strip()}``\n")
             f.write(f"     - {param.description}\n")
+
 
 if __name__ == "__main__":
     main()

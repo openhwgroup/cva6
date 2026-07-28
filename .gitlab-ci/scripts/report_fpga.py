@@ -12,11 +12,11 @@ import sys
 
 import report_builder as rb
 
-with open(str(sys.argv[1]), "r") as f:
+with open(str(sys.argv[1]), "r", encoding="utf-8") as f:
     log = f.read()
 
 pattern = re.compile(
-    "\|(?P<ind> +)(?P<Instance>[\w()\[\].]+) +\| +(?P<Module>[\w()\[\].]+) \| +(?P<TotalLUTs>\d+) \| +(?P<LogicLUTs>\d+) \| +(?P<LUTRAMs>\d+) \| +(?P<SRLs>\d+) \| +(?P<FFs>\d+) \| +(?P<RAMB36>\d+) \| +(?P<RAMB18>\d+) \| +(?P<DSP48Blocks>\d+) \|"
+    r"\|(?P<ind> +)(?P<Instance>[\w()\[\].]+) +\| +(?P<Module>[\w()\[\].]+) \| +(?P<TotalLUTs>\d+) \| +(?P<LogicLUTs>\d+) \| +(?P<LUTRAMs>\d+) \| +(?P<SRLs>\d+) \| +(?P<FFs>\d+) \| +(?P<RAMB36>\d+) \| +(?P<RAMB18>\d+) \| +(?P<DSP48Blocks>\d+) \|"
 )
 
 data = []
@@ -27,7 +27,7 @@ for line in pattern.finditer(log):
     data.append(l)
 
 report = rb.Report()
-metric = rb.TableMetric('Utilization Results')
+metric = rb.TableMetric("Utilization Results")
 
 for i in data:
     if (i["ind"]).count(" ") < 10:

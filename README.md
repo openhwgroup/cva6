@@ -6,8 +6,66 @@ It has a configurable size, separate TLBs, a hardware PTW and branch-prediction 
 
 <img src="docs/03_cva6_design/_static/ariane_overview.drawio.png"/>
 
+# CVA6 Target Configurations
 
-# Quick setup
+CVA6 supports multiple processor variants (targets), each defining a specific configuration with ISA extensions, memory maps, and RTL parameters. Each target is located in `config/target/<target_name>/` and contains configuration files for compilation, simulation, and verification.
+
+For detailed information on available targets, configuration file formats, and how to create new targets, see [config/README.md](config/README.md).
+
+# Quick Start
+
+#### cook.py
+
+`cook.py` is a Python-based command runner that provides a unified interface for CVA6 workflows including software compilation, RTL simulation with multiple simulators (VCS, Xcelium, Questa), synthesis, and analysis.
+
+**Quick Start Example:**
+```bash
+# Clone the repository
+git clone https://github.com/openhwgroup/cva6.git
+cd cva6
+
+# Install Python dependencies
+pip install -r flows/requirements.txt
+
+# Initialize submodules
+git submodule update --init --recursive
+
+# Install Spike ISA simulator (requires: gcc, g++, device-tree-compiler, libboost-dev)
+# See verif/regress/install-spike.sh for details
+(cd verif/regress && source ./install-spike.sh)
+
+# Configure your environment (adapt to your setup)
+# Edit flows/config/setenv.sh - Set paths to your CAD tools (VCS, Xcelium, Questa, etc.)
+# Edit flows/config/compiler.yml - Set your RISC-V toolchain paths (GCC or LLVM)
+# Edit flows/config/techno.yml - Set your ASIC library paths (optional, for synthesis)
+source flows/config/setenv.sh
+
+# Optional: Verify your setup
+./cook.py self-check
+# Optional: Enable shell autocompletion for cook.py commands
+./cook.py --install-completion
+# Optional: Get help on available commands
+./cook.py --help
+
+# Compile a test program
+./cook.py hello-world --target cv32a60x --compiler llvm-20-1-8
+
+# Compile RTL and run simulation with VCS
+./cook.py vcs-uvm-comp --target cv32a60x          #
+./cook.py vcs-uvm-run --target cv32a60x --testname hello-world
+
+# Or with Xcelium
+./cook.py xcelium-uvm-comp --target cv32a60x
+./cook.py xcelium-uvm-run --target cv32a60x --testname hello-world
+
+# Or with Questa
+./cook.py questa-uvm-comp --target cv32a60x
+./cook.py questa-uvm-run --target cv32a60x --testname hello-world
+```
+
+**For complete documentation**, see [flows/README.md](flows/README.md)
+
+# Old Quick setup
 
 The following instructions will allow you to compile and run a Verilator model of the CVA6 APU (which instantiates the CVA6 core) within the CVA6 APU testbench (corev_apu/tb).
 
@@ -15,7 +73,7 @@ Throughout all build and simulations scripts executions, you can use the environ
 - if left undefined, `NUM_JOBS` will default to 1, resulting in a sequential execution
 of `make` jobs;
 - when setting `NUM_JOBS` to an explicit value, it is recommended not to exceed 2/3 of
-the total number of virtual cores available on your system.    
+the total number of virtual cores available on your system.
 
 1. Checkout the repository and initialize all submodules.
 ```sh
@@ -96,7 +154,7 @@ Assuming you ran the smoke-tests scripts in the previous step, here is the log d
 - **directed_c_tests/**: The compiled (to .o then .bin) c tests
 - **spike_sim/**: Spike simulation log and trace files
 - **veri_testharness_sim**: Verilator simulation log and trace files
-- **iss_regr.log**: The regression test log 
+- **iss_regr.log**: The regression test log
 
 The regression test log summarizes the comparison between the simulator trace and the Spike trace. Beware that a if a test fails before the comparison step, it will not appear in this log, check the output of cva6.py and the logs of the simulation instead.
 
@@ -168,7 +226,7 @@ python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.ya
 We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual) and the [Agilex 7 Development Kit](https://www.intel.la/content/www/xl/es/products/details/fpga/development-kits/agilex/agf014.html).
 
 - **Genesys 2**
-    
+
     We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
     Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
@@ -184,16 +242,16 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
 - **Agilex 7**
-  
+
    Tested on Quartus Prime Version 24.1.0 Pro Edition. The FPGA currently contains the following peripherals:
-  
+
    - DDR4 memory controller
    - JTAG port (see debugging section below)
    - Bootrom containing zero stage bootloader
    - UART
    - GPIOs connected to LEDs
 
-> The ethernet controller and the corresponding network connection, as well as the SD Card connection and the capability to boot linux are still work in progress and not functional at the moment. Expect some updates soon-ish. 
+> The ethernet controller and the corresponding network connection, as well as the SD Card connection and the capability to boot linux are still work in progress and not functional at the moment. Expect some updates soon-ish.
 
 
 ## Programming the Memory Configuration File or bitstream
@@ -219,7 +277,7 @@ We currently provide support for the [Genesys 2 board](https://reference.digilen
    - For this you need to use the JTAG UART provided with Quartus installation
 
 ```
-.$quartus_installation_path/qprogrammer/quartus/bin/juart-terminal 
+.$quartus_installation_path/qprogrammer/quartus/bin/juart-terminal
 juart-terminal: connected to hardware target using JTAG UART on cable
 juart-terminal: "AGF FPGA Development Kit [1-3]", device 1, instance 0
 juart-terminal: (Use the IDE stop button or Ctrl-C to terminate)
@@ -265,7 +323,7 @@ We recommend to set the parameter FpgaAlteraEn (and also FpgaEn) to benefit from
 
 This will produce a bitstream file (in `altera/output_files`) which you can program following the previous instructions. **Note: Bear in mind that you need a Quartus Pro Licence to be able to generate this bitstream**
 
-To clean the project after generating the bitstream, use 
+To clean the project after generating the bitstream, use
 
 ```
 make clean-altera
@@ -313,14 +371,14 @@ Info : accepting 'gdb' connection on tcp/3333
 ```
 - **Agilex 7**
 
-You can debug (and program) the FPGA using a modified version of OpenOCD included with Quartus installation ($quartus_installation_path/qprogrammer/quartus/bin/openocd). 
+You can debug (and program) the FPGA using a modified version of OpenOCD included with Quartus installation ($quartus_installation_path/qprogrammer/quartus/bin/openocd).
 
 To get started, connect the micro USB port that is labeled with J13 to your machine. It is the same port that is used for the UART. Both use the JTAG interface and connect to the System Level Debugging (SLD) Hub instantiated inside the FPGA. Then the debugger connection goes to the virtual JTAG IP (vJTAG) which can be accessed with the modified version of OpenOCD.
 
 You can start openocd with the `altera/cva6.cfg` configuration file:
 
 ```
-./$quartus_installation_path/qprogrammer/quartus/bin/openocd -f altera/cva6.cfg 
+./$quartus_installation_path/qprogrammer/quartus/bin/openocd -f altera/cva6.cfg
 Open On-Chip Debugger 0.11.0-R22.4
 Licensed under GNU GPL v2
 For bug reports, read

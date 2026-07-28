@@ -92,7 +92,7 @@ ${CVA6_REPO_DIR}/core/cvfpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/cf_math_pkg.sv
 ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/config_pkg.sv
-${CVA6_REPO_DIR}/core/include/${TARGET_CFG}_config_pkg.sv
+${CVA6_REPO_DIR}/config/target/${TARGET_CFG}/rtl_cfg_pkg.sv
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
@@ -227,7 +227,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
 ${CVA6_REPO_DIR}/common/local/util/sram_cache.sv
 
-// MMU 
+// MMU
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_mmu.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
