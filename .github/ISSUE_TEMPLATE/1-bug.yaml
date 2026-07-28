@@ -14,6 +14,13 @@ body:
         During this interaction, my words are my own and are not generated.
         If relevant, I provide links to my sources.
       required: true
+- type: input
+  attributes:
+    label: CVA6 commit affected
+    description: The git hash of a commit in the official CVA6 repository that was used to demonstrate the bug.
+    placeholder: "0123abc"
+  validations:
+    required: true
 - type: textarea
   attributes:
     label: Bug Description
