@@ -5,15 +5,43 @@
 
 #define NTESTS 1
 
+
 // Bare-Metal UART Driver
 #define UART_BASE 0x10000000
 #define UART_THR  (*(volatile uint8_t *)(UART_BASE + 0x00)) // Transmitter Holding Register
 #define UART_LSR  (*(volatile uint8_t *)(UART_BASE + 0x14)) // Line Status Register
 
+#define UART_IER  (*(volatile uint8_t *)(UART_BASE + 0x04)) // Interrupt Enable Register
+#define UART_FCR  (*(volatile uint8_t *)(UART_BASE + 0x08)) // FIFO Control Register
+#define UART_LCR  (*(volatile uint8_t *)(UART_BASE + 0x0C)) // Line Control Register
+#define UART_DLL  (*(volatile uint8_t *)(UART_BASE + 0x00)) // Divisor Latch LSB
+#define UART_DLM  (*(volatile uint8_t *)(UART_BASE + 0x04)) // Divisor Latch MSB
+
 static void uart_sendchar(char c) {
     // Wait until Transmitter Holding Register Empty (THRE) bit is set
     while ((UART_LSR & 0x20) == 0);
     UART_THR = c;
+}
+
+
+
+static void uart_init(void) {
+    // 1. Disable interrupts
+    UART_IER = 0x00;
+    
+    // 2. Enable DLAB (Divisor Latch Access Bit) to set baud rate
+    UART_LCR = 0x80;
+    
+    // 3. Set Divisor for 115200 baud 
+    // (Assuming a 50MHz clock. Divisor = 50,000,000 / (16 * 115200) ≈ 27 = 0x001B)
+    UART_DLL = 0x1B;
+    UART_DLM = 0x00;
+    
+    // 4. Clear DLAB and set 8 bits, no parity, 1 stop bit (8-N-1)
+    UART_LCR = 0x03;
+    
+    // 5. Enable and clear FIFOs
+    UART_FCR = 0x07;
 }
 
 static void print_str(const char *str) {
@@ -137,6 +165,7 @@ static int test_invalid_ciphertext(void)
 
 int main(void)
 {
+    uart_init();
     unsigned int i;
     int r = 0;
 
