@@ -6,6 +6,16 @@ This guide outlines how to establish a JTAG connection to the CVA6 soft core on 
 
 ---
 
+## Project Status & To-Do
+
+| Task / Objective | Associated Folder | Status |
+| :--- | :--- | :--- |
+| JTAG Bring-up & GDB Execution | `kyber_gdb` | ✅ **Done** |
+| Basic UART pipeline (Receive `a`, `b`, transmit `c = a+b` with "Result:") | `uart_rx_tx` | ✅ **Done** |
+| Fully run Kyber over UART | `kyber_uart` | ⏳ **In Progress** |
+| Fully run Kyber, count clock cycles, and print cycles to host | *TBD* | 📅 **Planned** |
+| Fully run Dilithium, count clock cycles, and print cycles to host | *TBD* | 📅 **Planned** |
+zt
 ## Step 1: Establish the OpenOCD Connection
 
 Before you can load code or debug, you must open a connection to the FPGA and halt the CPU. This exposes a port that GDB can connect to.
