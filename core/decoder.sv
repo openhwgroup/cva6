@@ -102,7 +102,8 @@ module decoder
     output logic [31:0] orig_instr_o,
     // Is a control flow instruction - ISSUE_STAGE
     output logic is_control_flow_instr_o,
-    input debug_from_trigger_i
+    // Exception request - TRIGGER MODULE
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i
 );
   logic illegal_instr;
   logic illegal_instr_bm;
@@ -1841,9 +1842,20 @@ module decoder
     interrupt_cause = '0;
     instruction_o.ex = ex_i;
     orig_instr_o = '0;
-    // look if we didn't already get an exception in any previous
-    // stage - we should not overwrite it as we retain order regarding the exception
-    if (~ex_i.valid) begin
+
+    if ((CVA6Cfg.SdtrigMcontrol6ExecAddr || CVA6Cfg.SdtrigMcontrol6ExecData) && (sdtrig_decoder_action_i != '0)) begin
+      // this exception is valid
+      instruction_o.ex.valid = 1'b1;
+      // set cause
+      instruction_o.ex.cause = sdtrig_decoder_action_i;
+      // set tval
+      instruction_o.ex.tval  = (CVA6Cfg.TvalEn) ? instruction_o.pc : '0;
+      // set gva bit
+      if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
+      else instruction_o.ex.gva = 1'b0;
+    end  // look if we didn't already get an exception in any previous
+         // stage - we should not overwrite it as we retain order regarding the exception
+    else if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
       if (CVA6Cfg.CvxifEn || CVA6Cfg.RVF || CVA6Cfg.ZKN)
@@ -1978,7 +1990,7 @@ module decoder
     end
 
     // a debug request has precendece over everything else
-    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i) || (CVA6Cfg.SDTRIG && CVA6Cfg.Mcontrol6 && CVA6Cfg.DebugEn && !debug_mode_i && debug_from_trigger_i)) begin
+    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i)) begin
       instruction_o.ex.valid = 1'b1;
       instruction_o.ex.cause = riscv::DEBUG_REQUEST;
     end
