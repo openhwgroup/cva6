@@ -2051,12 +2051,12 @@ module csr_regfile
           // set epc
           vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
           // set vstval
-          vstval_d        = (ariane_pkg::ZERO_TVAL
+          vstval_d        = ((ariane_pkg::ZERO_TVAL
                              && (ex_i.cause inside {
                              riscv::ILLEGAL_INSTR,
                              riscv::BREAKPOINT,
                              riscv::ENV_CALL_UMODE
-                             } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+                             })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
         end else begin
           // update sstatus
           mstatus_d.sie = 1'b0;
@@ -2068,14 +2068,14 @@ module csr_regfile
           // set epc
           sepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
           // set mtval or stval
-          stval_d        = (ariane_pkg::ZERO_TVAL
+          stval_d        = ((ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
                                     riscv::ILLEGAL_INSTR,
                                     riscv::BREAKPOINT,
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+                                  })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
           if (CVA6Cfg.RVH) begin
             htinst_d       = (ariane_pkg::ZERO_TVAL
                               && (ex_i.cause inside {
@@ -2107,14 +2107,14 @@ module csr_regfile
         mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
         if (CVA6Cfg.TvalEn) begin
-          mtval_d        = (ariane_pkg::ZERO_TVAL
+          mtval_d        = ((ariane_pkg::ZERO_TVAL
                                     && (ex_i.cause inside {
                                       riscv::ILLEGAL_INSTR,
                                       riscv::BREAKPOINT,
                                       riscv::ENV_CALL_UMODE,
                                       riscv::ENV_CALL_SMODE,
                                       riscv::ENV_CALL_MMODE
-                                    } || ex_i.cause[CVA6Cfg.GPLEN-1])) ? '0 : ex_i.tval;
+                                    })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
         end else begin
           mtval_d = '0;
         end
