@@ -341,6 +341,7 @@ def questa_uvm_run(
 
     env_vars = {
         "LD_LIBRARY_PATH": f"{spike_lib}",
+        "LD_PRELOAD": f"{spike_lib}/libyaml-cpp.so:{spike_lib}/libriscv.so",
         "QUESTASIM_HOME": str(questasim_home),
     }
 
