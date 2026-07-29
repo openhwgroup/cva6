@@ -91,6 +91,12 @@ module miss_handler
     end
   endfunction
 
+  // Request port 0 carries the MMU's page table walker whenever an MMU is present;
+  // cva6.sv only reroutes that port to the ZCMT implicit read when MmuPresent is 0.
+  // A walk refill is not a load/store miss, so keep it out of the performance counter.
+  localparam int unsigned PtwPort = 0;
+  localparam bit ExclPtwMiss = CVA6Cfg.MmuPresent;
+
   // FSM states
   enum logic [3:0] {
     IDLE,                // 0
@@ -250,6 +256,9 @@ module miss_handler
           // here comes the refill portion of code
           if (miss_req_valid[i] && !miss_req_bypass[i]) begin
             state_d = MISS;
+            // pulse once per MSHR allocation
+            // do not count PTW accesses
+            miss_o = !(ExclPtwMiss && (i == PtwPort));
             // we are taking another request so don't take the AMO
             serve_amo_d = 1'b0;
             // save to MSHR
@@ -271,7 +280,6 @@ module miss_handler
         req_o   = '1;
         addr_o  = mshr_q.addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
         state_d = MISS_REPL;
-        miss_o  = 1'b1;
       end
 
       // ~> second miss cycle
