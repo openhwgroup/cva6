@@ -22,21 +22,21 @@
 
 # ===========================================================================================
 
-dummy1:
-    TOOLS_PATH: "/tmp/llvm-20"
-    CLANG: "riscv32-unknown-elf-clang"
-    GCC: None
-    OBJDUMP: "riscv32-unknown-elf-objdump"
-    NM: "riscv32-unknown-elf-nm"
-    TARGET_TOOLCHAIN: "riscv32-unknown-elf"
+dummy1:  &dummy1
+    TOOLS_PATH: "/opt/riscv"
+    CLANG: null
+    GCC: "riscv-none-elf-gcc"
+    OBJDUMP: "riscv-none-elf-objdump"
+    NM: "riscv-none-elf-nm"
+    TARGET_TOOLCHAIN: "riscv-none-elf"
 
-dummy2:
-    TOOLS_PATH: "/tmp/gcc-15"
-    CLANG: None
-    GCC: "riscv32-unknown-elf-clang"
-    OBJDUMP: "riscv32-unknown-elf-objdump"
-    NM: "riscv32-unknown-elf-nm"
-    TARGET_TOOLCHAIN: "riscv32-unknown-elf"
+# dummy2:
+#     TOOLS_PATH: "/tmp/gcc-15"
+#     CLANG: None
+#     GCC: "riscv32-unknown-elf-clang"
+#     OBJDUMP: "riscv32-unknown-elf-objdump"
+#     NM: "riscv32-unknown-elf-nm"
+#     TARGET_TOOLCHAIN: "riscv32-unknown-elf"
 
 my_cv32a60x_toolchain:
   <<: *dummy1
@@ -54,27 +54,27 @@ my_cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi_toolchain:
   <<: *dummy1
 my_cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi_toolchain:
   <<: *dummy1
-my_cv32a60x_zcmt_pmp_toolchain:
-  <<: *dummy2
-my_cv32a60x_zcmt_pmp_axi_toolchain:
-  <<: *dummy2
-my_cv32a65x_toolchain:
-  <<: *dummy2
-my_cv32a65x_axi_toolchain:
-  <<: *dummy2
-my_cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi_toolchain:
-  <<: *dummy2
-my_cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi_toolchain:
-  <<: *dummy2
-my_cv32a65x_sv32_toolchain:
-  <<: *dummy2
-my_cv32a65x_sv32_axi_toolchain:
-  <<: *dummy2
-my_cv32a6_imac_sv32_obi_toolchain:
-  <<: *dummy2
-my_cv32a6_imac_sv32_toolchain:
-  <<: *dummy2
-my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_toolchain:
-  <<: *dummy2
-my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_toolchain:
-  <<: *dummy2
+# my_cv32a60x_zcmt_pmp_toolchain:
+#   <<: *dummy2
+# my_cv32a60x_zcmt_pmp_axi_toolchain:
+#   <<: *dummy2
+# my_cv32a65x_toolchain:
+#   <<: *dummy2
+# my_cv32a65x_axi_toolchain:
+#   <<: *dummy2
+# my_cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi_toolchain:
+#   <<: *dummy2
+# my_cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi_toolchain:
+#   <<: *dummy2
+# my_cv32a65x_sv32_toolchain:
+#   <<: *dummy2
+# my_cv32a65x_sv32_axi_toolchain:
+#   <<: *dummy2
+# my_cv32a6_imac_sv32_obi_toolchain:
+#   <<: *dummy2
+# my_cv32a6_imac_sv32_toolchain:
+#   <<: *dummy2
+# my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_toolchain:
+#   <<: *dummy2
+# my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_toolchain:
+#   <<: *dummy2
