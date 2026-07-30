@@ -1,14 +1,16 @@
-# CVA6 Bare-Metal Kyber KEM Test (Nexys Video)
+# CVA6 Bare-Metal Kyber KEM Performance Profiling (Nexys Video)
 
-This repository contains the hardware-in-the-loop testing pipeline for running and validating bare-metal Post-Quantum Cryptography (Kyber KEM) C applications on a CVA6 (Ariane) 32-bit RISC-V soft core flashed onto a Xilinx Artix-7 Nexys Video FPGA.
+This repository contains the hardware-in-the-loop testing pipeline for running, validating, and benchmarking bare-metal Post-Quantum Cryptography (Kyber KEM) C applications on a CVA6 (Ariane) 32-bit RISC-V soft core flashed onto a Xilinx Artix-7 Nexys Video FPGA.
+
+This specific test implements cycle-accurate performance profiling using the RISC-V `mcycle` Control and Status Register (CSR) to measure the exact hardware clock cycles required for Kyber Key Generation, Encapsulation, and Decapsulation.
 
 Host-to-FPGA communication is handled via the onboard FTDI chip, which provides both the JTAG interface for programming/debugging and a UART interface for I/O. The test utilizes a host-device synchronization protocol to ensure no UART data is lost during the initialization phase.
 
 ## Repository Structure
-*   `main.c`: Bare-metal C code running the Kyber Key Encapsulation Mechanism validation.
+*   `main.c`: Bare-metal C code running the Kyber Key Encapsulation Mechanism validation and `mcycle` cycle counting.
 *   `host_test.py`: Python host script that synchronizes with the FPGA and logs the test output.
 *   `load.elf`: Compiled RISC-V binary.
-*   `../link.ld` / `Makefile`: Linker script and build instructions for the bare-metal environment.
+*   `Makefile`: Build instructions for the bare-metal environment.
 
 ## Hardware & System Configuration
 *   **Target:** CVA6 RISC-V Core on Nexys Video (Artix-7)
@@ -61,26 +63,26 @@ Return to **Terminal 2** (GDB) and start the RISC-V core:
     (gdb) continue
 
 ### Expected Result
-Once `continue` is executed, **Terminal 3** should instantly print the clean initialization string, send the trigger, run the Kyber tests, and gracefully close the connection:
+Once `continue` is executed, **Terminal 3** should instantly print the clean initialization string, send the trigger, run the Kyber tests (including cycle profiling), and gracefully close the connection:
 
     FPGA: CVA6 UART INITIALIZED. Waiting for trigger...
 
     Triggering Kyber test on FPGA...
 
     --- Test Output ---
-
     ===============================
-     Kyber KEM FPGA Hardware Test
+    Kyber KEM FPGA Hardware Test
     ===============================
-
     --- Running Test Iteration 1 ---
     Generating keypair...
+    -> Cycles: 4913737
     Encapsulating secret...
+    -> Cycles: 5195203
     Decapsulating secret...
+    -> Cycles: 5431782
     Shared secrets match.
     Invalid secret key rejected correctly.
     Invalid ciphertext rejected correctly.
-
     ALL TESTS PASSED
     CRYPTO_PUBLICKEYBYTES = 1184
     CRYPTO_SECRETKEYBYTES = 2400

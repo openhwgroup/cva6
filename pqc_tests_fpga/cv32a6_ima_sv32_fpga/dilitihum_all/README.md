@@ -8,7 +8,7 @@ Host-to-FPGA communication is handled via the onboard FTDI chip, which provides 
 *   `main.c`: Bare-metal C code running the Kyber Key Encapsulation Mechanism validation.
 *   `host_test.py`: Python host script that synchronizes with the FPGA and logs the test output.
 *   `load.elf`: Compiled RISC-V binary.
-*   `../link.ld` / `Makefile`: Linker script and build instructions for the bare-metal environment.
+*   `link.ld` / `Makefile`: Linker script and build instructions for the bare-metal environment.
 
 ## Hardware & System Configuration
 *   **Target:** CVA6 RISC-V Core on Nexys Video (Artix-7)

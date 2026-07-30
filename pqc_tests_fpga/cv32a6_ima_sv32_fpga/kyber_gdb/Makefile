@@ -4,7 +4,7 @@ OBJCOPY = riscv32-unknown-elf-objcopy
 ARCH = -march=rv32ima_zicsr -mabi=ilp32 -mcmodel=medany
 
 CFLAGS = $(ARCH) -g -O2 -Wall --specs=nosys.specs
-LDFLAGS = -T link.ld -nostartfiles
+LDFLAGS = -T ../link.ld -nostartfiles
 
 SRCS = ../../../verif/bsp/crt0.S \
        ./kyber_gdb.c \
