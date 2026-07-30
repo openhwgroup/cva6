@@ -67,7 +67,7 @@ package build_config_pkg;
     cfg.XF16ALT = CVA6Cfg.XF16ALT;
     cfg.XF8 = CVA6Cfg.XF8;
     cfg.RVA = CVA6Cfg.RVA;
-    cfg.RVB = CVA6Cfg.RVB || CVA6Cfg.ZKN; // ZKN requires RVB
+    cfg.RVB = CVA6Cfg.RVB || CVA6Cfg.ZKN;  // ZKN requires RVB
     cfg.ZKN = CVA6Cfg.ZKN;
     cfg.RVV = CVA6Cfg.RVV;
     cfg.RVC = CVA6Cfg.RVC;
@@ -130,11 +130,23 @@ package build_config_pkg;
     cfg.CachedRegionLength = CVA6Cfg.CachedRegionLength;
     cfg.MaxOutstandingStores = CVA6Cfg.MaxOutstandingStores;
     cfg.DebugEn = CVA6Cfg.DebugEn;
-    cfg.SDTRIG = CVA6Cfg.SDTRIG;
-    cfg.Mcontrol6 = CVA6Cfg.Mcontrol6;
-    cfg.Icount = CVA6Cfg.Icount;
-    cfg.Etrigger = CVA6Cfg.Etrigger;
-    cfg.Itrigger = CVA6Cfg.Itrigger;
+
+    cfg.Sdtrig = CVA6Cfg.Sdtrig;
+    cfg.SdtrigMcontrol6 = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigMcontrol6 : 1'b0;
+    cfg.SdtrigIcount = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigIcount : 1'b0;
+    cfg.SdtrigEtrigger = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigEtrigger : 1'b0;
+    cfg.SdtrigItrigger = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigItrigger : 1'b0;
+    cfg.SdtrigNrTriggers = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigNrTriggers : 32'd0;
+    cfg.SdtrigMcontrol6ExecAddr = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6ExecAddr : 1'b0;
+    cfg.SdtrigMcontrol6ExecData = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6ExecData : 1'b0;
+    cfg.SdtrigMcontrol6Store = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6Store : 1'b0;
+    cfg.SdtrigMcontrol6LoadAddr = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6LoadAddr : 1'b0;
+    cfg.SdtrigMcontrol6LoadData = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6LoadData : 1'b0;
+    cfg.SdtrigTriggerChaining = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigTriggerChaining : 1'b0;
+    cfg.SdtrigSupportedActions = CVA6Cfg.Sdtrig ? (CVA6Cfg.DebugEn ? CVA6Cfg.SdtrigSupportedActions : 2'b01) : 2'b00;
+    cfg.SdtrigSupportedMatch = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigSupportedMatch : 10'b00_0000_0000;
+    cfg.SdtrigSupportTextra = 1'b0;  //Trigger Extra not supported : no use implemented yet
+
     cfg.NonIdemPotenceEn = (CVA6Cfg.NrNonIdempotentRules > 0) && (CVA6Cfg.NonIdempotentLength > 0);
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 

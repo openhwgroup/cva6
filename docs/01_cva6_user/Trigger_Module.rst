@@ -3,6 +3,8 @@
    Copyright (c) 2023 Thales DIS SAS
 
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+   Original Author : Munail Waqar - 10X Engineers
+   Contributors : Mounsaf YOUSFI - Thales DIS
 
 
 Trigger Module (Sdtrig Extension)
@@ -32,6 +34,17 @@ Modified CSRs (Debug action)
 * ``dpc``    : updated with the address of the instruction causing the debug request.
 * ``dcsr``   : some fields are updated like debug entry cause (``CAUSE``)
 
+Priorities
+
+All triggers are subject to priority handling. The priority is such : ``Mcontrol6 load data timing:AFTER`` <=> ``Icount`` <=> ``Etrigger`` <=> ``Itrigger`` > ``Mcontrol6 execute address timing:BEFORE`` > ``Mcontrol6 execute data timing:BEFORE`` > ``Mcontrol6 load address timing:BEFORE`` <=> ``Mcontrol6 store address/data timing:BEFORE``.
+
+Priorities are handled as such : if multiple triggers request fire at the same time, only the highest priority ones are taken. If multiple triggers request fire in the same priority, all actions within this priority are taken at the same time.
+
+This order and behaviour fits the RISC-V debug specification chapter 5 (Sdtrig), paragraph 5.3 (Priority).
+
+Precision
+
+All triggers are precise which means ``mepc`` will always correspond to the matching instruction, except ``mcontrol6 load data`` trigger type, which updates ``mepc`` with the immediately-next instruction for physics related reasons(impossible to match on a load result if result is not obtained yet, which implies the execution of the whole instruction hence breaking on the next instruction to commit the result of the load instead of losing the data).
 
 Icount
 ------
@@ -45,8 +58,8 @@ Prerequisites
 Trigger Match Logic
 ~~~~~~~~~~~~~~~~~~~
 - The ``count`` field in ``tdata1`` is initialized with the number of instructions to wait.
-- The counter decrements on every instruction commit (``commit_ack_i``).
-- Countdown continues only outside trap handlers (``!in_trap_handler``) to avoid miscounts during exceptions.
+- The counter decrements on every instruction commit.
+- Countdown continues only outside trap handlers to avoid miscounts during exceptions.
 
 - Matching occurs when:
   - ``count == 0``
@@ -76,12 +89,12 @@ Key Fields (in ``tdata1``)
 
 Action Taken on Match
 ~~~~~~~~~~~~~~~~~~~~~
-- Breakpoint (``action == 0``):
-  - Sets ``break_from_trigger_d = 1``, which results in:
+- Breakpoint (``fire_req_Icount.action == 0``):
+  - Sets ``fire_req_Icount.valid = 1``, which results in a trap request that, if taken, results in:
     - Trap entry
     - Updates to ``mstatus``, ``mepc``, ``mcause``
 
-- Debug Entry (``action == 1``):
+- Debug Entry (``fire_req_Icount.action == 1``):
   - Sets ``debug_from_trigger_d = 1``, resulting in:
     - Trap into debug mode
     - Updates ``dpc``, ``dcsr``
@@ -124,11 +137,11 @@ A match occurs if:
 2. Condition Match:
    - Based on operation type and mode:
      - Instruction Execute:
-       - Match against PC (`commit_instr_i.pc`) or instruction (`orig_instr_i`).
+       - Match against PC (`fetch_sdtrig_pc_i`) or instruction (`fetch_sdtrig_instr_i`).
      - Store Operation:
-       - Match against store data (`store_result_i`) or address (`vaddr_from_lsu_i`).
+       - Match against store data (`sdtrig_lsu_inputs_data_i`) or address (`sdtrig_lsu_inputs_vaddr_i`).
      - Load Operation:
-       - Match against load result (`commit_instr_i.result`) or load address (`vaddr_from_lsu_i`).
+       - Match against load result (`sdtrig_load_data_i`) or load address (`sdtrig_lsu_inputs_vaddr_i`).
 
 3. Selection Mode:
    - If ``select == 1`` → compare data/instruction value.
@@ -140,7 +153,16 @@ A match occurs if:
    - ``8`` → not equal (``!=``)
 
 5. Action (only one supported here):
+   - ``0`` → breakpoint exception generation
    - ``1`` → enter debug mode
+
+6. Trigger chains
+
+``Mcontrol6`` type trigger supports trigger chaining. A trigger chain is necessarily a located on a contiguous sequence of ``tselect`` indexes (e.g. first trigger on index 2, last trigger on index 4, index 3 is part of the chain too). First chain' trigger has ``chain == 1``, last has ``chain == 0``.
+
+Every trigger must match and the only action taken is last trigger's action.
+
+Since priorities are taken into account, multiple trigger timings exist within ``mcontrol6`` type trigger and the CVA6 is a pipeline, it is necessary for the trigger chain to fire that the earliest events in terms of pipeline stages must be located on the lowest indexes, e.g. for a trigger chain on a load data instruction the order must be : execute address (pc check) > load address > load data because these events happen in that order in the pipeline.
 
 On match:
 - The configured ``action`` is executed.
@@ -178,22 +200,10 @@ Pseudocode
                     If select == 1 → compare load result
             Use match field (==, NAPOT, !=) to evaluate
             If match:
+                If action == 0 → generate breakpoint exception
                 If action == 1 → enter debug mode
         In debug mode:
             Clear hit0, set hit1, reset trigger state
-
-Implementation Note: Debug Entry Timing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Unlike other trigger types (`icount`, `etrigger`, `itrigger`) which assert debug entry directly at commit stage, the `mcontrol6` trigger initiates debug mode entry via a back-signal to the decode stage.
-This difference is necessary because the values used for matching in `mcontrol6` (``orig_instr_i``, ``vaddr_from_lsu_i``, ``store_result_i``) originate from earlier pipeline stages and may not correspond to the instruction currently at the commit point.
-To ensure that the correct program counter (``dpc``) is set — specifically, the PC of the instruction being watched or triggering the event — the implementation inserts a pseudo-instruction at the decode stage once a match is detected. This pseudo-instruction proceeds through the pipeline and commits in place of the original instruction.
-
-This approach guarantees:
-- The proper instruction is associated with debug entry.
-- ``dpc`` reflects the trigger-causing instruction's PC.
-
-This mechanism is only used for `mcontrol6` where precise coordination with the load/store or fetch context is required. Other trigger types do not require this level of staging and use commit-time debug entry.
-
 
 Etrigger
 --------
@@ -237,11 +247,11 @@ Key Fields
 Action Taken on Match
 ~~~~~~~~~~~~~~~~~~~~~
 - Breakpoint (``action == 0``):
-  - Raises exception via ``break_from_trigger_d = 1``
+  - Raises exception
   - Updates ``mstatus``, ``mepc``, ``mcause``
 
 - Debug Entry (``action == 1``):
-  - Sets ``debug_from_trigger_d = 1``
+  - Requests debug mode entry
   - Updates ``dpc``, ``dcsr``
 
 Pseudocode
@@ -300,11 +310,11 @@ Key Fields
 Action Taken on Match
 ~~~~~~~~~~~~~~~~~~~~~
 - Breakpoint (``action == 0``):
-  - Raises exception via ``break_from_trigger_d = 1``
+  - Raises exception
   - Updates ``mstatus``, ``mepc``, ``mcause``
 
 - Debug Entry (``action == 1``):
-  - Sets ``debug_from_trigger_d = 1``
+  - Requests debug mode entry
   - Updates ``dpc``, ``dcsr``
 
 Pseudocode
