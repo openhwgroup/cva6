@@ -31,7 +31,7 @@ openocd -f corev_apu/fpga/ariane_nexys_video.cfg
 ### Step 2: Connect GDB & Load Binary
 In **Terminal 2**, start GDB, connect to OpenOCD, and load the executable into the FPGA's memory:
 ```bash
-riscv32-unknown-elf-gdb test_kyber.elf
+riscv32-unknown-elf-gdb load.elf
 ```
 Inside the GDB prompt:
 ```gdb

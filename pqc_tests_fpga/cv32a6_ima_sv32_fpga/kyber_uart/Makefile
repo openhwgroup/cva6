@@ -7,7 +7,7 @@ CFLAGS = $(ARCH) -O2 -Wall --specs=nosys.specs
 LDFLAGS = -T link.ld -nostartfiles
 
 SRCS = ../../../verif/bsp/crt0.S \
-       ./kyber_uart.c \
+       ./main.c \
        ../../../verif/tests/custom/kyber/cbd.c \
        ../../../verif/tests/custom/kyber/fips202.c \
        ../../../verif/tests/custom/kyber/indcpa.c \
@@ -20,7 +20,7 @@ SRCS = ../../../verif/bsp/crt0.S \
        ../../../verif/tests/custom/kyber/symmetric-shake.c \
        ../../../verif/tests/custom/kyber/verify.c
 
-TARGET = test_kyber.elf
+TARGET = load.elf
 
 all: $(TARGET)
 

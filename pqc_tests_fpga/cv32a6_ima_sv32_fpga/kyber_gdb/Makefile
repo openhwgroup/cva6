@@ -20,7 +20,7 @@ SRCS = ../../../verif/bsp/crt0.S \
        ../../../verif/tests/custom/kyber/symmetric-shake.c \
        ../../../verif/tests/custom/kyber/verify.c
 
-TARGET = test_kyber.elf
+TARGET = load.elf
 
 all: $(TARGET)
 

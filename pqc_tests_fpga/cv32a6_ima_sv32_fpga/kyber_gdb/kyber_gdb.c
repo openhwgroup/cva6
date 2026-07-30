@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "../../verif/tests/custom/kyber/kem.h"
-#include "../../verif/tests/custom/kyber/randombytes.h"
+#include "../../../verif/tests/custom/kyber/kem.h"
+#include "../../../verif/tests/custom/kyber/randombytes.h"
 
 #define NTESTS 1
 
