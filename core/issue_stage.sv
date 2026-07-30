@@ -27,7 +27,8 @@ module issue_stage
     parameter type x_issue_req_t = logic,
     parameter type x_issue_resp_t = logic,
     parameter type x_register_t = logic,
-    parameter type x_commit_t = logic
+    parameter type x_commit_t = logic,
+    parameter type regfile_inputs_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -167,7 +168,10 @@ module issue_stage
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
     // Original instruction bits for AES
-    output logic [5:0] orig_instr_aes_bits
+    output logic [5:0] orig_instr_aes_bits,
+    // DCLS
+    input logic [CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] dcls_common_regfile_data_i,
+    output regfile_inputs_t dcls_common_regfile_ctrl_o
 );
   // ---------------------------------------------------
   // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -249,7 +253,8 @@ module issue_stage
       .x_issue_req_t(x_issue_req_t),
       .x_issue_resp_t(x_issue_resp_t),
       .x_register_t(x_register_t),
-      .x_commit_t(x_commit_t)
+      .x_commit_t(x_commit_t),
+      .regfile_inputs_t    (regfile_inputs_t)
   ) i_issue_read_operands (
       .clk_i,
       .rst_ni,
@@ -306,7 +311,9 @@ module issue_stage
       .stall_issue_o,
       .rvfi_rs1_o              (rvfi_rs1_o),
       .rvfi_rs2_o              (rvfi_rs2_o),
-      .orig_instr_aes_bits     (orig_instr_aes_bits)
+      .orig_instr_aes_bits     (orig_instr_aes_bits),
+      .dcls_common_regfile_data_i,
+      .dcls_common_regfile_ctrl_o
   );
 
 endmodule

@@ -147,6 +147,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/obi/src/obi_xbar.sv
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/cva6_example_obi.sv
 ${CVA6_REPO_DIR}/core/cva6_example_axi.sv
+${CVA6_REPO_DIR}/core/cva6_top.sv
 ${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/cva6_pipeline.sv
 ${CVA6_REPO_DIR}/core/cva6_rvfi_probes.sv
@@ -232,5 +233,12 @@ ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_mmu.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_ptw.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_tlb.sv
 ${CVA6_REPO_DIR}/core/cva6_mmu/cva6_shared_tlb.sv
+
+// DCLS
+${CVA6_REPO_DIR}/core/dcls_comparator.sv
+${CVA6_REPO_DIR}/core/dcls_logic.sv
+${CVA6_REPO_DIR}/core/dcls_common.sv
+${CVA6_REPO_DIR}/core/dcls_common_regfile.sv
+${CVA6_REPO_DIR}/core/dcls_common_bht.sv
 
 // end of manifest

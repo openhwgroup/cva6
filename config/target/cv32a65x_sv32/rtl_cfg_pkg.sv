@@ -106,7 +106,11 @@ package cva6_config_pkg;
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(3),
       ObiVersion: int'(config_pkg::OBI_V1_6),
-      PipelineOnly: bit'(1)
+      PipelineOnly: bit'(1),
+      DclsEn: bit'(0),
+      DclsDelay : unsigned'(1),
+      DclsCommonRegfile: bit'(0),
+      DclsCommonBHT: bit'(0)
   };
 
 endpackage
