@@ -1,16 +1,16 @@
-# CVA6 Bare-Metal Dilithium Signature Performance Profiling (Nexys Video)
+# CVA6 Bare-Metal Falcon Signature Performance Profiling (Nexys Video)
 
-This repository contains the hardware-in-the-loop testing pipeline for running, validating, and benchmarking bare-metal Post-Quantum Cryptography (Dilithium Digital Signature Algorithm) C applications on a CVA6 (Ariane) 32-bit RISC-V soft core flashed onto a Xilinx Artix-7 Nexys Video FPGA.
+This repository contains the hardware-in-the-loop testing pipeline for running, validating, and benchmarking bare-metal Post-Quantum Cryptography (Falcon Digital Signature Algorithm) C applications on a CVA6 (Ariane) 32-bit RISC-V soft core flashed onto a Xilinx Artix-7 Nexys Video FPGA.
 
-This specific test implements cycle-accurate performance profiling using the RISC-V `mcycle` Control and Status Register (CSR) to measure the exact hardware clock cycles required for Dilithium Key Generation, Signing, and Verification operations.
+This specific test implements cycle-accurate performance profiling using the RISC-V `mcycle` Control and Status Register (CSR) to measure the exact hardware clock cycles required for Falcon-512 Key Generation, Signing, and Verification operations. 
 
-Host-to-FPGA communication is handled via the onboard FTDI chip, which provides both the JTAG interface for programming/debugging and a UART interface for I/O. The test utilizes a host-device synchronization protocol to ensure no UART data is lost during the initialization phase.
+**Note on Floating-Point Arithmetic:** Unlike Kyber and Dilithium, Falcon relies heavily on floating-point arithmetic. Because this CVA6 target configuration (`rv32ima`) does not include a hardware floating-point unit (FPU), the Makefile relies on software floating-point emulation. Specific compiler flags (`-ffp-contract=off` and `-fno-math-errno`) are utilized to ensure deterministic behavior during emulation.
 
 ## Repository Structure
-*   `main.c`: Bare-metal C code running the Dilithium algorithm validation, forgery testing, and `mcycle` cycle counting.
+*   `main.c`: Bare-metal C code running the Falcon algorithm validation, forgery testing, and `mcycle` cycle counting.
 *   `host_test.py`: Python host script that synchronizes with the FPGA and logs the test output.
 *   `load.elf`: Compiled RISC-V binary.
-*   `Makefile`: Build instructions for the bare-metal environment (configured for Dilithium Mode 2 by default).
+*   `Makefile`: Build instructions for the bare-metal environment (configured with proper FPU emulation flags).
 *   `README.md`: Execution instructions and documentation.
 
 ## Hardware & System Configuration
@@ -64,31 +64,30 @@ Return to **Terminal 2** (GDB) and start the RISC-V core:
     (gdb) continue
 
 ### Expected Result
-Once `continue` is executed, **Terminal 3** should instantly print the clean initialization string, send the trigger, run the Dilithium tests (including cycle profiling for keygen, signing, and verification), and gracefully close the connection:
+Once `continue` is executed, **Terminal 3** should instantly print the clean initialization string, send the trigger, run the Falcon tests (including cycle profiling for keygen, signing, and verification), and gracefully close the connection:
 
+    FPGA: 
     FPGA: CVA6 UART INITIALIZED. Waiting for trigger...
 
-    Triggering Dilithium test on FPGA...
+    Triggering Kyber test on FPGA...
 
     --- Test Output ---
     ==================================
-     Dilithium FPGA Hardware Test
+     Falcon FPGA Hardware Test
     ==================================
     --- Running Test Iteration 1 ---
-    Generating random message...
     Generating keypair...
-    -> Cycles: 10778281
+    -> Cycles: 196904680
     Signing message...
-    -> Cycles: 84485228
+    -> Cycles: 77188146
     Verifying message...
-    -> Cycles: 11009099
+    -> Cycles: 1141406
     Signature valid and messages match.
     Testing trivial forgeries...
     Forged signatures rejected correctly.
     ALL TESTS PASSED
-    CRYPTO_PUBLICKEYBYTES = 1312
-    CRYPTO_SECRETKEYBYTES = 2560
-    CRYPTO_BYTES = 2420
+    FALCON_PUBLICKEYBYTES = 897
+    FALCON_SECRETKEYBYTES = 1281
 
     Serial connection closed.
 

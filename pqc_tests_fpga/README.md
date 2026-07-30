@@ -15,6 +15,10 @@ This guide outlines how to establish a JTAG connection to the CVA6 soft core on 
 | Fully run Kyber over UART | `kyber_uart` | ✅ **Done** |
 | Fully run Kyber, count clock cycles, and print cycles to host | `kyber_all` | ✅ **Done** |
 | Fully run Dilithium, count clock cycles, and print cycles to host | `dilithium_all` | ✅ **Done** |
+| Run Falcon key generation, count clock cycles, and print cycles to host | `falcon_keygen_all` | ⏳ **In Progress** |
+| Fully run Falcon, count clock cycles, and print cycles to host | `falcon_all` | 📅 **Planned** | 
+
+---
 
 ## Step 1: Establish the OpenOCD Connection
 

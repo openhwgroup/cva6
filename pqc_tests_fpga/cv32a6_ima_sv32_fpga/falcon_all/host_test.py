@@ -21,7 +21,7 @@ def run_kyber_test():
             if "Waiting for trigger" in line:
                 break
                 
-        print("\nTriggering Dilithium test on FPGA...")
+        print("\nTriggering Falcon test on FPGA...")
         ser.write(b'c')
         
         print("\n--- Test Output ---")
