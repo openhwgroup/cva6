@@ -17,6 +17,9 @@ This guide outlines how to establish a JTAG connection to the CVA6 soft core on 
 | Fully run Dilithium, count clock cycles, and print cycles to host | `dilithium_all` | ✅ **Done** |
 | Fully run Falcon, count clock cycles, and print cycles to host | `falcon_all` | ✅ **Done** | 
 
+
+Eventhough Every test folder has its own READMEs, the general concept of usign OpenOCD and GDB (GNU Debugger) is explained below.
+
 ---
 
 ## Step 1: Establish the OpenOCD Connection
@@ -73,33 +76,55 @@ riscv32-unknown-elf-gdb <your_compiled_test>.elf
 Once inside the `(gdb)` prompt, connect to the OpenOCD server you started in Step 1, load the code into the FPGA's memory, and start debugging:
 
 ```gdb
-# 1. Connect to OpenOCD (Use host.docker.internal:3333 if running GDB from a Docker container)
+# Connect to OpenOCD (Use host.docker.internal:3333 if running GDB from a Docker container)
 (gdb) target extended-remote localhost:3333
 
-# 2. Flash the binary into the FPGA's memory
+# Flash the binary into the FPGA's memory (You can do this if you want to reset the program as well)
 (gdb) load
 
-# 3. Set a breakpoint at the start of your program
+# Set a breakpoint at the start of your program (This is optional)
 (gdb) break main
 
-# 4. Resume execution (the CPU will run until it hits main)
+# Execute
 (gdb) continue
 ```
 
 From here, you can use standard GDB commands like `step` (step by line), `stepi` (step by instruction), or `info registers` to inspect the CPU state.
 
-### Method B: Run Without Debugging (!!! WORK-IN-PROGRESS !!!)
+### Method B: Run Without Debugging
 
 If you simply want to load a test program and let it run continuously (for example, to interact with it via a UART serial terminal) without keeping GDB open, you can pass a single command string directly to OpenOCD. 
 
-*Note: You do not need to do Step 1 if you use this method. This handles the connection, upload, and execution all at once.*
+#### Step 1: Connect GDB & Load Binary
+In **Terminal 2**, start GDB, connect to OpenOCD, and load the executable into the FPGA's memory:
 
-```bash
-openocd -f ariane_nexys_video.cfg -c "init; halt; load_image <your_compiled_test>.elf; resume 0x80000000; shutdown"
-```
+    riscv32-unknown-elf-gdb load.elf
 
-**What this does:**
-* Connects to the board and halts the CPU.
-* Writes the `.elf` binary into memory.
-* Forces the Program Counter to `0x80000000` (the CVA6 default RAM base address) and resumes the clock.
-* Safely shuts down the JTAG connection, leaving your program running on the FPGA.
+Inside the GDB prompt:
+
+    (gdb) target extended-remote localhost:3333
+    (gdb) load
+
+*(Do **not** type `continue` yet. Leave the GDB prompt open.)*
+
+#### Step 2: Start the Python Host Script
+In **Terminal 3**, launch the host listener. This script will connect to the UART, wait for the initialization string, and automatically send the trigger character.
+
+    sudo python3 host_test.py
+
+*Expected output:*
+
+    Opening /dev/ttyUSB0 at 57600 baud...
+    Waiting for FPGA to initialize...
+
+#### Step 3: Execute the Code
+Return to **Terminal 2** (GDB) and start the RISC-V core:
+
+    (gdb) continue
+
+#### Expected Result
+Once `continue` is executed, **Terminal 3** should instantly print the clean initialization string, send the trigger, run the according test.
+
+#### Troubleshooting
+* **Garbage characters:** This is a baud rate mismatch or a framing error. Ensure `host_test.py` is set to `57600` baud and that you are using a 25MHz system clock on the FPGA.
+* **Cannot open `/dev/ttyUSB0`:** Ensure you are using `sudo` to run the Python script, or add your user to the `dialout` group. Check your serial port name via `bash pyserial-ports` on any terminal. You can change the port parameter inside `host_test.py` to match your system.
