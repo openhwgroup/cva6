@@ -163,7 +163,7 @@ def dc_shell_synth(
     env_vars = {
         "TOP": "cva6",
         "TOP_ELABORATE": top_elaborate,
-        "TOP_SYNTHESIS": "cva6__*",
+        "TOP_SYNTHESIS": "cva6_top__*",
         "TARGET": target,
         "TARGET_CFG": target,
         "CVA6_REPO_DIR": str(repo_dir),

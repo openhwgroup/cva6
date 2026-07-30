@@ -82,10 +82,12 @@ module cva6_example_axi
     // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t noc_req_o,
     // noc response, can be AXI or OpenPiton - SUBSYSTEM
-    input noc_resp_t noc_resp_i
+    input noc_resp_t noc_resp_i,
+    // DCLS Alarms on core outputs & common modules inputs - DCLS
+    output logic [3:0] dcls_alarm_o
 );
 
-  cva6 #(
+  cva6_top #(
       .CVA6Cfg      (CVA6Cfg),
       .rvfi_probes_t(rvfi_probes_t),
       .noc_req_t    (noc_req_t),
@@ -103,7 +105,8 @@ module cva6_example_axi
       .cvxif_req_o(cvxif_req_o),
       .cvxif_resp_i(cvxif_resp_i),
       .noc_req_o(noc_req_o),
-      .noc_resp_i(noc_resp_i)
+      .noc_resp_i(noc_resp_i),
+      .dcls_alarm_o
   );
 
 endmodule  // ariane

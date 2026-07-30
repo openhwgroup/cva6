@@ -29,6 +29,12 @@ module cva6
     parameter type noc_req_t  = logic,
     parameter type noc_resp_t = logic,
 
+    // DCLS
+    parameter type regfile_inputs_t = logic,
+    parameter type bht_inputs_t = logic,
+    parameter type dcls_common_modules_ctrl_t = logic,
+    parameter type dcls_common_modules_data_t = logic,
+
     // CVXIF Types
     localparam type readregflags_t = `READREGFLAGS_T(CVA6Cfg),
     localparam type writeregflags_t = `WRITEREGFLAGS_T(CVA6Cfg),
@@ -71,7 +77,10 @@ module cva6
     // noc request, can be AXI or OpenPiton - SUBSYSTEM
     output noc_req_t noc_req_o,
     // noc response, can be AXI or OpenPiton - SUBSYSTEM
-    input noc_resp_t noc_resp_i
+    input noc_resp_t noc_resp_i,
+    // DCLS
+    input dcls_common_modules_data_t dcls_from_common_i,
+    output dcls_common_modules_ctrl_t dcls_to_common_o
 );
 
 
@@ -155,7 +164,11 @@ module cva6
       .x_commit_t         (x_commit_t),
       .x_result_t         (x_result_t),
       .cvxif_req_t        (cvxif_req_t),
-      .cvxif_resp_t       (cvxif_resp_t)
+      .cvxif_resp_t       (cvxif_resp_t),
+      .regfile_inputs_t    (regfile_inputs_t),
+      .bht_inputs_t(bht_inputs_t),
+      .dcls_common_modules_ctrl_t(dcls_common_modules_ctrl_t),
+      .dcls_common_modules_data_t(dcls_common_modules_data_t)
       //
   ) i_cva6_pipeline (
       .clk_i(clk_i),
@@ -198,7 +211,9 @@ module cva6
       .ypb_zcmt_rsp_i   (ypb_zcmt_rsp),
 
       .dcache_wbuffer_empty_i (wbuffer_empty),
-      .dcache_wbuffer_not_ni_i(wbuffer_not_ni)
+      .dcache_wbuffer_not_ni_i(wbuffer_not_ni),
+      .dcls_from_common_i,
+      .dcls_to_common_o
   );
 
 
