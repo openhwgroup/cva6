@@ -14,7 +14,7 @@ This guide outlines how to establish a JTAG connection to the CVA6 soft core on 
 | Basic UART pipeline (Receive `a`, `b`, transmit `c = a+b` with "Result:") | `uart_rx_tx` | ✅ **Done** |
 | Fully run Kyber over UART | `kyber_uart` | ✅ **Done** |
 | Fully run Kyber, count clock cycles, and print cycles to host | `kyber_all` | ✅ **Done** |
-| Fully run Dilithium, count clock cycles, and print cycles to host | `dilithium_all` | ⏳ **In Progress** |
+| Fully run Dilithium, count clock cycles, and print cycles to host | `dilithium_all` | ✅ **Done** |
 
 ## Step 1: Establish the OpenOCD Connection
 
