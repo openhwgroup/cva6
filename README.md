@@ -1,4 +1,19 @@
-# Easy Docker Setup for CVA6 by GSTL-ITU
+# CVA6 Post-Quantum Cryptography Port by GSTL-ITU
+
+This port aims to enhance the working environment experience for scaled teams while adding several sources and scripts for post-quantum cryptography (PQC) applications.
+
+## Table of Contents
+- [ CVA6 Post-Quantum Cryptography Port by GSTL-ITU](#cva6-post-quantum-cryptography-port-by-gstl-itu)
+   - [Easy Docker Setup for CVA6](#easy-docker-setup-for-cva6)
+     - [Added Configuration Files](#added-configuration-files)
+     - [How to Build and Run](#how-to-build-and-run)
+   - [PQC Source Codes](#pqc-source-codes)
+   - [Simulation Scripts](#simulation-scripts)
+   - [FPGA Tests](#fpga-tests)
+- [Original CVA6 README](#cva6-risc-v-cpu-build-status-cva6-dashboard-documentation-status-github-release)
+---
+
+## Easy Docker Setup for CVA6
 
 This repository offers a common ground for small and medium-scale teams. The original CVA6 repository requires specific, version-limited software and tools, including GCC, RISC-V GCC, Spike, Verilator, and various Python libraries. 
 
@@ -6,10 +21,10 @@ This fork introduces a Docker solution that automatically builds the exact versi
 
 ### Added Configuration Files
 This repository comes with four additional files to achieve this stable environment:
-*   **`.devcontainer/Dockerfile`**: Sets up the Docker environment using an Ubuntu 22.04 base image. It installs required dependencies like GCC 11, downloads the RISC-V GCC 13.2.0 toolchain (installs a compiled binary rather than compiling), configures necessary environment variables (including paths for Verilator v5.008 and Spike), and creates a dedicated `cva6user` with sudo privileges.
-*   **`.devcontainer/devcontainer.json`**: Configures the VS Code Dev Container extension. It sets the remote user to `cva6user`, automatically installs the required C/C++ and Verilog HDL extensions, and triggers the `python_requirements.sh` script once the container is created.
-*   **`python_requirements.sh`**: Iterates through the repository to find and install all Python dependencies via `pip3`, utilizing specific flags to prevent C-API build errors for packages like `ruamel.yaml`.
-*   **`cva6-pqc.code-workspace`**: An optional, out-of-the-box VS Code workspace configuration for this repository. 
+* **`.devcontainer/Dockerfile`**: Sets up the Docker environment using an Ubuntu 22.04 base image. It installs required dependencies like GCC 11, downloads the RISC-V GCC 13.2.0 toolchain (installs a compiled binary rather than compiling), configures necessary environment variables (including paths for Verilator v5.008 and Spike), and creates a dedicated `cva6user` with sudo privileges.
+* **`.devcontainer/devcontainer.json`**: Configures the VS Code Dev Container extension. It sets the remote user to `cva6user`, automatically installs the required C/C++ and Verilog HDL extensions, and triggers the `python_requirements.sh` script once the container is created.
+* **`python_requirements.sh`**: Iterates through the repository to find and install all Python dependencies via `pip3`, utilizing specific flags to prevent C-API build errors for packages like `ruamel.yaml`.
+* **`cva6-pqc.code-workspace`**: An optional, out-of-the-box VS Code workspace configuration for this repository. 
 
 > **Note on Standalone Docker Usage:** If you want to run the Docker environment outside of VS Code, the `devcontainer.json` configuration is not required, and the `.code-workspace` file is unused. Ensure your host machine's Docker permissions are configured properly. On Linux, you may need to add your host user to the `docker` group to run commands without `sudo` (refer to the [Docker Linux post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/)).
 
@@ -23,7 +38,7 @@ git submodule update --init --recursive
 ```
 2. **Build the container:** Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) and select **`Dev Containers: Rebuild and Reopen in Container`**. 
 3. VS Code will automatically start building the Docker container. The initial build will take some time as it prepares the Ubuntu 22.04 system, installs GCC 11, and sets up the RISC-V toolchain. 
-4. **Build the simulation tools:** Once the environment is up and running, you still need to build Spike and Verilator. These tools will be installed to /tools subdirectory and won't be compiled any image in the future. Open a new terminal inside VS Code and run the following command:
+4. **Build the simulation tools:** Once the environment is up and running, you still need to build Spike and Verilator. These tools will be installed to `/tools` subdirectory and won't be compiled into any image in the future. Open a new terminal inside VS Code and run the following command:
 
 ```bash
 # This will build the simulation tools (Spike & Verilator) and run the given test. Replace TESTNAME with a valid smoke test.
@@ -31,6 +46,43 @@ bash ./verif/regress/smoke-tests<TESTNAME>.sh
 ```
 
 To run simulations and tests, you can either follow the scripts provided in `/verif/regress/` for smoke tests or refer to `/tutorials/running_sim.md`.
+
+---
+
+## PQC Source Codes
+
+* **Location:** `verif/tests/custom/`
+
+This directory houses the source code and verification workloads for Post-Quantum Cryptography algorithms:
+* `verif/tests/custom/falcon/` — Falcon signature scheme sources and test suites.
+* `verif/tests/custom/kyber/` — ML-KEM (Kyber) key encapsulation sources and benchmarks.
+* `verif/tests/custom/dilithium/` — ML-DSA (Dilithium) digital signature algorithm implementations.
+
+> Refer to the dedicated `README.md` file located inside each individual algorithm folder for specific compilation flags, test targets, and usage instructions.
+
+---
+
+## Simulation Scripts
+
+* **Location:** `pqc_tests/`
+
+This section provides shell scripts (`.sh`) designed to easily configure parameters, streamline automated test execution, and run simulations for the added PQC suites across supported targets (Spike, Verilator, etc.).
+
+> For detailed script options, configuration flags, and example execution workflows, see [`pqc_tests/README.md`](./pqc_tests/README.md).
+
+---
+
+## FPGA Tests
+
+* **Location:** `pqc_tests_fpga/`
+
+Provides a streamlined environment for evaluating PQC code directly on hardware targets in real time. This folder includes:
+* **Makefiles & Linker Scripts:** Pre-configured for building hardware-compatible binaries.
+* **C Test Applications:** Minimal test cases, including UART communication and transaction routines for real-time monitoring.
+
+> Refer to [`pqc_tests_fpga/README.md`](./pqc_tests_fpga/README.md) for toolchain configuration, flashing instructions, and UART terminal connection guides.
+
+---
 
 You can find the original READMEs and details below and additional READMEs inside the according subdirectories. 
 
