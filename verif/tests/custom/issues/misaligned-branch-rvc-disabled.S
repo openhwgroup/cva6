@@ -11,7 +11,7 @@ branch_site:
 misaligned_target:
   j fail                    # Reaching here means the expected trap did not occur
 
-  .balign 4
+  .2byte 0
   .globl handle_trap
 handle_trap:
   bnez a0, fail             # mcause must be 0: instruction-address-misaligned
