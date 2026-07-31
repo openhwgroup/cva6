@@ -517,8 +517,10 @@ def run_test(test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
                   linker, gcc_opts, elf))
     else: # veri-testharness with proxy kernel enabled.
         cmd= ("%s %s %s -o %s " % (get_env_var("RISCV_CC", debug_cmd = debug_cmd), test_path, gcc_opts, elf))
-    cmd += (" -march=%s" % isa)
-    cmd += (" -mabi=%s" % mabi)
+    if not re.search(r"(?:^|\s)-march=", cmd):
+      cmd += (" -march=%s" % isa)
+    if not re.search(r"(?:^|\s)-mabi=", cmd):
+      cmd += (" -mabi=%s" % mabi)
     logging.info("Compilation cmd: %s" % cmd)
     run_cmd(cmd, debug_cmd = debug_cmd)
   log_list = []
