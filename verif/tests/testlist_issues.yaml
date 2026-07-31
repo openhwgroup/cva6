@@ -45,3 +45,7 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: misaligned-branch-rvc-disabled
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/misaligned-branch-rvc-disabled.S
