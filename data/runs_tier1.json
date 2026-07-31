@@ -1,5 +1,26 @@
 [
   {
+    "id": 30671347714,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 194,
+    "status": "completed",
+    "conclusion": "action_required",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/30671347714",
+    "head_branch": "test/misaligned-branch-1720",
+    "head_sha": "e1ddeda1",
+    "event": "pull_request",
+    "created_at": "2026-07-31T22:53:50Z",
+    "updated_at": "2026-07-31T22:53:50Z",
+    "run_started_at": "2026-07-31T22:53:50Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 30645665432,
     "source": "github-actions",
     "simulator": "verilator",
@@ -1877,26 +1898,5 @@
         "testcase": "smoke-tests-cv32a65x"
       }
     ]
-  },
-  {
-    "id": 29211553310,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 144,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/29211553310",
-    "head_branch": "fix/dcsr-warl-legalize",
-    "head_sha": "594290d5",
-    "event": "pull_request",
-    "created_at": "2026-07-12T22:27:02Z",
-    "updated_at": "2026-07-12T22:27:02Z",
-    "run_started_at": "2026-07-12T22:27:02Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
