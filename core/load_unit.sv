@@ -220,7 +220,12 @@ module load_unit
 
   logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
   assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
-      CVA6Cfg, {{52 - CVA6Cfg.PPNW{1'b0}}, dtlb_ppn_i, 12'd0}
+      CVA6Cfg, {{64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}, 
+                ypb_load_req_o.paddr[ CVA6Cfg.DCACHE_TAG_WIDTH + 
+                                      CVA6Cfg.DCACHE_INDEX_WIDTH-1:
+                                      CVA6Cfg.DCACHE_INDEX_WIDTH ], 
+                {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
+              }
   );
 
   logic paddr_nonidempotent;
@@ -317,16 +322,16 @@ module load_unit
   //default ypb state registred
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
-  assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? lsu_ctrl_i.be : be_q;
+  assign ypb_load_req_o.be = (ypb_a_state_q == TRANSPARENT) ? lsu_ctrl_i.be : be_q;
   assign ypb_load_req_o.size = (CVA6Cfg.XLEN == 64) ? ariane_pkg::size_gen(
-      lsu_ctrl_i.be
+      ypb_load_req_o.be
   ) : ariane_pkg::size_gen_32(
-      lsu_ctrl_i.be
+      ypb_load_req_o.be
   );
   assign ypb_load_req_o.wdata = '0;
   assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
-  assign ypb_load_req_o.cacheable = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? paddr_is_cacheable : paddr_is_cacheable_q;
+  assign ypb_load_req_o.cacheable = paddr_is_cacheable;
   assign ypb_load_req_o.access_type = 1'b1;  //data
 
 
@@ -375,7 +380,6 @@ module load_unit
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
         if (lsu_ctrl_i.valid) be_q <= lsu_ctrl_i.be;
-        if (lsu_ctrl_i.valid) paddr_is_cacheable_q <= paddr_is_cacheable;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
