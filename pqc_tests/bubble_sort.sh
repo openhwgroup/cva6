@@ -14,6 +14,9 @@ PRINT_CYCLES=0
 
 # Set this to 1 if you want a detailed report on instruction counts and ratios
 PROFILE=0
+
+# Set this to 1 if you want a log of ALU operands and results in EX-Stage
+LOG_ALU=1
  
 ############################################################################################
 
@@ -28,8 +31,11 @@ export EXTRA_FLAGS=""
 if [ $PRINT_CYCLES -eq 1 ]; then
     echo "Clock cycle printing is enabled, expect mismatches between Verilator ans Spike logs!"
     export EXTRA_FLAGS+=" -DPRINT_CYCLES"
-else
-    export EXTRA_FLAGS+=""
+fi
+export PQC_TESTS_CFLAGS=""
+if [ $LOG_ALU -eq 1 ]; then
+    echo "ALU logging is enabled. Logs can be found in '${TEST_NAME}_alu_cycle_trace.log' in cva6-pqc/pqc_tests"
+    export PQC_TESTS_CFLAGS+=" -DLOG_ALU -DTEST_NAME=$TEST_NAME"
 fi
 
 python3 cva6.py \

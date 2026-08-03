@@ -38,11 +38,13 @@ module alu
     // ALU branch compare result - branch_unit
     output logic alu_branch_res_o
 );
+  logic [CVA6Cfg.XLEN-1:0] result_log /* verilator public_flat_rw */;
+  assign result_log = result_o;
 
-  logic [CVA6Cfg.XLEN-1:0] operand_a;
+  logic [CVA6Cfg.XLEN-1:0] operand_a /* verilator public_flat_rw */;
   logic [CVA6Cfg.XLEN-1:0] operand_a_rev;
   logic [            31:0] operand_a_rev32;
-  logic [CVA6Cfg.XLEN-1:0] operand_b;
+  logic [CVA6Cfg.XLEN-1:0] operand_b /* verilator public_flat_rw */;
   logic [  CVA6Cfg.XLEN:0] operand_b_neg;
   logic [CVA6Cfg.XLEN+1:0] adder_result_ext_o;
   logic                    less;  // handles both signed and unsigned forms

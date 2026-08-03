@@ -39,6 +39,9 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <fstream>
+#include <string>
+
 #include <fesvr/dtm.h>
 #include <fesvr/htif_hexwriter.h>
 #include <fesvr/elfloader.h>
@@ -284,6 +287,20 @@ done_processing:
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
 
+#ifdef LOG_ALU
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#ifndef TEST_NAME
+#define TEST_NAME unknown_test
+#endif
+  std::string test_name = TOSTRING(TEST_NAME);
+  std::ofstream alu_log("/workspaces/cva6-pqc/pqc_tests/" + test_name + "_alu_cycle_trace.log");
+  if (alu_log.is_open()) {
+    alu_log << "Cycle, PC, Operand_A, Operand_B, Result" << std::endl;
+    alu_log << "---------------------------------------" << std::endl;
+  }
+#endif
+
   read_elf(htif_argv[1]);
 
 #if VM_TRACE
@@ -358,6 +375,23 @@ done_processing:
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
     top->clk_i = 0;
     top->eval();
+
+#ifdef LOG_ALU
+    if (top->rst_ni == 1 && alu_log.is_open()) {
+
+      auto alu_operand_a  = top->rootp->ariane_testharness__DOT__i_ariane__DOT__i_cva6__DOT__ex_stage_i__DOT__alu_wrapper_i__DOT__alu_i__DOT__operand_a;
+      auto alu_operand_b  = top->rootp->ariane_testharness__DOT__i_ariane__DOT__i_cva6__DOT__ex_stage_i__DOT__alu_wrapper_i__DOT__alu_i__DOT__operand_b;
+      auto alu_result_log = top->rootp->ariane_testharness__DOT__i_ariane__DOT__i_cva6__DOT__ex_stage_i__DOT__alu_wrapper_i__DOT__alu_i__DOT__result_log;
+      auto alu_pc_ex      = top->rootp->ariane_testharness__DOT__i_ariane__DOT__i_cva6__DOT__ex_stage_i__DOT__pc_i;
+    
+      alu_log << "CYCLE: " << std::dec << (main_time / 2) << ",  "
+      << "PC: 0x" << std::hex << std::setw(16) << std::setfill('0') << alu_pc_ex      << ",  "
+      << "OP-A: 0x" << std::hex << std::setw(16) << std::setfill('0') << alu_operand_a  << ",  "
+      << "OP-B: 0x" << std::hex << std::setw(16) << std::setfill('0') << alu_operand_b  << ",  "
+      << "RES: 0x" << std::hex << std::setw(16) << std::setfill('0') << alu_result_log << std::endl;
+    }
+#endif
+
 #if VM_TRACE
     if (vcdfile || fst_fname)
       tfp->dump(static_cast<vluint64_t>(main_time * 2));
@@ -410,6 +444,12 @@ done_processing:
               << std::chrono::duration<double, std::milli>(t_end-t_start).count()
               << " ms\n";
   }
+
+#ifdef LOG_ALU
+  if (alu_log.is_open()) {
+    alu_log.close();
+  }
+#endif
 
   return ret;
 }

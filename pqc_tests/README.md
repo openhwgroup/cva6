@@ -30,11 +30,15 @@ export NUM_JOBS=8
 
 Set `PRINT_CYCLES` to 1 if you want to print clock cycles (through UART). This will create mismatches between spike and verilator logs. After obtaining mismatched results, you might want to clear the logs in the simulation directory so the regression log doesn't print fail messages every time you run a simulation.
 ```sh
-PRINT_CYCLES=0
+PRINT_CYCLES=1
 ```
 Set `PROFILE` to 1 if you want a detailed report on call counts and ratios. This script will run `profile_csv.py` and read the csv files to produce the report. A verilator only simulation does not generate the csv files, so you need to run spike aswell.
 ```sh
 PROFILE=1
+```
+Setting `LOG_ALU` to 1 will generate a `<TEST_NAME>_alu_cycle_trace.log` file that shows the values of ALU operands and results in the Execute stage, alongside the clock cycle and the program counter values (for Verilator simulation).
+```sh
+LOG_ALU=1
 ```
 
 Finally, there are some additional options for different test, mainly different parameters for the pqc algorithms, which you might want to check out. Resulting log files might be too large, so the testing script might only copy the iss log into this directory.

@@ -51,7 +51,7 @@ module ex_stage
     // ALU to ALU bypass control - ISSUE_STAGE
     input alu_bypass_t alu_bypass_i,
     // PC of the current instruction - ISSUE_STAGE
-    input logic [CVA6Cfg.VLEN-1:0] pc_i,
+    input logic [CVA6Cfg.VLEN-1:0] pc_i /* verilator public_flat_rw */,
     // Is_zcmt instruction - ISSUE_STAGE
     input logic is_zcmt_i,
     // Report whether instruction is compressed - ISSUE_STAGE
