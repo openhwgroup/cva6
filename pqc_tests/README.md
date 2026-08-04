@@ -42,6 +42,3 @@ LOG_ALU=1
 ```
 
 Finally, there are some additional options for different test, mainly different parameters for the pqc algorithms, which you might want to check out. Resulting log files might be too large, so the testing script might only copy the iss log into this directory.
-
-### TODO
-Add Falcon and SPHINCS+.

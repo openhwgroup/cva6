@@ -54,7 +54,6 @@ int main()
     print_str(" signatures.. \n");
 
     for (i = 0; i < SPX_SIGNATURES; i++) {
-        printf("  - iteration #%d:\n", i);
         print_str("  - iteration #");
         print_int(i);
         print_str(":\n");
@@ -105,7 +104,7 @@ int main()
             ret = -1;
         }
         else {
-            printf("mlen as expected.\n");
+            print_str("mlen as expected.\n");
         }
         if (memcmp(m, mout, SPX_MLEN)) {
             print_str("Output message incorrect!\n");
