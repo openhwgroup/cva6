@@ -1,0 +1,56 @@
+# Copyright 2026 PULP Platform
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+
+name: Slang
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  elaborate:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.config }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - cv64a6_imafdch_sv39_wb
+          - cv64a6_imafdchsclic_sv39
+          - cv64a6_imafdchsclic_sv39_wb
+          - cv64a6_imafdchsclic_sv39_hpdcache_wb
+          - cv64a6_imafdchxhclic_sv39_wb
+          - cv64a6_imafdchxhclic_sv39_hpdcache_wb
+          - cv64a6_splus
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    # Skip on forks or pull requests from forks due to missing secrets.
+    if: github.repository == 'pulp-platform/cva6' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Only the HPDCache sources are needed for linting; bender fetches the
+      # remaining dependencies itself.
+      - name: Checkout HPDCache
+        shell: bash
+        run: git submodule update --init core/cache_subsystem/hpdcache
+
+      - name: Install bender
+        uses: pulp-platform/pulp-actions/bender-install@v2.5.1
+
+      - name: Generate file list
+        shell: bash
+        run: |
+          bender checkout
+          bender script flist-plus -t rtl -t ${{ matrix.config }} > slang.f
+
+      - name: Run slang
+        uses: pulp-platform/pulp-actions/slang@v2.5.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reviewdog-name: slang-${{ matrix.config }}
+          slang-flags: '-f slang.f --top cva6'
