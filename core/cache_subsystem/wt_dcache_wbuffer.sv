@@ -160,6 +160,11 @@ module wt_dcache_wbuffer
     return out;
   endfunction : repData32
 
+  // Width of one user byte lane. DCACHE_USER_WIDTH collapses to 1 when the user
+  // channel is disabled, so clamp the select width to keep it in range; the
+  // guarded assignment is never executed in that case anyway.
+  localparam int unsigned UserByteWidth = CVA6Cfg.DATA_USER_EN ? 8 : CVA6Cfg.DCACHE_USER_WIDTH;
+
   typedef struct packed {
     logic                                         vld;
     logic [(CVA6Cfg.XLEN/8)-1:0]                  be;
@@ -593,7 +598,7 @@ module wt_dcache_wbuffer
             wbuffer_d[wr_ptr].dirty[k]     = 1'b1;
             wbuffer_d[wr_ptr].data[k*8+:8] = req_port_i.data_wdata[k*8+:8];
             if (CVA6Cfg.DATA_USER_EN) begin
-              wbuffer_d[wr_ptr].user[k*8+:8] = req_port_i.data_wuser[k*8+:8];
+              wbuffer_d[wr_ptr].user[k*8+:UserByteWidth] = req_port_i.data_wuser[k*8+:UserByteWidth];
             end
           end
         end
