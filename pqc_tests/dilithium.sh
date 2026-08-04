@@ -18,7 +18,7 @@ PRINT_CYCLES=0
 PROFILE=0
 
 # Set this to 1 if you want a log of ALU operands and results in EX-Stage
-LOG_ALU=1
+LOG_ALU=0
  
 ############################################################################################
 
@@ -40,21 +40,21 @@ if [ $LOG_ALU -eq 1 ]; then
 fi
 export EXTRA_FLAGS+=" -DDILITHIUM_MODE=$DDILITHIUMMODE"
 
-#python3 cva6.py \
-#	--target $DV_TARGET \
-#	--iss=$DV_SIMULATORS \
-#	--iss_yaml=cva6.yaml \
-#	--issrun_opts="+time_out=500000000" \
-#	--iss_timeout 100000 \
-#	--c_tests ../tests/custom/dilithium/test/test_dilithium.c \
-#	--linker=../../config/gen_from_riscv_config/linker/link.ld \
-#	--gcc_opts="-O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles \
-#	-g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S ../tests/custom/dilithium/sign.c \
-#	../tests/custom/dilithium/packing.c ../tests/custom/dilithium/polyvec.c ../tests/custom/dilithium/poly.c \
-#	../tests/custom/dilithium/ntt.c ../tests/custom/dilithium/reduce.c ../tests/custom/dilithium/rounding.c \
-#	../tests/custom/dilithium/fips202.c ../tests/custom/dilithium/symmetric-shake.c \
-#	../tests/custom/dilithium/randombytes.c ../tests/custom/dilithium/test/test_print.c \
-#	-lgcc -I../tests/custom/env -I../tests/custom/common -I../tests/custom/dilithium $EXTRA_FLAGS"
+python3 cva6.py \
+	--target $DV_TARGET \
+	--iss=$DV_SIMULATORS \
+	--iss_yaml=cva6.yaml \
+	--issrun_opts="+time_out=500000000" \
+	--iss_timeout 100000 \
+	--c_tests ../tests/custom/dilithium/test/test_dilithium.c \
+	--linker=../../config/gen_from_riscv_config/linker/link.ld \
+	--gcc_opts="-O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles \
+	-g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S ../tests/custom/dilithium/sign.c \
+	../tests/custom/dilithium/packing.c ../tests/custom/dilithium/polyvec.c ../tests/custom/dilithium/poly.c \
+	../tests/custom/dilithium/ntt.c ../tests/custom/dilithium/reduce.c ../tests/custom/dilithium/rounding.c \
+	../tests/custom/dilithium/fips202.c ../tests/custom/dilithium/symmetric-shake.c \
+	../tests/custom/dilithium/randombytes.c ../tests/custom/dilithium/test/test_print.c \
+	-lgcc -I../tests/custom/env -I../tests/custom/common -I../tests/custom/dilithium $EXTRA_FLAGS"
 
 LATEST_OUT_DIR=$(ls -td out_* | head -n 1)
 # If log file size exceeds this value, file is not copied to pqc_tests (default: 50 MB)

@@ -16,7 +16,7 @@ PRINT_CYCLES=0
 PROFILE=0
 
 # Set this to 1 if you want a log of ALU operands and results in EX-Stage
-LOG_ALU=1
+LOG_ALU=0
  
 ############################################################################################
 

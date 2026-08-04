@@ -2,8 +2,6 @@
 
 # Change the target to your desired configuration
 export DV_TARGET="cv32a60x"
-# You can modify this to change the kyber parameter (2, 3 or 4)
-DKYBERK=2
 
 # If you want to change the simulator (default: veri-testharness,spike)
 # and number of cores (default: 8), modify this part
@@ -22,7 +20,7 @@ LOG_ALU=0
  
 ############################################################################################
 
-TEST_NAME="test_kyber"
+TEST_NAME="test_sphincs"
 
 cd $ROOT_PROJECT
 make clean
@@ -38,31 +36,22 @@ if [ $LOG_ALU -eq 1 ]; then
     echo "ALU logging is enabled. Logs can be found in '${TEST_NAME}_alu_cycle_trace.log' in cva6-pqc/pqc_tests"
     export PQC_TESTS_CFLAGS+=" -DLOG_ALU -DTEST_NAME=$TEST_NAME"
 fi
-export EXTRA_FLAGS+=" -DKYBER_K=$DKYBERK"
 
 python3 cva6.py \
-    --target $DV_TARGET \
-    --iss=$DV_SIMULATORS \
-    --iss_yaml=cva6.yaml \
-    --issrun_opts="+time_out=500000000" \
-    --iss_timeout 100000 \
-    --c_tests ../tests/custom/kyber/test/test_kyber.c \
-    --linker=../../config/gen_from_riscv_config/linker/link.ld \
-    --gcc_opts="-O3 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles \
-    -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S \
-    ../tests/custom/kyber/cbd.c \
-    ../tests/custom/kyber/fips202.c \
-    ../tests/custom/kyber/indcpa.c \
-    ../tests/custom/kyber/kem.c \
-    ../tests/custom/kyber/ntt.c \
-    ../tests/custom/kyber/poly.c \
-    ../tests/custom/kyber/polyvec.c \
-    ../tests/custom/kyber/randombytes.c \
-    ../tests/custom/kyber/reduce.c \
-    ../tests/custom/kyber/symmetric-shake.c \
-    ../tests/custom/kyber/verify.c \
-    ../tests/custom/kyber/test/test_print.c \
-    -lgcc -I../tests/custom/env -I../tests/custom/common -I../tests/custom/kyber $EXTRA_FLAGS"
+	--target $DV_TARGET \
+	--iss=$DV_SIMULATORS \
+	--iss_yaml=cva6.yaml \
+	--issrun_opts="+time_out=500000000" \
+	--iss_timeout 100000 \
+	--c_tests ../tests/custom/sphincs/test/spx.c \
+	--linker=../../config/gen_from_riscv_config/linker/link.ld \
+	--gcc_opts="-O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles \
+	-g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S ../tests/custom/sphincs/address.c \
+    ../tests/custom/sphincs/fips202.c ../tests/custom/sphincs/fors.c ../tests/custom/sphincs/hash_shake256.c \
+    ../tests/custom/sphincs/randombytes.c ../tests/custom/sphincs/sign.c ../tests/custom/sphincs/thash_shake256_simple.c \
+    ../tests/custom/sphincs/utils.c ../tests/custom/sphincs/wots.c ../tests/custom/sphincs/test/test_print.c \
+    ../tests/custom/sphincs/test/test_syscalls.c \
+	-lgcc -I../tests/custom/env -I../tests/custom/common -I../tests/custom/sphincs $EXTRA_FLAGS"
 
 LATEST_OUT_DIR=$(ls -td out_* | head -n 1)
 # If log file size exceeds this value, file is not copied to pqc_tests (default: 50 MB)
