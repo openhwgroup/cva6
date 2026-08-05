@@ -128,6 +128,9 @@ build_env:
   tags: [$TAGS_RUNNER_SIMU]
   extends:
     - .rules_verif_regress_dev
+  variables:
+    DASHBOARD_JOB_TITLE: "Build env"
+    DASHBOARD_JOB_DESCRIPTION: "Install Python requirements for the flow"
   script:
     - id
     - pip3 install -r flows/requirements.txt
@@ -138,6 +141,9 @@ build_spike:
   extends:
     - .rules_verif_regress_dev
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Build Spike"
+    DASHBOARD_JOB_DESCRIPTION: "Install Spike ISS used as tandem reference"
   script:
     - echo NUMJOB=$NUM_JOBS
     - source $SYN_VCS_BASHRC
@@ -156,6 +162,9 @@ verible:
   extends:
     - .rules_verif_regress_dev
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Verible formatting"
+    DASHBOARD_JOB_DESCRIPTION: "Check RTL formatting with Verible"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - export PATH="$VERIBLE_PATH:$PATH"
@@ -177,6 +186,9 @@ black:
   extends:
     - .rules_verif_regress_dev
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Black formatting"
+    DASHBOARD_JOB_DESCRIPTION: "Check Python formatting with Black"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - ./cook.py black-python-formating | tee black-cmd.log
@@ -197,6 +209,9 @@ pylint:
   extends:
     - .rules_verif_regress_dev
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Pylint"
+    DASHBOARD_JOB_DESCRIPTION: "Check Python code quality with Pylint"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - ./cook.py pylint-run | tee pylint-cmd.log
@@ -214,6 +229,9 @@ lint_spyglass:
     - .rules_verif_regress_dev
     - .global_matrix_target
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Spyglass lint"
+    DASHBOARD_JOB_DESCRIPTION: "Run Spyglass RTL lint checks per target"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_SG_BASHRC
@@ -243,6 +261,9 @@ sw_compile:
     - .rules_verif_regress_dev
     - .global_matrix_target
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "SW compile"
+    DASHBOARD_JOB_DESCRIPTION: "Compile hello-world with the target toolchain"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - ./cook.py hello-world -t $MY_TARGET -c my_${MY_TARGET}_toolchain
@@ -270,6 +291,9 @@ run_sim_spike:
     - job: sw_compile
       artifacts: true
       <<: *global_matrix_mapping
+  variables:
+    DASHBOARD_JOB_TITLE: "Spike simulation - ${MY_TARGET} - hello-world"
+    DASHBOARD_JOB_DESCRIPTION: "Run hello-world on the Spike ISS for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - ./cook.py spike-run -t $MY_TARGET -n hello-world
@@ -294,6 +318,9 @@ elab_rtl:
   needs:
     - job: build_spike
       artifacts: true
+  variables:
+    DASHBOARD_JOB_TITLE: "RTL elaboration"
+    DASHBOARD_JOB_DESCRIPTION: "Compile UVM testbench and RTL with VCS"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -325,6 +352,9 @@ run_sim_rtl:
     - job: sw_compile
       artifacts: true
       <<: *global_matrix_mapping
+  variables:
+    DASHBOARD_JOB_TITLE: "RTL simulation - ${MY_TARGET} - hello-world"
+    DASHBOARD_JOB_DESCRIPTION: "Run hello-world on RTL with tandem check for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -353,6 +383,8 @@ run_sim_rtl:
       <<: *global_matrix_mapping
   variables:
     MY_SYNTH_PERIOD: 15
+    DASHBOARD_JOB_TITLE: "ASIC synthesis"
+    DASHBOARD_JOB_DESCRIPTION: "Synthesize the design with DC Shell"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_DCSHELL_BASHRC
@@ -385,6 +417,9 @@ run_sim_rtl:
     - job: asic_synthesis
       artifacts: true
       <<: *global_matrix_mapping
+  variables:
+    DASHBOARD_JOB_TITLE: "Gate-level elaboration"
+    DASHBOARD_JOB_DESCRIPTION: "Compile post-synthesis netlist for gate simulation"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -416,6 +451,9 @@ run_sim_rtl:
     - job: sw_compile
       artifacts: true
       <<: *global_matrix_mapping
+  variables:
+    DASHBOARD_JOB_TITLE: "Gate-level simulation - ${MY_TARGET} - hello-world"
+    DASHBOARD_JOB_DESCRIPTION: "Run hello-world on the post-synthesis netlist for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -458,6 +496,9 @@ benchmark_compile:
     - .rules_verif_regress_dev
     - .benchmark_matrix_target
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Benchmark compile"
+    DASHBOARD_JOB_DESCRIPTION: "Compile the benchmark for the target"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - verif/regress/install-riscv-tests.sh
@@ -486,6 +527,9 @@ benchmark_run_sim_rtl:
       artifacts: true
       <<: *benchmark_matrix_mapping
   allow_failure: true
+  variables:
+    DASHBOARD_JOB_TITLE: "Benchmark RTL run - ${MY_TARGET} - ${MY_BENCHMARK}"
+    DASHBOARD_JOB_DESCRIPTION: "Run benchmark ${MY_BENCHMARK} on RTL and report performance for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -625,6 +669,9 @@ testlist_compile:
     - .rules_verif_regress_dev
     - .testlist_matrix_target
   needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Testlist compile"
+    DASHBOARD_JOB_DESCRIPTION: "Compile all tests from the testlist"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - verif/regress/install-riscv-tests.sh
@@ -652,6 +699,9 @@ testlist_run_sim_rtl:
     - job: testlist_compile
       artifacts: true
       <<: *testlist_matrix_mapping
+  variables:
+    DASHBOARD_JOB_TITLE: "Testlist RTL run - ${MY_TARGET} - ${MY_TESTLIST}"
+    DASHBOARD_JOB_DESCRIPTION: "Run testlist ${MY_TESTLIST} on RTL with Spike tandem for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
@@ -673,6 +723,8 @@ merge reports:
   tags: [$TAGS_RUNNER_SIMU]
   variables:
     GIT_SUBMODULE_STRATEGY: none
+    DASHBOARD_JOB_TITLE: "Merge reports"
+    DASHBOARD_JOB_DESCRIPTION: "Merge all job reports into the pipeline dashboard"
   extends:
     - .rules_verif_regress_dev
   when: always
