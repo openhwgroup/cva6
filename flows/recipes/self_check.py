@@ -12,7 +12,7 @@
 from pathlib import Path
 import shutil
 import typer
-from flows.utils.config_loader import TECHNO_DATA, COMPILER_DATA
+from flows.utils.config_loader import load_techno_config, load_compiler_config
 from flows.utils.utils import (
     print_recipe_title,
     print_recipe_end,
@@ -41,6 +41,9 @@ def self_check(
     """
     Self check
     """
+
+    TECHNO_DATA = load_techno_config()
+    COMPILER_DATA = load_compiler_config()
 
     # Title
     print_recipe_title("Self check", quiet=quiet)

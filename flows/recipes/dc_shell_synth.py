@@ -16,7 +16,7 @@ import re
 from functools import reduce
 import yaml
 import typer
-from flows.utils.config_loader import TECHNO_DATA
+from flows.utils.config_loader import load_techno_config
 from flows.utils.utils import (
     Cva6Hier,
     TechnoOption,
@@ -66,6 +66,7 @@ def dc_shell_synth(
         False, "--quiet", "-q", help="Suppress output (errors only)"
     ),
 ):
+    TECHNO_DATA = load_techno_config()
     """
     DC Shell Synthesis flow
     """
@@ -161,9 +162,9 @@ def dc_shell_synth(
     # ==========================================================
 
     env_vars = {
-        "TOP": "cva6",
+        "TOP": "cva6_top",
         "TOP_ELABORATE": top_elaborate,
-        "TOP_SYNTHESIS": "cva6__*",
+        "TOP_SYNTHESIS": "cva6_top__*",
         "TARGET": target,
         "TARGET_CFG": target,
         "CVA6_REPO_DIR": str(repo_dir),

@@ -13,7 +13,7 @@ from pathlib import Path
 import shutil
 import typer
 import yaml
-from flows.utils.config_loader import COMPILER_DATA
+from flows.utils.config_loader import load_compiler_config
 from flows.utils.utils import (
     ToolchainOption,
     autocompletion_target,
@@ -71,6 +71,9 @@ def sw_compile(
     """
     Compile software and generate ELF + reports.
     """
+
+    COMPILER_DATA = load_compiler_config()
+
     print_recipe_title("Software compilation", quiet=quiet)
 
     print_param_table(

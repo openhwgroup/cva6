@@ -25,7 +25,7 @@ from rich.table import Table
 from rich.syntax import Syntax
 from rich.text import Text
 import yaml
-from flows.utils.config_loader import TECHNO_DATA, COMPILER_DATA
+from flows.utils.config_loader import load_techno_config, load_compiler_config
 
 
 # ==========================================================
@@ -34,6 +34,8 @@ from flows.utils.config_loader import TECHNO_DATA, COMPILER_DATA
 
 console = Console()
 
+TECHNO_DATA = load_techno_config(verbose = False)
+COMPILER_DATA = load_compiler_config(verbose = False)
 
 def print_recipe_title(title, quiet=False):
     if not quiet:
@@ -319,13 +321,17 @@ class Cva6Hier(str, Enum):
     obi = "obi"
     axi = "axi"
 
+if TECHNO_DATA != None:
+    TechnoOption = Enum("TechnoOption", {key.upper(): key for key in TECHNO_DATA.keys()})
+else:
+    TechnoOption = Enum("TechnoOption", [])
 
-TechnoOption = Enum("TechnoOption", {key.upper(): key for key in TECHNO_DATA.keys()})
-
-ToolchainOption = Enum(
-    "ToolchainOption", {key.upper(): key for key in COMPILER_DATA.keys()}
-)
-
+if COMPILER_DATA != None:
+    ToolchainOption = Enum(
+        "ToolchainOption", {key.upper(): key for key in COMPILER_DATA.keys()}
+    )
+else:
+    ToolchainOption = Enum("ToolchainOption", [])
 
 def autocompletion_target():
     target_list = []
