@@ -86,7 +86,10 @@ module store_unit
     // Data cache request - CACHES
     input dcache_req_o_t req_port_i,
     // Data cache response - CACHES
-    output dcache_req_i_t req_port_o
+    output dcache_req_i_t req_port_o,
+    //Trigger module
+    input logic sdtrig_store_stall_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
 
   // align data to address e.g.: shift data to be naturally 64
@@ -143,11 +146,11 @@ module store_unit
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
   // output assignments
-  assign vaddr_o         = lsu_ctrl_i.vaddr;  // virtual address
+  assign vaddr_o = lsu_ctrl_i.vaddr;  // virtual address
   assign hs_ld_st_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hs_ld_st_inst : 1'b0;
-  assign hlvx_inst_o     = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
-  assign tinst_o         = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
-  assign trans_id_o      = trans_id_q;  // transaction id from previous cycle
+  assign hlvx_inst_o = CVA6Cfg.RVH ? lsu_ctrl_i.hlvx_inst : 1'b0;
+  assign tinst_o = CVA6Cfg.RVH ? lsu_ctrl_i.tinst : '0;  // transformed instruction
+  assign trans_id_o      = (sdtrig_store_stall_i && valid_i) ? lsu_ctrl_i.trans_id : trans_id_q; // transaction id from previous cycle
 
   always_comb begin : store_control
     translation_req_o      = 1'b0;
@@ -159,93 +162,108 @@ module store_unit
     trans_id_n             = lsu_ctrl_i.trans_id;
     state_d                = state_q;
 
-    case (state_q)
-      // we got a valid store
-      IDLE: begin
-        if (valid_i) begin
-          state_d = VALID_STORE;
-          translation_req_o = 1'b1;
-          pop_st_o = 1'b1;
-          // check if translation was valid and we have space in the store buffer
-          // otherwise simply stall
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d  = WAIT_TRANSLATION;
-            pop_st_o = 1'b0;
-          end
+    if (sdtrig_store_stall_i && valid_i) begin
+      //validation of the store architecturally but do not store any result nor commit it
+      pop_st_o = 1'b0;
+      valid_o = 1'b1;
+      st_valid = 1'b0;
+      translation_req_o = 1'b0;
+      //generate exception    
+      ex_o.valid = 1'b1;
+      ex_o.cause = sdtrig_store_action_i;
+      ex_o.tval = lsu_ctrl_i.vaddr;
 
-          if (!st_ready) begin
-            state_d  = WAIT_STORE_READY;
-            pop_st_o = 1'b0;
+      //stall store unit
+      state_d = IDLE;
+    end else begin
+      case (state_q)
+        // we got a valid store
+        IDLE: begin
+          if (valid_i) begin
+            state_d = VALID_STORE;
+            translation_req_o = 1'b1;
+            pop_st_o = 1'b1;
+            // check if translation was valid and we have space in the store buffer
+            // otherwise simply stall
+            if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+              state_d  = WAIT_TRANSLATION;
+              pop_st_o = 1'b0;
+            end
+
+            if (!st_ready) begin
+              state_d  = WAIT_STORE_READY;
+              pop_st_o = 1'b0;
+            end
           end
         end
-      end
 
-      VALID_STORE: begin
-        valid_o = 1'b1;
-        // post this store to the store buffer if we are not flushing
-        if (!flush_i) st_valid = 1'b1;
+        VALID_STORE: begin
+          valid_o = 1'b1;
+          // post this store to the store buffer if we are not flushing
+          if (!flush_i && !sdtrig_store_stall_i) st_valid = 1'b1;
 
-        st_valid_without_flush = 1'b1;
+          st_valid_without_flush = 1'b1;
 
-        // we have another request and its not an AMO (the AMO buffer only has depth 1)
-        if ((valid_i && CVA6Cfg.RVA && !instr_is_amo) || (valid_i && !CVA6Cfg.RVA)) begin
+          // we have another request and its not an AMO (the AMO buffer only has depth 1)
+          if ((valid_i && CVA6Cfg.RVA && !instr_is_amo) || (valid_i && !CVA6Cfg.RVA)) begin
 
-          translation_req_o = 1'b1;
-          state_d = VALID_STORE;
-          pop_st_o = 1'b1;
+            translation_req_o = 1'b1;
+            state_d = VALID_STORE;
+            pop_st_o = 1'b1;
 
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d  = WAIT_TRANSLATION;
-            pop_st_o = 1'b0;
-          end
+            if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+              state_d  = WAIT_TRANSLATION;
+              pop_st_o = 1'b0;
+            end
 
-          if (!st_ready) begin
-            state_d  = WAIT_STORE_READY;
-            pop_st_o = 1'b0;
-          end
-          // if we do not have another request go back to idle
-        end else begin
-          state_d = IDLE;
-        end
-      end
-
-      // the store queue is currently full
-      WAIT_STORE_READY: begin
-        // keep the translation request high
-        translation_req_o = 1'b1;
-
-        if (st_ready && dtlb_hit_i) begin
-          state_d = IDLE;
-        end
-      end
-
-      default: begin
-        // we didn't receive a valid translation, wait for one
-        // but we know that the store queue is not full as we could only have landed here if
-        // it wasn't full
-        if (state_q == WAIT_TRANSLATION && CVA6Cfg.MmuPresent) begin
-          translation_req_o = 1'b1;
-
-          if (dtlb_hit_i) begin
+            if (!st_ready) begin
+              state_d  = WAIT_STORE_READY;
+              pop_st_o = 1'b0;
+            end
+            // if we do not have another request go back to idle
+          end else begin
             state_d = IDLE;
           end
         end
+
+        // the store queue is currently full
+        WAIT_STORE_READY: begin
+          // keep the translation request high
+          translation_req_o = 1'b1;
+
+          if (st_ready && dtlb_hit_i) begin
+            state_d = IDLE;
+          end
+        end
+
+        default: begin
+          // we didn't receive a valid translation, wait for one
+          // but we know that the store queue is not full as we could only have landed here if
+          // it wasn't full
+          if (state_q == WAIT_TRANSLATION && CVA6Cfg.MmuPresent) begin
+            translation_req_o = 1'b1;
+
+            if (dtlb_hit_i) begin
+              state_d = IDLE;
+            end
+          end
+        end
+      endcase
+
+      // -----------------
+      // Access Exception
+      // -----------------
+      // we got an address translation exception (access rights, misaligned or page fault)
+      if (ex_i.valid && (state_q != IDLE)) begin
+        // the only difference is that we do not want to store this request
+        pop_st_o = 1'b1;
+        st_valid = 1'b0;
+        state_d  = IDLE;
+        valid_o  = 1'b1;
       end
-    endcase
 
-    // -----------------
-    // Access Exception
-    // -----------------
-    // we got an address translation exception (access rights, misaligned or page fault)
-    if (ex_i.valid && (state_q != IDLE)) begin
-      // the only difference is that we do not want to store this request
-      pop_st_o = 1'b1;
-      st_valid = 1'b0;
-      state_d  = IDLE;
-      valid_o  = 1'b1;
+      if (flush_i) state_d = IDLE;
     end
-
-    if (flush_i) state_d = IDLE;
   end
 
   // -------------

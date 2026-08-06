@@ -159,6 +159,27 @@ smoke-tests:
   rules:
     - allow_failure: true
 
+sdtrig-tests:
+  extends:
+    - .fe_smoke_test
+  variables:
+    DASHBOARD_JOB_TITLE: "Sdtrig test $DV_SIMULATORS $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge sdtrig features in cv32a65x configuration"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
+    COLLECT_SIMU_LOGS: 1
+  parallel:
+    matrix:
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a65x"
+      - DV_SIMULATORS: "vcs-uvm"
+        DV_TARGET: "cv32a60x"
+  script:
+    - bash verif/regress/triggers-tests-$DV_TARGET.sh
+    - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - allow_failure: true
+
 smoke-gen:
   extends:
     - .fe_smoke_test

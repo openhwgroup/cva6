@@ -80,7 +80,12 @@ module load_unit
     // Data cache request in - CACHES
     output dcache_req_i_t req_port_o,
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
-    input logic dcache_wbuffer_not_ni_i
+    input logic dcache_wbuffer_not_ni_i,
+
+    //Trigger module
+    input logic sdtrig_load_stall_i,
+    input logic sdtrig_load_cancel_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i
 );
   enum logic [3:0] {
     IDLE,
@@ -221,11 +226,12 @@ module load_unit
   // user field not used
   assign req_port_o.data_wuser = '0;
   // directly forward exception fields (valid bit is set below)
-  assign ex_o.cause = ex_i.cause;
-  assign ex_o.tval = ex_i.tval;
+  assign ex_o.cause = (sdtrig_load_action_i != '0) ? sdtrig_load_action_i : ex_i.cause;
+  assign ex_o.tval = (CVA6Cfg.TvalEn && (sdtrig_load_action_i != '0)) ? lsu_ctrl_i.vaddr : ex_i.tval;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
+  assign ex_o.timing = (sdtrig_load_stall_i && req_port_i.data_rvalid && sdtrig_load_action_i != '0) ? 1'b1 : 1'b0;
 
   // Check that NI operations follow the necessary conditions
   logic paddr_ni;
@@ -237,7 +243,7 @@ module load_unit
   );
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_ni && CVA6Cfg.NonIdemPotenceEn) || sdtrig_load_stall_i;
 
   // ---------------
   // Load Control
@@ -260,192 +266,210 @@ module load_unit
     // when the load buffer is not full or if there is a response and the
     // load buffer is in fall-through mode
     accept_req           = (valid_i && (!ldbuf_full || (LDBUF_FALLTHROUGH && ldbuf_r)));
+    if (sdtrig_load_cancel_i) begin
+      //cancel any possible memory access
+      req_port_o.data_req = 1'b0;
+      req_port_o.tag_valid = 1'b0;
+      req_port_o.kill_req = 1'b1;
+      translation_req_o = 1'b0;
+      pop_ld_o = 1'b0;
+      //stall load unit
+      state_d = IDLE;
+    end else begin
 
-    case (state_q)
-      IDLE: begin
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match this should ease timing
-          // don't start the translation for speculative loads that miss on tlb
-          translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
-          // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
-            // check if the page offset matches with a store, if it does then stall and wait
-            if (!page_offset_matches_i) begin
-              // make a load request to memory
-              req_port_o.data_req = 1'b1;
-              // we got no data grant so wait for the grant before sending the tag
-              if (!req_port_i.data_gnt) begin
-                state_d = WAIT_GNT;
-              end else begin
-                if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                  state_d = ABORT_TRANSACTION;
-                end else begin
-                  if (!stall_ni) begin
-                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                    state_d  = SEND_TAG;
-                    pop_ld_o = 1'b1;
-                    // translation valid but this is to NC and the WB is not yet empty.
-                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                    state_d = ABORT_TRANSACTION_NI;
-                  end
-                end
-              end
+      case (state_q)
+        IDLE: begin
+          if (accept_req) begin
+            if (sdtrig_load_stall_i) begin
+              //Stalls the load unit
+              req_port_o.data_req = 1'b0;
+              pop_ld_o = 1'b0;
+              state_d = IDLE;
             end else begin
-              // wait for the store buffer to train and the page offset to not match anymore
-              state_d = WAIT_PAGE_OFFSET;
-            end
-          end else begin
-            // check branch result on the next cycle
-            state_d = WAIT_SPEC_LOAD;
-          end
-        end
-      end
-
-      // wait here for the page offset to not match anymore
-      WAIT_PAGE_OFFSET: begin
-        // we make a new request as soon as the page offset does not match anymore
-        if (!page_offset_matches_i) begin
-          state_d = WAIT_GNT;
-        end
-      end
-
-      WAIT_SPEC_LOAD: begin
-        // if we have a misspredicted speculative load
-        if (CVA6Cfg.SpeculativeSb && lsu_ctrl_i.is_speculative_load_miss) begin
-          // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-          if (!req_port_i.data_rvalid) begin
-            state_d  = IDLE;
-            pop_ld_o = 1'b1;
-          end
-          // if we have a correct prediction this is now a regular load
-        end else begin
-          state_d = IDLE;
-        end
-      end
-
-      WAIT_GNT: begin
-        // keep the translation request up
-        translation_req_o   = 1'b1;
-        // keep the request up
-        req_port_o.data_req = 1'b1;
-        // we finally got a data grant
-        if (req_port_i.data_gnt) begin
-          // so we send the tag in the next cycle
-          if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-            state_d = ABORT_TRANSACTION;
-          end else begin
-            if (!stall_ni) begin
-              // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-              state_d  = SEND_TAG;
-              pop_ld_o = 1'b1;
-              // translation valid but this is to NC and the WB is not yet empty.
-            end else if (CVA6Cfg.NonIdemPotenceEn) begin
-              state_d = ABORT_TRANSACTION_NI;
-            end
-          end
-
-        end
-        // otherwise we keep waiting on our grant
-      end
-      // we know for sure that the tag we want to send is valid
-      SEND_TAG: begin
-        req_port_o.tag_valid = 1'b1;
-        state_d = IDLE;
-
-        if (accept_req) begin
-          // start the translation process even though we do not know if the addresses match this should ease timing
-          // don't start the translation for speculative loads that miss on tlb
-          translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
-          // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-          if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
-            // check if the page offset matches with a store, if it does stall and wait
-            if (!page_offset_matches_i) begin
-              // make a load request to memory
-              req_port_o.data_req = 1'b1;
-              // we got no data grant so wait for the grant before sending the tag
-              if (!req_port_i.data_gnt) begin
-                state_d = WAIT_GNT;
-              end else begin
-                // we got a grant so we can send the tag in the next cycle
-                if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
-                  state_d = ABORT_TRANSACTION;
-                end else begin
-                  if (!stall_ni) begin
-                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                    state_d  = SEND_TAG;
-                    pop_ld_o = 1'b1;
-                    // translation valid but this is to NC and the WB is not yet empty.
-                  end else if (CVA6Cfg.NonIdemPotenceEn) begin
-                    state_d = ABORT_TRANSACTION_NI;
+              // start the translation process even though we do not know if the addresses match this should ease timing
+              // don't start the translation for speculative loads that miss on tlb
+              translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
+              // check if load is speculative and non idempotent, if it is then stall and wait for branch result
+              if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+                // check if the page offset matches with a store, if it does then stall and wait
+                if (!page_offset_matches_i) begin
+                  // make a load request to memory
+                  req_port_o.data_req = 1'b1;
+                  // we got no data grant so wait for the grant before sending the tag
+                  if (!req_port_i.data_gnt) begin
+                    state_d = WAIT_GNT;
+                  end else begin
+                    if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+                      state_d = ABORT_TRANSACTION;
+                    end else begin
+                      if (!stall_ni) begin
+                        // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                        state_d  = SEND_TAG;
+                        pop_ld_o = 1'b1;
+                        // translation valid but this is to NC and the WB is not yet empty.
+                      end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                        state_d = ABORT_TRANSACTION_NI;
+                      end
+                    end
                   end
+                end else begin
+                  // wait for the store buffer to train and the page offset to not match anymore
+                  state_d = WAIT_PAGE_OFFSET;
                 end
+              end else begin
+                // check branch result on the next cycle
+                state_d = WAIT_SPEC_LOAD;
               end
-            end else begin
-              // wait for the store buffer to train and the page offset to not match anymore
-              state_d = WAIT_PAGE_OFFSET;
             end
-          end else begin
-            // check branch result on the next cycle
-            state_d = WAIT_SPEC_LOAD;
           end
         end
-        // ----------
-        // Exception
-        // ----------
-        // if we got an exception we need to kill the request immediately
-        if (ex_i.valid) begin
-          req_port_o.kill_req = 1'b1;
+
+        // wait here for the page offset to not match anymore
+        WAIT_PAGE_OFFSET: begin
+          // we make a new request as soon as the page offset does not match anymore
+          if (!page_offset_matches_i) begin
+            state_d = WAIT_GNT;
+          end
         end
-      end
 
-      WAIT_FLUSH: begin
-        // the D$ arbiter will take care of presenting this to the memory only in case we
-        // have an outstanding request
-        req_port_o.kill_req = 1'b1;
-        req_port_o.tag_valid = 1'b1;
-        // we've killed the current request so we can go back to idle
-        state_d = IDLE;
-      end
-
-      default: begin
-        // abort the previous request - free the D$ arbiter
-        // we are here because of a TLB miss, we need to abort the current request and give way for the
-        // PTW walker to satisfy the TLB miss
-        if (state_q == ABORT_TRANSACTION && CVA6Cfg.MmuPresent) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
-          // wait until the WB is empty
-          state_d = WAIT_TRANSLATION;
-        end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
-          req_port_o.kill_req = 1'b1;
-          req_port_o.tag_valid = 1'b1;
-          // re-do the request
-          state_d = WAIT_WB_EMPTY;
-        end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
-          // Wait until the write-back buffer is empty in the data cache.
-          // the write buffer is empty, so let's go and re-do the translation.
-          state_d = WAIT_TRANSLATION;
-        end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
-          translation_req_o = 1'b1;
-          // we've got a hit and we can continue with the request process
-          if (dtlb_hit_i) state_d = WAIT_GNT;
-
-          // we got an exception
-          if (ex_i.valid) begin
-            // the next state will be the idle state
-            state_d  = IDLE;
+        WAIT_SPEC_LOAD: begin
+          // if we have a misspredicted speculative load
+          if (CVA6Cfg.SpeculativeSb && lsu_ctrl_i.is_speculative_load_miss) begin
             // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            pop_ld_o = ~req_port_i.data_rvalid;
+            if (!req_port_i.data_rvalid) begin
+              state_d  = IDLE;
+              pop_ld_o = 1'b1;
+            end
+            // if we have a correct prediction this is now a regular load
+          end else begin
+            state_d = IDLE;
           end
-        end else begin
+        end
+
+        WAIT_GNT: begin
+          // keep the translation request up
+          translation_req_o   = 1'b1;
+          // keep the request up
+          req_port_o.data_req = 1'b1;
+          // we finally got a data grant
+          if (req_port_i.data_gnt) begin
+            // so we send the tag in the next cycle
+            if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+              state_d = ABORT_TRANSACTION;
+            end else begin
+              if (!stall_ni) begin
+                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                state_d  = SEND_TAG;
+                pop_ld_o = 1'b1;
+                // translation valid but this is to NC and the WB is not yet empty.
+              end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                state_d = ABORT_TRANSACTION_NI;
+              end
+            end
+
+          end
+          // otherwise we keep waiting on our grant
+        end
+        // we know for sure that the tag we want to send is valid
+        SEND_TAG: begin
+          req_port_o.tag_valid = 1'b1;
+          state_d = IDLE;
+
+          if (accept_req) begin
+            // start the translation process even though we do not know if the addresses match this should ease timing
+            // don't start the translation for speculative loads that miss on tlb
+            translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
+            // check if load is speculative and non idempotent, if it is then stall and wait for branch result
+            if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+              // check if the page offset matches with a store, if it does stall and wait
+              if (!page_offset_matches_i) begin
+                // make a load request to memory
+                req_port_o.data_req = 1'b1;
+                // we got no data grant so wait for the grant before sending the tag
+                if (!req_port_i.data_gnt) begin
+                  state_d = WAIT_GNT;
+                end else begin
+                  // we got a grant so we can send the tag in the next cycle
+                  if (CVA6Cfg.MmuPresent && !dtlb_hit_i) begin
+                    state_d = ABORT_TRANSACTION;
+                  end else begin
+                    if (!stall_ni) begin
+                      // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                      state_d  = SEND_TAG;
+                      pop_ld_o = 1'b1;
+                      // translation valid but this is to NC and the WB is not yet empty.
+                    end else if (CVA6Cfg.NonIdemPotenceEn) begin
+                      state_d = ABORT_TRANSACTION_NI;
+                    end
+                  end
+                end
+              end else begin
+                // wait for the store buffer to train and the page offset to not match anymore
+                state_d = WAIT_PAGE_OFFSET;
+              end
+            end else begin
+              // check branch result on the next cycle
+              state_d = WAIT_SPEC_LOAD;
+            end
+          end
+          // ----------
+          // Exception
+          // ----------
+          // if we got an exception we need to kill the request immediately
+          if (ex_i.valid) begin
+            req_port_o.kill_req = 1'b1;
+          end
+        end
+
+        WAIT_FLUSH: begin
+          // the D$ arbiter will take care of presenting this to the memory only in case we
+          // have an outstanding request
+          req_port_o.kill_req = 1'b1;
+          req_port_o.tag_valid = 1'b1;
+          // we've killed the current request so we can go back to idle
           state_d = IDLE;
         end
-      end
-    endcase
 
-    // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in an extra stage
-    if (flush_i) begin
-      state_d = WAIT_FLUSH;
+        default: begin
+          // abort the previous request - free the D$ arbiter
+          // we are here because of a TLB miss, we need to abort the current request and give way for the
+          // PTW walker to satisfy the TLB miss
+          if (state_q == ABORT_TRANSACTION && CVA6Cfg.MmuPresent) begin
+            req_port_o.kill_req = 1'b1;
+            req_port_o.tag_valid = 1'b1;
+            // wait until the WB is empty
+            state_d = WAIT_TRANSLATION;
+          end else if (state_q == ABORT_TRANSACTION_NI && CVA6Cfg.NonIdemPotenceEn) begin
+            req_port_o.kill_req = 1'b1;
+            req_port_o.tag_valid = 1'b1;
+            // re-do the request
+            state_d = WAIT_WB_EMPTY;
+          end else if (state_q == WAIT_WB_EMPTY && CVA6Cfg.NonIdemPotenceEn && dcache_wbuffer_not_ni_i) begin
+            // Wait until the write-back buffer is empty in the data cache.
+            // the write buffer is empty, so let's go and re-do the translation.
+            state_d = WAIT_TRANSLATION;
+          end else if(state_q == WAIT_TRANSLATION && (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn)) begin
+            translation_req_o = 1'b1;
+            // we've got a hit and we can continue with the request process
+            if (dtlb_hit_i) state_d = WAIT_GNT;
+
+            // we got an exception
+            if (ex_i.valid) begin
+              // the next state will be the idle state
+              state_d  = IDLE;
+              // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
+              pop_ld_o = ~req_port_i.data_rvalid;
+            end
+          end else begin
+            state_d = IDLE;
+          end
+        end
+      endcase
+
+      // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in an extra stage
+      if (flush_i) begin
+        state_d = WAIT_FLUSH;
+      end
     end
   end
 
@@ -483,7 +507,7 @@ module load_unit
     // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
     // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
     // round in the load FSM
-    if ((CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
+    if (sdtrig_load_cancel_i || (CVA6Cfg.MmuPresent || CVA6Cfg.NonIdemPotenceEn) && (state_q == WAIT_TRANSLATION) && !req_port_i.data_rvalid && ex_i.valid && valid_i) begin
       trans_id_o = lsu_ctrl_i.trans_id;
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
