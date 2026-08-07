@@ -16,13 +16,14 @@
 module std_nbdcache
   import std_cache_pkg::*;
   import ariane_pkg::*;
+  import dcache_dtypes_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = dcache_dtypes_pkg::CVA6Cfg,
+    parameter type dcache_req_i_t = dcache_dtypes_pkg::dcache_req_i_t,
+    parameter type dcache_req_o_t = dcache_dtypes_pkg::dcache_req_o_t,
     parameter int unsigned NumPorts = 4,
-    parameter type axi_req_t = logic,
-    parameter type axi_rsp_t = logic
+    parameter type axi_req_t = dcache_dtypes_pkg::axi_req_t,
+    parameter type axi_rsp_t = dcache_dtypes_pkg::axi_rsp_t
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low
@@ -41,7 +42,12 @@ module std_nbdcache
     output axi_req_t axi_data_o,
     input axi_rsp_t axi_data_i,
     output axi_req_t axi_bypass_o,
-    input axi_rsp_t axi_bypass_i
+    input axi_rsp_t axi_bypass_i,
+
+    // symbolic variables for verification
+    input logic [CVA6Cfg.PLEN-1:0] sym_paddr_i,
+    input logic [CVA6Cfg.DCACHE_LINE_WIDTH-1:0] sym_cache_line_i,
+    input logic [$clog2(NumPorts)-1:0] sym_port
 );
 
   import std_cache_pkg::*;

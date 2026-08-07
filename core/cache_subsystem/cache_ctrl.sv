@@ -21,12 +21,13 @@
 module cache_ctrl
   import ariane_pkg::*;
   import std_cache_pkg::*;
+  import dcache_dtypes_pkg::*;
 #(
-    parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
+    parameter config_pkg::cva6_cfg_t CVA6Cfg = dcache_dtypes_pkg::CVA6Cfg,
     parameter type cache_line_t = logic,
     parameter type cl_be_t = logic,
-    parameter type dcache_req_i_t = logic,
-    parameter type dcache_req_o_t = logic
+    parameter type dcache_req_i_t = dcache_dtypes_pkg::dcache_req_i_t,
+    parameter type dcache_req_o_t = dcache_dtypes_pkg::dcache_req_o_t
 ) (
     input logic clk_i,  // Clock
     input logic rst_ni,  // Asynchronous reset active low

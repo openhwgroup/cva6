@@ -64,9 +64,9 @@ module cva6_icache
     output icache_req_t  mem_data_o,
 
     // symbolic variables for verification
-    input logic [CVA6Cfg.VLEN-1:0] sym_vaddr_i,
-    input logic [CVA6Cfg.PLEN-1:0] sym_paddr_i,
-    input logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] sym_cache_line_i
+    input logic [CVA6Cfg.PLEN-1:0] symbolic_physical_addr_i,
+    // input logic [CVA6Cfg.ICACHE_LINE_WIDTH-1:0] sym_cache_line_i
+    input logic [$clog2(CVA6Cfg.ICACHE_LINE_WIDTH)-1:0] symbolic_bit_index_i
 );
 
   localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
