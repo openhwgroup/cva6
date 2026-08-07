@@ -260,7 +260,7 @@ Fu = Enum('Fu', ['ALU', 'MUL', 'BRANCH', 'LDU', 'STU'])
 # This way we do not have more write-back ports than currently with F
 
 def to_fu(instr):
-    if instr.is_branch() or instr.is_regjump():
+    if instr.is_branch() or instr.is_jump() or instr.is_regjump():
         return Fu.BRANCH
     if instr.is_muldiv():
         return Fu.MUL
@@ -621,7 +621,7 @@ def issue_commit_graph(input_file, n = 3):
 def filter_timed_part(all_instructions):
     "Keep only timed part from a trace"
     filtered = []
-    re_csrr_minstret = re.compile(r"^csrr\s+\w\w,\s*minstret$")
+    re_csrr_minstret = re.compile(r"^csrrs\s+\w+,\s*minstret\b")
     accepting = False
     for instr in all_instructions:
         if re_csrr_minstret.search(instr.mnemo):

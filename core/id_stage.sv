@@ -103,8 +103,8 @@ module id_stage #(
     input x_compressed_resp_t compressed_resp_i,
     output logic compressed_valid_o,
     output x_compressed_req_t compressed_req_o,
-    // breakpoint request from trigger module
-    input debug_from_trigger_i,
+    // mcontrol6 address match breakpoint exc. generation request from trigg. module
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i[CVA6Cfg.NrIssuePorts],
     // Data cache request ouput - CACHE
     input dcache_req_o_t dcache_req_ports_i,
     // Data cache request input - CACHE
@@ -301,14 +301,16 @@ module id_stage #(
     is_illegal_deco    = is_illegal_rvc;
     instruction_deco   = instruction_rvc;
     is_compressed_deco = is_compressed_rvc;
-    if (CVA6Cfg.CvxifEn) begin
-      is_illegal_deco[0]    = is_illegal_cvxif_o;
-      instruction_deco[0]   = instruction_cvxif_o;
-      is_compressed_deco[0] = is_compressed_cvxif_o;
-    end else if (!CVA6Cfg.CvxifEn && (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT)) begin
-      is_illegal_deco[0]    = is_illegal_cvxif_i;
-      instruction_deco[0]   = instruction_cvxif_i;
-      is_compressed_deco[0] = is_compressed_cvxif_i;
+    if (CVA6Cfg.RVC) begin
+      if (CVA6Cfg.CvxifEn) begin
+        is_illegal_deco[0]    = is_illegal_cvxif_o;
+        instruction_deco[0]   = instruction_cvxif_o;
+        is_compressed_deco[0] = is_compressed_cvxif_o;
+      end else if (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT) begin
+        is_illegal_deco[0]    = is_illegal_cvxif_i;
+        instruction_deco[0]   = instruction_cvxif_i;
+        is_compressed_deco[0] = is_compressed_cvxif_i;
+      end
     end
   end
 
@@ -360,7 +362,7 @@ module id_stage #(
         .instruction_o             (decoded_instruction[i]),
         .orig_instr_o              (orig_instr[i]),
         .is_control_flow_instr_o   (is_control_flow_instr[i]),
-        .debug_from_trigger_i      (debug_from_trigger_i)
+        .sdtrig_decoder_action_i   (sdtrig_decoder_action_i[i])
     );
   end
 

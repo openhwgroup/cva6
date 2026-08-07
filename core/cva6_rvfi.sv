@@ -45,7 +45,7 @@ module cva6_rvfi
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVU) << 20)  // U - User mode implemented
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVV) << 21)  // V - Vector extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
-  | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
+  | ((CVA6Cfg.IS_XLEN64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
   localparam logic [CVA6Cfg.XLEN-1:0] hart_id_i = '0;
 
@@ -510,7 +510,7 @@ module cva6_rvfi
 
       rvfi_instr_o[i].cause <= ex_commit_cause;
       rvfi_instr_o[i].mode <= (CVA6Cfg.DebugEn && debug_mode) ? 2'b10 : priv_lvl;
-      rvfi_instr_o[i].ixl <= CVA6Cfg.XLEN == 64 ? 2 : 1;
+      rvfi_instr_o[i].ixl <= CVA6Cfg.IS_XLEN64 ? 2 : 1;
       rvfi_instr_o[i].rs1_addr <= commit_instr_rs1[i];
       rvfi_instr_o[i].rs2_addr <= commit_instr_rs2[i];
       rvfi_instr_o[i].rd_addr <= commit_instr_rd[i];
@@ -625,7 +625,7 @@ module cva6_rvfi
 
     `CONNECT_RVFI_FULL(1'b1, menvcfg, csr.fiom_q)
 
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, menvcfgh, 32'h0)
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, menvcfgh, 32'h0)
 
     `CONNECT_RVFI_FULL(1'b1, mvendorid, OPENHWGROUP_MVENDORID)
     `CONNECT_RVFI_FULL(1'b1, marchid, ARIANE_MARCHID)
@@ -634,16 +634,16 @@ module cva6_rvfi
     `CONNECT_RVFI_SAME(1'b1, mcountinhibit)
 
     `CONNECT_RVFI_FULL(1'b1, mcycle, csr.cycle_q[CVA6Cfg.XLEN-1:0])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, mcycleh, csr.cycle_q[63:32])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, mcycleh, csr.cycle_q[63:32])
 
     `CONNECT_RVFI_FULL(1'b1, minstret, csr.instret_q[CVA6Cfg.XLEN-1:0])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, minstreth, csr.instret_q[63:32])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, minstreth, csr.instret_q[63:32])
 
     `CONNECT_RVFI_FULL(1'b1, cycle, csr.cycle_q[CVA6Cfg.XLEN-1:0])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, cycleh, csr.cycle_q[63:32])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, cycleh, csr.cycle_q[63:32])
 
     `CONNECT_RVFI_FULL(1'b1, instret, csr.instret_q[CVA6Cfg.XLEN-1:0])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, instreth, csr.instret_q[63:32])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, instreth, csr.instret_q[63:32])
 
     `CONNECT_RVFI_SAME(1'b1, dcache)
     `CONNECT_RVFI_SAME(1'b1, icache)
@@ -651,10 +651,10 @@ module cva6_rvfi
     `CONNECT_RVFI_SAME(CVA6Cfg.EnableAccelerator, acc_cons)
     `CONNECT_RVFI_SAME(CVA6Cfg.RVZCMT, jvt)
     `CONNECT_RVFI_FULL(1'b1, pmpcfg0, csr.pmpcfg_q[CVA6Cfg.XLEN/8-1:0])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, pmpcfg1, csr.pmpcfg_q[7:4])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, pmpcfg1, csr.pmpcfg_q[7:4])
 
     `CONNECT_RVFI_FULL(1'b1, pmpcfg2, csr.pmpcfg_q[8+:CVA6Cfg.XLEN/8])
-    `CONNECT_RVFI_FULL(CVA6Cfg.XLEN == 32, pmpcfg3, csr.pmpcfg_q[15:12])
+    `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, pmpcfg3, csr.pmpcfg_q[15:12])
 
     bit [CVA6Cfg.XLEN-1:0] pmpaddr_q;
     genvar i;

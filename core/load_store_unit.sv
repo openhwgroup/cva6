@@ -28,7 +28,8 @@ module load_store_unit
     parameter type lsu_ctrl_t = logic,
     parameter type acc_mmu_req_t = logic,
     parameter type acc_mmu_resp_t = logic,
-    parameter type cbo_t = logic
+    parameter type cbo_t = logic,
+    parameter type bp_resolve_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -40,6 +41,8 @@ module load_store_unit
     input logic stall_st_pending_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output logic no_st_pending_o,
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -50,6 +53,8 @@ module load_store_unit
     output logic lsu_ready_o,
     // Load Store Unit instruction is valid - ISSUE_STAGE
     input logic lsu_valid_i,
+    // Signals speculative loads for non-idempotent load handling - EX_STAGE
+    input logic speculative_load_i,
 
     // Load transaction ID - ISSUE_STAGE
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] load_trans_id_o,
@@ -75,7 +80,8 @@ module load_store_unit
     output logic commit_ready_o,
     // Commit transaction ID - TO_BE_COMPLETED
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
-
+    // Result from branch unit - EX_STAGE
+    input bp_resolve_t resolved_branch_i,
     // Enable virtual memory translation - TO_BE_COMPLETED
     input logic enable_translation_i,
     // Enable G-Stage memory translation - TO_BE_COMPLETED
@@ -164,7 +170,13 @@ module load_store_unit
     // RVFI information - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
-    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    //Trigger module communication
+    input  logic                         sdtrig_load_stall_i,
+    input  logic                         sdtrig_load_cancel_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    input  logic                         sdtrig_store_stall_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
 
   // data is misaligned
@@ -315,6 +327,7 @@ module load_store_unit
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
+        .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
 
         .req_port_i(dcache_req_ports_i[0]),
         .req_port_o(dcache_req_ports_o[0]),
@@ -325,6 +338,7 @@ module load_store_unit
   end else begin : gen_no_mmu
     // icache request without MMU, virtual and physical address are identical
     assign pmp_icache_areq_i.fetch_valid = icache_areq_i.fetch_req;
+    assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_icache_areq_i.fetch_paddr = icache_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin : gen_virtual_physical_address_instruction_plen_greater
@@ -550,7 +564,10 @@ module load_store_unit
       .amo_resp_i,
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[2]),
-      .req_port_o           (dcache_req_ports_o[2])
+      .req_port_o           (dcache_req_ports_o[2]),
+      //Trigger module
+      .sdtrig_store_stall_i (sdtrig_store_stall_i),
+      .sdtrig_store_action_i(sdtrig_store_action_i)
   );
 
   // ------------------
@@ -593,7 +610,11 @@ module load_store_unit
       // to memory arbiter
       .req_port_i           (dcache_req_ports_i[1]),
       .req_port_o           (dcache_req_ports_o[1]),
-      .dcache_wbuffer_not_ni_i
+      .dcache_wbuffer_not_ni_i,
+      //sdtrig
+      .sdtrig_load_stall_i  (sdtrig_load_stall_i),
+      .sdtrig_load_cancel_i (sdtrig_load_cancel_i),
+      .sdtrig_load_action_i (sdtrig_load_action_i)
   );
 
   // ----------------------------
@@ -860,12 +881,15 @@ module load_store_unit
     be_i,
     fu_data_i.fu,
     fu_data_i.operation,
-    fu_data_i.trans_id
+    fu_data_i.trans_id,
+    speculative_load_i,
+    1'b0
   };
 
   lsu_bypass #(
       .CVA6Cfg(CVA6Cfg),
-      .lsu_ctrl_t(lsu_ctrl_t)
+      .lsu_ctrl_t(lsu_ctrl_t),
+      .bp_resolve_t(bp_resolve_t)
   ) lsu_bypass_i (
       .clk_i,
       .rst_ni,
@@ -874,6 +898,7 @@ module load_store_unit
       .lsu_req_valid_i(lsu_valid_i),
       .pop_ld_i       (pop_ld),
       .pop_st_i       (pop_st),
+      .resolved_branch_i,
 
       .lsu_ctrl_o(lsu_ctrl_byp),
       .ready_o   (lsu_ready_o)

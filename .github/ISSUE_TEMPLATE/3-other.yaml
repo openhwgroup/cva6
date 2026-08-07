@@ -1,0 +1,19 @@
+name: Other
+description: Other issues
+title: "<title>"
+labels: []
+body:
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    options:
+    - label: >-
+        I am a human engaging in an interpersonal interaction.
+        During this interaction, my words are my own and are not generated.
+        If relevant, I provide links to my sources.
+      required: true
+- type: textarea
+  attributes:
+    label: Description
+  validations:
+    required: true

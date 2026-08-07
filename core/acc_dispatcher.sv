@@ -189,8 +189,6 @@ module acc_dispatcher
 
     // We received a new instruction
     if (acc_valid_q) insn_pending_d[acc_data.trans_id] = 1'b1;
-    // Flush all received instructions
-    if (flush_ex_i) insn_pending_d = '0;
 
     // An accelerator instruction is no longer speculative.
     if (acc_commit && insn_pending_q[acc_commit_trans_id]) begin
@@ -200,6 +198,15 @@ module acc_dispatcher
 
     // An accelerator instruction was issued.
     if (acc_req_o.acc_req.req_valid) insn_ready_d[acc_req_o.acc_req.trans_id] = 1'b0;
+
+    // Flush all received instructions.  This branch must appear LAST so that
+    // it wins the lexical-priority contest against a simultaneous acc_commit
+    // (which reads the registered insn_pending_q and would otherwise leave a
+    // stale insn_ready bit set for a just-flushed trans_id).
+    if (flush_ex_i) begin
+      insn_pending_d = '0;
+      insn_ready_d   = '0;
+    end
   end : p_non_speculative_ff
 
   /*************************

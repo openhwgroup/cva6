@@ -120,7 +120,9 @@ module branch_unit #(
     branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
     branch_exception_o.valid = 1'b0;
     if (CVA6Cfg.TvalEn)
-      branch_exception_o.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+      branch_exception_o.tval = {
+        {CVA6Cfg.XLEN - CVA6Cfg.VLEN{target_address[CVA6Cfg.VLEN-1]}}, target_address
+      };
     else branch_exception_o.tval = '0;
     branch_exception_o.tval2 = {CVA6Cfg.GPLEN{1'b0}};
     branch_exception_o.tinst = '0;

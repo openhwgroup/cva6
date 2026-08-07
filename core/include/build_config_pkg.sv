@@ -26,20 +26,20 @@ package build_config_pkg;
     int unsigned DCACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.DcacheLineWidth / 8);
 
     // MMU
-    int unsigned VpnLen = (CVA6Cfg.XLEN == 64) ? (CVA6Cfg.RVH ? 29 : 27) : 20;
-    int unsigned PtLevels = (CVA6Cfg.XLEN == 64) ? 3 : 2;
+    int unsigned VpnLen = IS_XLEN64 ? (CVA6Cfg.RVH ? 29 : 27) : 20;
+    int unsigned PtLevels = IS_XLEN64 ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;
 
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
-    cfg.PLEN = (CVA6Cfg.XLEN == 32) ? 34 : 56;
-    cfg.GPLEN = (CVA6Cfg.XLEN == 32) ? 34 : 41;
+    cfg.PLEN = IS_XLEN32 ? 34 : 56;
+    cfg.GPLEN = IS_XLEN32 ? 34 : 41;
     cfg.IS_XLEN32 = IS_XLEN32;
     cfg.IS_XLEN64 = IS_XLEN64;
     cfg.XLEN_ALIGN_BYTES = $clog2(CVA6Cfg.XLEN / 8);
-    cfg.ASID_WIDTH = (CVA6Cfg.XLEN == 64) ? 16 : 1;
-    cfg.VMID_WIDTH = (CVA6Cfg.XLEN == 64) ? 14 : 1;
+    cfg.ASID_WIDTH = IS_XLEN64 ? 16 : 1;
+    cfg.VMID_WIDTH = IS_XLEN64 ? 14 : 1;
 
     cfg.FpgaEn = CVA6Cfg.FpgaEn;
     cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
@@ -67,7 +67,7 @@ package build_config_pkg;
     cfg.XF16ALT = CVA6Cfg.XF16ALT;
     cfg.XF8 = CVA6Cfg.XF8;
     cfg.RVA = CVA6Cfg.RVA;
-    cfg.RVB = CVA6Cfg.RVB;
+    cfg.RVB = CVA6Cfg.RVB || CVA6Cfg.ZKN;  // ZKN requires RVB
     cfg.ZKN = CVA6Cfg.ZKN;
     cfg.RVV = CVA6Cfg.RVV;
     cfg.RVC = CVA6Cfg.RVC;
@@ -130,11 +130,23 @@ package build_config_pkg;
     cfg.CachedRegionLength = CVA6Cfg.CachedRegionLength;
     cfg.MaxOutstandingStores = CVA6Cfg.MaxOutstandingStores;
     cfg.DebugEn = CVA6Cfg.DebugEn;
-    cfg.SDTRIG = CVA6Cfg.SDTRIG;
-    cfg.Mcontrol6 = CVA6Cfg.Mcontrol6;
-    cfg.Icount = CVA6Cfg.Icount;
-    cfg.Etrigger = CVA6Cfg.Etrigger;
-    cfg.Itrigger = CVA6Cfg.Itrigger;
+
+    cfg.Sdtrig = CVA6Cfg.Sdtrig;
+    cfg.SdtrigMcontrol6 = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigMcontrol6 : 1'b0;
+    cfg.SdtrigIcount = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigIcount : 1'b0;
+    cfg.SdtrigEtrigger = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigEtrigger : 1'b0;
+    cfg.SdtrigItrigger = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigItrigger : 1'b0;
+    cfg.SdtrigNrTriggers = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigNrTriggers : 32'd0;
+    cfg.SdtrigMcontrol6ExecAddr = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6ExecAddr : 1'b0;
+    cfg.SdtrigMcontrol6ExecData = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6ExecData : 1'b0;
+    cfg.SdtrigMcontrol6Store = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6Store : 1'b0;
+    cfg.SdtrigMcontrol6LoadAddr = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6LoadAddr : 1'b0;
+    cfg.SdtrigMcontrol6LoadData = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigMcontrol6LoadData : 1'b0;
+    cfg.SdtrigTriggerChaining = CVA6Cfg.SdtrigMcontrol6 ? CVA6Cfg.SdtrigTriggerChaining : 1'b0;
+    cfg.SdtrigSupportedActions = CVA6Cfg.Sdtrig ? (CVA6Cfg.DebugEn ? CVA6Cfg.SdtrigSupportedActions : 2'b01) : 2'b00;
+    cfg.SdtrigSupportedMatch = CVA6Cfg.Sdtrig ? CVA6Cfg.SdtrigSupportedMatch : 10'b00_0000_0000;
+    cfg.SdtrigSupportTextra = 1'b0;  //Trigger Extra not supported : no use implemented yet
+
     cfg.NonIdemPotenceEn = (CVA6Cfg.NrNonIdempotentRules > 0) && (CVA6Cfg.NonIdempotentLength > 0);
     cfg.AxiBurstWriteEn = CVA6Cfg.AxiBurstWriteEn;
 
@@ -175,12 +187,12 @@ package build_config_pkg;
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
-    cfg.ModeW = (CVA6Cfg.XLEN == 32) ? 1 : 4;
-    cfg.ASIDW = (CVA6Cfg.XLEN == 32) ? 9 : 16;
-    cfg.VMIDW = (CVA6Cfg.XLEN == 32) ? 7 : 14;
-    cfg.PPNW = (CVA6Cfg.XLEN == 32) ? 22 : 44;
-    cfg.GPPNW = (CVA6Cfg.XLEN == 32) ? 22 : 29;
-    cfg.MODE_SV = (CVA6Cfg.XLEN == 32) ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
+    cfg.ModeW = IS_XLEN32 ? 1 : 4;
+    cfg.ASIDW = IS_XLEN32 ? 9 : 16;
+    cfg.VMIDW = IS_XLEN32 ? 7 : 14;
+    cfg.PPNW = IS_XLEN32 ? 22 : 44;
+    cfg.GPPNW = IS_XLEN32 ? 22 : 29;
+    cfg.MODE_SV = IS_XLEN32 ? config_pkg::ModeSv32 : config_pkg::ModeSv39;
     cfg.SV = (cfg.MODE_SV == config_pkg::ModeSv32) ? 32 : 39;
     cfg.SVX = (cfg.MODE_SV == config_pkg::ModeSv32) ? 34 : 41;
     cfg.InstrTlbEntries = CVA6Cfg.InstrTlbEntries;

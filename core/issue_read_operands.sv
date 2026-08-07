@@ -380,8 +380,6 @@ module issue_read_operands
             fus_busy[1].alu = 1'b1;
             fus_busy[1].ctrl_flow = 1'b1;
             fus_busy[1].csr = 1'b1;
-            // Speculative non-idempotent loads are not supported yet
-            fus_busy[1].load = 1'b1;
             // The store buffer cannot be partially flushed yet
             fus_busy[1].store = 1'b1;
           end else begin
@@ -1085,24 +1083,14 @@ module issue_read_operands
       if (CVA6Cfg.RVH) begin
         tinst_q <= tinst_n;
       end
-      if (CVA6Cfg.SuperscalarEn) begin
-        if (issue_instr_i[1].fu == CTRL_FLOW) begin
-          pc_o                  <= issue_instr_i[1].pc;
-          is_compressed_instr_o <= issue_instr_i[1].is_compressed;
-          branch_predict_o      <= issue_instr_i[1].bp;
-        end
-      end
+      pc_o <= pc_n;
+      is_compressed_instr_o <= is_compressed_instr_n;
+      branch_predict_o <= branch_predict_n;
       if (issue_instr_i[0].fu == CTRL_FLOW) begin
-        pc_o                  <= issue_instr_i[0].pc;
-        is_compressed_instr_o <= issue_instr_i[0].is_compressed;
-        branch_predict_o      <= issue_instr_i[0].bp;
         if (CVA6Cfg.RVZCMT) is_zcmt_o <= issue_instr_i[0].is_zcmt;
         else is_zcmt_o <= '0;
       end
-      x_transaction_rejected_o <= 1'b0;
-      if (issue_instr_i[0].fu == CVXIF) begin
-        x_transaction_rejected_o <= x_transaction_rejected;
-      end
+      x_transaction_rejected_o <= x_transaction_rejected_n;
     end
   end
 

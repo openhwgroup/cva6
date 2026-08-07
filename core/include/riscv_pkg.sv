@@ -37,6 +37,7 @@ package riscv;
 
   // type which holds xlen
   typedef enum logic [1:0] {
+    XLEN_NA  = 2'b00,  // Used for mstatus.{S/U}XL when {S/U} not implemented
     XLEN_32  = 2'b01,
     XLEN_64  = 2'b10,
     XLEN_128 = 2'b11

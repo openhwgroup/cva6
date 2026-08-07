@@ -55,7 +55,6 @@ module cva6_tlb
     output logic [CVA6Cfg.PtLevels-2:0] lu_is_page_o,
     output logic lu_hit_o
 );
-  localparam GPPN2 = (CVA6Cfg.XLEN == 32) ? CVA6Cfg.VLEN - 33 : 10;
   // SV39 defines three levels of page tables
   struct packed {
     logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
@@ -107,14 +106,6 @@ module cva6_tlb
   generate
     for (i_gen = 0; i_gen < TLB_ENTRIES; i_gen++) begin
       for (x_gen = 0; x_gen < CVA6Cfg.PtLevels; x_gen++) begin
-        // Identify if virtual address at level `x` matches the vaddr / gpaddr to be flushed
-        if (CVA6Cfg.RVH) begin
-          assign vaddr_vpn_match[i_gen][HYP_EXT][x_gen] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] ==
-                                                                  gppn[i_gen][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen];
-        end
-      end
-
-      for (x_gen = 0; x_gen < CVA6Cfg.PtLevels; x_gen++) begin
         // WARNING: `x` goes in the order {0 = 4K, 1 = 2M, 2 = 1G}.
 
         // Identify page_match for all TLB Entries:
@@ -163,12 +154,12 @@ module cva6_tlb
         // Identify `vpage_match` (matching page type) and deduce `vaddr_level` match (hit at all level on the virtual addr to be flushed
         // and matching page type).
         for (z_gen = 0; z_gen < HYP_EXT + 1; z_gen++) begin
-          assign vpage_match[i_gen][z_gen][x_gen] = x_gen == 0 ? 1 : tags_q[i_gen].is_page[CVA6Cfg.PtLevels-1-x_gen][z_gen];
+          assign vpage_match      [i_gen][z_gen][x_gen] = x_gen == 0 ? 1 : tags_q[i_gen].is_page[CVA6Cfg.PtLevels-1-x_gen][z_gen];
           assign vaddr_level_match[i_gen][z_gen][x_gen] = &vaddr_vpn_match[i_gen][z_gen][CVA6Cfg.PtLevels-1:x_gen] && vpage_match[i_gen][z_gen][x_gen];
         end
-        //identify if virtual address vpn matches at all PT levels for all TLB entries 
-        assign vaddr_vpn_match[i_gen][0][x_gen]  = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
 
+        // Identify if virtual address vpn matches at all PT levels for all TLB entries
+        assign vaddr_vpn_match[i_gen][0][x_gen] = vaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] == tags_q[i_gen].vpn[x_gen];
       end
 
       // Identify if the input virtual address matches a stored NAPOT tag
@@ -176,11 +167,11 @@ module cva6_tlb
       assign napot_tag_match[i_gen] = (CVA6Cfg.SvnapotEn && tags_q[i_gen].is_napot_64k) ? vpn_match[i_gen][2] && vpn_match[i_gen][1] && vpn0_napot_match[i_gen] : 1'b0;
 
       if (CVA6Cfg.RVH) begin
-        //identify if GPADDR matches the GPPN
-        assign vaddr_vpn_match[i_gen][HYP_EXT][0] = (gpaddr_to_be_flushed_i[20:12] == gppn[i_gen][8:0]);
-        assign vaddr_vpn_match[i_gen][HYP_EXT][HYP_EXT] = (gpaddr_to_be_flushed_i[29:21] == gppn[i_gen][17:9]);
-        assign vaddr_vpn_match[i_gen][HYP_EXT][HYP_EXT*2] = (gpaddr_to_be_flushed_i[30+GPPN2:30] == gppn[i_gen][18+GPPN2:18]);
-
+        for (x_gen = 0; x_gen < CVA6Cfg.PtLevels; x_gen++) begin
+          // Identify if GPADDR matches the GPPN
+          assign vaddr_vpn_match[i_gen][HYP_EXT][x_gen] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] ==
+                                                                      gppn[i_gen][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen];
+        end
       end
 
       // Reorganise the output structure to match `is_page` tag order: [1G, 2M]
@@ -237,12 +228,12 @@ module cva6_tlb
             lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
             // S-stage Mega page
             if (tags_q[i].is_page[1][0])
-              lu_gpaddr_o[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12];
+              lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
             // S-stage Giga page
             if (tags_q[i].is_page[0][0])
-              lu_gpaddr_o[12+2*CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
+              lu_gpaddr_o[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
           end else begin
-            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.XLEN == 32?CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
+            lu_gpaddr_o = CVA6Cfg.GPLEN'(lu_vaddr_i[(CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN:CVA6Cfg.GPLEN)-1:0]);
           end
 
           // G-translation (if requested), depending on `content[i].gpte` page type
@@ -374,9 +365,9 @@ module cva6_tlb
           // flush everything if vmid is 0 and addr is 0 ("HFENCE.GVMA x0 x0" case)
           if (vmid_to_be_flushed_is0 && gpaddr_to_be_flushed_is0) tags_n[i].valid = 1'b0;
           // flush gpaddr in all addressing space ("HFENCE.GVMA gpaddr x0" case), it should happen only for leaf pages
-          else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT] ) && (~gpaddr_to_be_flushed_is0))
+          else if (vmid_to_be_flushed_is0 && (|vaddr_level_match[i][HYP_EXT]) && (~gpaddr_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
-          // the entry vmid and gpaddr both matches with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
+          // the entry vmid and gpaddr both match with the entry to be flushed ("HFENCE.GVMA gpaddr vmid" case)
           else if ((|vaddr_level_match[i][HYP_EXT]) && (vmid_to_be_flushed_i == tags_q[i].vmid) && (~gpaddr_to_be_flushed_is0) && (~vmid_to_be_flushed_is0))
             tags_n[i].valid = 1'b0;
           // the entry is flushed if the vmid matches and gpaddr is 0. ("HFENCE.GVMA 0 vmid" case)

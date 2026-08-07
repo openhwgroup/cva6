@@ -321,7 +321,7 @@ This class has the expected functionality following UVM standards. It receives t
 
 *_[.underline]#Axi Agent#_*
 
-This agent is an AXI4 (Advanced eXtensible Interface) SV UVM1.1 SLAVE. Aligned to AXI4 AMBA spec https://developer.arm.com/documentation/ihi0022/hc
+This agent is an AXI4 (Advanced eXtensible Interface) SV UVM1.1 SLAVE. Aligned to AXI4 spec https://developer.arm.com/documentation/ihi0022/hc
 
 [.underline]#Agent Architecture:#
 
@@ -396,7 +396,7 @@ This collaboration is also important for the open-source community, as it enable
 It is described in a previous section of this document.
 
 ===== Agent developed by CEA
-The AXI superset agent is a highly configurable AXI agent. It is based on the AMBA AXI and ACE Protocol Specification from ARM(https://developer.arm.com/documentation/ihi0022/g/). It provides the functionality of AXI master and AXI slave. In the master mode, it provides the sequences/APIs to drive READ/WRITE/ATOP transactions. In the slave mode, the agent uses an external memory to perform response.
+The AXI superset agent is a highly configurable AXI agent. It is based on the AXI and ACE Protocol Specification from ARM(https://developer.arm.com/documentation/ihi0022/g/). It provides the functionality of AXI master and AXI slave. In the master mode, it provides the sequences/APIs to drive READ/WRITE/ATOP transactions. In the slave mode, the agent uses an external memory to perform response.
 
 ===== Enhancement
 The idea was to merge the master part of the CEA agent with the Thales slave agent and create one agent supporting both slave and master functionality, incorporating all AXI4 features and the potential to support additional functionality from AXI5. The agent must also support external memory in slave mode.

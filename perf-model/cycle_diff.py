@@ -10,7 +10,7 @@
 import re
 import sys
 
-re_csrr_minstret = re.compile(r"^csrr\s+\w+,\s*minstret$")
+re_csrr_minstret = re.compile(r"^csrrs\s+\w+,\s*minstret\b")
 re_full = re.compile(
     r"([a-z]+)\s+0:\s*0x00000000([0-9a-f]+)\s*\(([0-9a-fx]+)\)\s*(\S*)@\s*([0-9]+)\s*(.*)"
 )

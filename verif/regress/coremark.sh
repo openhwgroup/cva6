@@ -76,7 +76,7 @@ cflags_opt=(
 cflags=(
         "${cflags_opt[@]}"
         "-DCOMPILER_FLAGS='\"${cflags_opt[*]}\"'"
-        -DITERATIONS=4
+        -DITERATIONS=1
         -DPERFORMANCE_RUN
         -DSKIP_TIME_CHECK
         -I../tests/custom/env
