@@ -25,6 +25,14 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
+# Check Zcmt JVT address calculation with the complete eight-bit index.
+if ! make -C corev_apu/tb/tb_zcmt_decoder test; then
+  make -C corev_apu/tb/tb_zcmt_decoder clean
+  echo "Error: Zcmt decoder unit test failed"
+  return 1 2>/dev/null || exit 1
+fi
+make -C corev_apu/tb/tb_zcmt_decoder clean
+
 cd verif/sim/
 python3 cva6.py --testlist=../tests/testlist_issues.yaml --test compressed-fpreg-commits-rv64 --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS
 make clean
