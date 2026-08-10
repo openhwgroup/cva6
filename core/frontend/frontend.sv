@@ -331,8 +331,8 @@ module frontend
   );
 
   logic paddr_nonidempotent;
-  assign paddr_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
-      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_fetch_req_o.paddr}  //TO DO CHECK GRANULARITY
+  assign paddr_nonidempotent = arsp_i.fetch_valid && config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, arsp_i.fetch_paddr}  //TO DO CHECK GRANULARITY
   );
 
   // Caches optimisation signals

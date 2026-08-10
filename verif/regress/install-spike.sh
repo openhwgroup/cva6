@@ -43,7 +43,10 @@ if ! [ -f "$SPIKE_INSTALL_DIR/bin/spike" ]; then
   cd build
   WITH_BOOST=""
   if [[ ! -z "$BOOST_INSTALL_DIR" ]]; then
-      WITH_BOOST="--with-boost=${BOOST_INSTALL_DIR}"
+      WITH_BOOST="${WITH_BOOST} --with-boost=${BOOST_INSTALL_DIR}"
+  fi
+  if [[ ! -z "$BOOST_LIBDIR" ]]; then
+      WITH_BOOST="${WITH_BOOST} --with-boost-libdir=${BOOST_LIBDIR}"
   fi
   if [ ! -f config.log ]; then
       ../configure --prefix="$SPIKE_INSTALL_DIR" ${WITH_BOOST}
