@@ -101,8 +101,8 @@ endif
 # target takes one of the following cva6 hardware configuration:
 # cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
 # Changing the default target to cv32a60x for Step1 verification
-target     ?= cv64a6_imafdc_sv39
-ifeq ($(target), cv64a6_imafdc_sv39_hpdcache)
+target     ?= cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi
+ifeq ($(target), cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi)
 	XLEN ?= 64
 else
 	XLEN ?= 32
