@@ -506,6 +506,7 @@ module cva6_mmu
   logic [CVA6Cfg.GPLEN-1:0] lsu_gpaddr_n, lsu_gpaddr_q;
   logic [31:0] lsu_tinst_n, lsu_tinst_q;
   logic hs_ld_st_inst_n, hs_ld_st_inst_q;
+  logic hlvx_inst_n, hlvx_inst_q;
   pte_cva6_t dtlb_pte_n, dtlb_pte_q;
   pte_cva6_t dtlb_gpte_n, dtlb_gpte_q;
   logic lsu_req_n, lsu_req_q;
@@ -548,9 +549,15 @@ module cva6_mmu
     if (CVA6Cfg.RVH) begin
       lsu_tinst_n = lsu_tinst_i;
       hs_ld_st_inst_n = hs_ld_st_inst_i;
+      hlvx_inst_n = hlvx_inst_i;
       lsu_gpaddr_n[(CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0] = dtlb_gpaddr[(CVA6Cfg.IS_XLEN32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0];
       csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
-      d_g_st_access_err = en_ld_st_g_translation_i && !dtlb_gpte_q.u;
+      d_g_st_access_err = en_ld_st_g_translation_i && (
+                          !dtlb_gpte_q.u ||
+                          !dtlb_gpte_q.a ||
+                          (!lsu_is_store_q &&
+                           !(dtlb_gpte_q.r || (dtlb_gpte_q.x && (mxr_i || hlvx_inst_q))))
+      );
       dtlb_gpte_n = dtlb_g_content;
     end
 
@@ -765,6 +772,7 @@ module cva6_mmu
       dtlb_is_page_q  <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
+      hlvx_inst_q     <= '0;
       misaligned_ex_q <= '0;
     end else begin
       lsu_vaddr_q     <= lsu_vaddr_n;
@@ -778,6 +786,7 @@ module cva6_mmu
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
         hs_ld_st_inst_q <= hs_ld_st_inst_n;
+        hlvx_inst_q     <= hlvx_inst_n;
         dtlb_gpte_q     <= dtlb_gpte_n;
         lsu_gpaddr_q    <= lsu_gpaddr_n;
       end
