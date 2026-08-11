@@ -301,39 +301,56 @@ module std_cache_subsystem
 
   a_invalid_instruction_fetch :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) (icache_dreq_o.valid & ~icache_dreq_o.ex.valid) |-> !$isunknown(
+      icache_dreq_o.data
+  ))
   else
     $warning(
         1,
-        "[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-        icache_dreq_o.vaddr,
-        icache_dreq_o.data
+        "[l1 icache] reading invalid instructions: vaddr=%08X, data=%08X",
+        $sampled(
+            icache_dreq_o.vaddr
+        ),
+        $sampled(
+            icache_dreq_o.data
+        )
     );
 
   a_invalid_write_data :
   assert property (
-    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> |dcache_req_ports_i[NumPorts-1].data_be |-> (|dcache_req_ports_i[NumPorts-1].data_wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[NumPorts-1].data_req |-> |dcache_req_ports_i[NumPorts-1].data_be |-> !$isunknown(
+      dcache_req_ports_i[NumPorts-1].data_wdata
+  ))
   else
     $warning(
         1,
         "[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
         {
-          dcache_req_ports_i[NumPorts-1].address_tag, dcache_req_ports_i[NumPorts-1].address_index
+          $sampled(dcache_req_ports_i[NumPorts-1].address_tag),
+          $sampled(dcache_req_ports_i[NumPorts-1].address_index)
         },
-        dcache_req_ports_i[NumPorts-1].data_be,
-        dcache_req_ports_i[NumPorts-1].data_wdata
+        $sampled(
+            dcache_req_ports_i[NumPorts-1].data_be
+        ),
+        $sampled(
+            dcache_req_ports_i[NumPorts-1].data_wdata
+        )
     );
   generate
     for (genvar j = 0; j < NumPorts - 1; j++) begin
       a_invalid_read_data :
       assert property (
-          @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
+          @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> !$isunknown(
+          dcache_req_ports_o[j].data_rdata
+      ))
       else
         $warning(
             1,
             "[l1 dcache] reading invalid data on port %01d: data=%016X",
             j,
-            dcache_req_ports_o[j].data_rdata
+            $sampled(
+                dcache_req_ports_o[j].data_rdata
+            )
         );
     end
   endgenerate
