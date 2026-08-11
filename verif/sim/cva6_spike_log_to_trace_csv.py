@@ -31,7 +31,7 @@ RD_RE = re.compile(r"(core\s+\d+:\s+)?(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
                    "\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?)\s*0x(?P<val>[a-f0-9]+)")
 
 CORE_RE = re.compile(
-    r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
+    r"^\s*(?P<cycle>\d+)\s*\|\s*core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
 ADDR_RE = re.compile(
     r"(?P<rd>[a-z0-9]+?),(?P<imm>[\-0-9]+?)\((?P<rs1>[a-z0-9]+)\)")
 ILLE_RE = re.compile(r"trap_illegal_instruction")
@@ -121,8 +121,8 @@ def read_spike_trace(path, full_trace):
     # true. Otherwise, we are in state EFFECT if instr is not None, otherwise we
     # are in state INSTR.
 
-    start_trampoline_re = re.compile(r'core.*: 0x0*10000 ')
-    end_trampoline_re = re.compile(r'core.*: 0x0*10010 ')
+    start_trampoline_re = re.compile(r'^\s*(?P<cycle>\d+)\s*\|\s*core.*: 0x0*10000 ')
+    end_trampoline_re = re.compile(r'^\s*(?P<cycle>\d+)\s*\|\s*core.*: 0x0*10010 ')
 
     in_trampoline = False
     instr = None
