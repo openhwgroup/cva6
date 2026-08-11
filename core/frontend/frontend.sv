@@ -325,7 +325,7 @@ module frontend
 
   // CHECK PMA regions
 
-  logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
+  logic paddr_is_cacheable;  // asserted if physical address is non-cacheable
   assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_fetch_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
@@ -584,7 +584,6 @@ module frontend
     if (~rst_ni) begin
       ypb_a_state_q <= TRANSPARENT;
       paddr_q <= '0;
-      paddr_is_cacheable_q <= '0;
       kill_req_q <= '0;
       fetchbuf_windex_q <= '0;
       fetchbuf_w_q <= '0;
@@ -592,7 +591,6 @@ module frontend
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        paddr_is_cacheable_q <= paddr_is_cacheable;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;

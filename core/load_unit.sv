@@ -218,7 +218,7 @@ module load_unit
 
   // CHECK PMA regions
 
-  logic paddr_is_cacheable, paddr_is_cacheable_q;  // asserted if physical address is non-cacheable
+  logic paddr_is_cacheable;  // asserted if physical address is non-cacheable
   assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}, 
                 ypb_load_req_o.paddr[ CVA6Cfg.DCACHE_TAG_WIDTH + 
@@ -322,7 +322,7 @@ module load_unit
   //default ypb state registred
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
-  assign ypb_load_req_o.be = (ypb_a_state_q == TRANSPARENT) ? lsu_ctrl_i.be : be_q;
+  assign ypb_load_req_o.be = (ypb_a_state_q == TRANSPARENT) && valid_i ? lsu_ctrl_i.be : be_q;
   assign ypb_load_req_o.size = (CVA6Cfg.XLEN == 64) ? ariane_pkg::size_gen(
       ypb_load_req_o.be
   ) : ariane_pkg::size_gen_32(
@@ -372,14 +372,13 @@ module load_unit
       ypb_a_state_q <= TRANSPARENT;
       paddr_q <= '0;
       be_q <= '0;
-      paddr_is_cacheable_q <= '0;
       kill_req_q <= '0;
       ldbuf_windex_q <= '0;
       ldbuf_w_q <= '0;
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        if (lsu_ctrl_i.valid) be_q <= lsu_ctrl_i.be;
+        if (valid_i) be_q <= lsu_ctrl_i.be;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
