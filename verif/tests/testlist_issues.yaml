@@ -45,3 +45,9 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: misaligned-branch-rvc-disabled
+    <<: *common_test_config
+    iterations: 1
+    gen_opts: +disable_compressed_instr=1
+    gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc -march=rv32im_zba_zbb_zbs_zbc_zicsr_zifencei -mabi=ilp32"
+    asm_tests: <path_var>/custom/issues/misaligned-branch-rvc-disabled.S
