@@ -26,28 +26,6 @@ package cva6_config_pkg;
   localparam CVA6ConfigDataUserWidth = 12;
 
 
-`ifndef __UVMA_AXI_MACROS_SV__
-  `define __UVMA_AXI_MACROS_SV__
-
-  `define IFNDEF_DEFINE(name, value) \
-    `ifndef name \
-      `define name value \
-  `endif
-
-  `define UVMA_AXI_ADDR_MAX_WIDTH 39
-  `define UVMA_AXI_DATA_MAX_WIDTH 128
-  `define UVMA_AXI_USER_MAX_WIDTH 12
-  `define UVMA_AXI_ID_MAX_WIDTH 4
-  // `IFNDEF_DEFINE(UVMA_AXI_STRB_MAX_WIDTH , 8   )
-
-  `define UVMA_AXI_MAX_NB_TXN_BURST 256
-  `define UVMA_AXI_LOOP_MAX_WIDTH 8  
-  `define UVMA_AXI_MMUSID_MAX_WIDTH 32 
-  `define UVMA_AXI_MMUSSID_MAX_WIDTH 20 
-
-`endif  // __UVMA_AXI_MACROS_SV__
-
-
 localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    XLEN: unsigned'(CVA6ConfigXlen),
    VLEN: unsigned'(64),
@@ -82,6 +60,7 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    CoproType: config_pkg::COPRO_EXAMPLE,
    RVZiCond: bit'(1),
    RVZicntr: bit'(1),
+   RVZiCbom: bit'(1),
    RVZihpm: bit'(1),
    NrScoreboardEntries: unsigned'(8),
    PerfCounterEn: bit'(1),
@@ -109,18 +88,28 @@ localparam config_pkg::cva6_user_cfg_t cva6_cfg = '{
    NonIdempotentAddrBase: 1024'({64'b0, 64'b0}),
    NonIdempotentLength: 1024'({64'b0, 64'b0}),
    NrExecuteRegionRules: unsigned'(6),
-   ExecuteRegionAddrBase: 1024'({64'h1_0000_0000, 64'h8000_0000, 64'h300_0000, 64'h0, 64'h2000_0000, 64'h8_0000_0000}),
-   ExecuteRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000, 64'h1000, 64'h1_0000, 64'h2000_0000, 64'h7_FFFF_FFFF}),
+   ExecuteRegionAddrBase: 1024'({64'h1_0000_0000, 64'h8000_0000, 64'h300_0000, 64'h0, 64'h2000_0000, 64'h8_0000_0000, 64'h4_0000_0000}),
+   ExecuteRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000, 64'h1000, 64'h1_0000, 64'h2000_0000, 64'h7_FFFF_FFFF, 64'h3_FFFF_FFFF}),
    NrCachedRegionRules: unsigned'(2),
    CachedRegionAddrBase: 1024'({64'h1_0000_0000, 64'h8000_0000}),
    CachedRegionLength: 1024'({64'h2_0000_0000, 64'h1_0000}),
    MaxOutstandingStores: unsigned'(7),
    DebugEn: bit'(1),
-   SDTRIG: bit'(0),
-   Mcontrol6: bit'(0),
-   Icount: bit'(0),
-   Etrigger: bit'(0),
-   Itrigger: bit'(0),
+   Sdtrig: bit'(0),
+   SdtrigMcontrol6: bit'(0),
+   SdtrigMcontrol6ExecAddr: bit'(0),
+   SdtrigMcontrol6ExecData: bit'(0),
+   SdtrigMcontrol6Store: bit'(0),
+   SdtrigMcontrol6LoadAddr: bit'(0),
+   SdtrigMcontrol6LoadData: bit'(0),
+   SdtrigIcount: bit'(0),
+   SdtrigEtrigger: bit'(0),
+   SdtrigItrigger: bit'(0),
+   SdtrigNrTriggers: int'(4),
+   SdtrigTriggerChaining: bit'(0),
+   SdtrigSupportedActions: {2{2'b01}},
+   SdtrigSupportedMatch: {10{10'b00_0000_0001}},
+   SdtrigSupportTextra: bit'(0),
    AxiBurstWriteEn: bit'(0),
    IcacheByteSize: unsigned'(32768),
    IcacheSetAssoc: unsigned'(8),
