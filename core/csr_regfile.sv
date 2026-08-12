@@ -1995,12 +1995,12 @@ module csr_regfile
     end
     // hardwired extension registers
     if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
-      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+      mstatus_d.sd = (mstatus_d.xs == riscv::Dirty) | (mstatus_d.fs == riscv::Dirty);
     end else begin
       mstatus_d.sd = riscv::Off;
     end
     if (CVA6Cfg.RVH) begin
-      vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
+      vsstatus_d.sd = (vsstatus_d.xs == riscv::Dirty) | (vsstatus_d.fs == riscv::Dirty);
     end
 
     // reserve PMPCFG bits 5 and 6 (hardwire to 0)
