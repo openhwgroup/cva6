@@ -329,7 +329,7 @@ run_sim_rtl:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
     - ./cook.py vcs-uvm-run -t $MY_TARGET -n hello-world --comp-mode rtl --tandem-enabled
-      --tb-performance-mode --trace-mode notrace
+      --trace-mode notrace
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
@@ -490,7 +490,7 @@ benchmark_run_sim_rtl:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
     - ./cook.py vcs-uvm-run -t $MY_TARGET -n $MY_BENCHMARK --comp-mode rtl
-      --tandem-enabled --tb-performance-mode --trace-mode notrace
+      --tandem-enabled --trace-mode notrace
     - ./cook.py report-benchmark -t $MY_TARGET -n $MY_BENCHMARK --comp-mode rtl
   artifacts:
     when: always
@@ -656,7 +656,7 @@ testlist_run_sim_rtl:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
     - ./cook.py uvm-run-testlist --simulator ${MY_SIMULATOR} -t $MY_TARGET -l verif/tests/${MY_TESTLIST}.yaml --comp-mode rtl
-      --tandem-enabled --tb-performance-mode --trace-mode notrace
+      --tandem-enabled --trace-mode notrace
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
