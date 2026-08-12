@@ -25,14 +25,6 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-testharness,spike
 fi
 
-# Check Zcmt JVT address calculation with the complete eight-bit index.
-if ! make -C corev_apu/tb/tb_zcmt_decoder test; then
-  make -C corev_apu/tb/tb_zcmt_decoder clean
-  echo "Error: Zcmt decoder unit test failed"
-  return 1 2>/dev/null || exit 1
-fi
-make -C corev_apu/tb/tb_zcmt_decoder clean
-
 cd verif/sim/
 python3 cva6.py --testlist=../tests/testlist_issues.yaml --test compressed-fpreg-commits-rv64 --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS $DV_OPTS
 make clean
@@ -40,5 +32,23 @@ make -C verif/sim clean_all
 python3 cva6.py --testlist=../tests/testlist_issues.yaml --test compressed-fpreg-commits-rv32 --iss_yaml cva6.yaml --target cv32a6_imafc_sv32 --iss=$DV_SIMULATORS $DV_OPTS
 make clean
 make -C verif/sim clean_all
+
+
+# Check the complete eight-bit Zcmt JVT index with a directed assembly test.
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test zcmt-jvt-index-rv32 \
+  --iss_yaml cva6.yaml \
+  --target hwconfig \
+  --hwconfig_opts="cv32a60x *RVZCMT=1" \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld"
+
+zcmt_status=$?
+if [ "$zcmt_status" -ne 0 ]; then
+  echo "Error: Zcmt JVT index assembly regression failed"
+  cd ../..
+  return "$zcmt_status" 2>/dev/null || exit "$zcmt_status"
+fi
 
 cd -
