@@ -25,7 +25,6 @@ from flows.utils.utils import (
     run_cmd,
 )
 
-
 app = typer.Typer()
 
 

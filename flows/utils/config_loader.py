@@ -18,50 +18,58 @@ from rich.panel import Panel
 console = Console()
 
 config_dir = Path(os.getenv("CONFIG_DIR", Path.cwd() / "flows" / "config"))
+print(config_dir)
 
 
-def read_config(config_file):
-    DATA = {}
+def _read_config(config_file: str, verbose: bool):
+    DATA = None
     try:
         with (config_dir / config_file).open("r") as f:
             DATA = yaml.safe_load(f)
     except FileNotFoundError:
-        console.print(
-            Panel(
-                f"[red]{config_dir}/{config_file}[/red]",
-                title="ERROR CONFIG NOT FOUND",
-                title_align="left",
-                border_style="red",
-                expand=False,
+        if verbose:
+            console.print(
+                Panel(
+                    f"[red]{config_dir}/{config_file}[/red]",
+                    title="ERROR CONFIG NOT FOUND",
+                    title_align="left",
+                    border_style="red",
+                    expand=False,
+                )
             )
-        )
     except yaml.YAMLError:
-        console.print(
-            Panel(
-                f"[red]{config_dir}/{config_file}[/red]",
-                title="ERROR READ YAML CONFIG",
-                title_align="left",
-                border_style="red",
-                expand=False,
+        if verbose:
+            console.print(
+                Panel(
+                    f"[red]{config_dir}/{config_file}[/red]",
+                    title="ERROR READ YAML CONFIG",
+                    title_align="left",
+                    border_style="red",
+                    expand=False,
+                )
             )
-        )
     # Test to detect dummy config (uninitialised environement
     # Rename dummy1 key in yaml to disable this error
-    if "dummy1" in DATA:
-        console.print(
-            Panel(
-                f"[red]{config_dir}/{config_file}\n\
-       Please configure flows/config/{config_file} \n\
-       to fit your environment or set $CONFIG_DIR env variable\n\
-       to a path that contains your personnal yml config files[/red]",
-                title="ERROR CONFIG NOT INITIALISED",
-                title_align="left",
-                border_style="red",
-                expand=False,
+    if DATA != None and "dummy1" in DATA:
+        if verbose:
+            console.print(
+                Panel(
+                    f"[red]{config_dir}/{config_file}\n\
+        Please configure flows/config/{config_file} \n\
+        to fit your environment or set $CONFIG_DIR env variable\n\
+        to a path that contains your personnal yml config files[/red]",
+                    title="ERROR CONFIG NOT INITIALISED",
+                    title_align="left",
+                    border_style="red",
+                    expand=False,
+                )
             )
-        )
     return DATA
 
 
-TECHNO_DATA = read_config("techno.yml")
-COMPILER_DATA = read_config("compiler.yml")
+def load_techno_config(verbose: bool = True):
+    return _read_config("techno.yml", verbose)
+
+
+def load_compiler_config(verbose: bool = True):
+    return _read_config("compiler.yml", verbose)

@@ -26,6 +26,7 @@ from flows.utils.utils import (
     print_recipe_title,
     print_recipe_end,
     print_step,
+    print_warning,
     print_info,
     print_success,
     print_error,
@@ -33,7 +34,6 @@ from flows.utils.utils import (
     tail_file,
     run_cmd,
 )
-
 
 app = typer.Typer()
 
@@ -181,6 +181,14 @@ def questa_uvm_run(
 
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
 
+    if spike_param_file.exists():
+        spike_param_string = f"+config_file={spike_param_file}"
+    else:
+        spike_param_string = ""
+        print_warning(
+            "The spike parameter file is missing. Tandem simulation will be configured automatically"
+        )
+
     elf = compile_dir / f"{test_name}.elf"
     signature = compile_dir / f"{test_name}.elf.signature_output"
     tandem_report = simulation_dir / "tandem_report.yml"
@@ -242,7 +250,7 @@ def questa_uvm_run(
         "+mhartid=0",
         f"+signature={signature}",
         "+UVM_TESTNAME=uvmt_cva6_firmware_test_c",
-        f"+report_file={tandem_report}",
+        spike_param_string,
         f"+UVM_VERBOSITY=UVM_{uvm_verbosity}",
         f"+config_file={spike_param_file}",
         f"+tandem_enabled={int(tandem_enabled)}",
