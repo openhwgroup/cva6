@@ -29,7 +29,6 @@ from flows.utils.utils import (
     print_error,
 )
 
-
 app = typer.Typer()
 
 

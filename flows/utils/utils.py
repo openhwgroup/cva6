@@ -27,15 +27,15 @@ from rich.text import Text
 import yaml
 from flows.utils.config_loader import load_techno_config, load_compiler_config
 
-
 # ==========================================================
 # Print functions
 # ==========================================================
 
 console = Console()
 
-TECHNO_DATA = load_techno_config(verbose = False)
-COMPILER_DATA = load_compiler_config(verbose = False)
+TECHNO_DATA = load_techno_config(verbose=False)
+COMPILER_DATA = load_compiler_config(verbose=False)
+
 
 def print_recipe_title(title, quiet=False):
     if not quiet:
@@ -321,8 +321,11 @@ class Cva6Hier(str, Enum):
     obi = "obi"
     axi = "axi"
 
+
 if TECHNO_DATA != None:
-    TechnoOption = Enum("TechnoOption", {key.upper(): key for key in TECHNO_DATA.keys()})
+    TechnoOption = Enum(
+        "TechnoOption", {key.upper(): key for key in TECHNO_DATA.keys()}
+    )
 else:
     TechnoOption = Enum("TechnoOption", [])
 
@@ -332,6 +335,7 @@ if COMPILER_DATA != None:
     )
 else:
     ToolchainOption = Enum("ToolchainOption", [])
+
 
 def autocompletion_target():
     target_list = []

@@ -66,8 +66,10 @@ def _read_config(config_file: str, verbose: bool):
             )
     return DATA
 
+
 def load_techno_config(verbose: bool = True):
     return _read_config("techno.yml", verbose)
+
 
 def load_compiler_config(verbose: bool = True):
     return _read_config("compiler.yml", verbose)

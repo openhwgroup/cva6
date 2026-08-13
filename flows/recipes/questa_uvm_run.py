@@ -35,7 +35,6 @@ from flows.utils.utils import (
     run_cmd,
 )
 
-
 app = typer.Typer()
 
 
@@ -186,7 +185,9 @@ def questa_uvm_run(
         spike_param_string = f"+config_file={spike_param_file}"
     else:
         spike_param_string = ""
-        print_warning("The spike parameter file is missing. Tandem simulation will be configured automatically")
+        print_warning(
+            "The spike parameter file is missing. Tandem simulation will be configured automatically"
+        )
 
     elf = compile_dir / f"{test_name}.elf"
     signature = compile_dir / f"{test_name}.elf.signature_output"

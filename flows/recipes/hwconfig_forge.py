@@ -26,7 +26,6 @@ from flows.utils.utils import (
     print_table,
 )
 
-
 app = typer.Typer()
 
 
