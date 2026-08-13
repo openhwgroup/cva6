@@ -27,6 +27,7 @@ from flows.utils.utils import (
     print_recipe_end,
     print_step,
     print_info,
+    print_warning,
     print_success,
     print_error,
     print_param_table,
@@ -190,6 +191,12 @@ def vcs_uvm_run(
 
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
 
+    if spike_param_file.exists():
+        spike_param_string = f"+config_file={spike_param_file}"
+    else:
+        spike_param_string = ""
+        print_warning("The spike parameter file is missing. Tandem simulation will be configured automatically")
+
     elf = compile_dir / f"{test_name}.elf"
     signature = compile_dir / f"{test_name}.elf.signature_output"
     tandem_report = simulation_dir / "tandem_report.yml"
@@ -206,7 +213,7 @@ def vcs_uvm_run(
         *[f"{run_opt}" for run_opt in run_opts],
         "-assert",
         "nopostproc",
-        f"+config_file={spike_param_file}",
+        spike_param_string,
         "-sv_lib",
         f"{spike_lib}/libcustomext",
         "-sv_lib",
