@@ -1,0 +1,127 @@
+# Copyright 2026 OpenHW Group
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+# ================================================================================
+# OpenHW CVA6 CI - Tier 1: master_candidate cook.py sanity
+# ================================================================================
+#
+# Fast public validation for the initial master_candidate AXI targets. Software
+# is compiled through cook.py and executed with Verilator TestHarness plus Spike
+# tandem. The workflow intentionally uses the same result and artifact contract
+# as the Tier CI on master.
+# ================================================================================
+
+name: openhw-cva6-ci-tier1
+
+on:
+  pull_request:
+    branches:
+      - master_candidate
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openhw-cva6-ci-tier1-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SPIKE_TANDEM: 1
+  NUM_JOBS: 8
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  setup-tools:
+    name: Setup Tools
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Setup CVA6 Environment
+        uses: ./.github/actions/setup-cva6-env
+        with:
+          install-tools: "true"
+          install-cook-dependencies: "true"
+
+      - name: Validate master_candidate Tier CI adapter
+        run: python3 .github/tests/test_master_candidate_cook_tier.py -v
+
+  execute-rv32-tier1:
+    name: RV32 Tier1 ${{ matrix.config }} / ${{ matrix.testcase }}
+    runs-on: ubuntu-24.04
+    needs: setup-tools
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - config: cv32a60x_axi
+            testcase: base-rv32-p
+            mode: cook-testlist
+            simulator: veri-testharness,spike
+            install_script: install-riscv-tests
+            testlist: verif/tests/base_rv32_p.yaml
+            toolchain: github_actions_gcc
+            compiler_march: rv32imc_zicsr_zba_zbb_zbs_zbc
+            compiler_march_reason: public-gcc-13.2-does-not-accept-zcmt
+            expected_enabled_tests: 5
+            install_llvm18: false
+
+          - config: cv32a65x_axi
+            testcase: base-rv32-p
+            mode: cook-testlist
+            simulator: veri-testharness,spike
+            install_script: install-riscv-tests
+            testlist: verif/tests/base_rv32_p.yaml
+            toolchain: github_actions_gcc
+            compiler_march: rv32imc_zicsr_zba_zbb_zbs_zbc_zifencei
+            compiler_march_reason: public-gcc-13.2-does-not-accept-zcmt
+            expected_enabled_tests: 5
+            install_llvm18: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Setup CVA6 Environment
+        uses: ./.github/actions/setup-cva6-env
+        with:
+          install-cook-dependencies: "true"
+          install-llvm18: ${{ matrix.install_llvm18 }}
+
+      - name: Install simulation prerequisites
+        run: source ci/install-prereq.sh
+
+      - name: Run Tier 1 for ${{ matrix.config }} / ${{ matrix.testcase }}
+        env:
+          TIER_NAME: Tier 1
+          TIER_MODE: ${{ matrix.mode }}
+          TIER_CONFIG: ${{ matrix.config }}
+          TIER_TESTCASE: ${{ matrix.testcase }}
+          TIER_SIMULATOR: ${{ matrix.simulator }}
+          TIER_INSTALL_SCRIPT: ${{ matrix.install_script }}
+          TIER_TESTLIST: ${{ matrix.testlist }}
+          TIER_TOOLCHAIN: ${{ matrix.toolchain }}
+          TIER_COMPILER_MARCH: ${{ matrix.compiler_march }}
+          TIER_COMPILER_MARCH_REASON: ${{ matrix.compiler_march_reason }}
+          TIER_EXPECTED_ENABLED_TESTS: ${{ matrix.expected_enabled_tests }}
+          TIER_EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          TIER_EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: bash .github/scripts/run-tier-regression.sh
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier1-rv32-${{ matrix.config }}-${{ matrix.testcase }}
+          path: |
+            ci-results/
+            artifacts/reports/
+            build/${{ matrix.config }}/compile/
+            build/${{ matrix.config }}/simulation/sim_verilator_testharness/
+            build/${{ matrix.config }}/config/
+          if-no-files-found: error
+          retention-days: 14
