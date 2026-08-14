@@ -1995,12 +1995,12 @@ module csr_regfile
     end
     // hardwired extension registers
     if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
-      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+      mstatus_d.sd = (mstatus_d.xs == riscv::Dirty) | (mstatus_d.fs == riscv::Dirty);
     end else begin
       mstatus_d.sd = riscv::Off;
     end
     if (CVA6Cfg.RVH) begin
-      vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
+      vsstatus_d.sd = (vsstatus_d.xs == riscv::Dirty) | (vsstatus_d.fs == riscv::Dirty);
     end
 
     // reserve PMPCFG bits 5 and 6 (hardwire to 0)
@@ -2344,8 +2344,8 @@ module csr_regfile
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
       if (CVA6Cfg.RVH) begin
-        // set virtualization mode
-        v_d           = mstatus_q.mpv;
+        // MPV is ignored when returning to M-mode.
+        v_d = (mstatus_q.mpp == riscv::PRIV_LVL_M) ? 1'b0 : mstatus_q.mpv;
         //set mstatus mpv to false
         mstatus_d.mpv = 1'b0;
         if (mstatus_q.mpp != riscv::PRIV_LVL_M) mstatus_d.mprv = 1'b0;
