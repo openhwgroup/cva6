@@ -152,7 +152,7 @@ def main() -> None:
             llvm, llvm_metadata = llvm_entry(output_dir)
             compiler_data["github_actions_llvm18"] = llvm
             environment["toolchains"]["github_actions_llvm18"] = llvm_metadata
-        except ValueError:
+        except (ValueError, OSError, subprocess.CalledProcessError):
             if args.required_toolchain == "github_actions_llvm18":
                 raise
 

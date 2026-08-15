@@ -294,11 +294,21 @@ class RecipeAdapterTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "iss_regr.log"
 
-            report.write_text("trace [PASSED]\n", encoding="utf-8")
+            report.write_text("[PASSED]: 24 matched\n", encoding="utf-8")
             self.assertEqual(
                 RECIPE.regression_report_passed(report),
-                (True, "1 passed comparison(s)"),
+                (True, "24 matched instruction(s) across 1 comparison(s)"),
             )
+
+            report.write_text("[PASSED]: 0 matched\n", encoding="utf-8")
+            passed, detail = RECIPE.regression_report_passed(report)
+            self.assertFalse(passed)
+            self.assertIn("zero-match comparison", detail)
+
+            report.write_text("trace [PASSED]\n", encoding="utf-8")
+            passed, detail = RECIPE.regression_report_passed(report)
+            self.assertFalse(passed)
+            self.assertIn("no pass/fail comparison evidence", detail)
 
             report.write_text("trace [FAILED]\n", encoding="utf-8")
             passed, detail = RECIPE.regression_report_passed(report)
@@ -314,6 +324,18 @@ class RecipeAdapterTest(unittest.TestCase):
             passed, detail = RECIPE.regression_report_passed(report)
             self.assertFalse(passed)
             self.assertIn("missing regression report", detail)
+
+    def test_regression_report_rejects_any_zero_match_comparison(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "iss_regr.log"
+            report.write_text(
+                "[PASSED]: 24 matched\n[PASSED]: 0 matched\n",
+                encoding="utf-8",
+            )
+
+            passed, detail = RECIPE.regression_report_passed(report)
+            self.assertFalse(passed)
+            self.assertIn("zero-match comparison", detail)
 
     def test_tandem_log_requires_tandem_and_explicit_success(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -438,6 +460,55 @@ class RecipeAdapterTest(unittest.TestCase):
         self.assertFalse(tandem_option.default)
         self.assertNotIn("mabi", signature.parameters)
 
+    def test_top_level_command_propagates_failed_test(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = "cv32a60x_axi"
+            target_dir = root / "config" / "target" / target
+            target_dir.mkdir(parents=True)
+            (target_dir / "isa.yml").write_text(
+                "mabi: ilp32\n", encoding="utf-8"
+            )
+            (target_dir / "spike.yaml").write_text(
+                "spike_param_tree:\n  priv: MSU\n", encoding="utf-8"
+            )
+
+            testlist = root / "verif" / "tests" / "example.yaml"
+            testlist.parent.mkdir(parents=True)
+            testlist.write_text(
+                "testlist:\n  - test: example\n    iterations: 1\n",
+                encoding="utf-8",
+            )
+            source_iss = root / "verif" / "sim" / "cva6.yaml"
+            source_iss.parent.mkdir(parents=True)
+            source_iss.write_text("{}\n", encoding="utf-8")
+
+            failed_result = RECIPE.CompiledTestResult(
+                "example_0", "rv32imc", "ilp32", False
+            )
+            with (
+                working_directory(root),
+                patch.object(RECIPE, "write_iss_config"),
+                patch.object(
+                    RECIPE,
+                    "run_compiled_test",
+                    return_value=failed_result,
+                ),
+                patch.object(RECIPE.Report, "dump"),
+                self.assertRaises(RECIPE.typer.Exit) as raised,
+            ):
+                RECIPE.verilator_testharness_run_testlist(
+                    target=target,
+                    testlist=str(testlist.relative_to(root)),
+                    test_name=None,
+                    tandem_enabled=True,
+                    iss_timeout=500,
+                    sv_seed="1",
+                    quiet=True,
+                )
+
+            self.assertEqual(raised.exception.exit_code, 1)
+
 
 class ToolchainConfigTest(unittest.TestCase):
     def test_clang_wrapper_forces_lld(self) -> None:
@@ -451,6 +522,64 @@ class ToolchainConfigTest(unittest.TestCase):
             self.assertIn("-fuse-ld=lld", text)
             self.assertIn(str(compiler), text)
             self.assertTrue(os.access(wrapper, os.X_OK))
+
+    def test_llvm_probe_failure_only_breaks_required_llvm(self) -> None:
+        gcc_config = {"GCC": "riscv32-unknown-elf-gcc"}
+        gcc_metadata = {"version": "test-gcc"}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = {
+                "RISCV": str(root),
+                "CV_SW_PREFIX": "riscv32-unknown-elf-",
+            }
+            with (
+                patch.dict(os.environ, environment),
+                patch.object(
+                    TOOLCHAINS,
+                    "gcc_entry",
+                    return_value=(gcc_config, gcc_metadata),
+                ),
+                patch.object(
+                    TOOLCHAINS,
+                    "llvm_entry",
+                    side_effect=OSError("broken optional LLVM"),
+                ),
+            ):
+                gcc_output = root / "gcc-config"
+                with patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "prepare-cook-toolchains.py",
+                        "--output-dir",
+                        str(gcc_output),
+                        "--required-toolchain",
+                        "github_actions_gcc",
+                    ],
+                ):
+                    TOOLCHAINS.main()
+
+                compiler_data = yaml.safe_load(
+                    (gcc_output / "compiler.yml").read_text(encoding="utf-8")
+                )
+                self.assertEqual(set(compiler_data), {"github_actions_gcc"})
+
+                llvm_output = root / "llvm-config"
+                with patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "prepare-cook-toolchains.py",
+                        "--output-dir",
+                        str(llvm_output),
+                        "--required-toolchain",
+                        "github_actions_llvm18",
+                    ],
+                ):
+                    with self.assertRaisesRegex(
+                        SystemExit, "broken optional LLVM"
+                    ):
+                        TOOLCHAINS.main()
 
 
 class DependencyContractTest(unittest.TestCase):

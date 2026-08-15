@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 import shlex
 import signal
@@ -190,9 +191,19 @@ def regression_report_passed(report: Path) -> tuple[bool, str]:
     if failed_markers:
         return False, f"{failed_markers} failed comparison(s)"
 
-    passed_markers = report_text.count("[PASSED]")
-    if passed_markers:
-        return True, f"{passed_markers} passed comparison(s)"
+    matched_counts = [
+        int(value)
+        for value in re.findall(
+            r"\[PASSED\]:\s*([0-9]+)\s+matched\b", report_text
+        )
+    ]
+    if matched_counts and all(count > 0 for count in matched_counts):
+        return True, (
+            f"{sum(matched_counts)} matched instruction(s) "
+            f"across {len(matched_counts)} comparison(s)"
+        )
+    if matched_counts:
+        return False, "regression report contains a zero-match comparison"
     return False, "regression report contains no pass/fail comparison evidence"
 
 
