@@ -34,6 +34,7 @@ jobs:
   setup-tools:
     name: Setup Tools
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
@@ -51,6 +52,7 @@ jobs:
   execute-rv32-tier2:
     name: RV32 Tier2 ${{ matrix.config }} / ${{ matrix.testcase }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     needs: setup-tools
     strategy:
       fail-fast: false

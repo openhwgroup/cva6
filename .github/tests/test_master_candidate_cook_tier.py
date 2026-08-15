@@ -146,6 +146,19 @@ class WorkflowContractTest(unittest.TestCase):
             self.assertNotIn("continue-on-error", text)
             self.assertNotIn("allow_failure", text)
 
+    def test_workflow_jobs_have_bounded_runtime(self) -> None:
+        jobs = (
+            (self.tier1, "execute-rv32-tier1"),
+            (self.tier2, "execute-rv32-tier2"),
+        )
+        for workflow, execute_job in jobs:
+            self.assertEqual(
+                workflow["jobs"]["setup-tools"]["timeout-minutes"], "45"
+            )
+            self.assertEqual(
+                workflow["jobs"][execute_job]["timeout-minutes"], "60"
+            )
+
     def test_no_gitlab_matrix_runtime_dependency(self) -> None:
         paths = (
             self.tier1_path,
