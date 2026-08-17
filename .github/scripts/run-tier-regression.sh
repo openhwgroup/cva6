@@ -26,10 +26,8 @@ TIER_TESTLIST="${TIER_TESTLIST:-}"
 TIER_TEST_NAME="${TIER_TEST_NAME:-}"
 TIER_LINKER="${TIER_LINKER:-}"
 TIER_HWCONFIG_OPTS="${TIER_HWCONFIG_OPTS:-}"
-TIER_TOOLCHAIN="${TIER_TOOLCHAIN:-}"
+TIER_TOOLCHAIN="${TIER_TOOLCHAIN:-github_actions_gcc}"
 TIER_COMPILER_MARCH="${TIER_COMPILER_MARCH:-}"
-TIER_COMPILER_MARCH_REASON="${TIER_COMPILER_MARCH_REASON:-not-specified}"
-TIER_EXPECTED_ENABLED_TESTS="${TIER_EXPECTED_ENABLED_TESTS:-unknown}"
 TIER_ISS_TIMEOUT="${TIER_ISS_TIMEOUT:-500}"
 
 case "${TIER_MODE}" in
@@ -42,7 +40,6 @@ case "${TIER_MODE}" in
     ;;
   cook-testlist)
     : "${TIER_TESTLIST:?TIER_TESTLIST is required for cook-testlist mode}"
-    : "${TIER_TOOLCHAIN:?TIER_TOOLCHAIN is required for cook-testlist mode}"
     : "${TIER_COMPILER_MARCH:?TIER_COMPILER_MARCH is required for cook-testlist mode}"
     ;;
   *)
@@ -107,8 +104,6 @@ write_metadata() {
     echo "simulator=${TIER_SIMULATOR}"
     echo "toolchain=${TIER_TOOLCHAIN}"
     echo "compiler_march=${TIER_COMPILER_MARCH}"
-    echo "compiler_march_reason=${TIER_COMPILER_MARCH_REASON}"
-    echo "expected_enabled_tests=${TIER_EXPECTED_ENABLED_TESTS}"
     echo "spike_tandem=${SPIKE_TANDEM:-unset}"
     echo "source_revision=$(git rev-parse HEAD)"
     echo "event_head_sha=${TIER_EVENT_HEAD_SHA:-unknown}"
@@ -202,15 +197,11 @@ if [ "${rc}" -eq 0 ] && [ "${TIER_MODE}" = "cook-testlist" ]; then
 
   if [ "${rc}" -eq 0 ]; then
     run_logged python3 .github/scripts/prepare-cook-toolchains.py \
-      --output-dir "${COOK_CONFIG_DIR}" \
-      --required-toolchain "${TIER_TOOLCHAIN}"
+      --output-dir "${COOK_CONFIG_DIR}"
     record_rc "$?"
   fi
 
   export CONFIG_DIR="${COOK_CONFIG_DIR}"
-  if [ -d "${COOK_CONFIG_DIR}/llvm18/bin" ]; then
-    export PATH="${COOK_CONFIG_DIR}/llvm18/bin:${PATH}"
-  fi
 
   export DASHBOARD_JOB_TITLE="${TIER_CONFIG} ${TIER_TESTCASE} public tandem"
   export DASHBOARD_JOB_DESCRIPTION="cook.py Verilator TestHarness and Spike validation"
