@@ -252,7 +252,6 @@ def questa_uvm_run(
         "+UVM_TESTNAME=uvmt_cva6_firmware_test_c",
         spike_param_string,
         f"+UVM_VERBOSITY=UVM_{uvm_verbosity}",
-        f"+config_file={spike_param_file}",
         f"+tandem_enabled={int(tandem_enabled)}",
         f"+tohost_addr={add_tohost}",
         f"+GLOBAL_PATTERN_start={add_start_window}",
