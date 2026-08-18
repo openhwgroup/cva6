@@ -1576,7 +1576,7 @@ module csr_regfile
             mstatus_d.tw   = riscv::Off;
             mstatus_d.mprv = riscv::Off;
           end
-          if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
+          if ((mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
