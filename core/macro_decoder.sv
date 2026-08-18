@@ -17,21 +17,20 @@
 module macro_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
-    input  logic [31:0] instr_i,
-    input  logic        clk_i,                      // Clock
-    input  logic        rst_ni,                     // Synchronous reset
-    input  logic        flush_i,                    // Flush the current macro-instruction expansion
-    input  logic        is_macro_instr_i,           // Instruction is of macro extension
-    input  logic        illegal_instr_i,            // From compressed decoder
-    input  logic        is_compressed_i,
-    input  logic        issue_ack_i,                // Check if the instruction is acknowledged
+    input logic clk_i,  // Clock
+    input logic rst_ni,  // Synchronous reset
+    input logic flush_i,  // Flush the current macro-instruction expansion
+    input logic is_macro_instr_i,  // Instruction is of macro extension
+    input logic illegal_instr_i,  // From compressed decoder
+    input logic is_compressed_i,
+    input logic issue_ack_i,  // Check if the instruction is acknowledged
     output logic [31:0] instr_o,
-    output logic        illegal_instr_o,
-    output logic        is_compressed_o,
-    output logic        fetch_stall_o,              // Wait while push/pop/move instructions expand
-    output logic        is_last_macro_instr_o,
-    output logic        is_double_rd_macro_instr_o,
-    output logic        is_macro_instr_atomic_o
+    output logic illegal_instr_o,
+    output logic is_compressed_o,
+    output logic fetch_stall_o,  // Wait while push/pop/move instructions expand
+    output logic is_last_macro_instr_o,
+    output logic is_double_rd_macro_instr_o,
+    output logic is_macro_instr_atomic_o
 );
 
   // FSM States
