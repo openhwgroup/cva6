@@ -137,7 +137,7 @@ def questa_uvm_comp(
         "SPIKE_PATH": str(
             repo_dir / "verif" / "core-v-verif" / "vendor" / "riscv" / "riscv-isa-sim"
         ),
-        "LD_PRELOAD": f"{repo_dir}/verif/core-v-verif/vendor/riscv/riscv-isa-sim/lib/libyaml-cpp.so:{repo_dir}/verif/core-v-verif/vendor/riscv/riscv-isa-sim/lib/libriscv.so",  # ← ADD THIS COMMA
+        "LD_PRELOAD": f"{repo_dir}/tools/spike/lib/libyaml-cpp.so:{repo_dir}/tools/spike/lib/libriscv.so",  # ← ADD THIS COMMA
         "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),"HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
         "HPDCACHE_TARGET_CFG": str(
             repo_dir / "core/include/cva6_hpdcache_default_config_pkg.sv"
