@@ -162,6 +162,12 @@ module macro_decoder #(
         default: reg_numbers = '0;
       endcase
 
+      // rlist values 0-3 are reserved for Zcmp push/pop-family instructions.
+      if ((instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111) && instr_i[7:4] < 4'b0100) begin
+        illegal_instr_o = 1'b1;
+        instr_o_reg     = instr_i;
+      end
+
       if (CVA6Cfg.IS_XLEN32) begin
         unique case (instr_i[7:4])
           4'b0100, 4'b0101, 4'b0110, 4'b0111: begin
@@ -272,7 +278,7 @@ module macro_decoder #(
 
     unique case (state_q)
       IDLE: begin
-        if (is_macro_instr_i) begin
+        if (is_macro_instr_i && !illegal_instr_o) begin
           reg_numbers_d = reg_numbers - 1'b1;
           state_d = issue_ack_i ? INIT : IDLE;
           case (macro_instr_type)

@@ -62,3 +62,18 @@ testlist:
       -fvisibility=hidden
       -nostdlib
       -nostartfiles
+
+  - test: zcmp-reserved-rlist-rv32
+    description: >
+      Check that reserved Zcmp push/pop rlist values 0 through 3
+      raise illegal-instruction exceptions.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/Zcmp/cm_reserved_rlist_test.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      -I../tests/custom/env
