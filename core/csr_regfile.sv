@@ -1194,6 +1194,20 @@ module csr_regfile
             dcsr_d.nmip      = 1'b0;
             dcsr_d.stopcount = 1'b0;
             dcsr_d.stoptime  = 1'b0;
+            // dcsr.prv is WARL over supported privilege modes
+            // legalize any unsupported value to M in every configuration
+            if (dcsr_d.prv != riscv::PRIV_LVL_M &&
+                !(CVA6Cfg.RVS && dcsr_d.prv == riscv::PRIV_LVL_S)  &&
+                !(CVA6Cfg.RVU && dcsr_d.prv == riscv::PRIV_LVL_U)) begin
+              dcsr_d.prv = riscv::PRIV_LVL_M;
+            end
+            // dcsr.v is WARL: clear it without H or when DRET returns to M-mode
+            if (!CVA6Cfg.RVH || dcsr_d.prv == riscv::PRIV_LVL_M) dcsr_d.v = 1'b0;
+            // dcsr.cause is written by hardware only, preserve on a software write
+            dcsr_d.cause = dcsr_q.cause;
+            // reserved fields are hardwired to zero
+            dcsr_d.zero1 = 1'b0;
+            dcsr_d.zero2 = '0;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -2396,7 +2410,7 @@ module csr_regfile
         priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
         if (CVA6Cfg.RVH) begin
           // restore the previous virtualization mode
-          v_d = dcsr_q.v;
+          v_d = (dcsr_q.prv == riscv::PRIV_LVL_M) ? 1'b0 : dcsr_q.v;
         end
         // actually return from debug mode
         debug_mode_d = 1'b0;
