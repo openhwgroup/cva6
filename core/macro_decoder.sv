@@ -17,6 +17,7 @@
 module macro_decoder #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty
 ) (
+    input logic [31:0] instr_i,
     input logic clk_i,  // Clock
     input logic rst_ni,  // Synchronous reset
     input logic flush_i,  // Flush the current macro-instruction expansion
