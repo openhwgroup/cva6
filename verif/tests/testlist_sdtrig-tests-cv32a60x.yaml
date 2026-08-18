@@ -1,4 +1,4 @@
-# Copyright Google LLC
+# Copyright Thales DIS SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,35 +30,14 @@
 # compare_opts    : Options for the RTL & ISS trace comparison
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
+# 
+
 common_test_config: &common_test_config
   path_var: TESTS_PATH
-  gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc"
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostartfiles -g <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/tests/custom/common "
 
 testlist:
-  - test: compressed-fpreg-commits-rv64
+  - test: asic
+    iterations: 1
     <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv64.S
-
-  - test: compressed-fpreg-commits-rv32
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
-
-  - test: mret-mpv-rv64
-    <<: *common_test_config
-    iterations: 1
-    asm_tests: <path_var>/custom/issues/mret-mpv-rv64.S
-
-  - test: zcmt-jvt-index-rv32
-    description: >
-      Check that cm.jalt uses the complete eight-bit JVT table index.
-    iterations: 1
-    path_var: TESTS_PATH
-    asm_tests: <path_var>/custom/zcmt/cm_jalt_long.S
-    gcc_opts: >-
-      -static
-      -mcmodel=medany
-      -fvisibility=hidden
-      -nostdlib
-      -nostartfiles
+    asm_tests: <path_var>/custom/trigger_tests/mcontrol6Asic.S
