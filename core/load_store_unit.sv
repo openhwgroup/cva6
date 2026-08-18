@@ -227,9 +227,11 @@ module load_store_unit
   logic translation_valid, cva6_translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr, cva6_mmu_vaddr, acc_mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, cva6_mmu_paddr, acc_mmu_paddr, lsu_paddr;
-  logic [31:0] mmu_tinst;
-  logic        mmu_hs_ld_st_inst;
-  logic        mmu_hlvx_inst;
+  logic [CVA6Cfg.VLEN-1:0] pmp_vaddr_q;
+  logic                    pmp_is_store_q;
+  logic [            31:0] mmu_tinst;
+  logic                    mmu_hs_ld_st_inst;
+  logic                    mmu_hlvx_inst;
   exception_t mmu_exception, cva6_mmu_exception, acc_mmu_exception;
   exception_t   pmp_exception;
   icache_areq_t pmp_icache_areq_i;
@@ -297,6 +299,8 @@ module load_store_unit
 
         .lsu_valid_o    (pmp_translation_valid),
         .lsu_paddr_o    (lsu_paddr),
+        .lsu_vaddr_o    (pmp_vaddr_q),
+        .lsu_is_store_o (pmp_is_store_q),
         .lsu_exception_o(pmp_exception),
 
         .priv_lvl_i      (priv_lvl_i),
@@ -350,6 +354,8 @@ module load_store_unit
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         lsu_paddr <= '0;
+        pmp_vaddr_q <= '0;
+        pmp_is_store_q <= 1'b0;
         pmp_exception <= '0;
         pmp_translation_valid <= 1'b0;
       end else begin
@@ -358,6 +364,8 @@ module load_store_unit
         end else begin
           lsu_paddr <= CVA6Cfg.PLEN'(mmu_vaddr);
         end
+        pmp_vaddr_q <= mmu_vaddr;
+        pmp_is_store_q <= st_translation_req;
         pmp_exception <= misaligned_exception;
         pmp_translation_valid <= translation_req;
       end
@@ -398,9 +406,9 @@ module load_store_unit
       .icache_fetch_vaddr_i(icache_areq_i.fetch_vaddr),
       .lsu_valid_i         (pmp_translation_valid),
       .lsu_paddr_i         (lsu_paddr),
-      .lsu_vaddr_i         (mmu_vaddr),
+      .lsu_vaddr_i         (pmp_vaddr_q),
       .lsu_exception_i     (pmp_exception),
-      .lsu_is_store_i      (st_translation_req),
+      .lsu_is_store_i      (pmp_is_store_q),
       .lsu_valid_o         (translation_valid),
       .lsu_paddr_o         (mmu_paddr),
       .lsu_exception_o     (mmu_exception),
