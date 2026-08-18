@@ -757,10 +757,10 @@ module frontend
         bht_q <= bht_prediction[CVA6Cfg.INSTR_PER_FETCH-1];
       end
 
-      if (is_mispredict & !arsp_i.fetch_valid)  // translation request for misprediction ongoing
-        was_mispredicted <= '1;
       if (arsp_i.fetch_valid)  // translation finished, can clear flag
         was_mispredicted <= '0;
+      else if (is_mispredict & !arsp_i.fetch_valid)  // translation request for misprediction ongoing
+        was_mispredicted <= '1;
     end
   end
 
