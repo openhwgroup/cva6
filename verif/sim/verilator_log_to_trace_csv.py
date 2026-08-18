@@ -28,8 +28,8 @@ sys.path.insert(0, "dv/scripts")
 from riscv_trace_csv import *
 from lib import *
 
-RD_RE    = re.compile(r"(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                      "\((?P<bin>.*?)\) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
+RD_RE    = re.compile(r"(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) "
+                      r"\((?P<bin>.*?)\) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
 CORE_RE  = re.compile(r"core.*0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
 ILLE_RE  = re.compile(r"trap_illegal_instruction")
 
@@ -81,7 +81,7 @@ def read_verilator_instr(match, full_trace):
   return instr
 
 
-def read_verilator_trace(path, full_trace):
+def read_verilator_trace(path, full_trace, exit_on_ecall=True):
   '''Read a Spike simulation log at <path>, yielding executed instructions.
 
   This assumes that the log was generated with the -l and --log-commits options
@@ -151,7 +151,7 @@ def read_verilator_trace(path, full_trace):
         instr = read_verilator_instr(instr_match, full_trace)
 
         # If instr.instr_str is 'ecall', we should stop.
-        if instr.instr_str == 'ecall':
+        if exit_on_ecall and instr.instr_str == 'ecall':
           break
 
         continue
@@ -164,7 +164,7 @@ def read_verilator_trace(path, full_trace):
       if instr_match:
         yield (instr, False)
         instr = read_verilator_instr(instr_match, full_trace)
-        if instr.instr_str == 'ecall':
+        if exit_on_ecall and instr.instr_str == 'ecall':
           break
         continue
 
@@ -189,7 +189,7 @@ def read_verilator_trace(path, full_trace):
       yield (instr, False)
 
 
-def process_verilator_sim_log(verilator_log, csv, full_trace = 0):
+def process_verilator_sim_log(verilator_log, csv, full_trace = 0, exit_on_ecall=True):
   """Process VERILATOR simulation log.
 
   Extract instruction and affected register information from verilator simulation
@@ -206,7 +206,7 @@ def process_verilator_sim_log(verilator_log, csv, full_trace = 0):
     trace_csv = RiscvInstructionTraceCsv(csv_fd)
     trace_csv.start_new_trace()
 
-    for (entry, illegal) in read_verilator_trace(verilator_log, full_trace):
+    for (entry, illegal) in read_verilator_trace(verilator_log, full_trace, exit_on_ecall):
       instrs_in += 1
 
       if illegal and full_trace:

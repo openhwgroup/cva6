@@ -99,10 +99,10 @@ ifneq ($(spike-tandem),)
 endif
 
 # target takes one of the following cva6 hardware configuration:
-# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga
+# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv32a6_ima_sv32_fpga, cv64a6_imafdch_sv39
 # Changing the default target to cv32a60x for Step1 verification
 target     ?= cv64a6_imafdc_sv39
-ifeq ($(target), cv64a6_imafdc_sv39)
+ifeq ($(target), $(filter $(target),cv64a6_imafdc_sv39 cv64a6_imafdch_sv39))
 	XLEN ?= 64
 else
 	XLEN ?= 32
@@ -295,12 +295,12 @@ altera_filter := corev_apu/tb/ariane_testharness.sv \
 								corev_apu/riscv-dbg/src/dmi_jtag_tap.sv \
 								corev_apu/riscv-dbg/src/dmi_jtag.sv \
 								corev_apu/fpga/src/apb_uart/src/reg_uart_wrap.sv
-								
+
 altera_filter := $(addprefix $(root-dir), $(altera_filter))
 xil_debug_filter = $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dm_obi_top.sv)
 xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dm_pkg.sv)
 xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag_tap.sv)
-xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag.sv)						
+xil_debug_filter += $(addprefix $(root-dir), corev_apu/riscv-dbg/src/dmi_vjtag.sv)
 src := $(filter-out $(xil_debug_filter), $(src))
 
 fpga_src += corev_apu/fpga/src/bootrom/bootrom_$(XLEN).sv
@@ -350,6 +350,7 @@ endif
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW
 questa-flags     += -t 1ns -64 $(gui-sim) $(QUESTASIM_FLAGS) \
 			+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1) \
+			+fromhost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w fromhost | cut -d' ' -f1) \
 			+core_name=$(target) +define+QUESTA -suppress 3356 -suppress 3579 +report_file=$(report_file) \
 			$(spike-yaml-plusarg)
 compile_flag_vhd += -64 -nologo -quiet -2008
@@ -591,6 +592,7 @@ xrun_sim: xrun_comp
 		+UVM_TESTNAME=$(test_case)	\
 		+time_out=200000000000            \
 		+tohost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w tohost | cut -d' ' -f1)          \
+		+fromhost_addr=$(shell ${RISCV}/bin/${CV_SW_PREFIX}nm -B $(elf) | grep -w fromhost | cut -d' ' -f1)          \
 		-log $(XRUN_RUN_LOG)		\
 		+gui				\
 		+permissive-off			\
@@ -700,7 +702,8 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     --threads-dpi none                                                                           \
                     --Mdir $(ver-library) -O3                                                                    \
                     --exe corev_apu/tb/ariane_tb.cpp corev_apu/tb/dpi/SimDTM.cc corev_apu/tb/dpi/SimJTAG.cc      \
-                    corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc
+                    corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc                           \
+                    corev_apu/tb/dpi/syscalls.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:

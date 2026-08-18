@@ -9,34 +9,51 @@
 //
 `ifndef READ_SYMBOL_T
 `define READ_SYMBOL_T
-import "DPI-C" function byte read_symbol (input string symbol_name, inout longint unsigned address);
+import "DPI-C" function byte read_symbol(
+  input string symbol_name,
+  inout longint unsigned address
+);
 `endif
 
 `ifndef READ_ELF_T
 `define READ_ELF_T
 import "DPI-C" function void read_elf(input string filename);
-import "DPI-C" function byte get_section(output longint address, output longint len);
-import "DPI-C" context function void read_section_sv(input longint address, inout byte buffer[]);
+import "DPI-C" function byte get_section(
+  output longint address,
+  output longint len
+);
+import "DPI-C" context function void read_section_sv(
+  input longint address,
+  inout byte buffer[]
+);
+`endif
+
+`ifndef SYSCALL_T
+import "DPI-C" function void emulate_syscall(
+  input longint tohost,
+  input longint fromhost
+);
 `endif
 
 
 module rvfi_tracer #(
-  parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
-  parameter type rvfi_instr_t = logic,
-  parameter type rvfi_csr_t = logic,
-  //
-  parameter logic [7:0] HART_ID      = '0,
-  parameter int unsigned DEBUG_START = 0,
-  parameter int unsigned DEBUG_STOP  = 0
-)(
-  input logic                           clk_i,
-  input logic                           rst_ni,
-  input rvfi_instr_t[CVA6Cfg.NrCommitPorts-1:0] rvfi_i,
-  input rvfi_csr_t                      rvfi_csr_i,
-  output logic[31:0]                    end_of_test_o
+    parameter config_pkg::cva6_cfg_t       CVA6Cfg      = config_pkg::cva6_cfg_empty,
+    parameter type                         rvfi_instr_t = logic,
+    parameter type                         rvfi_csr_t   = logic,
+    //
+    parameter logic                  [7:0] HART_ID      = '0,
+    parameter int unsigned                 DEBUG_START  = 0,
+    parameter int unsigned                 DEBUG_STOP   = 0
+) (
+    input  logic                                    clk_i,
+    input  logic                                    rst_ni,
+    input  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_i,
+    input  rvfi_csr_t                               rvfi_csr_i,
+    output logic        [                     31:0] end_of_test_o
 );
 
   longint unsigned TOHOST_ADDR;
+  longint unsigned FROMHOST_ADDR;
   string binary;
   int f;
   int unsigned SIM_FINISH;
@@ -45,29 +62,50 @@ module rvfi_tracer #(
     f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
     if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
     if (!$value$plusargs("tohost_addr=%h", TOHOST_ADDR)) TOHOST_ADDR = '0;
+    if (!$value$plusargs("fromhost_addr=%h", FROMHOST_ADDR)) FROMHOST_ADDR = '0;
     if (TOHOST_ADDR == '0) begin
-        if (!$value$plusargs("elf_file=%s", binary)) binary = "";
-        if (binary != "") begin
-            read_elf(binary);
-            read_symbol("tohost", TOHOST_ADDR);
-        end
-        $display("*** [rvf_tracer] INFO: Loading binary : %s", binary);
-        $display("*** [rvf_tracer] INFO: tohost_addr: %h", TOHOST_ADDR);
-        if (TOHOST_ADDR == '0) begin
-            $display("*** [rvf_tracer] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
-            $fwrite(f, "*** [rvfi_tracer] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n", TOHOST_ADDR);
-        end
+      if (!$value$plusargs("elf_file=%s", binary)) binary = "";
+      if (binary != "") begin
+        read_elf(binary);
+        $display("*** [rvf_tracer %d] INFO: Loading binary : %s", HART_ID, binary);
+      end
+      read_symbol("tohost", TOHOST_ADDR);
+      $display("*** [rvf_tracer %d] INFO: tohost_addr: %h", HART_ID, TOHOST_ADDR);
+    end
+    if (FROMHOST_ADDR == '0) begin
+      if (!$value$plusargs("elf_file=%s", binary)) binary = "";
+      if (binary != "") begin
+        read_elf(binary);
+        $display("*** [rvf_tracer %d] INFO: Loading binary : %s", HART_ID, binary);
+      end
+      $display("*** [rvf_tracer %d] INFO: fromhost_addr: %h", HART_ID, FROMHOST_ADDR);
+      read_symbol("fromhost", FROMHOST_ADDR);
+    end
+    if (TOHOST_ADDR == '0) begin
+      $display(
+          "*** [rvf_tracer %d] WARNING: No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n",
+          HART_ID, TOHOST_ADDR);
+      $fwrite(
+          f,
+          "*** [rvfi_tracer %d] WARNING No valid address of 'tohost' (tohost == 0x%h), termination possible only by timeout or Ctrl-C!\n",
+          HART_ID, TOHOST_ADDR);
+    end
+    if (FROMHOST_ADDR == '0) begin
+      $display(
+          "*** [rvf_tracer %d] WARNING: No valid address of 'fromhost_addr' (fromhost_addr == 0x%h), syscalls will not work\n",
+          HART_ID, FROMHOST_ADDR);
+      $fwrite(
+          f,
+          "*** [rvfi_tracer %d] WARNING No valid address of 'fromhost_addr' (fromhost_addr == 0x%h), syscalls will not work\n",
+          HART_ID, FROMHOST_ADDR);
     end
   end
 
   final $fclose(f);
 
   logic [31:0] cycles;
-  // Generate the trace based on RVFI
-  logic [63:0] pc64;
   string cause;
-  logic[31:0] end_of_test_q;
-  logic[31:0] end_of_test_d;
+  logic [31:0] end_of_test_q;
 
   function automatic logic fp_instr_writes_gpr(logic [31:0] insn);
     logic [6:0] opcode;
@@ -102,31 +140,34 @@ module rvfi_tracer #(
     return 1'b0;
   endfunction
 
-  assign end_of_test_o = end_of_test_d;
+  assign end_of_test_o = end_of_test_q;
 
   always_ff @(posedge clk_i) begin
-    end_of_test_q <= (rst_ni && (end_of_test_d[0] == 1'b1)) ? end_of_test_d : 0;
+    logic [31:0] end_of_test_d;
+    // Generate the trace based on RVFI
+    logic [63:0] pc64;
+
+    end_of_test_d = (rst_ni && (end_of_test_q[0] == 1'b1)) ? end_of_test_q : 0;
     for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
-      pc64 = {{CVA6Cfg.XLEN-CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata};
+      pc64 = {
+        {CVA6Cfg.XLEN - CVA6Cfg.VLEN{rvfi_i[i].pc_rdata[CVA6Cfg.VLEN-1]}}, rvfi_i[i].pc_rdata
+      };
       // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].valid) begin
         logic dest_is_fp;
         // Instruction information
         if (rvfi_i[i].intr[2]) begin
-           $fwrite(f, "core   INTERRUPT 0: 0x%h (0x%h) DASM(%h)\n",
-             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
-        end
-        else begin
-           $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
-             pc64, rvfi_i[i].insn, rvfi_i[i].insn);
+          $fwrite(f, "core   INTERRUPT %d: 0x%h (0x%h) DASM(%h)\n", HART_ID, pc64, rvfi_i[i].insn,
+                  rvfi_i[i].insn);
+        end else begin
+          $fwrite(f, "core   %d: 0x%h (0x%h) DASM(%h)\n", HART_ID, pc64, rvfi_i[i].insn,
+                  rvfi_i[i].insn);
         end
         // Destination register information
         if (rvfi_i[i].insn[1:0] != 2'b11) begin
-          $fwrite(f, "%h 0x%h (0x%h)",
-            rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+          $fwrite(f, "%h 0x%h (0x%h)", rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
         end else begin
-          $fwrite(f, "%h 0x%h (0x%h)",
-            rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+          $fwrite(f, "%h 0x%h (0x%h)", rvfi_i[i].mode, pc64, rvfi_i[i].insn);
         end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
@@ -159,11 +200,16 @@ module rvfi_tracer #(
         // Handle memory writes (including for AMO instructions which have both rd and mem_wmask)
         if (rvfi_i[i].mem_wmask != 0) begin
           $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
-          if (TOHOST_ADDR != '0 &&
-              rvfi_i[i].mem_paddr == TOHOST_ADDR &&
-              rvfi_i[i].mem_wdata[0] == 1'b1) begin
-            end_of_test_q <= rvfi_i[i].mem_wdata[31:0];
-            $display("*** [rvfi_tracer] INFO: Simulation terminated after %d cycles!\n", cycles);
+          if (TOHOST_ADDR != '0 && rvfi_i[i].mem_paddr == TOHOST_ADDR) begin
+            case (rvfi_i[i].mem_wdata[0])
+              'b1: begin
+                end_of_test_d = rvfi_i[i].mem_wdata[31:0];
+                $display(
+                    "*** [rvfi_tracer %d] INFO: Simulation terminated after %d cycles with value 0x%h!",
+                    HART_ID, cycles, rvfi_i[i].mem_wdata[31:0]);
+              end
+              'b0: emulate_syscall(rvfi_i[i].mem_wdata, FROMHOST_ADDR);
+            endcase
           end
         end
         $fwrite(f, "\n");
@@ -184,7 +230,8 @@ module rvfi_tracer #(
             32'hc: cause = "INSTR_PAGE_FAULT";
             32'hd: cause = "LOAD_PAGE_FAULT";
             32'hf: cause = "STORE_PAGE_FAULT";
-          endcase;
+          endcase
+          ;
           if (rvfi_i[i].insn[1:0] != 2'b11) begin
             $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn[15:0]);
           end else begin
@@ -194,28 +241,25 @@ module rvfi_tracer #(
       end
     end
 
-    if (~rst_ni)
-      cycles <= 0;
-    else
-      cycles <= cycles+1;
-    if (cycles > SIM_FINISH)
-      end_of_test_q <= 32'hffff_ffff;
+    if (~rst_ni) cycles <= 0;
+    else cycles <= cycles + 1;
+    if (cycles > SIM_FINISH) end_of_test_d = 32'hffff_ffff;
 
-    end_of_test_d <= end_of_test_q;
+    end_of_test_q <= end_of_test_d;
   end
 
 
   // Trace any custom signals
   // Define signals to be traced by adding them into debug and name arrays
   string name[0:10];
-  logic[63:0] debug[0:10], debug_previous[0:10];
+  logic [63:0] debug[0:10], debug_previous[0:10];
 
   always_ff @(posedge clk_i) begin
     if (cycles > DEBUG_START && cycles < DEBUG_STOP)
       for (int index = 0; index < 100; index++)
-        if (debug_previous[index] != debug[index])
-          $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
+      if (debug_previous[index] != debug[index])
+        $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
     debug_previous <= debug;
   end
 
-endmodule // rvfi_tracer
+endmodule  // rvfi_tracer
