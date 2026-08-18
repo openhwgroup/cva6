@@ -62,3 +62,17 @@ testlist:
       -fvisibility=hidden
       -nostdlib
       -nostartfiles
+
+  - test: zcmp-mva01s-equal-regs-rv32
+    description: >
+      Check that cm.mva01s accepts equal r1s' and r2s' encodings.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/Zcmp/cm_mva01s_equal_regs_test.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      -I../tests/custom/env
