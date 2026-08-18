@@ -35,6 +35,7 @@ module cva6
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     localparam type branchpredict_sbe_t = struct packed {
+      logic                    valid;            // valid control flow prediction
       cf_t                     cf;               // type of control flow prediction
       logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
     },
