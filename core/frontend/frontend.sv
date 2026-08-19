@@ -743,11 +743,11 @@ module frontend
         end
 
         // Map the only three exceptions which can occur in the frontend to a two bit enum
-        if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
+        if (CVA6Cfg.MmuPresent && arsp_i.fetch_valid && arsp_i.fetch_exception.cause == riscv::INSTR_GUEST_PAGE_FAULT) begin
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_GUEST_PAGE_FAULT;
-        end else if (CVA6Cfg.MmuPresent && arsp_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT) begin
+        end else if (CVA6Cfg.MmuPresent && arsp_i.fetch_valid && arsp_i.fetch_exception.cause == riscv::INSTR_PAGE_FAULT) begin
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-        end else if (CVA6Cfg.NrPMPEntries != 0 && arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
+        end else if (CVA6Cfg.NrPMPEntries != 0 && arsp_i.fetch_valid && arsp_i.fetch_exception.cause == riscv::INSTR_ACCESS_FAULT) begin
           fetch_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
         end else begin
           fetch_ex_valid_q <= ariane_pkg::FE_NONE;
