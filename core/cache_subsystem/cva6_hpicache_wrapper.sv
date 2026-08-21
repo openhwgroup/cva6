@@ -179,8 +179,8 @@ module cva6_hpicache_wrapper
       .mem_resp_write_valid_i(1'b0),
       .mem_resp_write_i      ('0),
 
-      .evt_cache_write_miss_o(  /* unused */),
-      .evt_cache_read_miss_o (icache_read_miss),
+      .evt_cache_write_miss_o (  /* unused */),
+      .evt_cache_read_miss_o  (icache_read_miss),
       .evt_cache_dir_unc_err_o(  /* unused */),
       .evt_cache_dir_cor_err_o(  /* unused */),
       .evt_cache_dat_unc_err_o(  /* unused */),
