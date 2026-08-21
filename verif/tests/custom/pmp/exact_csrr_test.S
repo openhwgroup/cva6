@@ -70,6 +70,13 @@ main:
     bne t0, t1, fail
     csrw pmpaddr7, zero
 
+    # Checking PMP ADDR 63 boundary
+    li t0, 0xFACADE7E
+    csrw pmpaddr63, t0
+    csrr t1, pmpaddr63
+    bnez t1, fail
+    csrw pmpaddr63, zero
+
 
     # Write in configurations and check what is written, except for the reserved combinations with R=0 and W=1.
 
