@@ -1996,8 +1996,14 @@ module csr_regfile
           // index is calculated using PMPADDR0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+          if (!pmpcfg_q[index].locked) begin
+            if (index < 63) begin
+              if (!(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
+                pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+              end
+            end else begin
+              pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+            end
           end
         end
         default: update_access_exception = 1'b1;
