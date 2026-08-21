@@ -137,7 +137,8 @@ def questa_uvm_comp(
         "SPIKE_PATH": str(
             repo_dir / "verif" / "core-v-verif" / "vendor" / "riscv" / "riscv-isa-sim"
         ),
-        "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
+        "LD_PRELOAD": f"{repo_dir}/tools/spike/lib/libyaml-cpp.so:{repo_dir}/tools/spike/lib/libriscv.so",  # ← ADD THIS COMMA
+        "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),"HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
         "HPDCACHE_TARGET_CFG": str(
             repo_dir / "core/include/cva6_hpdcache_default_config_pkg.sv"
         ),
@@ -237,7 +238,7 @@ def questa_uvm_comp(
     incdirs = [
         repo_dir / "verif" / "env" / "uvme",
         repo_dir / "verif" / "tb" / "uvmt",
-        Path("${QUESTASIM_HOME}") / "verilog_src" / "uvm-1.2" / "src",
+        Path (f"{questasim_home}") / "verilog_src" / "uvm-1.2" / "src",
     ]
 
     # DEFINES
@@ -325,7 +326,7 @@ def questa_uvm_comp(
 
     # UVM package
     vlog_cmd += [
-        "${QUESTASIM_HOME}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
+        f"{questasim_home}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
     ]
 
     # File lists

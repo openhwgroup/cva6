@@ -1,5 +1,5 @@
 // Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright 2024 - PlanV Technologies for additionnal contribution.
+// Copyright 2024 - PlanV Technologies for additional contribution.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -23,7 +23,7 @@
 //                 sync-write port, each with a parametrized number of async-read ports.
 //                 Read-accesses are multiplexed from the relevant block depending on which block
 //                 was last written to. For that purpose an additional array of registers is
-//                 maintained keeping track of write acesses.
+//                 maintained keeping track of write accesses.
 //
 
 module ariane_regfile_fpga #(
@@ -57,12 +57,12 @@ module ariane_regfile_fpga #(
   logic [NUM_WORDS-1:0][LOG_NR_WRITE_PORTS-1:0] mem_block_sel;
   logic [NUM_WORDS-1:0][LOG_NR_WRITE_PORTS-1:0] mem_block_sel_q;
   logic [CVA6Cfg.NrCommitPorts-1:0][DATA_WIDTH-1:0] wdata_reg;
-  logic [NR_READ_PORTS-1:0] read_after_write;
+  logic [NR_READ_PORTS-1:0][CVA6Cfg.NrCommitPorts-1:0] read_after_write;
 
   logic [NR_READ_PORTS-1:0][4:0] raddr_q;
   logic [NR_READ_PORTS-1:0][4:0] raddr;
 
-  // write adress decoder (for block selector)
+  // write address decoder (for block selector)
   always_comb begin
     for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       for (int unsigned i = 0; i < NUM_WORDS; i++) begin
@@ -116,14 +116,14 @@ module ariane_regfile_fpga #(
       if (CVA6Cfg.FpgaAlteraEn) begin
         for (int k = 0; k < NR_READ_PORTS; k++) begin : block_read
           mem_read_sync[j][k] = mem[j][raddr_i[k]];  // synchronous RAM
-          read_after_write[k] <= '0;
+          read_after_write[k][j] <= '0;
           if (waddr_i[j] == raddr_i[k])
-            read_after_write[k] <= we_i[j] && ~waddr_i[j] != 0; // Identify if we need to read the content that was written
+            read_after_write[k][j] <= we_i[j] && ~waddr_i[j] != 0; // Identify if we need to read the content that was written
         end
       end
     end
     for (genvar k = 0; k < NR_READ_PORTS; k++) begin : block_read
-      assign mem_read[j][k] = CVA6Cfg.FpgaAlteraEn ? ( read_after_write[k] ? wdata_reg[j]: mem_read_sync[j][k]) : mem[j][raddr_i[k]];
+      assign mem_read[j][k] = CVA6Cfg.FpgaAlteraEn ? ( read_after_write[k]!='0 ? wdata_reg[j]: mem_read_sync[j][k]) : mem[j][raddr_i[k]];
     end
   end
   //with synchronous ram there is the need to adjust which address is used at the output MUX

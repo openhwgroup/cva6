@@ -252,7 +252,6 @@ def questa_uvm_run(
         "+UVM_TESTNAME=uvmt_cva6_firmware_test_c",
         spike_param_string,
         f"+UVM_VERBOSITY=UVM_{uvm_verbosity}",
-        f"+config_file={spike_param_file}",
         f"+tandem_enabled={int(tandem_enabled)}",
         f"+tohost_addr={add_tohost}",
         f"+GLOBAL_PATTERN_start={add_start_window}",
@@ -349,6 +348,7 @@ def questa_uvm_run(
 
     env_vars = {
         "LD_LIBRARY_PATH": f"{spike_lib}",
+        "LD_PRELOAD": f"{spike_lib}/libyaml-cpp.so:{spike_lib}/libriscv.so",
         "QUESTASIM_HOME": str(questasim_home),
     }
 
@@ -433,7 +433,7 @@ def questa_uvm_run(
     extract_pattern_to_file(
         log_file,
         "*** [rvfi_tracer] INFO: Simulation terminated after",
-        6,
+        7,
         simulation_dir / "timing_GLOBAL_PATTERN_end_cycle",
         "Simulation end cycle",
         "cycles",
@@ -442,7 +442,7 @@ def questa_uvm_run(
     extract_pattern_to_file(
         log_file,
         "*** [rvfi_tracer] INFO: GLOBAL_PATTERN_start",
-        7,
+        8,
         simulation_dir / "timing_GLOBAL_PATTERN_start",
         "Symbol GLOBAL_PATTERN_start",
         "ns",
@@ -450,7 +450,7 @@ def questa_uvm_run(
     extract_pattern_to_file(
         log_file,
         "*** [rvfi_tracer] INFO: GLOBAL_PATTERN_end",
-        7,
+        8,
         simulation_dir / "timing_GLOBAL_PATTERN_end",
         "Symbol GLOBAL_PATTERN_end",
         "ns",
@@ -458,7 +458,7 @@ def questa_uvm_run(
     extract_pattern_to_file(
         log_file,
         "*** [rvfi_tracer] INFO: GLOBAL_PATTERN_start",
-        9,
+        10,
         simulation_dir / "timing_GLOBAL_PATTERN_start_cycle",
         "Symbol GLOBAL_PATTERN_start",
         "cycles",
@@ -466,7 +466,7 @@ def questa_uvm_run(
     extract_pattern_to_file(
         log_file,
         "*** [rvfi_tracer] INFO: GLOBAL_PATTERN_end",
-        9,
+        10,
         simulation_dir / "timing_GLOBAL_PATTERN_end_cycle",
         "Symbol GLOBAL_PATTERN_end",
         "cycles",
