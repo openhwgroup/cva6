@@ -29,11 +29,16 @@ module pmp_entry #(
     output logic match_o
 );
   logic [CVA6Cfg.PLEN-1:0] conf_addr_n;
+  logic [CVA6Cfg.PLEN-3:0] tor_conf_addr;
+  logic [CVA6Cfg.PLEN-3:0] tor_conf_addr_prev;
   logic [$clog2(CVA6Cfg.PLEN)-1:0] trail_ones;
   logic [CVA6Cfg.PLEN-1:0] base;
   logic [CVA6Cfg.PLEN-1:0] mask;
   int unsigned size;
   assign conf_addr_n = {2'b11, ~conf_addr_i};
+  // CVA6 implements G=1. Bit 0 does not participate in either TOR boundary.
+  assign tor_conf_addr = {conf_addr_i[CVA6Cfg.PLEN-3:1], 1'b0};
+  assign tor_conf_addr_prev = {conf_addr_prev_i[CVA6Cfg.PLEN-3:1], 1'b0};
   lzc #(
       .WIDTH(CVA6Cfg.PLEN),
       .MODE (1'b0)
@@ -51,15 +56,15 @@ module pmp_entry #(
         size = '0;
         // check that the requested address is in between the two
         // configuration addresses
-        if (addr_i >= ({2'b0, conf_addr_prev_i} << 2) && addr_i < ({2'b0, conf_addr_i} << 2)) begin
+        if (addr_i >= ({2'b0, tor_conf_addr_prev} << 2) && addr_i < ({2'b0, tor_conf_addr} << 2)) begin
           match_o = 1'b1;
         end else match_o = 1'b0;
 
         // synthesis translate_off
         if (match_o == 0) begin
-          assert (addr_i >= ({2'b0, conf_addr_i} << 2) || addr_i < ({2'b0, conf_addr_prev_i} << 2));
+          assert (addr_i >= ({2'b0, tor_conf_addr} << 2) || addr_i < ({2'b0, tor_conf_addr_prev} << 2));
         end else begin
-          assert (addr_i < ({2'b0, conf_addr_i} << 2) && addr_i >= ({2'b0, conf_addr_prev_i} << 2));
+          assert (addr_i < ({2'b0, tor_conf_addr} << 2) && addr_i >= ({2'b0, tor_conf_addr_prev} << 2));
         end
         // synthesis translate_on
 
