@@ -159,6 +159,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
   static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
   string binary = "";
 
+  // DCLS ALARMS
+  logic [3:0] dcls_alarm;
 
   // DUT 
 
@@ -170,7 +172,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     // TODO Is AXI agent in passive mode is required anymore in this testbench?
     assign axi_ariane_req = noc_axi_req;
 
-    cva6 #(
+    cva6_top #(
         .CVA6Cfg      (CVA6Cfg),
         .rvfi_probes_t(rvfi_probes_t),
         .noc_req_t    (noc_axi_req_t),
@@ -188,7 +190,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
         .cvxif_req_o(cvxif_req),
         .cvxif_resp_i(cvxif_resp),
         .noc_req_o(noc_axi_req),
-        .noc_resp_i(noc_axi_resp)
+        .noc_resp_i(noc_axi_resp),
+        .dcls_alarm_o(dcls_alarm)
     );
 
     //Response structs
@@ -294,7 +297,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
     assign noc_obi_resp.obi_mmu_ptw_rsp = obi_mmu_ptw_rsp;
     assign noc_obi_resp.obi_zcmt_rsp = obi_zcmt_rsp;
 
-    cva6 #(
+    cva6_top #(
         .CVA6Cfg      (CVA6Cfg),
         .rvfi_probes_t(rvfi_probes_t),
         .noc_req_t    (noc_obi_req_t),
@@ -312,7 +315,8 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
         .cvxif_req_o(cvxif_req),
         .cvxif_resp_i(cvxif_resp),
         .noc_req_o(noc_obi_req),
-        .noc_resp_i(noc_obi_resp)
+        .noc_resp_i(noc_obi_resp),
+        .dcls_alarm_o(dcls_alarm)
     );
 
     assign obi_fetch_slave.req               = obi_fetch_req.req;
