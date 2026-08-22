@@ -1,5 +1,60 @@
 [
   {
+    "id": 32579018954,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 260,
+    "status": "completed",
+    "conclusion": "cancelled",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32579018954",
+    "head_branch": "fix/trigger-dmode",
+    "head_sha": "374bb3c6",
+    "event": "pull_request",
+    "created_at": "2026-08-22T14:32:55Z",
+    "updated_at": "2026-08-22T14:36:21Z",
+    "run_started_at": "2026-08-22T14:32:55Z",
+    "duration_seconds": 206,
+    "total_jobs": 3,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 3,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "cancelled",
+        "started_at": "2026-08-22T14:34:07Z",
+        "completed_at": "2026-08-22T14:36:15Z",
+        "duration_seconds": 128,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32579018954/job/97045628358",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "cancelled",
+        "started_at": "2026-08-22T14:34:07Z",
+        "completed_at": "2026-08-22T14:36:20Z",
+        "duration_seconds": 133,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32579018954/job/97045628374",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "cancelled",
+        "started_at": "2026-08-22T14:34:08Z",
+        "completed_at": "2026-08-22T14:36:19Z",
+        "duration_seconds": 131,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32579018954/job/97045628376",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      }
+    ]
+  },
+  {
     "id": 32578367178,
     "source": "github-actions",
     "simulator": "verilator",
@@ -1934,26 +1989,5 @@
         "testcase": "cv64a6_imafdc_tests"
       }
     ]
-  },
-  {
-    "id": 31005286520,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 207,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/31005286520",
-    "head_branch": "instr_scan_fix",
-    "head_sha": "5d3fd828",
-    "event": "pull_request",
-    "created_at": "2026-08-05T12:21:56Z",
-    "updated_at": "2026-08-05T12:21:56Z",
-    "run_started_at": "2026-08-05T12:21:56Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
