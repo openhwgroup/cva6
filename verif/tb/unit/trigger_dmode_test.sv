@@ -123,7 +123,7 @@ module trigger_dmode_test;
     write_tdata1(64'h6000_0000_0000_0000);
     assert (tdata1_o[59]);
     assert (tdata1_o[2]);
-    write_tdata2(64'haa);
+    write_tdata2(64'hAA);
     assert (tdata2_o == 64'h55);
 
     $finish;
