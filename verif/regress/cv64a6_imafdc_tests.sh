@@ -66,6 +66,18 @@ python3 cva6.py --target ${DV_TARGET} --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml 
   --gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld" $DV_OPTS
 [[ $? > 0 ]] && ((errors++))
 
+# Regression for #3342: pmpaddr bit 0 must not affect either TOR boundary
+# when the PMP grain is eight bytes. Run the DUT alone because the default
+# CV64 Spike configuration does not describe CVA6's PMP granularity.
+env -u SPIKE_TANDEM python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test pmp-tor-grain-rv64 \
+  --iss_yaml cva6.yaml \
+  --target ${DV_TARGET} \
+  --iss=veri-testharness \
+  $DV_OPTS
+[[ $? > 0 ]] && ((errors++))
+
 make -C ../.. clean
 make clean_all
 
