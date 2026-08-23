@@ -1576,12 +1576,17 @@ module csr_regfile
             mstatus_d.tw   = riscv::Off;
             mstatus_d.mprv = riscv::Off;
           end
+          if (!CVA6Cfg.RVH) begin
+            mstatus_d.mpv = 1'b0;
+            mstatus_d.gva = 1'b0;
+          end
           if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
           end
           mstatus_d.wpri3 = 9'b0;
+          mstatus_d.wpri4 = '0;
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
