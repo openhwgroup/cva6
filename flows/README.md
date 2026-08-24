@@ -1155,6 +1155,50 @@ Modify or override hardware configuration parameters.
 
 **Output:** New configuration file `config/cv32a60x_custom.yml`
 
+#### `riscv-isa-modify`
+
+Modify RISC-V ISA strings by adding or removing extensions with automatic dependency handling.
+
+```bash
+./cook.py riscv-isa-modify [OPTIONS]
+```
+
+**Required Options:**
+- `-t, --target TEXT` - CVA6 user configuration (for output directory isolation)
+- `-i, --isa TEXT` - Input RISC-V ISA string (e.g., `rv32imc_zicsr` or `rv64gc`)
+
+**Optional Options:**
+- `-a, --add TEXT` - Extensions to add if not present (can be specified multiple times)
+- `-r, --remove TEXT` - Extensions to remove if present (can be specified multiple times)
+- `-q, --quiet` - Suppress output (errors only)
+
+**Features:**
+- Automatic extension dependency handling (e.g., adding 'd' auto-adds 'f')
+- G-macro expansion/compaction (G = IMAFD + Zicsr + Zifencei)
+- Per-target output isolation (prevents contamination in parallel CI jobs)
+- YAML output for easy shell parsing
+
+**Examples:**
+```bash
+# Add floating-point extensions
+./cook.py riscv-isa-modify -t cv32a60x --isa rv32imc --add f --add d
+
+# Remove floating-point (also removes dependent extensions)
+./cook.py riscv-isa-modify -t cv64a6_imafdc_sv39 --isa rv64gc --remove f
+
+# Combined add and remove
+./cook.py riscv-isa-modify -t cv32a60x --isa rv32imc_zicsr --add f --add d --remove c
+
+# Use in shell script
+./cook.py riscv-isa-modify -t cv32a60x --isa rv32imc --add f --quiet
+MODIFIED_ISA=$(grep modified_isa build/cv32a60x/riscv_isa_modify/modified_isa.yml | awk '{print $2}')
+echo "Result: $MODIFIED_ISA"  # rv32imfc
+```
+
+**Output:** `build/<target>/riscv_isa_modify/modified_isa.yml`
+
+**Use Case:** Commonly used in CI to dynamically adjust ISA strings for specific test requirements (e.g., adding 'f' extension for virtual memory tests).
+
 #### `self-check`
 
 Verify framework integrity and configuration.

@@ -551,116 +551,56 @@ benchmark_run_sim_rtl:
     matrix:
       # OBI noPMP noMMU
       - MY_TARGET: cv32a60x
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
+        MY_TESTLISTS: "base_rv32_p base_zcmt"
       - MY_TARGET: cv32a60x_no_zcmt
-        MY_TESTLIST:
-          - base_rv32_p
+        MY_TESTLISTS: "base_rv32_p"
       - MY_TARGET: cv32a65x_noPMP
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
+        MY_TESTLISTS: "base_rv32_p base_zcmt"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi
-        MY_TESTLIST:
-          - base_rv64_p
-          - base_zcmt
+        MY_TESTLISTS: "base_rv64_p base_zcmt"
       # AXI noPMP noMMU
       - MY_TARGET: cv32a60x_axi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
+        MY_TESTLISTS: "base_rv32_p base_zcmt"
       - MY_TARGET: cv32a60x_no_zcmt_axi
-        MY_TESTLIST:
-          - base_rv32_p
+        MY_TESTLISTS: "base_rv32_p"
       - MY_TARGET: cv32a65x_noPMP_axi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
+        MY_TESTLISTS: "base_rv32_p base_zcmt"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi
-        MY_TESTLIST:
-          - base_rv64_p
+        MY_TESTLISTS: "base_rv64_p"
       # OBI PMP noMMU
       - MY_TARGET: cv32a60x_zcmt_pmp
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv32a65x
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi
-        MY_TESTLIST:
-          - base_rv64_p
-          - base_zcmt
-          - base_pmp
-          - base_rv64_amo_p
+        MY_TESTLISTS: "base_rv64_p base_zcmt base_pmp base_rv64_amo_p"
       # AXI PMP noMMU
       - MY_TARGET: cv32a60x_zcmt_pmp_axi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv32a65x_axi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_zcmt
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi
-        MY_TESTLIST:
-          - base_rv64_p
-          - base_zcmt
-          - base_pmp
-          - base_rv64_amo_p
+        MY_TESTLISTS: "base_rv64_p base_zcmt base_pmp base_rv64_amo_p"
       # OBI PMP MMU
       - MY_TARGET: cv32a6_imac_sv32_obi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_rv32_v
-          - base_pmp
-          - base_rv32_amo_p
-          - base_rv32_amo_v
+        MY_TESTLISTS: "base_rv32_p base_rv32_v base_pmp base_rv32_amo_p base_rv32_amo_v"
       - MY_TARGET: cv32a65x_sv32
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_rv32_v
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_rv32_v base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi
-        MY_TESTLIST:
-          - base_rv64_p
-          - base_rv64_v
-          - base_pmp
-          - base_rv64_amo_p
-          - base_rv64_amo_v
+        MY_TESTLISTS: "base_rv64_p base_rv64_v base_pmp base_rv64_amo_p base_rv64_amo_v"
       # AXI PMP MMU
       - MY_TARGET: cv32a6_imac_sv32
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_rv32_v
-          - base_pmp
-          - base_rv32_amo_p
-          - base_rv32_amo_v
+        MY_TESTLISTS: "base_rv32_p base_rv32_v base_pmp base_rv32_amo_p base_rv32_amo_v"
       - MY_TARGET: cv32a65x_sv32_axi
-        MY_TESTLIST:
-          - base_rv32_p
-          - base_rv32_v
-          - base_pmp
+        MY_TESTLISTS: "base_rv32_p base_rv32_v base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi
-        MY_TESTLIST:
-          - base_rv64_p
-          - base_rv64_v
-          - base_pmp
-          - base_rv64_amo_p
-          - base_rv64_amo_v
+        MY_TESTLISTS: "base_rv64_p base_rv64_v base_pmp base_rv64_amo_p base_rv64_amo_v"
 
 # Used to perform mapping 1:1 in jobs dependencies ("needs" in gitlab-ci)
 .testlist_matrix_mapping: &testlist_matrix_mapping
   parallel:
     matrix:
       - MY_TARGET: ["$[[ matrix.MY_TARGET ]]"]
-        MY_TESTLIST: ["$[[ matrix.MY_TESTLIST ]]"]
 
 testlist_compile:
   stage: testlist
@@ -670,12 +610,29 @@ testlist_compile:
     - .testlist_matrix_target
   needs: []
   variables:
-    DASHBOARD_JOB_TITLE: "Testlist compile"
-    DASHBOARD_JOB_DESCRIPTION: "Compile all tests from the testlist"
+    DASHBOARD_JOB_TITLE: "Testlist compile - ${MY_TARGET}"
+    DASHBOARD_JOB_DESCRIPTION: "Compile all tests from multiple testlists for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - verif/regress/install-riscv-tests.sh
-    - ./cook.py sw-compile-testlist -t $MY_TARGET -c my_${MY_TARGET}_toolchain -l verif/tests/${MY_TESTLIST}.yaml
+    - |
+      exit_code=0
+      for testlist in ${MY_TESTLISTS}; do
+        echo "=== Compiling testlist: ${testlist} ==="
+        # Check if testlist needs F extension (virtual memory tests)
+        march_flag=""
+        if echo "${testlist}" | grep -qE "_v$"; then
+          march=$(grep '^march:' config/target/$MY_TARGET/isa.yml | awk '{print $2}')
+          # Add 'f' extension if needed using riscv-isa-modify recipe
+          echo "Original ISA: ${march}"
+          ./cook.py riscv-isa-modify -t $MY_TARGET --isa "${march}" --add f --quiet
+          march=$(grep modified_isa build/$MY_TARGET/riscv_isa_modify/modified_isa.yml | awk '{print $2}')
+          echo "Modified ISA: ${march}"
+          march_flag="--march ${march}"
+        fi
+        ./cook.py sw-compile-testlist -t $MY_TARGET -c my_${MY_TARGET}_toolchain -l verif/tests/${testlist}.yaml $march_flag || exit_code=1
+      done
+      exit $exit_code
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
@@ -697,16 +654,20 @@ testlist_run_sim_rtl:
       artifacts: true
       <<: *global_matrix_mapping
     - job: testlist_compile
-      artifacts: true
-      <<: *testlist_matrix_mapping
   variables:
-    DASHBOARD_JOB_TITLE: "Testlist RTL run - ${MY_TARGET} - ${MY_TESTLIST}"
-    DASHBOARD_JOB_DESCRIPTION: "Run testlist ${MY_TESTLIST} on RTL with Spike tandem for target ${MY_TARGET}"
+    DASHBOARD_JOB_TITLE: "Testlist RTL run - ${MY_TARGET}"
+    DASHBOARD_JOB_DESCRIPTION: "Run multiple testlists on RTL with Spike tandem for target ${MY_TARGET}"
   script:
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $SYN_VCS_BASHRC
-    - ./cook.py uvm-run-testlist --simulator ${MY_SIMULATOR} -t $MY_TARGET -l verif/tests/${MY_TESTLIST}.yaml --comp-mode rtl
-      --tandem-enabled --trace-mode notrace
+    - |
+      exit_code=0
+      for testlist in ${MY_TESTLISTS}; do
+        echo "=== Running testlist: ${testlist} ==="
+        ./cook.py uvm-run-testlist --simulator ${MY_SIMULATOR} -t $MY_TARGET -l verif/tests/${testlist}.yaml --comp-mode rtl \
+          --tandem-enabled --trace-mode notrace || exit_code=1
+      done
+      exit $exit_code
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
