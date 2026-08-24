@@ -77,7 +77,6 @@ def coremark(
         "falign-functions=16",
         "Wno-implicit-function-declaration",
         "Wno-implicit-int",
-        "fno-tree-loop-distribute-patterns"
     ]
 
     preprocessor_directives = [
