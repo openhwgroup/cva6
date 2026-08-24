@@ -232,7 +232,7 @@ def vcs_uvm_run(
         f"+tandem_enabled={int(tandem_enabled)}",
         f"+tohost_addr={add_tohost}",
         f"+GLOBAL_PATTERN_start={add_start_window}",
-        f"+GLOBAL_PATTERN_end={add_end_window}" f"--gui",
+        f"+GLOBAL_PATTERN_end={add_end_window}",
     ]
 
     if interactive_gui:
