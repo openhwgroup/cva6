@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON - Thales
 
 if ! [ -n "$TESTS_REPO" ]; then
-  TESTS_REPO="https://github.com/riscv/riscv-tests.git"
+  TESTS_REPO="https://github.com/riscv-software-src/riscv-tests.git"
   TESTS_BRANCH="master"
   TESTS_HASH="f92842f91644092960ac7946a61ec2895e543cec"
 fi
