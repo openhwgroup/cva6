@@ -233,6 +233,7 @@ def vcs_uvm_run(
         f"+tohost_addr={add_tohost}",
         f"+GLOBAL_PATTERN_start={add_start_window}",
         f"+GLOBAL_PATTERN_end={add_end_window}",
+        "--gui",
     ]
 
     if interactive_gui:
