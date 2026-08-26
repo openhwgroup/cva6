@@ -373,8 +373,8 @@ def questa_uvm_run(
     # Tail log
     tail_file(log_file, n=20, quiet=quiet)
 
-    status_passed = re.compile(r"^\s+SIMULATION PASSED")
-    status_failed = re.compile(r"^\s+SIMULATION FAILED")
+    status_passed = re.compile(r"^#\s+SIMULATION PASSED")
+    status_failed = re.compile(r"^#\s+SIMULATION FAILED")
 
     try:
         found = 0
