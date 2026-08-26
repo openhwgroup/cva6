@@ -17,6 +17,12 @@ import importlib.util
 import sys
 import random
 import typer
+from flows.utils.manifest import (
+    write_manifest,
+    read_manifest,
+    require_prerequisite,
+    require_manifest_option,
+)
 from flows.utils.utils import (
     CompMode,
     TraceMode,
@@ -149,6 +155,80 @@ def vcs_uvm_run(
         compile_dir / f"{test_name}.add_GLOBAL_PATTERN_start"
     )
     file_add_GLOBAL_PATTERN_end = compile_dir / f"{test_name}.add_GLOBAL_PATTERN_end"
+
+    # ==========================================================
+    # CHECK PREREQUISITES
+    # ==========================================================
+    print_step("Check prerequisites", quiet=quiet)
+
+    # Software must be compiled first
+    require_prerequisite(
+        compile_dir / f"{test_name}.elf",
+        f"compiled software for test '{test_name}'",
+        f"./cook.py sw-compile -t {target} -c <toolchain> --out {test_name} <sources>",
+    )
+
+    # Hardware must be elaborated first (in the same comp_mode)
+    require_prerequisite(
+        elab_dir / "simv",
+        f"VCS elaborated design (comp mode '{comp_mode.value}')",
+        f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value}",
+    )
+
+    # Options must be compatible with how the design was elaborated
+    elab_manifest = read_manifest(elab_dir)
+
+    if trace_mode != TraceMode.notrace:
+        require_manifest_option(
+            elab_manifest,
+            "trace_mode",
+            [TraceMode.gui.value, TraceMode.fast.value, TraceMode.compact.value],
+            f"trace mode '{trace_mode.value}' requires a design elaborated with trace support",
+            f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value} --trace-mode {trace_mode.value}",
+            manifest_dir=elab_dir,
+        )
+
+    if interactive_gui:
+        require_manifest_option(
+            elab_manifest,
+            "trace_mode",
+            [TraceMode.gui.value],
+            "interactive GUI requires a design elaborated with --trace-mode gui (verdi -kdb)",
+            f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value} --trace-mode gui",
+            manifest_dir=elab_dir,
+        )
+
+    if tandem_enabled:
+        require_manifest_option(
+            elab_manifest,
+            "tandem_enabled",
+            [True],
+            "spike tandem requires a design elaborated with --tandem-enabled",
+            f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value} --tandem-enabled",
+            manifest_dir=elab_dir,
+        )
+
+    if stats:
+        require_manifest_option(
+            elab_manifest,
+            "stats",
+            [True],
+            "RTL perf tracer requires a design elaborated with --stats",
+            f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value} --stats",
+            manifest_dir=elab_dir,
+        )
+
+    if sim_profile:
+        require_manifest_option(
+            elab_manifest,
+            "sim_profile",
+            [True],
+            "simulation profiling requires a design elaborated with --sim-profile",
+            f"./cook.py vcs-uvm-comp -t {target} --comp-mode {comp_mode.value} --sim-profile",
+            manifest_dir=elab_dir,
+        )
+
+    print_success("Prerequisites OK", quiet=quiet)
 
     # ==========================================================
     # CLEAN
@@ -500,6 +580,28 @@ def vcs_uvm_run(
         finally:
             if directory_script in sys.path:
                 sys.path.remove(directory_script)
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        simulation_dir,
+        "vcs-uvm-run",
+        {
+            "target": target,
+            "test_name": test_name,
+            "comp_mode": comp_mode,
+            "trace_mode": trace_mode,
+            "uvm_verbosity": uvm_verbosity,
+            "tandem_enabled": tandem_enabled,
+            "tb_performance_mode": tb_performance_mode,
+            "stats": stats,
+            "sim_profile": sim_profile,
+            "run_opts": run_opts,
+            "uvm_seed": uvm_seed,
+        },
+        quiet=quiet,
+    )
 
     # ==========================================================
     # List

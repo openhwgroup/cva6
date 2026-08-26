@@ -14,6 +14,7 @@ import shutil
 import typer
 import yaml
 from flows.utils.config_loader import load_compiler_config
+from flows.utils.manifest import write_manifest
 from flows.utils.utils import (
     ToolchainOption,
     autocompletion_target,
@@ -325,6 +326,27 @@ def sw_compile(
     extract_symbol("tohost", add_tohost_file)
     extract_symbol("GLOBAL_PATTERN_start", add_GLOBAL_PATTERN_start_file)
     extract_symbol("GLOBAL_PATTERN_end", add_GLOBAL_PATTERN_end_file)
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        compile_dir,
+        "sw-compile",
+        {
+            "target": target,
+            "toolchain": toolchain,
+            "test_name": test_name,
+            "src_files": src_files,
+            "inc_dirs": inc_dirs,
+            "linker_file": linker_file,
+            "options": options,
+            "march": march,
+            "mabi": mabi,
+            "preprocessor_directives": preprocessor_directives,
+        },
+        quiet=quiet,
+    )
 
     # ==========================================================
     # List

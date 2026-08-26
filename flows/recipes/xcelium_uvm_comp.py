@@ -13,6 +13,7 @@ from pathlib import Path
 import shutil
 import typer
 import yaml
+from flows.utils.manifest import write_manifest, require_prerequisite
 from flows.utils.utils import (
     CompMode,
     TraceMode,
@@ -105,6 +106,28 @@ def xcelium_uvm_comp(
     build_root = repo_dir / "build" / target
     elab_dir = build_root / "elab" / inout_dir
     cov_exclude_list = repo_dir / "verif" / "sim" / "cov-exclude-mod.lst"
+
+    # ==========================================================
+    # CHECK PREREQUISITES
+    # ==========================================================
+    print_step("Check prerequisites", quiet=quiet)
+
+    if comp_mode in [CompMode.gate_wc_power, CompMode.gate_wc_timing]:
+        synth_dir = build_root / "synthesis"
+        sdf_name = (
+            "wc_timing.sdf" if comp_mode == CompMode.gate_wc_timing else "wc_power.sdf"
+        )
+        for artifact, description in [
+            (synth_dir / "Flist.libverilog", "synthesis library filelist"),
+            (synth_dir / "netlist" / "synth.v", "synthesized netlist"),
+            (synth_dir / "netlist" / sdf_name, "SDF timing annotation"),
+        ]:
+            require_prerequisite(
+                artifact,
+                f"{description} (gate-level compilation needs a synthesized design)",
+                f"./cook.py dc-shell-synth -t {target} --techno <techno> --period <period>",
+            )
+    print_success("Prerequisites OK", quiet=quiet)
 
     # ==========================================================
     # CLEAN
@@ -385,6 +408,22 @@ def xcelium_uvm_comp(
 
     if not log_file.exists():
         print_error("Compilation log missing")
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        elab_dir,
+        "xcelium-uvm-comp",
+        {
+            "target": target,
+            "comp_mode": comp_mode,
+            "trace_mode": trace_mode,
+            "tandem_enabled": tandem_enabled,
+            "stats": stats,
+        },
+        quiet=quiet,
+    )
 
     # ==========================================================
     # List

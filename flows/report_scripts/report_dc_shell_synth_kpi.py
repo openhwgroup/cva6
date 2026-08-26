@@ -17,6 +17,7 @@ import yaml
 
 import flows.utils.report_builder as rb
 
+from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
     autocompletion_target,
     print_error,
@@ -82,15 +83,17 @@ def report_dc_shell_check_area(
     if config is None:
         config = Path(f"build/{target}/synthesis/build_config.yaml")
 
-    if not log.exists() or not log.is_file():
-        print_error(f"Error: Area log file not found at '{log}'", quiet=quiet)
-        raise typer.Exit(code=1)
+    require_prerequisite(
+        log,
+        "synthesis area report",
+        f"./cook.py dc-shell-synth -t {target} --techno <techno> --period <period>",
+    )
 
-    if not synthesis_log.exists() or not synthesis_log.is_file():
-        print_error(
-            f"Error: Synthesis log file not found at '{synthesis_log}'", quiet=quiet
-        )
-        raise typer.Exit(code=1)
+    require_prerequisite(
+        synthesis_log,
+        "synthesis log",
+        f"./cook.py dc-shell-synth -t {target} --techno <techno> --period <period>",
+    )
 
     # Report Path
     report_path = Path("build", f"{target}", "reports")

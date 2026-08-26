@@ -13,6 +13,7 @@ from pathlib import Path
 import shutil
 import typer
 import yaml
+from flows.utils.manifest import write_manifest
 from flows.utils.utils import (
     Cva6Hier,
     autocompletion_target,
@@ -294,5 +295,19 @@ test_mode -scanshift -name "{top_elaborate}.rst_ni" -value 1
     for genfile in gen_files:
         if genfile.exists():
             print_info(f"> {genfile}", quiet=quiet)
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        spyglass_dir,
+        "spyglass-design-read",
+        {
+            "target": target,
+            "testbench_hier": cva6_hier,
+            "top_elaborate": top_elaborate,
+        },
+        quiet=quiet,
+    )
 
     print_recipe_end("Completed", quiet=quiet)

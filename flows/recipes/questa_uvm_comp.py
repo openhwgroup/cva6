@@ -13,6 +13,7 @@ from pathlib import Path
 import shutil
 import typer
 import yaml
+from flows.utils.manifest import write_manifest, require_prerequisite
 from flows.utils.utils import (
     CompMode,
     TraceMode,
@@ -112,6 +113,28 @@ def questa_uvm_comp(
     work_dir = elab_dir / "work"
 
     # ==========================================================
+    # CHECK PREREQUISITES
+    # ==========================================================
+    print_step("Check prerequisites", quiet=quiet)
+
+    if comp_mode in [CompMode.gate_wc_power, CompMode.gate_wc_timing]:
+        synth_dir = build_root / "synthesis"
+        sdf_name = (
+            "wc_timing.sdf" if comp_mode == CompMode.gate_wc_timing else "wc_power.sdf"
+        )
+        for artifact, description in [
+            (synth_dir / "Flist.libverilog", "synthesis library filelist"),
+            (synth_dir / "netlist" / "synth.v", "synthesized netlist"),
+            (synth_dir / "netlist" / sdf_name, "SDF timing annotation"),
+        ]:
+            require_prerequisite(
+                artifact,
+                f"{description} (gate-level compilation needs a synthesized design)",
+                f"./cook.py dc-shell-synth -t {target} --techno <techno> --period <period>",
+            )
+    print_success("Prerequisites OK", quiet=quiet)
+
+    # ==========================================================
     # CLEAN
     # ==========================================================
     print_step("Clean", quiet=quiet)
@@ -138,7 +161,8 @@ def questa_uvm_comp(
             repo_dir / "verif" / "core-v-verif" / "vendor" / "riscv" / "riscv-isa-sim"
         ),
         "LD_PRELOAD": f"{repo_dir}/tools/spike/lib/libyaml-cpp.so:{repo_dir}/tools/spike/lib/libriscv.so",  # ← ADD THIS COMMA
-        "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),"HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
+        "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
+        "HPDCACHE_DIR": str(repo_dir / "core" / "cache_subsystem" / "hpdcache"),
         "HPDCACHE_TARGET_CFG": str(
             repo_dir / "core/include/cva6_hpdcache_default_config_pkg.sv"
         ),
@@ -238,7 +262,7 @@ def questa_uvm_comp(
     incdirs = [
         repo_dir / "verif" / "env" / "uvme",
         repo_dir / "verif" / "tb" / "uvmt",
-        Path (f"{questasim_home}") / "verilog_src" / "uvm-1.2" / "src",
+        Path(f"{questasim_home}") / "verilog_src" / "uvm-1.2" / "src",
     ]
 
     # DEFINES
@@ -422,6 +446,22 @@ def questa_uvm_comp(
     # Check if optimization succeeded
     if not log_file.exists():
         print_error("Compilation log missing", quiet=quiet)
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        elab_dir,
+        "questa-uvm-comp",
+        {
+            "target": target,
+            "comp_mode": comp_mode,
+            "trace_mode": trace_mode,
+            "tandem_enabled": tandem_enabled,
+            "stats": stats,
+        },
+        quiet=quiet,
+    )
 
     # ==========================================================
     # List
