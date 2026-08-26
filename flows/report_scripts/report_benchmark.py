@@ -15,6 +15,7 @@ import yaml
 
 import flows.utils.report_builder as rb
 
+from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
     CompMode,
     autocompletion_target,
@@ -94,16 +95,18 @@ def report_benchmark(
     )
     file_GLOBAL_PATTERN_end_cycle = simulation_dir / "timing_GLOBAL_PATTERN_end_cycle"
 
-    if file_GLOBAL_PATTERN_start_cycle.exists():
-        start_cycle = int(file_GLOBAL_PATTERN_start_cycle.read_text().strip())
-    else:
-        print_error(f"Missing {file_GLOBAL_PATTERN_start_cycle}", quiet=quiet)
-        raise typer.Exit(code=1)
-    if file_GLOBAL_PATTERN_end_cycle.exists():
-        end_cycle = int(file_GLOBAL_PATTERN_end_cycle.read_text().strip())
-    else:
-        print_error(f"Missing {file_GLOBAL_PATTERN_end_cycle}", quiet=quiet)
-        raise typer.Exit(code=1)
+    for cycle_file in [
+        file_GLOBAL_PATTERN_start_cycle,
+        file_GLOBAL_PATTERN_end_cycle,
+    ]:
+        require_prerequisite(
+            cycle_file,
+            f"simulation timing results for test '{test_name}' (comp mode '{comp_mode.value}')",
+            f"./cook.py vcs-uvm-run -t {target} -n {test_name} --comp-mode {comp_mode.value}",
+        )
+
+    start_cycle = int(file_GLOBAL_PATTERN_start_cycle.read_text().strip())
+    end_cycle = int(file_GLOBAL_PATTERN_end_cycle.read_text().strip())
 
     # Extract reference values
     with expected_values_path.open("r", encoding="utf-8") as f:

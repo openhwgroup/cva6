@@ -249,6 +249,7 @@ lint_spyglass:
       - build/$MY_TARGET/spyglass/*.log
       - build/$MY_TARGET/spyglass/sg_run_results
       - build/$MY_TARGET/spyglass/sg_setup
+      - build/$MY_TARGET/spyglass/cook_manifest.yml
 
 # ==========================================================
 # TOOLCHAIN COMPILATION
@@ -302,7 +303,7 @@ run_sim_spike:
     when: always
     paths:
       - artifacts/reports/report_*.yml
-      - build/$MY_TARGET/simulation/sim_spike/hello-world
+      - build/$MY_TARGET/simulation/sim_spike/hello-world/*
 
 # ==========================================================
 # VCS UVM RTL SIMULATIONS
@@ -335,6 +336,7 @@ elab_rtl:
       - build/$MY_TARGET/elab/sim_rtl/simv.daidir
       - build/$MY_TARGET/elab/sim_rtl/simv.vdb
       - build/$MY_TARGET/elab/sim_rtl/compilation.log
+      - build/$MY_TARGET/elab/sim_rtl/cook_manifest.yml
 
 run_sim_rtl:
   stage: rtl
@@ -365,7 +367,7 @@ run_sim_rtl:
     when: always
     paths:
       - artifacts/reports/report_*.yml
-      - build/$MY_TARGET/simulation/sim_rtl/hello-world
+      - build/$MY_TARGET/simulation/sim_rtl/hello-world/*
 
 # ==========================================================
 # POST SYNTHESIS SIMULATIONS (ASIC)
@@ -398,11 +400,11 @@ run_sim_rtl:
     when: always
     paths:
       - artifacts/reports/report_*.yml
-      - build/$MY_TARGET/synthesis_base/synthesis.log
       - build/$MY_TARGET/synthesis/synthesis.log
       - build/$MY_TARGET/synthesis/Flist.libverilog
       - build/$MY_TARGET/synthesis/reports
       - build/$MY_TARGET/synthesis/netlist
+      - build/$MY_TARGET/synthesis/cook_manifest.yml
 
 .asic_synthesis_elab:
   stage: synth
@@ -430,10 +432,10 @@ run_sim_rtl:
     when: always
     paths:
       - artifacts/reports/report_*.yml
-      - build/$MY_TARGET/elab/sim_gate_wc_timing/simv
       - build/$MY_TARGET/elab/sim_gate_wc_timing/simv.daidir
       - build/$MY_TARGET/elab/sim_gate_wc_timing/simv.vdb
       - build/$MY_TARGET/elab/sim_gate_wc_timing/compilation.log
+      - build/$MY_TARGET/elab/sim_gate_wc_timing/cook_manifest.yml
 
 .asic_synthesis_run_sim:
   stage: synth
@@ -464,7 +466,7 @@ run_sim_rtl:
     when: always
     paths:
       - artifacts/reports/report_*.yml
-      - build/$MY_TARGET/simulation/sim_gate_wc_timing/hello-world
+      - build/$MY_TARGET/simulation/sim_gate_wc_timing/hello-world/*
 
 # ==========================================================
 # BENCHMARK

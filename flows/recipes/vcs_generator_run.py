@@ -14,6 +14,7 @@ from pathlib import Path
 import typer
 import yaml
 
+from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
     print_error,
     print_info,
@@ -166,9 +167,11 @@ def vcs_generator_run(
     simv_path = build_dir / "simv"
     output_dir = repo_dir / "build" / "cv32a65x" / "dv_generated" / test_name
 
-    if not simv_path.exists():
-        print_error(f"simv Not found at {simv_path}", quiet=quiet)
-        raise typer.Exit(code=1)
+    require_prerequisite(
+        simv_path,
+        "compiled random test generator (simv)",
+        "./cook.py vcs-generator-comp",
+    )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     asm_dir = output_dir / "asm_tests"

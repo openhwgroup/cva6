@@ -12,8 +12,14 @@
 from pathlib import Path
 import shutil
 import typer
+from flows.utils.manifest import (
+    read_manifest,
+    require_prerequisite,
+    require_manifest_option,
+)
 from flows.utils.utils import (
     CompMode,
+    TraceMode,
     autocompletion_target,
     autocompletion_testname_compiled,
     print_recipe_title,
@@ -99,6 +105,29 @@ def vcs_uvm_gui(
     build_root = repo_dir / "build" / target
     elab_dir = build_root / "elab" / inout_dir
     simulation_dir = build_root / "simulation" / inout_dir / test_name
+
+    # ==========================================================
+    # CHECK PREREQUISITES
+    # ==========================================================
+    print_step("Check prerequisites", quiet=quiet)
+
+    require_prerequisite(
+        simulation_dir / "trace.fsdb",
+        f"FSDB trace for test '{test_name}' (comp mode '{comp_mode.value}')",
+        f"./cook.py vcs-uvm-run -t {target} -n {test_name} --comp-mode {comp_mode.value} --trace-mode gui (design must be elaborated with --trace-mode gui too)",
+    )
+
+    sim_manifest = read_manifest(simulation_dir)
+    require_manifest_option(
+        sim_manifest,
+        "trace_mode",
+        [TraceMode.gui.value, TraceMode.fast.value],
+        "Verdi needs an FSDB trace generated with --trace-mode gui or fast",
+        f"./cook.py vcs-uvm-run -t {target} -n {test_name} --comp-mode {comp_mode.value} --trace-mode gui",
+        manifest_dir=simulation_dir,
+    )
+
+    print_success("Prerequisites OK", quiet=quiet)
 
     # ==========================================================
     # BUILD VERDI COMMAND

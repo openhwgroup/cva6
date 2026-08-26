@@ -17,6 +17,7 @@ import typer
 from flows.recipes.vcs_uvm_run import vcs_uvm_run
 from flows.recipes.xcelium_uvm_run import xcelium_uvm_run
 from flows.recipes.questa_uvm_run import questa_uvm_run
+from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
     CompMode,
     TraceMode,
@@ -118,6 +119,34 @@ def uvm_run_testlist(
         raise typer.Exit(code=1)
 
     repo_dir = Path.cwd()
+
+    # ==========================================================
+    # CHECK PREREQUISITES (fail fast before looping on testlist)
+    # ==========================================================
+    if comp_mode == CompMode.rtl:
+        inout_dir = "sim_rtl"
+    elif comp_mode == CompMode.coverage:
+        inout_dir = "sim_cov"
+    elif comp_mode == CompMode.gate_wc_timing:
+        inout_dir = "sim_gate_wc_timing"
+    elif comp_mode == CompMode.gate_wc_power:
+        inout_dir = "sim_gate_wc_power"
+    else:
+        print_error("Unknown comp_mode", quiet=quiet)
+        raise typer.Exit(code=1)
+
+    elab_dir = repo_dir / "build" / target / "elab" / inout_dir
+    elab_artifact = {
+        Simulator.vcs: elab_dir / "simv",
+        Simulator.xcelium: elab_dir / "xcelium.d",
+        Simulator.questa: elab_dir / "work",
+    }[simulator]
+    require_prerequisite(
+        elab_artifact,
+        f"{simulator.value} elaborated design (comp mode '{comp_mode.value}')",
+        f"./cook.py {simulator.value}-uvm-comp -t {target} --comp-mode {comp_mode.value}",
+    )
+
     data = {"testlist": []}
 
     # Special handling for cvxif testlist

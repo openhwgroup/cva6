@@ -14,6 +14,7 @@ import shutil
 from enum import Enum
 import typer
 import yaml
+from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
     Cva6Hier,
     autocompletion_target,
@@ -99,12 +100,12 @@ def spyglass_run(
     sg_setup_dir = spyglass_dir / "sg_setup" / f"{top_elaborate}"
     tmp_dir = spyglass_dir / "tmp"
 
-    if sg_setup_dir.exists():
-        print_info(f"sg_setup found: {spyglass_dir}", quiet=quiet)
-    else:
-        print_error(f"sg_setup not found: {spyglass_dir}", quiet=quiet)
-        print_error("Run design read first", quiet=quiet)
-        raise typer.Exit(code=1)
+    require_prerequisite(
+        sg_setup_dir,
+        "Spyglass design read setup",
+        f"./cook.py spyglass-design-read -t {target}",
+    )
+    print_info(f"sg_setup found: {spyglass_dir}", quiet=quiet)
 
     # ==========================================================
     # CLEAN

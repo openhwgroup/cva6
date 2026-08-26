@@ -10,6 +10,7 @@
 from pathlib import Path
 import shutil
 import typer
+from flows.utils.manifest import write_manifest
 from flows.utils.utils import (
     print_recipe_title,
     print_recipe_end,
@@ -195,5 +196,18 @@ def vcs_generator_comp(
     for genfile in gen_files:
         if genfile.exists():
             print_info(f"> {genfile}", quiet=quiet)
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        elab_dir,
+        "vcs-generator-comp",
+        {
+            "top": "cva6_instr_gen_tb_top",
+            "defines": defines,
+        },
+        quiet=quiet,
+    )
 
     print_recipe_end("Completed", quiet=quiet)

@@ -12,6 +12,7 @@
 from pathlib import Path
 import shutil
 import typer
+from flows.utils.manifest import write_manifest, require_prerequisite
 from flows.utils.utils import (
     autocompletion_target,
     autocompletion_testname_compiled,
@@ -83,6 +84,25 @@ def spike_run(
     spike_dir = repo_dir / "tools" / "spike"
     spike_bin = spike_dir / "bin" / "spike"
     spike_lib = spike_dir / "lib"
+
+    # ==========================================================
+    # CHECK PREREQUISITES
+    # ==========================================================
+    print_step("Check prerequisites", quiet=quiet)
+
+    require_prerequisite(
+        spike_bin,
+        "SPIKE simulator binary",
+        "./cook.py git-dependencies",
+    )
+
+    require_prerequisite(
+        compile_dir / f"{test_name}.elf",
+        f"compiled software for test '{test_name}'",
+        f"./cook.py sw-compile -t {target} -c <toolchain> --out {test_name} <sources>",
+    )
+
+    print_success("Prerequisites OK", quiet=quiet)
 
     # ==========================================================
     # CLEAN
@@ -190,6 +210,19 @@ def spike_run(
     if found == 0:
         print_error("Simulation status unknown", quiet=quiet)
         code = 1
+
+    # ==========================================================
+    # BUILD MANIFEST
+    # ==========================================================
+    write_manifest(
+        simulation_dir,
+        "spike-run",
+        {
+            "target": target,
+            "test_name": test_name,
+        },
+        quiet=quiet,
+    )
 
     # ==========================================================
     # List
