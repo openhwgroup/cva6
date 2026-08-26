@@ -128,26 +128,16 @@ export NUM_JOBS=8  # Use 8 parallel jobs (cmake)
 ./verif/regress/install-spike.sh
 ```
 
-4. **Install DV**
+4. **Install external git dependencies(Optional)**
+
+Some git dependencies are not in submodules and must be cloned by manually.
 
 ```bash
-# Install Python dependencies
-pip3 install -r verif/sim/dv/requirements.txt
-
-# Install DV (Instruction generator)
-./verif/regress/install-dv.sh
+# Install external git dependencies (mostly test suites)
+./cook.py git-dependencies
 ```
 
-5. **Install Test suites**
-
-```bash
-# Install test suites
-./verif/regress/install-tests.sh
-./verif/regress/install-arch-tests.sh
-./verif/regress/install-compliance.sh
-```
-
-6. **RISC-V Proxy Kernel (Optional)**
+5. **RISC-V Proxy Kernel (Optional)**
 
 For simulations requiring system calls (e.g., printf in C programs), you can install the RISC-V proxy kernel:
 
@@ -180,6 +170,8 @@ Configuration files are located in `flows/config/`:
 
 - **`compiler.yml`** - Toolchain configurations (required)
 - **`techno.yml`** - Technology libraries for synthesis
+- **`dependencies.yml`** - External git repositories
+
 
 ### Custom Configuration Directory
 
