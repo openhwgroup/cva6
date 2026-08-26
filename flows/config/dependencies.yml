@@ -1,0 +1,54 @@
+# Copyright 2026 Thales France
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
+#
+# Please refer to flows/README.md to add target
+#
+# CVA6 External Git Dependencies Configuration
+#
+# This file defines external Git repositories that need to be cloned
+# for verification and testing (not Git submodules).
+#
+# Each dependency can specify:
+#   - repo: Git repository URL
+#   - branch: Branch to checkout
+#   - commit: Specific commit hash to checkout
+#   - destination: Local path where to clone
+#   - patches: List of patch files to apply (optional)
+
+riscv-tests:
+  repo: "https://github.com/riscv/riscv-tests.git"
+  branch: "master"
+  commit: "f92842f91644092960ac7946a61ec2895e543cec"
+  destination: "verif/tests/riscv-tests"
+  patches:
+    - "verif/regress/riscv-tests.patch"
+    - "verif/regress/riscv-tests-env.patch:env"  # Apply in env/ subdirectory
+  submodules: true  # Clone submodules recursively
+
+riscv-compliance:
+  repo: "https://github.com/riscv-non-isa/riscv-arch-test.git"
+  branch: "main"
+  commit: "220e78542da4510e40eac31e31fdd4e77cdae437"
+  destination: "verif/tests/riscv-compliance"
+  patches:
+    - "verif/regress/riscv-compliance.patch"
+  submodules: false
+
+riscv-arch-test:
+  repo: "https://github.com/riscv-non-isa/riscv-arch-test"
+  branch: "main"
+  commit: "a5a49fc9f244192649e57fe61b4513d9bc39b1e3"
+  destination: "verif/tests/riscv-arch-test"
+  patches: []
+  submodules: false
+  post_install:
+    # Copy Spike arch_test_target definitions to riscv-target subdirectory
+    # Uses: $SPIKE_PATH/riscv-isa-sim/arch_test_target
+    # SPIKE_PATH is defined in flows/config/setenv.sh
+    copy_spike_target: true
