@@ -24,8 +24,10 @@ For detailed information on available targets, configuration file formats, and h
 git clone https://github.com/openhwgroup/cva6.git
 cd cva6
 
-# Install Python dependencies
-pip install -r flows/requirements.txt
+# Install Python dependencies (use pip3 if pip is not available)
+pip3 install --user -r flows/requirements.txt
+# Note: --user installs packages to ~/.local/lib/python*/site-packages
+# Ensure ~/.local/bin is in your PATH for black and pylint commands
 
 # Initialize submodules
 git submodule update --init --recursive
