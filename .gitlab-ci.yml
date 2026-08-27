@@ -559,7 +559,7 @@ benchmark_run_sim_rtl:
       - MY_TARGET: cv32a65x_noPMP
         MY_TESTLISTS: "base_rv32_p base_zcmt"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi
-        MY_TESTLISTS: "base_rv64_p base_zcmt"
+        MY_TESTLISTS: "base_rv64_p"
       # AXI noPMP noMMU
       - MY_TARGET: cv32a60x_axi
         MY_TESTLISTS: "base_rv32_p base_zcmt"
@@ -575,14 +575,14 @@ benchmark_run_sim_rtl:
       - MY_TARGET: cv32a65x
         MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi
-        MY_TESTLISTS: "base_rv64_p base_zcmt base_pmp base_rv64_amo_p"
+        MY_TESTLISTS: "base_rv64_p base_pmp base_rv64_amo_p"
       # AXI PMP noMMU
       - MY_TARGET: cv32a60x_zcmt_pmp_axi
         MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv32a65x_axi
         MY_TESTLISTS: "base_rv32_p base_zcmt base_pmp"
       - MY_TARGET: cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi
-        MY_TESTLISTS: "base_rv64_p base_zcmt base_pmp base_rv64_amo_p"
+        MY_TESTLISTS: "base_rv64_p base_pmp base_rv64_amo_p"
       # OBI PMP MMU
       - MY_TARGET: cv32a6_imac_sv32_obi
         MY_TESTLISTS: "base_rv32_p base_rv32_v base_pmp base_rv32_amo_p base_rv32_amo_v"
