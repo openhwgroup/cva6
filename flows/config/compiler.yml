@@ -25,14 +25,14 @@
 dummy1: &dummy1
     TOOLS_PATH: "/tmp/llvm-20"
     CLANG: "riscv32-unknown-elf-clang"
-    GCC: null
+    GCC:
     OBJDUMP: "riscv32-unknown-elf-objdump"
     NM: "riscv32-unknown-elf-nm"
     TARGET_TOOLCHAIN: "riscv32-unknown-elf"
 
 dummy2: &dummy2
     TOOLS_PATH: "/tmp/gcc-15"
-    CLANG: null
+    CLANG:
     GCC: "riscv32-unknown-elf-clang"
     OBJDUMP: "riscv32-unknown-elf-objdump"
     NM: "riscv32-unknown-elf-nm"
