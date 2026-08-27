@@ -23,9 +23,8 @@ RVTEST_CODE_BEGIN
 
 // trap handler
 trap_handler:
-    lui    t0, %hi(failure)        # Load upper 20 bits of address of 'success' into t0
-    addi   t0, t0, %lo(failure)    # Add lower 12 bits to form full address
-    jalr   x0, 0(t0) 
+    la     t0, failure             # Load address of 'failure' (PC-relative, RV32/RV64 safe)
+    jalr   x0, 0(t0)
 
 // cm.jalt target label
 target1:

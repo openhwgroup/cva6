@@ -26,9 +26,8 @@ target1:
                 
 
 trap_handler:
-	lui    t0, %hi(failure)        # Load upper 20 bits of target address into t0
-    addi   t0, t0, %lo(failure)    # Add the lower 12 bits to t0
-    jalr   x0, 0(t0) 
+    la     t0, failure             # Load address of 'failure' (PC-relative, RV32/RV64 safe)
+    jalr   x0, 0(t0)
 
 // jump to this label to signal that the test failed
 failure:
