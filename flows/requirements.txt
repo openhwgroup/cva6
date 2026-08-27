@@ -7,3 +7,5 @@ tqdm
 rich
 typer
 pyyaml
+black
+pylint
