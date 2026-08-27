@@ -13,6 +13,7 @@ from pathlib import Path
 import yaml
 import typer
 from flows.recipes.sw_compile import sw_compile
+from flows.utils.config_loader import load_compiler_config
 from flows.utils.utils import (
     ToolchainOption,
     autocompletion_target,
@@ -79,6 +80,11 @@ def sw_compile_testlist(
 
     repo_dir = Path.cwd()
 
+    # Detect LLVM mode to select llvm_opts instead of gcc_opts in testlists
+    # (same detection as in sw_compile)
+    COMPILER_DATA = load_compiler_config()
+    is_llvm = COMPILER_DATA[toolchain.value]["CLANG"] is not None
+
     testlist_file = repo_dir / testlist
 
     try:
@@ -104,6 +110,10 @@ def sw_compile_testlist(
         if iterations == 0:
             continue
 
+        # Select compile options: llvm_opts (if LLVM toolchain and key present),
+        # otherwise gcc_opts
+        opts_key = "llvm_opts" if is_llvm and "llvm_opts" in test else "gcc_opts"
+
         if "path_var" in test:
             if test["path_var"] == "TESTS_PATH":
                 test["path_var"] = "verif/tests"
@@ -114,7 +124,7 @@ def sw_compile_testlist(
             test["asm_tests"] = test["asm_tests"].replace(
                 "<path_var>", test["path_var"]
             )
-            test["gcc_opts"] = test["gcc_opts"].replace("<path_var>", test["path_var"])
+            test[opts_key] = test[opts_key].replace("<path_var>", test["path_var"])
 
         # Case where mabi or march is specified in <testlist>.yml
         if "mabi" not in test:
@@ -122,13 +132,13 @@ def sw_compile_testlist(
         if "march" not in test:
             test["march"] = march
 
-        test["gcc_opts"] = test["gcc_opts"].split()
+        test[opts_key] = test[opts_key].split()
         test["asm_tests"] = test["asm_tests"].split()
 
         print_param_table(
             {
                 "Test": test["test"],
-                "gcc_opts": test["gcc_opts"],
+                opts_key: test[opts_key],
                 "Iterations": test["iterations"],
                 "Test path": test["asm_tests"],
                 "march": test["march"],
@@ -142,7 +152,7 @@ def sw_compile_testlist(
         options = []
         preprocessor_directives = []
 
-        for item in test["gcc_opts"]:
+        for item in test[opts_key]:
             if item.startswith("-I"):
                 inc_dirs += [item[2:]]
             elif item.startswith("-T"):
