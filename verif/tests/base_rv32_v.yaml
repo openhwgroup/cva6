@@ -25,12 +25,14 @@
 # no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
 # compare_opts    : Options for the RTL & ISS trace comparison
 # gcc_opts        : gcc compile options
+# llvm_opts       : llvm compile options (used instead of gcc_opts with an LLVM toolchain)
 # --------------------------------------------------------------------------------
 ## C
 
 common_test_config: &common_test_config
   path_var: TESTS_PATH
   gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/ -lgcc"
+  llvm_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/"
 
 testlist:
   - test: rv32ui-v-add
