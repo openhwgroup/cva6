@@ -45,3 +45,20 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: mret-mpv-rv64
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/mret-mpv-rv64.S
+
+  - test: zcmt-jvt-index-rv32
+    description: >
+      Check that cm.jalt uses the complete eight-bit JVT table index.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/zcmt/cm_jalt_long.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles

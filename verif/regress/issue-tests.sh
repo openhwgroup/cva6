@@ -33,4 +33,22 @@ python3 cva6.py --testlist=../tests/testlist_issues.yaml --test compressed-fpreg
 make clean
 make -C verif/sim clean_all
 
+
+# Check the complete eight-bit Zcmt JVT index with a directed assembly test.
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test zcmt-jvt-index-rv32 \
+  --iss_yaml cva6.yaml \
+  --target hwconfig \
+  --hwconfig_opts="cv32a60x *RVZCMT=1" \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld"
+
+zcmt_status=$?
+if [ "$zcmt_status" -ne 0 ]; then
+  echo "Error: Zcmt JVT index assembly regression failed"
+  cd ../..
+  return "$zcmt_status" 2>/dev/null || exit "$zcmt_status"
+fi
+
 cd -
