@@ -628,7 +628,7 @@ module csr_regfile
         if (CVA6Cfg.RVS) csr_rdata = medeleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIDELEG:
-        if (CVA6Cfg.RVS) csr_rdata = mideleg_q;
+        if (CVA6Cfg.RVS) csr_rdata = (CVA6Cfg.RVH) ? mideleg_q | HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIE: csr_rdata = mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
@@ -2814,7 +2814,7 @@ module csr_regfile
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
         medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        mideleg_q    <= {CVA6Cfg.XLEN{1'b0}};
+        mideleg_q    <= (CVA6Cfg.RVH) ? CVA6Cfg.XLEN'(HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]) : {CVA6Cfg.XLEN{1'b0}};
         sepc_q       <= {CVA6Cfg.XLEN{1'b0}};
         scause_q     <= {CVA6Cfg.XLEN{1'b0}};
         stvec_q      <= {CVA6Cfg.XLEN{1'b0}};
