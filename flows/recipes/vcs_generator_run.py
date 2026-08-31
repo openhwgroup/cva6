@@ -16,7 +16,6 @@ import yaml
 
 from flows.utils.manifest import require_prerequisite
 from flows.utils.utils import (
-    print_error,
     print_info,
     print_param_table,
     print_recipe_title,

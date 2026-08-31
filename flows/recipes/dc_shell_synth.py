@@ -67,7 +67,6 @@ def dc_shell_synth(
         False, "--quiet", "-q", help="Suppress output (errors only)"
     ),
 ):
-    TECHNO_DATA = load_techno_config()
     """
     DC Shell Synthesis flow
     """
@@ -102,6 +101,7 @@ def dc_shell_synth(
 
     # Get config
     #
+    TECHNO_DATA = load_techno_config()
     techno = TECHNO_DATA[techno.value]
 
     print_param_table(
