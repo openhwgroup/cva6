@@ -50,7 +50,7 @@ def _read_config(config_file: str, verbose: bool):
             )
     # Test to detect dummy config (uninitialised environement
     # Rename dummy1 key in yaml to disable this error
-    if DATA != None and "dummy1" in DATA:
+    if DATA is not None and "dummy1" in DATA:
         if verbose:
             console.print(
                 Panel(

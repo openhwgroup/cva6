@@ -251,7 +251,6 @@ def questa_uvm_run(
 
     elf = compile_dir / f"{test_name}.elf"
     signature = compile_dir / f"{test_name}.elf.signature_output"
-    tandem_report = simulation_dir / "tandem_report.yml"
 
     # Get QUESTASIM_HOME
     questasim_home = shutil.which("vsim")

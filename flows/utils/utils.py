@@ -322,14 +322,14 @@ class Cva6Hier(str, Enum):
     axi = "axi"
 
 
-if TECHNO_DATA != None:
+if TECHNO_DATA is not None:
     TechnoOption = Enum(
         "TechnoOption", {key.upper(): key for key in TECHNO_DATA.keys()}
     )
 else:
     TechnoOption = Enum("TechnoOption", [])
 
-if COMPILER_DATA != None:
+if COMPILER_DATA is not None:
     ToolchainOption = Enum(
         "ToolchainOption", {key.upper(): key for key in COMPILER_DATA.keys()}
     )
