@@ -815,16 +815,11 @@ module frontend
   if (CVA6Cfg.BHTEntries == 0) begin
     assign bht_prediction = '0;
   end else begin : bht_gen
-    if(CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin: gen_common_bht
+    if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin : gen_common_bht
       assign bht_prediction = dcls_common_bht_data_i;
 
-      assign dcls_common_bht_ctrl_o = '{
-          flush_bp_i,
-          debug_mode_i,
-          vpc_bht,
-          bht_update
-        };
-    end else begin: gen_no_common_bht
+      assign dcls_common_bht_ctrl_o = '{flush_bp_i, debug_mode_i, vpc_bht, bht_update};
+    end else begin : gen_no_common_bht
       bht #(
           .CVA6Cfg   (CVA6Cfg),
           .bht_update_t(bht_update_t),

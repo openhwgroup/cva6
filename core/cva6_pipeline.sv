@@ -568,31 +568,31 @@ module cva6_pipeline
   ) i_frontend (
       .clk_i,
       .rst_ni,
-      .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .flush_bp_i         (1'b0),
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
-      .halt_i             (halt_ctrl),
-      .set_pc_commit_i    (set_pc_ctrl_pcgen),
-      .pc_commit_i        (pc_commit),
-      .ex_valid_i         (ex_commit.valid),
-      .resolved_branch_i  (resolved_branch),
-      .eret_i             (eret),
-      .epc_i              (epc_commit_pcgen),
-      .trap_vector_base_i (trap_vector_base_commit_pcgen),
-      .set_debug_pc_i     (set_debug_pc),
-      .debug_mode_i       (debug_mode),
-      .areq_o             (fetch_areq_frontend_ex),
-      .arsp_i             (fetch_arsp_ex_frontend),
-      .ypb_fetch_req_o    (ypb_fetch_req_o),
-      .ypb_fetch_rsp_i    (ypb_fetch_rsp_i),
-      .fetch_entry_o      (fetch_entry_if_id),
-      .fetch_entry_valid_o(fetch_valid_if_id),
-      .fetch_entry_ready_i(fetch_ready_id_if),
+      .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .flush_bp_i            (1'b0),
+      .flush_i               (flush_ctrl_if),                  // not entirely correct
+      .halt_i                (halt_ctrl),
+      .set_pc_commit_i       (set_pc_ctrl_pcgen),
+      .pc_commit_i           (pc_commit),
+      .ex_valid_i            (ex_commit.valid),
+      .resolved_branch_i     (resolved_branch),
+      .eret_i                (eret),
+      .epc_i                 (epc_commit_pcgen),
+      .trap_vector_base_i    (trap_vector_base_commit_pcgen),
+      .set_debug_pc_i        (set_debug_pc),
+      .debug_mode_i          (debug_mode),
+      .areq_o                (fetch_areq_frontend_ex),
+      .arsp_i                (fetch_arsp_ex_frontend),
+      .ypb_fetch_req_o       (ypb_fetch_req_o),
+      .ypb_fetch_rsp_i       (ypb_fetch_rsp_i),
+      .fetch_entry_o         (fetch_entry_if_id),
+      .fetch_entry_valid_o   (fetch_valid_if_id),
+      .fetch_entry_ready_i   (fetch_ready_id_if),
       .dcls_common_bht_data_i(bht_from_common),
       .dcls_common_bht_ctrl_o(bht_to_common)
   );
 
-  if(CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin
+  if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin
     assign bht_from_common = dcls_from_common_i.bht_prediction;
     assign dcls_to_common_o.bht_inputs = bht_to_common;
   end else begin
@@ -723,18 +723,18 @@ module cva6_pipeline
   logic [CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] common_regfile_rdata;
 
   issue_stage #(
-      .CVA6Cfg(CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t),
+      .CVA6Cfg            (CVA6Cfg),
+      .bp_resolve_t       (bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .exception_t(exception_t),
-      .fu_data_t(fu_data_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .writeback_t(writeback_t),
-      .x_issue_req_t(x_issue_req_t),
-      .x_issue_resp_t(x_issue_resp_t),
-      .x_register_t(x_register_t),
-      .x_commit_t(x_commit_t),
-      .regfile_inputs_t    (regfile_inputs_t)
+      .exception_t        (exception_t),
+      .fu_data_t          (fu_data_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .writeback_t        (writeback_t),
+      .x_issue_req_t      (x_issue_req_t),
+      .x_issue_resp_t     (x_issue_resp_t),
+      .x_register_t       (x_register_t),
+      .x_commit_t         (x_commit_t),
+      .regfile_inputs_t   (regfile_inputs_t)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -808,26 +808,26 @@ module cva6_pipeline
       .x_we_i                  (x_we_ex_id),
       .x_rd_i                  (x_rd_ex_id),
 
-      .waddr_i              (waddr_commit_id),
-      .wdata_i              (wdata_commit_id),
-      .we_gpr_i             (we_gpr_commit_id),
-      .we_fpr_i             (we_fpr_commit_id),
-      .commit_instr_o       (commit_instr_id_commit),
-      .commit_drop_o        (commit_drop_id_commit),
-      .commit_ack_i         (commit_ack_commit_id),
+      .waddr_i                   (waddr_commit_id),
+      .wdata_i                   (wdata_commit_id),
+      .we_gpr_i                  (we_gpr_commit_id),
+      .we_fpr_i                  (we_fpr_commit_id),
+      .commit_instr_o            (commit_instr_id_commit),
+      .commit_drop_o             (commit_drop_id_commit),
+      .commit_ack_i              (commit_ack_commit_id),
       // Performance Counters
-      .stall_issue_o        (stall_issue),
+      .stall_issue_o             (stall_issue),
       //RVFI
-      .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer),
-      .rvfi_rs1_o           (rvfi_rs1),
-      .rvfi_rs2_o           (rvfi_rs2),
-      .orig_instr_aes_bits  (orig_instr_aes),
+      .rvfi_issue_pointer_o      (rvfi_issue_pointer),
+      .rvfi_commit_pointer_o     (rvfi_commit_pointer),
+      .rvfi_rs1_o                (rvfi_rs1),
+      .rvfi_rs2_o                (rvfi_rs2),
+      .orig_instr_aes_bits       (orig_instr_aes),
       .dcls_common_regfile_data_i(common_regfile_rdata),
       .dcls_common_regfile_ctrl_o(common_regfile_ctrl)
   );
 
-  if(CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin
+  if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin
     assign dcls_to_common_o.regfile_inputs = common_regfile_ctrl;
     assign common_regfile_rdata = dcls_from_common_i.regfile_rdata;
   end else begin

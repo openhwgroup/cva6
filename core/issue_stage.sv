@@ -243,18 +243,18 @@ module issue_stage
   // 3. Issue instruction and read operand, also commit
   // ---------------------------------------------------------
   issue_read_operands #(
-      .CVA6Cfg(CVA6Cfg),
+      .CVA6Cfg            (CVA6Cfg),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .fu_data_t(fu_data_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .rs3_len_t(rs3_len_t),
-      .writeback_t(writeback_t),
-      .forwarding_t(forwarding_t),
-      .x_issue_req_t(x_issue_req_t),
-      .x_issue_resp_t(x_issue_resp_t),
-      .x_register_t(x_register_t),
-      .x_commit_t(x_commit_t),
-      .regfile_inputs_t    (regfile_inputs_t)
+      .fu_data_t          (fu_data_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .rs3_len_t          (rs3_len_t),
+      .writeback_t        (writeback_t),
+      .forwarding_t       (forwarding_t),
+      .x_issue_req_t      (x_issue_req_t),
+      .x_issue_resp_t     (x_issue_resp_t),
+      .x_register_t       (x_register_t),
+      .x_commit_t         (x_commit_t),
+      .regfile_inputs_t   (regfile_inputs_t)
   ) i_issue_read_operands (
       .clk_i,
       .rst_ni,

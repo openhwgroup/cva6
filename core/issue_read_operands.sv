@@ -1013,30 +1013,25 @@ module issue_read_operands
         .we_i     (we_pack)
     );
   end else begin : gen_asic_regfile
-    if(CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin: gen_dcls_common_regfile_dup
+    if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin : gen_dcls_common_regfile_dup
       assign rdata = dcls_common_regfile_data_i;
-      assign dcls_common_regfile_ctrl_o = '{
-          raddr_pack,
-          wdata_pack,
-          waddr_pack,
-          we_pack
-      };
+      assign dcls_common_regfile_ctrl_o = '{raddr_pack, wdata_pack, waddr_pack, we_pack};
     end else begin
-        ariane_regfile #(
-            .CVA6Cfg      (CVA6Cfg),
-            .DATA_WIDTH   (CVA6Cfg.XLEN),
-            .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
-            .ZERO_REG_ZERO(1)
-        ) i_ariane_regfile (
-            .clk_i,
-            .rst_ni,
-            .test_en_i(1'b0),
-            .raddr_i  (raddr_pack),
-            .rdata_o  (rdata),
-            .waddr_i  (waddr_pack),
-            .wdata_i  (wdata_pack),
-            .we_i     (we_pack)
-        );
+      ariane_regfile #(
+          .CVA6Cfg      (CVA6Cfg),
+          .DATA_WIDTH   (CVA6Cfg.XLEN),
+          .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
+          .ZERO_REG_ZERO(1)
+      ) i_ariane_regfile (
+          .clk_i,
+          .rst_ni,
+          .test_en_i(1'b0),
+          .raddr_i  (raddr_pack),
+          .rdata_o  (rdata),
+          .waddr_i  (waddr_pack),
+          .wdata_i  (wdata_pack),
+          .we_i     (we_pack)
+      );
     end
   end
 
