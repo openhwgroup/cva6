@@ -1414,3 +1414,9 @@ python -u cook.py <command> [OPTIONS]
 export CONFIG_DIR=/your/config
 ./cook.py self-check
 ```
+
+
+
+./cook.py sw-compile-testlist -t cv32a60x -c dummy1 -l config/target/cv32a60x/verif/*.yaml
+./cook.py questa-uvm-comp -t cv32a60x --tandem-enabled
+./cook.py questa-uvm-run -t cv32a60x -n rv32ui-p-add_0 --tandem-enabled

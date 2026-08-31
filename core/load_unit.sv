@@ -222,8 +222,8 @@ module load_unit
   assign paddr_is_cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
-        {64 - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}},
-        ypb_load_req_o.paddr[ CVA6Cfg.DCACHE_TAG_WIDTH + 
+        {64 - CVA6Cfg.DCACHE_INDEX_WIDTH - CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}},
+        ypb_load_req_o.paddr[ CVA6Cfg.DCACHE_TAG_WIDTH +
                                       CVA6Cfg.DCACHE_INDEX_WIDTH-1:
                                       CVA6Cfg.DCACHE_INDEX_WIDTH ],
         {CVA6Cfg.DCACHE_INDEX_WIDTH{1'b0}}
