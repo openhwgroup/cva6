@@ -1419,7 +1419,10 @@ module csr_regfile
                 2'b00:   scbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   scbie_d = riscv::CBIE_FLUSH;
                 2'b11:   scbie_d = riscv::CBIE_INVAL;
-                default: scbie_d = riscv::CBIE_RSVD;
+                // WARL: reject the reserved encoding 2'b10 by
+                // reverting to the previously held legal value
+                // instead of silently storing it (#3511).
+                default: scbie_d = scbie_q;
               endcase
               scbcfe_d = csr_wdata[6];
             end
@@ -1546,7 +1549,10 @@ module csr_regfile
                 2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   hcbie_d = riscv::CBIE_FLUSH;
                 2'b11:   hcbie_d = riscv::CBIE_INVAL;
-                default: hcbie_d = riscv::CBIE_RSVD;
+                // WARL: reject the reserved encoding 2'b10 by
+                // reverting to the previously held legal value
+                // instead of silently storing it (#3511).
+                default: hcbie_d = hcbie_q;
               endcase
               hcbcfe_d = csr_wdata[6];
             end
@@ -1732,7 +1738,10 @@ module csr_regfile
               2'b00:   mcbie_d = riscv::CBIE_ILLEGAL;
               2'b01:   mcbie_d = riscv::CBIE_FLUSH;
               2'b11:   mcbie_d = riscv::CBIE_INVAL;
-              default: mcbie_d = riscv::CBIE_RSVD;
+              // WARL: reject the reserved encoding 2'b10 by
+              // reverting to the previously held legal value
+              // instead of silently storing it (#3511).
+              default: mcbie_d = mcbie_q;
             endcase
             mcbcfe_d = csr_wdata[6];
           end
