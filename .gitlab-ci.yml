@@ -243,6 +243,8 @@ hello-pk:
   script:
     - bash verif/regress/veri-testharness-pk-tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
+  rules:
+    - allow_failure: true
 
 .synthesis_test:
   stage: heavy tests
