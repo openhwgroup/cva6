@@ -237,6 +237,12 @@ package config_pkg;
     int unsigned                 ObiVersion;
     // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
     bit                          PipelineOnly;
+    // DCLS parameters
+    bit                          DclsEn;
+    // Number of cycles o
+    int unsigned                 DclsDelay;
+    bit                          DclsCommonRegfile;
+    bit                          DclsCommonBHT;
   } cva6_user_cfg_t;
 
   typedef struct packed {
@@ -408,6 +414,12 @@ package config_pkg;
     obi_pkg::obi_cfg_t ObiZcmtbusCfg;
 
     bit PipelineOnly;
+
+    bit DclsEn;
+    int unsigned DclsDelay;
+    bit DclsCommonRegfile;
+    bit DclsCommonBHT;
+    bit DclsCommonModules;
   } cva6_cfg_t;
 
   /// Empty configuration to sanity check proper parameter passing. Whenever

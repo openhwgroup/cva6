@@ -27,7 +27,8 @@ module frontend
     parameter type fetch_areq_t = logic,
     parameter type fetch_arsp_t = logic,
     parameter type ypb_fetch_req_t = logic,
-    parameter type ypb_fetch_rsp_t = logic
+    parameter type ypb_fetch_rsp_t = logic,
+    parameter type bht_inputs_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -72,7 +73,10 @@ module frontend
     // Handshake's valid between fetch and decode - ID_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_valid_o,
     // Handshake's ready between fetch and decode - ID_STAGE
-    input logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_ready_i
+    input logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_ready_i,
+    // DCLS
+    input bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0] dcls_common_bht_data_i,
+    output bht_inputs_t dcls_common_bht_ctrl_o
 );
 
   localparam type bht_update_t = struct packed {
@@ -811,19 +815,25 @@ module frontend
   if (CVA6Cfg.BHTEntries == 0) begin
     assign bht_prediction = '0;
   end else begin : bht_gen
-    bht #(
-        .CVA6Cfg   (CVA6Cfg),
-        .bht_update_t(bht_update_t),
-        .NR_ENTRIES(CVA6Cfg.BHTEntries)
-    ) i_bht (
-        .clk_i,
-        .rst_ni,
-        .flush_bp_i      (flush_bp_i),
-        .debug_mode_i,
-        .vpc_i           (vpc_bht),
-        .bht_update_i    (bht_update),
-        .bht_prediction_o(bht_prediction)
-    );
+    if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin : gen_common_bht
+      assign bht_prediction = dcls_common_bht_data_i;
+
+      assign dcls_common_bht_ctrl_o = '{flush_bp_i, debug_mode_i, vpc_bht, bht_update};
+    end else begin : gen_no_common_bht
+      bht #(
+          .CVA6Cfg   (CVA6Cfg),
+          .bht_update_t(bht_update_t),
+          .NR_ENTRIES(CVA6Cfg.BHTEntries)
+      ) i_bht (
+          .clk_i,
+          .rst_ni,
+          .flush_bp_i      (flush_bp_i),
+          .debug_mode_i,
+          .vpc_i           (vpc_bht),
+          .bht_update_i    (bht_update),
+          .bht_prediction_o(bht_prediction)
+      );
+    end
   end
 
   // we need to inspect up to CVA6Cfg.INSTR_PER_FETCH instructions for branches

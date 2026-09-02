@@ -52,7 +52,13 @@ module cva6_pipeline
     parameter type x_commit_t = logic,
     parameter type x_result_t = logic,
     parameter type cvxif_req_t = logic,
-    parameter type cvxif_resp_t = logic
+    parameter type cvxif_resp_t = logic,
+
+    // DCLS
+    parameter type regfile_inputs_t = logic,
+    parameter type bht_inputs_t = logic,
+    parameter type dcls_common_modules_ctrl_t = logic,
+    parameter type dcls_common_modules_data_t = logic
 
 ) (
     // Subsystem Clock - SUBSYSTEM
@@ -130,7 +136,10 @@ module cva6_pipeline
     // Write buffer status to know if empty - EX_STAGE
     input logic dcache_wbuffer_empty_i,
     // Write buffer status to know if not non idempotent - EX_STAGE
-    input logic dcache_wbuffer_not_ni_i
+    input logic dcache_wbuffer_not_ni_i,
+    // DCLS
+    input dcls_common_modules_data_t dcls_from_common_i,
+    output dcls_common_modules_ctrl_t dcls_to_common_o
 );
 
   localparam type rvfi_probes_instr_t = `RVFI_PROBES_INSTR_T(CVA6Cfg);
@@ -544,6 +553,9 @@ module cva6_pipeline
   // --------------
   // Frontend
   // --------------
+  bht_inputs_t bht_to_common;
+  bht_prediction_t [CVA6Cfg.INSTR_PER_FETCH-1:0] bht_from_common;
+
   frontend #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
@@ -551,31 +563,41 @@ module cva6_pipeline
       .fetch_areq_t(fetch_areq_t),
       .fetch_arsp_t(fetch_arsp_t),
       .ypb_fetch_req_t(ypb_fetch_req_t),
-      .ypb_fetch_rsp_t(ypb_fetch_rsp_t)
+      .ypb_fetch_rsp_t(ypb_fetch_rsp_t),
+      .bht_inputs_t(bht_inputs_t)
   ) i_frontend (
       .clk_i,
       .rst_ni,
-      .boot_addr_i        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .flush_bp_i         (1'b0),
-      .flush_i            (flush_ctrl_if),                  // not entirely correct
-      .halt_i             (halt_ctrl),
-      .set_pc_commit_i    (set_pc_ctrl_pcgen),
-      .pc_commit_i        (pc_commit),
-      .ex_valid_i         (ex_commit.valid),
-      .resolved_branch_i  (resolved_branch),
-      .eret_i             (eret),
-      .epc_i              (epc_commit_pcgen),
-      .trap_vector_base_i (trap_vector_base_commit_pcgen),
-      .set_debug_pc_i     (set_debug_pc),
-      .debug_mode_i       (debug_mode),
-      .areq_o             (fetch_areq_frontend_ex),
-      .arsp_i             (fetch_arsp_ex_frontend),
-      .ypb_fetch_req_o    (ypb_fetch_req_o),
-      .ypb_fetch_rsp_i    (ypb_fetch_rsp_i),
-      .fetch_entry_o      (fetch_entry_if_id),
-      .fetch_entry_valid_o(fetch_valid_if_id),
-      .fetch_entry_ready_i(fetch_ready_id_if)
+      .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .flush_bp_i            (1'b0),
+      .flush_i               (flush_ctrl_if),                  // not entirely correct
+      .halt_i                (halt_ctrl),
+      .set_pc_commit_i       (set_pc_ctrl_pcgen),
+      .pc_commit_i           (pc_commit),
+      .ex_valid_i            (ex_commit.valid),
+      .resolved_branch_i     (resolved_branch),
+      .eret_i                (eret),
+      .epc_i                 (epc_commit_pcgen),
+      .trap_vector_base_i    (trap_vector_base_commit_pcgen),
+      .set_debug_pc_i        (set_debug_pc),
+      .debug_mode_i          (debug_mode),
+      .areq_o                (fetch_areq_frontend_ex),
+      .arsp_i                (fetch_arsp_ex_frontend),
+      .ypb_fetch_req_o       (ypb_fetch_req_o),
+      .ypb_fetch_rsp_i       (ypb_fetch_rsp_i),
+      .fetch_entry_o         (fetch_entry_if_id),
+      .fetch_entry_valid_o   (fetch_valid_if_id),
+      .fetch_entry_ready_i   (fetch_ready_id_if),
+      .dcls_common_bht_data_i(bht_from_common),
+      .dcls_common_bht_ctrl_o(bht_to_common)
   );
+
+  if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin
+    assign bht_from_common = dcls_from_common_i.bht_prediction;
+    assign dcls_to_common_o.bht_inputs = bht_to_common;
+  end else begin
+    assign bht_from_common = '0;
+  end
 
   // ---------
   // ID
@@ -696,18 +718,23 @@ module cva6_pipeline
   // ---------
   // Issue
   // ---------
+
+  regfile_inputs_t common_regfile_ctrl;
+  logic [CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] common_regfile_rdata;
+
   issue_stage #(
-      .CVA6Cfg(CVA6Cfg),
-      .bp_resolve_t(bp_resolve_t),
+      .CVA6Cfg            (CVA6Cfg),
+      .bp_resolve_t       (bp_resolve_t),
       .branchpredict_sbe_t(branchpredict_sbe_t),
-      .exception_t(exception_t),
-      .fu_data_t(fu_data_t),
-      .scoreboard_entry_t(scoreboard_entry_t),
-      .writeback_t(writeback_t),
-      .x_issue_req_t(x_issue_req_t),
-      .x_issue_resp_t(x_issue_resp_t),
-      .x_register_t(x_register_t),
-      .x_commit_t(x_commit_t)
+      .exception_t        (exception_t),
+      .fu_data_t          (fu_data_t),
+      .scoreboard_entry_t (scoreboard_entry_t),
+      .writeback_t        (writeback_t),
+      .x_issue_req_t      (x_issue_req_t),
+      .x_issue_resp_t     (x_issue_resp_t),
+      .x_register_t       (x_register_t),
+      .x_commit_t         (x_commit_t),
+      .regfile_inputs_t   (regfile_inputs_t)
   ) issue_stage_i (
       .clk_i,
       .rst_ni,
@@ -781,22 +808,31 @@ module cva6_pipeline
       .x_we_i                  (x_we_ex_id),
       .x_rd_i                  (x_rd_ex_id),
 
-      .waddr_i              (waddr_commit_id),
-      .wdata_i              (wdata_commit_id),
-      .we_gpr_i             (we_gpr_commit_id),
-      .we_fpr_i             (we_fpr_commit_id),
-      .commit_instr_o       (commit_instr_id_commit),
-      .commit_drop_o        (commit_drop_id_commit),
-      .commit_ack_i         (commit_ack_commit_id),
+      .waddr_i                   (waddr_commit_id),
+      .wdata_i                   (wdata_commit_id),
+      .we_gpr_i                  (we_gpr_commit_id),
+      .we_fpr_i                  (we_fpr_commit_id),
+      .commit_instr_o            (commit_instr_id_commit),
+      .commit_drop_o             (commit_drop_id_commit),
+      .commit_ack_i              (commit_ack_commit_id),
       // Performance Counters
-      .stall_issue_o        (stall_issue),
+      .stall_issue_o             (stall_issue),
       //RVFI
-      .rvfi_issue_pointer_o (rvfi_issue_pointer),
-      .rvfi_commit_pointer_o(rvfi_commit_pointer),
-      .rvfi_rs1_o           (rvfi_rs1),
-      .rvfi_rs2_o           (rvfi_rs2),
-      .orig_instr_aes_bits  (orig_instr_aes)
+      .rvfi_issue_pointer_o      (rvfi_issue_pointer),
+      .rvfi_commit_pointer_o     (rvfi_commit_pointer),
+      .rvfi_rs1_o                (rvfi_rs1),
+      .rvfi_rs2_o                (rvfi_rs2),
+      .orig_instr_aes_bits       (orig_instr_aes),
+      .dcls_common_regfile_data_i(common_regfile_rdata),
+      .dcls_common_regfile_ctrl_o(common_regfile_ctrl)
   );
+
+  if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin
+    assign dcls_to_common_o.regfile_inputs = common_regfile_ctrl;
+    assign common_regfile_rdata = dcls_from_common_i.regfile_rdata;
+  end else begin
+    assign common_regfile_rdata = '0;
+  end
 
   // ---------
   // EX

@@ -28,7 +28,8 @@ module issue_read_operands
     parameter type x_issue_req_t = logic,
     parameter type x_issue_resp_t = logic,
     parameter type x_register_t = logic,
-    parameter type x_commit_t = logic
+    parameter type x_commit_t = logic,
+    parameter type regfile_inputs_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -131,7 +132,10 @@ module issue_read_operands
     // Information dedicated to RVFI - RVFI
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2_o,
     // Original instruction bits for AES
-    output logic [5:0] orig_instr_aes_bits
+    output logic [5:0] orig_instr_aes_bits,
+    // DCLS
+    input logic [CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] dcls_common_regfile_data_i,
+    output regfile_inputs_t dcls_common_regfile_ctrl_o
 );
 
   localparam OPERANDS_PER_INSTR = CVA6Cfg.NrRgprPorts / CVA6Cfg.NrIssuePorts;
@@ -1009,21 +1013,26 @@ module issue_read_operands
         .we_i     (we_pack)
     );
   end else begin : gen_asic_regfile
-    ariane_regfile #(
-        .CVA6Cfg      (CVA6Cfg),
-        .DATA_WIDTH   (CVA6Cfg.XLEN),
-        .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
-        .ZERO_REG_ZERO(1)
-    ) i_ariane_regfile (
-        .clk_i,
-        .rst_ni,
-        .test_en_i(1'b0),
-        .raddr_i  (raddr_pack),
-        .rdata_o  (rdata),
-        .waddr_i  (waddr_pack),
-        .wdata_i  (wdata_pack),
-        .we_i     (we_pack)
-    );
+    if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonRegfile) begin : gen_dcls_common_regfile_dup
+      assign rdata = dcls_common_regfile_data_i;
+      assign dcls_common_regfile_ctrl_o = '{raddr_pack, wdata_pack, waddr_pack, we_pack};
+    end else begin
+      ariane_regfile #(
+          .CVA6Cfg      (CVA6Cfg),
+          .DATA_WIDTH   (CVA6Cfg.XLEN),
+          .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
+          .ZERO_REG_ZERO(1)
+      ) i_ariane_regfile (
+          .clk_i,
+          .rst_ni,
+          .test_en_i(1'b0),
+          .raddr_i  (raddr_pack),
+          .rdata_o  (rdata),
+          .waddr_i  (waddr_pack),
+          .wdata_i  (wdata_pack),
+          .we_i     (we_pack)
+      );
+    end
   end
 
   // -----------------------------

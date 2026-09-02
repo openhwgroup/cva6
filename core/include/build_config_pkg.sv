@@ -300,6 +300,12 @@ package build_config_pkg;
 
     cfg.PipelineOnly = CVA6Cfg.PipelineOnly;
 
+    cfg.DclsEn = CVA6Cfg.DclsEn;
+    cfg.DclsDelay = CVA6Cfg.DclsDelay;
+    cfg.DclsCommonRegfile = CVA6Cfg.DclsCommonRegfile;
+    cfg.DclsCommonBHT = CVA6Cfg.DclsCommonBHT;
+    cfg.DclsCommonModules = CVA6Cfg.DclsCommonBHT | CVA6Cfg.DclsCommonRegfile;
+
     return cfg;
   endfunction
 
