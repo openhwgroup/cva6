@@ -1000,7 +1000,11 @@ module cva6_pipeline
       .hfence_gvma_o     (hfence_gvma_commit_controller)
   );
 
-  assign commit_ack = commit_macro_ack & ~(commit_drop_id_commit & CVA6Cfg.SpeculativeSb);
+  if (CVA6Cfg.SpeculativeSb) begin
+    assign commit_ack = commit_macro_ack & ~commit_drop_id_commit;
+  end else begin
+    assign commit_ack = commit_macro_ack;
+  end
 
   // ---------
   // CSR
