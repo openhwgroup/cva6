@@ -358,6 +358,10 @@ module cva6_mmu
   // Instruction Interface
   //-----------------------
   localparam int PPNWMin = (CVA6Cfg.PPNW - 1 > 29) ? 29 : CVA6Cfg.PPNW - 1;
+  // Width of the mid-level (2M) superpage PPN substitution for PtLevels == 3.
+  // Evaluates to 9 for Sv39 and (unused but elaboration-legal) 1 for Sv32.
+  localparam int unsigned MegaPageSubstWidth =
+      PPNWMin - (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) - 8 - CVA6Cfg.PtLevels;
 
   // The instruction interface is a simple request response interface
   always_comb begin : instr_interface
@@ -563,8 +567,9 @@ module cva6_mmu
     // Cycle 0: effective PPN
     if (CVA6Cfg.PtLevels == 3 &&
         dtlb_is_page_n[CVA6Cfg.PtLevels-2]) begin
-          lsu_dtlb_ppn_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-12:0] = lsu_vaddr_n[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
-        end
+      lsu_dtlb_ppn_o[0+:MegaPageSubstWidth] =
+          lsu_vaddr_n[(9+CVA6Cfg.PtLevels)+:MegaPageSubstWidth];
+    end
     if (dtlb_is_page_n[0]) begin
         lsu_dtlb_ppn_o[PPNWMin-12:0] = lsu_vaddr_n[PPNWMin:12];
       end
