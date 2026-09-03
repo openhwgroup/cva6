@@ -552,43 +552,20 @@ module cva6_mmu
         lsu_vaddr_q[11:0]
       };
 
-// ---------------------------------------------------------
-// 2 MiB superpage
-// ---------------------------------------------------------
-
-// Cycle 1: final physical address
-if (CVA6Cfg.PtLevels == 3 &&
-    dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
-
-  lsu_paddr_o[
-    PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)
-    :
-    9+CVA6Cfg.PtLevels
-  ] =
-  lsu_vaddr_q[
-    PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)
-    :
-    9+CVA6Cfg.PtLevels
-  ];
-end
-
-// Cycle 0: effective PPN
-if (CVA6Cfg.PtLevels == 3 &&
-    dtlb_is_page_n[CVA6Cfg.PtLevels-2]) begin
-
-  lsu_dtlb_ppn_o[
-    PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-12
-    :
-    0
-  ] =
-  lsu_vaddr_n[
-    PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)
-    :
-    9+CVA6Cfg.PtLevels
-  ];
-end
-
-      if (dtlb_is_page_n[0]) begin
+    // ---------------------------------------------------------
+    // Superpage physical-address reconstruction
+    // ---------------------------------------------------------
+    // Cycle 1: final physical address
+    if (CVA6Cfg.PtLevels == 3 &&
+        dtlb_is_page_q[CVA6Cfg.PtLevels-2]) begin
+          lsu_paddr_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels] =lsu_vaddr_q[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
+        end
+    // Cycle 0: effective PPN
+    if (CVA6Cfg.PtLevels == 3 &&
+        dtlb_is_page_n[CVA6Cfg.PtLevels-2]) begin
+          lsu_dtlb_ppn_o[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-12:0] = lsu_vaddr_n[PPNWMin-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels):9+CVA6Cfg.PtLevels];
+        end
+    if (dtlb_is_page_n[0]) begin
         lsu_dtlb_ppn_o[PPNWMin-12:0] = lsu_vaddr_n[PPNWMin:12];
       end
       if (dtlb_is_page_q[0]) begin
