@@ -1,5 +1,26 @@
 [
   {
+    "id": 33837823501,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 314,
+    "status": "completed",
+    "conclusion": "action_required",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837823501",
+    "head_branch": "fix/cbie-warl-3511",
+    "head_sha": "8933c019",
+    "event": "pull_request",
+    "created_at": "2026-09-04T04:42:54Z",
+    "updated_at": "2026-09-04T04:42:54Z",
+    "run_started_at": "2026-09-04T04:42:54Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 33836801804,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2319,26 +2340,5 @@
         "testcase": "cv64a6_imafdc_tests"
       }
     ]
-  },
-  {
-    "id": 32581258891,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 263,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32581258891",
-    "head_branch": "master",
-    "head_sha": "65209349",
-    "event": "pull_request",
-    "created_at": "2026-08-22T15:17:41Z",
-    "updated_at": "2026-08-22T15:17:41Z",
-    "run_started_at": "2026-08-22T15:17:41Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
