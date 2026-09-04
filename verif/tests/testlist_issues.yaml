@@ -62,3 +62,13 @@ testlist:
       -fvisibility=hidden
       -nostdlib
       -nostartfiles
+
+  - test: decoder-zip-unzip-rv64
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
+
+  - test: decoder-zip-unzip-rv64
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
