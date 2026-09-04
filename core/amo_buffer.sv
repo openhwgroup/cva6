@@ -96,7 +96,7 @@ module amo_buffer #(
       .data_i    (amo_data_in),
       .push_i    (valid_i),
       .data_o    (amo_data_out),
-      .pop_i     (ypb_amo_rsp_i.pgnt)
+      .pop_i     (ypb_amo_req_o.preq && ypb_amo_rsp_i.pgnt)
   );
 
 endmodule
