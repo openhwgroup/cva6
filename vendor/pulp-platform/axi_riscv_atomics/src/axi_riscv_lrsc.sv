@@ -27,6 +27,16 @@
 //  -   The adapter does not support bursts in exclusive accessing.  Only single words can be
 //      reserved.
 //
+// Backport note (cva6, 2026-09): This file is upstream revision 550881f (v0.2.2, 2019-02-28)
+// plus two minimally-ported upstream fixes:
+//   1. Burst invalidation: reservations are now invalidated for every word covered by a write
+//      burst, not only at the burst base address (backport of the walker introduced by upstream
+//      PR #26, v0.8.0, and its termination fix in upstream PR #31 / issue #30, v0.8.2).
+//   2. RVWMO ordering: an exclusive read no longer (re-)establishes a reservation while a write
+//      overlapping the reservation word is in flight downstream (backport of the
+//      in-flight-write exists-check introduced by the upstream v0.3.0 rewrite, upstream issue
+//      #4).
+//
 // Maintainer: Andreas Kurth <akurth@iis.ee.ethz.ch>
 
 module axi_riscv_lrsc #(
@@ -39,7 +49,8 @@ module axi_riscv_lrsc #(
     parameter int unsigned AXI_ID_WIDTH = 0,
     parameter int unsigned AXI_USER_WIDTH = 0,
     /// Derived Parameters (do NOT change manually!)
-    localparam int unsigned AXI_STRB_WIDTH = AXI_DATA_WIDTH / 8
+    localparam int unsigned AXI_STRB_WIDTH = AXI_DATA_WIDTH / 8,
+                            AXI_STRB_AW    = $clog2(AXI_STRB_WIDTH)
 ) (
     input logic                         clk_i,
     input logic                         rst_ni,
@@ -158,7 +169,14 @@ module axi_riscv_lrsc #(
                                     art_set_addr,
                                     rd_clr_addr,
                                     wr_clr_addr,
-                                    w_addr_d,                   w_addr_q;
+                                    w_addr_d,                   w_addr_q,
+                                    w_end_d,                    w_end_q,
+                                    w_clr_first,
+                                    w_clr_next,
+                                    w_clr_addr_d,               w_clr_addr_q;
+
+    // Write-in-flight flag for the exclusive-read ordering guard (backport of upstream #4).
+    logic                           excl_ar_stall;
 
     logic                           art_check_req,              art_check_gnt,
                                     art_clr_req,                art_clr_gnt,
@@ -175,7 +193,7 @@ module axi_riscv_lrsc #(
     r_state_t                       r_state_d,                  r_state_q;
 
     typedef enum logic [2:0]    {AW_IDLE, W_FORWARD, W_BYPASS, W_WAIT_ART_CLR, W_DROP, B_FORWARD,
-                                B_INJECT} w_state_t;
+                                B_INJECT, W_CLR_WALK} w_state_t;
     w_state_t                       w_state_d,                  w_state_q;
 
     // AR and R Channel
@@ -215,12 +233,14 @@ module axi_riscv_lrsc #(
         case (r_state_q)
 
             R_IDLE: begin
-                if (slv_ar_valid_i) begin
+                if (slv_ar_valid_i && !excl_ar_stall) begin
                     if (slv_ar_addr_i >= ADDR_BEGIN && slv_ar_addr_i <= ADDR_END && slv_ar_lock_i &&
                             slv_ar_len_i == 8'h00) begin
                         // Inside exclusively-accessible address range and exclusive access and no
-                        // burst
-                        art_set_addr    = slv_ar_addr_i;
+                        // burst.  Backport of upstream >= v0.8.0 granularity: reserve the whole
+                        // word containing the address.
+                        art_set_addr    = AXI_ADDR_WIDTH'(64'(slv_ar_addr_i) >> AXI_STRB_AW
+                                                            << AXI_STRB_AW);
                         art_set_id      = slv_ar_id_i;
                         art_set_req     = 1'b1;
                         r_excl_d        = 1'b1;
@@ -295,12 +315,44 @@ module axi_riscv_lrsc #(
     assign mst_w_user_o     = slv_w_user_i;
     assign mst_w_last_o     = slv_w_last_i;
 
+    // Backport of upstream #30/#31: besides the base address, latch the last word address
+    // covered by the accepted write burst.
     always_comb begin
         w_addr_d    = w_addr_q;
         w_id_d      = w_id_q;
+        w_end_d     = w_end_q;
         if (slv_aw_valid_i && slv_aw_ready_o) begin
             w_addr_d    = slv_aw_addr_i;
             w_id_d      = slv_aw_id_i;
+            // Last word (reservation granule) address covered by this write burst:
+            // ((len+1) << size) bytes starting at the base address, rounded down to whole words.
+            w_end_d     = AXI_ADDR_WIDTH'(((64'(slv_aw_addr_i) +
+                            ((64'(slv_aw_len_i) + 64'd1) << slv_aw_size_i) - 64'd1) >>
+                            AXI_STRB_AW) << AXI_STRB_AW);
+        end
+    end
+
+    // Backport of upstream #30/#31: reservation granularity is one AXI data word (as in upstream
+    // >= v0.8.0, parameter AXI_ADDR_LSB): reservations are set and checked at word-aligned
+    // addresses, and a write invalidates every word it covers.
+    assign w_clr_first = AXI_ADDR_WIDTH'(64'(w_addr_q) >> AXI_STRB_AW << AXI_STRB_AW);
+    assign w_clr_next  = AXI_ADDR_WIDTH'(((64'(w_addr_q) >> AXI_STRB_AW) + 64'd1) << AXI_STRB_AW);
+
+    // Backport of upstream #4: do not let an exclusive read (re-)establish a reservation while a
+    // write overlapping the word of the exclusive read is still in flight downstream (i.e.,
+    // between acceptance of AW and reception of B).  Otherwise the LR could overtake the write at
+    // the downstream slave, read pre-write data, and reserve the word after the write's
+    // reservation clear, so a subsequent SC would succeed on stale data.
+    always_comb begin
+        excl_ar_stall = 1'b0;
+        if (w_state_q != AW_IDLE && slv_ar_valid_i && slv_ar_lock_i && slv_ar_len_i == 8'h00 &&
+                slv_ar_addr_i >= ADDR_BEGIN && slv_ar_addr_i <= ADDR_END) begin
+            if (AXI_ADDR_WIDTH'(64'(slv_ar_addr_i) >> AXI_STRB_AW) >=
+                    AXI_ADDR_WIDTH'(64'(w_addr_q) >> AXI_STRB_AW) &&
+                    AXI_ADDR_WIDTH'(64'(slv_ar_addr_i) >> AXI_STRB_AW) <=
+                    AXI_ADDR_WIDTH'(64'(w_end_q) >> AXI_STRB_AW)) begin
+                excl_ar_stall = 1'b1;
+            end
         end
     end
 
@@ -322,6 +374,7 @@ module axi_riscv_lrsc #(
         wr_clr_req      = 1'b0;
         b_excl_d        = b_excl_q;
         w_state_d       = w_state_q;
+        w_clr_addr_d    = w_clr_addr_q;
 
         case (w_state_q)
 
@@ -331,8 +384,11 @@ module axi_riscv_lrsc #(
                     if (slv_aw_addr_i >= ADDR_BEGIN && slv_aw_addr_i <= ADDR_END) begin
                         // Inside exclusively-accessible address range
                         if (slv_aw_lock_i && slv_aw_len_i == 8'h00) begin
-                            // Exclusive access and no burst, so check if reservation exists
-                            art_check_addr  = slv_aw_addr_i;
+                            // Exclusive access and no burst, so check if reservation exists.
+                            // Backport of upstream >= v0.8.0 granularity: check the whole word
+                            // containing the address.
+                            art_check_addr  = AXI_ADDR_WIDTH'(64'(slv_aw_addr_i) >> AXI_STRB_AW
+                                                                << AXI_STRB_AW);
                             art_check_id    = slv_aw_id_i;
                             art_check_req   = 1'b1;
                             if (art_check_gnt) begin
@@ -374,10 +430,18 @@ module axi_riscv_lrsc #(
                 mst_w_valid_o = slv_w_valid_i;
                 slv_w_ready_o = mst_w_ready_i;
                 if (slv_w_valid_i && slv_w_ready_o && slv_w_last_i) begin
-                    wr_clr_addr = w_addr_q;
+                    wr_clr_addr = w_clr_first;
                     wr_clr_req  = 1'b1;
                     if (wr_clr_gnt) begin
-                        w_state_d = B_FORWARD;
+                        // Backport of upstream #30/#31: after clearing at the exact base address
+                        // (preserving the behavior of the 2019 code for the first word), keep
+                        // clearing every remaining word covered by the burst.
+                        if (w_clr_next <= w_end_q) begin
+                            w_clr_addr_d = w_clr_next;
+                            w_state_d = W_CLR_WALK;
+                        end else begin
+                            w_state_d = B_FORWARD;
+                        end
                     end else begin
                         w_state_d = W_WAIT_ART_CLR;
                     end
@@ -393,10 +457,33 @@ module axi_riscv_lrsc #(
             end
 
             W_WAIT_ART_CLR: begin
-                wr_clr_addr = w_addr_q;
+                wr_clr_addr = w_clr_first;
                 wr_clr_req  = 1'b1;
                 if (wr_clr_gnt) begin
-                    w_state_d = B_FORWARD;
+                    // Backport of upstream #30/#31: identical continuation decision as in
+                    // W_FORWARD.
+                    if (w_clr_next <= w_end_q) begin
+                        w_clr_addr_d = w_clr_next;
+                        w_state_d = W_CLR_WALK;
+                    end else begin
+                        w_state_d = B_FORWARD;
+                    end
+                end
+            end
+
+            // Backport of upstream #30/#31: walk over the remaining words covered by the write
+            // burst and invalidate reservations at each of them, one word per cycle, until the
+            // last word address (w_end_q) has been cleared.
+            W_CLR_WALK: begin
+                wr_clr_addr = w_clr_addr_q;
+                wr_clr_req  = 1'b1;
+                if (wr_clr_gnt) begin
+                    if (w_clr_addr_q + AXI_ADDR_WIDTH'(AXI_STRB_WIDTH) <= w_end_q) begin
+                        w_clr_addr_d = w_clr_addr_q + AXI_ADDR_WIDTH'(AXI_STRB_WIDTH);
+                        w_state_d = W_CLR_WALK;
+                    end else begin
+                        w_state_d = B_FORWARD;
+                    end
                 end
             end
 
@@ -479,6 +566,8 @@ module axi_riscv_lrsc #(
             r_state_q   <= R_IDLE;
             w_addr_q    <= '0;
             w_id_q      <= '0;
+            w_end_q     <= '0;
+            w_clr_addr_q <= '0;
             w_state_q   <= AW_IDLE;
         end else begin
             b_excl_q    <= b_excl_d;
@@ -486,6 +575,8 @@ module axi_riscv_lrsc #(
             r_state_q   <= r_state_d;
             w_addr_q    <= w_addr_d;
             w_id_q      <= w_id_d;
+            w_end_q     <= w_end_d;
+            w_clr_addr_q <= w_clr_addr_d;
             w_state_q   <= w_state_d;
         end
     end
