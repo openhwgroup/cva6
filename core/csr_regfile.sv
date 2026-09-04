@@ -166,6 +166,13 @@ module csr_regfile
     output logic icache_en_o,
     // L1 DCache Enable - CACHE
     output logic dcache_en_o,
+    output logic dcache_scrub_en_o,
+    output logic [5:0] dcache_scrub_period_o,
+    input logic dcache_scrub_cycle_i,
+    input logic dcache_dat_cor_err_i,
+    input logic dcache_dat_unc_err_i,
+    input logic dcache_dir_cor_err_i,
+    input logic dcache_dir_unc_err_i,
     // Accelerator memory consistent mode - ACC_DISPATCHER
     output logic acc_cons_en_o,
     // read/write address to performance counter module - PERF_COUNTERS
@@ -233,6 +240,20 @@ module csr_regfile
     logic [CVA6Cfg.VMIDW-1:0] vmid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
+
+  typedef struct packed {
+    logic                     eccPresent;
+    logic                     eccScrubberPresent;
+    logic [CVA6Cfg.XLEN-1:30] rsvd;
+    logic [3:0]               dirCorErr;
+    logic [3:0]               dirUncErr;
+    logic [3:0]               datCorErr;
+    logic [3:0]               datUncErr;
+    logic [3:0]               scrubCycles;
+    logic [5:0]               scrubPeriod;
+    logic                     scrubEn;
+    logic                     cacheEn;
+  } dcache_cfg_t;
 
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
@@ -306,7 +327,7 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] vscause_q, vscause_d;
   logic [CVA6Cfg.XLEN-1:0] vstval_q, vstval_d;
 
-  logic [CVA6Cfg.XLEN-1:0] dcache_q, dcache_d;
+  dcache_cfg_t dcache_q, dcache_d;
   logic [CVA6Cfg.XLEN-1:0] icache_q, icache_d;
   logic [CVA6Cfg.XLEN-1:0] acc_cons_q, acc_cons_d;
 
@@ -1010,6 +1031,8 @@ module csr_regfile
     // --------------------
     cycle_d         = cycle_q;
     instret_d       = instret_q;
+    dcache_d        = dcache_q;
+
     if (!(CVA6Cfg.DebugEn && debug_mode_q)) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
@@ -1021,6 +1044,18 @@ module csr_regfile
       if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0]))
         cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
+    end
+
+    dcache_d.eccPresent = CVA6Cfg.DcacheEccEnable;
+    dcache_d.eccScrubberPresent = CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable;
+    if (CVA6Cfg.DcacheEccEnable) begin
+      if (dcache_dat_cor_err_i && (dcache_q.datCorErr != '1)) dcache_d.datCorErr++;
+      if (dcache_dat_unc_err_i && (dcache_q.datUncErr != '1)) dcache_d.datUncErr++;
+      if (dcache_dir_cor_err_i && (dcache_q.dirCorErr != '1)) dcache_d.dirCorErr++;
+      if (dcache_dir_unc_err_i && (dcache_q.dirUncErr != '1)) dcache_d.dirUncErr++;
+      if (CVA6Cfg.DcacheEccScrubberEnable) begin
+        if (dcache_scrub_cycle_i && (dcache_q.scrubCycles != '1)) dcache_d.scrubCycles++;
+      end
     end
 
     eret_o                          = 1'b0;
@@ -1083,7 +1118,6 @@ module csr_regfile
     end
 
     fiom_d     = fiom_q;
-    dcache_d   = dcache_q;
     icache_d   = icache_q;
     acc_cons_d = acc_cons_q;
 
@@ -1863,7 +1897,7 @@ module csr_regfile
           else update_access_exception = 1'b1;
         end
 
-        riscv::CSR_DCACHE: dcache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
+        riscv::CSR_DCACHE: dcache_d = csr_wdata;  // enable bit
         riscv::CSR_ICACHE: icache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
         riscv::CSR_ACC_CONS: begin
           if (CVA6Cfg.EnableAccelerator) begin
@@ -2771,7 +2805,9 @@ module csr_regfile
 `else
   assign icache_en_o = icache_q[0] & ~(CVA6Cfg.DebugEn && debug_mode_q);
 `endif
-  assign dcache_en_o = dcache_q[0];
+  assign dcache_en_o = dcache_q.cacheEn;
+  assign dcache_scrub_en_o = dcache_q.scrubEn;
+  assign dcache_scrub_period_o = dcache_q.scrubPeriod;
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
   // determine if mprv needs to be considered if in debug mode
@@ -2812,7 +2848,7 @@ module csr_regfile
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       fiom_q          <= '0;
-      dcache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
+      dcache_q        <= '{cacheEn: 1'b1, default: '0};
       icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q <= '0;
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
