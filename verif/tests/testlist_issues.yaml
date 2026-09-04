@@ -75,3 +75,29 @@ testlist:
       -I<path_var>/riscv-tests/isa/macros/scalar/
       -I<path_var>/riscv-tests/env/p/
       -march=rv64gh
+
+  - test: zcmt-jt-target-lsb-rv32
+    description: >
+      Check that cm.jt clears bit 0 of the loaded JVT target.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/zcmt/cm_jt_target_lsb.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+
+  - test: zcmt-jalt-target-lsb-rv32
+    description: >
+      Check that cm.jalt clears bit 0 of the loaded JVT target.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/zcmt/cm_jalt_target_lsb.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles

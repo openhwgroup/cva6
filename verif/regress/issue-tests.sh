@@ -51,4 +51,39 @@ if [ "$zcmt_status" -ne 0 ]; then
   return "$zcmt_status" 2>/dev/null || exit "$zcmt_status"
 fi
 
+
+# Check that cm.jt clears bit 0 of the loaded JVT target.
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test zcmt-jt-target-lsb-rv32 \
+  --iss_yaml cva6.yaml \
+  --target hwconfig \
+  --hwconfig_opts="cv32a60x *RVZCMT=1" \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld"
+
+zcmt_jt_lsb_status=$?
+if [ "$zcmt_jt_lsb_status" -ne 0 ]; then
+  echo "Error: Zcmt cm.jt target LSB regression failed"
+  cd ../..
+  return "$zcmt_jt_lsb_status" 2>/dev/null || exit "$zcmt_jt_lsb_status"
+fi
+
+# Check that cm.jalt clears bit 0 of the loaded JVT target.
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test zcmt-jalt-target-lsb-rv32 \
+  --iss_yaml cva6.yaml \
+  --target hwconfig \
+  --hwconfig_opts="cv32a60x *RVZCMT=1" \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld"
+
+zcmt_jalt_lsb_status=$?
+if [ "$zcmt_jalt_lsb_status" -ne 0 ]; then
+  echo "Error: Zcmt cm.jalt target LSB regression failed"
+  cd ../..
+  return "$zcmt_jalt_lsb_status" 2>/dev/null || exit "$zcmt_jalt_lsb_status"
+fi
+
 cd -
