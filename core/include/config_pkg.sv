@@ -486,6 +486,11 @@ package config_pkg;
     assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
+    // Zcmp is incompatible with Zcd (compressed double-precision FP loads/stores),
+    // which is part of D, due to opcode collisions.
+    if (Cfg.RVZCMP && Cfg.RVD) begin
+      $fatal(1, "[config] RVZCMP (Zcmp) and RVD (D) are mutually exclusive");
+    end
     // pragma translate_on
   endfunction
 
