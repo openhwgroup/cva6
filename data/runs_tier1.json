@@ -1,5 +1,26 @@
 [
   {
+    "id": 33925775121,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 347,
+    "status": "completed",
+    "conclusion": "action_required",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33925775121",
+    "head_branch": "fix/lrsc-burst-invalidation-backport",
+    "head_sha": "51c50036",
+    "event": "pull_request",
+    "created_at": "2026-09-04T22:30:12Z",
+    "updated_at": "2026-09-04T22:30:12Z",
+    "run_started_at": "2026-09-04T22:30:12Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 33923994286,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2455,26 +2476,5 @@
         "testcase": "smoke-tests-cv32a65x"
       }
     ]
-  },
-  {
-    "id": 33601194434,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 297,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33601194434",
-    "head_branch": "fix-rvfi-tracer-oob-loop",
-    "head_sha": "fcba9547",
-    "event": "pull_request",
-    "created_at": "2026-09-02T06:57:06Z",
-    "updated_at": "2026-09-02T06:57:06Z",
-    "run_started_at": "2026-09-02T06:57:06Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
