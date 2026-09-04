@@ -1580,9 +1580,6 @@ module csr_regfile
                 2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   hcbie_d = riscv::CBIE_FLUSH;
                 2'b11:   hcbie_d = riscv::CBIE_INVAL;
-                // WARL: reject the reserved encoding 2'b10 by
-                // reverting to the previously held legal value
-                // instead of silently storing it (#3511).
                 default: hcbie_d = hcbie_q;
               endcase
               hcbcfe_d = csr_wdata[6];
