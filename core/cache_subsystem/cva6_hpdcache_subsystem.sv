@@ -197,7 +197,7 @@ module cva6_hpdcache_subsystem
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn = 1'b0;
     userCfg.wbEn = 1'b0;
-    //userCfg.lowLatency = 1'b0;
+    userCfg.lowLatency = 1'b1;
     return userCfg;
   endfunction
 
