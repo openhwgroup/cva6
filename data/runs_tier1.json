@@ -1,5 +1,60 @@
 [
   {
+    "id": 33838373823,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 316,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33838373823",
+    "head_branch": "bugfix/mideleg-vs-bits-ro1-3317",
+    "head_sha": "c9bd2d01",
+    "event": "pull_request",
+    "created_at": "2026-09-04T04:51:52Z",
+    "updated_at": "2026-09-04T04:58:50Z",
+    "run_started_at": "2026-09-04T04:51:56Z",
+    "duration_seconds": 414,
+    "total_jobs": 3,
+    "passed_jobs": 3,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:53:06Z",
+        "completed_at": "2026-09-04T04:56:38Z",
+        "duration_seconds": 212,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33838373823/job/100915634893",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:53:06Z",
+        "completed_at": "2026-09-04T04:58:49Z",
+        "duration_seconds": 343,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33838373823/job/100915634901",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:53:06Z",
+        "completed_at": "2026-09-04T04:55:19Z",
+        "duration_seconds": 133,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33838373823/job/100915634902",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      }
+    ]
+  },
+  {
     "id": 33838192196,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2319,26 +2374,5 @@
         "testcase": "cv32a6_tests"
       }
     ]
-  },
-  {
-    "id": 32583223185,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 266,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/32583223185",
-    "head_branch": "fix/3342-pmp-tor-boundary-v3",
-    "head_sha": "661e447b",
-    "event": "pull_request",
-    "created_at": "2026-08-22T15:56:45Z",
-    "updated_at": "2026-08-22T15:56:45Z",
-    "run_started_at": "2026-08-22T15:56:45Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
