@@ -62,3 +62,16 @@ testlist:
       -fvisibility=hidden
       -nostdlib
       -nostartfiles
+
+  - test: pmp-misalign-priority-over-access-fault
+    description: >
+      Misaligned hsv.d/hlv.d to a PMP-denied paddr must report
+      address-misaligned (mcause 6/4), not access-fault (5/7).
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/issues/pmp-misalign-priority-over-access-fault.S
+    gcc_opts: >-
+      -static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+      <path_var>/custom/common/crt.S
+      -I<path_var>/custom/env -I<path_var>/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc -march=rv64gh

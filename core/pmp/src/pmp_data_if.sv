@@ -126,7 +126,11 @@ module pmp_data_if
     pmp_access_type = lsu_is_store_i ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
 
     // If translation is not enabled, check the paddr immediately against PMPs
-    if (lsu_valid_i && !data_allow_o) begin
+    // A misaligned exception has higher priority than an access fault, so don't
+    // overwrite it (RISC-V privilege spec, simultaneous trap cause priority).
+    if (lsu_valid_i && !data_allow_o &&
+        !(lsu_exception_i.valid &&
+          (lsu_exception_i.cause inside {riscv::LD_ADDR_MISALIGNED, riscv::ST_ADDR_MISALIGNED}))) begin
       lsu_exception_o.valid = 1'b1;
 
       if (CVA6Cfg.TvalEn) begin
