@@ -49,7 +49,7 @@ package cva6_config_pkg;
   localparam CVA6ConfigDcacheInvalidateOnFlush = 1'b0;
 
   localparam CVA6ConfigDcacheIdWidth = 1;
-  localparam CVA6ConfigMemTidWidth = 2;
+  localparam CVA6ConfigMemTidWidth = CVA6ConfigAxiIdWidth;
 
   localparam CVA6ConfigWtDcacheWbufDepth = 8;
 
@@ -69,7 +69,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigPerfCounterEn = 1;
 
-  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
+  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::HPDCACHE_WT;
 
   localparam CVA6ConfigMmuPresent = 1;
 
@@ -108,7 +108,7 @@ package cva6_config_pkg;
       CvxifEn: bit'(CVA6ConfigCvxifEn),
       CoproType: config_pkg::COPRO_NONE,
       RVZiCond: bit'(CVA6ConfigRVZiCond),
-      RVZiCbom: bit'(0),
+      RVZiCbom: bit'(1),
       RVZicntr: bit'(1),
       RVZihpm: bit'(1),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
