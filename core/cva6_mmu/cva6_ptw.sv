@@ -244,6 +244,7 @@ module cva6_ptw
   assign req_port_o.kill_req  = (state_q == KILL_REQ);
 
   logic allow_access;
+  logic hlvx_eff;
 
 
 
@@ -265,6 +266,11 @@ module cva6_ptw
   assign req_port_o.data_be = CVA6Cfg.IS_XLEN32 ? be_gen_32(
       req_port_o.address_index[1:0], req_port_o.data_size
   ) : '1;
+  // The HLVX permission rule (allow read via execute-only pages) applies only to the
+  // *original* access. For an implicit page-table read performed while G-stage-translating
+  // a VS-stage PTE address (G_INTERMED_STAGE), the access must be checked as an ordinary
+  // implicit load, so HLVX must not apply here.
+  assign hlvx_eff = hlvx_inst_i && !(CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE);
 
 
 
@@ -501,7 +507,7 @@ module cva6_ptw
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
                 if (
-                  (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
+                  (pte.a && ((pte.r && !hlvx_eff) || (pte.x && (mxr_i || hlvx_eff || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
                     // Request is a store: perform some additional checks
                     // If the request was a store and the page is not write-able, raise an error
                     // the same applies if the dirty flag is not set
@@ -646,7 +652,7 @@ module cva6_ptw
     end
   end
 
-  // Big Endian Capability Additions 
+  // Big Endian Capability Additions
   // req_port_i.data_rdata is the data coming into the Page Table Walker from Data Memory. If mbe=1 meaning the processor is in Big Endian data mode, then we need to reverse the byte order to correctly view this data.
   // Otherwise, this page table walker would not be able to understand a page table stored in Big Endian byte order.
   logic [CVA6Cfg.XLEN-1:0] endian_data;
