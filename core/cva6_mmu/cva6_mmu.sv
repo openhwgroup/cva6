@@ -511,8 +511,11 @@ module cva6_mmu
   logic lsu_req_n, lsu_req_q;
   logic lsu_is_store_n, lsu_is_store_q;
   logic dtlb_hit_n, dtlb_hit_q;
+  logic hlvx_inst_n, hlvx_inst_q;
   logic [CVA6Cfg.PtLevels-2:0] dtlb_is_page_n, dtlb_is_page_q;
   exception_t misaligned_ex_n, misaligned_ex_q;
+  // Cached DTLB load permission is stale w.r.t. the current MXR (see below).
+  logic dtlb_mxr_load_err;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
@@ -527,6 +530,7 @@ module cva6_mmu
     dtlb_hit_n = dtlb_lu_hit;
     lsu_is_store_n = lsu_is_store_i;
     dtlb_is_page_n = dtlb_is_page;
+    hlvx_inst_n = hlvx_inst_i;
     misaligned_ex_n = misaligned_ex_i;
 
     lsu_valid_o = lsu_req_q;
@@ -544,6 +548,16 @@ module cva6_mmu
     daccess_err = en_ld_st_translation_i &&
               ((ld_st_priv_lvl_i == riscv::PRIV_LVL_S && (ld_st_v_i ? !vs_sum_i : !sum_i ) && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
     (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u));
+
+    // Re-evaluate the load permission of a cached DTLB entry against the *current*
+    // MXR. Changes to mstatus.MXR/sstatus.MXR take effect immediately without an
+    // SFENCE.VMA, so an execute-only page (r=0, x=1) that is loadable while MXR=1
+    // must fault on a load once MXR is cleared. A virtualized (V=1) access reads the
+    // VS-stage leaf, so it is relaxed by vsstatus.MXR (vmxr_i), mirroring how SUM
+    // selects vs_sum_i/sum_i above. Readable pages (r=1) are unaffected, and HLVX
+    // loads intentionally read executable pages.
+    dtlb_mxr_load_err = en_ld_st_translation_i && !dtlb_pte_q.r && !hlvx_inst_q &&
+        !(dtlb_pte_q.x && (ld_st_v_i ? vmxr_i : mxr_i));
 
     if (CVA6Cfg.RVH) begin
       lsu_tinst_n = lsu_tinst_i;
@@ -640,7 +654,7 @@ module cva6_mmu
               lsu_exception_o.gva = ld_st_v_i;
             end
             // check for sufficient access privileges - throw a page fault if necessary
-          end else if (daccess_err || canonical_addr_check) begin
+          end else if (daccess_err || canonical_addr_check || dtlb_mxr_load_err) begin
             lsu_exception_o.cause = riscv::LOAD_PAGE_FAULT;
             lsu_exception_o.valid = 1'b1;
             if (CVA6Cfg.TvalEn)
@@ -763,6 +777,7 @@ module cva6_mmu
       dtlb_hit_q      <= '0;
       lsu_is_store_q  <= '0;
       dtlb_is_page_q  <= '0;
+      hlvx_inst_q     <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
       misaligned_ex_q <= '0;
@@ -773,6 +788,7 @@ module cva6_mmu
       dtlb_hit_q      <= dtlb_hit_n;
       lsu_is_store_q  <= lsu_is_store_n;
       dtlb_is_page_q  <= dtlb_is_page_n;
+      hlvx_inst_q     <= hlvx_inst_n;
       misaligned_ex_q <= misaligned_ex_n;
 
       if (CVA6Cfg.RVH) begin
