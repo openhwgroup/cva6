@@ -62,3 +62,16 @@ testlist:
       -fvisibility=hidden
       -nostdlib
       -nostartfiles
+
+  - test: vsmode-counterh-cause
+    description: >
+      RV64+H: a high-half counter CSR access from VS-mode must raise
+      illegal-instruction (mcause=2), not virtual-instruction (mcause=22).
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/issues/vsmode_counterh_cause.S
+    gcc_opts: >-
+      -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+      -I<path_var>/riscv-tests/isa/macros/scalar/
+      -I<path_var>/riscv-tests/env/p/
+      -march=rv64gh
