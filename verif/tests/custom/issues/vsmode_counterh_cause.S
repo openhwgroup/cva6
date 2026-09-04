@@ -12,8 +12,8 @@
 # exception (cause 22) via virtual_privilege_violation.
 #
 # This test: from M-mode, enables mcounteren bit0 (cycle/cycleh), leaves
-# hcounteren bit0 clear (default), enters VS-mode via mret (mstatus.MPP=S,
-# hstatus.spv=1), and executes a cycleh read. The resulting trap (delivered
+# hcounteren bit0 clear (default), enters VS-mode via mret (mstatus.MPP=S, mstatus.MPV=1),
+# and executes a cycleh read. The resulting trap (delivered
 # to M-mode, no H-delegation configured) must report mcause=2, not 22.
 
 #include "riscv_test.h"
