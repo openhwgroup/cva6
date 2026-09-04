@@ -257,6 +257,124 @@
     ]
   },
   {
+    "id": 33837618194,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 6312,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194",
+    "head_branch": "fix-rvfi-tracer-oob-loop",
+    "head_sha": "60a9a3b6",
+    "event": "pull_request",
+    "created_at": "2026-09-04T04:39:34Z",
+    "updated_at": "2026-09-04T05:48:20Z",
+    "run_started_at": "2026-09-04T04:40:27Z",
+    "duration_seconds": 4073,
+    "total_jobs": 8,
+    "passed_jobs": 8,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "execute-riscv32-tests (dv-riscv-arch-test, cv32a65x, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T05:07:37Z",
+        "duration_seconds": 1543,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659519",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "dv-riscv-arch-test",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv32-tests (cv32a6_tests, cv32a65x, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T04:45:07Z",
+        "duration_seconds": 193,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659525",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "cv32a6_tests",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (dv-riscv-arch-test, cv64a6_imafdc_sv39_hpdcache, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T05:35:39Z",
+        "duration_seconds": 3225,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659540",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache",
+        "testcase": "dv-riscv-arch-test",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (cv64a6_imafdc_tests, cv64a6_imafdc_sv39, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T04:47:07Z",
+        "duration_seconds": 313,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659566",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39",
+        "testcase": "cv64a6_imafdc_tests",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (cv64a6_imafdc_tests, cv64a6_imafdc_sv39_wb, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T04:47:32Z",
+        "duration_seconds": 338,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659603",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_wb",
+        "testcase": "cv64a6_imafdc_tests",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (cv64a6_imafdc_tests, cv64a6_imafdc_sv39_hpdcache_wb, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T04:47:32Z",
+        "duration_seconds": 338,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659608",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (cv64a6_imafdc_tests, cv64a6_imafdc_sv39_hpdcache, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T04:47:45Z",
+        "duration_seconds": 351,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659658",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache",
+        "testcase": "cv64a6_imafdc_tests",
+        "simulator": "veri-testharness"
+      },
+      {
+        "name": "execute-riscv64-tests (dv-riscv-arch-test, cv64a6_imafdc_sv39_hpdcache_wb, veri-testharness)",
+        "conclusion": "success",
+        "started_at": "2026-09-04T04:41:54Z",
+        "completed_at": "2026-09-04T05:48:20Z",
+        "duration_seconds": 3986,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33837618194/job/100913659692",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "dv-riscv-arch-test",
+        "simulator": "veri-testharness"
+      }
+    ]
+  },
+  {
     "id": 33836801809,
     "source": "github-actions",
     "simulator": "verilator",
@@ -5101,26 +5219,5 @@
         "simulator": "veri-testharness"
       }
     ]
-  },
-  {
-    "id": 33371268749,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 6265,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33371268749",
-    "head_branch": "cv32a65x-act4",
-    "head_sha": "5203be68",
-    "event": "pull_request",
-    "created_at": "2026-08-31T08:05:34Z",
-    "updated_at": "2026-08-31T08:05:34Z",
-    "run_started_at": "2026-08-31T08:05:34Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
