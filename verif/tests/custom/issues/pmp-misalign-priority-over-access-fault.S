@@ -16,7 +16,7 @@ main:
 phase1:
   li s4, 1
   hlv.d a4, (a2)
-  li a0, 0
+  li a0, 11
   j fin
   .align 2
 th:
