@@ -96,23 +96,15 @@ package triggers_pkg;
 
   function automatic logic napot_match32(logic [31:0] base, logic [31:0] value);
     logic [31:0] mask;
-    logic is_valid_napot;
 
-    is_valid_napot = ((base & (base + 1)) == 0);
-    if (!is_valid_napot) return 0;
-
-    mask = ~(base & ~(base + 1));
+    mask = ~(base ^ (base + 1));
     return (value & mask) == (base & mask);
   endfunction
 
   function automatic logic napot_match64(logic [63:0] base, logic [63:0] value);
     logic [63:0] mask;
-    logic is_valid_napot;
 
-    is_valid_napot = ((base & (base + 1)) == 0);
-    if (!is_valid_napot) return 0;
-
-    mask = ~(base & ~(base + 1));
+    mask = ~(base ^ (base + 1));
     return (value & mask) == (base & mask);
   endfunction
 
