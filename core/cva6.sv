@@ -223,6 +223,7 @@ module cva6
       logic [CVA6Cfg.DcacheIdWidth-1:0]     data_rid;
       logic [CVA6Cfg.XLEN-1:0]              data_rdata;
       logic [CVA6Cfg.DCACHE_USER_WIDTH-1:0] data_ruser;
+      logic                                 data_error;
     },
 
     // Accelerator - CVA6
@@ -590,7 +591,14 @@ module cva6
   logic tsr_csr_id;
   logic hu;
   irq_ctrl_t irq_ctrl_csr_id;
-  logic dcache_en_csr_nbdcache;
+  logic dcache_en_csr;
+  logic dcache_scrub_en_csr;
+  logic [5:0] dcache_scrub_period_csr;
+  logic dcache_scrub_cycle_csr;
+  logic dcache_dat_cor_err_csr;
+  logic dcache_dat_unc_err_csr;
+  logic dcache_dir_cor_err_csr;
+  logic dcache_dir_unc_err_csr;
   logic csr_write_fflags_commit_cs;
   logic icache_en_csr;
   logic acc_cons_en_csr;
@@ -1274,7 +1282,14 @@ module cva6
       .debug_mode_o                       (debug_mode),
       .single_step_o                      (single_step_csr_commit),
       .icache_en_o                        (icache_en_csr),
-      .dcache_en_o                        (dcache_en_csr_nbdcache),
+      .dcache_en_o                        (dcache_en_csr),
+      .dcache_scrub_en_o                  (dcache_scrub_en_csr),
+      .dcache_scrub_period_o              (dcache_scrub_period_csr),
+      .dcache_scrub_cycle_i               (dcache_scrub_cycle_csr),
+      .dcache_dat_cor_err_i               (dcache_dat_cor_err_csr),
+      .dcache_dat_unc_err_i               (dcache_dat_unc_err_csr),
+      .dcache_dir_cor_err_i               (dcache_dir_cor_err_csr),
+      .dcache_dir_unc_err_i               (dcache_dir_unc_err_csr),
       .acc_cons_en_o                      (acc_cons_en_csr),
       .perf_addr_o                        (addr_csr_perf),
       .perf_data_o                        (data_csr_perf),
@@ -1478,7 +1493,7 @@ module cva6
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
         // D$
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
+        .dcache_enable_i   (dcache_en_csr),
         .dcache_flush_i    (dcache_flush_ctrl_cache),
         .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
         // to commit stage
@@ -1500,6 +1515,11 @@ module cva6
         .inval_valid_i     (inval_valid),
         .inval_ready_o     (inval_ready)
     );
+    assign dcache_scrub_cycle_csr = 1'b0;
+    assign dcache_dat_cor_err_csr = 1'b0;
+    assign dcache_dat_unc_err_csr = 1'b0;
+    assign dcache_dir_cor_err_csr = 1'b0;
+    assign dcache_dir_unc_err_csr = 1'b0;
   end else if (
         CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT ||
         CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB ||
@@ -1536,10 +1556,17 @@ module cva6
         .icache_dreq_i (icache_dreq_if_cache),
         .icache_dreq_o (icache_dreq_cache_if),
 
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
-        .dcache_flush_i    (dcache_flush_ctrl_cache),
-        .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
-        .dcache_miss_o     (dcache_miss_cache_perf),
+        .dcache_enable_i      (dcache_en_csr),
+        .dcache_flush_i       (dcache_flush_ctrl_cache),
+        .dcache_flush_ack_o   (dcache_flush_ack_cache_ctrl),
+        .dcache_miss_o        (dcache_miss_cache_perf),
+        .dcache_scrub_enable_i(dcache_scrub_en_csr),
+        .dcache_scrub_period_i(dcache_scrub_period_csr),
+        .dcache_scrub_cycle_o (dcache_scrub_cycle_csr),
+        .dcache_dat_cor_err_o (dcache_dat_cor_err_csr),
+        .dcache_dat_unc_err_o (dcache_dat_unc_err_csr),
+        .dcache_dir_cor_err_o (dcache_dir_cor_err_csr),
+        .dcache_dir_unc_err_o (dcache_dir_unc_err_csr),
 
         .dcache_amo_req_i (amo_req),
         .dcache_amo_resp_o(amo_resp),
@@ -1600,7 +1627,7 @@ module cva6
         .icache_dreq_i     (icache_dreq_if_cache),
         .icache_dreq_o     (icache_dreq_cache_if),
         // D$
-        .dcache_enable_i   (dcache_en_csr_nbdcache),
+        .dcache_enable_i   (dcache_en_csr),
         .dcache_flush_i    (dcache_flush_ctrl_cache),
         .dcache_flush_ack_o(dcache_flush_ack_cache_ctrl),
         // to commit stage
@@ -1617,6 +1644,11 @@ module cva6
         .axi_resp_i        (noc_resp_i)
     );
     assign dcache_commit_wbuffer_not_ni = 1'b1;
+    assign dcache_scrub_cycle_csr       = 1'b0;
+    assign dcache_dat_cor_err_csr       = 1'b0;
+    assign dcache_dat_unc_err_csr       = 1'b0;
+    assign dcache_dir_cor_err_csr       = 1'b0;
+    assign dcache_dir_unc_err_csr       = 1'b0;
     assign inval_ready                  = 1'b1;
     assign miss_vld_bits                = '0;
   end
