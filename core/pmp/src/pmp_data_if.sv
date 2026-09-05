@@ -27,6 +27,7 @@ module pmp_data_if
     input logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_i,  // virtual address in, for tval only
     input exception_t lsu_exception_i,  // lsu exception coming from MMU, or misaligned exception
     input logic lsu_is_store_i,  // the translation is requested by a store
+    input logic lsu_hlvx_inst_i,
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
@@ -123,7 +124,13 @@ module pmp_data_if
     lsu_valid_o     = lsu_valid_i;
     lsu_paddr_o     = lsu_paddr_i;
     lsu_exception_o = lsu_exception_i;
-    pmp_access_type = lsu_is_store_i ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+    if (lsu_is_store_i) begin
+      pmp_access_type = riscv::ACCESS_WRITE;
+    end else if (lsu_hlvx_inst_i) begin
+      pmp_access_type = riscv::ACCESS_READ | riscv::ACCESS_EXEC;
+    end else begin
+      pmp_access_type = riscv::ACCESS_READ;
+    end
 
     // If translation is not enabled, check the paddr immediately against PMPs
     if (lsu_valid_i && !data_allow_o) begin
