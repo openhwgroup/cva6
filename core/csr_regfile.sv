@@ -166,6 +166,13 @@ module csr_regfile
     output logic icache_en_o,
     // L1 DCache Enable - CACHE
     output logic dcache_en_o,
+    output logic dcache_scrub_en_o,
+    output logic [5:0] dcache_scrub_period_o,
+    input logic dcache_scrub_cycle_i,
+    input logic dcache_dat_cor_err_i,
+    input logic dcache_dat_unc_err_i,
+    input logic dcache_dir_cor_err_i,
+    input logic dcache_dir_unc_err_i,
     // Accelerator memory consistent mode - ACC_DISPATCHER
     output logic acc_cons_en_o,
     // read/write address to performance counter module - PERF_COUNTERS
@@ -233,6 +240,20 @@ module csr_regfile
     logic [CVA6Cfg.VMIDW-1:0] vmid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
+
+  typedef struct packed {
+    logic                     eccPresent;
+    logic                     eccScrubberPresent;
+    logic [CVA6Cfg.XLEN-1:30] rsvd;
+    logic [3:0]               dirCorErr;
+    logic [3:0]               dirUncErr;
+    logic [3:0]               datCorErr;
+    logic [3:0]               datUncErr;
+    logic [3:0]               scrubCycles;
+    logic [5:0]               scrubPeriod;
+    logic                     scrubEn;
+    logic                     cacheEn;
+  } dcache_cfg_t;
 
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
@@ -306,7 +327,7 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] vscause_q, vscause_d;
   logic [CVA6Cfg.XLEN-1:0] vstval_q, vstval_d;
 
-  logic [CVA6Cfg.XLEN-1:0] dcache_q, dcache_d;
+  dcache_cfg_t dcache_q, dcache_d;
   logic [CVA6Cfg.XLEN-1:0] icache_q, icache_d;
   logic [CVA6Cfg.XLEN-1:0] acc_cons_q, acc_cons_d;
 
@@ -628,7 +649,8 @@ module csr_regfile
         if (CVA6Cfg.RVS) csr_rdata = medeleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIDELEG:
-        if (CVA6Cfg.RVS) csr_rdata = mideleg_q;
+        if (CVA6Cfg.RVS)
+          csr_rdata = (CVA6Cfg.RVH) ? mideleg_q | HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIE: csr_rdata = mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
@@ -1010,6 +1032,8 @@ module csr_regfile
     // --------------------
     cycle_d         = cycle_q;
     instret_d       = instret_q;
+    dcache_d        = dcache_q;
+
     if (!(CVA6Cfg.DebugEn && debug_mode_q)) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
@@ -1021,6 +1045,18 @@ module csr_regfile
       if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0]))
         cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
+    end
+
+    dcache_d.eccPresent = CVA6Cfg.DcacheEccEnable;
+    dcache_d.eccScrubberPresent = CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable;
+    if (CVA6Cfg.DcacheEccEnable) begin
+      if (dcache_dat_cor_err_i && (dcache_q.datCorErr != '1)) dcache_d.datCorErr++;
+      if (dcache_dat_unc_err_i && (dcache_q.datUncErr != '1)) dcache_d.datUncErr++;
+      if (dcache_dir_cor_err_i && (dcache_q.dirCorErr != '1)) dcache_d.dirCorErr++;
+      if (dcache_dir_unc_err_i && (dcache_q.dirUncErr != '1)) dcache_d.dirUncErr++;
+      if (CVA6Cfg.DcacheEccScrubberEnable) begin
+        if (dcache_scrub_cycle_i && (dcache_q.scrubCycles != '1)) dcache_d.scrubCycles++;
+      end
     end
 
     eret_o                          = 1'b0;
@@ -1083,7 +1119,6 @@ module csr_regfile
     end
 
     fiom_d     = fiom_q;
-    dcache_d   = dcache_q;
     icache_d   = icache_q;
     acc_cons_d = acc_cons_q;
 
@@ -1419,7 +1454,7 @@ module csr_regfile
                 2'b00:   scbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   scbie_d = riscv::CBIE_FLUSH;
                 2'b11:   scbie_d = riscv::CBIE_INVAL;
-                default: scbie_d = riscv::CBIE_RSVD;
+                default: scbie_d = scbie_q;
               endcase
               scbcfe_d = csr_wdata[6];
             end
@@ -1546,7 +1581,7 @@ module csr_regfile
                 2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   hcbie_d = riscv::CBIE_FLUSH;
                 2'b11:   hcbie_d = riscv::CBIE_INVAL;
-                default: hcbie_d = riscv::CBIE_RSVD;
+                default: hcbie_d = hcbie_q;
               endcase
               hcbcfe_d = csr_wdata[6];
             end
@@ -1576,12 +1611,17 @@ module csr_regfile
             mstatus_d.tw   = riscv::Off;
             mstatus_d.mprv = riscv::Off;
           end
+          if (!CVA6Cfg.RVH) begin
+            mstatus_d.mpv = 1'b0;
+            mstatus_d.gva = 1'b0;
+          end
           if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
           end
           mstatus_d.wpri3 = 9'b0;
+          mstatus_d.wpri4 = '0;
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
@@ -1732,7 +1772,7 @@ module csr_regfile
               2'b00:   mcbie_d = riscv::CBIE_ILLEGAL;
               2'b01:   mcbie_d = riscv::CBIE_FLUSH;
               2'b11:   mcbie_d = riscv::CBIE_INVAL;
-              default: mcbie_d = riscv::CBIE_RSVD;
+              default: mcbie_d = mcbie_q;
             endcase
             mcbcfe_d = csr_wdata[6];
           end
@@ -1854,7 +1894,7 @@ module csr_regfile
           else update_access_exception = 1'b1;
         end
 
-        riscv::CSR_DCACHE: dcache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
+        riscv::CSR_DCACHE: dcache_d = csr_wdata;  // enable bit
         riscv::CSR_ICACHE: icache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
         riscv::CSR_ACC_CONS: begin
           if (CVA6Cfg.EnableAccelerator) begin
@@ -1995,12 +2035,12 @@ module csr_regfile
     end
     // hardwired extension registers
     if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
-      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+      mstatus_d.sd = (mstatus_d.xs == riscv::Dirty) | (mstatus_d.fs == riscv::Dirty);
     end else begin
       mstatus_d.sd = riscv::Off;
     end
     if (CVA6Cfg.RVH) begin
-      vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
+      vsstatus_d.sd = (vsstatus_d.xs == riscv::Dirty) | (vsstatus_d.fs == riscv::Dirty);
     end
 
     // reserve PMPCFG bits 5 and 6 (hardwire to 0)
@@ -2344,8 +2384,8 @@ module csr_regfile
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
       if (CVA6Cfg.RVH) begin
-        // set virtualization mode
-        v_d           = mstatus_q.mpv;
+        // MPV is ignored when returning to M-mode.
+        v_d = (mstatus_q.mpp == riscv::PRIV_LVL_M) ? 1'b0 : mstatus_q.mpv;
         //set mstatus mpv to false
         mstatus_d.mpv = 1'b0;
         if (mstatus_q.mpp != riscv::PRIV_LVL_M) mstatus_d.mprv = 1'b0;
@@ -2496,7 +2536,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2514,7 +2554,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2550,7 +2590,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2562,7 +2602,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2762,7 +2802,9 @@ module csr_regfile
 `else
   assign icache_en_o = icache_q[0] & ~(CVA6Cfg.DebugEn && debug_mode_q);
 `endif
-  assign dcache_en_o = dcache_q[0];
+  assign dcache_en_o = dcache_q.cacheEn;
+  assign dcache_scrub_en_o = dcache_q.scrubEn;
+  assign dcache_scrub_period_o = dcache_q.scrubPeriod;
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
   // determine if mprv needs to be considered if in debug mode
@@ -2803,7 +2845,7 @@ module csr_regfile
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       fiom_q          <= '0;
-      dcache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
+      dcache_q        <= '{cacheEn: 1'b1, default: '0};
       icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q <= '0;
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
@@ -2813,15 +2855,15 @@ module csr_regfile
       end
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
-        medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        mideleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        sepc_q       <= {CVA6Cfg.XLEN{1'b0}};
-        scause_q     <= {CVA6Cfg.XLEN{1'b0}};
-        stvec_q      <= {CVA6Cfg.XLEN{1'b0}};
+        medeleg_q <= {CVA6Cfg.XLEN{1'b0}};
+        mideleg_q    <= (CVA6Cfg.RVH) ? CVA6Cfg.XLEN'(HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]) : {CVA6Cfg.XLEN{1'b0}};
+        sepc_q <= {CVA6Cfg.XLEN{1'b0}};
+        scause_q <= {CVA6Cfg.XLEN{1'b0}};
+        stvec_q <= {CVA6Cfg.XLEN{1'b0}};
         scounteren_q <= {CVA6Cfg.XLEN{1'b0}};
-        sscratch_q   <= {CVA6Cfg.XLEN{1'b0}};
-        stval_q      <= {CVA6Cfg.XLEN{1'b0}};
-        satp_q       <= {CVA6Cfg.XLEN{1'b0}};
+        sscratch_q <= {CVA6Cfg.XLEN{1'b0}};
+        stval_q <= {CVA6Cfg.XLEN{1'b0}};
+        satp_q <= {CVA6Cfg.XLEN{1'b0}};
         if (CVA6Cfg.RVZiCbom) begin
           scbie_q  <= riscv::CBIE_INVAL;
           scbcfe_q <= 1'b1;
