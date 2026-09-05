@@ -649,7 +649,8 @@ module csr_regfile
         if (CVA6Cfg.RVS) csr_rdata = medeleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIDELEG:
-        if (CVA6Cfg.RVS) csr_rdata = mideleg_q;
+        if (CVA6Cfg.RVS)
+          csr_rdata = (CVA6Cfg.RVH) ? mideleg_q | HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIE: csr_rdata = mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
@@ -1453,7 +1454,7 @@ module csr_regfile
                 2'b00:   scbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   scbie_d = riscv::CBIE_FLUSH;
                 2'b11:   scbie_d = riscv::CBIE_INVAL;
-                default: scbie_d = riscv::CBIE_RSVD;
+                default: scbie_d = scbie_q;
               endcase
               scbcfe_d = csr_wdata[6];
             end
@@ -1580,7 +1581,7 @@ module csr_regfile
                 2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   hcbie_d = riscv::CBIE_FLUSH;
                 2'b11:   hcbie_d = riscv::CBIE_INVAL;
-                default: hcbie_d = riscv::CBIE_RSVD;
+                default: hcbie_d = hcbie_q;
               endcase
               hcbcfe_d = csr_wdata[6];
             end
@@ -1766,7 +1767,7 @@ module csr_regfile
               2'b00:   mcbie_d = riscv::CBIE_ILLEGAL;
               2'b01:   mcbie_d = riscv::CBIE_FLUSH;
               2'b11:   mcbie_d = riscv::CBIE_INVAL;
-              default: mcbie_d = riscv::CBIE_RSVD;
+              default: mcbie_d = mcbie_q;
             endcase
             mcbcfe_d = csr_wdata[6];
           end
@@ -2530,7 +2531,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2548,7 +2549,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2584,7 +2585,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2596,7 +2597,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2849,15 +2850,15 @@ module csr_regfile
       end
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
-        medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        mideleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        sepc_q       <= {CVA6Cfg.XLEN{1'b0}};
-        scause_q     <= {CVA6Cfg.XLEN{1'b0}};
-        stvec_q      <= {CVA6Cfg.XLEN{1'b0}};
+        medeleg_q <= {CVA6Cfg.XLEN{1'b0}};
+        mideleg_q    <= (CVA6Cfg.RVH) ? CVA6Cfg.XLEN'(HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]) : {CVA6Cfg.XLEN{1'b0}};
+        sepc_q <= {CVA6Cfg.XLEN{1'b0}};
+        scause_q <= {CVA6Cfg.XLEN{1'b0}};
+        stvec_q <= {CVA6Cfg.XLEN{1'b0}};
         scounteren_q <= {CVA6Cfg.XLEN{1'b0}};
-        sscratch_q   <= {CVA6Cfg.XLEN{1'b0}};
-        stval_q      <= {CVA6Cfg.XLEN{1'b0}};
-        satp_q       <= {CVA6Cfg.XLEN{1'b0}};
+        sscratch_q <= {CVA6Cfg.XLEN{1'b0}};
+        stval_q <= {CVA6Cfg.XLEN{1'b0}};
+        satp_q <= {CVA6Cfg.XLEN{1'b0}};
         if (CVA6Cfg.RVZiCbom) begin
           scbie_q  <= riscv::CBIE_INVAL;
           scbcfe_q <= 1'b1;
