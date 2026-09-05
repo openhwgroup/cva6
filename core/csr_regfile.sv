@@ -166,6 +166,13 @@ module csr_regfile
     output logic icache_en_o,
     // L1 DCache Enable - CACHE
     output logic dcache_en_o,
+    output logic dcache_scrub_en_o,
+    output logic [5:0] dcache_scrub_period_o,
+    input logic dcache_scrub_cycle_i,
+    input logic dcache_dat_cor_err_i,
+    input logic dcache_dat_unc_err_i,
+    input logic dcache_dir_cor_err_i,
+    input logic dcache_dir_unc_err_i,
     // Accelerator memory consistent mode - ACC_DISPATCHER
     output logic acc_cons_en_o,
     // read/write address to performance counter module - PERF_COUNTERS
@@ -187,13 +194,31 @@ module csr_regfile
     //jvt output
     output jvt_t jvt_o,
     // trigger module signals
-    output logic debug_from_trigger_o,
-    input logic [CVA6Cfg.VLEN-1:0] vaddr_from_lsu_i,
-    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] orig_instr_i,
-    input logic [CVA6Cfg.XLEN-1:0] store_result_i,
-    output logic break_from_trigger_o
-);
+    input logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_vaddr_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_data_i,
+    input logic sdtrig_lsu_inputs_fu_i,
+    input logic sdtrig_lsu_inputs_valid_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_i,
+    input logic sdtrig_load_valid_i,
 
+    //LSU <-> trigger module commmunication
+    output logic sdtrig_load_stall_o,
+    output logic sdtrig_load_cancel_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_o,
+    output logic sdtrig_store_stall_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_o,
+
+    //Decoder/fetch <-> trigger module communication
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] fetch_sdtrig_pc_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] fetch_sdtrig_instr_i,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_o[CVA6Cfg.NrIssuePorts],
+
+    //Commit <- trigger module
+    output logic sdtrig_commit_icount_valid_o,
+    output logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_o,
+    output logic sdtrig_commit_std_exception_valid_o
+);
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
   localparam logic [63:0] HS_DELEG_INTERRUPTS = {
     {32{1'b0}}, ariane_pkg::hs_deleg_interrupts(CVA6Cfg)
@@ -215,6 +240,20 @@ module csr_regfile
     logic [CVA6Cfg.VMIDW-1:0] vmid;
     logic [CVA6Cfg.PPNW-1:0]  ppn;
   } hgatp_t;
+
+  typedef struct packed {
+    logic                     eccPresent;
+    logic                     eccScrubberPresent;
+    logic [CVA6Cfg.XLEN-1:30] rsvd;
+    logic [3:0]               dirCorErr;
+    logic [3:0]               dirUncErr;
+    logic [3:0]               datCorErr;
+    logic [3:0]               datUncErr;
+    logic [3:0]               scrubCycles;
+    logic [5:0]               scrubPeriod;
+    logic                     scrubEn;
+    logic                     cacheEn;
+  } dcache_cfg_t;
 
   // internal signal to keep track of access exceptions
   logic read_access_exception, update_access_exception, privilege_violation;
@@ -288,7 +327,7 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] vscause_q, vscause_d;
   logic [CVA6Cfg.XLEN-1:0] vstval_q, vstval_d;
 
-  logic [CVA6Cfg.XLEN-1:0] dcache_q, dcache_d;
+  dcache_cfg_t dcache_q, dcache_d;
   logic [CVA6Cfg.XLEN-1:0] icache_q, icache_d;
   logic [CVA6Cfg.XLEN-1:0] acc_cons_q, acc_cons_d;
 
@@ -300,6 +339,10 @@ module csr_regfile
   riscv::pmpcfg_t [63:0] pmpcfg_q, pmpcfg_d, pmpcfg_next;
   logic [63:0][CVA6Cfg.PLEN-3:0] pmpaddr_q, pmpaddr_d, pmpaddr_next;
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
+
+  // CBO enable flags from menvcfg/senvcfg/henvcfg
+  riscv::cbie_t mcbie_q, mcbie_d, scbie_q, scbie_d, hcbie_q, hcbie_d;
+  logic mcbcfe_q, mcbcfe_d, scbcfe_q, scbcfe_d, hcbcfe_q, hcbcfe_d;
 
   // Trigger Module Registers
   logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
@@ -313,13 +356,12 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] tselect_from_tm;
   logic tselect_we, tdata1_we, tdata2_we, tdata3_we;
   logic flush_from_tm;
-  logic break_from_trigger;
-  logic debug_from_trigger;
-  logic debug_from_mcontrol;
-
-  // CBO enable flags from menvcfg/senvcfg/henvcfg
-  riscv::cbie_t mcbie_q, mcbie_d, scbie_q, scbie_d, hcbie_q, hcbie_d;
-  logic mcbcfe_q, mcbcfe_d, scbcfe_q, scbcfe_d, hcbcfe_q, hcbcfe_d;
+  logic sdtrig_commit_std_exception_valid;
+  //Trigger module helpers
+  logic sdtrig_etrigger_context_saved_valid;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mepc;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mcause;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mtval;
 
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // B - Bitmanip extension
@@ -427,19 +469,19 @@ module csr_regfile
         else read_access_exception = 1'b1;
         // Trigger module registers
         riscv::CSR_TSELECT:
-        if (CVA6Cfg.SDTRIG) csr_rdata = tselect_from_tm;
+        if (CVA6Cfg.Sdtrig) csr_rdata = tselect_from_tm;
         else read_access_exception = 1'b1;
         riscv::CSR_TDATA1:
-        if (CVA6Cfg.SDTRIG) csr_rdata = tdata1_from_tm;
+        if (CVA6Cfg.Sdtrig) csr_rdata = tdata1_from_tm;
         else read_access_exception = 1'b1;
         riscv::CSR_TDATA2:
-        if (CVA6Cfg.SDTRIG) csr_rdata = tdata2_from_tm;
+        if (CVA6Cfg.Sdtrig) csr_rdata = tdata2_from_tm;
         else read_access_exception = 1'b1;
         riscv::CSR_TDATA3:
-        if (CVA6Cfg.SDTRIG) csr_rdata = tdata3_from_tm;
+        if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) csr_rdata = tdata3_from_tm;
         else read_access_exception = 1'b1;
         riscv::CSR_TINFO: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig) begin
             csr_rdata = {
               {CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000
             };  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
@@ -448,7 +490,7 @@ module csr_regfile
           end
         end
         riscv::CSR_SCONTEXT:
-        if (CVA6Cfg.SDTRIG) csr_rdata = scontext_q;
+        if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) csr_rdata = scontext_q;
         else read_access_exception = 1'b1;
         riscv::CSR_VSSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = vsstatus_extended;
@@ -607,7 +649,8 @@ module csr_regfile
         if (CVA6Cfg.RVS) csr_rdata = medeleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIDELEG:
-        if (CVA6Cfg.RVS) csr_rdata = mideleg_q;
+        if (CVA6Cfg.RVS)
+          csr_rdata = (CVA6Cfg.RVH) ? mideleg_q | HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0] : mideleg_q;
         else read_access_exception = 1'b1;
         riscv::CSR_MIE: csr_rdata = mie_q;
         riscv::CSR_MTVEC: csr_rdata = mtvec_q;
@@ -971,6 +1014,8 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
+    mtval_d = '0;
+
     if (CVA6Cfg.RVS) begin
       satp = satp_q;
     end
@@ -987,6 +1032,8 @@ module csr_regfile
     // --------------------
     cycle_d         = cycle_q;
     instret_d       = instret_q;
+    dcache_d        = dcache_q;
+
     if (!(CVA6Cfg.DebugEn && debug_mode_q)) begin
       // increase instruction retired counter
       for (int i = 0; i < CVA6Cfg.NrCommitPorts; i++) begin
@@ -998,6 +1045,18 @@ module csr_regfile
       if (!CVA6Cfg.PerfCounterEn || (CVA6Cfg.PerfCounterEn && !mcountinhibit_q[0]))
         cycle_d = cycle_q + 1'b1;
       else cycle_d = cycle_q;
+    end
+
+    dcache_d.eccPresent = CVA6Cfg.DcacheEccEnable;
+    dcache_d.eccScrubberPresent = CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable;
+    if (CVA6Cfg.DcacheEccEnable) begin
+      if (dcache_dat_cor_err_i && (dcache_q.datCorErr != '1)) dcache_d.datCorErr++;
+      if (dcache_dat_unc_err_i && (dcache_q.datUncErr != '1)) dcache_d.datUncErr++;
+      if (dcache_dir_cor_err_i && (dcache_q.dirCorErr != '1)) dcache_d.dirCorErr++;
+      if (dcache_dir_unc_err_i && (dcache_q.dirUncErr != '1)) dcache_d.dirUncErr++;
+      if (CVA6Cfg.DcacheEccScrubberEnable) begin
+        if (dcache_scrub_cycle_i && (dcache_q.scrubCycles != '1)) dcache_d.scrubCycles++;
+      end
     end
 
     eret_o                          = 1'b0;
@@ -1046,20 +1105,20 @@ module csr_regfile
       medeleg_d = medeleg_q;
       mideleg_d = mideleg_q;
     end
-    mip_d        = mip_q;
-    mie_d        = mie_q;
-    mepc_d       = mepc_q;
-    mcause_d     = mcause_q;
+    mip_d = mip_q;
+    mie_d = mie_q;
+    mepc_d       = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : mepc_q;
+    mcause_d     = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : mcause_q;
     mcounteren_d = mcounteren_q;
-    mscratch_d   = mscratch_q;
-    if (CVA6Cfg.TvalEn) mtval_d = mtval_q;
+    mscratch_d = mscratch_q;
+    if (CVA6Cfg.TvalEn)
+      mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : mtval_q;
     if (CVA6Cfg.RVH) begin
       mtinst_d = mtinst_q;
       mtval2_d = mtval2_q;
     end
 
     fiom_d     = fiom_q;
-    dcache_d   = dcache_q;
     icache_d   = icache_q;
     acc_cons_d = acc_cons_q;
 
@@ -1113,6 +1172,8 @@ module csr_regfile
     tdata1_we              = 1'b0;
     tdata2_we              = 1'b0;
     tdata3_we              = 1'b0;
+
+    if (CVA6Cfg.Sdtrig) scontext_d = scontext_q;
 
     // check for correct access rights and that we are writing
     if (csr_we) begin
@@ -1191,7 +1252,7 @@ module csr_regfile
         end
         // Trigger module CSRs
         riscv::CSR_TSELECT: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig) begin
             tselect_to_tm = csr_wdata;
             tselect_we    = csr_we;
           end else begin
@@ -1199,7 +1260,7 @@ module csr_regfile
           end
         end
         riscv::CSR_TDATA1: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig) begin
             tdata1_to_tm = csr_wdata;
             tdata1_we    = csr_we;
             flush_o = flush_from_tm;
@@ -1208,15 +1269,16 @@ module csr_regfile
           end
         end
         riscv::CSR_TDATA2: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig) begin
             tdata2_to_tm = csr_wdata;
             tdata2_we    = csr_we;
+            flush_o = flush_from_tm;
           end else begin
             update_access_exception = 1'b1;
           end
         end
         riscv::CSR_TDATA3: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) begin
             tdata3_to_tm = csr_wdata;
             tdata3_we    = csr_we;
           end else begin
@@ -1224,7 +1286,7 @@ module csr_regfile
           end
         end
         riscv::CSR_SCONTEXT: begin
-          if (CVA6Cfg.SDTRIG) begin
+          if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) begin
             scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
           end else begin
             update_access_exception = 1'b1;
@@ -1392,7 +1454,7 @@ module csr_regfile
                 2'b00:   scbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   scbie_d = riscv::CBIE_FLUSH;
                 2'b11:   scbie_d = riscv::CBIE_INVAL;
-                default: scbie_d = riscv::CBIE_RSVD;
+                default: scbie_d = scbie_q;
               endcase
               scbcfe_d = csr_wdata[6];
             end
@@ -1519,7 +1581,7 @@ module csr_regfile
                 2'b00:   hcbie_d = riscv::CBIE_ILLEGAL;
                 2'b01:   hcbie_d = riscv::CBIE_FLUSH;
                 2'b11:   hcbie_d = riscv::CBIE_INVAL;
-                default: hcbie_d = riscv::CBIE_RSVD;
+                default: hcbie_d = hcbie_q;
               endcase
               hcbcfe_d = csr_wdata[6];
             end
@@ -1549,12 +1611,17 @@ module csr_regfile
             mstatus_d.tw   = riscv::Off;
             mstatus_d.mprv = riscv::Off;
           end
+          if (!CVA6Cfg.RVH) begin
+            mstatus_d.mpv = 1'b0;
+            mstatus_d.gva = 1'b0;
+          end
           if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
           end
           mstatus_d.wpri3 = 9'b0;
+          mstatus_d.wpri4 = '0;
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
@@ -1666,10 +1733,14 @@ module csr_regfile
         end
 
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
-        riscv::CSR_MEPC: mepc_d = {csr_wdata[CVA6Cfg.XLEN-1:1], 1'b0};
-        riscv::CSR_MCAUSE: mcause_d = csr_wdata;
+        riscv::CSR_MEPC:
+        mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc
+        : {csr_wdata[CVA6Cfg.XLEN-1:1], 1'b0};
+        riscv::CSR_MCAUSE:
+        mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : {csr_wdata[CVA6Cfg.XLEN - 1], {CVA6Cfg.XLEN - 6{1'b0}}, csr_wdata[4:0]};
         riscv::CSR_MTVAL: begin
-          if (CVA6Cfg.TvalEn) mtval_d = csr_wdata;
+          if (CVA6Cfg.TvalEn)
+            mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : csr_wdata;
         end
         riscv::CSR_MTINST:
         if (CVA6Cfg.RVH) mtinst_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
@@ -1701,7 +1772,7 @@ module csr_regfile
               2'b00:   mcbie_d = riscv::CBIE_ILLEGAL;
               2'b01:   mcbie_d = riscv::CBIE_FLUSH;
               2'b11:   mcbie_d = riscv::CBIE_INVAL;
-              default: mcbie_d = riscv::CBIE_RSVD;
+              default: mcbie_d = mcbie_q;
             endcase
             mcbcfe_d = csr_wdata[6];
           end
@@ -1823,7 +1894,7 @@ module csr_regfile
           else update_access_exception = 1'b1;
         end
 
-        riscv::CSR_DCACHE: dcache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
+        riscv::CSR_DCACHE: dcache_d = csr_wdata;  // enable bit
         riscv::CSR_ICACHE: icache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
         riscv::CSR_ACC_CONS: begin
           if (CVA6Cfg.EnableAccelerator) begin
@@ -1964,12 +2035,12 @@ module csr_regfile
     end
     // hardwired extension registers
     if (CVA6Cfg.RVS || CVA6Cfg.RVF) begin
-      mstatus_d.sd = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
+      mstatus_d.sd = (mstatus_d.xs == riscv::Dirty) | (mstatus_d.fs == riscv::Dirty);
     end else begin
       mstatus_d.sd = riscv::Off;
     end
     if (CVA6Cfg.RVH) begin
-      vsstatus_d.sd = (vsstatus_q.xs == riscv::Dirty) | (vsstatus_q.fs == riscv::Dirty);
+      vsstatus_d.sd = (vsstatus_d.xs == riscv::Dirty) | (vsstatus_d.fs == riscv::Dirty);
     end
 
     // reserve PMPCFG bits 5 and 6 (hardwire to 0)
@@ -2009,7 +2080,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid) || (!CVA6Cfg.DebugEn && CVA6Cfg.SDTRIG && break_from_trigger)) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -2102,21 +2173,23 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = (break_from_trigger) ? 32'h00000003 : ex_i.cause;
-        // set epc
-        mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+        //set cause and epc adapted to etrigger
+        mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : ex_i.cause;
+        mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
         if (CVA6Cfg.TvalEn) begin
-          mtval_d        = (ariane_pkg::ZERO_TVAL
-                                    && (ex_i.cause inside {
-                                      riscv::ILLEGAL_INSTR,
-                                      riscv::BREAKPOINT,
-                                      riscv::ENV_CALL_UMODE,
-                                      riscv::ENV_CALL_SMODE,
-                                      riscv::ENV_CALL_MMODE
-                                    } || ex_i.cause[CVA6Cfg.GPLEN-1])) ? '0 : ex_i.tval;
-        end else begin
-          mtval_d = '0;
+          if (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) begin
+            mtval_d = sdtrig_etrigger_context_mtval;
+          end else begin
+            mtval_d        = (ariane_pkg::ZERO_TVAL
+                                      && (ex_i.cause inside {
+                                        riscv::ILLEGAL_INSTR,
+                                        riscv::BREAKPOINT,
+                                        riscv::ENV_CALL_UMODE,
+                                        riscv::ENV_CALL_SMODE,
+                                        riscv::ENV_CALL_MMODE
+                                      } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval; //TODO changed ex_i.cause[CVA6Cfg.GPLEN-1] to XLEN because spyglass triggered and i fail to understand why
+          end
         end
 
         if (CVA6Cfg.RVH) begin
@@ -2160,16 +2233,6 @@ module csr_regfile
       dcsr_d.prv = priv_lvl_o;
       // save virtualization mode bit
       dcsr_d.v   = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
-
-      // trigger module fired
-      if (CVA6Cfg.SDTRIG && debug_from_trigger) begin
-        dcsr_d.prv = priv_lvl_o;
-        dcsr_d.v = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
-        dpc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
-        debug_mode_d = 1'b1;
-        set_debug_pc_o = 1'b1;
-        dcsr_d.cause = ariane_pkg::CauseTrigger;
-      end
 
       // caused by a breakpoint
       if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
@@ -2321,8 +2384,8 @@ module csr_regfile
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
       if (CVA6Cfg.RVH) begin
-        // set virtualization mode
-        v_d           = mstatus_q.mpv;
+        // MPV is ignored when returning to M-mode.
+        v_d = (mstatus_q.mpp == riscv::PRIV_LVL_M) ? 1'b0 : mstatus_q.mpv;
         //set mstatus mpv to false
         mstatus_d.mpv = 1'b0;
         if (mstatus_q.mpp != riscv::PRIV_LVL_M) mstatus_d.mprv = 1'b0;
@@ -2473,7 +2536,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2491,7 +2554,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (curr_priv == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
@@ -2527,7 +2590,7 @@ module csr_regfile
         // counter address range is C00 to C1F
         if (CVA6Cfg.RVZihpm) begin
           if (csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3 : riscv::CSR_HPM_COUNTER_31]} |
-              csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_HPM_COUNTER_3H : riscv::CSR_HPM_COUNTER_31H]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2539,7 +2602,7 @@ module csr_regfile
         end
         if (CVA6Cfg.RVZicntr) begin
           if (csr_addr_i inside {[riscv::CSR_CYCLE : riscv::CSR_INSTRET]} |
-              csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]}) begin
+              (CVA6Cfg.IS_XLEN32 && csr_addr_i inside {[riscv::CSR_CYCLEH : riscv::CSR_INSTRETH]})) begin
             if (priv_lvl_o == riscv::PRIV_LVL_S && CVA6Cfg.RVS) begin
               privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
@@ -2739,7 +2802,9 @@ module csr_regfile
 `else
   assign icache_en_o = icache_q[0] & ~(CVA6Cfg.DebugEn && debug_mode_q);
 `endif
-  assign dcache_en_o = dcache_q[0];
+  assign dcache_en_o = dcache_q.cacheEn;
+  assign dcache_scrub_en_o = dcache_q.scrubEn;
+  assign dcache_scrub_period_o = dcache_q.scrubPeriod;
   assign acc_cons_en_o = CVA6Cfg.EnableAccelerator ? acc_cons_q[0] : 1'b0;
 
   // determine if mprv needs to be considered if in debug mode
@@ -2780,7 +2845,7 @@ module csr_regfile
       mscratch_q       <= {CVA6Cfg.XLEN{1'b0}};
       if (CVA6Cfg.TvalEn) mtval_q <= {CVA6Cfg.XLEN{1'b0}};
       fiom_q          <= '0;
-      dcache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
+      dcache_q        <= '{cacheEn: 1'b1, default: '0};
       icache_q        <= {{CVA6Cfg.XLEN - 1{1'b0}}, 1'b1};
       mcountinhibit_q <= '0;
       acc_cons_q      <= {{CVA6Cfg.XLEN - 1{1'b0}}, CVA6Cfg.EnableAccelerator};
@@ -2790,15 +2855,15 @@ module csr_regfile
       end
       // supervisor mode registers
       if (CVA6Cfg.RVS) begin
-        medeleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        mideleg_q    <= {CVA6Cfg.XLEN{1'b0}};
-        sepc_q       <= {CVA6Cfg.XLEN{1'b0}};
-        scause_q     <= {CVA6Cfg.XLEN{1'b0}};
-        stvec_q      <= {CVA6Cfg.XLEN{1'b0}};
+        medeleg_q <= {CVA6Cfg.XLEN{1'b0}};
+        mideleg_q    <= (CVA6Cfg.RVH) ? CVA6Cfg.XLEN'(HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0]) : {CVA6Cfg.XLEN{1'b0}};
+        sepc_q <= {CVA6Cfg.XLEN{1'b0}};
+        scause_q <= {CVA6Cfg.XLEN{1'b0}};
+        stvec_q <= {CVA6Cfg.XLEN{1'b0}};
         scounteren_q <= {CVA6Cfg.XLEN{1'b0}};
-        sscratch_q   <= {CVA6Cfg.XLEN{1'b0}};
-        stval_q      <= {CVA6Cfg.XLEN{1'b0}};
-        satp_q       <= {CVA6Cfg.XLEN{1'b0}};
+        sscratch_q <= {CVA6Cfg.XLEN{1'b0}};
+        stval_q <= {CVA6Cfg.XLEN{1'b0}};
+        satp_q <= {CVA6Cfg.XLEN{1'b0}};
         if (CVA6Cfg.RVZiCbom) begin
           scbie_q  <= riscv::CBIE_INVAL;
           scbcfe_q <= 1'b1;
@@ -2831,7 +2896,7 @@ module csr_regfile
           hcbcfe_q <= 1'b1;
         end
       end
-      if (CVA6Cfg.SDTRIG) begin
+      if (CVA6Cfg.Sdtrig) begin
         scontext_q <= '0;
       end
       // timer and counters
@@ -2929,7 +2994,7 @@ module csr_regfile
           hcbcfe_q <= hcbcfe_d;
         end
       end
-      if (CVA6Cfg.SDTRIG) begin
+      if (CVA6Cfg.Sdtrig) begin
         scontext_q <= scontext_d;
       end
       // timer and counters
@@ -2945,8 +3010,7 @@ module csr_regfile
     end
   end
 
-  assign debug_from_trigger_o = debug_from_mcontrol;  // from trigger module to id stage
-  assign break_from_trigger_o = break_from_trigger;  // from trigger module to commit stage
+  assign sdtrig_commit_std_exception_valid_o = sdtrig_commit_std_exception_valid;
 
   // write logic pmp
   always_comb begin : write
@@ -2982,43 +3046,60 @@ module csr_regfile
   // Trigger Module
   //-------------
   generate
-    if (CVA6Cfg.SDTRIG) begin : tm_gen
+    if (CVA6Cfg.Sdtrig) begin : tm_gen
       trigger_module #(
-          .CVA6Cfg           (CVA6Cfg),
-          .exception_t       (exception_t),
-          .scoreboard_entry_t(scoreboard_entry_t),
-          .N_Triggers        (N_Triggers)
+          .CVA6Cfg    (CVA6Cfg),
+          .exception_t(exception_t)
       ) trigger_module_i (
           .clk_i,
           .rst_ni,
-          .commit_instr_i       (commit_instr_i),
-          .commit_ack_i         (commit_ack_i),
-          .ex_i                 (ex_i),
-          .vaddr_from_lsu_i     (vaddr_from_lsu_i),
-          .orig_instr_i         (orig_instr_i),
-          .store_result_i       (store_result_i),
-          .priv_lvl_i           (priv_lvl_o),
-          .debug_mode_i         (debug_mode_q),
-          .mret_i               (mret),
-          .sret_i               (sret),
-          .scontext_i           (scontext_q),
-          .tselect_i            (tselect_to_tm),
-          .tdata1_i             (tdata1_to_tm),
-          .tdata2_i             (tdata2_to_tm),
-          .tdata3_i             (tdata3_to_tm),
-          .tselect_we           (tselect_we),
-          .tdata1_we            (tdata1_we),
-          .tdata2_we            (tdata2_we),
-          .tdata3_we            (tdata3_we),
-          .tselect_o            (tselect_from_tm),
-          .tdata1_o             (tdata1_from_tm),
-          .tdata2_o             (tdata2_from_tm),
-          .tdata3_o             (tdata3_from_tm),
-          .flush_o              (flush_from_tm),
-          // debug/break request from TM
-          .debug_from_trigger_o (debug_from_trigger),
-          .break_from_trigger_o (break_from_trigger),
-          .debug_from_mcontrol_o(debug_from_mcontrol)
+          .commit_ack_i                       (commit_ack_i),
+          .ex_i                               (ex_i),
+          .sdtrig_lsu_inputs_vaddr_i          (sdtrig_lsu_inputs_vaddr_i),
+          .fetch_sdtrig_instr_i               (fetch_sdtrig_instr_i),
+          .sdtrig_lsu_inputs_data_i           (sdtrig_lsu_inputs_data_i),
+          .sdtrig_lsu_inputs_fu_i             (sdtrig_lsu_inputs_fu_i),
+          .sdtrig_lsu_inputs_valid_i          (sdtrig_lsu_inputs_valid_i),
+          .sdtrig_load_data_i                 (sdtrig_load_data_i),
+          .sdtrig_load_valid_i                (sdtrig_load_valid_i),
+          .priv_lvl_i                         (priv_lvl_o),
+          .debug_mode_i                       (debug_mode_q),
+          .mret_i                             (mret),
+          .sret_i                             (sret),
+          .instr_count_d                      (instret_d[13:0]),
+          .instr_count_q                      (instret_q[13:0]),
+          .scontext_i                         (scontext_q),
+          .tselect_i                          (tselect_to_tm),
+          .tdata1_i                           (tdata1_to_tm),
+          .tdata2_i                           (tdata2_to_tm),
+          .tdata3_i                           (tdata3_to_tm),
+          .tselect_we                         (tselect_we),
+          .tdata1_we                          (tdata1_we),
+          .tdata2_we                          (tdata2_we),
+          .tdata3_we                          (tdata3_we),
+          .tselect_o                          (tselect_from_tm),
+          .tdata1_o                           (tdata1_from_tm),
+          .tdata2_o                           (tdata2_from_tm),
+          .tdata3_o                           (tdata3_from_tm),
+          .flush_o                            (flush_from_tm),
+          .mepc_i                             (mepc_d),
+          .mcause_i                           (mcause_d),
+          .mtval_i                            (mtval_d),
+          .etrigger_context_saved_valid_o     (sdtrig_etrigger_context_saved_valid),
+          .etrigger_context_mepc_o            (sdtrig_etrigger_context_mepc),
+          .etrigger_context_mcause_o          (sdtrig_etrigger_context_mcause),
+          .etrigger_context_mtval_o           (sdtrig_etrigger_context_mtval),
+          .sdtrig_commit_std_exception_valid_o(sdtrig_commit_std_exception_valid),
+          .fetch_sdtrig_pc_i                  (fetch_sdtrig_pc_i),
+          .sdtrig_decoder_action_o            (sdtrig_decoder_action_o),
+          .sdtrig_load_stall_o                (sdtrig_load_stall_o),
+          .sdtrig_load_cancel_o               (sdtrig_load_cancel_o),
+          .sdtrig_load_action_o               (sdtrig_load_action_o),
+          .sdtrig_store_stall_o               (sdtrig_store_stall_o),
+          .sdtrig_store_action_o              (sdtrig_store_action_o),
+          .sdtrig_commit_icount_valid_o       (sdtrig_commit_icount_valid_o),
+          .sdtrig_commit_action_o             (sdtrig_commit_action_o),
+          .sdtrig_commit_icount_nr_instr_o    (sdtrig_commit_icount_nr_instr_o)
       );
     end else begin
       assign tdata1_from_tm = '0;
@@ -3026,9 +3107,20 @@ module csr_regfile
       assign tdata3_from_tm = '0;
       assign tselect_from_tm = '0;
       assign flush_from_tm = 0;
-      assign debug_from_trigger = 0;
-      assign break_from_trigger = 0;
-      assign debug_from_mcontrol = 0;
+      assign sdtrig_commit_std_exception_valid = '0;
+      assign sdtrig_etrigger_context_saved_valid = '0;
+      assign sdtrig_etrigger_context_mepc = '0;
+      assign sdtrig_etrigger_context_mcause = '0;
+      assign sdtrig_etrigger_context_mtval = '0;
+      for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) assign sdtrig_decoder_action_o[i] = '0;
+      assign sdtrig_load_stall_o = '0;
+      assign sdtrig_load_cancel_o = '0;
+      assign sdtrig_load_action_o = '0;
+      assign sdtrig_store_stall_o = '0;
+      assign sdtrig_store_action_o = '0;
+      assign sdtrig_commit_icount_valid_o = '0;
+      assign sdtrig_commit_action_o = '0;
+      assign sdtrig_commit_icount_nr_instr_o = '0;
     end
   endgenerate
 

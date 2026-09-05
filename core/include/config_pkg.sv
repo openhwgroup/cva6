@@ -121,11 +121,21 @@ package config_pkg;
     // Address to jump when exception
     logic [63:0]                 ExceptionAddress;
     // Trigger Module Sdtrig Extension
-    bit                          SDTRIG;
-    bit                          Mcontrol6;
-    bit                          Icount;
-    bit                          Etrigger;
-    bit                          Itrigger;
+    bit                          Sdtrig;
+    bit                          SdtrigMcontrol6;
+    bit                          SdtrigMcontrol6ExecAddr;
+    bit                          SdtrigMcontrol6ExecData;
+    bit                          SdtrigMcontrol6Store;
+    bit                          SdtrigMcontrol6LoadAddr;
+    bit                          SdtrigMcontrol6LoadData;
+    bit                          SdtrigIcount;
+    bit                          SdtrigEtrigger;
+    bit                          SdtrigItrigger;
+    int                          SdtrigNrTriggers;
+    bit                          SdtrigTriggerChaining;
+    logic [1:0]                  SdtrigSupportedActions;
+    logic [9:0]                  SdtrigSupportedMatch;
+    bit                          SdtrigSupportTextra;
     // Tval Support Enable
     bit                          TvalEn;
     // MTVEC CSR supports only direct mode
@@ -213,6 +223,10 @@ package config_pkg;
     bit          DcacheFlushOnFence;
     bit          DcacheFlushOnFenceI;
     bit          DcacheInvalidateOnFlush;
+    // Is Error Detection and Correction enabled in the L1D ?
+    bit          DcacheEccEnable;
+    // Is Error Detection and Correction scrubber integrated in the L1D ?
+    bit          DcacheEccScrubberEnable;
     // User field on data bus enable
     int unsigned DataUserEn;
     // Write-through data cache write buffer depth
@@ -353,33 +367,43 @@ package config_pkg;
     int unsigned VpnLen;
     int unsigned PtLevels;
 
-    logic [63:0]                 DmBaseAddress;
-    bit                          TvalEn;
-    bit                          DirectVecOnly;
-    int unsigned                 NrPMPEntries;
-    logic [63:0][63:0]           PMPCfgRstVal;
-    logic [63:0][63:0]           PMPAddrRstVal;
-    bit [63:0]                   PMPEntryReadOnly;
-    bit                          PMPNapotEn;
-    noc_type_e                   NOCType;
-    int unsigned                 NrNonIdempotentRules;
+    logic [63:0] DmBaseAddress;
+    bit TvalEn;
+    bit DirectVecOnly;
+    int unsigned NrPMPEntries;
+    logic [63:0][63:0] PMPCfgRstVal;
+    logic [63:0][63:0] PMPAddrRstVal;
+    bit [63:0] PMPEntryReadOnly;
+    bit PMPNapotEn;
+    noc_type_e NOCType;
+    int unsigned NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
-    int unsigned                 NrExecuteRegionRules;
+    int unsigned NrExecuteRegionRules;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
-    int unsigned                 NrCachedRegionRules;
+    int unsigned NrCachedRegionRules;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
-    int unsigned                 MaxOutstandingStores;
-    bit                          DebugEn;
-    bit                          SDTRIG;
-    bit                          Mcontrol6;
-    bit                          Icount;
-    bit                          Etrigger;
-    bit                          Itrigger;
-    bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
-    bit                          AxiBurstWriteEn;
+    int unsigned MaxOutstandingStores;
+    bit DebugEn;
+    bit NonIdemPotenceEn;  // Currently only used by V extension (Ara)
+    bit AxiBurstWriteEn;
+    bit Sdtrig;
+    bit SdtrigMcontrol6;
+    bit SdtrigMcontrol6ExecAddr;
+    bit SdtrigMcontrol6ExecData;
+    bit SdtrigMcontrol6Store;
+    bit SdtrigMcontrol6LoadAddr;
+    bit SdtrigMcontrol6LoadData;
+    bit SdtrigIcount;
+    bit SdtrigEtrigger;
+    bit SdtrigItrigger;
+    int SdtrigNrTriggers;
+    bit SdtrigTriggerChaining;
+    logic [1:0] SdtrigSupportedActions;
+    logic [9:0] SdtrigSupportedMatch;
+    bit SdtrigSupportTextra;
 
     int unsigned ICACHE_SET_ASSOC;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
@@ -404,6 +428,9 @@ package config_pkg;
     bit DcacheFlushOnFence;
     bit DcacheFlushOnFenceI;
     bit DcacheInvalidateOnFlush;
+
+    bit DcacheEccEnable;
+    bit DcacheEccScrubberEnable;
 
     int unsigned DATA_USER_EN;
     int unsigned WtDcacheWbufDepth;
@@ -459,6 +486,12 @@ package config_pkg;
     assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn));
     assert (!(Cfg.RVZCMT && ~Cfg.MmuPresent));
+    // Zcmp is incompatible with Zcd (compressed double-precision FP loads/stores,
+    // automatically present whenever both C and D are implemented), due to
+    // opcode collisions.
+    if (Cfg.RVZCMP && Cfg.RVC && Cfg.RVD) begin
+      $fatal(1, "[config] RVZCMP (Zcmp) and RVC+RVD (Zcd = C+D) are mutually exclusive");
+    end
     // pragma translate_on
   endfunction
 

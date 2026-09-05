@@ -86,7 +86,26 @@ package triggers_pkg;
     logic [5:0] action;
   } etrigger32_tdata1_t;
 
-  function automatic logic napot_match(logic [63:0] base, logic [63:0] value);
+  typedef union packed {
+    logic [31:0] tdata1_type;
+    mcontrol6_32_tdata1_t mc6_type;
+    etrigger32_tdata1_t etrigger_type;
+    itrigger32_tdata1_t itrigger_type;
+    icount32_tdata1_t icount_type;
+  } trigger_32_tdata1_type;
+
+  function automatic logic napot_match32(logic [31:0] base, logic [31:0] value);
+    logic [31:0] mask;
+    logic is_valid_napot;
+
+    is_valid_napot = ((base & (base + 1)) == 0);
+    if (!is_valid_napot) return 0;
+
+    mask = ~(base & ~(base + 1));
+    return (value & mask) == (base & mask);
+  endfunction
+
+  function automatic logic napot_match64(logic [63:0] base, logic [63:0] value);
     logic [63:0] mask;
     logic is_valid_napot;
 
@@ -97,13 +116,15 @@ package triggers_pkg;
     return (value & mask) == (base & mask);
   endfunction
 
-  // textra32: sbytemask is 2-bit, svalue is 16-bit, max 2 bytes compared
   function automatic logic match_scontext32(input logic [31:0] scontext, input logic [1:0] sselect,
-                                            input logic [1:0] sbytemask, input logic [15:0] svalue);
+                                            input logic [1:0] sbytemask, input logic [15:0] svalue,
+                                            input logic flag);
     logic match;
+    int   max_bytes = 0;
     match = 1'b1;
     if (sselect == 2'd1) begin
-      for (int b = 0; b < 2; b++) begin
+      max_bytes = (flag) ? 4 : 2;
+      for (int b = 0; b < max_bytes; b++) begin
         if (!sbytemask[b]) begin
           if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
         end
@@ -112,13 +133,15 @@ package triggers_pkg;
     return match;
   endfunction
 
-  // textra64: sbytemask is 4-bit, svalue is 32-bit, max 4 bytes compared
   function automatic logic match_scontext64(input logic [31:0] scontext, input logic [1:0] sselect,
-                                            input logic [3:0] sbytemask, input logic [31:0] svalue);
+                                            input logic [3:0] sbytemask, input logic [31:0] svalue,
+                                            input logic flag);
     logic match;
+    int   max_bytes = 0;
     match = 1'b1;
     if (sselect == 2'd1) begin
-      for (int b = 0; b < 4; b++) begin
+      max_bytes = (flag) ? 4 : 2;
+      for (int b = 0; b < max_bytes; b++) begin
         if (!sbytemask[b]) begin
           if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
         end
