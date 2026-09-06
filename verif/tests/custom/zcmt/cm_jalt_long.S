@@ -1,59 +1,76 @@
 .globl _start
 _start:
-	la t0, trap_handler
-	csrw mtvec, t0
+    la t0, trap_handler
+    csrw mtvec, t0
 
-    la a1, target1
+    # Configure the Jump Vector Table.
     la t0, __jvt_base$
 
-    sw a1, 128(t0)       //cm.jalt entry start from index >=32
-
-    csrw  jvt, t0
+    # JVT CSR = 0x017.
+    # Use the numeric CSR address because the bundled assembler does not
+    # recognize the Zcmt CSR name.
+    csrw 0x017, t0
 
     fence.i
-    # Perform jump using the index from JVT
-    cm.jalt 32
 
-    li t1, 1
-    addi x20,x20, 9
-    j write_tohost
+    # cm.jalt 64
+    #
+    # The bundled GNU assembler does not recognize the Zcmt mnemonic, so emit
+    # the architecturally defined 16-bit encoding directly.
+    #
+    # index = instruction[9:2] = 64
+    # encoding = 0xa102
+    .2byte 0xa102
 
+    # cm.jalt must not fall through.
+    j fail
 
-exit:
-    j write_tohost
-
-write_tohost:
-   li   x1, 1
-   la   t0, tohost
-   sw   x1, 0(t0)
-   j    write_tohost
-
-
-# Jump Vector Table (JVT) Section
-# Create a separate section for the JVT
-.section .riscv.jvt, "ax" 
-.align 6                    # Align the JVT on a 64-byte boundary (6 = 2^6 = 64)
-__jvt_base$:
-     .word 0x80000054
-     .word 0x80000800
-     .word 0x80000802
-     .word 0x80000804
-
-# Target Addresses (Where cm.jalt will jump)
-.align 20
 target1:
-    li x2, 99
-    lui    t0, %hi(write_tohost)        # Load upper 20 bits of target address into t0
-    addi   t0, t0, %lo(write_tohost)    # Add the lower 12 bits to t0
-    jalr   x0, 0(t0)
-              
-                  
+    j pass
 
 trap_handler:
-	lui    t0, %hi(write_tohost)        # Load upper 20 bits of target address into t0
-    addi   t0, t0, %lo(write_tohost)    # Add the lower 12 bits to t0
-    jalr   x0, 0(t0) 
+    j fail
 
+pass:
+    # RISC-V test convention: tohost = 1 means success.
+    li x1, 1
+    j write_tohost
 
-.align 6;   .global tohost;   tohost:   .dword 0;
-.align 6;   .global fromhost; fromhost: .dword 0;
+fail:
+    # An odd value greater than one represents failure.
+    li x1, 3
+
+write_tohost:
+    la t0, tohost
+    sw x1, 0(t0)
+
+1:
+    j 1b
+
+# Jump Vector Table.
+#
+# Entry 0 deliberately points to the failure path.
+# Entry 64 deliberately points to target1.
+#
+# With the buggy six-bit index calculation:
+#   index 64 aliases index 0 -> fail
+#
+# With the correct eight-bit calculation:
+#   index 64 -> target1 -> pass
+.section .riscv.jvt, "a", @progbits
+.align 6
+__jvt_base$:
+    .word fail
+    .space 252
+    .word target1
+
+.section .data
+.align 6
+.global tohost
+tohost:
+    .dword 0
+
+.align 6
+.global fromhost
+fromhost:
+    .dword 0

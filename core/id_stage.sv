@@ -103,8 +103,8 @@ module id_stage #(
     input x_compressed_resp_t compressed_resp_i,
     output logic compressed_valid_o,
     output x_compressed_req_t compressed_req_o,
-    // breakpoint request from trigger module
-    input debug_from_trigger_i,
+    // mcontrol6 address match breakpoint exc. generation request from trigg. module
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i[CVA6Cfg.NrIssuePorts],
     // Data cache request ouput - CACHE
     input dcache_req_o_t dcache_req_ports_i,
     // Data cache request input - CACHE
@@ -362,7 +362,7 @@ module id_stage #(
         .instruction_o             (decoded_instruction[i]),
         .orig_instr_o              (orig_instr[i]),
         .is_control_flow_instr_o   (is_control_flow_instr[i]),
-        .debug_from_trigger_i      (debug_from_trigger_i)
+        .sdtrig_decoder_action_i   (sdtrig_decoder_action_i[i])
     );
   end
 
