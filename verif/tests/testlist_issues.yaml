@@ -50,6 +50,14 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/mret-mpv-rv64.S
 
+  - test: pmp-tor-grain-rv64
+    <<: *common_test_config
+    description: >
+      Check that pmpaddr bit 0 does not affect either TOR boundary when the
+      PMP grain is eight bytes.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/pmp-tor-grain-rv64.S
+
   - test: zcmt-jvt-index-rv32
     description: >
       Check that cm.jalt uses the complete eight-bit JVT table index.
