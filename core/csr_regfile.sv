@@ -1331,7 +1331,9 @@ module csr_regfile
         if (CVA6Cfg.RVH) vsscratch_d = csr_wdata;
         else update_access_exception = 1'b1;
         riscv::CSR_VSEPC:
-        if (CVA6Cfg.RVH) vsepc_d = {csr_wdata[CVA6Cfg.XLEN-1:1], 1'b0};
+        // bit[1] stays writable only with RVC; without RVC (IALIGN=32) vsepc[1:0] are always zero
+        if (CVA6Cfg.RVH)
+          vsepc_d = {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
         else update_access_exception = 1'b1;
         riscv::CSR_VSCAUSE:
         if (CVA6Cfg.RVH) vscause_d = csr_wdata;
@@ -1417,7 +1419,9 @@ module csr_regfile
         if (CVA6Cfg.RVS) sscratch_d = csr_wdata;
         else update_access_exception = 1'b1;
         riscv::CSR_SEPC:
-        if (CVA6Cfg.RVS) sepc_d = {csr_wdata[CVA6Cfg.XLEN-1:1], 1'b0};
+        // bit[1] stays writable only with RVC; without RVC (IALIGN=32) sepc[1:0] are always zero
+        if (CVA6Cfg.RVS)
+          sepc_d = {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
         else update_access_exception = 1'b1;
         riscv::CSR_SCAUSE:
         if (CVA6Cfg.RVS) scause_d = csr_wdata;
@@ -1734,8 +1738,9 @@ module csr_regfile
 
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
         riscv::CSR_MEPC:
+        // bit[1] stays writable only with RVC; without RVC (IALIGN=32) mepc[1:0] are always zero
         mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc
-        : {csr_wdata[CVA6Cfg.XLEN-1:1], 1'b0};
+        : {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
         riscv::CSR_MCAUSE:
         mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : {csr_wdata[CVA6Cfg.XLEN - 1], {CVA6Cfg.XLEN - 6{1'b0}}, csr_wdata[4:0]};
         riscv::CSR_MTVAL: begin
