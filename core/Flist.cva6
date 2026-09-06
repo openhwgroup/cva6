@@ -37,6 +37,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncDpRam_ind_r_w.sv
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
++incdir+${HPDCACHE_DIR}/rtl/src/utils/ecc
 
 // Floating point unit
 ${CVA6_REPO_DIR}/core/cvfpu/src/fpnew_pkg.sv
@@ -198,6 +199,15 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache_axi_wrapper.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/std_cache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/std_nbdcache.sv
 -F ${HPDCACHE_DIR}/rtl/hpdcache.Flist
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_36_29_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_36_29_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_39_32_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_39_32_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_55_48_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_55_48_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_72_64_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_72_64_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_pkg.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_resp_demux.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_read.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_write.sv
@@ -209,6 +219,9 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_wrapper.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_ecc_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_ecc_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/behav/hpdcache_sram_wmask_ecc_1rw.sv
 
 // Physical Memory Protection
 // NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
