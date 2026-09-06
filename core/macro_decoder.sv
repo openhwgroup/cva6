@@ -133,7 +133,7 @@ module macro_decoder #(
 
       // Calculate xreg1 & xreg2 for move instructions
       if (macro_instr_type == MVSA01 || macro_instr_type == MVA01S) begin
-        if (instr_i[9:7] != instr_i[4:2]) begin
+        if (macro_instr_type == MVA01S || instr_i[9:7] != instr_i[4:2]) begin
           xreg1 = {instr_i[9:8] > 0, instr_i[9:8] == 0, instr_i[9:7]};
           xreg2 = {instr_i[4:3] > 0, instr_i[4:3] == 0, instr_i[4:2]};
         end else begin
