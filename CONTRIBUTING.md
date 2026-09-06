@@ -141,3 +141,5 @@ To format RTL files checked by GitHub , use the following command:
 ```
 verible-verilog-format --inplace $(git ls-tree -r HEAD --name-only core |grep '\.sv$' |grep -v '^core/include/std_cache_pkg.sv$' |grep -v cvfpu)
 ```
+
+The Verible version currently used in the GitHub CI worflow can be found in [`.github/workflows/verible.yml`](.github/workflows/verible.yml).

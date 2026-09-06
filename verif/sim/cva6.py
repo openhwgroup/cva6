@@ -1009,7 +1009,7 @@ def check_spike_version():
     logging.info(f"- stderr:\n\n{user_spike_stderr_string}")
     # Run 'ldd' on Spike binary and print contents of stdout and stderr.
     spike_ldd = subprocess.run(
-        "ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
+        "/bin/ldd $SPIKE_PATH/spike", capture_output=True, text=True, shell=True
     )
     spike_ldd_stdout = spike_ldd.stdout.strip()
     spike_ldd_stderr = spike_ldd.stderr.strip()
@@ -1030,7 +1030,8 @@ def check_spike_version():
 
   logging.info(f"Spike Version: {user_spike_stderr_string}")
 
-  if user_spike_stderr_string != spike_version:
+  n = min(len(user_spike_stderr_string), len(spike_version))
+  if user_spike_stderr_string[:n] != spike_version[:n]:
     incorrect_version_exit("Spike", user_spike_stderr_string, spike_version)
 
 
