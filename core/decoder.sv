@@ -1170,7 +1170,7 @@ module decoder
                   instruction_o.op = ariane_pkg::BSETI;
                 else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0010100)
                   instruction_o.op = ariane_pkg::BSETI;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::ZIP;
                 else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001) begin
                   instruction_o.op = ariane_pkg::AES64KS1I;
@@ -1220,7 +1220,7 @@ module decoder
                   instruction_o.op = ariane_pkg::RORI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b011010000111)
                   instruction_o.op = ariane_pkg::BREV8;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::UNZIP;
                 else illegal_instr_bm = 1'b1;
               end
