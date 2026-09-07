@@ -1,5 +1,115 @@
 [
   {
+    "id": 34111792512,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 384,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111792512",
+    "head_branch": "fix/3452-pmpaddr63-oob",
+    "head_sha": "fc03bdf6",
+    "event": "pull_request",
+    "created_at": "2026-09-07T10:30:24Z",
+    "updated_at": "2026-09-07T10:38:41Z",
+    "run_started_at": "2026-09-07T10:30:24Z",
+    "duration_seconds": 497,
+    "total_jobs": 3,
+    "passed_jobs": 3,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:52Z",
+        "completed_at": "2026-09-07T10:35:28Z",
+        "duration_seconds": 216,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111792512/job/101709881669",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:52Z",
+        "completed_at": "2026-09-07T10:38:40Z",
+        "duration_seconds": 408,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111792512/job/101709881695",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:52Z",
+        "completed_at": "2026-09-07T10:34:03Z",
+        "duration_seconds": 131,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111792512/job/101709881736",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      }
+    ]
+  },
+  {
+    "id": 34111775161,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 383,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111775161",
+    "head_branch": "fix/3497-single-step-wfi",
+    "head_sha": "8ec6cbf2",
+    "event": "pull_request",
+    "created_at": "2026-09-07T10:30:13Z",
+    "updated_at": "2026-09-07T10:38:42Z",
+    "run_started_at": "2026-09-07T10:30:13Z",
+    "duration_seconds": 509,
+    "total_jobs": 3,
+    "passed_jobs": 3,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:46Z",
+        "completed_at": "2026-09-07T10:34:31Z",
+        "duration_seconds": 165,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111775161/job/101709849832",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      },
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:45Z",
+        "completed_at": "2026-09-07T10:36:00Z",
+        "duration_seconds": 255,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111775161/job/101709849915",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-07T10:31:45Z",
+        "completed_at": "2026-09-07T10:38:41Z",
+        "duration_seconds": 416,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34111775161/job/101709849961",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      }
+    ]
+  },
+  {
     "id": 34105857756,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2432,116 +2542,6 @@
         "arch": "rv32",
         "config": "cv32a65x",
         "testcase": "smoke-tests-cv32a65x"
-      }
-    ]
-  },
-  {
-    "id": 33882558438,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 334,
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33882558438",
-    "head_branch": "fix/3464-cm-mva01s-equal-regs",
-    "head_sha": "6bf1f94a",
-    "event": "pull_request",
-    "created_at": "2026-09-04T14:14:15Z",
-    "updated_at": "2026-09-04T14:21:48Z",
-    "run_started_at": "2026-09-04T14:14:15Z",
-    "duration_seconds": 453,
-    "total_jobs": 3,
-    "passed_jobs": 3,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": [
-      {
-        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:15:49Z",
-        "completed_at": "2026-09-04T14:21:47Z",
-        "duration_seconds": 358,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33882558438/job/101054946958",
-        "arch": "rv64",
-        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
-        "testcase": "cv64a6_imafdc_tests"
-      },
-      {
-        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:15:49Z",
-        "completed_at": "2026-09-04T14:18:02Z",
-        "duration_seconds": 133,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33882558438/job/101054947105",
-        "arch": "rv32",
-        "config": "cv32a65x",
-        "testcase": "smoke-tests-cv32a65x"
-      },
-      {
-        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:15:49Z",
-        "completed_at": "2026-09-04T14:19:53Z",
-        "duration_seconds": 244,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33882558438/job/101054947162",
-        "arch": "rv32",
-        "config": "cv32a60x",
-        "testcase": "cv32a6_tests"
-      }
-    ]
-  },
-  {
-    "id": 33881609128,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 333,
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33881609128",
-    "head_branch": "fix/counterh-is-xlen32-guard-3466",
-    "head_sha": "ec27fde0",
-    "event": "pull_request",
-    "created_at": "2026-09-04T14:04:19Z",
-    "updated_at": "2026-09-04T14:11:49Z",
-    "run_started_at": "2026-09-04T14:04:19Z",
-    "duration_seconds": 450,
-    "total_jobs": 3,
-    "passed_jobs": 3,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": [
-      {
-        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:06:10Z",
-        "completed_at": "2026-09-04T14:11:48Z",
-        "duration_seconds": 338,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33881609128/job/101051911145",
-        "arch": "rv64",
-        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
-        "testcase": "cv64a6_imafdc_tests"
-      },
-      {
-        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:06:08Z",
-        "completed_at": "2026-09-04T14:08:09Z",
-        "duration_seconds": 121,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33881609128/job/101051911213",
-        "arch": "rv32",
-        "config": "cv32a65x",
-        "testcase": "smoke-tests-cv32a65x"
-      },
-      {
-        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
-        "conclusion": "success",
-        "started_at": "2026-09-04T14:06:09Z",
-        "completed_at": "2026-09-04T14:09:43Z",
-        "duration_seconds": 214,
-        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/33881609128/job/101051911418",
-        "arch": "rv32",
-        "config": "cv32a60x",
-        "testcase": "cv32a6_tests"
       }
     ]
   }
