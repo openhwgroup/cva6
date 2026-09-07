@@ -212,7 +212,7 @@ module rvfi_tracer #(
 
   always_ff @(posedge clk_i) begin
     if (cycles > DEBUG_START && cycles < DEBUG_STOP)
-      for (int index = 0; index < 100; index++)
+      for (int index = 0; index < $size(debug); index++)
         if (debug_previous[index] != debug[index])
           $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
     debug_previous <= debug;
