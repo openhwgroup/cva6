@@ -81,7 +81,7 @@ module zcmt_decoder #(
         fetch_stall_o = 1'b0;
         if (is_zcmt_instr_i) begin
           if (CVA6Cfg.IS_XLEN32) begin  //It is only target for 32 bit targets in cva6 with No MMU
-            table_address = {jvt_i.base, 6'b000000} + {24'h0, instr_i[7:2], 2'b00};
+            table_address = {jvt_i.base, 6'b000000} + {22'h0, instr_i[9:2], 2'b00};
             req_port_o.address_index = table_address[9:0];
             req_port_o.address_tag = table_address[CVA6Cfg.VLEN-1:10];  // No MMU support
             state_d = TABLE_JUMP;
@@ -97,8 +97,9 @@ module zcmt_decoder #(
       end
       TABLE_JUMP: begin
         if (req_port_i.data_rvalid) begin
-          // save the PC relative Xlen table jump address 
-          jump_address_o = $unsigned($signed(req_port_i.data_rdata) - $signed(pc_i));
+          // Clear bit 0 of the JVT target before converting it to a PC-relative offset.
+          jump_address_o =
+              $unsigned($signed({req_port_i.data_rdata[CVA6Cfg.XLEN-1:1], 1'b0}) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
             instr_o = {
               20'h0, 5'h0, riscv::OpcodeJal

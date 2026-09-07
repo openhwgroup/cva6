@@ -330,6 +330,7 @@ module instr_queue
         fetch_entry_o[i].ex.tval2 = '0;
         fetch_entry_o[i].ex.gva = 1'b0;
         fetch_entry_o[i].ex.tinst = '0;
+        fetch_entry_o[i].ex.timing = '0;
         fetch_entry_o[i].branch_predict.predict_address = address_out;
         fetch_entry_o[i].branch_predict.cf = ariane_pkg::NoCF;
       end

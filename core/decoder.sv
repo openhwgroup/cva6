@@ -102,7 +102,8 @@ module decoder
     output logic [31:0] orig_instr_o,
     // Is a control flow instruction - ISSUE_STAGE
     output logic is_control_flow_instr_o,
-    input debug_from_trigger_i
+    // Exception request - TRIGGER MODULE
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i
 );
   logic illegal_instr;
   logic illegal_instr_bm;
@@ -300,6 +301,7 @@ module decoder
                     // only if S mode is supported
                     // otherwise decode an illegal instruction
                     if (CVA6Cfg.RVH && v_i) begin
+                      illegal_instr = (instr.itype.rd == '0) ? illegal_instr : 1'b1;
                       virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
                     end else begin
                       illegal_instr    = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
@@ -1530,12 +1532,14 @@ module decoder
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11010: begin
                 instruction_o.op = ariane_pkg::FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11100: begin
                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
@@ -1841,9 +1845,20 @@ module decoder
     interrupt_cause = '0;
     instruction_o.ex = ex_i;
     orig_instr_o = '0;
-    // look if we didn't already get an exception in any previous
-    // stage - we should not overwrite it as we retain order regarding the exception
-    if (~ex_i.valid) begin
+
+    if ((CVA6Cfg.SdtrigMcontrol6ExecAddr || CVA6Cfg.SdtrigMcontrol6ExecData) && (sdtrig_decoder_action_i != '0)) begin
+      // this exception is valid
+      instruction_o.ex.valid = 1'b1;
+      // set cause
+      instruction_o.ex.cause = sdtrig_decoder_action_i;
+      // set tval
+      instruction_o.ex.tval  = (CVA6Cfg.TvalEn) ? instruction_o.pc : '0;
+      // set gva bit
+      if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
+      else instruction_o.ex.gva = 1'b0;
+    end  // look if we didn't already get an exception in any previous
+         // stage - we should not overwrite it as we retain order regarding the exception
+    else if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
       if (CVA6Cfg.CvxifEn || CVA6Cfg.RVF || CVA6Cfg.ZKN)
@@ -1978,7 +1993,7 @@ module decoder
     end
 
     // a debug request has precendece over everything else
-    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i) || (CVA6Cfg.SDTRIG && CVA6Cfg.Mcontrol6 && CVA6Cfg.DebugEn && !debug_mode_i && debug_from_trigger_i)) begin
+    if ((CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i)) begin
       instruction_o.ex.valid = 1'b1;
       instruction_o.ex.cause = riscv::DEBUG_REQUEST;
     end
