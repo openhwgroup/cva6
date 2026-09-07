@@ -1619,7 +1619,7 @@ module csr_regfile
             mstatus_d.mpv = 1'b0;
             mstatus_d.gva = 1'b0;
           end
-          if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
+          if ((mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
@@ -2006,8 +2006,14 @@ module csr_regfile
           // index is calculated using PMPADDR0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+          if (!pmpcfg_q[index].locked) begin
+            if (index < 63) begin
+              if (!(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
+                pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+              end
+            end else begin
+              pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+            end
           end
         end
         default: update_access_exception = 1'b1;
