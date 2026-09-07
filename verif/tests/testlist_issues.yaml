@@ -159,3 +159,11 @@ testlist:
       -nostdlib
       -nostartfiles
       -I../tests/custom/env
+
+  - test: fcvt-rv64-only-rv32
+    <<: *common_test_config
+    description: >
+      Check that RV64-only FCVT L/LU conversions raise
+      illegal-instruction exceptions on RV32.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/fcvt-rv64-only-rv32.S
