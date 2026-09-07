@@ -82,6 +82,11 @@ module macro_decoder #(
       unique case (instr_i[12:10])
         // push or pop
         3'b110: begin
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = PUSH;
@@ -97,6 +102,11 @@ module macro_decoder #(
         end
         // popret or popretz
         3'b111: begin
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = POPRETZ;
@@ -161,12 +171,6 @@ module macro_decoder #(
         4'b1111: reg_numbers = 4'b1100;  // 15
         default: reg_numbers = '0;
       endcase
-
-      // rlist values 0-3 are reserved for Zcmp push/pop-family instructions.
-      if ((instr_i[12:10] == 3'b110 || instr_i[12:10] == 3'b111) && instr_i[7:4] < 4'b0100) begin
-        illegal_instr_o = 1'b1;
-        instr_o_reg     = instr_i;
-      end
 
       if (CVA6Cfg.IS_XLEN32) begin
         unique case (instr_i[7:4])
