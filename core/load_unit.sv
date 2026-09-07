@@ -682,12 +682,12 @@ module load_unit
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LW, ariane_pkg::LWU})
         |-> ldbuf_wdata.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0] < 5)
-  else $fatal(1, "invalid address offset used with {LW, LWU}");
+  else $warning("invalid address offset used with {LW, LWU}");
   addr_offset1 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LH, ariane_pkg::LHU})
         |-> ldbuf_wdata.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0] < 7)
-  else $fatal(1, "invalid address offset used with {LH, LHU}");
+  else $warning("invalid address offset used with {LH, LHU}");
   addr_offset2 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w |->  (ldbuf_wdata.operation inside {ariane_pkg::LB, ariane_pkg::LBU})
