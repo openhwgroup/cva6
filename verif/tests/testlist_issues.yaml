@@ -45,6 +45,12 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: misaligned-branch-rvc-disabled
+    <<: *common_test_config
+    iterations: 1
+    gen_opts: +disable_compressed_instr=1
+    gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc -march=rv32im_zba_zbb_zbs_zbc_zicsr_zifencei -mabi=ilp32"
+    asm_tests: <path_var>/custom/issues/misaligned-branch-rvc-disabled.S
   - test: mret-mpv-rv64
     <<: *common_test_config
     iterations: 1
@@ -80,6 +86,18 @@ testlist:
     <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
+  - test: pmp-misalign-priority-over-access-fault
+    description: >
+      Misaligned hsv.d/hlv.d to a PMP-denied paddr must report
+      address-misaligned (mcause 6/4), not access-fault (5/7).
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/issues/pmp-misalign-priority-over-access-fault.S
+    gcc_opts: >-
+      -static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+      <path_var>/custom/common/crt.S
+      -I<path_var>/custom/env -I<path_var>/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc -march=rv64gh
   - test: vsmode-counterh-cause
     description: >
       RV64+H: a high-half counter CSR access from VS-mode must raise
@@ -141,3 +159,26 @@ testlist:
       offset assertions.
     iterations: 1
     asm_tests: <path_var>/custom/issues/load-misaligned-warning.S
+
+  - test: zcmp-reserved-rlist-rv32
+    description: >
+      Check that reserved Zcmp push/pop rlist values 0 through 3
+      raise illegal-instruction exceptions.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/Zcmp/cm_reserved_rlist_test.S
+    gcc_opts: >-
+      -static
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      -I../tests/custom/env
+
+  - test: fcvt-rv64-only-rv32
+    <<: *common_test_config
+    description: >
+      Check that RV64-only FCVT L/LU conversions raise
+      illegal-instruction exceptions on RV32.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/fcvt-rv64-only-rv32.S

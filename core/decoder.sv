@@ -1532,12 +1532,14 @@ module decoder
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11010: begin
                 instruction_o.op = ariane_pkg::FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11100: begin
                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
