@@ -539,8 +539,8 @@ module cva6_mmu
     misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [CVA6Cfg.VLEN-1:CVA6Cfg.SV-1] are equal to bit [CVA6Cfg.SV]
-    canonical_addr_check = (lsu_req_i && en_ld_st_translation_i &&
-           !((&lsu_vaddr_i[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|lsu_vaddr_i[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0));
+    canonical_addr_check = (lsu_req_q && en_ld_st_translation_i &&
+           !((&lsu_vaddr_q[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b1 || (|lsu_vaddr_q[CVA6Cfg.VLEN-1:CVA6Cfg.SV-1]) == 1'b0));
 
     // Check if the User flag is set, then we may only access it in supervisor mode
     // if SUM is enabled
