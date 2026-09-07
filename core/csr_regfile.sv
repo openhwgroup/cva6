@@ -1230,11 +1230,11 @@ module csr_regfile
             dcsr_d.stopcount = 1'b0;
             dcsr_d.stoptime  = 1'b0;
             // dcsr.prv is WARL over supported privilege modes
-            // legalize any unsupported value to M in every configuration
+            // preserve the previous value on an unsupported write
             if (dcsr_d.prv != riscv::PRIV_LVL_M &&
                 !(CVA6Cfg.RVS && dcsr_d.prv == riscv::PRIV_LVL_S)  &&
                 !(CVA6Cfg.RVU && dcsr_d.prv == riscv::PRIV_LVL_U)) begin
-              dcsr_d.prv = riscv::PRIV_LVL_M;
+              dcsr_d.prv = dcsr_q.prv;
             end
             // dcsr.v is WARL: clear it without H or when DRET returns to M-mode
             if (!CVA6Cfg.RVH || dcsr_d.prv == riscv::PRIV_LVL_M) dcsr_d.v = 1'b0;
