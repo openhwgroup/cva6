@@ -1536,7 +1536,7 @@ module csr_regfile
         end
         riscv::CSR_HTVAL: begin
           if (CVA6Cfg.RVH) begin
-            htval_d = csr_wdata;
+            htval_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, csr_wdata[CVA6Cfg.GPLEN-3:0]};
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1751,7 +1751,8 @@ module csr_regfile
         if (CVA6Cfg.RVH) mtinst_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
         else update_access_exception = 1'b1;
         riscv::CSR_MTVAL2:
-        if (CVA6Cfg.RVH) mtval2_d = csr_wdata;
+        if (CVA6Cfg.RVH)
+          mtval2_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, csr_wdata[CVA6Cfg.GPLEN-3:0]};
         else update_access_exception = 1'b1;
         riscv::CSR_MIP: begin
           if (CVA6Cfg.RVH) begin

@@ -178,3 +178,11 @@ testlist:
       illegal-instruction exceptions on RV32.
     iterations: 1
     asm_tests: <path_var>/custom/issues/fcvt-rv64-only-rv32.S
+
+  - test: htval-mtval2-warl-rv64
+    <<: *common_test_config
+    description: >
+      Check that RV64 Sv39x4 htval and mtval2 retain only the implemented
+      2-bit-shifted guest-physical-address bits.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/htval-mtval2-warl-rv64.S
