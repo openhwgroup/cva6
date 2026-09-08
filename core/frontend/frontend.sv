@@ -265,8 +265,6 @@ module frontend
         end
         // branch prediction
         4'b1000: begin
-          ras_pop  = 1'b0;
-          ras_push = 1'b0;
           // if we have a valid dynamic prediction use it
           if (bht_prediction_shifted[i].valid) begin
             taken_rvi_cf[i] = rvi_branch[i] & bht_prediction_shifted[i].taken;
@@ -279,6 +277,10 @@ module frontend
           end
           if (taken_rvi_cf[i] || taken_rvc_cf[i]) begin
             cf_type[i] = ariane_pkg::Branch;
+            // clear the RAS ops only for a taken branch. a not-taken branch falls
+            // through, so it must keep the upper slot's ras_push/ras_pop
+            ras_pop  = 1'b0;
+            ras_push = 1'b0;
           end
         end
         default: ;
