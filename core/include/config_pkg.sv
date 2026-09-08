@@ -208,8 +208,8 @@ package config_pkg;
     // DcacheInvalidateOnFlush causes dcache to also be invalidated when flushed
     // tradeoff between coherence and efficiency, depending on remaining configuration:
 
-    // DcacheFlushOnFenceI is required for write-back caches - otherwise, 
-    // no way to reliably write instruction memory with store instructions, 
+    // DcacheFlushOnFenceI is required for write-back caches - otherwise,
+    // no way to reliably write instruction memory with store instructions,
     // as data and instruction cache are currently not coherent
     // DcacheFlushOnFence is required for write-back caches to ensure coherency
     // with other harts or DMA devices --> a fence forces all stores to commit to memory

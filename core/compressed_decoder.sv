@@ -858,7 +858,7 @@ module compressed_decoder #(
           end
 
           riscv::OpcodeC2Fsdsp: begin
-            if (CVA6Cfg.FpPresent) begin
+            if (CVA6Cfg.RVD && CVA6Cfg.RVC) begin
               // c.fsdsp -> fsd rs2, imm(x2)
               instr_o = {
                 3'b0,
