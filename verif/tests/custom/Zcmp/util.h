@@ -7,8 +7,6 @@ extern void setStats(int enable);
 
 #include <stdint.h>
 
-#define static_assert(cond) switch(0) { case 0: case !!(long)(cond): ; }
-
 static int verify(int n, const volatile int* test, const int* verify)
 {
   int i;
