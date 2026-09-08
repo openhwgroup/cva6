@@ -1,5 +1,60 @@
 [
   {
+    "id": 34279934335,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 410,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34279934335",
+    "head_branch": "fix-ras-branch-arm",
+    "head_sha": "fbc27a27",
+    "event": "pull_request",
+    "created_at": "2026-09-08T21:19:24Z",
+    "updated_at": "2026-09-08T21:27:31Z",
+    "run_started_at": "2026-09-08T21:19:24Z",
+    "duration_seconds": 487,
+    "total_jobs": 3,
+    "passed_jobs": 3,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": [
+      {
+        "name": "RV32 Tier1 cv32a65x / smoke-tests-cv32a65x",
+        "conclusion": "success",
+        "started_at": "2026-09-08T21:20:49Z",
+        "completed_at": "2026-09-08T21:23:09Z",
+        "duration_seconds": 140,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34279934335/job/102242419474",
+        "arch": "rv32",
+        "config": "cv32a65x",
+        "testcase": "smoke-tests-cv32a65x"
+      },
+      {
+        "name": "RV64 Tier1 cv64a6_imafdc_sv39_hpdcache_wb / cv64a6_imafdc_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-08T21:20:49Z",
+        "completed_at": "2026-09-08T21:27:31Z",
+        "duration_seconds": 402,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34279934335/job/102242419476",
+        "arch": "rv64",
+        "config": "cv64a6_imafdc_sv39_hpdcache_wb",
+        "testcase": "cv64a6_imafdc_tests"
+      },
+      {
+        "name": "RV32 Tier1 cv32a60x / cv32a6_tests",
+        "conclusion": "success",
+        "started_at": "2026-09-08T21:20:50Z",
+        "completed_at": "2026-09-08T21:25:45Z",
+        "duration_seconds": 295,
+        "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34279934335/job/102242419486",
+        "arch": "rv32",
+        "config": "cv32a60x",
+        "testcase": "cv32a6_tests"
+      }
+    ]
+  },
+  {
     "id": 34277306307,
     "source": "github-actions",
     "simulator": "verilator",
@@ -2387,26 +2442,5 @@
         "testcase": "cv64a6_imafdc_tests"
       }
     ]
-  },
-  {
-    "id": 34042501967,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 360,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwgroup/cva6/actions/runs/34042501967",
-    "head_branch": "fix/3351-elf-segment-loading-v3",
-    "head_sha": "99b88849",
-    "event": "pull_request",
-    "created_at": "2026-09-06T15:30:11Z",
-    "updated_at": "2026-09-06T15:30:11Z",
-    "run_started_at": "2026-09-06T15:30:11Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
