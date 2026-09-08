@@ -279,7 +279,7 @@ module frontend
             cf_type[i] = ariane_pkg::Branch;
             // clear the RAS ops only for a taken branch. a not-taken branch falls
             // through, so it must keep the upper slot's ras_push/ras_pop
-            ras_pop  = 1'b0;
+            ras_pop = 1'b0;
             ras_push = 1'b0;
           end
         end
