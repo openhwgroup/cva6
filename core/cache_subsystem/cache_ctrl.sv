@@ -423,7 +423,8 @@ module cache_ctrl
             if (gnt_i) begin
               state_d = WAIT_TAG;
               mem_req_d.bypass = 1'b0;
-              req_port_o.data_gnt = 1'b1;
+              // only for a read
+              if (!req_port_i.data_we) req_port_o.data_gnt = 1'b1;
             end
           end else begin
             state_d = IDLE;
