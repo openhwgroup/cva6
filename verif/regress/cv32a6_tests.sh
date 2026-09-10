@@ -81,6 +81,20 @@ if [ "$DV_TARGET" = "cv32a60x" ]; then
   [[ $? > 0 ]] && ((errors++))
 fi
 
+# Regression for #3465: reserved Zcmp rlist values must trap as illegal.
+if [ "$DV_TARGET" = "cv32a60x" ]; then
+  python3 cva6.py \
+    --testlist=../tests/testlist_issues.yaml \
+    --test zcmp-reserved-rlist-rv32 \
+    --iss_yaml cva6.yaml \
+    --target hwconfig \
+    --hwconfig_opts="cv32a60x *RVZCMP=1" \
+    --iss=$DV_SIMULATORS \
+    --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld" \
+    $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+fi
+
 make -C ../.. clean
 make clean_all
 
