@@ -41,3 +41,7 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/custom/hello_world/custom_test_template.S
 
+  - test: false_4k_alias
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/lsu/false_4k_alias.S
