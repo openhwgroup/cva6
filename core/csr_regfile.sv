@@ -1229,6 +1229,20 @@ module csr_regfile
             dcsr_d.nmip      = 1'b0;
             dcsr_d.stopcount = 1'b0;
             dcsr_d.stoptime  = 1'b0;
+            // dcsr.prv is WARL over supported privilege modes
+            // preserve the previous value on an unsupported write
+            if (dcsr_d.prv != riscv::PRIV_LVL_M &&
+                !(CVA6Cfg.RVS && dcsr_d.prv == riscv::PRIV_LVL_S)  &&
+                !(CVA6Cfg.RVU && dcsr_d.prv == riscv::PRIV_LVL_U)) begin
+              dcsr_d.prv = dcsr_q.prv;
+            end
+            // dcsr.v is WARL: clear it without H or when DRET returns to M-mode
+            if (!CVA6Cfg.RVH || dcsr_d.prv == riscv::PRIV_LVL_M) dcsr_d.v = 1'b0;
+            // dcsr.cause is written by hardware only, preserve on a software write
+            dcsr_d.cause = dcsr_q.cause;
+            // reserved fields are hardwired to zero
+            dcsr_d.zero1 = 1'b0;
+            dcsr_d.zero2 = '0;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1619,7 +1633,7 @@ module csr_regfile
             mstatus_d.mpv = 1'b0;
             mstatus_d.gva = 1'b0;
           end
-          if ((!CVA6Cfg.RVH & mstatus_d.mpp == riscv::PRIV_LVL_HS) |
+          if ((mstatus_d.mpp == riscv::PRIV_LVL_HS) |
               (!CVA6Cfg.RVS & mstatus_d.mpp == riscv::PRIV_LVL_S) |
               (!CVA6Cfg.RVU & mstatus_d.mpp == riscv::PRIV_LVL_U)) begin
             mstatus_d.mpp = mstatus_q.mpp;
@@ -2006,8 +2020,14 @@ module csr_regfile
           // index is calculated using PMPADDR0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
-          if (!pmpcfg_q[index].locked && !(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
-            pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+          if (!pmpcfg_q[index].locked) begin
+            if (index < 63) begin
+              if (!(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
+                pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+              end
+            end else begin
+              pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+            end
           end
         end
         default: update_access_exception = 1'b1;
@@ -2127,12 +2147,12 @@ module csr_regfile
           // set epc
           vsepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
           // set vstval
-          vstval_d        = (ariane_pkg::ZERO_TVAL
+          vstval_d        = ((ariane_pkg::ZERO_TVAL
                              && (ex_i.cause inside {
                              riscv::ILLEGAL_INSTR,
                              riscv::BREAKPOINT,
                              riscv::ENV_CALL_UMODE
-                             } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+                             })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
         end else begin
           // update sstatus
           mstatus_d.sie = 1'b0;
@@ -2144,14 +2164,14 @@ module csr_regfile
           // set epc
           sepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
           // set mtval or stval
-          stval_d        = (ariane_pkg::ZERO_TVAL
+          stval_d        = ((ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
                                     riscv::ILLEGAL_INSTR,
                                     riscv::BREAKPOINT,
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
+                                  })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
           if (CVA6Cfg.RVH) begin
             htinst_d       = (ariane_pkg::ZERO_TVAL
                               && (ex_i.cause inside {
@@ -2186,14 +2206,14 @@ module csr_regfile
           if (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) begin
             mtval_d = sdtrig_etrigger_context_mtval;
           end else begin
-            mtval_d        = (ariane_pkg::ZERO_TVAL
+            mtval_d        = ((ariane_pkg::ZERO_TVAL
                                       && (ex_i.cause inside {
                                         riscv::ILLEGAL_INSTR,
                                         riscv::BREAKPOINT,
                                         riscv::ENV_CALL_UMODE,
                                         riscv::ENV_CALL_SMODE,
                                         riscv::ENV_CALL_MMODE
-                                      } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval; //TODO changed ex_i.cause[CVA6Cfg.GPLEN-1] to XLEN because spyglass triggered and i fail to understand why
+                                      })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
           end
         end
 
@@ -2441,7 +2461,7 @@ module csr_regfile
         priv_lvl_d = riscv::priv_lvl_t'(dcsr_q.prv);
         if (CVA6Cfg.RVH) begin
           // restore the previous virtualization mode
-          v_d = dcsr_q.v;
+          v_d = (dcsr_q.prv == riscv::PRIV_LVL_M) ? 1'b0 : dcsr_q.v;
         end
         // actually return from debug mode
         debug_mode_d = 1'b0;
