@@ -2408,12 +2408,12 @@ module csr_regfile
       end
       // set mpie to 1
       mstatus_d.mpie = 1'b1;
+      if (mstatus_q.mpp != riscv::PRIV_LVL_M) mstatus_d.mprv = 1'b0;
       if (CVA6Cfg.RVH) begin
         // MPV is ignored when returning to M-mode.
         v_d = (mstatus_q.mpp == riscv::PRIV_LVL_M) ? 1'b0 : mstatus_q.mpv;
         //set mstatus mpv to false
         mstatus_d.mpv = 1'b0;
-        if (mstatus_q.mpp != riscv::PRIV_LVL_M) mstatus_d.mprv = 1'b0;
       end
     end
 
@@ -2428,12 +2428,12 @@ module csr_regfile
       mstatus_d.spp  = 1'b0;
       // set spie to 1
       mstatus_d.spie = 1'b1;
+      mstatus_d.mprv = 1'b0;
       if (CVA6Cfg.RVH) begin
         // set virtualization mode
-        v_d            = hstatus_q.spv;
+        v_d           = hstatus_q.spv;
         //set hstatus spv to false
-        hstatus_d.spv  = 1'b0;
-        mstatus_d.mprv = 1'b0;
+        hstatus_d.spv = 1'b0;
       end
     end
 
