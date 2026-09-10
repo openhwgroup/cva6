@@ -207,12 +207,13 @@ module rvfi_tracer #(
 
   // Trace any custom signals
   // Define signals to be traced by adding them into debug and name arrays
-  string name[0:10];
-  logic[63:0] debug[0:10], debug_previous[0:10];
+  localparam int unsigned DEBUG_SIZE = 11;
+  string name [0:DEBUG_SIZE-1];
+  logic [63:0] debug [0:DEBUG_SIZE-1], debug_previous [0:DEBUG_SIZE-1];
 
   always_ff @(posedge clk_i) begin
     if (cycles > DEBUG_START && cycles < DEBUG_STOP)
-      for (int index = 0; index < 100; index++)
+      for (int index = 0; index < DEBUG_SIZE; index++)
         if (debug_previous[index] != debug[index])
           $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
     debug_previous <= debug;

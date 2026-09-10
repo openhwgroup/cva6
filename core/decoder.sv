@@ -301,6 +301,7 @@ module decoder
                     // only if S mode is supported
                     // otherwise decode an illegal instruction
                     if (CVA6Cfg.RVH && v_i) begin
+                      illegal_instr = (instr.itype.rd == '0) ? illegal_instr : 1'b1;
                       virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
                     end else begin
                       illegal_instr    = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
@@ -487,40 +488,55 @@ module decoder
                 endcase
 
                 if (instruction_o.op == ariane_pkg::CBO_INVAL) begin
-                  // permissions checks
-                  if((priv_lvl_i != riscv::PRIV_LVL_M && mcbie_i == riscv::CBIE_ILLEGAL) ||
-                    (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U && scbie_i == riscv::CBIE_ILLEGAL)) begin
-                    // disabled in M-mode / S-mode
+                  // CBO.INVAL permission checks
+                  if ((priv_lvl_i != riscv::PRIV_LVL_M &&
+                       mcbie_i == riscv::CBIE_ILLEGAL) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U &&
+                       scbie_i == riscv::CBIE_ILLEGAL)) begin
                     illegal_instr = 1'b1;
-                  end
-                  else if((priv_lvl_i == riscv::PRIV_LVL_HS && hcbie_i == riscv::CBIE_ILLEGAL) ||
-                    (priv_lvl_i == riscv::PRIV_LVL_U && hu_i) ) begin
-                    // disabled in HS-mode / H-mode
+                  end else if (
+                      CVA6Cfg.RVH && v_i &&
+                      ((priv_lvl_i == riscv::PRIV_LVL_S &&
+                        hcbie_i == riscv::CBIE_ILLEGAL) ||
+                       (priv_lvl_i == riscv::PRIV_LVL_U &&
+                        (hcbie_i == riscv::CBIE_ILLEGAL ||
+                         scbie_i == riscv::CBIE_ILLEGAL)))) begin
                     virtual_illegal_instr = 1'b1;
-                  end else begin
-                    if((priv_lvl_i != riscv::PRIV_LVL_M && mcbie_i == riscv::CBIE_FLUSH) || 
-                      (priv_lvl_i == riscv::PRIV_LVL_U && scbie_i == riscv::CBIE_FLUSH) ||
-                      (priv_lvl_i == riscv::PRIV_LVL_HS && hcbie_i == riscv::CBIE_FLUSH) ||
-                      (priv_lvl_i == riscv::PRIV_LVL_U && hu_i && (hcbie_i == riscv::CBIE_FLUSH || scbie_i == riscv::CBIE_FLUSH))) begin
-                      // have to flush instead of invalidate
-                      instruction_o.op = ariane_pkg::CBO_FLUSH;
-                    end
+                  end else if (
+                      (priv_lvl_i != riscv::PRIV_LVL_M &&
+                       mcbie_i == riscv::CBIE_FLUSH) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U &&
+                       scbie_i == riscv::CBIE_FLUSH) ||
+                      (CVA6Cfg.RVH && v_i &&
+                       ((priv_lvl_i == riscv::PRIV_LVL_S &&
+                         hcbie_i == riscv::CBIE_FLUSH) ||
+                        (priv_lvl_i == riscv::PRIV_LVL_U &&
+                         (hcbie_i == riscv::CBIE_FLUSH ||
+                          scbie_i == riscv::CBIE_FLUSH))))) begin
+                    // Execute CBO.INVAL as a flush.
+                    instruction_o.op = ariane_pkg::CBO_FLUSH;
                   end
-                  // otherwise: normal invalidate
                 end
 
-                if (instruction_o.op inside {ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH}) begin
-                  if((priv_lvl_i != riscv::PRIV_LVL_M && !mcbcfe_i) ||
-                    (priv_lvl_i == riscv::PRIV_LVL_U && !scbcfe_i)) begin
-                    // disabled in m-mode / s-mode
+                // CBCFE controls genuine CBO.CLEAN/CBO.FLUSH instructions.
+                // An original CBO.INVAL remains governed by CBIE even when
+                // CBIE makes the operation perform a flush.
+                if ((instruction_o.op inside {
+                      ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH
+                    }) && instr.itype.imm != 12'b000000000000) begin
+                  if ((priv_lvl_i != riscv::PRIV_LVL_M && !mcbcfe_i) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U && !scbcfe_i)) begin
                     illegal_instr = 1'b1;
-                  end
-                  else if((priv_lvl_i == riscv::PRIV_LVL_HS && !hcbcfe_i) ||
-                          (priv_lvl_i == riscv::PRIV_LVL_U && hu_i && !(hcbcfe_i && scbcfe_i))) begin
-                    // disabled in HS-mode / H-mode
+                  end else if (
+                      CVA6Cfg.RVH && v_i &&
+                      ((priv_lvl_i == riscv::PRIV_LVL_S && !hcbcfe_i) ||
+                       (priv_lvl_i == riscv::PRIV_LVL_U &&
+                        !(hcbcfe_i && scbcfe_i)))) begin
                     virtual_illegal_instr = 1'b1;
                   end
-                  // otherwise: normal flush / clean
                 end
               end else begin
                 illegal_instr = 1'b1;
@@ -1169,7 +1185,7 @@ module decoder
                   instruction_o.op = ariane_pkg::BSETI;
                 else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0010100)
                   instruction_o.op = ariane_pkg::BSETI;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::ZIP;
                 else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001) begin
                   instruction_o.op = ariane_pkg::AES64KS1I;
@@ -1219,7 +1235,7 @@ module decoder
                   instruction_o.op = ariane_pkg::RORI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b011010000111)
                   instruction_o.op = ariane_pkg::BREV8;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::UNZIP;
                 else illegal_instr_bm = 1'b1;
               end
@@ -1531,12 +1547,14 @@ module decoder
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11010: begin
                 instruction_o.op = ariane_pkg::FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11100: begin
                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
