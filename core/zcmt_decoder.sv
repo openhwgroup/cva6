@@ -97,8 +97,9 @@ module zcmt_decoder #(
       end
       TABLE_JUMP: begin
         if (req_port_i.data_rvalid) begin
-          // save the PC relative Xlen table jump address 
-          jump_address_o = $unsigned($signed(req_port_i.data_rdata) - $signed(pc_i));
+          // Clear bit 0 of the JVT target before converting it to a PC-relative offset.
+          jump_address_o =
+              $unsigned($signed({req_port_i.data_rdata[CVA6Cfg.XLEN-1:1], 1'b0}) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin  // jal pc_offset, x0 for no return stack
             instr_o = {
               20'h0, 5'h0, riscv::OpcodeJal
