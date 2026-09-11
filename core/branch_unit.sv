@@ -100,7 +100,7 @@ module branch_unit #(
       end
       if (fu_data_i.operation == ariane_pkg::JALR
           // check if the address of the jump register is correct and that we actually predicted
-          && (branch_predict_i.cf == ariane_pkg::NoCF || target_address != branch_predict_i.predict_address)) begin
+          && (!branch_predict_i.valid || target_address != branch_predict_i.predict_address)) begin
         resolved_branch_o.is_mispredict = 1'b1;
         // update BTB only if this wasn't a return
         if (branch_predict_i.cf != ariane_pkg::Return)
