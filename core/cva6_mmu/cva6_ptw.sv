@@ -474,7 +474,7 @@ module cva6_ptw
                     state_d = WAIT_GRANT;
                     ptw_stage_d = S_STAGE;
                     ptw_lvl_n[0] = ptw_lvl_q[HYP_EXT];
-                    pptr = {pte.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
+                    pptr = {pte.ppn, gptw_pptr_q[11:0]};
                     if (ptw_lvl_q[0] == 1) pptr[20:0] = gptw_pptr_q[20:0];
                     if (ptw_lvl_q[0] == 0) pptr[29:0] = gptw_pptr_q[29:0];
                     ptw_pptr_n = pptr;
