@@ -186,3 +186,11 @@ testlist:
       2-bit-shifted guest-physical-address bits.
     iterations: 1
     asm_tests: <path_var>/custom/issues/htval-mtval2-warl-rv64.S
+  - test: xret-mprv-clear-rv64
+    <<: *common_test_config
+    description: >
+      Check xRET mstatus.MPRV handling in an RVH-disabled configuration,
+      including MRET preservation when returning to M-mode and clearing
+      when MRET or SRET returns below M-mode.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S
