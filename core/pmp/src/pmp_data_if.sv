@@ -127,7 +127,7 @@ module pmp_data_if
     if (lsu_is_store_i) begin
       pmp_access_type = riscv::ACCESS_WRITE;
     end else if (lsu_hlvx_inst_i) begin
-      pmp_access_type = riscv::ACCESS_READ | riscv::ACCESS_EXEC;
+      pmp_access_type = riscv::pmp_access_t'(riscv::ACCESS_READ | riscv::ACCESS_EXEC);
     end else begin
       pmp_access_type = riscv::ACCESS_READ;
     end
