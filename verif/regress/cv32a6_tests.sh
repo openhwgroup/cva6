@@ -46,6 +46,10 @@ cd verif/sim/
 
 errors=0
 
+# Regression for #3535: Zcmp macro expansion must wait for issue acknowledgement.
+make -C ../tb/macro_decoder_unit
+[[ $? > 0 ]] && ((errors++))
+
 # 32-bit configurations without MMU
 riscv_tests_list=(
   rv32ui-p-add
