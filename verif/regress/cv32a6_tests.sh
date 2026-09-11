@@ -46,6 +46,10 @@ cd verif/sim/
 
 errors=0
 
+# Regression for #3535: Zcmp macro expansion must wait for issue acknowledgement.
+make -C ../tb/macro_decoder_unit
+[[ $? > 0 ]] && ((errors++))
+
 # 32-bit configurations without MMU
 riscv_tests_list=(
   rv32ui-p-add
@@ -62,6 +66,38 @@ done
 python3 cva6.py --target ${DV_TARGET} --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --c_tests ../tests/custom/hello_world/hello_world.c --linker=../../config/gen_from_riscv_config/linker/link.ld\
   --gcc_opts="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -lgcc -I../tests/custom/env -I../tests/custom/common" $DV_OPTS
 [[ $? > 0 ]] && ((errors++))
+
+# Regression for #3464: cm.mva01s permits equal compact-register operands.
+if [ "$DV_TARGET" = "cv32a60x" ]; then
+  # Rebuild for the generated hwconfig because the preceding tests use
+  # the default cv32a60x configuration, where RVZCMP is disabled.
+  make -C ../.. clean
+
+  env -u SPIKE_TANDEM python3 cva6.py \
+    --testlist=../tests/testlist_issues.yaml \
+    --test zcmp-mva01s-equal-regs-rv32 \
+    --iss_yaml cva6.yaml \
+    --target hwconfig \
+    --hwconfig_opts="cv32a60x *RVZCMP=1" \
+    --iss=veri-testharness \
+    --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld" \
+    $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+fi
+
+# Regression for #3465: reserved Zcmp rlist values must trap as illegal.
+if [ "$DV_TARGET" = "cv32a60x" ]; then
+  python3 cva6.py \
+    --testlist=../tests/testlist_issues.yaml \
+    --test zcmp-reserved-rlist-rv32 \
+    --iss_yaml cva6.yaml \
+    --target hwconfig \
+    --hwconfig_opts="cv32a60x *RVZCMP=1" \
+    --iss=$DV_SIMULATORS \
+    --linker="../../config/gen_from_riscv_config/cv32a60x/linker/link.ld" \
+    $DV_OPTS
+  [[ $? > 0 ]] && ((errors++))
+fi
 
 make -C ../.. clean
 make clean_all
