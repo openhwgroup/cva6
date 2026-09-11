@@ -522,6 +522,8 @@ module cva6_ptw
                 end
               end
 
+              if (CVA6Cfg.SvnapotEn && pte.n && !is_napot_64k) shared_tlb_update_valid = 1'b0;
+
               // if there is a misaligned page, propagate error
               if (|misaligned_page) begin
                 state_d = PROPAGATE_ERROR;
@@ -534,6 +536,7 @@ module cva6_ptw
                 if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
+                  shared_tlb_update_valid = 1'b0;
                 end
               end
               // this is a pointer to the next TLB level
@@ -583,9 +586,9 @@ module cva6_ptw
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
-                if (CVA6Cfg.RVH && (pte.a || pte.d || pte.u)) begin
+                if (pte.a || pte.d || pte.u) begin
                   state_d = PROPAGATE_ERROR;
-                  ptw_stage_d = ptw_stage_q;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
 
               end
