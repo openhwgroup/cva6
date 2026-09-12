@@ -72,6 +72,9 @@ jobs:
           - testcase: dv-riscv-arch-test
             config: cv64a6_imafdc_sv39_hpdcache_wb
             simulator: veri-testharness
+          - testcase: pmp_lsu_transaction
+            config: cv64a6_imafdc_sv39
+            simulator: veri-testharness
     needs:
       build-riscv-tests
     steps:

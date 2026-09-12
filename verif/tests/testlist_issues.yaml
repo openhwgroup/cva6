@@ -34,7 +34,44 @@ common_test_config: &common_test_config
   path_var: TESTS_PATH
   gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc"
 
+pmp_test_config: &pmp_test_config
+  <<: *common_test_config
+  iterations: 1
+  gcc_opts: >-
+    -static
+    -misa-spec=2.2
+    -mcmodel=medany
+    -fvisibility=hidden
+    -nostdlib
+    -nostartfiles
+    ../tests/custom/common/syscalls.c
+    ../tests/custom/common/crt.S
+    -I../tests/custom/env
+    -I../tests/custom/common
+    -lgcc
+
 testlist:
+  - test: pmp-lsu-transaction-rv64
+    description: >
+      Check that PMP uses the access type and virtual address belonging to the
+      MMU response on DTLB-miss and DTLB-hit store transactions.
+    <<: *pmp_test_config
+    asm_tests: <path_var>/custom/pmp/lsu_pipeline_store_test.S
+
+  - test: pmp-lsu-transaction-no-mmu-rv64
+    description: >
+      Check that the no-MMU LSU response keeps PMP address, access type, and
+      valid metadata aligned.
+    <<: *pmp_test_config
+    asm_tests: <path_var>/custom/pmp/lsu_pipeline_store_no_mmu_test.S
+
+  - test: pmp-amo-access-fault-rv64
+    description: >
+      Check that a PMP-denied AMO reports a store/AMO access fault with the
+      matching tval and does not update its destination register.
+    <<: *pmp_test_config
+    asm_tests: <path_var>/custom/pmp/amo_access_fault_test.S
+
   - test: compressed-fpreg-commits-rv64
     <<: *common_test_config
     iterations: 1
