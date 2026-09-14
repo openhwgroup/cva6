@@ -59,3 +59,11 @@ make -C ../.. clean
 
 run_test pmp-lsu-transaction-no-mmu-rv64 hwconfig \
   --hwconfig_opts="${no_mmu_options}"
+
+# HLVX carries its execute-permission requirement with the response too.
+make -C ../.. clean
+run_test pmp-hlvx-access-fault-rv64 cv64a6_imafdch_sv39
+
+make -C ../.. clean
+run_test pmp-hlvx-access-fault-rv64 hwconfig \
+  --hwconfig_opts="cv64a6_imafdch_sv39 +CVA6ConfigDcacheFlushOnFence=0 +CVA6ConfigDcacheFlushOnFenceI=0 +CVA6ConfigDcacheInvalidateOnFlush=0 *MmuPresent=0"

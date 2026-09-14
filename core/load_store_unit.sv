@@ -229,6 +229,7 @@ module load_store_unit
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, cva6_mmu_paddr, acc_mmu_paddr, lsu_paddr;
   logic [CVA6Cfg.VLEN-1:0] pmp_vaddr_q;
   logic                    pmp_is_store_q;
+  logic                    pmp_hlvx_inst_q;
   logic [            31:0] mmu_tinst;
   logic                    mmu_hs_ld_st_inst;
   logic                    mmu_hlvx_inst;
@@ -301,6 +302,7 @@ module load_store_unit
         .lsu_paddr_o    (lsu_paddr),
         .lsu_vaddr_o    (pmp_vaddr_q),
         .lsu_is_store_o (pmp_is_store_q),
+        .lsu_hlvx_inst_o(pmp_hlvx_inst_q),
         .lsu_exception_o(pmp_exception),
 
         .priv_lvl_i      (priv_lvl_i),
@@ -356,6 +358,7 @@ module load_store_unit
         lsu_paddr <= '0;
         pmp_vaddr_q <= '0;
         pmp_is_store_q <= 1'b0;
+        pmp_hlvx_inst_q <= 1'b0;
         pmp_exception <= '0;
         pmp_translation_valid <= 1'b0;
       end else begin
@@ -366,6 +369,7 @@ module load_store_unit
         end
         pmp_vaddr_q <= mmu_vaddr;
         pmp_is_store_q <= st_translation_req;
+        pmp_hlvx_inst_q <= mmu_hlvx_inst;
         pmp_exception <= misaligned_exception;
         pmp_translation_valid <= translation_req;
       end
@@ -409,7 +413,7 @@ module load_store_unit
       .lsu_vaddr_i         (pmp_vaddr_q),
       .lsu_exception_i     (pmp_exception),
       .lsu_is_store_i      (pmp_is_store_q),
-      .lsu_hlvx_inst_i     (mmu_hlvx_inst),
+      .lsu_hlvx_inst_i     (pmp_hlvx_inst_q),
       .lsu_valid_o         (translation_valid),
       .lsu_paddr_o         (mmu_paddr),
       .lsu_exception_o     (mmu_exception),

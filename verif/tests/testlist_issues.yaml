@@ -72,6 +72,13 @@ testlist:
     <<: *pmp_test_config
     asm_tests: <path_var>/custom/pmp/amo_access_fault_test.S
 
+  - test: pmp-hlvx-access-fault-rv64
+    description: >
+      Check that HLVX execute permission and fault metadata belong to the
+      response transaction when ordinary loads and HLVX requests are adjacent.
+    <<: *pmp_test_config
+    asm_tests: <path_var>/custom/pmp/hlvx_access_fault_test.S
+
   - test: compressed-fpreg-commits-rv64
     <<: *common_test_config
     iterations: 1

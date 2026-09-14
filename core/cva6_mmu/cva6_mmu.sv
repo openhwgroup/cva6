@@ -66,6 +66,7 @@ module cva6_mmu
     // and lsu_exception_o.
     output logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_o,
     output logic lsu_is_store_o,
+    output logic lsu_hlvx_inst_o,
     output exception_t lsu_exception_o,  // address translation threw an exception
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
@@ -523,6 +524,7 @@ module cva6_mmu
 
   assign lsu_vaddr_o = lsu_vaddr_q;
   assign lsu_is_store_o = lsu_is_store_q;
+  assign lsu_hlvx_inst_o = CVA6Cfg.RVH ? hlvx_inst_q : 1'b0;
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
