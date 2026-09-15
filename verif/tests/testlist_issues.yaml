@@ -238,3 +238,21 @@ testlist:
       when MRET or SRET returns below M-mode.
     iterations: 1
     asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S
+
+  - test: medeleg-s-ecall-rv64
+    description: >
+      Check that medeleg[9] retains writes and delegates an S-mode
+      ECALL to the S-mode trap handler.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/issues/medeleg-s-ecall-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      <path_var>/custom/common/crt.S
+      -I<path_var>/custom/env
+      -I<path_var>/custom/common
