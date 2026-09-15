@@ -187,3 +187,23 @@ testlist:
       when MRET or SRET returns below M-mode.
     iterations: 1
     asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S
+
+  - test: fcvt-same-format-rv64
+    description: >
+      Check that reserved same-format scalar FCVT encodings raise
+      illegal-instruction exceptions.
+    iterations: 1
+    path_var: TESTS_PATH
+    asm_tests: <path_var>/custom/issues/fcvt-same-format-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      <path_var>/custom/common/crt.S
+      -I<path_var>/custom/env
+      -I<path_var>/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld
+      -lgcc
