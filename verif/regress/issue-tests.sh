@@ -86,4 +86,46 @@ if [ "$zcmt_jalt_lsb_status" -ne 0 ]; then
   return "$zcmt_jalt_lsb_status" 2>/dev/null || exit "$zcmt_jalt_lsb_status"
 fi
 
+# Regression for #3463: reserved HLV/HLVX rs2 encodings and
+# HSV encodings with non-zero rd must raise illegal instruction.
+make -C ../.. clean
+make clean_all
+
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test decoder-hlv-hsv-fixed-fields-rv64 \
+  --iss_yaml cva6.yaml \
+  --target cv64a6_imafdch_sv39 \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/linker/link.ld" \
+  --issrun_opts=+debug_disable=1
+
+hlv_hsv_fixed_fields_status=$?
+if [ "$hlv_hsv_fixed_fields_status" -ne 0 ]; then
+  echo "Error: HLV/HLVX/HSV fixed-field decoder regression failed"
+  cd ../..
+  return "$hlv_hsv_fixed_fields_status" 2>/dev/null || exit "$hlv_hsv_fixed_fields_status"
+fi
+
+# Regression for #3463: CBO.INVAL/CLEAN/FLUSH encodings with
+# non-zero rd must raise illegal instruction.
+make -C ../.. clean
+make clean_all
+
+python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test decoder-cbo-rd-zero-rv64 \
+  --iss_yaml cva6.yaml \
+  --target cv64a6_imafdc_sv39_hpdcache \
+  --iss=veri-testharness \
+  --linker="../../config/gen_from_riscv_config/linker/link.ld" \
+  --issrun_opts=+debug_disable=1
+
+cbo_rd_zero_status=$?
+if [ "$cbo_rd_zero_status" -ne 0 ]; then
+  echo "Error: CBO fixed-rd decoder regression failed"
+  cd ../..
+  return "$cbo_rd_zero_status" 2>/dev/null || exit "$cbo_rd_zero_status"
+fi
+
 cd -
