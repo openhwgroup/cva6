@@ -50,6 +50,7 @@ stages:
   - benchmark
   - testlist
   - synth
+  - fpga
   - report
 
 .global_matrix_target:
@@ -676,6 +677,55 @@ testlist_run_sim_rtl:
     paths:
       - artifacts/reports/report_*.yml
       - build/$MY_TARGET/simulation/sim_rtl/*
+
+# ============================================================
+# FPGA BOOT
+# ============================================================
+
+fpga-synth:
+  stage: fpga
+  tags: [$TAGS_RUNNER_FPGA]
+  timeout : 2 hours
+  parallel:
+    matrix:
+      - TARGET: ['cv32a6_imac_sv32']
+  variables:
+    DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Test FPGA Build flow"
+  script:
+    - source $VIVADO_SETUP
+    - source ./verif/sim/setup-env.sh
+    - mkdir -p artifacts/FPGA/logs/$TARGET
+    - make target=$TARGET fpga &> artifacts/FPGA/logs/$TARGET/fpga_synth.log
+    - mkdir -p artifacts/FPGA/bitstream
+    - mv corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/FPGA/bitstream/ariane_xilinx_$TARGET.bit
+    - python3 .gitlab-ci/scripts/report_fpga.py corev_apu/fpga/reports/ariane.utilization.rpt
+  artifacts:
+    when: always
+    paths:
+      - artifacts/reports/report_*.yml
+
+fpga-boot:
+  stage: fpga
+  tags: [$TAGS_RUNNER_FPGA]
+  timeout : 1 hours
+  parallel:
+    matrix:
+      - TARGET: ['cv32a6_imac_sv32']
+  variables:
+    DASHBOARD_JOB_TITLE: "FPGA Linux Boot $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Test FPGA Linux Boot"
+  needs:
+    - job: fpga-synth
+  resource_group: physical_fpga_lock
+  script:
+    - source $VIVADO_SETUP
+    - source ./verif/sim/setup-env.sh
+    - cd corev_apu/fpga/scripts
+    - source check_fpga_boot.sh $CI_PROJECT_DIR/artifacts/FPGA/bitstream/ariane_xilinx_$TARGET.bit
+    - cd -
+    - python3 .gitlab-ci/scripts/report_fpga_boot.py corev_apu/fpga/scripts/fpga_boot.rpt
+
 
 # ============================================================
 # DASHBOARD GENERATION

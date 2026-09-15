@@ -9,7 +9,8 @@
 # Original Author: Guillaume CHAUVON (guillaume.chauvon@thalesgroup.com)
 
 
-BITSTREAM=../work-fpga/ariane_xilinx.bit
+BITSTREAM="${1:-../work-fpga/ariane_xilinx.bit}"
+export BITSTREAM
 
 if ! [ -n "$VIVADO_CMD" ]; then
   echo "Error: VIVADO_CMD variable undefined.
