@@ -719,6 +719,8 @@ fpga-boot:
     - job: fpga-synth
   resource_group: physical_fpga_lock
   script:
+    - source ./verif/sim/setup-env.sh
+    - source $VIVADO2022_SETUP
     - cd corev_apu/fpga/scripts
     - source check_fpga_boot.sh $CI_PROJECT_DIR/artifacts/FPGA/bitstream/ariane_xilinx_$TARGET.bit
     - cd -
