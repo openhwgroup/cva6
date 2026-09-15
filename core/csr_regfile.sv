@@ -2222,19 +2222,19 @@ module csr_regfile
         if (CVA6Cfg.RVH) begin
           // save previous virtualization mode
           mstatus_d.mpv = v_q;
-          mtinst_d       = (ariane_pkg::ZERO_TVAL
-                            && (ex_i.cause inside {
-                              riscv::INSTR_ADDR_MISALIGNED,
-                              riscv::INSTR_ACCESS_FAULT,
-                              riscv::ILLEGAL_INSTR,
-                              riscv::BREAKPOINT,
-                              riscv::ENV_CALL_UMODE,
-                              riscv::ENV_CALL_SMODE,
-                              riscv::ENV_CALL_MMODE,
-                              riscv::INSTR_PAGE_FAULT,
-                              riscv::INSTR_GUEST_PAGE_FAULT,
-                              riscv::VIRTUAL_INSTRUCTION
-                            } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
+          // Preserve instruction guest-page-fault tinst; the MMU may supply the
+          // required VS-stage page-walk pseudoinstruction.
+          mtinst_d       = (ex_i.cause inside {
+                    riscv::INSTR_ADDR_MISALIGNED,
+                    riscv::INSTR_ACCESS_FAULT,
+                    riscv::ILLEGAL_INSTR,
+                    riscv::BREAKPOINT,
+                    riscv::ENV_CALL_UMODE,
+                    riscv::ENV_CALL_SMODE,
+                    riscv::ENV_CALL_MMODE,
+                    riscv::INSTR_PAGE_FAULT,
+                    riscv::VIRTUAL_INSTRUCTION
+                  } || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
           mtval2_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, ex_i.tval2[CVA6Cfg.GPLEN-1:2]};
           mstatus_d.gva = ex_i.gva;
         end
