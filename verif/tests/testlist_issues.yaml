@@ -187,3 +187,43 @@ testlist:
       when MRET or SRET returns below M-mode.
     iterations: 1
     asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S
+
+  - test: mtinst-zero-virtual-instruction-rv64
+    <<: *common_test_config
+    description: >
+      Check that a virtual-instruction exception writes zero to mtinst
+      in a normal non-SPIKE_TANDEM build.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/mtinst-zero-virtual-instruction-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      ../tests/custom/common/crt.S
+      -I../tests/custom/env
+      -I../tests/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld
+      -lgcc
+
+  - test: mtinst-zero-interrupt-rv64
+    <<: *common_test_config
+    description: >
+      Check that an interrupt always writes zero to mtinst
+      in a normal non-SPIKE_TANDEM build.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/mtinst-zero-interrupt-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      ../tests/custom/common/crt.S
+      -I../tests/custom/env
+      -I../tests/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld
+      -lgcc
