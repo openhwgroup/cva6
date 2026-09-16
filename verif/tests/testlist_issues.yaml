@@ -238,3 +238,24 @@ testlist:
       when MRET or SRET returns below M-mode.
     iterations: 1
     asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S
+
+  - test: mtvec-warl-rv64
+    <<: *common_test_config
+    description: >
+      Check that mtvec CSR readback and machine-mode trap dispatch remain
+      coherent when software writes address bits outside the implemented
+      physical-address width.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/mtvec-warl-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      ../tests/custom/common/crt.S
+      -I../tests/custom/env
+      -I../tests/custom/common
+      -T ../../config/gen_from_riscv_config/linker/link.ld
+      -lgcc
