@@ -234,27 +234,45 @@ module store_buffer
   //
   // checks if the requested load is in the store buffer
   // page offsets are virtually and physically the same
+  // A normal store only conflicts with a load to the same 8-byte word.
+  // Cache-block operations act on the whole cache block, so a younger load
+  // must also wait when it addresses a different word in the same block.
+  function automatic logic load_matches_entry(input logic [11:0] load_page_offset,
+                                              input logic [CVA6Cfg.PLEN-1:0] entry_address,
+                                              input cbo_t entry_cbo_op);
+    if (entry_cbo_op != ariane_pkg::CBO_NONE) begin
+      return load_page_offset[11:CVA6Cfg.DCACHE_OFFSET_WIDTH] ==
+             entry_address[11:CVA6Cfg.DCACHE_OFFSET_WIDTH];
+    end
+
+    return load_page_offset[11:3] == entry_address[11:3];
+  endfunction
+
   always_comb begin : address_checker
     page_offset_matches_o = 1'b0;
 
-    // check if the LSBs are identical and the entry is valid
+    // Check the non-speculative commit queue.
     for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
-      // Check if the page offset matches and whether the entry is valid, for the commit queue
-      if ((page_offset_i[11:3] == commit_queue_q[i].address[11:3]) && commit_queue_q[i].valid) begin
+      if (commit_queue_q[i].valid && load_matches_entry(
+              page_offset_i, commit_queue_q[i].address, commit_queue_q[i].cbo_op
+          )) begin
         page_offset_matches_o = 1'b1;
         break;
       end
     end
 
+    // Check the speculative queue.
     for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
-      // do the same for the speculative queue
-      if ((page_offset_i[11:3] == speculative_queue_q[i].address[11:3]) && speculative_queue_q[i].valid) begin
+      if (speculative_queue_q[i].valid && load_matches_entry(
+              page_offset_i, speculative_queue_q[i].address, speculative_queue_q[i].cbo_op
+          )) begin
         page_offset_matches_o = 1'b1;
         break;
       end
     end
-    // or it matches with the entry we are currently putting into the queue
-    if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_without_flush_i) begin
+
+    // Check the entry currently being inserted into the queue.
+    if (valid_without_flush_i && load_matches_entry(page_offset_i, paddr_i, cbo_op_i)) begin
       page_offset_matches_o = 1'b1;
     end
   end
