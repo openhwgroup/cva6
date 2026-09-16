@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-16T14:20:44.697450+00:00",
-  "repo": "openhwgroup/cva6",
+  "generated_at": "2026-09-16T16:11:08.143096+00:00",
+  "repo": "openhwfoundation/cva6",
   "workflows": [
     "ci",
     "tier1",
