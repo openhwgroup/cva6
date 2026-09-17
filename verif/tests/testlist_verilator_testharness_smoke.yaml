@@ -7,7 +7,7 @@
 #
 # Original Author: Junchao Chen (junchao.chen@eclipse-foundation.org)
 
-# RV32 execution smoke for cv32a65x_axi; not a full ISA regression.
+# RV32 execution smoke on the TestHarness; not a full ISA regression.
 
 common_test_config: &common_test_config
   path_var: TESTS_PATH
