@@ -526,19 +526,19 @@ module issue_read_operands
 
     for (genvar k = 0; unsigned'(k) < CVA6Cfg.NR_SB_ENTRIES; k++) begin : gen_rs_entries
 
-      assign rs1_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].rs1) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+      assign rs1_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].rs1) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & (~fwd_i.sbe[k].ex.valid) & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           fwd_i.sbe[k].op
       )) == (CVA6Cfg.FpPresent && ariane_pkg::is_rs1_fpr(
           issue_instr_i[i].op
       )));
 
-      assign rs2_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].rs2) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+      assign rs2_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].rs2) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & (~fwd_i.sbe[k].ex.valid) & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           fwd_i.sbe[k].op
       )) == (CVA6Cfg.FpPresent && ariane_pkg::is_rs2_fpr(
           issue_instr_i[i].op
       )));
 
-      assign rs3_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].result[ariane_pkg::REG_ADDR_SIZE-1:0]) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
+      assign rs3_fwd_req[i][k+CVA6Cfg.NrWbPorts] = (fwd_i.sbe[k].rd == issue_instr_i[i].result[ariane_pkg::REG_ADDR_SIZE-1:0]) & fwd_i.still_issued[k] & fwd_i.sbe[k].valid & (~fwd_i.sbe[k].ex.valid) & ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
           fwd_i.sbe[k].op
       )) == (CVA6Cfg.FpPresent && ariane_pkg::is_imm_fpr(
           issue_instr_i[i].op
@@ -884,7 +884,7 @@ module issue_read_operands
           case (issue_instr_i[i].fu)
             CVXIF: begin
               cvxif_valid_n[i]  = 1'b1;
-              cvxif_off_instr_n = orig_instr[i];
+              cvxif_off_instr_n = orig_instr_i[i];
             end
             default: ;
           endcase
