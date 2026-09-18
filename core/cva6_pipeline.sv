@@ -364,6 +364,7 @@ module cva6_pipeline
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2;
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
+  alu_bypass_t alu_bypass_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic zcmt_id_ex;
   logic is_compressed_instr_id_ex;
@@ -754,6 +755,7 @@ module cva6_pipeline
       .rs1_forwarding_o        (rs1_forwarding_id_ex),
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
       .fu_data_o               (fu_data_id_ex),
+      .alu_bypass_o            (alu_bypass_id_ex),
       .pc_o                    (pc_id_ex),
       .is_zcmt_o               (zcmt_id_ex),
       .is_compressed_instr_o   (is_compressed_instr_id_ex),
@@ -863,6 +865,7 @@ module cva6_pipeline
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),
       .fu_data_i(fu_data_id_ex),
+      .alu_bypass_i(alu_bypass_id_ex),
       .pc_i(pc_id_ex),
       .is_zcmt_i(zcmt_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
