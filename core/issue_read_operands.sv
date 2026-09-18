@@ -52,6 +52,8 @@ module issue_read_operands
     input forwarding_t fwd_i,
     // FU data useful to execute instruction - EX_STAGE
     output fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_o,
+    // ALU to ALU bypass control - EX_STAGE
+    output alu_bypass_t alu_bypass_o,
     // Unregistered version of fu_data_o.operanda - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs1_forwarding_o,
     // Unregistered version of fu_data_o.operandb - EX_STAGE
@@ -218,6 +220,11 @@ module issue_read_operands
   logic [CVA6Cfg.NrIssuePorts-1:0] forward_rs1, forward_rs2, forward_rs3;
 
   // original instruction
+  // ALU-ALU bypass signals
+  alu_bypass_t alu_bypass, alu_bypass_n, alu_bypass_q;
+  logic is_alu_bypass;
+  logic [1:0] use_alu2;
+
   riscv::instruction_t orig_instr;
   assign orig_instr = riscv::instruction_t'(orig_instr_i[0]);
 
@@ -292,6 +299,28 @@ module issue_read_operands
   assign cvxif_valid_o = CVA6Cfg.CvxifEn ? cvxif_valid_q : '0;
   assign cvxif_off_instr_o = CVA6Cfg.CvxifEn ? cvxif_off_instr_q : '0;
   assign stall_issue_o = stall_raw[0];
+
+  assign alu_bypass_o = alu_bypass_q;
+
+  // ALU bypass signals
+  if (CVA6Cfg.ALUBypass) begin
+    // If it is a ALU -> ALU, we can fuse all operation beside CPOP (maybe can be optimized OP -> CPOP, to explore)
+    assign is_alu_bypass =
+      (issue_instr_i[0].fu == ALU && issue_instr_i[1].fu == ALU) &&
+      !((issue_instr_i[0].op inside {CPOP, CPOPW}) || (issue_instr_i[1].op inside {CPOP, CPOPW}));
+  end else begin
+    assign is_alu_bypass = 1'b0;
+  end
+
+  if (CVA6Cfg.SuperscalarEn) begin
+    // When a bypass is possible, an instruction uses `alu2` only when `alu` is already busy,
+    // in all other scenarios `alu2` is preferred over `alu`, unless it is busy
+    for (genvar i = 0; i < 2; i++) begin
+      assign use_alu2[i] = is_alu_bypass ? fus_busy[i].alu : !fus_busy[i].alu2;
+    end
+  end else begin
+    assign use_alu2 = '0;
+  end
   assign tinst_o = CVA6Cfg.RVH ? tinst_q : '0;
   // ---------------
   // Issue Stage
@@ -363,7 +392,7 @@ module issue_read_operands
           end
         end
         ALU: begin
-          if (CVA6Cfg.SuperscalarEn && !fus_busy[0].alu2) begin
+          if (use_alu2[0]) begin
             fus_busy[1].alu2 = 1'b1;
             // TODO is there a minimum float execution time?
             // If so we could issue FPU & ALU2 the same cycle
@@ -401,7 +430,7 @@ module issue_read_operands
       unique case (issue_instr_i[i].fu)
         NONE: fu_busy[i] = fus_busy[i].none;
         ALU: begin
-          if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
+          if (CVA6Cfg.SuperscalarEn && use_alu2[i]) begin
             fu_busy[i] = fus_busy[i].alu2;
           end else begin
             fu_busy[i] = fus_busy[i].alu;
@@ -533,6 +562,7 @@ module issue_read_operands
   // check that all operands are available, otherwise stall
   // forward corresponding register
   always_comb begin : operands_available
+    alu_bypass  = '0;
     stall_raw   = '{default: stall_i};
     stall_rs1   = '{default: stall_i};
     stall_rs2   = '{default: stall_i};
@@ -581,7 +611,11 @@ module issue_read_operands
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs1 == issue_instr_i[0].rd && issue_instr_i[1].rs1 != '0) begin
-        stall_raw[1] = 1'b1;
+        if (is_alu_bypass) begin
+          alu_bypass.rs1_from_rd = 1'b1;
+        end else begin
+          stall_raw[1] = 1'b1;  // RS1[1] NEEDS RD[0]
+        end
       end
 
       if ((!CVA6Cfg.FpPresent || (is_rs2_fpr(
@@ -589,7 +623,11 @@ module issue_read_operands
           ) == is_rd_fpr(
               issue_instr_i[0].op
           ))) && issue_instr_i[1].rs2 == issue_instr_i[0].rd && issue_instr_i[1].rs2 != '0) begin
-        stall_raw[1] = 1'b1;
+        if (is_alu_bypass) begin
+          alu_bypass.rs2_from_rd = 1'b1;
+        end else begin
+          stall_raw[1] = 1'b1;  // RS2[1] NEEDS RD[0]
+        end
       end
 
       // Only check clobbered gpr for OFFLOADED instruction
@@ -684,7 +722,7 @@ module issue_read_operands
       if (!issue_instr_i[i].ex.valid && issue_instr_valid_i[i] && issue_ack_o[i]) begin
         case (issue_instr_i[i].fu)
           ALU: begin
-            if (CVA6Cfg.SuperscalarEn && !fus_busy[i].alu2) begin
+            if (CVA6Cfg.SuperscalarEn && use_alu2[i]) begin
               alu2_valid_n[i] = 1'b1;
             end else begin
               alu_valid_n[i] = 1'b1;
@@ -1001,6 +1039,8 @@ module issue_read_operands
   end
 
 
+  assign alu_bypass_n = &issue_ack_o ? alu_bypass : '0;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       fu_data_q <= '0;
@@ -1012,8 +1052,10 @@ module issue_read_operands
       is_compressed_instr_o    <= 1'b0;
       branch_predict_o         <= {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
       x_transaction_rejected_o <= 1'b0;
+      alu_bypass_q             <= '0;
     end else begin
       fu_data_q <= fu_data_n;
+      alu_bypass_q <= alu_bypass_n;
       pc_o <= pc_n;
       is_compressed_instr_o <= is_compressed_instr_n;
       branch_predict_o <= branch_predict_n;
