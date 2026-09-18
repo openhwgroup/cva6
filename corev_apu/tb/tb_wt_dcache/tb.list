@@ -1,4 +1,4 @@
-../../../core/include/cv64a6_imafdc_sv39_config_pkg.sv
+../../../config/target/cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi/rtl_cfg_pkg.sv
 ../../../core/include/riscv_pkg.sv
 ../../riscv-dbg/src/dm_pkg.sv
 ../common_verification/src/rand_id_queue.sv

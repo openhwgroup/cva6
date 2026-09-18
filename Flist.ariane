@@ -20,7 +20,7 @@
 +incdir+common/local/util/
 +incdir+corev_apu/register_interface/include/
 
-core/include/cv64a6_imafdc_sv39_openpiton_config_pkg.sv
+config/target/cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi/rtl_cfg_pkg.sv
 core/include/riscv_pkg.sv
 corev_apu/riscv-dbg/src/dm_pkg.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
