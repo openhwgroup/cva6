@@ -67,6 +67,8 @@
   rvfi_csr_elmt_t mepc; \
   rvfi_csr_elmt_t mcause; \
   rvfi_csr_elmt_t mtval; \
+  rvfi_csr_elmt_t mtinst; \
+  rvfi_csr_elmt_t mtval2; \
   rvfi_csr_elmt_t mip; \
   rvfi_csr_elmt_t menvcfg; \
   rvfi_csr_elmt_t menvcfgh; \
@@ -157,6 +159,8 @@
   logic [Cfg.XLEN-1:0] mepc_q; \
   logic [Cfg.XLEN-1:0] mcause_q; \
   logic [Cfg.XLEN-1:0] mtval_q; \
+  logic [Cfg.XLEN-1:0] mtinst_q; \
+  logic [Cfg.XLEN-1:0] mtval2_q; \
   logic fiom_q; \
   logic [ariane_pkg::MHPMCounterNum+3-1:0] mcountinhibit_q; \
   logic [63:0] cycle_q; \
