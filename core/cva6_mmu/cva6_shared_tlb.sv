@@ -140,6 +140,7 @@ module cva6_shared_tlb #(
   logic flush_asid_is0;
   logic flush_vaddr_is0;
   logic flush_last_set;
+  logic flush_all_now;
 
   logic [CVA6Cfg.SharedTlbDepth-1:0][SHARED_TLB_WAYS-1:0] shared_tag_valid_q, shared_tag_valid_d;
 
@@ -464,6 +465,8 @@ module cva6_shared_tlb #(
   assign flush_vmid_is0 = ~(|flush_vmid_q);
   assign flush_gpaddr_is0 = ~(|flush_gpaddr_q);
   assign flush_last_set = (flush_idx_q == CVA6Cfg.SharedTlbDepth - 1);
+  // SFENCE.VMA x0, x0 clears every entry at once instead of walking the sets
+  assign flush_all_now = (HYP_EXT == 0) && flush_i && !(|asid_to_be_flushed_i) && !(|vaddr_to_be_flushed_i);
   assign flush_busy_o = (CVA6Cfg.UseSharedTlb) && (flush_state_q != IDLE);
   assign flush_match_way = (flush_kind_q == FLUSH_SFENCE) ? sfence_match_way :
       (flush_kind_q == FLUSH_VVMA) ? vvma_match_way : gvma_match_way;
@@ -480,7 +483,13 @@ module cva6_shared_tlb #(
     unique case (flush_state_q)
       IDLE: begin
         if (flush_i) begin
-          flush_state_d = FLUSH_READ;
+          // Global SFENCE.VMA without the hypervisor extension: every entry is
+          // cleared at once (flush_all_now), no set walk.
+          if ((HYP_EXT == 0) && !(|asid_to_be_flushed_i) && !(|vaddr_to_be_flushed_i)) begin
+            flush_state_d = IDLE;
+          end else begin
+            flush_state_d = FLUSH_READ;
+          end
           flush_idx_d = '0;
           flush_asid_d = asid_to_be_flushed_i;
           flush_vaddr_d = vaddr_to_be_flushed_i;
@@ -684,7 +693,9 @@ module cva6_shared_tlb #(
     tag_wr_en = '0;
     pte_wr_en = '0;
 
-    if (flush_state_q == FLUSH_APPLY) begin
+    if (flush_all_now) begin
+      shared_tag_valid_d = '0;
+    end else if (flush_state_q == FLUSH_APPLY) begin
       for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
         if (flush_match_way[i]) begin
           shared_tag_valid_d[flush_idx_q][i] = 1'b0;
