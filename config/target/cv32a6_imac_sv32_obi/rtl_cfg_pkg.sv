@@ -103,6 +103,7 @@ package cva6_config_pkg;
       DataTlbEntries: int'(2),
       UseSharedTlb: bit'(1),
       SharedTlbDepth: int'(64),
+      SvnapotEn: bit'(0),
       NrLoadPipeRegs: int'(1),
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(3),

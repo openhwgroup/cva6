@@ -103,7 +103,8 @@ module cva6_mmu
 
   // memory management, pte for cva6
   localparam type pte_cva6_t = struct packed {
-    logic [9:0] reserved;
+    logic n;
+    logic [8:0] reserved;
     logic [CVA6Cfg.PPNW-1:0] ppn;  // PPN length for
     logic [1:0] rsw;
     logic d;
@@ -117,14 +118,15 @@ module cva6_mmu
   };
 
   localparam type tlb_update_cva6_t = struct packed {
-    logic                                   valid;
+    logic valid;
+    logic is_napot_64k;  // Svnapot: Flag indicating a 64KiB NAPOT page
     logic [CVA6Cfg.PtLevels-2:0][HYP_EXT:0] is_page;
-    logic [CVA6Cfg.VpnLen-1:0]              vpn;
-    logic [CVA6Cfg.ASID_WIDTH-1:0]          asid;
-    logic [CVA6Cfg.VMID_WIDTH-1:0]          vmid;
-    logic [HYP_EXT*2:0]                     v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
-    pte_cva6_t                              content;
-    pte_cva6_t                              g_content;
+    logic [CVA6Cfg.VpnLen-1:0] vpn;
+    logic [CVA6Cfg.ASID_WIDTH-1:0] asid;
+    logic [CVA6Cfg.VMID_WIDTH-1:0] vmid;
+    logic [HYP_EXT*2:0] v_st_enbl;  // v_i,g-stage enabled, s-stage enabled
+    pte_cva6_t content;
+    pte_cva6_t g_content;
   };
 
   logic iaccess_err;  // insufficient privilege to access this instruction page
@@ -152,6 +154,7 @@ module cva6_mmu
   pte_cva6_t                          itlb_content;
   pte_cva6_t                          itlb_g_content;
   logic      [  CVA6Cfg.PtLevels-2:0] itlb_is_page;
+  logic      [      CVA6Cfg.PPNW-1:0] final_fetch_ppn;
   logic                               itlb_lu_hit;
   logic      [     CVA6Cfg.GPLEN-1:0] itlb_gpaddr;
   logic      [CVA6Cfg.ASID_WIDTH-1:0] itlb_lu_asid;
@@ -403,10 +406,8 @@ module cva6_mmu
 
       fetch_arsp_o.fetch_valid = 1'b0;
 
-      fetch_arsp_o.fetch_paddr = {
-        (enable_g_translation_i && CVA6Cfg.RVH) ? itlb_g_content.ppn : itlb_content.ppn,
-        fetch_areq_i.fetch_vaddr[11:0]
-      };
+      final_fetch_ppn = (enable_g_translation_i && CVA6Cfg.RVH) ? itlb_g_content.ppn : itlb_content.ppn;
+      fetch_arsp_o.fetch_paddr = {final_fetch_ppn, fetch_areq_i.fetch_vaddr[11:0]};
 
       if (CVA6Cfg.PtLevels == 3 && itlb_is_page[CVA6Cfg.PtLevels-2]) begin
 

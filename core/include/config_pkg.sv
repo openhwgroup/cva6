@@ -235,6 +235,8 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
+    // Option to enable Svnapot extension
+    bit                          SvnapotEn;
     // OBI version compliance, 0 means not compliant -> best performance
     int unsigned                 ObiVersion;
     // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
@@ -334,6 +336,7 @@ package config_pkg;
     int unsigned InstrTlbEntries;
     int unsigned DataTlbEntries;
     bit unsigned UseSharedTlb;
+    bit SvnapotEn;
     int unsigned SharedTlbDepth;
     int unsigned VpnLen;
     int unsigned PtLevels;
