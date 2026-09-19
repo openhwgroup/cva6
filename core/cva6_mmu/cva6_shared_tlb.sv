@@ -310,7 +310,7 @@ module cva6_shared_tlb #(
         // check if translation is a: S-Stage and G-Stage, S-Stage only or G-Stage only translation and virtualization mode is on/off
         match_stage[i] = shared_tag_rd[i].v_st_enbl == v_st_enbl[i_req_q][HYP_EXT*2:0];
 
-        if (shared_tag_valid[i] && match_asid && match_vmid && match_stage[i]) begin
+        if (shared_tag_valid[i] && match_asid[i] && match_vmid[i] && match_stage[i]) begin
           if (|level_match[i]) begin
             shared_tlb_hit_d = 1'b1;
             if (itlb_req_q) begin
