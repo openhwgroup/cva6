@@ -41,6 +41,8 @@ module load_store_unit
     input logic stall_st_pending_i,
     // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -313,6 +315,7 @@ module load_store_unit
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
+        .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
 
         .ypb_mmu_ptw_req_o(ypb_mmu_ptw_req_o),
         .ypb_mmu_ptw_rsp_i(ypb_mmu_ptw_rsp_i),
@@ -323,6 +326,7 @@ module load_store_unit
   end else begin : gen_no_mmu
     // fetch request without MMU, virtual and physical address are identical
     assign pmp_fetch_arsp.fetch_valid = fetch_areq_i.fetch_req;
+    assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_fetch_arsp.fetch_paddr = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin : gen_virtual_physical_address_instruction_plen_greater
@@ -751,7 +755,7 @@ module load_store_unit
       .ready_o   (lsu_ready_o)
   );
 
-  assign rvfi_lsu_ctrl_o = lsu_ctrl;
+  assign rvfi_lsu_ctrl_o  = lsu_ctrl;
   // Probe only: the translated address of the access currently presented to
   // the store buffer / AMO buffer. Pairing it with the access it belongs to is
   // done in cva6_rvfi.sv, no RVFI logic lives in the CPU RTL.

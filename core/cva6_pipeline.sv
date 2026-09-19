@@ -436,6 +436,7 @@ module cva6_pipeline
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic no_st_pending_ex;
   logic no_st_pending_commit;
+  logic shared_tlb_flush_busy_ex;
   logic amo_valid_commit;
   // --------------
   // ID <-> COMMIT
@@ -912,6 +913,7 @@ module cva6_pipeline
       // Accelerator
       .stall_st_pending_i      ('0  /*FIXME*/),
       .no_st_pending_o         (no_st_pending_ex),               //
+      .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       // FPU
       .fpu_ready_o             (fpu_ready_ex_id),
       .fpu_valid_i             (fpu_valid_id_ex),
@@ -1005,38 +1007,39 @@ module cva6_pipeline
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i            (halt_ctrl),
-      .flush_dcache_i    (dcache_flush_o),
-      .exception_o       (ex_commit),
-      .dirty_fp_state_o  (dirty_fp_state),
-      .single_step_i     (single_step_csr_commit),         // // Accelerator /*FIXME*/
-      .commit_instr_i    (commit_instr_id_commit),
-      .commit_drop_i     (commit_drop_id_commit),
-      .commit_ack_o      (commit_ack_commit_id),
-      .commit_macro_ack_o(commit_macro_ack),
-      .waddr_o           (waddr_commit_id),
-      .wdata_o           (wdata_commit_id),
-      .we_gpr_o          (we_gpr_commit_id),
-      .we_fpr_o          (we_fpr_commit_id),
-      .ypb_amo_rsp_i     (ypb_amo_rsp_i),
-      .pc_o              (pc_commit),
-      .csr_op_o          (csr_op_commit_csr),
-      .csr_wdata_o       (csr_wdata_commit_csr),
-      .csr_rdata_i       (csr_rdata_csr_commit),
-      .csr_write_fflags_o(csr_write_fflags_commit_cs),
-      .csr_exception_i   (csr_exception_csr_commit),
-      .commit_lsu_o      (lsu_commit_commit_ex),
-      .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
-      .commit_tran_id_o  (lsu_commit_trans_id),
-      .amo_valid_commit_o(amo_valid_commit),
-      .no_st_pending_i   (no_st_pending_commit),
-      .commit_csr_o      (csr_commit_commit_ex),
-      .fence_i_o         (fence_i_commit_controller),
-      .fence_o           (fence_commit_controller),
-      .flush_commit_o    (flush_commit),
-      .sfence_vma_o      (sfence_vma_commit_controller),
-      .hfence_vvma_o     (hfence_vvma_commit_controller),
-      .hfence_gvma_o     (hfence_gvma_commit_controller)
+      .halt_i                 (halt_ctrl),
+      .flush_dcache_i         (dcache_flush_o),
+      .exception_o            (ex_commit),
+      .dirty_fp_state_o       (dirty_fp_state),
+      .single_step_i          (single_step_csr_commit),         // // Accelerator /*FIXME*/
+      .commit_instr_i         (commit_instr_id_commit),
+      .commit_drop_i          (commit_drop_id_commit),
+      .commit_ack_o           (commit_ack_commit_id),
+      .commit_macro_ack_o     (commit_macro_ack),
+      .waddr_o                (waddr_commit_id),
+      .wdata_o                (wdata_commit_id),
+      .we_gpr_o               (we_gpr_commit_id),
+      .we_fpr_o               (we_fpr_commit_id),
+      .ypb_amo_rsp_i          (ypb_amo_rsp_i),
+      .pc_o                   (pc_commit),
+      .csr_op_o               (csr_op_commit_csr),
+      .csr_wdata_o            (csr_wdata_commit_csr),
+      .csr_rdata_i            (csr_rdata_csr_commit),
+      .csr_write_fflags_o     (csr_write_fflags_commit_cs),
+      .csr_exception_i        (csr_exception_csr_commit),
+      .commit_lsu_o           (lsu_commit_commit_ex),
+      .commit_lsu_ready_i     (lsu_commit_ready_ex_commit),
+      .commit_tran_id_o       (lsu_commit_trans_id),
+      .amo_valid_commit_o     (amo_valid_commit),
+      .no_st_pending_i        (no_st_pending_commit),
+      .shared_tlb_flush_busy_i(shared_tlb_flush_busy_ex),
+      .commit_csr_o           (csr_commit_commit_ex),
+      .fence_i_o              (fence_i_commit_controller),
+      .fence_o                (fence_commit_controller),
+      .flush_commit_o         (flush_commit),
+      .sfence_vma_o           (sfence_vma_commit_controller),
+      .hfence_vvma_o          (hfence_vvma_commit_controller),
+      .hfence_gvma_o          (hfence_gvma_commit_controller)
   );
 
   if (CVA6Cfg.SpeculativeSb) begin
