@@ -33,27 +33,10 @@ common_test_config: &common_test_config
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
 
 testlist:
-  - test: rv32ui-p-add
+  - test: rv64_hypervisor_insn
     iterations: 1
-    <<: *common_test_config
-    asm_tests: <path_var>/riscv-tests/isa/rv32ui/add.S
-
-  - test: rv32ui-p-lw
-    iterations: 1
-    <<: *common_test_config
-    asm_tests: <path_var>/riscv-tests/isa/rv32ui/lw.S
-
-  - test: rv32ui-p-sw
-    iterations: 1
-    <<: *common_test_config
-    asm_tests: <path_var>/riscv-tests/isa/rv32ui/sw.S
-
-  - test: rv32ui-p-beq
-    iterations: 1
-    <<: *common_test_config
-    asm_tests: <path_var>/riscv-tests/isa/rv32ui/beq.S
-
-  - test: rv32ui-p-jal
-    iterations: 1
-    <<: *common_test_config
-    asm_tests: <path_var>/riscv-tests/isa/rv32ui/jal.S
+    march: rv64gch_zba_zbb_zbs_zbc_zbkb
+    mabi: lp64d
+    path_var: TESTS_PATH
+    gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/custom/env/"
+    asm_tests: <path_var>/custom/sv39h/hypervisor_insn.S
