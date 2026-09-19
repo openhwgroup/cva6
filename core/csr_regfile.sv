@@ -2872,6 +2872,8 @@ module csr_regfile
   assign rvfi_csr_o.mepc_q = mepc_q;
   assign rvfi_csr_o.mcause_q = mcause_q;
   assign rvfi_csr_o.mtval_q = CVA6Cfg.TvalEn ? mtval_q : '0;
+  assign rvfi_csr_o.mtinst_q = CVA6Cfg.RVH ? mtinst_q : '0;
+  assign rvfi_csr_o.mtval2_q = CVA6Cfg.RVH ? mtval2_q : '0;
   assign rvfi_csr_o.fiom_q = fiom_q;
   assign rvfi_csr_o.mcountinhibit_q = mcountinhibit_q;
   assign rvfi_csr_o.cycle_q = cycle_q;

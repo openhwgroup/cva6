@@ -651,6 +651,8 @@ module cva6_rvfi
     `CONNECT_RVFI_SAME(1'b1, mepc)
     `CONNECT_RVFI_SAME(1'b1, mcause)
     `CONNECT_RVFI_SAME(1'b1, mtval)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, mtinst)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, mtval2)
     `CONNECT_RVFI_SAME(1'b1, mip)
 
     `CONNECT_RVFI_FULL(1'b1, menvcfg, csr.fiom_q)
