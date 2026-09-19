@@ -284,6 +284,13 @@ testlist:
     <<: *common_test_config_4
     asm_tests: <path_var>/custom/sv32/vm_mstatus_tvm_level_1.S
 
+  - test: rv32_vm_sfence_selective
+    iterations: 1
+    march: rv32izicsr
+    mabi: ilp32
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/sv32/vm_sfence_selective.S
+
   - test: rv32_vm_mstatus_tvm_level_0_u
     iterations: 1
     march: rv32izicsr
