@@ -121,6 +121,8 @@ module ex_stage
     output logic no_st_pending_o,
     // Shared TLB is busy processing a multi-cycle flush
     output logic shared_tlb_flush_busy_o,
+    // Data endianness - CSR REGFILE
+    input logic mbe_i,
     // Atomic result is valid - COMMIT_STAGE
     input logic amo_valid_commit_i,
     // FU is ready - ISSUE_STAGE
@@ -551,6 +553,7 @@ module ex_stage
       .stall_st_pending_i,
       .no_st_pending_o,
       .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
+      .mbe_i,
       .fu_data_i              (lsu_data),
       .lsu_ready_o,
       .lsu_valid_i            (|lsu_valid_i),
