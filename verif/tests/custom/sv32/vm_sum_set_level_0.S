@@ -11,7 +11,7 @@
 # When satp.mode=sv32, PTE has (r,w,x) PMP permissions, PTE has non-reserved RWX
 # encoding, and pte.v=1, then test the following in supervisor mode for level0 PTE.
 # 
-# - Set pte.r=1 & pte.u=1 & s/mstatus.SUM = 1 and test the read acces.
+# - Set pte.r=1 & pte.u=1 & s/mstatus.SUM = 1 and test the read access.
 # - Set pte.w=1 & pte.u=1 & s/mstatus.SUM = 1 and test the write access.
 # - Set pte.x=1 & pte.u=1 & s/mstatus.SUM = 1 and test the execute access.
 #
@@ -112,7 +112,7 @@ trap_handler:
     lw t4, 8(t1)                                                            # load the expected value of mcause  
 
     li  t1, CAUSE_SUPERVISOR_ECALL                                          # load the value of supervisor ecall
-    beq t0,t1,continue_in_m_mode                                            # checks if ecall is occured
+    beq t0,t1,continue_in_m_mode                                            # checks if ecall is occurred
 
     beqz t2, test_fail                                                      # Jumps to exit if cause is not expected
  

@@ -67,7 +67,7 @@ module cva6_hpdcache_subsystem
     input logic icache_enable_i,
     // Flush the instruction cache - CONTROLLER
     input logic icache_flush_i,
-    // instructino cache miss - PERF_COUNTERS
+    // instruction cache miss - PERF_COUNTERS
     output logic icache_miss_o,
     // Fetch Request channel - FRONTEND
     input ypb_fetch_req_t ypb_fetch_req_i,

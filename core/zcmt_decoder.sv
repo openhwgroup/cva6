@@ -24,7 +24,7 @@ module zcmt_decoder #(
     input  logic          [            31:0] instr_i,
     // current PC - FRONTEND
     input  logic          [CVA6Cfg.VLEN-1:0] pc_i,
-    // Intruction is of ZCMT extension - compressed_decoder
+    // Instruction is of ZCMT extension - compressed_decoder
     input  logic                             is_zcmt_instr_i,
     // Instruction is illegal - compressed_decoder
     input  logic                             illegal_instr_i,
@@ -120,7 +120,7 @@ module zcmt_decoder #(
       TABLE_WAIT_RVALID: begin
         ypb_zcmt_req_o.preq = 1'b0;
         if (ypb_zcmt_rsp_i.rvalid) begin
-          // save the PC relative XLEN table jump address
+          // safe the PC relative XLEN table jump address
           jump_address_o = $unsigned($signed(ypb_zcmt_rsp_i.rdata) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin
             // jal pc_offset, x0 for no return stack

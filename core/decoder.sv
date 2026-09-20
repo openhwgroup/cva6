@@ -54,7 +54,7 @@ module decoder
     input logic [CVA6Cfg.XLEN-1:0] jump_address_i,
     // Is a branch predict instruction - FRONTEND
     input branchpredict_sbe_t branch_predict_i,
-    // If an exception occured in fetch stage - FRONTEND
+    // If an exception occurred in fetch stage - FRONTEND
     input exception_t ex_i,
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
@@ -205,7 +205,7 @@ module decoder
                   illegal_instr = 1'b1;
                 end
               end
-              // decode the immiediate field
+              // decode the immediate field
               case (instr.itype.imm)
                 // ECALL -> inject exception
                 12'b0: ecall = 1'b1;
@@ -541,7 +541,7 @@ module decoder
                     5'b001??: begin
                       instruction_o.op       = ariane_pkg::FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
                       instruction_o.rs2 = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
-                      imm_select = IIMM;  // rs2 holds part of the intruction
+                      imm_select = IIMM;  // rs2 holds part of the instruction
                       // TODO CHECK R bit for valid fmt combinations
                       // determine source format
                       unique case (instr.rvftype.rs2[21:20])
@@ -1354,7 +1354,7 @@ module decoder
             if (check_fprm) begin
               unique case (instr.rftype.rm) inside
                 [3'b000 : 3'b100]: ;  //legal rounding modes
-                3'b101: begin  // Alternative Half-Precsision encded as fmt=10 and rm=101
+                3'b101: begin  // Alternative Half-Precision encoded as fmt=10 and rm=101
                   if (~CVA6Cfg.XF16ALT || instr.rftype.fmt != 2'b10) illegal_instr = 1'b1;
                   unique case (frm_i) inside  // actual rounding mode from frm csr
                     [3'b000 : 3'b100]: ;  //legal rounding modes
@@ -1427,7 +1427,7 @@ module decoder
               5'b01000: begin
                 instruction_o.op = ariane_pkg::FCVT_F2F;  // fcvt.fmt.fmt - FP to FP Conversion
                 instruction_o.rs2 = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
-                imm_select = IIMM;  // rs2 holds part of the intruction
+                imm_select = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:23])
                   illegal_instr = 1'b1;  // bits [22:20] used, other bits must be 0
                 // check source format
@@ -1500,7 +1500,7 @@ module decoder
             if (check_fprm) begin
               unique case (instr.rftype.rm) inside
                 [3'b000 : 3'b100]: ;  //legal rounding modes
-                3'b101: begin  // Alternative Half-Precsision encded as fmt=10 and rm=101
+                3'b101: begin  // Alternative Half-Precision encoded as fmt=10 and rm=101
                   if (~CVA6Cfg.XF16ALT || instr.rftype.fmt != 2'b10) illegal_instr = 1'b1;
                   unique case (frm_i) inside  // actual rounding mode from frm csr
                     [3'b000 : 3'b100]: ;  //legal rounding modes
@@ -1695,7 +1695,7 @@ module decoder
     imm_u_type = {
       {CVA6Cfg.XLEN - 32{instruction_i[31]}}, instruction_i[31:12], 12'b0
     };  // JAL, AUIPC, sign extended to 64 bit
-    //  if zcmt then xlen jump address assign to immidiate
+    //  if zcmt then xlen jump address assign to immediate
     if (CVA6Cfg.RVZCMT && is_zcmt_i) begin
       imm_uj_type = {{CVA6Cfg.XLEN - 32{jump_address_i[31]}}, jump_address_i[31:0]};
     end else begin
@@ -1902,7 +1902,7 @@ module decoder
       end
     end
 
-    // a debug request has precendece over everything else
+    // a debug request has precedence over everything else
     if (CVA6Cfg.DebugEn && debug_req_i && !debug_mode_i) begin
       instruction_o.ex.valid = 1'b1;
       instruction_o.ex.cause = riscv::DEBUG_REQUEST;

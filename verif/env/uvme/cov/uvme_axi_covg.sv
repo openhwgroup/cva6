@@ -13,7 +13,7 @@
 
    /*
    * Covergroups
-   * Decalred at package-level to enable mutliple instances per monitor class (e.g. read/write)
+   * Declared at package-level to enable multiple instances per monitor class (e.g. read/write)
    */
 
 covergroup cg_axi_w_channel(string name)

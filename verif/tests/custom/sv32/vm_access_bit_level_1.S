@@ -8,7 +8,7 @@
 # and PTE has pte.A=0, then accessing it would raise page fault 
 # exception of the corresponding access type. 
 #
-# - Set pte.r=1 & pte.a=0 and test the read acces. 
+# - Set pte.r=1 & pte.a=0 and test the read access. 
 # - Set pte.w=1 & pte.a=0 and test the write access.
 # - Set pte.x=1 & pte.a=0 and test the execute access.
 #
@@ -129,10 +129,10 @@ trap_handler:
     lw t4, 8(t1)                                                        # load the expected value of mcause
 
     li  t1, CAUSE_SUPERVISOR_ECALL                                      # load the value of supervisor ecall
-    beq t0,t1,continue_in_m_mode                                        # checks if ecall is occured
+    beq t0,t1,continue_in_m_mode                                        # checks if ecall is occurred
 
     li  t1, CAUSE_USER_ECALL                                            # load the value of user ecall
-    beq t0,t1,continue_in_m_mode                                        # checks for ecall is occured
+    beq t0,t1,continue_in_m_mode                                        # checks for ecall is occurred
 
     beqz t2, test_fail                                                  # Jumps to exit if cause is not expected
     csrr t5,mepc                                                        # read the value of mepc

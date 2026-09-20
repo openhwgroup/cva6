@@ -164,7 +164,7 @@ module load_store_unit
     // PMP address - CSR_REGFILE
     input logic           [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
-    // RVFI inforamtion - RVFI
+    // RVFI information - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
     output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o

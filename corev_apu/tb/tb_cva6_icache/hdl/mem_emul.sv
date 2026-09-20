@@ -122,7 +122,7 @@ module mem_emul import ariane_pkg::*; import wt_cache_pkg::*; #(
           mem_inv_q = '1;
           ok = randomize(lval) with {lval>=0; lval<MemWords;};
           ok = randomize(val);
-          // save for coherent view above
+          // safe for coherent view above
           inval_addr_queue.push_front(lval);
           inval_data_queue.push_front(val);
           // overwrite the memory with new random data value
