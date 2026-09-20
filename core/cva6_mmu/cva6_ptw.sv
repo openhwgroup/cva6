@@ -185,6 +185,8 @@ module cva6_ptw
   assign ypb_mmu_ptw_req_o.rready = '1;
   assign ypb_mmu_ptw_req_o.access_type = 1'b1;  //1 = data
   assign ypb_mmu_ptw_req_o.atop = ariane_pkg::AMO_NONE;
+  // not a cache block operation
+  assign ypb_mmu_ptw_req_o.cbo_op = ariane_pkg::CBO_NONE;
   // -----------
   // TLB Update
   // -----------

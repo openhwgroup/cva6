@@ -23,6 +23,7 @@
     logic [DATA_WIDTH-1:0]            wdata;         \
     logic [cfg.IdWidth-1:0]           aid;           \
     ariane_pkg::amo_t                 atop;          \
+    ariane_pkg::fu_op                 cbo_op;        \
     logic                             access_type;   \
     logic                             cacheable;     \
     logic                             kill_req;      \

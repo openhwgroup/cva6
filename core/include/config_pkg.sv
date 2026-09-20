@@ -87,6 +87,8 @@ package config_pkg;
     bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
+    // Zicbom RISC-V extension (cache management / CBO)
+    bit                          RVZiCbom;
     // Zicntr RISC-V extension
     bit                          RVZicntr;
     // Zifencei RISC-V extension
@@ -187,9 +189,12 @@ package config_pkg;
     int unsigned                 DcacheSetAssoc;
     // Data cache line width
     int unsigned                 DcacheLineWidth;
-    // Data cache flush on fence
+    // three configurations for cache coherency after flush:
+    // DcacheFlushOnFence causes dcache flush for every fence instruction
+    // DcacheFlushOnFenceI causes dcache flush for every fence.I instruction
+    // DcacheInvalidateOnFlush causes dcache to also be invalidated when flushed
     bit                          DcacheFlushOnFence;
-    // Data cache invalidate on flush
+    bit                          DcacheFlushOnFenceI;
     bit                          DcacheInvalidateOnFlush;
     // User field on data bus enable
     bit                          DataUserEn;
@@ -305,6 +310,7 @@ package config_pkg;
     bit          CvxifEn;
     copro_type_t CoproType;
     bit          RVZiCond;
+    bit          RVZiCbom;
     bit          RVZicntr;
     bit          RVZifencei;
     bit          RVZihpm;
@@ -383,6 +389,7 @@ package config_pkg;
     int unsigned DCACHE_NUM_WORDS;
 
     bit DcacheFlushOnFence;
+    bit DcacheFlushOnFenceI;
     bit DcacheInvalidateOnFlush;
 
     bit          DATA_USER_EN;

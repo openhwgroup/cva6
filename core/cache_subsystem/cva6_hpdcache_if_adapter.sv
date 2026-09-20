@@ -310,6 +310,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
       logic forward_store, forward_amo, forward_flush;
       logic flush_not_sent;
+      hpdcache_pkg::hpdcache_req_op_t store_op;
 
       //  DCACHE flush request
       //  {{{
@@ -352,6 +353,22 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
           default: begin
           end
         endcase
+      end
+      //  }}}
+
+      // CBO logic
+      //  {{{
+      always_comb begin : store_cmo_comb
+        store_op = hpdcache_pkg::HPDCACHE_REQ_STORE;
+
+        if (CVA6Cfg.RVZiCbom) begin
+          case (ypb_store_req_i.cbo_op)
+            ariane_pkg::CBO_INVAL: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_INVAL_NLINE;
+            ariane_pkg::CBO_CLEAN: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_NLINE;
+            ariane_pkg::CBO_FLUSH: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_INVAL_NLINE;
+            default: ;  // store - above
+          endcase
+        end
       end
       //  }}}
 
@@ -410,7 +427,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_store = '{
               addr_offset: get_paddr_index(ypb_store_req_i.paddr),
               wdata: ypb_store_req_i.wdata,
-              op: hpdcache_pkg::HPDCACHE_REQ_STORE,
+              op: store_op,
               be: ypb_store_req_i.be,
               size: ypb_store_req_i.size,
               sid: hpdcache_req_sid_i,

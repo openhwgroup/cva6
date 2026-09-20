@@ -338,6 +338,7 @@ module load_unit
   assign ypb_load_req_o.wdata = '0;
   assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
+  assign ypb_load_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_load_req_o.cacheable = paddr_is_cacheable;
   assign ypb_load_req_o.access_type = 1'b1;  //data
 
