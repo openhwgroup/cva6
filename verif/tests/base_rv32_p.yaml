@@ -72,3 +72,8 @@ testlist:
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/alu/alu_chain_test.S
+
+  - test: be_swap_test
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/be/be_swap_test.S
