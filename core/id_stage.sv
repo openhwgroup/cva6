@@ -53,7 +53,7 @@ module id_stage #(
     output logic [CVA6Cfg.NrIssuePorts-1:0] issue_entry_valid_o,
     // Report if instruction is a control flow instruction - ISSUE
     output logic [CVA6Cfg.NrIssuePorts-1:0] is_ctrl_flow_o,
-    // Handshake's acknowlege between decode and issue - ISSUE
+    // Handshake's acknowledge between decode and issue - ISSUE
     input logic [CVA6Cfg.NrIssuePorts-1:0] issue_instr_ack_i,
     output logic [CVA6Cfg.NrIssuePorts-1:0] rvfi_is_compressed_o,
     // Current privilege level - CSR_REGFILE
@@ -238,7 +238,7 @@ module id_stage #(
       assign is_illegal_cvxif_i = is_zcmt_instr[0] ? is_illegal_zcmt : is_illegal_zcmp;
       assign is_compressed_cvxif_i = is_zcmt_instr[0] ? is_compressed_zcmt : is_compressed_zcmp;
       assign stall_macro_deco = is_zcmt_instr[0] ? stall_macro_deco_zcmt : stall_macro_deco_zcmp;
-    end else begin  // Do not instantiate the mux which is not optimized cross-bondaries
+    end else begin  // Do not instantiate the mux which is not optimized cross-boundaries
       assign instruction_cvxif_i = instruction_zcmp;
       assign is_illegal_cvxif_i = is_illegal_zcmp;
       assign is_compressed_cvxif_i = is_compressed_zcmp;

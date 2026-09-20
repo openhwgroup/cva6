@@ -70,7 +70,7 @@ module tb_mem import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*;#(
 
     // this shadow memory  provides a view that is consistent with the one from the core
     // i.e., pending writes are present in this view, and invalidations will not overwrite
-    // the corresponding bytes until they have been commited to the normal memory.
+    // the corresponding bytes until they have been committed to the normal memory.
     logic [63:0] mem_array_shadow_q[MemWords-1:0];
     logic [7:0]  mem_array_dirty_q[MemWords-1:0];
 

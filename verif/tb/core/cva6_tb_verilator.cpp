@@ -20,7 +20,7 @@
  *******************************************************************************
  *
  * Verilator top for the CVA6 "core_only" testbench.
- * Genrates clock, reset and optionally dumps waves.
+ * Generates clock, reset and optionally dumps waves.
  *
  *******************************************************************************
  */

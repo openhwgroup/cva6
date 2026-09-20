@@ -67,7 +67,7 @@
 
 #### Item: 000
 
-* **Requirement location:** ISA Volume II: Privilege Architecture Version 20211203, Chpter 5.3.2
+* **Requirement location:** ISA Volume II: Privilege Architecture Version 20211203, Chapter 5.3.2
 * **Feature Description**
   
   If PTE does not have Valid (pte.V=0) permission, then accessing it would raise page fault exception of the corresponding access type.   
@@ -76,7 +76,7 @@
   - Set PTE.V = 0 and test the write access.  
   - Set PTE.V = 0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode
 * **Verification Goals**
   
@@ -109,7 +109,7 @@
   - Set pte.w=1 & pte.r=0 and test the write access.  
   - Set pte.w=1 & pte.r=0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode
 * **Verification Goals**
   
@@ -142,7 +142,7 @@
   - Set pte.x=0 & pte.r=0 & pte.w=0 and test the write access.  
   - Set pte.x=0 & pte.r=0 & pte.w=0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode
 * **Verification Goals**
   
@@ -175,7 +175,7 @@
   - Test the write access for both pte.w=1 and for pte.w=0  
   - Test the execute access for both pte.x=1 and for pte.x=0  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.
 * **Verification Goals**
   
   RWX access should be successful if the corresponding permissions are granted in the PTE. Check that load, store and execute works without any page fault.  
@@ -208,7 +208,7 @@
   - Set pte.u=0 and test the write access.  
   - Set pte.u=0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.
 * **Verification Goals**
   
   Page fault exception should be raised according to {x,r,w} access type. Check that:  
@@ -237,7 +237,7 @@
   - Set pte.u=1 & s/mstatus.SUM = 0 and test the write access.  
   - Set pte.u=1 & s/mstatus.SUM = 0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.
 * **Verification Goals**
   
   Page fault exception should be raised according to {x,r,w} access type. Check that:  
@@ -269,7 +269,7 @@
   - Set pte.w=1 & pte.u=1 & s/mstatus.SUM = 1 and test the write access.  
   - Set pte.x=1 & pte.u=1 & s/mstatus.SUM = 1 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.
 * **Verification Goals**
   
   Read and Write access to the PTE should be successful. So, check that the load and store works without page fault and expected data is stored to and loaded from the memory, repectively.  
@@ -300,7 +300,7 @@
   - Test the write access for both pte.w=1 and for pte.w=0  
   - Test the execute access for both pte.x=1 and for pte.x=0  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.
 * **Verification Goals**
   
   RWX access should be successful if the corresponding permissions are granted in the PTE. Check that load, store and execute works without any page fault.  
@@ -332,7 +332,7 @@
   When satp.mode=sv32, PTE has (r,w,x) PMP permissions, and pte.v=1, then test the following in supervisor and user privilege mode for level0 and level1 PTE.  
   - Set pte.r=0 & pte.w=0 & pte.x=1 & s/mstatus.MXR=0 and test the read acces.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode
 * **Verification Goals**
   
@@ -360,7 +360,7 @@
   When satp.mode=sv32, PTE has (r,w,x) PMP permissions, and pte.v=1, then test the following in supervisor and user privilege mode for level0 and level1 PTE.  
   - Set pte.r=0 & pte.w=0 & pte.x=1 & s/mstatus.MXR=1 and test the read acces.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode
 * **Verification Goals**
   
@@ -409,7 +409,7 @@
   - Set pte.w=1 & pte.a=0 and test the write access.  
   - Set pte.x=1 & pte.a=0 and test the execute access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode.
 * **Verification Goals**
   
@@ -440,7 +440,7 @@
   When satp.mode=sv32, PTE has (r,w,x) PMP permissions, pte.a=1 and pte.v=1, then test the following in supervisor and user privilege mode for level0 and level1 PTE. Execute sfence.vma before accessign the PTE.  
   - Set pte.w=1 & pte.d=0 and test the write access.  
     
-  * For testing at level0, set all the pte perimssions at level1 to 0 except pte.v, so that level1 points to level0.  
+  * For testing at level0, set all the pte permissions at level1 to 0 except pte.v, so that level1 points to level0.  
   * Set pte.U=0 when test in Supervisor mode and Set pte.U=1 when testing in user mode.
 * **Verification Goals**
   

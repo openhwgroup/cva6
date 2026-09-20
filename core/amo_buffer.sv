@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 20.09.2018
 // Description: Buffers AMO requests
-// This unit buffers an atomic memory operations for the cache subsyste.
+// This unit buffers an atomic memory operations for the cache subsystem.
 // Furthermore it handles interfacing with the commit stage
 
 module amo_buffer #(
@@ -35,7 +35,7 @@ module amo_buffer #(
     // AMO response - DCACHE
     input ypb_amo_rsp_t ypb_amo_rsp_i,
     // Auxiliary signals
-    input logic amo_valid_commit_i,  // We have a vaild AMO in the commit stage
+    input logic amo_valid_commit_i,  // We have a valid AMO in the commit stage
     input logic no_st_pending_i  // there is currently no store pending anymore
 );
   logic flush_amo_buffer;

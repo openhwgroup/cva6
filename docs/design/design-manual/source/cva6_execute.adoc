@@ -121,7 +121,7 @@ It stalls until it can satisfy the current request. This means:
 * Two loads to the same address are allowed.
 * Two stores to the same address are allowed.
 * A store after a load to the same address is allowed.
-* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no fowarding.
+* A load after a store to the same address can only be processed if the store has already been sent to the cache i.e there is no forwarding.
 
 After the check of the store buffer, a read request is sent to the D$ with the index field of the address (1).
 The load unit stalls until the D$ acknowledges this request (2).

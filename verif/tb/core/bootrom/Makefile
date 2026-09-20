@@ -1,7 +1,7 @@
 ###############################################################################
 #    $@ is the file being generated.
 #    $< is first prerequiste.
-#    $^ is all prerequistes.
+#    $^ is all prerequisites.
 #    $* is file_name (w/o extension) of target
 
 DTB ?= cva6.dtb

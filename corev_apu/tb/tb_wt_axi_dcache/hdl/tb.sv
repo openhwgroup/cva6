@@ -294,7 +294,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
           amo_op_a_u = $unsigned(amo_shadow);
           amo_op_b_u = $unsigned(amo_req_i.operand_b);
 
-          // The result that is expected to be returned by AMO and evantually to be stored in rd.
+          // The result that is expected to be returned by AMO and eventually to be stored in rd.
           // For most AMOs, this is the previous memory content.
           amo_exp_result = amo_shadow;
         end

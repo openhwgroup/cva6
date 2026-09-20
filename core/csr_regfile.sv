@@ -54,7 +54,7 @@ module csr_regfile
     input logic [CVA6Cfg.XLEN-1:0] csr_wdata_i,
     // Read data out - COMMIT_STAGE
     output logic [CVA6Cfg.XLEN-1:0] csr_rdata_o,
-    // Mark the FP sate as dirty - COMMIT_STAGE
+    // Mark the FP state as dirty - COMMIT_STAGE
     input logic dirty_fp_state_i,
     // Write fflags register e.g.: we are retiring a floating point instruction - COMMIT_STAGE
     input logic csr_write_fflags_i,

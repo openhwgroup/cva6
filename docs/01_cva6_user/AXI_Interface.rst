@@ -510,7 +510,7 @@ for each 8 bits of the write data bus, therefore ``WSTRB[n]`` corresponds to ``W
 
 *The size of transactions performed by cva6 is equal to the number of data byte lanes containing valid information.*
 *This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
-*CVA6 doesn't perform unaligned memory acces, therefore the WSTRB take only combination of aligned access*
+*CVA6 doesn't perform unaligned memory access, therefore the WSTRB take only combination of aligned access*
 *If(RV32) WSTRB < 255 (Since AWSIZE lower than 3, so the data bus cannot have more than 4 valid byte lanes)*
 
 
