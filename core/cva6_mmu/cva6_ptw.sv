@@ -128,6 +128,13 @@ module cva6_ptw
   }
       ptw_stage_q, ptw_stage_d;
 
+  logic hlvx_eff;
+  // The HLVX permission rule (allow read via execute-only pages) applies only to the
+  // *original* access. For an implicit page-table read performed while G-stage-translating
+  // a VS-stage PTE address (G_INTERMED_STAGE), the access must be checked as an ordinary
+  // implicit load, so HLVX must not apply here.
+  assign hlvx_eff = hlvx_inst_i && !(CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE);
+
   // is this an instruction page table walk?
   logic is_instr_ptw_q, is_instr_ptw_n;
   logic global_mapping_q, global_mapping_n;
@@ -207,8 +214,9 @@ module cva6_ptw
     // update the correct page table level
     for (int unsigned y = 0; y < HYP_EXT + 1; y++) begin
       for (int unsigned x = 0; x < CVA6Cfg.PtLevels - 1; x++) begin
-        if((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i) && CVA6Cfg.RVH) begin
-          shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==HYP_EXT?0 : 1] == x);
+        if(((enable_g_translation_i && enable_translation_i) || (en_ld_st_g_translation_i && en_ld_st_translation_i)) && CVA6Cfg.RVH) begin
+          // VS + G-Translation
+          shared_tlb_update_o.is_page[x][y] = (ptw_lvl_q[y==1?0 : 1] == x);
         end else if (enable_translation_i || en_ld_st_translation_i || !CVA6Cfg.RVH) begin
           shared_tlb_update_o.is_page[x][y] = y == 0 ? (ptw_lvl_q[0] == x) : 1'b0;
         end else begin
@@ -228,7 +236,7 @@ module cva6_ptw
 
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
-    shared_tlb_update_o.vmid = tlb_update_vmid_q;
+    shared_tlb_update_o.vmid = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
 
     bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
@@ -308,7 +316,6 @@ module cva6_ptw
     global_mapping_n          = global_mapping_q;
     // input registers
     tlb_update_asid_n         = tlb_update_asid_q;
-    tlb_update_vmid_n         = tlb_update_vmid_q;
     vaddr_n                   = vaddr_q;
     pptr                      = ptw_pptr_q;
 
@@ -316,6 +323,7 @@ module cva6_ptw
       gpaddr_n    = gpaddr_q;
       gptw_pptr_n = gptw_pptr_q;
       gpte_d = gpte_q;
+      tlb_update_vmid_n = tlb_update_vmid_q;
     end
 
     shared_tlb_miss_o = 1'b0;
@@ -483,7 +491,7 @@ module cva6_ptw
                 // If page is not readable (there are no write-only pages)
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
-                if (pte.a && ((pte.r && !hlvx_inst_i) || (pte.x && (mxr_i || hlvx_inst_i || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH))))) begin
+                if (pte.a && ((pte.r && !hlvx_eff) || (pte.x && (mxr_i || hlvx_eff || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH))))) begin
                   if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i) || !CVA6Cfg.RVH)
                     shared_tlb_update_o.valid = 1'b1;
                 end else begin
@@ -572,7 +580,7 @@ module cva6_ptw
               if (CVA6Cfg.RVH) begin
                 if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
-                  ptw_stage_d = ptw_stage_q;
+                  ptw_stage_d = G_FINAL_STAGE;
                 end
               end
             end
