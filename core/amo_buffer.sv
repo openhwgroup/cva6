@@ -70,6 +70,7 @@ module amo_buffer #(
   assign ypb_amo_req_o.wdata = amo_data_out.data;
   assign ypb_amo_req_o.aid = '0;
   assign ypb_amo_req_o.atop = amo_data_out.op;
+  assign ypb_amo_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_amo_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr}  //TO DO CHECK GRANULARITY
   );

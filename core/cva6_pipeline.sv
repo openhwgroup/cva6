@@ -493,6 +493,8 @@ module cva6_pipeline
   logic vtw_csr_id;
   logic tsr_csr_id;
   logic hu;
+  riscv::cbie_t mcbie, scbie, hcbie;
+  logic mcbcfe, scbcfe, hcbcfe;
   irq_ctrl_t irq_ctrl_csr_id;
   logic dcache_en_csr_nbdcache;
   logic csr_write_fflags_commit_cs;
@@ -651,6 +653,12 @@ module cva6_pipeline
       .vtw_i               (vtw_csr_id),
       .tsr_i               (tsr_csr_id),
       .hu_i                (hu),
+      .mcbie_i             (mcbie),
+      .scbie_i             (scbie),
+      .hcbie_i             (hcbie),
+      .mcbcfe_i            (mcbcfe),
+      .scbcfe_i            (scbcfe),
+      .hcbcfe_i            (hcbcfe),
       .hart_id_i           (hart_id_i),
       .jvt_i               (jvt),
       .compressed_ready_i  (x_compressed_ready),
@@ -1137,6 +1145,12 @@ module cva6_pipeline
       .pmpcfg_o                (pmpcfg),
       .pmpaddr_o               (pmpaddr),
       .mcountinhibit_o         (mcountinhibit_csr_perf),
+      .mcbie_o                 (mcbie),
+      .scbie_o                 (scbie),
+      .hcbie_o                 (hcbie),
+      .mcbcfe_o                (mcbcfe),
+      .scbcfe_o                (scbcfe),
+      .hcbcfe_o                (hcbcfe),
       .jvt_o                   (jvt),
       //RVFI
       .rvfi_csr_o              (rvfi_csr)

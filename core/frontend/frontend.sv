@@ -548,6 +548,7 @@ module frontend
   assign ypb_fetch_req_o.wdata = '0;
   assign ypb_fetch_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? fetchbuf_windex : fetchbuf_windex_q;
   assign ypb_fetch_req_o.atop = ariane_pkg::AMO_NONE;
+  assign ypb_fetch_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_fetch_req_o.cacheable = paddr_is_cacheable;
   assign ypb_fetch_req_o.access_type = '0;  //  0 = fetch
   assign ypb_fetch_req_o.rready = '1;  //always ready  TODO maybe manage instr_queue_ready & replay with this signal

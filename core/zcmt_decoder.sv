@@ -86,6 +86,7 @@ module zcmt_decoder #(
     ypb_zcmt_req_o.kill_req = 1'b0;
     ypb_zcmt_req_o.vreq     = 1'b0;
     ypb_zcmt_req_o.atop     = ariane_pkg::AMO_NONE;
+    ypb_zcmt_req_o.cbo_op   = ariane_pkg::CBO_NONE;
     unique case (state_q)
       IDLE: begin
         fetch_stall_o = 1'b0;

@@ -79,6 +79,7 @@ package build_config_pkg;
     cfg.CvxifEn = CVA6Cfg.CvxifEn;
     cfg.CoproType = CVA6Cfg.CoproType;
     cfg.RVZiCond = CVA6Cfg.RVZiCond;
+    cfg.RVZiCbom = CVA6Cfg.RVZiCbom;
     cfg.RVZicntr = CVA6Cfg.RVZicntr;
     cfg.RVZifencei = CVA6Cfg.RVZifencei;
     cfg.RVZihpm = CVA6Cfg.RVZihpm;
@@ -152,6 +153,7 @@ package build_config_pkg;
     cfg.DCACHE_NUM_WORDS = 2 ** (DCACHE_INDEX_WIDTH - DCACHE_OFFSET_WIDTH);
 
     cfg.DcacheFlushOnFence = CVA6Cfg.DcacheFlushOnFence;
+    cfg.DcacheFlushOnFenceI = CVA6Cfg.DcacheFlushOnFenceI;
     cfg.DcacheInvalidateOnFlush = CVA6Cfg.DcacheInvalidateOnFlush;
 
     cfg.DATA_USER_EN = CVA6Cfg.DataUserEn;

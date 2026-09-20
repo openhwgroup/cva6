@@ -157,6 +157,7 @@ module store_unit
   logic [(CVA6Cfg.XLEN/8)-1:0] st_be, st_be_n, st_be_q;
   logic [1:0] st_data_size, st_data_size_n, st_data_size_q;
   amo_t amo_op, amo_op_d, amo_op_q;
+  fu_op cbo_op, cbo_op_d, cbo_op_q;
 
   logic store_buffer_valid, store_buffer_valid_d, store_buffer_valid_q;
   logic store_buffer_valid_no_flush, store_buffer_valid_no_flush_d, store_buffer_valid_no_flush_q;
@@ -267,12 +268,24 @@ module store_unit
     end else begin
       amo_op_d = AMO_NONE;
     end
+
+    if (CVA6Cfg.RVZiCbom) begin
+      case (lsu_ctrl_i.operation)
+        ariane_pkg::CBO_INVAL: cbo_op_d = ariane_pkg::CBO_INVAL;
+        ariane_pkg::CBO_CLEAN: cbo_op_d = ariane_pkg::CBO_CLEAN;
+        ariane_pkg::CBO_FLUSH: cbo_op_d = ariane_pkg::CBO_FLUSH;
+        default:               cbo_op_d = ariane_pkg::CBO_NONE;
+      endcase
+    end else begin
+      cbo_op_d = ariane_pkg::CBO_NONE;
+    end
   end
 
   assign st_be = CVA6Cfg.MmuPresent ? st_be_q : st_be_n;
   assign st_data = CVA6Cfg.MmuPresent ? st_data_q : st_data_n;
   assign st_data_size = CVA6Cfg.MmuPresent ? st_data_size_q : st_data_size_n;
   assign amo_op = CVA6Cfg.MmuPresent ? amo_op_q : amo_op_d;
+  assign cbo_op = CVA6Cfg.MmuPresent ? cbo_op_q : cbo_op_d;
   assign store_buffer_valid = CVA6Cfg.MmuPresent ? store_buffer_valid_q && !ex_s1 : store_buffer_valid_d;
   assign store_buffer_valid_no_flush = CVA6Cfg.MmuPresent ? store_buffer_valid_no_flush_q && !ex_s1 : store_buffer_valid_no_flush_d;
   assign amo_buffer_valid = CVA6Cfg.MmuPresent ? amo_buffer_valid_q && !ex_s1 : amo_buffer_valid_d;
@@ -305,6 +318,7 @@ module store_unit
       .valid_without_flush_i(store_buffer_valid_no_flush),
       .paddr_i              (paddr_i),
       .data_i               (st_data),
+      .cbo_op_i             (cbo_op),
       .be_i                 (st_be),
       .data_size_i          (st_data_size),
       .ypb_store_req_o      (ypb_store_req_o),
@@ -346,6 +360,7 @@ module store_unit
       st_data_size_q                <= '0;
       trans_id_q                    <= '0;
       amo_op_q                      <= AMO_NONE;
+      cbo_op_q                      <= ariane_pkg::CBO_NONE;
       amo_buffer_valid_q            <= '0;
       store_buffer_valid_q          <= '0;
       store_buffer_valid_no_flush_q <= '0;
@@ -355,6 +370,7 @@ module store_unit
       trans_id_q                    <= trans_id_n;
       st_data_size_q                <= st_data_size_n;
       amo_op_q                      <= amo_op_d;
+      cbo_op_q                      <= cbo_op_d;
       amo_buffer_valid_q            <= amo_buffer_valid_d;
       store_buffer_valid_q          <= store_buffer_valid_d;
       store_buffer_valid_no_flush_q <= store_buffer_valid_no_flush_d;
