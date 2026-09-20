@@ -1,0 +1,31 @@
+// -*- coding: utf-8 -*-
+// Copyright (C) 2025 Thales DIS France SAS
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+// Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+
+{
+    // Name of the project
+    name: "pulp_axi_riscv_atomics",
+
+    // Target directory: relative to the location of this script.
+    target_dir: "pulp-platform/axi_riscv_atomics",
+
+    // Upstream repository
+    upstream: {
+        // URL
+        url: "https://github.com/pulp-platform/axi_riscv_atomics.git",
+        // revision
+        rev: "550881f12e22dfae405612fc1df6368f4c003e68",
+    }
+
+    // Patch dir for local changes
+    patch_dir: "patches/pulp-platform/axi_riscv_atomics",
+
+    // Exclusions from upstream content
+    exclude_from_upstream: [
+        ".editorconfig",
+	".git",
+        "Bender.yml",
+        "test",
+    ]
+}
