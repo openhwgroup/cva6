@@ -304,6 +304,7 @@ module cva6_pipeline
   // Signals connecting more than one module
   // ------------------------------------------
   riscv::priv_lvl_t                               priv_lvl;
+  logic                                           mbe;  // data endianness of the processor
   logic                                           v;
   exception_t                                     ex_commit;  // exception from commit stage
   bp_resolve_t                                    resolved_branch;
@@ -913,6 +914,7 @@ module cva6_pipeline
       // Accelerator
       .stall_st_pending_i      ('0  /*FIXME*/),
       .no_st_pending_o         (no_st_pending_ex),               //
+      .mbe_i                   (mbe),                            // from CSR
       .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       // FPU
       .fpu_ready_o             (fpu_ready_ex_id),
@@ -1084,6 +1086,7 @@ module cva6_pipeline
       .eret_o                  (eret),
       .trap_vector_base_o      (trap_vector_base_commit_pcgen),
       .priv_lvl_o              (priv_lvl),
+      .mbe_o                   (mbe),
       .v_o                     (v),
       // Accelerator
       .acc_fflags_ex_i         ('0  /*FIXME*/),

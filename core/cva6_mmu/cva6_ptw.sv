@@ -49,6 +49,7 @@ module cva6_ptw
     input logic v_i,  // current virtualization mode bit
     input logic ld_st_v_i,  // load/store virtualization mode bit
     input logic hlvx_inst_i,  // is a HLVX load/store instruction
+    input logic mbe_i,  // data endianness of the processor
 
     input  logic             lsu_is_store_i,     // this translation was triggered by a store
     // PTW memory interface
@@ -127,6 +128,15 @@ module cva6_ptw
     G_FINAL_STAGE
   }
       ptw_stage_q, ptw_stage_d;
+
+  // Big Endian Capability Additions
+  // The data coming into the page table walker from memory is byte reversed
+  // when the processor is in big endian data mode, so a page table stored in
+  // big endian byte order can still be walked.
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
+  assign byteSwapped_data = {<<8{ypb_mmu_ptw_rsp_i.rdata}};
+  assign endian_data = mbe_i ? byteSwapped_data : ypb_mmu_ptw_rsp_i.rdata;
 
   logic hlvx_eff;
   // The HLVX permission rule (allow read via execute-only pages) applies only to the
@@ -671,7 +681,7 @@ module cva6_ptw
       tlb_update_asid_q <= tlb_update_asid_n;
       vaddr_q           <= vaddr_n;
       global_mapping_q  <= global_mapping_n;
-      data_rdata_q      <= ypb_mmu_ptw_rsp_i.rdata;
+      data_rdata_q      <= endian_data;
       data_rvalid_q     <= ypb_mmu_ptw_rsp_i.rvalid;
       grant_q           <= ypb_mmu_ptw_rsp_i.pgnt;
 

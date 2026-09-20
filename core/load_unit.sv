@@ -53,6 +53,8 @@ module load_unit
     output logic          [         CVA6Cfg.XLEN-1:0] result_o,
     // Load exception - ISSUE_STAGE
     output exception_t                                ex_o,
+    // Data Endian mode - CSR_REGFILE
+    input  logic                                      mbe_i,
     // Request address translation - MMU/PMP
     output logic                                      translation_req_o,
     // Virtual address - MMU/PMP
@@ -426,6 +428,36 @@ module load_unit
         endcase
     end  */
 
+  // BIG ENDIAN CAPABLE result mux fast
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+
+  // The internals of CVA6 are little endian. When mbe is set the processor
+  // treats data memory as big endian, so the byte order is reversed as the
+  // data enters the core through a load.
+  always_comb begin
+    endian_data = shifted_data;
+    if (mbe_i) begin
+      case (ldbuf_rdata.operation)
+        ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::HLV_B, ariane_pkg::HLV_BU, ariane_pkg::FLB: begin
+          // a single byte needs no reordering
+          endian_data[7:0] = {shifted_data[7:0]};
+        end
+        ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::HLV_H, ariane_pkg::HLV_HU, ariane_pkg::HLVX_HU, ariane_pkg::FLH: begin
+          endian_data[15:0] = {<<8{shifted_data[15:0]}};
+        end
+        ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::HLV_W, ariane_pkg::HLV_WU, ariane_pkg::HLVX_WU, ariane_pkg::FLW,
+        ariane_pkg::AMO_LRW, ariane_pkg::AMO_SCW, ariane_pkg::AMO_SWAPW, ariane_pkg::AMO_ADDW,
+        ariane_pkg::AMO_ANDW, ariane_pkg::AMO_ORW, ariane_pkg::AMO_XORW, ariane_pkg::AMO_MAXW,
+        ariane_pkg::AMO_MAXWU, ariane_pkg::AMO_MINW, ariane_pkg::AMO_MINWU: begin
+          endian_data[31:0] = {<<8{shifted_data[31:0]}};
+        end
+        default: begin
+          endian_data[CVA6Cfg.XLEN-1:0] = {<<8{shifted_data[CVA6Cfg.XLEN-1:0]}};
+        end
+      endcase
+    end
+  end
+
   // result mux fast
   logic [        (CVA6Cfg.XLEN/8)-1:0] rdata_sign_bits;
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] rdata_offset;
@@ -435,8 +467,10 @@ module load_unit
   // prepare these signals for faster selection in the next cycle
   assign rdata_is_signed    =   ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB, ariane_pkg::HLV_W, ariane_pkg::HLV_H, ariane_pkg::HLV_B};
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) & CVA6Cfg.IS_XLEN64) ? ldbuf_rdata.address_offset + 3 :
-                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H})                     ? ldbuf_rdata.address_offset + 1 :
+  // In big endian mode nothing is added to the offset to reach the byte that
+  // holds the sign bit: it is always the lowest addressed one.
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) && CVA6Cfg.IS_XLEN64 && (~mbe_i)) ? ldbuf_rdata.address_offset + 3 :
+                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H} && (~mbe_i))                     ? ldbuf_rdata.address_offset + 1 :
                                                                                                                          ldbuf_rdata.address_offset;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
@@ -452,23 +486,23 @@ module load_unit
   always_comb begin
     unique case (ldbuf_rdata.operation)
       ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::HLV_W, ariane_pkg::HLV_WU, ariane_pkg::HLVX_WU:
-      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+      result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, endian_data[31:0]};
       ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::HLV_H, ariane_pkg::HLV_HU, ariane_pkg::HLVX_HU:
-      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, endian_data[15:0]};
       ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::HLV_B, ariane_pkg::HLV_BU:
-      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+      result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, endian_data[7:0]};
       default: begin
         // FLW, FLH and FLB have been defined here in default case to improve Code Coverage
         if (CVA6Cfg.FpPresent) begin
           unique case (ldbuf_rdata.operation)
             ariane_pkg::FLW: begin
-              result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, shifted_data[31:0]};
+              result_o = {{CVA6Cfg.XLEN - 32{rdata_sign_bit}}, endian_data[31:0]};
             end
             ariane_pkg::FLH: begin
-              result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, shifted_data[15:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 16{rdata_sign_bit}}, endian_data[15:0]};
             end
             ariane_pkg::FLB: begin
-              result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, shifted_data[7:0]};
+              result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, endian_data[7:0]};
             end
             default: begin
               result_o = shifted_data[CVA6Cfg.XLEN-1:0];

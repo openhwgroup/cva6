@@ -48,6 +48,8 @@ module store_unit
     output logic commit_ready_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
+    // Data Endian mode - CSR_REGFILE
+    input logic mbe_i,
     // Store result is valid - ISSUE_STAGE
     output logic valid_o,
     // Transaction ID - ISSUE_STAGE
@@ -125,6 +127,30 @@ module store_unit
 
   // store buffer control signals
   logic instr_is_amo;
+
+  // -------------
+  // Byte-Swapper
+  // -------------
+  // The byte order of what is about to be stored is reversed when the
+  // processor is in big endian data mode.
+  logic [CVA6Cfg.XLEN-1:0] endian_data;
+  always_comb begin
+    endian_data = lsu_ctrl_i.data;
+    if (mbe_i) begin
+      case (lsu_ctrl_i.operation)
+        ariane_pkg::SB, ariane_pkg::HSV_B, ariane_pkg::FSB:
+        endian_data[7:0] = {lsu_ctrl_i.data[7:0]};
+        ariane_pkg::SH, ariane_pkg::HSV_H, ariane_pkg::FSH:
+        endian_data[15:0] = {<<8{lsu_ctrl_i.data[15:0]}};
+        ariane_pkg::SW, ariane_pkg::HSV_W, ariane_pkg::FSW, ariane_pkg::AMO_LRW, ariane_pkg::AMO_SCW,
+        ariane_pkg::AMO_SWAPW, ariane_pkg::AMO_ADDW, ariane_pkg::AMO_ANDW, ariane_pkg::AMO_ORW,
+        ariane_pkg::AMO_XORW, ariane_pkg::AMO_MAXW, ariane_pkg::AMO_MINW, ariane_pkg::AMO_MAXWU,
+        ariane_pkg::AMO_MINWU:
+        endian_data[31:0] = {<<8{lsu_ctrl_i.data[31:0]}};
+        default: endian_data[CVA6Cfg.XLEN-1:0] = {<<8{lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0]}};
+      endcase
+    end
+  end
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
   // keep the data and the byte enable for the second cycle (after address translation)
   logic [CVA6Cfg.XLEN-1:0] st_data, st_data_n, st_data_q;
@@ -219,8 +245,8 @@ module store_unit
   always_comb begin
     st_be_n = lsu_ctrl_i.be;
     // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-    st_data_n = (CVA6Cfg.RVA && instr_is_amo) ? lsu_ctrl_i.data[CVA6Cfg.XLEN-1:0] :
-        data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, lsu_ctrl_i.data});
+    st_data_n = ((CVA6Cfg.RVA && instr_is_amo) ? endian_data[CVA6Cfg.XLEN-1:0] :
+                 data_align(lsu_ctrl_i.vaddr[2:0], {{64 - CVA6Cfg.XLEN{1'b0}}, endian_data}));
     st_data_size_n = extract_transfer_size(lsu_ctrl_i.operation);
     // save AMO op for next cycle
     if (CVA6Cfg.RVA) begin
