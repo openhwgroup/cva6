@@ -298,9 +298,7 @@ module cva6
         .ypb_zcmt_req_t   (ypb_zcmt_req_t),
         .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
         .noc_req_t        (noc_req_t),
-        .noc_resp_t       (noc_resp_t),
-        .cmo_req_t        (logic  /*FIXME*/),
-        .cmo_rsp_t        (logic  /*FIXME*/)
+        .noc_resp_t       (noc_resp_t)
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
@@ -338,11 +336,6 @@ module cva6
 
         .wbuffer_empty_o (wbuffer_empty),
         .wbuffer_not_ni_o(wbuffer_not_ni),
-
-        // FROM/TO CMO
-
-        .dcache_cmo_req_i('0  /*FIXME*/),
-        .dcache_cmo_rsp_o(  /*FIXME*/),
 
         // FROM/TO HW PREFETCHER
 
