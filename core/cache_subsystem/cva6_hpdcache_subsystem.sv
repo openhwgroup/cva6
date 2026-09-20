@@ -37,10 +37,7 @@ module cva6_hpdcache_subsystem
     parameter int NrHwPrefetchers = 4,
 
     parameter type noc_req_t  = logic,
-    parameter type noc_resp_t = logic,
-
-    parameter type cmo_req_t = logic,
-    parameter type cmo_rsp_t = logic
+    parameter type noc_resp_t = logic
 )
 //  }}}
 
@@ -87,10 +84,6 @@ module cva6_hpdcache_subsystem
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
-    // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t dcache_cmo_req_i,
-    // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t dcache_cmo_rsp_o,
 
     // Store cache response - CACHES
     input ypb_store_req_t ypb_store_req_i,
@@ -289,18 +282,15 @@ module cva6_hpdcache_subsystem
   //    .
   //    .
   //    .
-  //    NumPorts: CMO
-  //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
-  localparam int HPDCACHE_ENABLE_CMO = 0;
-  localparam int HPDCACHE_NREQUESTERS = 3 + (HPDCACHE_ENABLE_CMO ? 1:0) + (CVA6Cfg.MmuPresent ? 1:0) + (CVA6Cfg.RVZCMT ? 1:0);
-  localparam int NUM_SNOOP_PORTS = HPDCACHE_ENABLE_CMO ? 3 : 2;
+  //    NumPorts: Hardware Memory Prefetcher (hwpf)
+  localparam int HPDCACHE_NREQUESTERS = 3 + (CVA6Cfg.MmuPresent ? 1 : 0) + (CVA6Cfg.RVZCMT ? 1 : 0);
+  localparam int NUM_SNOOP_PORTS = 2;
 
   localparam int MMU_PTW_INDEX = 0;
   localparam int ZCMT_INDEX = (CVA6Cfg.MmuPresent ? 1 : 0);
   localparam int LOAD_INDEX = (CVA6Cfg.RVZCMT ? ZCMT_INDEX + 1 : ZCMT_INDEX);
   localparam int STORE_AMO_INDEX = LOAD_INDEX + 1;
-  localparam int CMO_INDEX = STORE_AMO_INDEX + 1;
-  localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
+  localparam int HWPF_INDEX = STORE_AMO_INDEX + 1;
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
     hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
@@ -399,19 +389,15 @@ module cva6_hpdcache_subsystem
       .ypb_zcmt_req_t   (ypb_zcmt_req_t),
       .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
 
-      .HPDCACHE_ENABLE_CMO (HPDCACHE_ENABLE_CMO),
       .HPDCACHE_NREQUESTERS(HPDCACHE_NREQUESTERS),
       .NUM_SNOOP_PORTS     (NUM_SNOOP_PORTS),
       .MMU_PTW_INDEX       (MMU_PTW_INDEX),
       .ZCMT_INDEX          (ZCMT_INDEX),
       .LOAD_INDEX          (LOAD_INDEX),
       .STORE_AMO_INDEX     (STORE_AMO_INDEX),
-      .CMO_INDEX           (CMO_INDEX),
       .HWPF_INDEX          (HWPF_INDEX),
 
       .NrHwPrefetchers        (NrHwPrefetchers),
-      .cmo_req_t              (cmo_req_t),
-      .cmo_rsp_t              (cmo_rsp_t),
       .hpdcache_mem_addr_t    (hpdcache_mem_addr_t),
       .hpdcache_mem_id_t      (hpdcache_mem_id_t),
       .hpdcache_mem_data_t    (hpdcache_mem_data_t),
@@ -438,8 +424,6 @@ module cva6_hpdcache_subsystem
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
       .dcache_miss_o(dcache_miss_o),
-      .dcache_cmo_req_i(dcache_cmo_req_i),
-      .dcache_cmo_rsp_o(dcache_cmo_rsp_o),
       .ypb_store_req_i(ypb_store_req_i),
       .ypb_store_rsp_o(ypb_store_rsp_o),
       .ypb_amo_req_i(ypb_amo_req_i),
