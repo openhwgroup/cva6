@@ -838,6 +838,12 @@ module cva6_shared_tlb #(
         );
         assign pte[i][a] = pte_cva6_t'(pte_rd_data[i][a]);
       end
+    end else begin
+      // Without the shared TLB, the read paths the match logic reads are tied to zero.
+      assign shared_tag_rd[i] = '0;
+      for (genvar a = 0; a < HYP_EXT + 1; a++) begin : g_no_content_sram
+        assign pte[i][a] = '0;
+      end
     end
   end
 endmodule
