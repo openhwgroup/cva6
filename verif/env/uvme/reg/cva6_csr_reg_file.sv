@@ -571,13 +571,13 @@ class reg_mstatush extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatush__read_cg";
       option.per_instance = 1;
+      // MBE and SBE select big endian data accesses; SBE is a read-only copy of
+      // MBE, which the privileged specification allows.
       SBE: coverpoint data[4:4] {
-         bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         bins legal_values[] = {0, 1};
       }
       MBE: coverpoint data[5:5]{
-         bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         bins legal_values[] = {0, 1};
       }
   endgroup
 
@@ -585,12 +585,10 @@ class reg_mstatush extends csr_reg;
       option.name = "csr_mstatush.mstatush__write_cp";
       option.per_instance = 1;
       SBE: coverpoint data[4:4] {
-         bins legal_values[] = {0};
-         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+         bins legal_values[] = {0, 1};
       }
       MBE: coverpoint data[5:5] {
-         bins legal_values[] = {0};
-         bins illegal_values[] = {[0:$]} with (!(item inside {0}));
+         bins legal_values[] = {0, 1};
       }
   endgroup
 
