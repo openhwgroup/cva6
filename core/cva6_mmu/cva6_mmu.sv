@@ -136,6 +136,9 @@ module cva6_mmu
   logic daccess_err;  // insufficient privilege to access this data page
   logic canonical_addr_check;  // canonical check on the virtual address for SV39
   logic d_g_st_access_err;  // insufficient privilege to access this data page
+  logic hlvx_inst_n, hlvx_inst_q;
+  logic g_load_exec_as_read_ok;
+  logic g_load_access_ok;
   logic ptw_active;  // PTW is currently walking a page table
   logic walking_instr;  // PTW is walking because of an ITLB miss
   logic ptw_error;  // PTW threw an exception
@@ -553,9 +556,21 @@ module cva6_mmu
     if (CVA6Cfg.RVH) begin
       lsu_tinst_n = lsu_tinst_i;
       hs_ld_st_inst_n = hs_ld_st_inst_i;
+      hlvx_inst_n = hlvx_inst_i;
       lsu_gpaddr_n[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0] = dtlb_gpaddr[(CVA6Cfg.XLEN == 32 ? CVA6Cfg.VLEN: CVA6Cfg.GPLEN)-1:0];
       csr_hs_ld_st_inst_o = hs_ld_st_inst_i || hs_ld_st_inst_q;
-      d_g_st_access_err = en_ld_st_g_translation_i && !dtlb_gpte_q.u;
+      // The PTW path has its own permission checks while populating translation
+      // state. Once a G-stage translation is cached and a later LSU access hits in
+      // the DTLB, the hit path still has to re-check permissions against the
+      // current access type. In particular, a prior HLVX hit must not cause a
+      // later plain HLV load to inherit execute-only permission.
+      g_load_exec_as_read_ok = dtlb_gpte_q.x && (mxr_i || hlvx_inst_q);
+      g_load_access_ok = dtlb_gpte_q.r || g_load_exec_as_read_ok;
+      d_g_st_access_err = en_ld_st_g_translation_i && (
+                          !dtlb_gpte_q.u ||
+                          !dtlb_gpte_q.a ||
+                          (!lsu_is_store_q && !g_load_access_ok)
+      );
       dtlb_gpte_n = dtlb_g_content;
     end
 
@@ -771,6 +786,7 @@ module cva6_mmu
       dtlb_is_page_q  <= '0;
       lsu_tinst_q     <= '0;
       hs_ld_st_inst_q <= '0;
+      hlvx_inst_q     <= '0;
       misaligned_ex_q <= '0;
     end else begin
       lsu_vaddr_q           <= lsu_vaddr_n;
@@ -786,6 +802,7 @@ module cva6_mmu
       if (CVA6Cfg.RVH) begin
         lsu_tinst_q     <= lsu_tinst_n;
         hs_ld_st_inst_q <= hs_ld_st_inst_n;
+        hlvx_inst_q     <= hlvx_inst_n;
         dtlb_gpte_q     <= dtlb_gpte_n;
         lsu_gpaddr_q    <= lsu_gpaddr_n;
       end
