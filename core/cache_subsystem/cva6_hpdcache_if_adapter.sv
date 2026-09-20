@@ -381,7 +381,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign amo_data_size = ypb_amo_req_i.size;
       assign amo_is_word = (amo_data_size == 2'b10);
       assign amo_is_word_hi = ypb_amo_req_i.paddr[2];
-      if (CVA6Cfg.XLEN == 64) begin : amo_data_64_gen
+      if (CVA6Cfg.IS_XLEN64) begin : amo_data_64_gen
         assign amo_data = amo_is_word ? {2{ypb_amo_req_i.wdata[0+:32]}} : ypb_amo_req_i.wdata;
         assign amo_data_be = amo_is_word_hi ? 8'hf0 : amo_is_word ? 8'h0f : 8'hff;
       end else begin : amo_data_32_gen
@@ -465,7 +465,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
       //  Response forwarding
       //  {{{
-      if (CVA6Cfg.XLEN == 64) begin : amo_resp_64_gen
+      if (CVA6Cfg.IS_XLEN64) begin : amo_resp_64_gen
         assign amo_resp_word = amo_is_word_hi
                              ? hpdcache_rsp_i.rdata[0][32 +: 32]
                              : hpdcache_rsp_i.rdata[0][0  +: 32];

@@ -297,7 +297,7 @@ module csr_regfile
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVU) << 20)  // U - User mode implemented
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVV) << 21)  // V - Vector extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.NSX) << 23)  // X - Non-standard extensions present
-  | ((CVA6Cfg.XLEN == 64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
+  | ((CVA6Cfg.IS_XLEN64 ? 2 : 1) << CVA6Cfg.XLEN - 2);  // MXL
 
   assign pmpcfg_o  = pmpcfg_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
   assign pmpaddr_o = pmpaddr_q[(CVA6Cfg.NrPMPEntries>0?CVA6Cfg.NrPMPEntries-1 : 0):0];
@@ -570,7 +570,7 @@ module csr_regfile
         // machine mode registers
         riscv::CSR_MSTATUS: csr_rdata = mstatus_extended;
         riscv::CSR_MSTATUSH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = '0;
+        if (CVA6Cfg.IS_XLEN32) csr_rdata = '0;
         else read_access_exception = 1'b1;
         riscv::CSR_MISA: csr_rdata = IsaCode;
         riscv::CSR_MEDELEG:
@@ -603,7 +603,7 @@ module csr_regfile
           else read_access_exception = 1'b1;
         end
         riscv::CSR_MENVCFGH: begin
-          if (CVA6Cfg.RVU && CVA6Cfg.XLEN == 32) csr_rdata = '0;
+          if (CVA6Cfg.RVU && CVA6Cfg.IS_XLEN32) csr_rdata = '0;
           else read_access_exception = 1'b1;
         end
         riscv::CSR_MVENDORID: csr_rdata = {{CVA6Cfg.XLEN - 32{1'b0}}, OPENHWGROUP_MVENDORID};
@@ -616,18 +616,18 @@ module csr_regfile
         // Counters and Timers
         riscv::CSR_MCYCLE: csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
         riscv::CSR_MCYCLEH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = cycle_q[63:32];
+        if (CVA6Cfg.IS_XLEN32) csr_rdata = cycle_q[63:32];
         else read_access_exception = 1'b1;
         riscv::CSR_MINSTRET: csr_rdata = instret_q[CVA6Cfg.XLEN-1:0];
         riscv::CSR_MINSTRETH:
-        if (CVA6Cfg.XLEN == 32) csr_rdata = instret_q[63:32];
+        if (CVA6Cfg.IS_XLEN32) csr_rdata = instret_q[63:32];
         else read_access_exception = 1'b1;
         riscv::CSR_CYCLE:
         if (CVA6Cfg.RVZicntr) csr_rdata = cycle_q[CVA6Cfg.XLEN-1:0];
         else read_access_exception = 1'b1;
         riscv::CSR_CYCLEH:
         if (CVA6Cfg.RVZicntr)
-          if (CVA6Cfg.XLEN == 32) csr_rdata = cycle_q[63:32];
+          if (CVA6Cfg.IS_XLEN32) csr_rdata = cycle_q[63:32];
           else read_access_exception = 1'b1;
         else read_access_exception = 1'b1;
         riscv::CSR_INSTRET:
@@ -635,7 +635,7 @@ module csr_regfile
         else read_access_exception = 1'b1;
         riscv::CSR_INSTRETH:
         if (CVA6Cfg.RVZicntr)
-          if (CVA6Cfg.XLEN == 32) csr_rdata = instret_q[63:32];
+          if (CVA6Cfg.IS_XLEN32) csr_rdata = instret_q[63:32];
           else read_access_exception = 1'b1;
         else read_access_exception = 1'b1;
         //Event Selector
@@ -730,7 +730,7 @@ module csr_regfile
                 riscv::CSR_MHPM_COUNTER_29H,
                 riscv::CSR_MHPM_COUNTER_30H,
                 riscv::CSR_MHPM_COUNTER_31H :
-        if (CVA6Cfg.XLEN == 32) csr_rdata = perf_data_i;
+        if (CVA6Cfg.IS_XLEN32) csr_rdata = perf_data_i;
         else read_access_exception = 1'b1;
 
         // Performance counters (User Mode - R/O Shadows)
@@ -799,7 +799,7 @@ module csr_regfile
                 riscv::CSR_HPM_COUNTER_30H,
                 riscv::CSR_HPM_COUNTER_31H :
         if (CVA6Cfg.RVZihpm) begin
-          if (CVA6Cfg.XLEN == 32) csr_rdata = perf_data_i;
+          if (CVA6Cfg.IS_XLEN32) csr_rdata = perf_data_i;
           else read_access_exception = 1'b1;
         end else begin
           read_access_exception = 1'b1;
@@ -837,7 +837,7 @@ module csr_regfile
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
-          if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) read_access_exception = 1'b1;
+          if (CVA6Cfg.IS_XLEN64 && index[0] == 1'b1) read_access_exception = 1'b1;
           else begin
             csr_rdata = pmpcfg_q[index*4+:CVA6Cfg.XLEN/8];
           end
@@ -1587,11 +1587,11 @@ module csr_regfile
         // performance counters
         riscv::CSR_MCYCLE: cycle_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
         riscv::CSR_MCYCLEH:
-        if (CVA6Cfg.XLEN == 32) cycle_d[63:32] = csr_wdata;
+        if (CVA6Cfg.IS_XLEN32) cycle_d[63:32] = csr_wdata;
         else update_access_exception = 1'b1;
         riscv::CSR_MINSTRET: instret_d[CVA6Cfg.XLEN-1:0] = csr_wdata;
         riscv::CSR_MINSTRETH:
-        if (CVA6Cfg.XLEN == 32) instret_d[63:32] = csr_wdata;
+        if (CVA6Cfg.IS_XLEN32) instret_d[63:32] = csr_wdata;
         else update_access_exception = 1'b1;
         //Event Selector
         riscv::CSR_MHPM_EVENT_3,
@@ -1690,7 +1690,7 @@ module csr_regfile
                 riscv::CSR_MHPM_COUNTER_30H,
                 riscv::CSR_MHPM_COUNTER_31H :  begin
           perf_we_o = 1'b1;
-          if (CVA6Cfg.XLEN == 32) perf_data_o = csr_wdata;
+          if (CVA6Cfg.IS_XLEN32) perf_data_o = csr_wdata;
           else update_access_exception = 1'b1;
         end
 
@@ -1727,7 +1727,7 @@ module csr_regfile
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
           // if index is not even and XLEN==64, raise exception
-          if (CVA6Cfg.XLEN == 64 && index[0] == 1'b1) update_access_exception = 1'b1;
+          if (CVA6Cfg.IS_XLEN64 && index[0] == 1'b1) update_access_exception = 1'b1;
           else begin
             for (int i = 0; i < CVA6Cfg.XLEN / 8; i++) begin
               if (!pmpcfg_q[index*4+i].locked) pmpcfg_d[index*4+i] = csr_wdata[i*8+:8];

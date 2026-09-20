@@ -91,7 +91,7 @@ module zcmt_decoder #(
         fetch_stall_o = 1'b0;
         ypb_zcmt_req_o.preq = 1'b0;
         if (is_zcmt_instr_i) begin
-          if (CVA6Cfg.XLEN == 32) begin
+          if (CVA6Cfg.IS_XLEN32) begin
             req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[9:2], 2'b00};
             ypb_zcmt_req_o.paddr = req_addr_d;
             ypb_zcmt_req_o.preq = 1'b1;  // Always assert req

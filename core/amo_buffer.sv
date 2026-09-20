@@ -61,7 +61,7 @@ module amo_buffer #(
   assign ypb_amo_req_o.preq = no_st_pending_i & amo_valid_commit_i & amo_valid;
   assign ypb_amo_req_o.paddr = amo_data_out.paddr;
   assign ypb_amo_req_o.we = 1'b1;
-  assign ypb_amo_req_o.be = CVA6Cfg.XLEN == 64 ? ariane_pkg::be_gen(
+  assign ypb_amo_req_o.be = CVA6Cfg.IS_XLEN64 ? ariane_pkg::be_gen(
       amo_data_out.paddr[2:0], amo_data_out.size
   ) : ariane_pkg::be_gen_32(
       amo_data_out.paddr[1:0], amo_data_out.size

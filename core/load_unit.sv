@@ -328,7 +328,7 @@ module load_unit
   // request, so the registered byte enable is the one belonging to it.
   assign ypb_load_req_o.be = (ypb_a_state_q == TRANSPARENT) && valid_i && !CVA6Cfg.MmuPresent
                              ? lsu_ctrl_i.be : be_q;
-  assign ypb_load_req_o.size = (CVA6Cfg.XLEN == 64) ? ariane_pkg::size_gen(
+  assign ypb_load_req_o.size = (CVA6Cfg.IS_XLEN64) ? ariane_pkg::size_gen(
       ypb_load_req_o.be
   ) : ariane_pkg::size_gen_32(
       ypb_load_req_o.be
