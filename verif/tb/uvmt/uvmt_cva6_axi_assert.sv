@@ -16,14 +16,22 @@ module  uvmt_cva6_axi_assert#(int HPDCache=2)
 
    import uvm_pkg::*;
 
+   // The identifiers and the cache attributes below describe the AXI traffic of
+   // the legacy write-back and write-through caches. Every HPDcache variant
+   // drives them differently, so the checks are held off for all of them rather
+   // than for HPDCACHE_WT alone.
+   localparam bit LEGACY_CACHE = (HPDCache != int'(config_pkg::HPDCACHE_WT))
+                             && (HPDCache != int'(config_pkg::HPDCACHE_WB))
+                             && (HPDCache != int'(config_pkg::HPDCACHE_WT_WB));
+
    //check if the CVA6 identify read transaction with an ID equal to 0 or 1
    property AXI4_CVA6_ARID;
-      @(posedge axi_assert_if.clk && (HPDCache != 2) && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |-> axi_assert_if.ar_id == 0 || axi_assert_if.ar_id == 1 || (axi_assert_if.ar_id == 3 && axi_assert_if.ar_lock == 1);
+      @(posedge axi_assert_if.clk && LEGACY_CACHE && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |-> axi_assert_if.ar_id == 0 || axi_assert_if.ar_id == 1 || (axi_assert_if.ar_id == 3 && axi_assert_if.ar_lock == 1);
    endproperty
 
    //check if the CVA6 identify write transaction with an ID equal to 0 or 1
    property AXI4_CVA6_AWID;
-      @(posedge axi_assert_if.clk && (HPDCache != 2) && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_id == 1 || (axi_assert_if.aw_id == 3 && axi_assert_if.aw_atop != 0) || (axi_assert_if.aw_id == 3 && axi_assert_if.aw_lock == 1);
+      @(posedge axi_assert_if.clk && LEGACY_CACHE && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_id == 1 || (axi_assert_if.aw_id == 3 && axi_assert_if.aw_atop != 0) || (axi_assert_if.aw_id == 3 && axi_assert_if.aw_lock == 1);
    endproperty
 
    //Check if user-defined extension for read address channel is equal to 0b00
@@ -58,12 +66,12 @@ module  uvmt_cva6_axi_assert#(int HPDCache=2)
 
    //Check if AWCACHE is always equal to 0b0000
    property AXI4_CVA6_AWCACHE;
-      @(posedge axi_assert_if.clk && (HPDCache != 2)) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_cache == 2;
+      @(posedge axi_assert_if.clk && LEGACY_CACHE) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_cache == 2;
    endproperty
 
    //Check if ARCACHE is always equal to 0b0000
    property AXI4_CVA6_ARCACHE;
-      @(posedge axi_assert_if.clk && (HPDCache != 2) && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |-> axi_assert_if.ar_cache == 2;
+      @(posedge axi_assert_if.clk && LEGACY_CACHE && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |-> axi_assert_if.ar_cache == 2;
    endproperty
 
    //Check if Protection attributes for write transaction always take the 0b000
