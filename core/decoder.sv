@@ -179,6 +179,7 @@ module decoder
     illegal_instr_bm                       = 1'b0;
     illegal_instr_zic                      = 1'b0;
     virtual_illegal_instr                  = 1'b0;
+    tinst                                  = 32'h0;
     instruction_o.pc                       = pc_i;
     instruction_o.trans_id                 = '0;
     instruction_o.fu                       = NONE;
@@ -298,6 +299,7 @@ module decoder
                     // only if S mode is supported
                     // otherwise decode an illegal instruction
                     if (CVA6Cfg.RVH && v_i) begin
+                      illegal_instr = (instr.itype.rd == '0) ? illegal_instr : 1'b1;
                       virtual_illegal_instr = (priv_lvl_i == riscv::PRIV_LVL_S) ? 1'b0 : 1'b1;
                     end else begin
                       illegal_instr    = (CVA6Cfg.RVS && (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
@@ -315,7 +317,7 @@ module decoder
                       if (v_i) begin
                         virtual_illegal_instr = 1'b1;
                       end else begin
-                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                       end
                       instruction_o.op = ariane_pkg::HFENCE_VVMA;
                     end else if (instr.instr[31:25] == 7'b110001) begin
@@ -324,7 +326,7 @@ module decoder
                       if (v_i) begin
                         virtual_illegal_instr = 1'b1;
                       end else begin
-                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
+                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                       end
                       instruction_o.op = ariane_pkg::HFENCE_GVMA;
                       // check TVM flag and intercept HFENCE.GVMA call if necessary
@@ -1169,7 +1171,7 @@ module decoder
                   instruction_o.op = ariane_pkg::BSETI;
                 else if (CVA6Cfg.IS_XLEN32 && instr.instr[31:25] == 7'b0010100)
                   instruction_o.op = ariane_pkg::BSETI;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::ZIP;
                 else if (CVA6Cfg.ZKN && instr.instr[31:24] == 8'b00110001) begin
                   instruction_o.op = ariane_pkg::AES64KS1I;
@@ -1219,7 +1221,7 @@ module decoder
                   instruction_o.op = ariane_pkg::RORI;
                 else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b011010000111)
                   instruction_o.op = ariane_pkg::BREV8;
-                else if (CVA6Cfg.ZKN && instr.instr[31:20] == 12'b000010001111)
+                else if (CVA6Cfg.ZKN && CVA6Cfg.IS_XLEN32 && instr.instr[31:20] == 12'b000010001111)
                   instruction_o.op = ariane_pkg::UNZIP;
                 else illegal_instr_bm = 1'b1;
               end
@@ -1259,9 +1261,9 @@ module decoder
               unique case (instr.itype.funct3)
                 3'b001: begin
                   if (instr.instr[31:25] == 7'b0110000) begin
-                    if (instr.instr[21:20] == 2'b10) instruction_o.op = ariane_pkg::CPOPW;
-                    else if (instr.instr[21:20] == 2'b00) instruction_o.op = ariane_pkg::CLZW;
-                    else if (instr.instr[21:20] == 2'b01) instruction_o.op = ariane_pkg::CTZW;
+                    if (instr.instr[24:20] == 5'b00010) instruction_o.op = ariane_pkg::CPOPW;
+                    else if (instr.instr[24:20] == 5'b00000) instruction_o.op = ariane_pkg::CLZW;
+                    else if (instr.instr[24:20] == 5'b00001) instruction_o.op = ariane_pkg::CTZW;
                     else illegal_instr_bm = 1'b1;
                   end else if (instr.instr[31:26] == 6'b000010) begin
                     instruction_o.op = ariane_pkg::SLLIUW; // Shift Left Logic by Immediate (Unsigned Word)
@@ -1531,12 +1533,14 @@ module decoder
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11010: begin
                 instruction_o.op = ariane_pkg::FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
                 imm_select       = IIMM;  // rs2 holds part of the instruction
                 if (|instr.rftype.rs2[24:22])
                   illegal_instr = 1'b1;  // bits [21:20] used, other bits must be 0
+                if (CVA6Cfg.IS_XLEN32 && instr.rftype.rs2[21]) illegal_instr = 1'b1;
               end
               5'b11100: begin
                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
