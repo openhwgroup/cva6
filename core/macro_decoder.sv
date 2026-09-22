@@ -82,6 +82,12 @@ module macro_decoder #(
       unique case (instr_i[12:10])
         // push or pop
         3'b110: begin
+          // rlist values 0 to 3 are reserved for a future EABI variant
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = PUSH;
@@ -97,6 +103,12 @@ module macro_decoder #(
         end
         // popret or popretz
         3'b111: begin
+          // rlist values 0 to 3 are reserved for a future EABI variant
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = POPRETZ;
@@ -133,7 +145,10 @@ module macro_decoder #(
 
       // Calculate xreg1 & xreg2 for move instructions
       if (macro_instr_type == MVSA01 || macro_instr_type == MVA01S) begin
-        if (instr_i[9:7] != instr_i[4:2]) begin
+        // Only cm.mvsa01 requires its two registers to differ: it writes both,
+        // so naming the same one twice has no defined meaning. cm.mva01s reads
+        // them into a0 and a1 and is well defined when they are the same.
+        if (macro_instr_type == MVA01S || instr_i[9:7] != instr_i[4:2]) begin
           xreg1 = {instr_i[9:8] > 0, instr_i[9:8] == 0, instr_i[9:7]};
           xreg2 = {instr_i[4:3] > 0, instr_i[4:3] == 0, instr_i[4:2]};
         end else begin
@@ -272,7 +287,7 @@ module macro_decoder #(
 
     unique case (state_q)
       IDLE: begin
-        if (is_macro_instr_i) begin
+        if (is_macro_instr_i && !illegal_instr_o) begin
           reg_numbers_d = reg_numbers - 1'b1;
           state_d = issue_ack_i ? INIT : IDLE;
           case (macro_instr_type)
