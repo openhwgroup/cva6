@@ -73,7 +73,7 @@ module commit_stage
     output logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_o,
     // Valid AMO in commit stage - EX_STAGE
     output logic amo_valid_commit_o,
-    // no store is pending - EX_STAGE
+    // No store is pending - EX_STAGE
     input logic no_st_pending_i,
     // Shared TLB is still processing a multi-cycle flush
     input logic shared_tlb_flush_busy_i,

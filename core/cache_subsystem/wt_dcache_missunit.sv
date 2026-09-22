@@ -53,7 +53,7 @@ module wt_dcache_missunit
     output logic [NumPorts-1:0] miss_replay_o,
     // signals response from memory
     output logic [NumPorts-1:0] miss_rtrn_vld_o,
-    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
+    output logic [CVA6Cfg.MEM_TID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero for reads
     // from writebuffer
     input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0][CVA6Cfg.PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
     input  logic [CVA6Cfg.DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations

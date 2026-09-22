@@ -16,7 +16,7 @@
     logic accept; /*Is the offloaded compressed instruction (id) accepted by the coprocessor?*/ \
 }
 
-`define X_ISSUE_REQ_T(Cfg, hartit_t, id_t) struct packed { \
+`define X_ISSUE_REQ_T(Cfg, hartid_t, id_t) struct packed { \
     logic [31:0] instr; /*Offloaded instruction*/ \
     hartid_t hartid; /*Identification of the hart offloading the instruction*/ \
     id_t id; /*Identification of the offloaded instruction*/ \
