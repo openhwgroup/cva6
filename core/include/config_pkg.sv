@@ -131,6 +131,22 @@ package config_pkg;
     logic [63:0]                 HaltAddress;
     // Address to jump when exception
     logic [63:0]                 ExceptionAddress;
+    // Trigger Module Sdtrig Extension
+    bit                          Sdtrig;
+    bit                          SdtrigMcontrol6;
+    bit                          SdtrigMcontrol6ExecAddr;
+    bit                          SdtrigMcontrol6ExecData;
+    bit                          SdtrigMcontrol6Store;
+    bit                          SdtrigMcontrol6LoadAddr;
+    bit                          SdtrigMcontrol6LoadData;
+    bit                          SdtrigIcount;
+    bit                          SdtrigEtrigger;
+    bit                          SdtrigItrigger;
+    int                          SdtrigNrTriggers;
+    bit                          SdtrigTriggerChaining;
+    logic [1:0]                  SdtrigSupportedActions;
+    logic [9:0]                  SdtrigSupportedMatch;
+    bit                          SdtrigSupportTextra;
     // Tval Support Enable
     bit                          TvalEn;
     // MTVEC CSR supports only direct mode
@@ -359,28 +375,44 @@ package config_pkg;
     int unsigned VpnLen;
     int unsigned PtLevels;
 
-    logic [63:0]                 DmBaseAddress;
-    bit                          TvalEn;
-    bit                          DirectVecOnly;
-    int unsigned                 NrPMPEntries;
-    logic [63:0][63:0]           PMPCfgRstVal;
-    logic [63:0][63:0]           PMPAddrRstVal;
-    bit [63:0]                   PMPEntryReadOnly;
-    bit                          PMPNapotEn;
-    noc_type_e                   NOCType;
-    int unsigned                 NrNonIdempotentRules;
+    logic [63:0] DmBaseAddress;
+    // Trigger Module Sdtrig Extension
+    bit Sdtrig;
+    bit SdtrigMcontrol6;
+    bit SdtrigMcontrol6ExecAddr;
+    bit SdtrigMcontrol6ExecData;
+    bit SdtrigMcontrol6Store;
+    bit SdtrigMcontrol6LoadAddr;
+    bit SdtrigMcontrol6LoadData;
+    bit SdtrigIcount;
+    bit SdtrigEtrigger;
+    bit SdtrigItrigger;
+    int SdtrigNrTriggers;
+    bit SdtrigTriggerChaining;
+    logic [1:0] SdtrigSupportedActions;
+    logic [9:0] SdtrigSupportedMatch;
+    bit SdtrigSupportTextra;
+    bit TvalEn;
+    bit DirectVecOnly;
+    int unsigned NrPMPEntries;
+    logic [63:0][63:0] PMPCfgRstVal;
+    logic [63:0][63:0] PMPAddrRstVal;
+    bit [63:0] PMPEntryReadOnly;
+    bit PMPNapotEn;
+    noc_type_e NOCType;
+    int unsigned NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
-    int unsigned                 NrExecuteRegionRules;
+    int unsigned NrExecuteRegionRules;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
-    int unsigned                 NrCachedRegionRules;
+    int unsigned NrCachedRegionRules;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
-    int unsigned                 MaxOutstandingStores;
-    bit                          DebugEn;
-    bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
-    bit                          AxiBurstWriteEn;
+    int unsigned MaxOutstandingStores;
+    bit DebugEn;
+    bit NonIdemPotenceEn;  // Currently only used by V extension (Ara)
+    bit AxiBurstWriteEn;
 
     int unsigned ICACHE_SET_ASSOC;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
