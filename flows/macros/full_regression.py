@@ -122,6 +122,8 @@ TARGETS = [
     "cv32a6_imac_sv32",
     "cv32a65x_sv32_axi",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
+    # AXI PMP MMU with the alternative half-precision format and AXI burst writes
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
 ]
 
 # Testlists run per target. A testlist whose
@@ -180,6 +182,7 @@ TESTLISTS = {
         "base_rv64_amo_p",
         "base_rv64_amo_v",
     ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": ["base_rv64_p", "base_rv64_amo_p"],
 }
 
 # Benchmark patterns, compiled with the same
