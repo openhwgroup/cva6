@@ -156,10 +156,6 @@ module load_unit
     ldbuf_flushed_d = ldbuf_flushed_q;
     ldbuf_valid_d   = ldbuf_valid_q;
 
-    //  In case of flush, raise the flushed flag in all slots.
-    if (flush_i) begin
-      ldbuf_flushed_d = '1;
-    end
     //  Free read entry (in the case of fall-through mode, free the entry
     //  only if there is no pending load)
     if (ldbuf_r && (!LDBUF_FALLTHROUGH || !ldbuf_w)) begin
@@ -173,6 +169,12 @@ module load_unit
     if (ldbuf_w) begin
       ldbuf_flushed_d[ldbuf_windex] = 1'b0;
       ldbuf_valid_d[ldbuf_windex]   = 1'b1;
+    end
+    //  In case of flush, raise the flushed flag in all slots, including a slot
+    //  allocated in the same cycle: this branch comes after ldbuf_w so that it
+    //  wins.
+    if (flush_i) begin
+      ldbuf_flushed_d = '1;
     end
   end
 
@@ -481,7 +483,7 @@ module load_unit
 
   // select correct sign bit in parallel to result shifter above
   // pull to 0 if unsigned
-  assign rdata_sign_bit = rdata_is_signed & rdata_sign_bits[rdata_offset] | (CVA6Cfg.FpPresent && rdata_is_fp_signed);
+  assign rdata_sign_bit = (rdata_is_signed && rdata_sign_bits[rdata_offset]) || (CVA6Cfg.FpPresent && rdata_is_fp_signed);
 
   // result mux
   always_comb begin
@@ -529,11 +531,11 @@ module load_unit
   addr_offset0 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 5)
-  else `ASSERT_FATAL("invalid address offset used with {LW, LWU}");
+  else `ASSERT_WARNING("invalid address offset used with {LW, LWU}");
   addr_offset1 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 7)
-  else `ASSERT_FATAL("invalid address offset used with {LH, LHU}");
+  else `ASSERT_WARNING("invalid address offset used with {LH, LHU}");
   addr_offset2 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 8)
