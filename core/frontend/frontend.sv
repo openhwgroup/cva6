@@ -42,6 +42,8 @@ module frontend
     input logic flush_i,
     // Halt requested by WFI and Accelerate port - CONTROLLER
     input logic halt_i,
+    // Halt frontend during fence.i, to avoid fetching a stale instruction - CONTROLLER
+    input logic halt_frontend_i,
     // Set COMMIT PC as next PC requested by FENCE, CSR side-effect and Accelerate port - CONTROLLER
     input logic set_pc_commit_i,
     // COMMIT PC - COMMIT
@@ -486,7 +488,10 @@ module frontend
   assign ypb_fetch_req_o.vaddr = npc_fetch_address;
   assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
 
-  assign data_req = (CVA6Cfg.MmuPresent ? (fetchbuf_w || fetchbuf_w_q) && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w);
+  // Gate the fetch request during fence.i: the instruction cache flush and the
+  // data cache flush are not simultaneous, so a fetch issued in between would
+  // bring back an instruction the flush was meant to drop.
+  assign data_req = (CVA6Cfg.MmuPresent ? (fetchbuf_w || fetchbuf_w_q) && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w) && !halt_frontend_i;
 
   always_comb begin : p_fsm_common
     // default assignmen
