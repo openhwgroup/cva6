@@ -51,3 +51,12 @@ testlist:
     <<: *common_test_config
     iterations: 1
     asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
+
+  - test: load-misaligned-warning
+    <<: *common_test_config
+    description: >
+      Check that misaligned word and halfword loads raise load-address-
+      misaligned exceptions without terminating simulation in load_unit
+      offset assertions.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/load-misaligned-warning.S
