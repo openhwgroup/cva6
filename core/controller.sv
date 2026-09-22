@@ -55,6 +55,8 @@ module controller
     input logic halt_acc_i,
     // Halt signal to commit stage - COMMIT_STAGE
     output logic halt_o,
+    // Halt frontend during fence.i to prevent fetching stale instructions - FRONTEND
+    output logic halt_frontend_o,
     // Return from exception - CSR_REGFILE
     input logic eret_i,
     // We got an exception, flush the pipeline - FRONTEND
@@ -83,6 +85,9 @@ module controller
 
   // active fence - high if we are currently flushing the dcache
   logic fence_active_d, fence_active_q;
+  // Tracks fence.i progress, separately from the plain fence above: the
+  // frontend has to stay halted until the data cache flush completes.
+  logic fence_i_active_d, fence_i_active_q;
   logic flush_dcache;
 
   // ------------
@@ -90,6 +95,7 @@ module controller
   // ------------
   always_comb begin : flush_ctrl
     fence_active_d         = fence_active_q;
+    fence_i_active_d       = fence_i_active_q;
     set_pc_commit_o        = 1'b0;
     flush_if_o             = 1'b0;
     flush_unissued_instr_o = 1'b0;
@@ -143,10 +149,11 @@ module controller
       flush_icache_o         = 1'b1;
       // this is not needed in the case since we
       // have a write-through cache in this case
-      // When handling fence.i, flush both caches
+      // When handling fence.i, flush both caches and activate fence_i state
       if (CVA6Cfg.DcacheFlushOnFenceI) begin
-        flush_dcache   = 1'b1;
-        fence_active_d = 1'b1;
+        flush_dcache     = 1'b1;
+        fence_active_d   = 1'b1;
+        fence_i_active_d = 1'b1;
       end
     end
 
@@ -156,6 +163,8 @@ module controller
       // wait for the acknowledge here
       if (flush_dcache_ack_i && fence_active_q) begin
         fence_active_d = 1'b0;
+        // Deassert fence_i state only after the data cache flush completes
+        if (fence_i_active_q) fence_i_active_d = 1'b0;
         // keep the flush dcache signal high as long as we didn't get the acknowledge from the cache
       end else if (fence_active_q) begin
         flush_dcache = 1'b1;
@@ -245,6 +254,8 @@ module controller
   always_comb begin
     // halt the core if the fence is active
     halt_o = halt_csr_i || halt_acc_i || ((CVA6Cfg.DcacheFlushOnFence || CVA6Cfg.DcacheFlushOnFenceI) && fence_active_q);
+    // Halt frontend during fence.i to synchronize ICache/DCache flushes
+    halt_frontend_o = fence_i_active_q;
   end
 
   // ----------------------
@@ -252,12 +263,14 @@ module controller
   // ----------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
-      fence_active_q <= 1'b0;
-      flush_dcache_o <= 1'b0;
+      fence_active_q   <= 1'b0;
+      fence_i_active_q <= 1'b0;
+      flush_dcache_o   <= 1'b0;
     end else begin
-      fence_active_q <= fence_active_d;
+      fence_active_q   <= fence_active_d;
+      fence_i_active_q <= fence_i_active_d;
       // register on the flush signal, this signal might be critical
-      flush_dcache_o <= flush_dcache;
+      flush_dcache_o   <= flush_dcache;
     end
   end
 endmodule
