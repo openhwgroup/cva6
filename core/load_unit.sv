@@ -303,7 +303,7 @@ module load_unit
       kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
     end
     // RETIRE LOAD
-    // we got an rvalid and it's corresponding request was not flushed
+    // we got an rvalid and its corresponding request was not flushed
     if (data_rvalid) begin
       trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
       valid_o    = 1'b1;

@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 20.09.2018
 // Description: Buffers AMO requests
-// This unit buffers an atomic memory operations for the cache subsystem.
+// This unit buffers an atomic memory operation for the cache subsystem.
 // Furthermore it handles interfacing with the commit stage
 
 module amo_buffer #(
