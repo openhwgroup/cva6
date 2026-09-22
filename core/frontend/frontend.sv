@@ -820,6 +820,18 @@ module frontend
 
   if (CVA6Cfg.BHTEntries == 0) begin
     assign bht_prediction = '0;
+  end else if (CVA6Cfg.BPType == config_pkg::PH_BHT) begin : bht2lvl_gen
+    bht2lvl #(
+        .CVA6Cfg     (CVA6Cfg),
+        .bht_update_t(bht_update_t)
+    ) i_bht (
+        .clk_i,
+        .rst_ni,
+        .flush_i         (flush_bp_i),
+        .vpc_i           (vpc_bht),
+        .bht_update_i    (bht_update),
+        .bht_prediction_o(bht_prediction)
+    );
   end else begin : bht_gen
     if (CVA6Cfg.DclsEn & CVA6Cfg.DclsCommonBHT) begin : gen_common_bht
       assign bht_prediction = dcls_common_bht_data_i;
