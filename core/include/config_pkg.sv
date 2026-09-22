@@ -489,6 +489,11 @@ package config_pkg;
     else `ASSERT_FATAL("");
     assert (!(Cfg.RVZCMT && Cfg.MmuPresent))
     else `ASSERT_FATAL("");
+    // Zcmp is incompatible with Zcd (compressed double-precision FP loads and
+    // stores, automatically present whenever both C and D are implemented),
+    // the two reusing the same opcodes.
+    assert (!(Cfg.RVZCMP && Cfg.RVC && Cfg.RVD))
+    else `ASSERT_FATAL("");
     // pragma translate_on
   endfunction
 

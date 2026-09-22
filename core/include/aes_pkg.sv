@@ -17,7 +17,7 @@ package aes_pkg;
   // ----------------------
 
   // AES MixColumns Forward
-  function [31:0] aes_mixcolumn_fwd(input [31:0] x);
+  function automatic [31:0] aes_mixcolumn_fwd(input [31:0] x);
     begin
       aes_mixcolumn_fwd = {
         (((x[7:0] << 1) ^ ((x[7]) ? 8'h1B : 8'h00)) ^ x[7:0]) ^ x[15:8] ^ x[23:16] ^ ((x[31:24] << 1) ^ ((x[31]) ? 8'h1B : 8'h00)),
@@ -28,7 +28,7 @@ package aes_pkg;
     end
   endfunction
   // AES subword Forward
-  function [31:0] aes_subword_fwd(input [31:0] word);
+  function automatic [31:0] aes_subword_fwd(input [31:0] word);
     aes_subword_fwd = {
       aes_sbox_fwd(word[31:24]),
       aes_sbox_fwd(word[23:16]),
@@ -37,7 +37,7 @@ package aes_pkg;
     };
   endfunction
   // AES Round Constant
-  function [31:0] aes_decode_rcon(input [3:0] r);
+  function automatic [31:0] aes_decode_rcon(input [3:0] r);
     case (r)
       4'h0: aes_decode_rcon = 32'h00000001;
       4'h1: aes_decode_rcon = 32'h00000002;
@@ -59,7 +59,7 @@ package aes_pkg;
     endcase
   endfunction
   // AES MixColumns Inverse
-  function logic [31:0] aes_mixcolumn_inv(input logic [31:0] x);
+  function automatic logic [31:0] aes_mixcolumn_inv(input logic [31:0] x);
     aes_mixcolumn_inv = {
       (gfmul(x[7:0], 4'hB) ^ gfmul(x[15:8], 4'hD) ^ gfmul(x[23:16], 4'h9) ^ gfmul(x[31:24], 4'hE)),
       (gfmul(x[7:0], 4'hD) ^ gfmul(x[15:8], 4'h9) ^ gfmul(x[23:16], 4'hE) ^ gfmul(x[31:24], 4'hB)),
@@ -68,7 +68,7 @@ package aes_pkg;
     };
   endfunction
   // GF multiplication
-  function logic [7:0] gfmul(input logic [7:0] x, input logic [3:0] y);
+  function automatic logic [7:0] gfmul(input logic [7:0] x, input logic [3:0] y);
     logic [7:0] result, temp;
     result = 8'h00;
     if (y[0]) result ^= x;
