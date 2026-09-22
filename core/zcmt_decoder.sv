@@ -121,8 +121,9 @@ module zcmt_decoder #(
       TABLE_WAIT_RVALID: begin
         ypb_zcmt_req_o.preq = 1'b0;
         if (ypb_zcmt_rsp_i.rvalid) begin
-          // safe the PC relative XLEN table jump address
-          jump_address_o = $unsigned($signed(ypb_zcmt_rsp_i.rdata) - $signed(pc_i));
+          // Clear bit 0 of the JVT target before converting it to a PC-relative offset.
+          jump_address_o =
+              $unsigned($signed({ypb_zcmt_rsp_i.rdata[CVA6Cfg.XLEN-1:1], 1'b0}) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin
             // jal pc_offset, x0 for no return stack
             instr_o = {20'h0, 5'h0, riscv::OpcodeJal};
