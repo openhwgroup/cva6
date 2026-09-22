@@ -1,0 +1,9 @@
+# Not baselined yet: this target was just created to exercise XF16ALT and the
+# AXI burst write path, and its gate count and benchmark cycles have never been
+# measured. Left empty on purpose rather than carrying over the values of the
+# target it derives from, which the extra floating point format and the burst
+# write state machine make wrong.
+# GTECH synthesis (dc-shell-synth --gtech): to measure when the target
+# joins GTECH_TARGETS of the regression
+# gtech_cells:
+# gtech_registers:
