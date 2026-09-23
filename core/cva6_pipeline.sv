@@ -506,6 +506,20 @@ module cva6_pipeline
   logic [31:0] mcountinhibit_csr_perf;
   //jvt
   jvt_t jvt;
+  // trigger module
+  logic
+      sdtrig_commit_std_exception_valid,
+      sdtrig_sb_std_exception_valid,
+      sdtrig_load_stall,
+      sdtrig_load_cancel,
+      sdtrig_store_stall;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action[CVA6Cfg.NrIssuePorts];
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action, sdtrig_store_action, sdtrig_commit_action;
+  logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_operand_a;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c;
+  logic sdtrig_lsu_inputs_we, sdtrig_lsu_inputs_valid;
+  logic sdtrig_commit_icount_valid;
+  logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -629,9 +643,10 @@ module cva6_pipeline
       .flush_i(flush_ctrl_if),
       .debug_req_i,
 
-      .fetch_entry_i      (fetch_entry_if_id),
-      .fetch_entry_valid_i(fetch_valid_if_id),
-      .fetch_entry_ready_o(fetch_ready_id_if),
+      .fetch_entry_i          (fetch_entry_if_id),
+      .sdtrig_decoder_action_i(sdtrig_decoder_action),
+      .fetch_entry_valid_i    (fetch_valid_if_id),
+      .fetch_entry_ready_o    (fetch_ready_id_if),
 
       .issue_entry_o       (issue_entry_id_issue),
       .issue_entry_o_prev  (issue_entry_id_issue_prev),
@@ -1063,6 +1078,14 @@ module cva6_pipeline
   // ---------
   // CSR
   // ---------
+  //Trigger Module assignments
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] fetch_sdtrig_pc;
+  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] fetch_sdtrig_instr;
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin : gen_fetch_sdtrig
+    assign fetch_sdtrig_pc[i] = CVA6Cfg.SdtrigMcontrol6ExecAddr ? fetch_entry_if_id[i].address : '0;
+    assign fetch_sdtrig_instr[i] = CVA6Cfg.SdtrigMcontrol6ExecData ? fetch_entry_if_id[i].instruction : '0;
+  end
+
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
       .exception_t       (exception_t),
@@ -1075,87 +1098,109 @@ module cva6_pipeline
       .clk_i,
       .rst_ni,
       .time_irq_i,
-      .flush_o                 (flush_csr_ctrl),
-      .halt_csr_o              (halt_csr_ctrl),
-      .commit_instr_i          (commit_instr_id_commit[0]),
-      .commit_ack_i            (commit_ack),
-      .boot_addr_i             (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
-      .ex_i                    (ex_commit),
-      .csr_op_i                (csr_op_commit_csr),
-      .csr_addr_i              (csr_addr_ex_csr),
-      .csr_wdata_i             (csr_wdata_commit_csr),
-      .csr_rdata_o             (csr_rdata_csr_commit),
-      .dirty_fp_state_i        (dirty_fp_state),
-      .csr_write_fflags_i      (csr_write_fflags_commit_cs),
+      .flush_o                            (flush_csr_ctrl),
+      .halt_csr_o                         (halt_csr_ctrl),
+      .commit_instr_i                     (commit_instr_id_commit[0]),
+      .commit_ack_i                       (commit_ack),
+      .boot_addr_i                        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .hart_id_i                          (hart_id_i[CVA6Cfg.XLEN-1:0]),
+      .ex_i                               (ex_commit),
+      .csr_op_i                           (csr_op_commit_csr),
+      .csr_addr_i                         (csr_addr_ex_csr),
+      .csr_wdata_i                        (csr_wdata_commit_csr),
+      .csr_rdata_o                        (csr_rdata_csr_commit),
+      .dirty_fp_state_i                   (dirty_fp_state),
+      .csr_write_fflags_i                 (csr_write_fflags_commit_cs),
       // Accelerator
-      .dirty_v_state_i         ('0  /*FIXME*/),
-      .pc_i                    (pc_commit),
-      .csr_exception_o         (csr_exception_csr_commit),
-      .epc_o                   (epc_commit_pcgen),
-      .eret_o                  (eret),
-      .trap_vector_base_o      (trap_vector_base_commit_pcgen),
-      .priv_lvl_o              (priv_lvl),
-      .mbe_o                   (mbe),
-      .v_o                     (v),
+      .dirty_v_state_i                    ('0  /*FIXME*/),
+      .pc_i                               (pc_commit),
+      .csr_exception_o                    (csr_exception_csr_commit),
+      .epc_o                              (epc_commit_pcgen),
+      .eret_o                             (eret),
+      .trap_vector_base_o                 (trap_vector_base_commit_pcgen),
+      .priv_lvl_o                         (priv_lvl),
+      .mbe_o                              (mbe),
+      .v_o                                (v),
       // Accelerator
-      .acc_fflags_ex_i         ('0  /*FIXME*/),
-      .acc_fflags_ex_valid_i   ('0  /*FIXME*/),
-      .fs_o                    (fs),
-      .vfs_o                   (vfs),
-      .fflags_o                (fflags_csr_commit),
-      .frm_o                   (frm_csr_id_issue_ex),
-      .fprec_o                 (fprec_csr_ex),
-      .vs_o                    (vs),
-      .irq_ctrl_o              (irq_ctrl_csr_id),
-      .en_translation_o        (enable_translation_csr_ex),
-      .en_g_translation_o      (enable_g_translation_csr_ex),
-      .en_ld_st_translation_o  (en_ld_st_translation_csr_ex),
-      .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
-      .ld_st_priv_lvl_o        (ld_st_priv_lvl_csr_ex),
-      .ld_st_v_o               (ld_st_v_csr_ex),
-      .csr_hs_ld_st_inst_i     (csr_hs_ld_st_inst_ex),
-      .sum_o                   (sum_csr_ex),
-      .vs_sum_o                (vs_sum_csr_ex),
-      .mxr_o                   (mxr_csr_ex),
-      .vmxr_o                  (vmxr_csr_ex),
-      .satp_ppn_o              (satp_ppn_csr_ex),
-      .asid_o                  (asid_csr_ex),
-      .vsatp_ppn_o             (vsatp_ppn_csr_ex),
-      .vs_asid_o               (vs_asid_csr_ex),
-      .hgatp_ppn_o             (hgatp_ppn_csr_ex),
-      .vmid_o                  (vmid_csr_ex),
+      .acc_fflags_ex_i                    ('0  /*FIXME*/),
+      .acc_fflags_ex_valid_i              ('0  /*FIXME*/),
+      .fs_o                               (fs),
+      .vfs_o                              (vfs),
+      .fflags_o                           (fflags_csr_commit),
+      .frm_o                              (frm_csr_id_issue_ex),
+      .fprec_o                            (fprec_csr_ex),
+      .vs_o                               (vs),
+      .irq_ctrl_o                         (irq_ctrl_csr_id),
+      .en_translation_o                   (enable_translation_csr_ex),
+      .en_g_translation_o                 (enable_g_translation_csr_ex),
+      .en_ld_st_translation_o             (en_ld_st_translation_csr_ex),
+      .en_ld_st_g_translation_o           (en_ld_st_g_translation_csr_ex),
+      .ld_st_priv_lvl_o                   (ld_st_priv_lvl_csr_ex),
+      .ld_st_v_o                          (ld_st_v_csr_ex),
+      .csr_hs_ld_st_inst_i                (csr_hs_ld_st_inst_ex),
+      .sum_o                              (sum_csr_ex),
+      .vs_sum_o                           (vs_sum_csr_ex),
+      .mxr_o                              (mxr_csr_ex),
+      .vmxr_o                             (vmxr_csr_ex),
+      .satp_ppn_o                         (satp_ppn_csr_ex),
+      .asid_o                             (asid_csr_ex),
+      .vsatp_ppn_o                        (vsatp_ppn_csr_ex),
+      .vs_asid_o                          (vs_asid_csr_ex),
+      .hgatp_ppn_o                        (hgatp_ppn_csr_ex),
+      .vmid_o                             (vmid_csr_ex),
       .irq_i,
       .ipi_i,
       .debug_req_i,
-      .set_debug_pc_o          (set_debug_pc),
-      .tvm_o                   (tvm_csr_id),
-      .tw_o                    (tw_csr_id),
-      .vtw_o                   (vtw_csr_id),
-      .tsr_o                   (tsr_csr_id),
-      .hu_o                    (hu),
-      .debug_mode_o            (debug_mode),
-      .single_step_o           (single_step_csr_commit),
-      .icache_en_o             (icache_enable_o),
-      .dcache_en_o             (dcache_enable_o),
+      .set_debug_pc_o                     (set_debug_pc),
+      .tvm_o                              (tvm_csr_id),
+      .tw_o                               (tw_csr_id),
+      .vtw_o                              (vtw_csr_id),
+      .tsr_o                              (tsr_csr_id),
+      .hu_o                               (hu),
+      .debug_mode_o                       (debug_mode),
+      .single_step_o                      (single_step_csr_commit),
+      .icache_en_o                        (icache_enable_o),
+      .dcache_en_o                        (dcache_enable_o),
       // Accelerator
-      .acc_cons_en_o           (  /*FIXME*/),
-      .perf_addr_o             (addr_csr_perf),
-      .perf_data_o             (data_csr_perf),
-      .perf_data_i             (data_perf_csr),
-      .perf_we_o               (we_csr_perf),
-      .pmpcfg_o                (pmpcfg),
-      .pmpaddr_o               (pmpaddr),
-      .mcountinhibit_o         (mcountinhibit_csr_perf),
-      .mcbie_o                 (mcbie),
-      .scbie_o                 (scbie),
-      .hcbie_o                 (hcbie),
-      .mcbcfe_o                (mcbcfe),
-      .scbcfe_o                (scbcfe),
-      .hcbcfe_o                (hcbcfe),
-      .jvt_o                   (jvt),
+      .acc_cons_en_o                      (  /*FIXME*/),
+      .perf_addr_o                        (addr_csr_perf),
+      .perf_data_o                        (data_csr_perf),
+      .perf_data_i                        (data_perf_csr),
+      .perf_we_o                          (we_csr_perf),
+      .pmpcfg_o                           (pmpcfg),
+      .pmpaddr_o                          (pmpaddr),
+      .mcountinhibit_o                    (mcountinhibit_csr_perf),
+      .mcbie_o                            (mcbie),
+      .scbie_o                            (scbie),
+      .hcbie_o                            (hcbie),
+      .mcbcfe_o                           (mcbcfe),
+      .scbcfe_o                           (scbcfe),
+      .hcbcfe_o                           (hcbcfe),
+      .jvt_o                              (jvt),
       //RVFI
-      .rvfi_csr_o              (rvfi_csr)
+      .rvfi_csr_o                         (rvfi_csr),
+      // Trigger Signals
+      .sdtrig_commit_std_exception_valid_o(sdtrig_commit_std_exception_valid),
+      //Decoder/FE <-> Trigger Module
+      .fetch_sdtrig_pc_i                  (fetch_sdtrig_pc),
+      .fetch_sdtrig_instr_i               (fetch_sdtrig_instr),
+      .sdtrig_decoder_action_o            (sdtrig_decoder_action),
+      //Load/Store Unit <-> Trigger Module
+      .sdtrig_lsu_inputs_vaddr_i          (sdtrig_lsu_inputs_operand_a),
+      .sdtrig_lsu_inputs_data_i           (sdtrig_lsu_inputs_operand_c),
+      .sdtrig_lsu_inputs_fu_i             (sdtrig_lsu_inputs_we),
+      .sdtrig_lsu_inputs_valid_i          (sdtrig_lsu_inputs_valid),
+      .sdtrig_load_data_i                 (load_result_ex_id),
+      .sdtrig_load_valid_i                (load_valid_ex_id),
+      .sdtrig_load_stall_o                (sdtrig_load_stall),
+      .sdtrig_load_cancel_o               (sdtrig_load_cancel),
+      .sdtrig_load_action_o               (sdtrig_load_action),
+      .sdtrig_store_stall_o               (sdtrig_store_stall),
+      .sdtrig_store_action_o              (sdtrig_store_action),
+      //Commit <- Trigger module
+      .sdtrig_commit_icount_valid_o       (sdtrig_commit_icount_valid),
+      .sdtrig_commit_action_o             (sdtrig_commit_action),
+      .sdtrig_commit_icount_nr_instr_o    (sdtrig_commit_icount_nr_instr)
   );
 
   // ------------------------

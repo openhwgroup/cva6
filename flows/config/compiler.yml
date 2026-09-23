@@ -64,6 +64,8 @@ my_cv32a60x_zcmt_pmp_toolchain:
   <<: *dummy2
 my_cv32a60x_zcmt_pmp_axi_toolchain:
   <<: *dummy2
+my_cv32a65x_sdtrig_toolchain:
+  <<: *dummy2
 my_cv32a65x_toolchain:
   <<: *dummy2
 my_cv32a65x_axi_toolchain:

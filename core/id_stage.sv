@@ -38,6 +38,8 @@ module id_stage #(
     input logic debug_req_i,
     // Handshake's data between fetch and decode - FRONTEND
     input fetch_entry_t [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_i,
+    // mcontrol6 execute match exception request - TRIGGER MODULE
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i[CVA6Cfg.NrIssuePorts],
     // Handshake's valid between fetch and decode - FRONTEND
     input logic [CVA6Cfg.NrIssuePorts-1:0] fetch_entry_valid_i,
     // Handshake's ready between fetch and decode - FRONTEND
@@ -338,6 +340,7 @@ module id_stage #(
         .compressed_instr_i        (fetch_entry_i[i].instruction[15:0]),
         .branch_predict_i          (fetch_entry_i[i].branch_predict),
         .ex_i                      (fetch_entry_i[i].ex),
+        .sdtrig_decoder_action_i   (sdtrig_decoder_action_i[i]),
         .priv_lvl_i                (priv_lvl_i),
         .v_i                       (v_i),
         .debug_mode_i              (debug_mode_i),

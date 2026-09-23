@@ -185,7 +185,32 @@ module csr_regfile
     // RVFI
     output rvfi_probes_csr_t rvfi_csr_o,
     //jvt output
-    output jvt_t jvt_o
+    output jvt_t jvt_o,
+    // trigger module signals
+    input logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_vaddr_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_data_i,
+    input logic sdtrig_lsu_inputs_fu_i,
+    input logic sdtrig_lsu_inputs_valid_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_i,
+    input logic sdtrig_load_valid_i,
+
+    //LSU <-> trigger module communication
+    output logic sdtrig_load_stall_o,
+    output logic sdtrig_load_cancel_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_o,
+    output logic sdtrig_store_stall_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_o,
+
+    //Decoder/fetch <-> trigger module communication
+    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] fetch_sdtrig_pc_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] fetch_sdtrig_instr_i,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_o[CVA6Cfg.NrIssuePorts],
+
+    //Commit <- trigger module
+    output logic sdtrig_commit_icount_valid_o,
+    output logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_o,
+    output logic sdtrig_commit_std_exception_valid_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -324,6 +349,25 @@ module csr_regfile
   riscv::fcsr_t fcsr_q, fcsr_d;
   jvt_t jvt_q, jvt_d;
 
+  // Trigger Module Registers
+  logic [CVA6Cfg.XLEN-1:0] scontext_d, scontext_q;
+  logic [CVA6Cfg.XLEN-1:0] tdata1_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata1_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata2_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata2_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata3_from_tm;
+  logic [CVA6Cfg.XLEN-1:0] tdata3_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tselect_to_tm;
+  logic [CVA6Cfg.XLEN-1:0] tselect_from_tm;
+  logic tselect_we, tdata1_we, tdata2_we, tdata3_we;
+  logic flush_from_tm;
+  logic sdtrig_commit_std_exception_valid;
+  //Trigger module helpers
+  logic sdtrig_etrigger_context_saved_valid;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mepc;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mcause;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_etrigger_context_mtval;
+
   logic fp_csrs_usable;
   logic vsstatus_fs_is_off;
   logic virtualization_off;
@@ -451,11 +495,31 @@ module csr_regfile
         riscv::CSR_DSCRATCH1:
         if (CVA6Cfg.DebugEn) csr_rdata = dscratch1_q;
         else read_access_exception = 1'b1;
-        // trigger module registers
-        riscv::CSR_TSELECT: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: read_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: read_access_exception = 1'b1;  // not implemented
+        // Trigger module registers
+        riscv::CSR_TSELECT:
+        if (CVA6Cfg.Sdtrig) csr_rdata = tselect_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA1:
+        if (CVA6Cfg.Sdtrig) csr_rdata = tdata1_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA2:
+        if (CVA6Cfg.Sdtrig) csr_rdata = tdata2_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TDATA3:
+        if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) csr_rdata = tdata3_from_tm;
+        else read_access_exception = 1'b1;
+        riscv::CSR_TINFO: begin
+          if (CVA6Cfg.Sdtrig) begin
+            csr_rdata = {
+              {CVA6Cfg.XLEN - 32{1'b0}}, 8'h1, 8'h0, 16'b1000_0000_0111_1000
+            };  // trigger info:icount = 3, itrigger = 4, etrigger = 5, mcontrol6 = 6, disable = 15
+          end else begin
+            read_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SCONTEXT:
+        if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) csr_rdata = scontext_q;
+        else read_access_exception = 1'b1;
         riscv::CSR_VSSTATUS:
         if (CVA6Cfg.RVH) csr_rdata = vsstatus_extended;
         else read_access_exception = 1'b1;
@@ -1058,13 +1122,14 @@ module csr_regfile
       medeleg_d = medeleg_q;
       mideleg_d = mideleg_q;
     end
-    mip_d        = mip_q;
-    mie_d        = mie_q;
-    mepc_d       = mepc_q;
-    mcause_d     = mcause_q;
+    mip_d = mip_q;
+    mie_d = mie_q;
+    mepc_d       = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : mepc_q;
+    mcause_d     = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : mcause_q;
     mcounteren_d = mcounteren_q;
-    mscratch_d   = mscratch_q;
-    if (CVA6Cfg.TvalEn) mtval_d = mtval_q;
+    mscratch_d = mscratch_q;
+    if (CVA6Cfg.TvalEn)
+      mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : mtval_q;
     if (CVA6Cfg.RVH) begin
       mtinst_d = mtinst_q;
       mtval2_d = mtval2_q;
@@ -1115,6 +1180,18 @@ module csr_regfile
     mcbcfe_d               = mcbcfe_q;
     scbcfe_d               = scbcfe_q;
     hcbcfe_d               = hcbcfe_q;
+
+    // trigger module defaults
+    tdata1_to_tm           = '0;
+    tdata2_to_tm           = '0;
+    tdata3_to_tm           = '0;
+    tselect_to_tm          = '0;
+    tselect_we             = 1'b0;
+    tdata1_we              = 1'b0;
+    tdata2_we              = 1'b0;
+    tdata3_we              = 1'b0;
+
+    if (CVA6Cfg.Sdtrig) scontext_d = scontext_q;
 
     // check for correct access rights and that we are writing
     if (csr_we) begin
@@ -1191,11 +1268,48 @@ module csr_regfile
             update_access_exception = 1'b1;
           end
         end
-        // trigger module CSRs
-        riscv::CSR_TSELECT: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA1: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA2: update_access_exception = 1'b1;  // not implemented
-        riscv::CSR_TDATA3: update_access_exception = 1'b1;  // not implemented
+        // Trigger module CSRs
+        riscv::CSR_TSELECT: begin
+          if (CVA6Cfg.Sdtrig) begin
+            tselect_to_tm = csr_wdata;
+            tselect_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA1: begin
+          if (CVA6Cfg.Sdtrig) begin
+            tdata1_to_tm = csr_wdata;
+            tdata1_we    = csr_we;
+            flush_o      = flush_from_tm;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA2: begin
+          if (CVA6Cfg.Sdtrig) begin
+            tdata2_to_tm = csr_wdata;
+            tdata2_we    = csr_we;
+            flush_o      = flush_from_tm;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_TDATA3: begin
+          if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) begin
+            tdata3_to_tm = csr_wdata;
+            tdata3_we    = csr_we;
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
+        riscv::CSR_SCONTEXT: begin
+          if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigSupportTextra) begin
+            scontext_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
+          end else begin
+            update_access_exception = 1'b1;
+          end
+        end
         // virtual supervisor registers
         riscv::CSR_VSSTATUS: begin
           if (CVA6Cfg.RVH) begin
@@ -2831,6 +2945,9 @@ module csr_regfile
           hcbcfe_q <= 1'b1;
         end
       end
+      if (CVA6Cfg.Sdtrig) begin
+        scontext_q <= '0;
+      end
       // timer and counters
       cycle_q                <= 64'b0;
       instret_q              <= 64'b0;
@@ -2926,6 +3043,9 @@ module csr_regfile
           hcbcfe_q <= hcbcfe_d;
         end
       end
+      if (CVA6Cfg.Sdtrig) begin
+        scontext_q <= scontext_d;
+      end
       // timer and counters
       cycle_q                <= cycle_d;
       instret_q              <= instret_d;
@@ -2968,6 +3088,88 @@ module csr_regfile
       end
     end
   end
+
+  //-------------
+  // Trigger Module
+  //-------------
+  generate
+    if (CVA6Cfg.Sdtrig) begin : tm_gen
+      trigger_module #(
+          .CVA6Cfg    (CVA6Cfg),
+          .exception_t(exception_t)
+      ) trigger_module_i (
+          .clk_i,
+          .rst_ni,
+          .commit_ack_i                       (commit_ack_i),
+          .ex_i                               (ex_i),
+          .sdtrig_lsu_inputs_vaddr_i          (sdtrig_lsu_inputs_vaddr_i),
+          .fetch_sdtrig_instr_i               (fetch_sdtrig_instr_i),
+          .sdtrig_lsu_inputs_data_i           (sdtrig_lsu_inputs_data_i),
+          .sdtrig_lsu_inputs_fu_i             (sdtrig_lsu_inputs_fu_i),
+          .sdtrig_lsu_inputs_valid_i          (sdtrig_lsu_inputs_valid_i),
+          .sdtrig_load_data_i                 (sdtrig_load_data_i),
+          .sdtrig_load_valid_i                (sdtrig_load_valid_i),
+          .priv_lvl_i                         (priv_lvl_o),
+          .debug_mode_i                       (debug_mode_q),
+          .mret_i                             (mret),
+          .sret_i                             (sret),
+          .instr_count_d                      (instret_d[13:0]),
+          .instr_count_q                      (instret_q[13:0]),
+          .scontext_i                         (scontext_q),
+          .tselect_i                          (tselect_to_tm),
+          .tdata1_i                           (tdata1_to_tm),
+          .tdata2_i                           (tdata2_to_tm),
+          .tdata3_i                           (tdata3_to_tm),
+          .tselect_we                         (tselect_we),
+          .tdata1_we                          (tdata1_we),
+          .tdata2_we                          (tdata2_we),
+          .tdata3_we                          (tdata3_we),
+          .tselect_o                          (tselect_from_tm),
+          .tdata1_o                           (tdata1_from_tm),
+          .tdata2_o                           (tdata2_from_tm),
+          .tdata3_o                           (tdata3_from_tm),
+          .flush_o                            (flush_from_tm),
+          .mepc_i                             (mepc_d),
+          .mcause_i                           (mcause_d),
+          .mtval_i                            (mtval_d),
+          .etrigger_context_saved_valid_o     (sdtrig_etrigger_context_saved_valid),
+          .etrigger_context_mepc_o            (sdtrig_etrigger_context_mepc),
+          .etrigger_context_mcause_o          (sdtrig_etrigger_context_mcause),
+          .etrigger_context_mtval_o           (sdtrig_etrigger_context_mtval),
+          .sdtrig_commit_std_exception_valid_o(sdtrig_commit_std_exception_valid),
+          .fetch_sdtrig_pc_i                  (fetch_sdtrig_pc_i),
+          .sdtrig_decoder_action_o            (sdtrig_decoder_action_o),
+          .sdtrig_load_stall_o                (sdtrig_load_stall_o),
+          .sdtrig_load_cancel_o               (sdtrig_load_cancel_o),
+          .sdtrig_load_action_o               (sdtrig_load_action_o),
+          .sdtrig_store_stall_o               (sdtrig_store_stall_o),
+          .sdtrig_store_action_o              (sdtrig_store_action_o),
+          .sdtrig_commit_icount_valid_o       (sdtrig_commit_icount_valid_o),
+          .sdtrig_commit_action_o             (sdtrig_commit_action_o),
+          .sdtrig_commit_icount_nr_instr_o    (sdtrig_commit_icount_nr_instr_o)
+      );
+    end else begin
+      assign tdata1_from_tm = '0;
+      assign tdata2_from_tm = '0;
+      assign tdata3_from_tm = '0;
+      assign tselect_from_tm = '0;
+      assign flush_from_tm = 0;
+      assign sdtrig_commit_std_exception_valid = '0;
+      assign sdtrig_etrigger_context_saved_valid = '0;
+      assign sdtrig_etrigger_context_mepc = '0;
+      assign sdtrig_etrigger_context_mcause = '0;
+      assign sdtrig_etrigger_context_mtval = '0;
+      for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) assign sdtrig_decoder_action_o[i] = '0;
+      assign sdtrig_load_stall_o = '0;
+      assign sdtrig_load_cancel_o = '0;
+      assign sdtrig_load_action_o = '0;
+      assign sdtrig_store_stall_o = '0;
+      assign sdtrig_store_action_o = '0;
+      assign sdtrig_commit_icount_valid_o = '0;
+      assign sdtrig_commit_action_o = '0;
+      assign sdtrig_commit_icount_nr_instr_o = '0;
+    end
+  endgenerate
 
   //-------------
   // Assertions
