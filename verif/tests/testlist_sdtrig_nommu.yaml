@@ -81,3 +81,11 @@ testlist:
       break is deferred to the next instruction, so the load completes.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_load_data.S
+
+  - test: sdtrig_chain
+    <<: *common_test_config
+    description: >
+      Trigger chaining: an execute link and a load link on consecutive indexes,
+      firing only when both match.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_chain.S
