@@ -31,11 +31,11 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_exec_match.S
 
-  - test: sdtrig_napot_guard_test
+  - test: sdtrig_napot_match_test
     <<: *common_test_config
     description: >
-      Pins the NAPOT guard of the trigger module: a spec-shaped NAPOT pattern
-      over a real code address is rejected by is_valid_napot, so it does not
-      fire. Turns red if the guard is relaxed.
+      NAPOT range match of an mcontrol6 execute trigger: a range based at a real
+      code address matches, an address inside it fires, and one past its end
+      does not, which pins the range size.
     iterations: 1
-    asm_tests: <path_var>/custom/sdtrig/sdtrig_napot_guard_test.S
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_napot_match_test.S
