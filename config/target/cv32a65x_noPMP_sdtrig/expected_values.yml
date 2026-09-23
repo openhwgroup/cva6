@@ -1,0 +1,8 @@
+# Left empty on purpose. This target derives from its non-Sdtrig namesake but
+# enables the trigger module and the debug module, which changes both the gate
+# count and the cycle counts, so carrying the parent's numbers over would record
+# figures known to be wrong. To be filled once measured.
+# GTECH synthesis (dc-shell-synth --gtech): to measure when the target
+# joins GTECH_TARGETS of the regression
+# gtech_cells:
+# gtech_registers:
