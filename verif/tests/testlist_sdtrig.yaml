@@ -71,3 +71,19 @@ testlist:
       register keeps its old value, plus a negative case on another address.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_load.S
+
+  - test: sdtrig_mcontrol6_exec_data
+    <<: *common_test_config
+    description: >
+      mcontrol6 execute trigger with select set, comparing the instruction word:
+      the same encoding at two addresses both fire, a different one does not.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_exec_data.S
+
+  - test: sdtrig_mcontrol6_load_data
+    <<: *common_test_config
+    description: >
+      mcontrol6 load trigger with select set, comparing the loaded value: the
+      break is deferred to the next instruction, so the load completes.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_load_data.S
