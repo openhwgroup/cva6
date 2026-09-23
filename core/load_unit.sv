@@ -87,7 +87,11 @@ module load_unit
     input  ypb_load_rsp_t                             ypb_load_rsp_i,
 
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
-    input logic dcache_wbuffer_not_ni_i
+    input logic dcache_wbuffer_not_ni_i,
+    //Trigger module
+    input logic sdtrig_load_stall_i,
+    input logic sdtrig_load_cancel_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i
 );
 
   // in order to decouple the response interface from the request interface,
@@ -210,8 +214,13 @@ module load_unit
   assign ypb_load_req_o.vaddr = lsu_ctrl_i.vaddr;
 
   // directly forward exception fields (valid bit is set below)
-  assign ex_o.cause = ex_i.cause;
-  assign ex_o.tval = ex_i.tval;
+  // A load trigger reports its own cause and the faulting address. The load
+  // data trigger is the one imprecise case: the value it compares only exists
+  // once the load has returned, so it breaks after the instruction rather than
+  // on it, which is what ex_o.timing says.
+  assign ex_o.cause = (sdtrig_load_action_i != '0) ? sdtrig_load_action_i : ex_i.cause;
+  assign ex_o.tval = (CVA6Cfg.TvalEn && (sdtrig_load_action_i != '0)) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} : ex_i.tval;
+  assign ex_o.timing = (sdtrig_load_stall_i && ypb_load_rsp_i.rvalid && sdtrig_load_action_i != '0) ? 1'b1 : 1'b0;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
@@ -262,7 +271,7 @@ module load_unit
 
   assign ypb_load_req_o.kill_req = kill_req_q || kill_s1;
 
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn) || sdtrig_load_stall_i;
   assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
@@ -301,6 +310,11 @@ module load_unit
       end
     end else begin
       kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
+    end
+    // A load address trigger matched: the request must not reach memory, so
+    // kill whatever was started speculatively in the previous cycle.
+    if (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) begin
+      kill_req_d = 1'b1;
     end
     // RETIRE LOAD
     // we got an rvalid and its corresponding request was not flushed

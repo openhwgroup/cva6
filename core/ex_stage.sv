@@ -171,6 +171,16 @@ module ex_stage
     output logic x_result_ready_o,
     // CVXIF Issue transaction rejected -> illegal instruction - ISSUE_STAGE
     input logic x_transaction_rejected_i,
+    //Trigger module communication
+    output logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_operand_a_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c_o,
+    output logic sdtrig_lsu_inputs_we_o,
+    output logic sdtrig_lsu_inputs_valid_o,
+    input logic sdtrig_load_stall_i,
+    input logic sdtrig_load_cancel_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    input logic sdtrig_store_stall_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i,
     // accelerate port result is valid - ACC_DISPATCHER
     input logic acc_valid_i,
     // Enable virtual memory translation - CSR_REGFILE
@@ -614,8 +624,28 @@ module ex_stage
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,
-      .rvfi_mem_paddr_o
+      .rvfi_mem_paddr_o,
+      //Trigger module command signals
+      .sdtrig_load_stall_i    (sdtrig_load_stall_i),
+      .sdtrig_load_cancel_i   (sdtrig_load_cancel_i),
+      .sdtrig_load_action_i   (sdtrig_load_action_i),
+      .sdtrig_store_stall_i   (sdtrig_store_stall_i),
+      .sdtrig_store_action_i  (sdtrig_store_action_i)
   );
+
+  //Sdtrig: the address and the value an access carries, tapped before the LSU
+  //consumes them, so a trigger can compare either one.
+  if (CVA6Cfg.SdtrigMcontrol6Store || CVA6Cfg.SdtrigMcontrol6LoadAddr || CVA6Cfg.SdtrigMcontrol6LoadData) begin : gen_sdtrig_lsu_taps
+    assign sdtrig_lsu_inputs_operand_a_o = CVA6Cfg.VLEN'(lsu_data.operand_a + lsu_data.imm);
+    assign sdtrig_lsu_inputs_operand_c_o = lsu_data.operand_b;
+    assign sdtrig_lsu_inputs_we_o = lsu_data.fu == STORE;
+    assign sdtrig_lsu_inputs_valid_o = |lsu_valid_i;
+  end else begin : gen_no_sdtrig_lsu_taps
+    assign sdtrig_lsu_inputs_operand_a_o = '0;
+    assign sdtrig_lsu_inputs_operand_c_o = '0;
+    assign sdtrig_lsu_inputs_we_o = '0;
+    assign sdtrig_lsu_inputs_valid_o = '0;
+  end
 
   if (CVA6Cfg.CvxifEn) begin : gen_cvxif
     fu_data_t cvxif_data;

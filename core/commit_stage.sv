@@ -35,6 +35,11 @@ module commit_stage
     output logic dirty_fp_state_o,
     // TO_BE_COMPLETED - CSR_REGFILE
     input logic single_step_i,
+    // Trigger module
+    input logic sdtrig_commit_icount_valid_i,
+    input logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_i,
+    input logic sdtrig_commit_std_exception_valid_i,
     // The instruction we want to commit - ISSUE_STAGE
     input scoreboard_entry_t [CVA6Cfg.NrCommitPorts-1:0] commit_instr_i,
     // The instruction is cancelled - ISSUE_STAGE
@@ -128,6 +133,9 @@ module commit_stage
   assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
   logic instr_0_is_amo;
+  // Exception of a load data trigger, held back one cycle so it lands on the
+  // instruction after the load whose value it matched.
+  exception_t ex_next_instr_d, ex_next_instr_q;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
 
@@ -167,7 +175,9 @@ module commit_stage
     // we do not commit the instruction yet if we requested a halt
     if (commit_instr_i[0].valid && !halt_i) begin
       // we will not commit the instruction if we took an exception
-      if (commit_instr_i[0].ex.valid) begin
+      if (commit_instr_i[0].ex.valid
+      || ((CVA6Cfg.SdtrigEtrigger || CVA6Cfg.SdtrigItrigger) && sdtrig_commit_std_exception_valid_i
+          || (CVA6Cfg.SdtrigIcount && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i == 0))) begin
         // However we can drop it (with its exception)
         if (CVA6Cfg.SpeculativeSb && commit_drop_i[0]) begin
           commit_ack_o[0] = 1'b1;
@@ -328,7 +338,9 @@ module commit_stage
                                 && !(commit_instr_i[0].fu inside {CSR})
                                 && !flush_dcache_i
                                 && !(CVA6Cfg.RVA && instr_0_is_amo)
-                                && !single_step_i) begin
+                                && !single_step_i
+                                && !(CVA6Cfg.Sdtrig && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i < CVA6Cfg.NrCommitPorts)
+                                && (CVA6Cfg.SdtrigMcontrol6LoadData ? !commit_instr_i[0].ex.timing : 1'b1)) begin
         // only if the first instruction didn't throw an exception and this instruction won't throw an exception
         // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
         if (!commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
@@ -378,10 +390,27 @@ module commit_stage
     // interrupts are correctly prioritized in the CSR reg file, exceptions are prioritized here
     exception_o.valid = 1'b0;
     exception_o.cause = '0;
-    exception_o.tval  = '0;
+    exception_o.tval = '0;
     exception_o.tval2 = '0;
     exception_o.tinst = '0;
-    exception_o.gva   = 1'b0;
+    exception_o.gva = 1'b0;
+    exception_o.timing = 1'b0;
+    ex_next_instr_d = ex_next_instr_q;
+
+    // Latch a deferred load data exception when the instruction carrying it
+    // commits, port 0 taking precedence.
+    if (CVA6Cfg.SdtrigMcontrol6LoadData) begin
+      if (commit_ack_o[0]) begin
+        if (commit_instr_i[0].ex.timing) begin
+          ex_next_instr_d = commit_instr_i[0].ex;
+        end else if (CVA6Cfg.NrCommitPorts > 1 && commit_instr_i[1].ex.timing && commit_ack_o[1]) begin
+          ex_next_instr_d = commit_instr_i[1].ex;
+        end
+      end
+      if (ex_next_instr_q.timing && !commit_instr_i[0].ex.timing) begin
+        ex_next_instr_d = '0;
+      end
+    end
 
     // we need a valid instruction in the commit stage
     if (commit_instr_i[0].valid && !(CVA6Cfg.SpeculativeSb && commit_drop_i[0])) begin
@@ -414,5 +443,36 @@ module commit_stage
     if (halt_i) begin
       exception_o.valid = 1'b0;
     end
+
+    // A commit-time trigger raises its own exception: icount once its counter
+    // has run out, or an exception/interrupt trigger having swallowed the trap
+    // it matched on.
+    if ((CVA6Cfg.SdtrigIcount && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i == '0)
+    || ((CVA6Cfg.SdtrigEtrigger || CVA6Cfg.SdtrigItrigger) && sdtrig_commit_std_exception_valid_i && commit_instr_i[0].valid)) begin
+      exception_o.valid = 1'b1;
+      exception_o.cause = sdtrig_commit_action_i;
+      exception_o.tval  = (CVA6Cfg.TvalEn) ? commit_instr_i[0].pc : '0;
+    end
+
+    // The load data trigger is imprecise: it fires once the loaded value is
+    // known, which is after the instruction. The exception was held back a
+    // cycle, so raise it now, on the instruction that follows.
+    if (CVA6Cfg.SdtrigMcontrol6LoadData && ex_next_instr_q.timing && !commit_instr_i[0].ex.timing) begin
+      exception_o        = ex_next_instr_q;
+      exception_o.timing = 1'b0;
+      exception_o.valid  = 1'b1;
+    end
+  end
+
+  if (CVA6Cfg.SdtrigMcontrol6LoadData) begin : gen_sdtrig_ex_next_instr
+    always_ff @(posedge clk_i, negedge rst_ni) begin
+      if (!rst_ni) begin
+        ex_next_instr_q <= '0;
+      end else begin
+        ex_next_instr_q <= ex_next_instr_d;
+      end
+    end
+  end else begin : gen_no_sdtrig_ex_next_instr
+    assign ex_next_instr_q = '0;
   end
 endmodule

@@ -153,6 +153,11 @@ module cva6_pipeline
     logic [31:0] tinst;  // transformed instruction information
     logic gva;  // signals when a guest virtual address is written to tval
     logic valid;
+    // Timing of the exception. 0 breaks on the instruction itself, 1 breaks
+    // immediately after it, letting that one instruction commit first. Only
+    // the mcontrol6 load data trigger needs the latter: the value it compares
+    // does not exist until the load has returned.
+    logic timing;
   };
 
   // Fetch  address translation requests
@@ -1008,14 +1013,24 @@ module cva6_pipeline
       .ypb_mmu_ptw_req_o       (ypb_mmu_ptw_req_o),
       .ypb_mmu_ptw_rsp_i       (ypb_mmu_ptw_rsp_i),
 
-      .dcache_wbuffer_empty_i (dcache_wbuffer_empty_i),
-      .dcache_wbuffer_not_ni_i(dcache_wbuffer_not_ni_i),
+      .dcache_wbuffer_empty_i       (dcache_wbuffer_empty_i),
+      .dcache_wbuffer_not_ni_i      (dcache_wbuffer_not_ni_i),
       // PMP
-      .pmpcfg_i               (pmpcfg),
-      .pmpaddr_i              (pmpaddr),
+      .pmpcfg_i                     (pmpcfg),
+      .pmpaddr_i                    (pmpaddr),
       //RVFI
-      .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o       (rvfi_mem_paddr)
+      .rvfi_lsu_ctrl_o              (rvfi_lsu_ctrl),
+      .rvfi_mem_paddr_o             (rvfi_mem_paddr),
+      //Trigger module
+      .sdtrig_lsu_inputs_operand_a_o(sdtrig_lsu_inputs_operand_a),
+      .sdtrig_lsu_inputs_operand_c_o(sdtrig_lsu_inputs_operand_c),
+      .sdtrig_lsu_inputs_we_o       (sdtrig_lsu_inputs_we),
+      .sdtrig_lsu_inputs_valid_o    (sdtrig_lsu_inputs_valid),
+      .sdtrig_load_stall_i          (sdtrig_load_stall),
+      .sdtrig_load_cancel_i         (sdtrig_load_cancel),
+      .sdtrig_load_action_i         (sdtrig_load_action),
+      .sdtrig_store_stall_i         (sdtrig_store_stall),
+      .sdtrig_store_action_i        (sdtrig_store_action)
   );
 
   // ---------
@@ -1034,39 +1049,44 @@ module cva6_pipeline
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i                 (halt_ctrl),
-      .flush_dcache_i         (dcache_flush_o),
-      .exception_o            (ex_commit),
-      .dirty_fp_state_o       (dirty_fp_state),
-      .single_step_i          (single_step_csr_commit),         // // Accelerator /*FIXME*/
-      .commit_instr_i         (commit_instr_id_commit),
-      .commit_drop_i          (commit_drop_id_commit),
-      .commit_ack_o           (commit_ack_commit_id),
-      .commit_macro_ack_o     (commit_macro_ack),
-      .waddr_o                (waddr_commit_id),
-      .wdata_o                (wdata_commit_id),
-      .we_gpr_o               (we_gpr_commit_id),
-      .we_fpr_o               (we_fpr_commit_id),
-      .ypb_amo_rsp_i          (ypb_amo_rsp_i),
-      .pc_o                   (pc_commit),
-      .csr_op_o               (csr_op_commit_csr),
-      .csr_wdata_o            (csr_wdata_commit_csr),
-      .csr_rdata_i            (csr_rdata_csr_commit),
-      .csr_write_fflags_o     (csr_write_fflags_commit_cs),
-      .csr_exception_i        (csr_exception_csr_commit),
-      .commit_lsu_o           (lsu_commit_commit_ex),
-      .commit_lsu_ready_i     (lsu_commit_ready_ex_commit),
-      .commit_tran_id_o       (lsu_commit_trans_id),
-      .amo_valid_commit_o     (amo_valid_commit),
-      .no_st_pending_i        (no_st_pending_commit),
+      .halt_i(halt_ctrl),
+      .flush_dcache_i(dcache_flush_o),
+      .exception_o(ex_commit),
+      .dirty_fp_state_o(dirty_fp_state),
+      .single_step_i(single_step_csr_commit),  // // Accelerator /*FIXME*/
+      .commit_instr_i(commit_instr_id_commit),
+      .commit_drop_i(commit_drop_id_commit),
+      .commit_ack_o(commit_ack_commit_id),
+      .commit_macro_ack_o(commit_macro_ack),
+      .waddr_o(waddr_commit_id),
+      .wdata_o(wdata_commit_id),
+      .we_gpr_o(we_gpr_commit_id),
+      .we_fpr_o(we_fpr_commit_id),
+      .ypb_amo_rsp_i(ypb_amo_rsp_i),
+      .pc_o(pc_commit),
+      .csr_op_o(csr_op_commit_csr),
+      .csr_wdata_o(csr_wdata_commit_csr),
+      .csr_rdata_i(csr_rdata_csr_commit),
+      .csr_write_fflags_o(csr_write_fflags_commit_cs),
+      .csr_exception_i(csr_exception_csr_commit),
+      .commit_lsu_o(lsu_commit_commit_ex),
+      .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
+      .commit_tran_id_o(lsu_commit_trans_id),
+      .amo_valid_commit_o(amo_valid_commit),
+      .no_st_pending_i(no_st_pending_commit),
       .shared_tlb_flush_busy_i(shared_tlb_flush_busy_ex),
-      .commit_csr_o           (csr_commit_commit_ex),
-      .fence_i_o              (fence_i_commit_controller),
-      .fence_o                (fence_commit_controller),
-      .flush_commit_o         (flush_commit),
-      .sfence_vma_o           (sfence_vma_commit_controller),
-      .hfence_vvma_o          (hfence_vvma_commit_controller),
-      .hfence_gvma_o          (hfence_gvma_commit_controller)
+      .commit_csr_o(csr_commit_commit_ex),
+      .fence_i_o(fence_i_commit_controller),
+      .fence_o(fence_commit_controller),
+      .flush_commit_o(flush_commit),
+      .sfence_vma_o(sfence_vma_commit_controller),
+      .hfence_vvma_o(hfence_vvma_commit_controller),
+      .hfence_gvma_o(hfence_gvma_commit_controller),
+      //Trigger module
+      .sdtrig_commit_icount_valid_i(sdtrig_commit_icount_valid),
+      .sdtrig_commit_icount_nr_instr_i(sdtrig_commit_icount_nr_instr),
+      .sdtrig_commit_action_i(sdtrig_commit_action),
+      .sdtrig_commit_std_exception_valid_i(sdtrig_commit_std_exception_valid)
   );
 
   if (CVA6Cfg.SpeculativeSb) begin

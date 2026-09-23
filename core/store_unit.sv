@@ -85,7 +85,10 @@ module store_unit
     // AMO request - DCACHE
     output ypb_amo_req_t ypb_amo_req_o,
     // AMO response - DCACHE
-    input ypb_amo_rsp_t ypb_amo_rsp_i
+    input ypb_amo_rsp_t ypb_amo_rsp_i,
+    //Trigger module
+    input logic sdtrig_store_stall_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
 
   // align data to address e.g.: shift data to be naturally 64
@@ -116,14 +119,16 @@ module store_unit
   endfunction
 
   // it doesn't matter what we are writing back as stores don't return anything
-  assign result_o   = lsu_ctrl_i.data;
+  assign result_o = lsu_ctrl_i.data;
 
   // directly forward exception fields (valid bit is set below)
-  assign ex_o.cause = ex_i.cause;
-  assign ex_o.tval  = ex_i.tval;
+  // A store trigger reports its own cause and the faulting address; otherwise
+  // the exception carried in from the MMU passes through unchanged.
+  assign ex_o.cause = (CVA6Cfg.SdtrigMcontrol6Store && sdtrig_store_stall_i && valid_i) ? sdtrig_store_action_i : ex_i.cause;
+  assign ex_o.tval  = (CVA6Cfg.SdtrigMcontrol6Store && sdtrig_store_stall_i && valid_i) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} : ex_i.tval;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
-  assign ex_o.gva   = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
+  assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
 
   // store buffer control signals
   logic instr_is_amo;
@@ -194,8 +199,16 @@ module store_unit
     trans_id_n                    = lsu_ctrl_i.trans_id;
     trans_id_o                    = lsu_ctrl_i.trans_id;
 
-    // REQUEST
-    if (valid_i) begin
+    // A store trigger matched: retire the instruction as an exception without
+    // letting it reach the store buffer, so the write never happens.
+    if (CVA6Cfg.SdtrigMcontrol6Store && sdtrig_store_stall_i && valid_i) begin
+      pop_st_o          = 1'b0;
+      valid_o           = 1'b1;
+      translation_req_o = 1'b0;
+      ex_o.valid        = 1'b1;
+      trans_id_o        = lsu_ctrl_i.trans_id;
+    end  // REQUEST
+    else if (valid_i) begin
       translation_req_o = 1'b1;
       if (!CVA6Cfg.MmuPresent || !stall_translation) begin
         if (CVA6Cfg.RVA && instr_is_amo) begin
