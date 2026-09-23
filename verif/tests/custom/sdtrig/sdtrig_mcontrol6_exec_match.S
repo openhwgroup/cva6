@@ -8,11 +8,11 @@
 # ------------------------------------------------------------------------------
 #   sdtrig_mcontrol6_exec_match.S
 #
-#   Fires an mcontrol6 execute trigger on the address of an instruction, once
-#   per match type the CVA6 documentation claims for this trigger: equal (0),
-#   NAPOT (1) and not-equal (8). The action is the breakpoint exception, so the
-#   test needs no debug module to observe the fire: it counts breakpoint traps
-#   in its own handler.
+#   Fires an mcontrol6 execute trigger on the address of an instruction, with
+#   the equality match. The action is the breakpoint exception, so the test
+#   needs no debug module to observe the fire: it counts breakpoint traps in its
+#   own handler. NAPOT is covered by sdtrig_napot_match_test, and not-equal is
+#   not testable this way, for the reason given below.
 #
 #   tdata1 layout for mcontrol6 on RV32, as the module decodes it:
 #     [31:28] type = 6      [22] hit0     [21] select    [18:16] size
@@ -68,43 +68,14 @@ target_insn_eq:
     csrw 0x7a1, zero
 
     # --------------------------------------------------------------------
-    # Match type 8, not-equal, is deliberately not exercised as an armed
-    # machine-mode execute trigger.
-    #
-    # It fires on every address that differs from tdata2, so it also fires on
-    # the first instruction of the trap handler, and the handler cannot reach
-    # the csrw that would disarm it before being trapped again. The result is
-    # an endless breakpoint loop, which is the trigger behaving as specified,
-    # not a defect: the Sdtrig spec expects the handler to run with the trigger
-    # inactive, which needs either dmode so the action is a debug-mode entry,
-    # or a privilege filter excluding the mode the handler runs in.
-    #
-    # The equality and NAPOT cases below cover the comparison logic. Verifying
-    # not-equal properly needs a debug-mode action, which belongs in a test
-    # driven through the debug module rather than a self-handled breakpoint.
-    # Its support bit is still enabled on this target, so the RTL path is
-    # elaborated either way.
+    # Match type 8, not-equal, is not tested: as a machine-mode execute trigger it
+    # also matches the trap handler, which loops. It needs a debug-mode action.
 
     # --------------------------------------------------------------------
-    # Match type 1, NAPOT, is not exercised here either, for a reason found
-    # while writing this test and worth recording.
-    #
-    # The Sdtrig spec encodes a naturally aligned power-of-two range as the
-    # base address followed by a run of low ones, so a 32-byte range at
-    # 0x80003000 is tdata2 = 0x8000300f. The module guards the comparison with
-    #
-    #     is_valid_napot = ((base & (base + 1)) == 0)
-    #
-    # which demands base + 1 be a power of two over the whole register, that is
-    # base be 0b0..01..1. Only ranges based at address zero satisfy it, so
-    # 0x8000300f is rejected and napot_match32 returns zero. A NAPOT trigger
-    # can never match code living at a real address.
-    #
-    # The mask the function then computes, ~(base & ~(base + 1)), is the right
-    # one; it is the guard in front of it that is too strict. This looks like an
-    # upstream defect rather than an encoding mistake on our side, and it is
-    # covered by sdtrig_napot_guard_test, which pins the current behaviour so
-    # the day the guard is relaxed the change is visible.
+    # Match type 1, NAPOT, is covered by sdtrig_napot_match_test rather than
+    # here, a range trigger needing its own handling: armed in machine mode it
+    # matches the trap handler too, so the handler has to disarm it before
+    # returning.
 
     # --------------------------------------------------------------------
     # A disarmed trigger must not fire: run a few instructions with every
