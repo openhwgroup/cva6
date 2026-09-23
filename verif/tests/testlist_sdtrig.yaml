@@ -39,3 +39,12 @@ testlist:
       does not, which pins the range size.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_napot_match_test.S
+
+  - test: sdtrig_mcontrol6_store
+    <<: *common_test_config
+    description: >
+      mcontrol6 store triggers on the store address and on the stored value,
+      checking the write has not reached memory when the trigger fires.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_store.S
+
