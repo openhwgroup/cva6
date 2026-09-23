@@ -1,0 +1,41 @@
+# ------------------------------------------------------------------------------
+#   Copyright 2026 Thales France
+#
+#   Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#   You may obtain a copy of the License at https://solderpad.org/licenses/
+# ------------------------------------------------------------------------------
+
+common_test_config: &common_test_config
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
+  llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
+
+testlist:
+  - test: sdtrig_csr_access
+    <<: *common_test_config
+    description: >
+      Trigger module CSR interface: tselect bounds itself to the number of
+      implemented triggers, tinfo reports the documented trigger types, and
+      tdata1/tdata2 are per-trigger state.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_csr_access.S
+
+  - test: sdtrig_mcontrol6_exec_match
+    <<: *common_test_config
+    description: >
+      mcontrol6 execute trigger, one case per match type the CVA6
+      documentation claims: equal, NAPOT and not-equal, on the instruction
+      address, with the breakpoint action.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_exec_match.S
+
+  - test: sdtrig_napot_guard_test
+    <<: *common_test_config
+    description: >
+      Pins the NAPOT guard of the trigger module: a spec-shaped NAPOT pattern
+      over a real code address is rejected by is_valid_napot, so it does not
+      fire. Turns red if the guard is relaxed.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_napot_guard_test.S

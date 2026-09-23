@@ -56,6 +56,8 @@ module decoder
     input branchpredict_sbe_t branch_predict_i,
     // If an exception occurred in fetch stage - FRONTEND
     input exception_t ex_i,
+    // Exception request - TRIGGER MODULE
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_i,
     // Level sensitive (async) interrupts - SUBSYSTEM
     input logic [1:0] irq_i,
     // Interrupt control status - CSR_REGFILE
@@ -1846,9 +1848,18 @@ module decoder
     interrupt_cause = '0;
     instruction_o.ex = ex_i;
     orig_instr_o = (is_compressed_i) ? {{CVA6Cfg.XLEN-16{1'b0}}, compressed_instr_i} : {{CVA6Cfg.XLEN-32{1'b0}}, instruction_i};
-    // look if we didn't already get an exception in any previous
-    // stage - we should not overwrite it as we retain order regarding the exception
-    if (~ex_i.valid) begin
+    if ((CVA6Cfg.SdtrigMcontrol6ExecAddr || CVA6Cfg.SdtrigMcontrol6ExecData) && (sdtrig_decoder_action_i != '0)) begin
+      // An mcontrol6 execute trigger matched this instruction. It takes
+      // precedence over whatever the fetch stage reported, the trigger being
+      // defined to fire before the instruction is allowed to execute.
+      instruction_o.ex.valid = 1'b1;
+      instruction_o.ex.cause = sdtrig_decoder_action_i;
+      instruction_o.ex.tval  = (CVA6Cfg.TvalEn) ? instruction_o.pc : '0;
+      if (CVA6Cfg.RVH) instruction_o.ex.gva = v_i;
+      else instruction_o.ex.gva = 1'b0;
+    end  // look if we didn't already get an exception in any previous
+         // stage - we should not overwrite it as we retain order regarding the exception
+    else if (~ex_i.valid) begin
       // if we didn't already get an exception save the instruction here as we may need it
       // in the commit stage if we got a access exception to one of the CSR registers
       if (CVA6Cfg.TvalEn)

@@ -121,6 +121,8 @@ TARGETS = [
     # AXI PMP MMU
     "cv32a6_imac_sv32",
     "cv32a65x_sv32_axi",
+    # Sdtrig trigger module, every trigger type and match type enabled
+    "cv32a65x_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
@@ -175,6 +177,7 @@ TESTLISTS = {
         "base_rv32_amo_v",
     ],
     "cv32a65x_sv32_axi": ["base_rv32_p", "base_rv32_v", "base_pmp"],
+    "cv32a65x_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
         "base_rv64_v",
