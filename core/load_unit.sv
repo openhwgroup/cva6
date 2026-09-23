@@ -120,6 +120,11 @@ module load_unit
   logic ldbuf_empty, ldbuf_full;
   ldbuf_id_t ldbuf_free_index;
   logic ldbuf_w, ldbuf_w_q;
+
+  // Transaction id of the load a trigger matched on, captured at the match:
+  // the trigger module reports its cancel one cycle later, when lsu_ctrl_i
+  // already presents the next request.
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] sdtrig_trans_id_d, sdtrig_trans_id_q;
   ldbuf_id_t ldbuf_windex, ldbuf_windex_q;
   logic      ldbuf_r;
   ldbuf_t    ldbuf_rdata;
@@ -184,13 +189,15 @@ module load_unit
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : ldbuf_ff
     if (!rst_ni) begin
-      ldbuf_flushed_q <= '0;
-      ldbuf_valid_q   <= '0;
-      ldbuf_last_id_q <= '0;
-      ldbuf_q         <= '0;
+      ldbuf_flushed_q   <= '0;
+      ldbuf_valid_q     <= '0;
+      ldbuf_last_id_q   <= '0;
+      ldbuf_q           <= '0;
+      sdtrig_trans_id_q <= '0;
     end else begin
       ldbuf_flushed_q <= ldbuf_flushed_d;
-      ldbuf_valid_q   <= ldbuf_valid_d;
+      ldbuf_valid_q <= ldbuf_valid_d;
+      sdtrig_trans_id_q <= sdtrig_trans_id_d;
       if (ldbuf_w) begin
         ldbuf_last_id_q                      <= ldbuf_windex;
         ldbuf_q[ldbuf_windex].trans_id       <= lsu_ctrl_i.trans_id;
@@ -251,7 +258,7 @@ module load_unit
   // Check that NI operations follow the necessary conditions
   logic not_commit_time;
   logic inflight_stores;
-  logic stall_ni;
+  logic stall_ni, stall_ni_mem;
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
 
@@ -271,7 +278,16 @@ module load_unit
 
   assign ypb_load_req_o.kill_req = kill_req_q || kill_s1;
 
-  assign stall_ni = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn) || sdtrig_load_stall_i;
+  // Non-idempotent stall, which gates the request itself: such a load must not
+  // leave until it is the oldest in flight.
+  assign stall_ni_mem = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
+  // A trigger stall does not gate the request: the trigger module releases it
+  // only on the exception this unit reports, so the request goes out and is
+  // killed instead.
+  assign stall_ni = stall_ni_mem || sdtrig_load_stall_i;
+  // Capture while the request is still the one being presented.
+  assign sdtrig_trans_id_d = (valid_i && sdtrig_load_action_i != '0) ? lsu_ctrl_i.trans_id
+                                                                    : sdtrig_trans_id_q;
   assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
@@ -294,13 +310,17 @@ module load_unit
     ex_o.valid = 1'b0;
     pop_ld_o = 1'b0; // release lsu_bypass fifo
 
+    // A load trigger asked for a break: raise the exception at once, which is
+    // what releases the trigger stall.
+    if (sdtrig_load_stall_i && sdtrig_load_action_i != '0) ex_o.valid = 1'b1;
+
     // REQUEST
     if (valid_i) begin
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
-        ypb_load_req_o.vreq = !stall_translation && !stall_ni;
+        ypb_load_req_o.vreq = !stall_translation && !stall_ni_mem;
         if (!CVA6Cfg.MmuPresent || ypb_load_rsp_i.vgnt) begin
-          if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i) begin
+          if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
             kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
           end else begin
             ldbuf_w  = CVA6Cfg.MmuPresent ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger physical request
@@ -311,11 +331,6 @@ module load_unit
     end else begin
       kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
     end
-    // A load address trigger matched: the request must not reach memory, so
-    // kill whatever was started speculatively in the previous cycle.
-    if (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) begin
-      kill_req_d = 1'b1;
-    end
     // RETIRE LOAD
     // we got an rvalid and its corresponding request was not flushed
     if (data_rvalid) begin
@@ -323,11 +338,12 @@ module load_unit
       valid_o    = 1'b1;
       ex_o.valid = 1'b0;
       // RETIRE EXCEPTION (low priority)
-    end else if (ex_s1) begin
-      trans_id_o = CVA6Cfg.MmuPresent ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id;
-      valid_o    = 1'b1;
+    end else if (ex_s1 || sdtrig_load_cancel_i) begin
+      trans_id_o = (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) ? sdtrig_trans_id_q :
+                   (CVA6Cfg.MmuPresent ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id);
+      valid_o = 1'b1;
       ex_o.valid = 1'b1;
-      pop_ld_o = !stall_translation;//1'b1; // release lsu_bypass fifo
+      pop_ld_o = !stall_translation;  //1'b1; // release lsu_bypass fifo
       // RETIRE EXCEPTION (low priority)
     end else if (CVA6Cfg.MmuPresent && ex_s0) begin
       trans_id_o = lsu_ctrl_i.trans_id;

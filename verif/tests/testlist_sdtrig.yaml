@@ -63,3 +63,11 @@ testlist:
       at zero, then spent once hit is set so it does not fire again.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_icount.S
+
+  - test: sdtrig_mcontrol6_load
+    <<: *common_test_config
+    description: >
+      mcontrol6 load trigger on the load address: precise, so the destination
+      register keeps its old value, plus a negative case on another address.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_load.S
