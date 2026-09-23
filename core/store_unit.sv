@@ -129,6 +129,9 @@ module store_unit
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
+  // Store triggers are precise: they break on the instruction itself, never
+  // after it, so the deferred-exception bit stays clear here.
+  assign ex_o.timing = 1'b0;
 
   // store buffer control signals
   logic instr_is_amo;
