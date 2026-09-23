@@ -169,7 +169,13 @@ module load_store_unit
     // RVFI information - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
-    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    //Trigger module communication
+    input  logic                         sdtrig_load_stall_i,
+    input  logic                         sdtrig_load_cancel_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    input  logic                         sdtrig_store_stall_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
 
   // data is misaligned
@@ -431,7 +437,10 @@ module load_store_unit
       .ypb_amo_req_o        (ypb_amo_req_o),
       .ypb_amo_rsp_i        (ypb_amo_rsp_i),
       .ypb_store_req_o      (ypb_store_req_o),
-      .ypb_store_rsp_i      (ypb_store_rsp_i)
+      .ypb_store_rsp_i      (ypb_store_rsp_i),
+      //Trigger module
+      .sdtrig_store_stall_i (sdtrig_store_stall_i),
+      .sdtrig_store_action_i(sdtrig_store_action_i)
   );
 
   // ------------------
@@ -474,7 +483,11 @@ module load_store_unit
       // to memory arbiter
       .ypb_load_req_o       (ypb_load_req_o),
       .ypb_load_rsp_i       (ypb_load_rsp_i),
-      .dcache_wbuffer_not_ni_i
+      .dcache_wbuffer_not_ni_i,
+      //sdtrig
+      .sdtrig_load_stall_i  (sdtrig_load_stall_i),
+      .sdtrig_load_cancel_i (sdtrig_load_cancel_i),
+      .sdtrig_load_action_i (sdtrig_load_action_i)
   );
 
   // ----------------------------
