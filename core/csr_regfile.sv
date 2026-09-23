@@ -3089,6 +3089,8 @@ module csr_regfile
     end
   end
 
+  assign sdtrig_commit_std_exception_valid_o = sdtrig_commit_std_exception_valid;
+
   //-------------
   // Trigger Module
   //-------------
