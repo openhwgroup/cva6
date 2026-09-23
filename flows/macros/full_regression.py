@@ -183,7 +183,9 @@ TESTLISTS = {
     "cv32a65x_sv32_axi": ["base_rv32_p", "base_rv32_v", "base_pmp"],
     "cv32a65x_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
     "cv32a65x_noPMP_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
-    "cv32a65x_sv32_sdtrig": ["base_rv32_p", "base_rv32_v", "testlist_sdtrig"],
+    # testlist_sdtrig_nommu on the Sv32 target: sdtrig_etrigger is excluded
+    # there, see the note in that file.
+    "cv32a65x_sv32_sdtrig": ["base_rv32_p", "base_rv32_v", "testlist_sdtrig_nommu"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
         "base_rv64_v",

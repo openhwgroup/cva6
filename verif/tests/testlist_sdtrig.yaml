@@ -48,3 +48,18 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_store.S
 
+  - test: sdtrig_etrigger
+    <<: *common_test_config
+    description: >
+      etrigger firing on an exception cause and replacing it with a breakpoint,
+      then a second exception with the mask emptied keeping its own cause.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_etrigger.S
+
+  - test: sdtrig_icount
+    <<: *common_test_config
+    description: >
+      icount trigger: a countdown on committed instructions raising a breakpoint
+      at zero, then spent once hit is set so it does not fire again.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_icount.S
