@@ -40,6 +40,32 @@ class uvma_interrupt_cfg_c extends uvm_object;
    // Number of cycle before Timeout if the agent failed to write into irq_add
    rand int unsigned             irq_timeout;
 
+   // Deterministic interrupts, driven from software rather than randomly.
+   //
+   // A test defines a label, irq_mei_hook, irq_timer_hook or irq_ipi_hook, and
+   // calls it wherever it wants that interrupt. The run recipe passes the address
+   // of the label here, and the sequence raises the channel a fixed number of
+   // cycles after the instruction at that address retires. Calling the label
+   // again asks for another interrupt, so a test controls both how many and when
+   // without any of it being expressed on the command line.
+   //
+   // An address of zero means the test defined no hook for that channel, which is
+   // the case of every test that does not use the feature, and the channel is
+   // left alone. The three channels are independent and can be used together.
+   //
+   //   mei   -> irq[0] -> mip[IRQ_M_EXT],   cause 11
+   //   timer -> irq[1] -> mip[IRQ_M_TIMER], cause 7
+   //   ipi   -> irq[2] -> mip[IRQ_M_SOFT],  cause 3, needs SoftwareInterruptEn
+   bit [XLEN-1:0]                irq_mei_addr;
+   bit [XLEN-1:0]                irq_timer_addr;
+   bit [XLEN-1:0]                irq_ipi_addr;
+   int unsigned                  irq_mei_delay;
+   int unsigned                  irq_timer_delay;
+   int unsigned                  irq_ipi_delay;
+   // True as soon as one hook is set, which is what tells the sequence to run in
+   // deterministic mode instead of the random one.
+   bit                           irq_deterministic;
+
    `uvm_object_utils_begin(uvma_interrupt_cfg_c)
       `uvm_field_int (                         enabled           , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active         , UVM_DEFAULT)   
@@ -88,6 +114,17 @@ function uvma_interrupt_cfg_c::new(string name="uvma_interrupt_cfg");
    if ($test$plusargs("enable_interrupt")) begin
       interrupt_plusarg_valid = 1;
    end
+
+   // Deterministic interrupt hooks. Addresses come from the symbols of the ELF,
+   // extracted at compile time by the sw-compile recipe.
+   if (!$value$plusargs("irq_mei_addr=%h", irq_mei_addr)) irq_mei_addr = '0;
+   if (!$value$plusargs("irq_timer_addr=%h", irq_timer_addr)) irq_timer_addr = '0;
+   if (!$value$plusargs("irq_ipi_addr=%h", irq_ipi_addr)) irq_ipi_addr = '0;
+   if (!$value$plusargs("irq_mei_delay=%d", irq_mei_delay)) irq_mei_delay = 10;
+   if (!$value$plusargs("irq_timer_delay=%d", irq_timer_delay)) irq_timer_delay = 10;
+   if (!$value$plusargs("irq_ipi_delay=%d", irq_ipi_delay)) irq_ipi_delay = 10;
+
+   irq_deterministic = (irq_mei_addr != 0) || (irq_timer_addr != 0) || (irq_ipi_addr != 0);
 
 endfunction : new
 

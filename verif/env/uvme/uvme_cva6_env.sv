@@ -204,6 +204,17 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
       // get irq_addr ack from CVA6 UVM env
       cfg.interrupt_cfg.irq_addr = cfg.get_irq_addr();
 
+      // The deterministic interrupt mode watches retired instructions to know
+      // when a hook address commits, so the interrupt agent needs the same
+      // instruction interface the scoreboard and the coverage models use.
+      if (!uvm_config_db#(virtual uvma_rvfi_instr_if)::get(this, "", "instr_vif0",
+                                                          cntxt.interrupt_cntxt.rvfi_instr_vif)) begin
+         if (cfg.interrupt_cfg.irq_deterministic) begin
+            `uvm_fatal("UVMECVA6ENV",
+                       "Deterministic interrupts asked for but instr_vif0 is not available")
+         end
+      end
+
       if ($test$plusargs("tandem_enabled"))
           $value$plusargs("tandem_enabled=%b",cfg.tandem_enabled);
 
@@ -490,7 +501,8 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin
-         if(cfg.interrupt_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.interrupt_cfg.is_active == UVM_ACTIVE
+            && (cfg.interrupt_cfg.enable_interrupt || cfg.interrupt_cfg.irq_deterministic)) begin
             uvma_interrupt_seq_c  interrupt_seq;
             interrupt_seq = uvma_interrupt_seq_c::type_id::create("interrupt_seq");
             interrupt_seq.start(interrupt_agent.sequencer);
