@@ -95,3 +95,10 @@ testlist:
       firing only when both match.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_chain.S
+  - test: sdtrig_itrigger
+    <<: *common_test_config
+    description: >
+      itrigger firing on a machine external interrupt and replacing it with a
+      breakpoint, using the deterministic interrupt hook irq_mei_hook.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_itrigger.S
