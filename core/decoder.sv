@@ -26,9 +26,7 @@ module decoder
     parameter type branchpredict_sbe_t = logic,
     parameter type exception_t = logic,
     parameter type irq_ctrl_t = logic,
-    parameter type scoreboard_entry_t = logic,
-    parameter type interrupts_t = logic,
-    parameter interrupts_t INTERRUPTS = '0
+    parameter type scoreboard_entry_t = logic
 ) (
     // Debug (async) request - SUBSYSTEM
     input logic debug_req_i,
@@ -1839,6 +1837,35 @@ module decoder
   // ---------------------
   // Exception handling
   // ---------------------
+  // Declared locally rather than passed as parameters, to work around a VCS
+  // bug: a type parameter and a value parameter of that type read as all
+  // zeroes.
+  typedef struct packed {
+    logic [CVA6Cfg.XLEN-1:0] S_SW;
+    logic [CVA6Cfg.XLEN-1:0] VS_SW;
+    logic [CVA6Cfg.XLEN-1:0] M_SW;
+    logic [CVA6Cfg.XLEN-1:0] S_TIMER;
+    logic [CVA6Cfg.XLEN-1:0] VS_TIMER;
+    logic [CVA6Cfg.XLEN-1:0] M_TIMER;
+    logic [CVA6Cfg.XLEN-1:0] S_EXT;
+    logic [CVA6Cfg.XLEN-1:0] VS_EXT;
+    logic [CVA6Cfg.XLEN-1:0] M_EXT;
+    logic [CVA6Cfg.XLEN-1:0] HS_EXT;
+  } interrupts_t;
+
+  localparam interrupts_t INTERRUPTS = '{
+      S_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_SOFT),
+      VS_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_SOFT),
+      M_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_SOFT),
+      S_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_TIMER),
+      VS_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_TIMER),
+      M_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_TIMER),
+      S_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_EXT),
+      VS_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_EXT),
+      M_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_EXT),
+      HS_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_HS_EXT)
+  };
+
   logic [CVA6Cfg.XLEN-1:0] interrupt_cause;
 
   // this instruction has already executed if the exception is valid

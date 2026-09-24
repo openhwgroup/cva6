@@ -278,31 +278,6 @@ module cva6_pipeline
     logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
   };
 
-  localparam type interrupts_t = struct packed {
-    logic [CVA6Cfg.XLEN-1:0] S_SW;
-    logic [CVA6Cfg.XLEN-1:0] VS_SW;
-    logic [CVA6Cfg.XLEN-1:0] M_SW;
-    logic [CVA6Cfg.XLEN-1:0] S_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] VS_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] M_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] S_EXT;
-    logic [CVA6Cfg.XLEN-1:0] VS_EXT;
-    logic [CVA6Cfg.XLEN-1:0] M_EXT;
-    logic [CVA6Cfg.XLEN-1:0] HS_EXT;
-  };
-
-  localparam interrupts_t INTERRUPTS = '{
-      S_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_SOFT),
-      VS_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_SOFT),
-      M_SW: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_SOFT),
-      S_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_TIMER),
-      VS_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_TIMER),
-      M_TIMER: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_TIMER),
-      S_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_EXT),
-      VS_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_EXT),
-      M_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_EXT),
-      HS_EXT: (CVA6Cfg.XLEN'(1) << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_HS_EXT)
-  };
 
   // ------------------------------------------
   // Global Signals
@@ -638,8 +613,6 @@ module cva6_pipeline
       .jvt_t(jvt_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS),
       .x_compressed_req_t(x_compressed_req_t),
       .x_compressed_resp_t(x_compressed_resp_t)
   ) id_stage_i (
@@ -1394,9 +1367,7 @@ module cva6_pipeline
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .exception_t(exception_t),
-      .INTERRUPTS(INTERRUPTS)
+      .exception_t(exception_t)
   ) instr_tracer_i (
       // .tracer_if(tracer_if),
       .pck(clk_i),
@@ -1543,5 +1514,7 @@ module cva6_pipeline
     else $fatal(1, "Accelerator is not supported by superscalar pipeline");
   end
   //pragma translate_on
+
+
 
 endmodule  // ariane

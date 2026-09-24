@@ -23,8 +23,6 @@ module id_stage #(
     parameter type jvt_t = logic,
     parameter type irq_ctrl_t = logic,
     parameter type scoreboard_entry_t = logic,
-    parameter type interrupts_t = logic,
-    parameter interrupts_t INTERRUPTS = '0,
     parameter type x_compressed_req_t = logic,
     parameter type x_compressed_resp_t = logic
 ) (
@@ -111,6 +109,8 @@ module id_stage #(
 
 
 );
+
+
   // ID/ISSUE register stage
   typedef struct packed {
     logic              valid;
@@ -321,9 +321,7 @@ module id_stage #(
         .branchpredict_sbe_t(branchpredict_sbe_t),
         .exception_t(exception_t),
         .irq_ctrl_t(irq_ctrl_t),
-        .scoreboard_entry_t(scoreboard_entry_t),
-        .interrupts_t(interrupts_t),
-        .INTERRUPTS(INTERRUPTS)
+        .scoreboard_entry_t(scoreboard_entry_t)
     ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
