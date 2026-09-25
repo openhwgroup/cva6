@@ -286,7 +286,12 @@ module id_stage #(
       assign stall_instr_fetch[0] = stall_macro_deco;
     end
   end else begin
-    assign stall_instr_fetch[0] = '0;
+    for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
+      assign is_illegal_rvc[i] = 1'b0;
+      assign instruction_rvc[i] = fetch_entry_i[i].instruction;
+      assign is_compressed_rvc[i] = 1'b0;
+      assign stall_instr_fetch[i] = 1'b0;
+    end
   end
 
   // ---------------------------------------------------------
@@ -302,14 +307,16 @@ module id_stage #(
       instruction_deco[1] = CVA6Cfg.RVC ? instruction_rvc[1] : fetch_entry_i[1].instruction;
     end
 
-    if (CVA6Cfg.CvxifEn) begin
-      is_illegal_deco[0]    = is_illegal_cvxif_o;
-      instruction_deco[0]   = instruction_cvxif_o;
-      is_compressed_deco[0] = is_compressed_cvxif_o;
-    end else if (!CVA6Cfg.CvxifEn && (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT)) begin
-      is_illegal_deco[0]    = is_illegal_cvxif_i;
-      instruction_deco[0]   = instruction_cvxif_i;
-      is_compressed_deco[0] = is_compressed_cvxif_i;
+    if (CVA6Cfg.RVC) begin
+      if (CVA6Cfg.CvxifEn) begin
+        is_illegal_deco[0]    = is_illegal_cvxif_o;
+        instruction_deco[0]   = instruction_cvxif_o;
+        is_compressed_deco[0] = is_compressed_cvxif_o;
+      end else if (CVA6Cfg.RVZCMP || CVA6Cfg.RVZCMT) begin
+        is_illegal_deco[0]    = is_illegal_cvxif_i;
+        instruction_deco[0]   = instruction_cvxif_i;
+        is_compressed_deco[0] = is_compressed_cvxif_i;
+      end
     end
   end
 
