@@ -150,7 +150,10 @@ module instr_queue
 
   assign ready_o = ~(|instr_queue_full) & ~full_address;
 
-  if (CVA6Cfg.RVC) begin : gen_multiple_instr_per_fetch_with_C
+  //  This branch handles fetch blocks that hold several instructions
+  //  (INSTR_PER_FETCH > 1). That is the case with C, and also without C on a
+  //  superscalar core, where a 64-bit block holds two 32-bit instructions.
+  if (CVA6Cfg.INSTR_PER_FETCH > 1) begin : gen_multiple_instr_per_fetch_with_C
 
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_unpack_taken
       assign taken[i] = cf_type_i[i] != ariane_pkg::NoCF;
@@ -276,7 +279,7 @@ module instr_queue
   // (e.g.: we pushed and it was full)
   // 2. The address/branch predict FIFO was full
   // if one of the FIFOs was full we need to replay the faulting instruction
-  if (CVA6Cfg.RVC == 1'b1) begin : gen_instr_overflow_fifo_with_C
+  if (CVA6Cfg.INSTR_PER_FETCH > 1) begin : gen_instr_overflow_fifo_with_C
     assign instr_overflow_fifo = instr_queue_full & fifo_pos;
   end else begin : gen_instr_overflow_fifo_without_C
     assign instr_overflow_fifo = instr_queue_full & valid_i;
@@ -285,7 +288,7 @@ module instr_queue
   assign address_overflow = full_address & push_address;
   assign replay_o = instr_overflow | address_overflow;
 
-  if (CVA6Cfg.RVC) begin : gen_replay_addr_o_with_c
+  if (CVA6Cfg.INSTR_PER_FETCH > 1) begin : gen_replay_addr_o_with_c
     // select the address, in the case of an address fifo overflow just
     // use the base of this package
     // if we successfully pushed some instructions we can output the next instruction
@@ -316,7 +319,7 @@ module instr_queue
     end
   end
 
-  if (CVA6Cfg.RVC) begin : gen_downstream_itf_with_c
+  if (CVA6Cfg.INSTR_PER_FETCH > 1) begin : gen_downstream_itf_with_c
     always_comb begin
       idx_ds_d  = idx_ds_q;
 
@@ -511,7 +514,7 @@ module instr_queue
   );
 
 
-  if (CVA6Cfg.RVC) begin : gen_pc_q_with_c
+  if (CVA6Cfg.INSTR_PER_FETCH > 1) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         idx_ds_q        <= 'b1;

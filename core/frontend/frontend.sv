@@ -211,8 +211,20 @@ module frontend
       assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(CVA6Cfg.INSTR_PER_FETCH):1]];
     end
   end else begin
-    assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
-    assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
+    //  Without C an instruction is 4-byte aligned, so bit 2 of the address
+    //  selects the prediction slot. INSTR_PER_FETCH is still 2 under
+    //  superscalar fetch, and slot 1 must be driven too.
+    if (CVA6Cfg.INSTR_PER_FETCH == 1) begin : gen_single_prediction_without_c
+      assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[0];
+      assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[0];
+    end else begin : gen_prediction_address_without_c
+      assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][2]];
+      assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][2]];
+      for (genvar i = 1; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_upper_slots
+        assign bht_prediction_shifted[i] = bht_prediction[addr[i][2]];
+        assign btb_prediction_shifted[i] = btb_prediction[addr[i][2]];
+      end
+    end
   end
   ;
 
