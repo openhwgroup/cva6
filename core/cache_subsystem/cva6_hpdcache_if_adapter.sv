@@ -519,9 +519,10 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
         if (!rst_ni) begin
           amo_pending_q <= 1'b0;
         end else begin
+          //  Set when a new atomic request is accepted, held until its response.
           amo_pending_q <=
-              ( ypb_amo_req_i.preq  & hpdcache_req_ready_i & ~amo_pending_q) |
-              (~ypb_amo_valid & amo_pending_q);
+              (~amo_pending_q &  ypb_amo_req_i.preq & hpdcache_req_ready_i) |
+              ( amo_pending_q & ~ypb_amo_valid);
         end
       end
 
