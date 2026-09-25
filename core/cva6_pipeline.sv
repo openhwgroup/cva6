@@ -583,8 +583,8 @@ module cva6_pipeline
       .clk_i,
       .rst_ni,
       .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .flush_bp_i            (1'b0),
-      .flush_i               (flush_ctrl_if),                  // not entirely correct
+      .flush_bp_i            ((CVA6Cfg.RVU || CVA6Cfg.RVS) ? flush_ctrl_bp : 1'b0),
+      .flush_i               (flush_ctrl_if),
       .halt_i                (halt_ctrl),
       .halt_frontend_i       (halt_frontend_ctrl),
       .set_pc_commit_i       (set_pc_ctrl_pcgen),
@@ -1378,10 +1378,15 @@ module cva6_pipeline
 
 `ifndef VERILATOR
 
-  logic [31:0] fetch_instructions[CVA6Cfg.NrIssuePorts-1:0];
+  logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
+  logic [CVA6Cfg.NrCommitPorts-1:0][63:0] wdata_commit_id_padded;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
     assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id[i]};
   end
 
   instr_tracer #(
@@ -1401,7 +1406,7 @@ module cva6_pipeline
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
-      .wdata(wdata_commit_id),
+      .wdata(wdata_commit_id_padded),
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
