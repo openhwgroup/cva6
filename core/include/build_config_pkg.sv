@@ -45,13 +45,27 @@ package build_config_pkg;
     cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
 
-    cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn;
-    cfg.NrCommitPorts = CVA6Cfg.SuperscalarEn ? unsigned'(2) : CVA6Cfg.NrCommitPorts;
-    cfg.NrIssuePorts = unsigned'(CVA6Cfg.SuperscalarEn ? 2 : 1);
-    cfg.SpeculativeSb = CVA6Cfg.SuperscalarEn;
+    cfg.FETCH_WIDTH = unsigned'((CVA6Cfg.SuperscalarEn && !CVA6Cfg.PipelineOnly) ? 64 : 32);
+    cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
+    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
+    cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
+    cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
-    cfg.NrALUs = CVA6Cfg.SuperscalarEn ? unsigned'(2) : unsigned'(1);
-    cfg.ALUBypass = CVA6Cfg.SuperscalarEn ? bit'(CVA6Cfg.ALUBypass) : bit'(0);
+    //  Issuing two instructions per cycle requires the frontend to be able to
+    //  deliver two, which is what INSTR_PER_FETCH says. The two quantities are
+    //  computed from different fields, FETCH_WIDTH from SuperscalarEn and
+    //  PipelineOnly, INSTR_PER_FETCH additionally from RVC, so asking for a
+    //  superscalar core is not enough on its own. Disabling C on a config that
+    //  forces a 32-bit fetch leaves one instruction per fetch against two issue
+    //  ports: the second port can never be fed, yet the frontend reads it, and
+    //  the address FIFO ends up popped on an undriven control-flow bit.
+    cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn && (cfg.INSTR_PER_FETCH > 1);
+    cfg.NrCommitPorts = cfg.SuperscalarEn ? unsigned'(2) : CVA6Cfg.NrCommitPorts;
+    cfg.NrIssuePorts = unsigned'(cfg.SuperscalarEn ? 2 : 1);
+    cfg.SpeculativeSb = cfg.SuperscalarEn;
+
+    cfg.NrALUs = cfg.SuperscalarEn ? unsigned'(2) : unsigned'(1);
+    cfg.ALUBypass = cfg.SuperscalarEn ? bit'(CVA6Cfg.ALUBypass) : bit'(0);
 
     cfg.NrLoadPipeRegs = CVA6Cfg.NrLoadPipeRegs;
     cfg.NrStorePipeRegs = CVA6Cfg.NrStorePipeRegs;
@@ -94,7 +108,7 @@ package build_config_pkg;
     cfg.XF16ALTVec = bit'(XF16ALTVec);
     cfg.XF8Vec = bit'(XF8Vec);
     // Can take 2 or 3 in single issue. 4 or 6 in dual issue.
-    cfg.NrRgprPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 4 : 2);
+    cfg.NrRgprPorts = unsigned'(cfg.SuperscalarEn ? 4 : 2);
     // cfg.NrRgprPorts = unsigned'(CVA6Cfg.SuperscalarEn ? 6 : 3);
     cfg.NrWbPorts = unsigned'(NrWbPorts);
     cfg.EnableAccelerator = bit'(EnableAccelerator);
@@ -180,12 +194,6 @@ package build_config_pkg;
     cfg.FETCH_USER_WIDTH = CVA6Cfg.FetchUserWidth;
     cfg.FETCH_USER_EN = CVA6Cfg.FetchUserEn;
     cfg.AXI_USER_EN = CVA6Cfg.DataUserEn | CVA6Cfg.FetchUserEn;
-
-    cfg.FETCH_WIDTH = unsigned'((CVA6Cfg.SuperscalarEn && !CVA6Cfg.PipelineOnly) ? 64 : 32);
-    cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
-    cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
-    cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
-    cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
     cfg.ModeW = IS_XLEN32 ? 1 : 4;
     cfg.ASIDW = IS_XLEN32 ? 9 : 16;
