@@ -209,8 +209,6 @@ module acc_dispatcher
 
     // We received a new instruction
     if (acc_valid_q) insn_pending_d[acc_data.trans_id] = 1'b1;
-    // Flush all received instructions
-    if (flush_ex_i) insn_pending_d = '0;
 
     // An accelerator instruction is no longer speculative.
     if (acc_commit && insn_pending_q[acc_commit_trans_id]) begin
@@ -220,6 +218,13 @@ module acc_dispatcher
 
     // An accelerator instruction was issued.
     if (acc_req_o.req_valid) insn_ready_d[acc_req_o.trans_id] = 1'b0;
+
+    // Flush all received instructions. Last, so that it overrides a
+    // simultaneous acc_commit.
+    if (flush_ex_i) begin
+      insn_pending_d = '0;
+      insn_ready_d   = '0;
+    end
   end : p_non_speculative_ff
 
   /*************************
