@@ -186,7 +186,7 @@ module cva6_hpdcache_if_adapter
 
       assign ypb_load_rsp_o.rvalid = hpdcache_rsp_valid_i && !hpdcache_rsp_i.aborted;
       assign ypb_load_rsp_o.rid = hpdcache_rsp_i.tid;
-      assign ypb_load_rsp_o.err = '0;
+      assign ypb_load_rsp_o.err = hpdcache_rsp_i.error;
       assign ypb_load_rsp_o.rdata = hpdcache_rsp_i.rdata;
 
       //  Assertions

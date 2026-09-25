@@ -225,7 +225,10 @@ module load_unit
   // data trigger is the one imprecise case: the value it compares only exists
   // once the load has returned, so it breaks after the instruction rather than
   // on it, which is what ex_o.timing says.
-  assign ex_o.cause = (sdtrig_load_action_i != '0) ? sdtrig_load_action_i : ex_i.cause;
+  //  An error on the response takes precedence over the MMU and trigger causes.
+  assign ex_o.cause = ypb_load_rsp_i.err                ? riscv::HARDWARE_ERROR :
+                      (sdtrig_load_action_i != '0)      ? sdtrig_load_action_i  :
+                                                          ex_i.cause;
   assign ex_o.tval = (CVA6Cfg.TvalEn && (sdtrig_load_action_i != '0)) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} : ex_i.tval;
   assign ex_o.timing = (sdtrig_load_stall_i && ypb_load_rsp_i.rvalid && sdtrig_load_action_i != '0) ? 1'b1 : 1'b0;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
@@ -336,7 +339,9 @@ module load_unit
     if (data_rvalid) begin
       trans_id_o = ldbuf_q[ldbuf_rindex].trans_id;
       valid_o    = 1'b1;
-      ex_o.valid = 1'b0;
+      //  The response carries an error: retire the load as an exception rather
+      //  than writing a corrupt value back.
+      ex_o.valid = ypb_load_rsp_i.err;
       // RETIRE EXCEPTION (low priority)
     end else if (ex_s1 || sdtrig_load_cancel_i) begin
       trans_id_o = (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) ? sdtrig_trans_id_q :
