@@ -76,9 +76,23 @@ module cva6_hpdcache_subsystem
     //  {{{
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input  logic dcache_enable_i,
+    input logic dcache_enable_i,
+    // Data cache scrubber enable - CSR_REGFILE
+    input logic dcache_scrub_enable_i,
+    // Data cache scrubber period - CSR_REGFILE
+    input logic [5:0] dcache_scrub_period_i,
+    // Data cache scrubber completed a cycle - CSR_REGFILE
+    output logic dcache_scrub_cycle_o,
+    // Data cache data error corrected - CSR_REGFILE
+    output logic dcache_dat_cor_err_o,
+    // Data cache data error detected but not corrected - CSR_REGFILE
+    output logic dcache_dat_unc_err_o,
+    // Data cache tag error corrected - CSR_REGFILE
+    output logic dcache_dir_cor_err_o,
+    // Data cache tag error detected but not corrected - CSR_REGFILE
+    output logic dcache_dir_unc_err_o,
     // Data cache flush - CONTROLLER
-    input  logic dcache_flush_i,
+    input logic dcache_flush_i,
     // Flush acknowledge - CONTROLLER
     output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
@@ -423,6 +437,13 @@ module cva6_hpdcache_subsystem
       .clk_i(clk_i),
       .rst_ni(rst_ni),
       .dcache_enable_i(dcache_enable_i),
+      .dcache_scrub_enable_i(dcache_scrub_enable_i),
+      .dcache_scrub_period_i(dcache_scrub_period_i),
+      .dcache_scrub_cycle_o(dcache_scrub_cycle_o),
+      .dcache_dat_cor_err_o(dcache_dat_cor_err_o),
+      .dcache_dat_unc_err_o(dcache_dat_unc_err_o),
+      .dcache_dir_cor_err_o(dcache_dir_cor_err_o),
+      .dcache_dir_unc_err_o(dcache_dir_unc_err_o),
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
       .dcache_miss_o(dcache_miss_o),

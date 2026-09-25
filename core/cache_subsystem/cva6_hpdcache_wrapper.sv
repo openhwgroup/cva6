@@ -73,9 +73,23 @@ module cva6_hpdcache_wrapper
     //  {{{
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input  logic dcache_enable_i,
+    input logic dcache_enable_i,
+    // Data cache scrubber enable - CSR_REGFILE
+    input logic dcache_scrub_enable_i,
+    // Data cache scrubber period - CSR_REGFILE
+    input logic [5:0] dcache_scrub_period_i,
+    // Data cache scrubber completed a cycle - CSR_REGFILE
+    output logic dcache_scrub_cycle_o,
+    // Data cache data error corrected - CSR_REGFILE
+    output logic dcache_dat_cor_err_o,
+    // Data cache data error detected but not corrected - CSR_REGFILE
+    output logic dcache_dat_unc_err_o,
+    // Data cache tag error corrected - CSR_REGFILE
+    output logic dcache_dir_cor_err_o,
+    // Data cache tag error detected but not corrected - CSR_REGFILE
+    output logic dcache_dir_unc_err_o,
     // Data cache flush - CONTROLLER
-    input  logic dcache_flush_i,
+    input logic dcache_flush_i,
     // Flush acknowledge - CONTROLLER
     output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
@@ -507,11 +521,11 @@ module cva6_hpdcache_wrapper
 
       .evt_cache_write_miss_o (dcache_write_miss),
       .evt_cache_read_miss_o  (dcache_read_miss),
-      .evt_cache_dir_unc_err_o(  /* unused */),
-      .evt_cache_dir_cor_err_o(  /* unused */),
-      .evt_cache_dat_unc_err_o(  /* unused */),
-      .evt_cache_dat_cor_err_o(  /* unused */),
-      .evt_scrub_complete_o   (  /* unused */),
+      .evt_cache_dir_unc_err_o(dcache_dir_unc_err_o),
+      .evt_cache_dir_cor_err_o(dcache_dir_cor_err_o),
+      .evt_cache_dat_unc_err_o(dcache_dat_unc_err_o),
+      .evt_cache_dat_cor_err_o(dcache_dat_cor_err_o),
+      .evt_scrub_complete_o   (dcache_scrub_cycle_o),
       .evt_uncached_req_o     (  /* unused */),
       .evt_cmo_req_o          (  /* unused */),
       .evt_write_req_o        (  /* unused */),
@@ -533,8 +547,8 @@ module cva6_hpdcache_wrapper
       .cfg_error_on_cacheable_amo_i       (1'b0),
       .cfg_rtab_single_entry_i            (1'b0),
       .cfg_default_wb_i                   (1'b0),
-      .cfg_scrub_enable_i                 (1'b0),
-      .cfg_scrub_period_i                 ('0),
+      .cfg_scrub_enable_i                 (dcache_scrub_enable_i),
+      .cfg_scrub_period_i                 (dcache_scrub_period_i),
       .cfg_scrub_restart_i                (1'b0)
   );
 

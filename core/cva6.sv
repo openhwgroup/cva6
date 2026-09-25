@@ -103,6 +103,11 @@ module cva6
   logic icache_miss;
 
   logic dcache_enable;
+  logic dcache_scrub_enable;
+  logic [5:0] dcache_scrub_period;
+  logic dcache_scrub_cycle;
+  logic dcache_dat_cor_err, dcache_dat_unc_err;
+  logic dcache_dir_cor_err, dcache_dir_unc_err;
   logic dcache_flush;
   logic dcache_flush_ack;
   logic dcache_miss;
@@ -194,10 +199,17 @@ module cva6
 
       // FROM/TO DCACHE SUBSYSTEM
 
-      .dcache_enable_o   (dcache_enable),
-      .dcache_flush_o    (dcache_flush),
-      .dcache_flush_ack_i(dcache_flush_ack),
-      .dcache_miss_i     (dcache_miss),
+      .dcache_enable_o      (dcache_enable),
+      .dcache_scrub_enable_o(dcache_scrub_enable),
+      .dcache_scrub_period_o(dcache_scrub_period),
+      .dcache_scrub_cycle_i (dcache_scrub_cycle),
+      .dcache_dat_cor_err_i (dcache_dat_cor_err),
+      .dcache_dat_unc_err_i (dcache_dat_unc_err),
+      .dcache_dir_cor_err_i (dcache_dir_cor_err),
+      .dcache_dir_unc_err_i (dcache_dir_unc_err),
+      .dcache_flush_o       (dcache_flush),
+      .dcache_flush_ack_i   (dcache_flush_ack),
+      .dcache_miss_i        (dcache_miss),
 
       .ypb_store_req_o  (ypb_store_req),
       .ypb_store_rsp_i  (ypb_store_rsp),
@@ -316,10 +328,17 @@ module cva6
 
         // FROM/TO LSU
 
-        .dcache_enable_i   (dcache_enable),
-        .dcache_flush_i    (dcache_flush),
-        .dcache_flush_ack_o(dcache_flush_ack),
-        .dcache_miss_o     (dcache_miss),
+        .dcache_enable_i      (dcache_enable),
+        .dcache_scrub_enable_i(dcache_scrub_enable),
+        .dcache_scrub_period_i(dcache_scrub_period),
+        .dcache_scrub_cycle_o (dcache_scrub_cycle),
+        .dcache_dat_cor_err_o (dcache_dat_cor_err),
+        .dcache_dat_unc_err_o (dcache_dat_unc_err),
+        .dcache_dir_cor_err_o (dcache_dir_cor_err),
+        .dcache_dir_unc_err_o (dcache_dir_unc_err),
+        .dcache_flush_i       (dcache_flush),
+        .dcache_flush_ack_o   (dcache_flush_ack),
+        .dcache_miss_o        (dcache_miss),
 
         // DATA FROM/TO PIPELINE (YPB)
 

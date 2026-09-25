@@ -95,12 +95,26 @@ module cva6_pipeline
     // D$
     // Data cache enable - CSR_REGFILE
     output logic dcache_enable_o,
+    // Data cache scrubber enable - CSR_REGFILE
+    output logic dcache_scrub_enable_o,
+    // Data cache scrubber period - CSR_REGFILE
+    output logic [5:0] dcache_scrub_period_o,
+    // Data cache scrubber completed a cycle - CACHES
+    input logic dcache_scrub_cycle_i,
+    // Data cache data error corrected - CACHES
+    input logic dcache_dat_cor_err_i,
+    // Data cache data error detected but not corrected - CACHES
+    input logic dcache_dat_unc_err_i,
+    // Data cache tag error corrected - CACHES
+    input logic dcache_dir_cor_err_i,
+    // Data cache tag error detected but not corrected - CACHES
+    input logic dcache_dir_unc_err_i,
     // Data cache flush (high until acknowledged)- CONTROLLER
     output logic dcache_flush_o,
     // Flush acknowledge (send a single cycle acknowledge signal when the cache is flushed) - CONTROLLER
-    input  logic dcache_flush_ack_i,
+    input logic dcache_flush_ack_i,
     // Load or store miss - PERF_COUNTERS
-    input  logic dcache_miss_i,
+    input logic dcache_miss_i,
 
     // Memory interfaces
     // Fetch YPB request ports - FRONTEND
@@ -1154,6 +1168,13 @@ module cva6_pipeline
       .single_step_o                      (single_step_csr_commit),
       .icache_en_o                        (icache_enable_o),
       .dcache_en_o                        (dcache_enable_o),
+      .dcache_scrub_en_o                  (dcache_scrub_enable_o),
+      .dcache_scrub_period_o              (dcache_scrub_period_o),
+      .dcache_scrub_cycle_i               (dcache_scrub_cycle_i),
+      .dcache_dat_cor_err_i               (dcache_dat_cor_err_i),
+      .dcache_dat_unc_err_i               (dcache_dat_unc_err_i),
+      .dcache_dir_cor_err_i               (dcache_dir_cor_err_i),
+      .dcache_dir_unc_err_i               (dcache_dir_unc_err_i),
       // Accelerator
       .acc_cons_en_o                      (  /*FIXME*/),
       .perf_addr_o                        (addr_csr_perf),
