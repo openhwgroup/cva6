@@ -77,3 +77,8 @@ testlist:
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/be/be_swap_test.S
+
+  - test: false_4k_alias
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/lsu/false_4k_alias.S
