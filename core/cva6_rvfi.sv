@@ -513,9 +513,9 @@ module cva6_rvfi
       rvfi_instr_o[i].valid <= valid;
       rvfi_instr_o[i].insn  <= mem_q[commit_pointer[i]].instr;
       // when synchronous trap, the instruction is not executed
-      rvfi_instr_o[i].trap  <= exception && !ex_commit_cause[31];
+      rvfi_instr_o[i].trap  <= exception && !ex_commit_cause[CVA6Cfg.XLEN-1];
 
-      if (exception && ex_commit_cause[31]) begin
+      if (exception && ex_commit_cause[CVA6Cfg.XLEN-1]) begin
         rvfi_intr[i] <= 'b101;
       end else if (exception) begin
         rvfi_intr[i] <= 'b11;
