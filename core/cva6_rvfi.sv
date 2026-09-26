@@ -509,6 +509,7 @@ module cva6_rvfi
       valid     = (commit_ack[i] && !ex_commit_valid && !commit_drop[i]) ||
         (exception && (ex_commit_cause == riscv::ENV_CALL_MMODE ||
                   ex_commit_cause == riscv::ENV_CALL_SMODE ||
+                  ex_commit_cause == riscv::ENV_CALL_VSMODE ||
                   ex_commit_cause == riscv::ENV_CALL_UMODE));
       rvfi_instr_o[i].valid <= valid;
       rvfi_instr_o[i].insn  <= mem_q[commit_pointer[i]].instr;
