@@ -549,7 +549,9 @@ module cva6_hpdcache_wrapper
       .cfg_default_wb_i                   (1'b0),
       .cfg_scrub_enable_i                 (dcache_scrub_enable_i),
       .cfg_scrub_period_i                 (dcache_scrub_period_i),
-      .cfg_scrub_restart_i                (1'b0)
+      //  The scrubber stops after one pass unless restart is set: following the
+      //  enable keeps it scrubbing the cache every scrub period.
+      .cfg_scrub_restart_i                (dcache_scrub_enable_i)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;
