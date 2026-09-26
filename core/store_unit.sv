@@ -62,7 +62,6 @@ module store_unit
     // Virtual address - TO_BE_COMPLETED
     output logic [CVA6Cfg.VLEN-1:0] vaddr_o,
     // RVFI information - RVFI
-    output logic [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     // Transformed trap instruction out - TO_BE_COMPLETED
     output logic [31:0] tinst_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -375,7 +374,6 @@ module store_unit
       // the whole pipeline anyway
       .valid_without_flush_i(st_valid_without_flush),
       .paddr_i,
-      .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .data_i               (st_data_q),
       .cbo_op_i             (cbo_op_q),
       .be_i                 (st_be_q),

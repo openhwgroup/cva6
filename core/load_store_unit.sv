@@ -583,7 +583,6 @@ module load_store_unit
       // MMU port
       .translation_req_o    (cva6_st_translation_req),
       .vaddr_o              (st_vaddr),
-      .rvfi_mem_paddr_o     (rvfi_mem_paddr_o),
       .tinst_o              (st_tinst),
       .hs_ld_st_inst_o      (st_hs_ld_st_inst),
       .hlvx_inst_o          (st_hlvx_inst),
@@ -945,6 +944,10 @@ module load_store_unit
       .ready_o   (lsu_ready_o)
   );
 
-  assign rvfi_lsu_ctrl_o = lsu_ctrl;
+  assign rvfi_lsu_ctrl_o  = lsu_ctrl;
+
+  // Physical address of the access being translated. It belongs to
+  // the lsu_ctrl that was presented one cycle earlier.
+  assign rvfi_mem_paddr_o = mmu_paddr;
 
 endmodule

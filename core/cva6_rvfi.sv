@@ -428,6 +428,7 @@ module cva6_rvfi
     logic [CVA6Cfg.XLEN-1:0] rs1_rdata;
     logic [CVA6Cfg.XLEN-1:0] rs2_rdata;
     logic [CVA6Cfg.VLEN-1:0] lsu_addr;
+    logic [CVA6Cfg.PLEN-1:0] lsu_paddr;
     logic [(CVA6Cfg.XLEN/8)-1:0] lsu_rmask;
     logic [(CVA6Cfg.XLEN/8)-1:0] lsu_wmask;
     logic [CVA6Cfg.XLEN-1:0] lsu_wdata;
@@ -438,6 +439,12 @@ module cva6_rvfi
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
 
+  logic lsu_paddr_pending_q, lsu_paddr_pending_n;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_paddr_trans_id_q, lsu_paddr_trans_id_n;
+
+  assign lsu_paddr_pending_n  = (lsu_rmask != 0) || (lsu_wmask != 0);
+  assign lsu_paddr_trans_id_n = lsu_addr_trans_id;
+
   always_comb begin : issue_fifo
     mem_n = mem_q;
 
@@ -447,6 +454,7 @@ module cva6_rvfi
             rs1_rdata: rs1[i],
             rs2_rdata: rs2[i],
             lsu_addr: '0,
+            lsu_paddr: '0,
             lsu_rmask: '0,
             lsu_wmask: '0,
             lsu_wdata: '0,
@@ -469,13 +477,23 @@ module cva6_rvfi
       mem_n[lsu_addr_trans_id].lsu_wmask = lsu_wmask;
       mem_n[lsu_addr_trans_id].lsu_wdata = wbdata[STORE_WB];
     end
+    // The physical address leaves the translation stage one cycle after the
+    // access was presented on lsu_ctrl, so it is written to the entry named by
+    // the transaction id of that earlier cycle.
+    if (lsu_paddr_pending_q) begin
+      mem_n[lsu_paddr_trans_id_q].lsu_paddr = mem_paddr;
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs
     if (!rst_ni) begin
       mem_q <= '{default: sb_mem_t'(0)};
+      lsu_paddr_pending_q <= 1'b0;
+      lsu_paddr_trans_id_q <= '0;
     end else begin
       mem_q <= mem_n;
+      lsu_paddr_pending_q <= lsu_paddr_pending_n;
+      lsu_paddr_trans_id_q <= lsu_paddr_trans_id_n;
     end
   end
 
@@ -519,8 +537,7 @@ module cva6_rvfi
       )) ? commit_instr_result[i] : wdata[i];
       rvfi_instr_o[i].pc_rdata <= commit_instr_pc[i];
       rvfi_instr_o[i].mem_addr <= mem_q[commit_pointer[i]].lsu_addr;
-      // So far, only write paddr is reported. TODO: read paddr
-      rvfi_instr_o[i].mem_paddr <= mem_paddr;
+      rvfi_instr_o[i].mem_paddr <= mem_q[commit_pointer[i]].lsu_paddr;
       rvfi_instr_o[i].mem_wmask <= mem_q[commit_pointer[i]].lsu_wmask;
 
       // For AMO operations, compute the actual write value
