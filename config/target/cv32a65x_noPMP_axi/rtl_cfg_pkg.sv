@@ -65,7 +65,7 @@ package cva6_config_pkg;
       RASDepth: unsigned'(8),
       BTBEntries: unsigned'(64),
       BPType: config_pkg::PH_BHT,
-      BHTEntries: unsigned'(512),
+      BHTEntries: unsigned'(256),
       BHTHist: unsigned'(4),
       DmBaseAddress: 64'h0,
       Sdtrig: bit'(0),
