@@ -135,7 +135,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zihpm_supported    == 0;
       ext_zicond_supported   == RTLCVA6Cfg.RVZiCond;
 
-      nr_pmp_entries         == 64;
+      nr_pmp_entries         == RTLCVA6Cfg.NrPMPEntries;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
@@ -166,7 +166,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          nr_pmp_entries == 0;
       }
       else {
-         nr_pmp_entries inside {0, 16, 64};
+         //  NrPMPEntries is free-form in the RTL configuration, 8 among others,
+         //  so the count is taken from it rather than from a fixed list.
+         nr_pmp_entries inside {[0:64]};
       }
    }
 
@@ -584,18 +586,13 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[uvma_core_cntrl_pkg::MINSTRETH] = 1;
    end
 
-   // Remove unsupported pmp CSRs
-   if (nr_pmp_entries == 0) begin
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'hffff;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'hffffffffffffffff;
+   // Remove the pmp CSRs beyond NrPMPEntries: one pmpaddr register per entry,
+   // four entries per pmpcfg register on RV32.
+   for (int i = 0; i < 64; i++) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+i] = (i >= nr_pmp_entries);
    end
-   else if (nr_pmp_entries == 16) begin
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG4+:12]   = 12'hfff;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR16+:48] = 48'hffffffffffff;
-   end
-   else if (nr_pmp_entries == 64) begin //if pmp entries is 64 we support all the pmp CSRs
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'h0;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'h0;
+   for (int i = 0; i < 16; i++) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+i] = (i * 4 >= nr_pmp_entries);
    end
 
 endfunction : set_unsupported_csr_mask
