@@ -128,6 +128,7 @@
   logic [Cfg.NrCommitPorts-1:0][Cfg.XLEN-1:0] wdata; \
   logic branch_valid; \
   logic is_taken; \
+  logic is_mispredict; \
   logic [Cfg.XLEN-1:0] tval; \
   logic [Cfg.TRANS_ID_BITS-1:0] branch_trans_id; \
 }
@@ -175,6 +176,7 @@
   logic [Cfg.NrCommitPorts-1:0] is_compressed; \
   logic [Cfg.NrCommitPorts-1:0] branch_valid; \
   logic [Cfg.NrCommitPorts-1:0] is_taken; \
+  logic [Cfg.NrCommitPorts-1:0] is_mispredict; \
   logic  ex_valid; \
   logic [Cfg.XLEN-1:0] tval; \
   logic [Cfg.XLEN-1:0] cause; \

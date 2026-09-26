@@ -119,6 +119,7 @@ module cva6_rvfi_probes
 
     instr.branch_valid = resolved_branch_i.valid;
     instr.is_taken = resolved_branch_i.is_taken;
+    instr.is_mispredict = resolved_branch_i.is_mispredict;
     instr.branch_trans_id = flu_trans_id_ex_id_i;
 
     csr = csr_i;

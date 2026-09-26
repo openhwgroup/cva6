@@ -263,6 +263,7 @@ module cva6_rvfi
   ariane_pkg::fu_op [CVA6Cfg.NrCommitPorts-1:0] op_iti;
   logic branch_valid_iti;
   logic is_taken_iti;
+  logic is_mispredict_iti;
   logic [CVA6Cfg.XLEN-1:0] tval_iti;
   logic [63:0] time_iti;
 
@@ -346,6 +347,7 @@ module cva6_rvfi
   assign op_iti = instr.commit_instr_op;
   assign branch_valid_iti = instr.branch_valid;
   assign is_taken_iti = instr.is_taken;
+  assign is_mispredict_iti = instr.is_mispredict;
   assign tval_iti = instr.tval;
   assign time_iti = csr.cycle_q;
 
@@ -442,6 +444,7 @@ module cva6_rvfi
     logic [31:0] instr;
     logic branch_valid;
     logic is_taken;
+    logic is_mispredict;
     logic is_compressed;
   } sb_mem_t;
   sb_mem_t [CVA6Cfg.NR_SB_ENTRIES-1:0] mem_q, mem_n;
@@ -468,6 +471,7 @@ module cva6_rvfi
             instr: issue_q[i].instr,
             branch_valid: 1'b0,
             is_taken: 1'b0,
+            is_mispredict: 1'b0,
             is_compressed: issue_q[i].is_compressed
         };
       end
@@ -475,6 +479,7 @@ module cva6_rvfi
     if (branch_valid_iti) begin
       mem_n[branch_trans_id].branch_valid = branch_valid_iti;
       mem_n[branch_trans_id].is_taken = is_taken_iti;
+      mem_n[branch_trans_id].is_mispredict = is_mispredict_iti;
     end
     if (lsu_rmask != 0) begin
       mem_n[lsu_addr_trans_id].lsu_addr  = lsu_addr;
@@ -566,6 +571,7 @@ module cva6_rvfi
       rvfi_instr_o[i].rs2_rdata <= mem_q[commit_pointer[i]].rs2_rdata;
       rvfi_to_iti_o.branch_valid[i] <= mem_q[commit_pointer[i]].branch_valid;
       rvfi_to_iti_o.is_taken[i] <= mem_q[commit_pointer[i]].is_taken;
+      rvfi_to_iti_o.is_mispredict[i] <= mem_q[commit_pointer[i]].is_mispredict;
       rvfi_to_iti_o.is_compressed[i] <= mem_q[commit_pointer[i]].is_compressed;
       rvfi_to_iti_o.valid[i] <= valid_iti[i];
       rvfi_to_iti_o.pc[i] <= pc_iti[i];
