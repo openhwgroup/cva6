@@ -140,7 +140,7 @@ TESTLISTS = {
     "cv32a60x_no_zcmt": ["base_rv32_p"],
     "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt"],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": ["base_rv64_p"],
-    "cv32a60x_axi": ["base_rv32_p", "base_zcmt"],
+    "cv32a60x_axi": ["base_rv32_p", "base_zcmt", "dcache_ecc"],
     "cv32a60x_no_zcmt_axi": ["base_rv32_p"],
     "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt"],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p"],

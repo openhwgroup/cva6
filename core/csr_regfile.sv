@@ -1170,19 +1170,8 @@ module csr_regfile
     //  them back whatever it wrote.
     dcache_d.eccPresent         = CVA6Cfg.DcacheEccEnable;
     dcache_d.eccScrubberPresent = CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable;
-    if (CVA6Cfg.DcacheEccEnable) begin
-      //  Saturating rather than wrapping: a reader can tell "at least fifteen"
-      //  from "none" without having to keep up with the hardware.
-      if (dcache_dat_cor_err_i && (dcache_q.datCorErr != '1)) dcache_d.datCorErr++;
-      if (dcache_dat_unc_err_i && (dcache_q.datUncErr != '1)) dcache_d.datUncErr++;
-      if (dcache_dir_cor_err_i && (dcache_q.dirCorErr != '1)) dcache_d.dirCorErr++;
-      if (dcache_dir_unc_err_i && (dcache_q.dirUncErr != '1)) dcache_d.dirUncErr++;
-      if (CVA6Cfg.DcacheEccScrubberEnable) begin
-        if (dcache_scrub_cycle_i && (dcache_q.scrubCycles != '1)) dcache_d.scrubCycles++;
-      end
-    end
-    icache_d   = icache_q;
-    acc_cons_d = acc_cons_q;
+    icache_d                    = icache_q;
+    acc_cons_d                  = acc_cons_q;
 
     if (CVA6Cfg.RVH) begin
       vstvec_d                 = vstvec_q;
@@ -2079,6 +2068,20 @@ module csr_regfile
         default: update_access_exception = 1'b1;
       endcase
     end
+
+    //  Dcache error and scrubbing counters, saturating, cleared by software.
+    //  Applied after the CSR write: a write assigns the whole register, and a
+    //  csrrs read with a non-zero mask register is also a write.
+    if (CVA6Cfg.DcacheEccEnable) begin
+      if (dcache_dat_cor_err_i && (dcache_d.datCorErr != '1)) dcache_d.datCorErr++;
+      if (dcache_dat_unc_err_i && (dcache_d.datUncErr != '1)) dcache_d.datUncErr++;
+      if (dcache_dir_cor_err_i && (dcache_d.dirCorErr != '1)) dcache_d.dirCorErr++;
+      if (dcache_dir_unc_err_i && (dcache_d.dirUncErr != '1)) dcache_d.dirUncErr++;
+      if (CVA6Cfg.DcacheEccScrubberEnable) begin
+        if (dcache_scrub_cycle_i && (dcache_d.scrubCycles != '1)) dcache_d.scrubCycles++;
+      end
+    end
+
     if (CVA6Cfg.IS_XLEN64) begin
       if (CVA6Cfg.RVS) mstatus_d.sxl = riscv::XLEN_64;
       else mstatus_d.sxl = riscv::XLEN_NA;
