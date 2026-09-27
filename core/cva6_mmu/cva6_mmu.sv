@@ -57,10 +57,16 @@ module cva6_mmu
     // Cycle 0
     output logic lsu_dtlb_hit_o,  // sent in same cycle as the request if translation hits in DTLB
     output logic [CVA6Cfg.PPNW-1:0] lsu_dtlb_ppn_o,  // ppn (send same cycle as hit)
-    // Cycle 1
+    // Cycle 1 response
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
+    // Metadata for the same response transaction as lsu_valid_o, lsu_paddr_o
+    // and lsu_exception_o, so a checker downstream does not mix a response with
+    // the request that happens to be presented in the same cycle.
+    output logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_o,
+    output logic lsu_is_store_o,
+    output logic lsu_hlvx_inst_o,
     // General control signals
     input riscv::priv_lvl_t priv_lvl_i,
     input logic v_i,
@@ -525,6 +531,11 @@ module cva6_mmu
 
   // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
   assign lsu_dtlb_hit_o = (en_ld_st_translation_i || en_ld_st_g_translation_i) ? dtlb_lu_hit : 1'b1;
+
+  //  Registered alongside the response, see the port comment.
+  assign lsu_vaddr_o = lsu_vaddr_q;
+  assign lsu_is_store_o = lsu_is_store_q;
+  assign lsu_hlvx_inst_o = CVA6Cfg.RVH ? hlvx_inst_q : 1'b0;
 
 
   // The data interface is simpler and only consists of a request/response interface
