@@ -133,7 +133,7 @@ module ariane_testharness #(
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
-    if (CVA6Cfg.XLEN != 32 & CVA6Cfg.XLEN != 64) $error("CVA6Cfg.XLEN different from 32 and 64");
+    if (!CVA6Cfg.IS_XLEN32 & !CVA6Cfg.IS_XLEN64) $error("CVA6Cfg.XLEN different from 32 and 64");
   end
 
   // debug if MUX

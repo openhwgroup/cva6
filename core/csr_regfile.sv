@@ -1847,7 +1847,7 @@ module csr_regfile
           end
         end
         riscv::CSR_MENVCFGH: begin
-          if (!CVA6Cfg.RVU || CVA6Cfg.XLEN != 32) update_access_exception = 1'b1;
+          if (!CVA6Cfg.RVU || !CVA6Cfg.IS_XLEN32) update_access_exception = 1'b1;
         end
         riscv::CSR_MCOUNTINHIBIT:
         if (CVA6Cfg.PerfCounterEn)
