@@ -473,7 +473,9 @@ module cva6_ptw
                     state_d = WAIT_GRANT;
                     ptw_stage_d = S_STAGE;
                     ptw_lvl_n[0] = ptw_lvl_q[HYP_EXT];
-                    pptr = {pte.ppn[CVA6Cfg.GPPNW-1:0], gptw_pptr_q[11:0]};
+                    //  This PTE comes from the G-stage walk: its PPN is a host address and
+                    //  keeps its full width, not the guest width.
+                    pptr = {pte.ppn, gptw_pptr_q[11:0]};
                     if (ptw_lvl_q[0] == 1) pptr[20:0] = gptw_pptr_q[20:0];
                     if (ptw_lvl_q[0] == 0) pptr[29:0] = gptw_pptr_q[29:0];
                     ptw_pptr_n = pptr;
@@ -521,6 +523,10 @@ module cva6_ptw
                 end
               end
 
+              //  A napot PTE whose range is not the 64 KiB one Svnapot defines
+              //  must not reach the TLB: the entry would cover the wrong span.
+              if (CVA6Cfg.SvnapotEn && pte.n && !is_napot_64k) shared_tlb_update_o.valid = 1'b0;
+
               //if there is a misaligned page, propagate error
               if (|misaligned_page) begin
                 state_d = PROPAGATE_ERROR;
@@ -533,6 +539,7 @@ module cva6_ptw
                 if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
+                  shared_tlb_update_o.valid = 1'b0;
                 end
               end
               // this is a pointer to the next TLB level
@@ -583,9 +590,11 @@ module cva6_ptw
                   endcase
                 end else ptw_pptr_n = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
 
-                if (CVA6Cfg.RVH && (pte.a || pte.d || pte.u)) begin
+                //  D, A and U are reserved in a non-leaf PTE, with or without the
+                //  hypervisor extension.
+                if (pte.a || pte.d || pte.u) begin
                   state_d = PROPAGATE_ERROR;
-                  ptw_stage_d = ptw_stage_q;
+                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
 
               end
