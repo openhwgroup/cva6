@@ -94,51 +94,18 @@ package triggers_pkg;
     icount32_tdata1_t icount_type;
   } trigger_32_tdata1_type;
 
-  // NAPOT range match, per the encoding of the privileged specification (table
-  // "NAPOT range encoding in PMP address and configuration registers"): the
-  // value is the base address followed by a run of low ones, and n trailing
-  // ones select a range of 2^(n+1) bytes. Only the bits above the run take
-  // part in the comparison.
-  //
-  // The address bits above the run are free, so no validity check applies; and
-  // the run of n ones has to mask off n + 1 bits, the range being twice the
-  // weight of the lowest zero. This matches what cva6's own PMP does in
-  // core/pmp/src/pmp_entry.sv and what Spike does in triggers.cc.
+  // NAPOT range match: the base address ends with a run of ones that sets the
+  // range size. ~(base ^ (base + 1)) keeps only the bits above that run, which
+  // are the ones compared.
   function automatic logic napot_match32(logic [31:0] base, logic [31:0] value);
     logic [31:0] mask;
-    int unsigned trailing_ones;
-
-    trailing_ones = 0;
-    for (int unsigned i = 0; i < 32; i++) begin
-      if (base[i]) trailing_ones = i + 1;
-      else break;
-    end
-
-    mask = ~((32'd1 << (trailing_ones + 1)) - 32'd1);
+    mask = ~(base ^ (base + 1));
     return (value & mask) == (base & mask);
   endfunction
 
-  // NAPOT range match, per the encoding of the privileged specification (table
-  // "NAPOT range encoding in PMP address and configuration registers"): the
-  // value is the base address followed by a run of low ones, and n trailing
-  // ones select a range of 2^(n+1) bytes. Only the bits above the run take
-  // part in the comparison.
-  //
-  // The address bits above the run are free, so no validity check applies; and
-  // the run of n ones has to mask off n + 1 bits, the range being twice the
-  // weight of the lowest zero. This matches what cva6's own PMP does in
-  // core/pmp/src/pmp_entry.sv and what Spike does in triggers.cc.
   function automatic logic napot_match64(logic [63:0] base, logic [63:0] value);
     logic [63:0] mask;
-    int unsigned trailing_ones;
-
-    trailing_ones = 0;
-    for (int unsigned i = 0; i < 64; i++) begin
-      if (base[i]) trailing_ones = i + 1;
-      else break;
-    end
-
-    mask = ~((64'd1 << (trailing_ones + 1)) - 64'd1);
+    mask = ~(base ^ (base + 1));
     return (value & mask) == (base & mask);
   endfunction
 

@@ -491,24 +491,37 @@ module decoder
                 endcase
 
                 if (instruction_o.op == ariane_pkg::CBO_INVAL) begin
-                  // permissions checks
-                  if((priv_lvl_i != riscv::PRIV_LVL_M && mcbie_i == riscv::CBIE_ILLEGAL) ||
-                    (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U && scbie_i == riscv::CBIE_ILLEGAL)) begin
-                    // disabled in M-mode / S-mode
+                  // CBO.INVAL permission checks. The mode that matters is the
+                  // virtualization state, not hu: menvcfg governs everything
+                  // below M, senvcfg the non-virtual U-mode, and henvcfg plus
+                  // senvcfg the virtual modes.
+                  if ((priv_lvl_i != riscv::PRIV_LVL_M &&
+                       mcbie_i == riscv::CBIE_ILLEGAL) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U &&
+                       scbie_i == riscv::CBIE_ILLEGAL)) begin
                     illegal_instr = 1'b1;
-                  end
-                  else if((priv_lvl_i == riscv::PRIV_LVL_HS && hcbie_i == riscv::CBIE_ILLEGAL) ||
-                    (priv_lvl_i == riscv::PRIV_LVL_U && hu_i) ) begin
-                    // disabled in HS-mode / H-mode
+                  end else if (
+                      CVA6Cfg.RVH && v_i &&
+                      ((priv_lvl_i == riscv::PRIV_LVL_S &&
+                        hcbie_i == riscv::CBIE_ILLEGAL) ||
+                       (priv_lvl_i == riscv::PRIV_LVL_U &&
+                        (hcbie_i == riscv::CBIE_ILLEGAL ||
+                         scbie_i == riscv::CBIE_ILLEGAL)))) begin
                     virtual_illegal_instr = 1'b1;
-                  end else begin
-                    if((priv_lvl_i != riscv::PRIV_LVL_M && mcbie_i == riscv::CBIE_FLUSH) ||
-                      (priv_lvl_i == riscv::PRIV_LVL_U && scbie_i == riscv::CBIE_FLUSH) ||
-                      (priv_lvl_i == riscv::PRIV_LVL_HS && hcbie_i == riscv::CBIE_FLUSH) ||
-                      (priv_lvl_i == riscv::PRIV_LVL_U && hu_i && (hcbie_i == riscv::CBIE_FLUSH || scbie_i == riscv::CBIE_FLUSH))) begin
-                      // have to flush instead of invalidate
-                      instruction_o.op = ariane_pkg::CBO_FLUSH;
-                    end
+                  end else if (
+                      (priv_lvl_i != riscv::PRIV_LVL_M &&
+                       mcbie_i == riscv::CBIE_FLUSH) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U &&
+                       scbie_i == riscv::CBIE_FLUSH) ||
+                      (CVA6Cfg.RVH && v_i &&
+                       ((priv_lvl_i == riscv::PRIV_LVL_S &&
+                         hcbie_i == riscv::CBIE_FLUSH) ||
+                        (priv_lvl_i == riscv::PRIV_LVL_U &&
+                         (hcbie_i == riscv::CBIE_FLUSH ||
+                          scbie_i == riscv::CBIE_FLUSH))))) begin
+                    instruction_o.op = ariane_pkg::CBO_FLUSH;
                   end
                   // otherwise: normal invalidate
                 end
