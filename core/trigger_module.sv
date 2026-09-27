@@ -929,7 +929,7 @@ module trigger_module
         end
       end
     end
-    if (tdata2_we) begin
+    if (tdata2_we && (!trigger_32_tdata1_q[tselect_q].tdata1_type[27] || debug_mode_i)) begin
       tdata2_d[tselect_q] = tdata2_i;
       flush_o = 1'b1;
     end
