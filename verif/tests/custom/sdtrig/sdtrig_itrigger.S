@@ -79,7 +79,9 @@ main:
 irq_mei_hook:
     nop
 
-    li   t2, 400
+    #  Generous: the interrupt arrives a few tens of cycles in, and the loop
+    #  costs nothing on a test this short.
+    li   t2, 4000
 wait_loop:
     addi t2, t2, -1
     bnez t2, wait_loop
@@ -127,6 +129,10 @@ trap_handler:
     csrw 0x7a1, s10
     csrw mie, zero
     li   t2, 1                  # leave the wait loop
+
+    # An itrigger fires on an interrupt: mepc holds the interrupted instruction,
+    # which has to be re-executed. Only the synchronous warm-up trap advances mepc.
+    mret
 
 warmup_trap:
     csrr s10, mepc
