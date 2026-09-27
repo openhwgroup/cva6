@@ -226,6 +226,9 @@ module load_store_unit
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, fetch_vaddr_plen, lsu_paddr;
+  logic        [         CVA6Cfg.VLEN-1:0] pmp_vaddr_q;
+  logic                                    pmp_is_store_q;
+  logic                                    pmp_hlvx_inst_q;
   logic        [                     31:0] mmu_tinst;
   logic                                    mmu_hs_ld_st_inst;
   logic                                    mmu_hlvx_inst;
@@ -295,6 +298,9 @@ module load_store_unit
         .lsu_valid_o    (pmp_translation_valid),
         .lsu_paddr_o    (lsu_paddr),
         .lsu_exception_o(pmp_exception),
+        .lsu_vaddr_o    (pmp_vaddr_q),
+        .lsu_is_store_o (pmp_is_store_q),
+        .lsu_hlvx_inst_o(pmp_hlvx_inst_q),
 
         .priv_lvl_i      (priv_lvl_i),
         .v_i,
@@ -344,6 +350,11 @@ module load_store_unit
     assign pmp_fetch_arsp.fetch_exception = 'h0;
     assign pmp_exception = misaligned_exception;
     assign pmp_translation_valid = translation_req;
+    //  Without an MMU the check happens in the request cycle, so the metadata
+    //  is the request's own and there is nothing to realign.
+    assign pmp_vaddr_q = mmu_vaddr;
+    assign pmp_is_store_q = st_translation_req;
+    assign pmp_hlvx_inst_q = mmu_hlvx_inst;
 
     if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
       assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
@@ -374,9 +385,10 @@ module load_store_unit
       .icache_fetch_vaddr_i(fetch_areq_i.fetch_vaddr),
       .lsu_valid_i         (pmp_translation_valid),
       .lsu_paddr_i         (lsu_paddr),
-      .lsu_vaddr_i         (mmu_vaddr),
+      .lsu_vaddr_i         (pmp_vaddr_q),
       .lsu_exception_i     (pmp_exception),
-      .lsu_is_store_i      (st_translation_req),
+      .lsu_is_store_i      (pmp_is_store_q),
+      .lsu_hlvx_inst_i     (pmp_hlvx_inst_q),
       .lsu_valid_o         (translation_valid),
       .lsu_paddr_o         (mmu_paddr),
       .lsu_exception_o     (mmu_exception),
