@@ -82,3 +82,8 @@ testlist:
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/lsu/false_4k_alias.S
+
+  - test: irq_mtval_zero
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/interrupt/irq_mtval_zero.S

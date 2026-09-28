@@ -2279,7 +2279,7 @@ module csr_regfile
                                       riscv::ENV_CALL_UMODE,
                                       riscv::ENV_CALL_SMODE,
                                       riscv::ENV_CALL_MMODE
-                                    })) || ex_i.cause[CVA6Cfg.GPLEN-1]) ? '0 : ex_i.tval;
+                                    })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
         end else begin
           mtval_d = '0;
         end
