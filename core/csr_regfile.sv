@@ -1069,6 +1069,8 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
+    mtval_d = '0;
+
     if (CVA6Cfg.RVS) begin
       satp = satp_q;
     end
@@ -1805,10 +1807,14 @@ module csr_regfile
 
         riscv::CSR_MSCRATCH: mscratch_d = csr_wdata;
         // bit[1] stays writable only with RVC; without RVC (IALIGN=32) mepc[1:0] are always zero
-        riscv::CSR_MEPC: mepc_d = {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
-        riscv::CSR_MCAUSE: mcause_d = csr_wdata;
+        riscv::CSR_MEPC:
+        mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc
+        : {csr_wdata[CVA6Cfg.XLEN-1:2], csr_wdata[1] & CVA6Cfg.RVC, 1'b0};
+        riscv::CSR_MCAUSE:
+        mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : {csr_wdata[CVA6Cfg.XLEN - 1], {CVA6Cfg.XLEN - 6{1'b0}}, csr_wdata[4:0]};
         riscv::CSR_MTVAL: begin
-          if (CVA6Cfg.TvalEn) mtval_d = csr_wdata;
+          if (CVA6Cfg.TvalEn)
+            mtval_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mtval : csr_wdata;
         end
         riscv::CSR_MTINST:
         if (CVA6Cfg.RVH) mtinst_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
@@ -2267,19 +2273,23 @@ module csr_regfile
         mstatus_d.mpie = mstatus_q.mie;
         // save the previous privilege mode
         mstatus_d.mpp = priv_lvl_q;
-        mcause_d = ex_i.cause;
-        // set epc
-        mepc_d = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+        // set cause and epc, from the saved etrigger context on an mret
+        mcause_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mcause : ex_i.cause;
+        mepc_d = (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) ? sdtrig_etrigger_context_mepc : {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
         // set mtval or stval
         if (CVA6Cfg.TvalEn) begin
-          mtval_d        = ((ariane_pkg::ZERO_TVAL
-                                    && (ex_i.cause inside {
-                                      riscv::ILLEGAL_INSTR,
-                                      riscv::BREAKPOINT,
-                                      riscv::ENV_CALL_UMODE,
-                                      riscv::ENV_CALL_SMODE,
-                                      riscv::ENV_CALL_MMODE
-                                    })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
+          if (CVA6Cfg.SdtrigEtrigger && sdtrig_etrigger_context_saved_valid && mret) begin
+            mtval_d = sdtrig_etrigger_context_mtval;
+          end else begin
+            mtval_d        = ((ariane_pkg::ZERO_TVAL
+                                      && (ex_i.cause inside {
+                                        riscv::ILLEGAL_INSTR,
+                                        riscv::BREAKPOINT,
+                                        riscv::ENV_CALL_UMODE,
+                                        riscv::ENV_CALL_SMODE,
+                                        riscv::ENV_CALL_MMODE
+                                      })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
+          end
         end else begin
           mtval_d = '0;
         end

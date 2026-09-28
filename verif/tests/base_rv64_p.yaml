@@ -74,3 +74,8 @@ testlist:
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/interrupt/irq_mtval_zero.S
+
+  - test: mcause_warl
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/CSR/mcause_warl.S
