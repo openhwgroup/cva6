@@ -193,7 +193,6 @@ module cva6_ptw
 
   assign gpaddr_base = {pte.ppn[CVA6Cfg.GPPNW-1:0], vaddr_q[11:0]};
   assign gpaddr[CVA6Cfg.PtLevels-1] = gpaddr_base;
-  assign shared_tlb_update_o.vpn = CVA6Cfg.VpnLen'(vaddr_q[CVA6Cfg.SV+HYP_EXT*2-1:12]);
 
   genvar z, w;
   generate
@@ -249,6 +248,7 @@ module cva6_ptw
     // output the correct ASIDs
     shared_tlb_update_o.asid = tlb_update_asid_q;
     shared_tlb_update_o.vmid = CVA6Cfg.RVH ? tlb_update_vmid_q : '0;
+    shared_tlb_update_o.vpn = vaddr_q[12+CVA6Cfg.VpnLen-1:12];
 
     bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
     if (CVA6Cfg.RVH)
@@ -463,7 +463,7 @@ module cva6_ptw
                       gpaddr_n = gpaddr[ptw_lvl_q[0]];
                       ptw_pptr_n = {
                         hgatp_ppn_i[CVA6Cfg.PPNW-1:2],
-                        gpaddr[ptw_lvl_q[0]][CVA6Cfg.SV+HYP_EXT*2-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
+                        gpaddr[ptw_lvl_q[0]][CVA6Cfg.GPLEN-1:CVA6Cfg.SV-(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)],
                         (CVA6Cfg.PtLevels)'(0)
                       };
                       ptw_lvl_n[0] = '0;
@@ -491,10 +491,11 @@ module cva6_ptw
                 // If page is not executable, we can directly raise an error. This
                 // doesn't put a useless entry into the TLB. The same idea applies
                 // to the access flag since we let the access flag be managed by SW.
-                if (!pte.x || !pte.a) begin
+                if ((!pte.x && (!CVA6Cfg.RVH || ptw_stage_q != G_INTERMED_STAGE)) || !pte.a
+                    || (CVA6Cfg.RVH && ptw_stage_q == G_INTERMED_STAGE && !pte.r)) begin
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                end else if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i) || !CVA6Cfg.RVH)
+                end else if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !enable_g_translation_i)) || !CVA6Cfg.RVH)
                   shared_tlb_update_o.valid = 1'b1;
 
               end else begin
@@ -506,18 +507,17 @@ module cva6_ptw
                 // If page is not readable (there are no write-only pages)
                 // we can directly raise an error. This doesn't put a useless
                 // entry into the TLB.
-                if (pte.a && ((pte.r && !hlvx_eff) || (pte.x && (mxr_i || hlvx_eff || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH))))) begin
-                  if (CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i) || !CVA6Cfg.RVH)
+                if (
+                  (pte.a && ((pte.r && !hlvx_eff) || (pte.x && (mxr_i || hlvx_eff || (ptw_stage_q == S_STAGE && vmxr_i && ld_st_v_i && CVA6Cfg.RVH)))))
+                    // Request is a store: perform some additional checks
+                    // If the request was a store and the page is not write-able, raise an error
+                    // the same applies if the dirty flag is not set
+                    // g-intermediate nodes however never need write-permission
+                    && (!lsu_is_store_i || (pte.w && pte.d) || (ptw_stage_q == G_INTERMED_STAGE && CVA6Cfg.RVH))
+                ) begin
+                  if ((CVA6Cfg.RVH && ((ptw_stage_q == G_FINAL_STAGE) || !en_ld_st_g_translation_i)) || !CVA6Cfg.RVH)
                     shared_tlb_update_o.valid = 1'b1;
                 end else begin
-                  state_d = PROPAGATE_ERROR;
-                  if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
-                end
-                // Request is a store: perform some additional checks
-                // If the request was a store and the page is not write-able, raise an error
-                // the same applies if the dirty flag is not set
-                if (lsu_is_store_i && (!pte.w || !pte.d)) begin
-                  shared_tlb_update_o.valid = 1'b0;
                   state_d = PROPAGATE_ERROR;
                   if (CVA6Cfg.RVH) ptw_stage_d = ptw_stage_q;
                 end
@@ -536,7 +536,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                   shared_tlb_update_o.valid = 1'b0;
@@ -562,7 +562,6 @@ module cva6_ptw
                     S_STAGE: begin
                       if (CVA6Cfg.RVH && ((is_instr_ptw_q && enable_g_translation_i) || (!is_instr_ptw_q && en_ld_st_g_translation_i))) begin
                         ptw_stage_d = G_INTERMED_STAGE;
-                        if (CVA6Cfg.RVH) gpte_d = pte;
                         ptw_lvl_n[HYP_EXT] = ptw_lvl_q[0] + 1;
                         pptr = {pte.ppn, vaddr_lvl[0][ptw_lvl_q[0]], (CVA6Cfg.PtLevels)'(0)};
                         gptw_pptr_n = pptr;
@@ -601,7 +600,7 @@ module cva6_ptw
 
               // check if 63:41 are all zeros
               if (CVA6Cfg.RVH) begin
-                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW-1+HYP_EXT]) == 1'b0)) begin
+                if (((v_i && is_instr_ptw_q) || (ld_st_v_i && !is_instr_ptw_q)) && ptw_stage_q == S_STAGE && !((|pte.ppn[CVA6Cfg.PPNW-1:CVA6Cfg.GPPNW]) == 1'b0)) begin
                   state_d = PROPAGATE_ERROR;
                   ptw_stage_d = G_FINAL_STAGE;
                 end
@@ -670,7 +669,6 @@ module cva6_ptw
       ptw_lvl_q         <= '0;
       tag_valid_q       <= 1'b0;
       tlb_update_asid_q <= '0;
-      tlb_update_vmid_q <= '0;
       vaddr_q           <= '0;
       ptw_pptr_q        <= '0;
       global_mapping_q  <= 1'b0;
@@ -678,10 +676,11 @@ module cva6_ptw
       data_rvalid_q     <= 1'b0;
       grant_q           <= 1'b0;
       if (CVA6Cfg.RVH) begin
-        gpaddr_q    <= '0;
-        gptw_pptr_q <= '0;
-        ptw_stage_q <= S_STAGE;
-        gpte_q      <= '0;
+        gpaddr_q          <= '0;
+        gptw_pptr_q       <= '0;
+        ptw_stage_q       <= S_STAGE;
+        gpte_q            <= '0;
+        tlb_update_vmid_q <= '0;
       end
     end else begin
       state_q           <= state_d;
