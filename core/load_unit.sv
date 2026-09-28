@@ -543,11 +543,11 @@ module load_unit
               result_o = {{CVA6Cfg.XLEN - 32 + 24{rdata_sign_bit}}, endian_data[7:0]};
             end
             default: begin
-              result_o = shifted_data[CVA6Cfg.XLEN-1:0];
+              result_o = endian_data[CVA6Cfg.XLEN-1:0];
             end
           endcase
         end else begin
-          result_o = shifted_data[CVA6Cfg.XLEN-1:0];
+          result_o = endian_data[CVA6Cfg.XLEN-1:0];
         end
       end
     endcase

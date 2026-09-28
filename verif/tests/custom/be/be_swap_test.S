@@ -32,15 +32,21 @@
 #   is little endian, so a test that exits with MBE set would write a value the
 #   tracer cannot read.
 #
-#   RV32 only: mstatush exists on RV32, where the high half of mstatus is a
-#   separate CSR. On RV64 the MBE bit lives in mstatus itself and this test
-#   would have to write it there instead.
+#   On RV32 MBE is bit 5 of mstatush. On RV64 it is bit 37 of mstatus, and
+#   the test also checks doubleword accesses:
+#     5. A doubleword stored with MBE set and read back with MBE clear comes
+#        out byte reversed. This checks the 64-bit store swapper.
+#     6. A doubleword written little endian and loaded with MBE set comes out
+#        byte reversed. This checks the 64-bit load swapper on its own, which
+#        a round trip cannot do.
+#     7. A doubleword round trip under MBE returns the value unchanged.
 # ------------------------------------------------------------------------------
 
 #include "encoding.h"
 
 #define MSTATUSH      0x310
 #define MSTATUSH_MBE  0x20
+#define MSTATUS_MBE_BIT 37
 
     .text
     .globl main
@@ -103,6 +109,64 @@ main:
     andi  t2, t1, MSTATUSH_MBE
     bnez  t2, fail
 
+#else
+
+    li    t0, 1
+    slli  t0, t0, MSTATUS_MBE_BIT   # t0 = mstatus.MBE
+    la    t3, scratch
+    li    t4, 0x0123456789ABCDEF
+    li    t6, 0xEFCDAB8967452301    # t4 with its bytes reversed
+
+    # --------------------------------------------------------------------
+    # Scenario 4a: MBE reads back what was written
+    # --------------------------------------------------------------------
+    csrs  mstatus, t0
+    csrr  t1, mstatus
+    and   t2, t1, t0
+    beqz  t2, fail              # the bit did not stick
+
+    # --------------------------------------------------------------------
+    # Scenario 7: a doubleword round trip under MBE returns the value
+    # --------------------------------------------------------------------
+    sd    t4, 0(t3)
+    ld    t5, 0(t3)
+    bne   t5, t4, fail
+
+    # --------------------------------------------------------------------
+    # Scenario 1: a word round trip under MBE returns the value
+    # --------------------------------------------------------------------
+    li    a1, 0x12345678
+    sw    a1, 8(t3)
+    lwu   a2, 8(t3)
+    bne   a2, a1, fail
+
+    # --------------------------------------------------------------------
+    # Scenario 5: stored under MBE, read back without it, byte reversed
+    # --------------------------------------------------------------------
+    sd    t4, 16(t3)
+    csrc  mstatus, t0           # back to little endian
+    ld    t5, 16(t3)
+    bne   t5, t6, fail
+
+    # --------------------------------------------------------------------
+    # Scenario 6: written little endian, loaded under MBE, byte reversed
+    # --------------------------------------------------------------------
+    sd    t4, 24(t3)
+    csrs  mstatus, t0
+    ld    t5, 24(t3)
+    csrc  mstatus, t0
+    bne   t5, t6, fail
+
+    # --------------------------------------------------------------------
+    # Scenario 4b: with MBE clear the round trip is plain again
+    # --------------------------------------------------------------------
+    sd    t4, 32(t3)
+    ld    t5, 32(t3)
+    bne   t5, t4, fail
+    csrr  t1, mstatus
+    and   t2, t1, t0
+    bnez  t2, fail
+
 #endif
 
 pass:
@@ -111,8 +175,14 @@ pass:
 
 fail:
     # leave the core little endian whatever happens, so the exit path works
+#if __riscv_xlen == 32
     li    t0, MSTATUSH_MBE
     csrc  MSTATUSH, t0
+#else
+    li    t0, 1
+    slli  t0, t0, MSTATUS_MBE_BIT
+    csrc  mstatus, t0
+#endif
     li    a0, 1
     ret
 

@@ -65,6 +65,11 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv64ui/jal.S
 
+  - test: be_swap_test
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/be/be_swap_test.S
+
   - test: irq_mtval_zero
     iterations: 1
     <<: *custom_test_config
