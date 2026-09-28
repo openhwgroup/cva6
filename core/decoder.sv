@@ -526,18 +526,23 @@ module decoder
                   // otherwise: normal invalidate
                 end
 
-                if (instruction_o.op inside {ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH}) begin
-                  if((priv_lvl_i != riscv::PRIV_LVL_M && !mcbcfe_i) ||
-                    (priv_lvl_i == riscv::PRIV_LVL_U && !scbcfe_i)) begin
-                    // disabled in m-mode / s-mode
+                // CBCFE controls genuine CBO.CLEAN/CBO.FLUSH instructions.
+                // An original CBO.INVAL remains governed by CBIE even when
+                // CBIE makes the operation perform a flush.
+                if ((instruction_o.op inside {
+                      ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH
+                    }) && instr.itype.imm != 12'b000000000000) begin
+                  if ((priv_lvl_i != riscv::PRIV_LVL_M && !mcbcfe_i) ||
+                      (!v_i && CVA6Cfg.RVU &&
+                       priv_lvl_i == riscv::PRIV_LVL_U && !scbcfe_i)) begin
                     illegal_instr = 1'b1;
-                  end
-                  else if((priv_lvl_i == riscv::PRIV_LVL_HS && !hcbcfe_i) ||
-                          (priv_lvl_i == riscv::PRIV_LVL_U && hu_i && !(hcbcfe_i && scbcfe_i))) begin
-                    // disabled in HS-mode / H-mode
+                  end else if (
+                      CVA6Cfg.RVH && v_i &&
+                      ((priv_lvl_i == riscv::PRIV_LVL_S && !hcbcfe_i) ||
+                       (priv_lvl_i == riscv::PRIV_LVL_U &&
+                        !(hcbcfe_i && scbcfe_i)))) begin
                     virtual_illegal_instr = 1'b1;
                   end
-                  // otherwise: normal flush / clean
                 end
               end else begin
                 illegal_instr = 1'b1;
