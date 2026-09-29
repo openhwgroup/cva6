@@ -120,6 +120,9 @@ module id_stage #(
     logic              was_compressed;
   } issue_struct_t;
   issue_struct_t [CVA6Cfg.NrIssuePorts-1:0] issue_n, issue_q;
+  // Fetch port 0 was loaded into an issue slot this cycle. The macro decoder
+  // (Zcmp, Zcmt) moves to its next micro-op on it.
+  logic                                               port0_taken;
   // stall required for ZCMP ZCMT CVXIF
   logic              [CVA6Cfg.NrIssuePorts-1:0]       stall_instr_fetch;
 
@@ -199,7 +202,7 @@ module id_stage #(
           .instr_o                   (instruction_zcmp),
           .illegal_instr_i           (is_illegal_rvc[0]),
           .is_compressed_i           (is_compressed_rvc[0]),
-          .issue_ack_i               (issue_instr_ack_i[0]),
+          .issue_ack_i               (port0_taken),
           .illegal_instr_o           (is_illegal_zcmp),
           .is_compressed_o           (is_compressed_zcmp),
           .fetch_stall_o             (stall_macro_deco_zcmp),
@@ -386,6 +389,7 @@ module id_stage #(
     always_comb begin
       issue_n = issue_q;
       fetch_entry_ready_o = '0;
+      port0_taken = 1'b0;
       // instruction is not valid if we stall due to ZCMT or CVXIF
       decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr[0] && stall_macro_deco_zcmt) ||
                                      (CVA6Cfg.CvxifEn && is_illegal_cvxif_i && ~stall_macro_deco) && stall_instr_fetch[0]
@@ -407,6 +411,7 @@ module id_stage #(
           issue_n[1].valid = 1'b0;
         end else if (fetch_entry_valid_i[0]) begin
           fetch_entry_ready_o[0] = ~stall_instr_fetch[0];
+          port0_taken = 1'b1;
           issue_n[0] = '{
               decoded_instruction_valid[0],
               decoded_instruction[0],
@@ -418,8 +423,8 @@ module id_stage #(
       end
 
       if (!issue_n[1].valid) begin
-        if (fetch_entry_ready_o[0]) begin
-          if (fetch_entry_valid_i[1]) begin
+        if (port0_taken) begin
+          if (fetch_entry_valid_i[1] && fetch_entry_ready_o[0]) begin
             fetch_entry_ready_o[1] = ~stall_instr_fetch[1];
             issue_n[1] = '{
                 decoded_instruction_valid[1],
@@ -430,7 +435,11 @@ module id_stage #(
             };
           end
         end else if (fetch_entry_valid_i[0]) begin
+          // Slot 0 did not take fetch port 0 this cycle, so slot 1 takes it.
+          // port0_taken is used rather than the ready of port 0, which stays low
+          // during a Zcmp or Zcmt expansion.
           fetch_entry_ready_o[0] = ~stall_instr_fetch[0];
+          port0_taken = 1'b1;
           issue_n[1] = '{
               decoded_instruction_valid[0],
               decoded_instruction[0],
@@ -444,12 +453,14 @@ module id_stage #(
       if (flush_i) begin
         issue_n[0].valid = 1'b0;
         issue_n[1].valid = 1'b0;
+        port0_taken = 1'b0;
       end
     end
   end else begin
     always_comb begin
       issue_n = issue_q;
       fetch_entry_ready_o = '0;
+      port0_taken = 1'b0;
       // instruction is not valid if we stall due to ZCMT or CVXIF
       decoded_instruction_valid[0] = (CVA6Cfg.RVZCMT && is_zcmt_instr[0] && stall_macro_deco_zcmt) ||
                                      (CVA6Cfg.CvxifEn && is_illegal_cvxif_i && ~stall_macro_deco && stall_instr_fetch[0])
@@ -462,6 +473,7 @@ module id_stage #(
       // for a new instruction
       if (!issue_n[0].valid && fetch_entry_valid_i[0]) begin
         fetch_entry_ready_o[0] = ~stall_instr_fetch[0];
+        port0_taken = 1'b1;
         issue_n[0] = '{
             decoded_instruction_valid[0],
             decoded_instruction[0],
@@ -472,7 +484,10 @@ module id_stage #(
       end
 
       // invalidate the pipeline register on a flush
-      if (flush_i) issue_n[0].valid = 1'b0;
+      if (flush_i) begin
+        issue_n[0].valid = 1'b0;
+        port0_taken = 1'b0;
+      end
     end
   end
   // -------------------------
