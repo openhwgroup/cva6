@@ -592,7 +592,7 @@ module issue_read_operands
         end
       end
 
-      if (CVA6Cfg.NrRgprPorts == 3 && rs3_has_raw[i]) begin
+      if (rs3_has_raw[i]) begin
         if (rs3_valid[i]) begin
           forward_rs3[i] = 1'b1;
         end else begin  // the operand is not available -> stall
@@ -602,7 +602,7 @@ module issue_read_operands
       end
 
       if (CVA6Cfg.CvxifEn) begin
-        stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || (CVA6Cfg.NrRgprPorts == 3 && stall_rs3[0]);
+        stall_raw[0] = x_transaction_rejected ? 1'b0 : stall_rs1[0] || stall_rs2[0] || stall_rs3[0];
       end
     end
 

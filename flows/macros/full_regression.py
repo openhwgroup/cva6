@@ -139,15 +139,16 @@ TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt"],
     "cv32a60x_no_zcmt": ["base_rv32_p"],
     "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": ["base_rv64_p"],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": ["base_rv64_p", "base_rv64_fp_p"],
     "cv32a60x_axi": ["base_rv32_p", "base_zcmt", "dcache_ecc"],
     "cv32a60x_no_zcmt_axi": ["base_rv32_p"],
     "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p"],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p", "base_rv64_fp_p"],
     "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp"],
     "cv32a65x": ["base_rv32_p", "base_zcmt", "base_pmp"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
+        "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_amo_p",
     ],
@@ -155,6 +156,7 @@ TESTLISTS = {
     "cv32a65x_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi": [
         "base_rv64_p",
+        "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_amo_p",
     ],
@@ -168,6 +170,7 @@ TESTLISTS = {
     "cv32a65x_sv32": ["base_rv32_p", "base_rv32_v", "base_pmp"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
+        "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
         "base_rv64_amo_p",
@@ -188,12 +191,17 @@ TESTLISTS = {
     "cv32a65x_sv32_sdtrig": ["base_rv32_p", "base_rv32_v", "testlist_sdtrig_nommu"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
+        "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
     ],
-    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": ["base_rv64_p", "base_rv64_amo_p"],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+    ],
 }
 
 # Benchmark patterns, compiled with the same
