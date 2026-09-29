@@ -54,3 +54,13 @@ testlist:
     iterations: 1
     <<: *common_test_config
     asm_tests: <path_var>/custom/zcmt/jvt_csr.S
+
+  - test: cm_jt_target_lsb
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/zcmt/cm_jt_target_lsb.S
+
+  - test: cm_jalt_target_lsb
+    iterations: 1
+    <<: *common_test_config
+    asm_tests: <path_var>/custom/zcmt/cm_jalt_target_lsb.S
