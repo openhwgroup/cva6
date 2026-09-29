@@ -109,6 +109,8 @@ TARGETS = [
     # OBI PMP noMMU
     "cv32a60x_zcmt_pmp",
     "cv32a65x",
+    # cv32a65x without the second issue port, for Zcmp on the scalar path
+    "cv32a65x_scalar",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi",
     # AXI PMP noMMU
     "cv32a60x_zcmt_pmp_axi",
@@ -130,6 +132,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
+    # AXI PMP MMU with the hypervisor extension
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss",
 ]
@@ -147,11 +151,13 @@ TESTLISTS = {
     "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt"],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p", "base_rv64_fp_p"],
     "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp"],
-    "cv32a65x": ["base_rv32_p", "base_zcmt", "base_pmp"],
+    "cv32a65x": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_pmp"],
+    "cv32a65x_scalar": ["base_rv32_p", "base_zcmt", "base_zcmp"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_pmp",
+        "base_rv64_pmp",
         "base_rv64_amo_p",
     ],
     "cv32a60x_zcmt_pmp_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
@@ -160,6 +166,7 @@ TESTLISTS = {
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_pmp",
+        "base_rv64_pmp",
         "base_rv64_amo_p",
     ],
     "cv32a6_imac_sv32_obi": [
@@ -175,6 +182,8 @@ TESTLISTS = {
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
     ],
@@ -186,7 +195,7 @@ TESTLISTS = {
         "base_rv32_amo_v",
     ],
     "cv32a65x_sv32_axi": ["base_rv32_p", "base_rv32_v", "base_pmp"],
-    "cv32a65x_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
+    "cv32a65x_sdtrig": ["base_rv32_p", "base_zcmp", "testlist_sdtrig"],
     "cv32a65x_noPMP_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
     # testlist_sdtrig_nommu on the Sv32 target: sdtrig_etrigger is excluded
     # there, see the note in that file.
@@ -196,6 +205,8 @@ TESTLISTS = {
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
     ],
@@ -208,6 +219,14 @@ TESTLISTS = {
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
     ],
 }
 
