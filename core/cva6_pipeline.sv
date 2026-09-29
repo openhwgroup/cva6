@@ -397,6 +397,7 @@ module cva6_pipeline
   logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_id_ex;
   // FPU
   logic fpu_ready_ex_id;
+  logic fpu_early_valid_ex_id;
   logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_id_ex;
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
@@ -796,6 +797,7 @@ module cva6_pipeline
       .mult_valid_o            (mult_valid_id_ex),
       // FPU
       .fpu_ready_i             (fpu_ready_ex_id),
+      .fpu_early_valid_i       (fpu_early_valid_ex_id),
       .fpu_valid_o             (fpu_valid_id_ex),
       .fpu_fmt_o               (fpu_fmt_id_ex),
       .fpu_rm_o                (fpu_rm_id_ex),
@@ -936,6 +938,7 @@ module cva6_pipeline
       .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       // FPU
       .fpu_ready_o             (fpu_ready_ex_id),
+      .fpu_early_valid_o       (fpu_early_valid_ex_id),
       .fpu_valid_i             (fpu_valid_id_ex),
       .fpu_fmt_i               (fpu_fmt_id_ex),
       .fpu_rm_i                (fpu_rm_id_ex),

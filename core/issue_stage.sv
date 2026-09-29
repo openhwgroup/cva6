@@ -89,6 +89,8 @@ module issue_stage
     output logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_o,
     // FPU FU is ready - EX_STAGE
     input logic fpu_ready_i,
+    // FPU early valid - EX_STAGE
+    input logic fpu_early_valid_i,
     // FPU FU is valid - EX_STAGE
     output logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_o,
     // FPU fmt field - EX_STAGE
@@ -285,6 +287,7 @@ module issue_stage
       .lsu_valid_o,
       .mult_valid_o,
       .fpu_ready_i,
+      .fpu_early_valid_i,
       .fpu_valid_o,
       .fpu_fmt_o,
       .fpu_rm_o,

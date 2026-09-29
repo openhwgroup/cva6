@@ -96,3 +96,5 @@ my_cv64a6_imafdc_sv39_hpdcache_wb_toolchain:
   <<: *dummy2
 my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt_toolchain:
   <<: *dummy2
+my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss_toolchain:
+  <<: *dummy2

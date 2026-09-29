@@ -130,6 +130,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
+    # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss",
 ]
 
 # Testlists run per target. A testlist whose
@@ -198,6 +200,11 @@ TESTLISTS = {
         "base_rv64_amo_v",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_rv64_amo_p",

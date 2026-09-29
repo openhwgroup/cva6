@@ -515,8 +515,6 @@ package config_pkg;
     else `ASSERT_FATAL("");
     assert (Cfg.NrPMPEntries <= 64)
     else `ASSERT_FATAL("");
-    assert (!(Cfg.SuperscalarEn && Cfg.RVF))
-    else `ASSERT_FATAL("");
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
     else `ASSERT_FATAL("[frontend] fetch width != not supported");
     // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
