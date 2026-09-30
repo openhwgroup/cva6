@@ -43,176 +43,176 @@
 #   env/             - riscv_arch_test.h and all framework headers
 sv39_test_config: &sv39_test_config
   path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=64 -DTEST_FLEN=64 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/custom/privtests/priv/config/pmp/ -I<path_var>/custom/privtests/priv/config/ -I<path_var>/custom/privtests/env/"
+  gcc_opts: "-DXLEN=64 -DTEST_FLEN=64 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/custom/env/privtests/priv/config/pmp/ -I<path_var>/custom/env/privtests/priv/config/ -I<path_var>/custom/env/privtests/env/"
 
 testlist:
   ##sv39 Supervisor-mode tests
   - test: sv39_canonical_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_canonical_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_canonical_Smode.S
 
   - test: sv39_canonical_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_canonical_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_canonical_Umode.S
 
   - test: sv39_global_pte_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_global_pte_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_global_pte_Smode.S
 
   - test: sv39_global_pte_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_global_pte_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_global_pte_Umode.S
 
   - test: sv39_invalid_pte_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_invalid_pte_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_invalid_pte_Smode.S
 
   - test: sv39_invalid_pte_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_invalid_pte_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_invalid_pte_Umode.S
 
   - test: sv39_misaligned_page_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_misaligned_page_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_misaligned_page_Smode.S
 
   - test: sv39_misaligned_page_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_misaligned_page_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_misaligned_page_Umode.S
 
   - test: sv39_mstatus_mprv_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_mprv_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_mprv_Smode.S
 
   - test: sv39_mstatus_mprv_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_mprv_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_mprv_Umode.S
 
   - test: sv39_mstatus_mxr_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_mxr_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_mxr_Smode.S
 
   - test: sv39_mstatus_mxr_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_mxr_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_mxr_Umode.S
 
   - test: sv39_mstatus_sbe_and_sum_set_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_sbe_and_sum_set_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_sbe_and_sum_set_Smode.S
 
   - test: sv39_mstatus_sbe_set_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_mstatus_sbe_set_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_mstatus_sbe_set_Smode.S
 
   - test: sv39_nleaf_pte_DAU_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_nleaf_pte_DAU_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_nleaf_pte_DAU_Smode.S
 
   - test: sv39_nleaf_pte_DAU_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_nleaf_pte_DAU_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_nleaf_pte_DAU_Umode.S
 
   - test: sv39_nleaf_pte_level0_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_nleaf_pte_level0_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_nleaf_pte_level0_Smode.S
 
   - test: sv39_nleaf_pte_level0_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_nleaf_pte_level0_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_nleaf_pte_level0_Umode.S
 
   - test: sv39_pte_reserved_field_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_pte_reserved_field_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_pte_reserved_field_Smode.S
 
   - test: sv39_pte_reserved_rwx_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_pte_reserved_rwx_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_pte_reserved_rwx_Smode.S
 
   - test: sv39_pte_reserved_rwx_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_pte_reserved_rwx_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_pte_reserved_rwx_Umode.S
 
   - test: sv39_pte_rsw_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_pte_rsw_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_pte_rsw_Smode.S
 
   - test: sv39_pte_rsw_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_pte_rsw_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_pte_rsw_Umode.S
 
   - test: sv39_satp_access_test
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_satp_access_test.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_satp_access_test.S
 
   - test: sv39_spage_access_Umode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_spage_access_Umode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_spage_access_Umode.S
 
   - test: sv39_spage_mstatus_sum_set_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_spage_mstatus_sum_set_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_spage_mstatus_sum_set_Smode.S
 
   - test: sv39_svnapot_not_supported_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_svnapot_not_supported_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_svnapot_not_supported_Smode.S
 
   - test: sv39_svpbmt_disabled_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_svpbmt_disabled_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_svpbmt_disabled_Smode.S
 
   - test: sv39_upage_mprv_set_sum_set_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_upage_mprv_set_sum_set_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_upage_mprv_set_sum_set_Smode.S
 
   - test: sv39_upage_mprv_set_sum_unset_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_upage_mprv_set_sum_unset_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_upage_mprv_set_sum_unset_Smode.S
 
   - test: sv39_upage_mstatus_sum_set_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_upage_mstatus_sum_set_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_upage_mstatus_sum_set_Smode.S
 
   - test: sv39_upage_mstatus_sum_unset_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_upage_mstatus_sum_unset_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_upage_mstatus_sum_unset_Smode.S
 
   - test: sv39_VA_all_ones_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_VA_all_ones_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_VA_all_ones_Smode.S
 
   - test: sv39_VA_all_zeros_Smode
     iterations: 1
     <<: *sv39_test_config
-    asm_tests: <path_var>/custom/privtests/priv/Sv/sv39_VA_all_zeros_Smode.S
+    asm_tests: <path_var>/custom/env/privtests/priv/Sv/sv39_VA_all_zeros_Smode.S
