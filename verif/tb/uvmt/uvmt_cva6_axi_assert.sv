@@ -94,9 +94,10 @@ module  uvmt_cva6_axi_assert#(int HPDCache=2)
       @(posedge axi_assert_if.clk && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |-> axi_assert_if.ar_burst == 1;
    endproperty
 
-   //Check if all write transaction performed by CVA6 are equal to 0
+   //Check if all write transaction performed by CVA6 are single beats. Not
+   //true of a write-back HPDcache, which evicts whole lines in bursts.
    property AXI4_CVA6_AWLEN;
-      @(posedge axi_assert_if.clk && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_len == 0;
+      @(posedge axi_assert_if.clk && (HPDCache != int'(config_pkg::HPDCACHE_WB)) && (HPDCache != int'(config_pkg::HPDCACHE_WT_WB)) && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> axi_assert_if.aw_len == 0;
    endproperty
 
    //Check if all Read transaction performed by CVA6 are equal to 0 or 1
