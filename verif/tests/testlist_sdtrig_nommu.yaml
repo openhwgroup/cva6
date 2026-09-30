@@ -96,3 +96,11 @@ testlist:
       breakpoint, using the deterministic interrupt hook irq_mei_hook.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_itrigger.S
+
+  - test: sdtrig_loadaddr_two_triggers
+    <<: *common_test_config
+    description: >
+      Two load-address triggers armed at once: a load matching one of them
+      takes the action of that trigger and sets hit0 in it only.
+    iterations: 1
+    asm_tests: <path_var>/custom/sdtrig/sdtrig_loadaddr_two_triggers.S
