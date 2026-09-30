@@ -83,7 +83,7 @@ package cva6_config_pkg;
       SdtrigSupportedActions: 2'b01,
       SdtrigSupportedMatch: 10'b00_0000_0001,
       SdtrigSupportTextra: bit'(0),
-      TvalEn: bit'(0),
+      TvalEn: bit'(1),
       DirectVecOnly: bit'(1),
       NrPMPEntries: unsigned'(0),
       PMPCfgRstVal: {64{64'h0}},
