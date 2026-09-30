@@ -1,0 +1,7 @@
+# Not baselined yet: this target had no flow files and has never been run
+# through cook.py, so its gate count and benchmark cycles have never been
+# measured. Left empty on purpose.
+# GTECH synthesis (dc-shell-synth --gtech): to measure when the target
+# joins GTECH_TARGETS of the regression
+# gtech_cells:
+# gtech_registers:
