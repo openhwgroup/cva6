@@ -430,7 +430,11 @@ module load_unit
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        if (valid_i) be_q <= lsu_ctrl_i.be;
+        // With an MMU be_q is the byte enable of the request that paddr, one
+        // stage later, belongs to: sample it only when that request enters
+        // the load buffer, so that a request presented while the previous one
+        // is still waiting for its grant does not replace it.
+        if (CVA6Cfg.MmuPresent ? ldbuf_w : valid_i) be_q <= lsu_ctrl_i.be;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
