@@ -1,6 +1,6 @@
 gates: 97499
-coremark_cycle: 313115
-dhrystone_cycle: 23294
+coremark_cycle: 309514
+dhrystone_cycle: 22295
 # GTECH synthesis (dc-shell-synth --gtech): to measure when the target
 # joins GTECH_TARGETS of the regression
 # gtech_cells:

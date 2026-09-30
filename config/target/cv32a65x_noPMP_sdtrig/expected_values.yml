@@ -1,3 +1,5 @@
+coremark_cycle: 273331
+dhrystone_cycle: 20942
 # Left empty on purpose. This target derives from its non-Sdtrig namesake but
 # enables the trigger module and the debug module, which changes both the gate
 # count and the cycle counts, so carrying the parent's numbers over would record

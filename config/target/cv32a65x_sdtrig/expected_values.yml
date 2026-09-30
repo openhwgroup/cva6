@@ -1,3 +1,5 @@
+coremark_cycle: 265332
+dhrystone_cycle: 20506
 # Left empty on purpose. This target derives from cv32a65x but enables the
 # Sdtrig trigger module and the debug module, which changes both the gate count
 # and the cycle counts, so carrying over the cv32a65x numbers would record
