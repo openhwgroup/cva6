@@ -147,33 +147,52 @@ TARGETS = [
 # Testlists run per target. A testlist whose
 # name ends with `_v` (virtual memory tests) needs the F extension, added
 # to the target ISA by the riscv-isa-modify recipe before compiling.
+#
+# Feature testlists follow the configuration of the target:
+#   base_csr       every target without RVH (base_rv64_h holds the RVH variant)
+#   base_zicbom    RVZiCbom, RVS and RVU
+#   base_zicbom_h  RVZiCbom and RVH
+#   base_rv64_h    RVH
+#   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
-    "cv32a60x": ["base_rv32_p", "base_zcmt"],
-    "cv32a60x_no_zcmt": ["base_rv32_p"],
-    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": ["base_rv64_p", "base_rv64_fp_p"],
-    "cv32a60x_axi": ["base_rv32_p", "base_zcmt", "dcache_ecc"],
-    "cv32a60x_no_zcmt_axi": ["base_rv32_p"],
-    "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p", "base_rv64_fp_p"],
-    "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp"],
-    "cv32a65x": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_pmp"],
-    "cv32a65x_scalar": ["base_rv32_p", "base_zcmt", "base_zcmp"],
+    "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr"],
+    "cv32a60x_no_zcmt": ["base_rv32_p", "base_csr"],
+    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt", "base_csr"],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_csr",
+    ],
+    "cv32a60x_axi": ["base_rv32_p", "base_zcmt", "dcache_ecc", "base_csr"],
+    "cv32a60x_no_zcmt_axi": ["base_rv32_p", "base_csr"],
+    "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt", "base_csr"],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_csr",
+        "base_zicbom",
+    ],
+    "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp", "base_csr"],
+    "cv32a65x": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_pmp", "base_csr"],
+    "cv32a65x_scalar": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_csr"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_pmp",
         "base_rv64_amo_p",
+        "base_csr",
     ],
-    "cv32a60x_zcmt_pmp_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
-    "cv32a65x_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
+    "cv32a60x_zcmt_pmp_axi": ["base_rv32_p", "base_zcmt", "base_pmp", "base_csr"],
+    "cv32a65x_axi": ["base_rv32_p", "base_zcmt", "base_pmp", "base_csr"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_pmp",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
     ],
     "cv32a6_imac_sv32_obi": [
         "base_rv32_p",
@@ -181,8 +200,9 @@ TESTLISTS = {
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
+        "base_csr",
     ],
-    "cv32a65x_sv32": ["base_rv32_p", "base_rv32_v", "base_pmp"],
+    "cv32a65x_sv32": ["base_rv32_p", "base_rv32_v", "base_pmp", "base_csr"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
@@ -192,6 +212,7 @@ TESTLISTS = {
         "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
+        "base_csr",
     ],
     "cv32a6_imac_sv32": [
         "base_rv32_p",
@@ -199,13 +220,24 @@ TESTLISTS = {
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
     ],
-    "cv32a65x_sv32_axi": ["base_rv32_p", "base_rv32_v", "base_pmp"],
-    "cv32a65x_sdtrig": ["base_rv32_p", "base_zcmp", "testlist_sdtrig"],
-    "cv32a65x_noPMP_sdtrig": ["base_rv32_p", "testlist_sdtrig"],
-    # testlist_sdtrig_nommu on the Sv32 target: sdtrig_etrigger is excluded
-    # there, see the note in that file.
-    "cv32a65x_sv32_sdtrig": ["base_rv32_p", "base_rv32_v", "testlist_sdtrig_nommu"],
+    "cv32a65x_sv32_axi": [
+        "base_rv32_p",
+        "base_rv32_v",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+    ],
+    "cv32a65x_sdtrig": ["base_rv32_p", "base_zcmp", "testlist_sdtrig", "base_csr"],
+    "cv32a65x_noPMP_sdtrig": ["base_rv32_p", "testlist_sdtrig", "base_csr"],
+    "cv32a65x_sv32_sdtrig": [
+        "base_rv32_p",
+        "base_rv32_v",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
         "base_rv64_fp_p",
@@ -215,16 +247,22 @@ TESTLISTS = {
         "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
     ],
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
@@ -233,18 +271,30 @@ TESTLISTS = {
         "base_rv64_pmp",
         "base_rv64_pmp_mmu",
         "base_rv64_h",
+        "base_zicbom",
+        "base_zicbom_h",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot": [
         "base_rv64_p",
         "base_rv64_svnapot",
+        "base_csr",
+        "base_zicbom",
     ],
-    "cv32a6_ima_sv32_fpga": ["base_rv32_p", "base_rv32_amo_p"],
+    "cv32a6_ima_sv32_fpga": [
+        "base_rv32_p",
+        "base_rv32_amo_p",
+        "base_csr",
+        "base_zicbom",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_wb": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
     ],
 }
+
 
 # Benchmark patterns, compiled with the same
 # toolchain for every target so the scores stay comparable
