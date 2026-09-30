@@ -132,6 +132,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
+    # AXI PMP MMU with Svnapot, without the shared TLB
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot",
     # AXI PMP MMU with the hypervisor extension
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
@@ -227,6 +229,10 @@ TESTLISTS = {
         "base_rv64_pmp",
         "base_rv64_pmp_mmu",
         "base_rv64_h",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot": [
+        "base_rv64_p",
+        "base_rv64_svnapot",
     ],
 }
 
