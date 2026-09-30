@@ -136,6 +136,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
     # AXI PMP MMU with Svnapot, without the shared TLB
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot",
+    # AXI PMP MMU with the write-back HPDcache
+    "cv64a6_imafdc_sv39_hpdcache_wb",
     # AXI PMP MMU with the hypervisor extension
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
@@ -237,6 +239,11 @@ TESTLISTS = {
         "base_rv64_svnapot",
     ],
     "cv32a6_ima_sv32_fpga": ["base_rv32_p", "base_rv32_amo_p"],
+    "cv64a6_imafdc_sv39_hpdcache_wb": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+    ],
 }
 
 # Benchmark patterns, compiled with the same
