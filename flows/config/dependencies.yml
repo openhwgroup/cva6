@@ -47,6 +47,14 @@ submodule_patches:
       When the read half runs first the notification is lost, the write half
       blocks and the AXI slave never sends the B response, which hangs the core.
       Still present on core-v-verif master: drop this patch once fixed upstream.
+  core/cache_subsystem/hpdcache:
+    patches:
+      - "verif/patches/hpdcache-blackbox-ecc-sram-port-list.patch"
+    reason: >
+      The blackbox model of hpdcache_sram_wbyteenable_ecc_1rw misses the comma
+      between rdata and the ECC ports, so a synthesis that reads the blackbox
+      SRAM models instead of the behavioural ones fails to parse it. Still
+      present on cv-hpdcache master: drop this patch once fixed upstream.
 
 riscv-tests:
   repo: "https://github.com/riscv/riscv-tests.git"
