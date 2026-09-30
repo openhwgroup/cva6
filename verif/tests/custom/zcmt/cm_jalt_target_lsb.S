@@ -57,7 +57,7 @@ write_tohost:
 1:
     j 1b
 
-.section .riscv.jvt, "a", @progbits
+.section .riscv.jvt, "ax"
 .align 6
 __jvt_base$:
     # Entries 0 through 63 are unused by this test.
