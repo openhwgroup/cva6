@@ -58,10 +58,18 @@ main:
 irq_mei_hook:
     nop
 
+    # Wait for the handler to count the interrupt, with a bound. The handler
+    # does not touch t2: the interrupt may land between the two instructions
+    # of the li below, and a value written by the handler would then be
+    # overwritten by the addi that resumes after mret.
     li   t2, 4000
 wait_loop:
+    la   t0, irq_count
+    lw   t1, 0(t0)
+    bnez t1, wait_done
     addi t2, t2, -1
     bnez t2, wait_loop
+wait_done:
 
     csrw mie, zero
     li   t0, MSTATUS_MIE_B
@@ -125,7 +133,6 @@ trap_handler:
     sw   s11, 0(s10)
 
     csrw mie, zero              # one interrupt only
-    li   t2, 1                  # leave the wait loop
 
     # An interrupt: mepc already points at the instruction to run again.
     mret
