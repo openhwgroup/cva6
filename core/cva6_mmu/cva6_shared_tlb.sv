@@ -345,6 +345,7 @@ module cva6_shared_tlb #(
           itlb_update_o.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
           itlb_update_o.asid = shared_tlb_update_i.asid;
           itlb_update_o.vmid = shared_tlb_update_i.vmid;
+          itlb_update_o.is_napot_64k = shared_tlb_update_i.is_napot_64k;
 
         end else if (dtlb_req_q) begin
           dtlb_update_o.valid = 1'b1;
@@ -355,6 +356,7 @@ module cva6_shared_tlb #(
           dtlb_update_o.v_st_enbl = v_st_enbl[i_req_q][HYP_EXT*2:0];
           dtlb_update_o.asid = shared_tlb_update_i.asid;
           dtlb_update_o.vmid = shared_tlb_update_i.vmid;
+          dtlb_update_o.is_napot_64k = shared_tlb_update_i.is_napot_64k;
         end
       end
     end else begin
