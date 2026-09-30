@@ -224,13 +224,13 @@ function bit uvme_cva6_sb_c::is_trap_delegated(uvma_isacov_instr_c trapping,
   if (trapping.rvfi.mode == uvma_rvfi_pkg::UVMA_RVFI_M_MODE)
     return 1'b0;
 
-  // The cause is read from whichever register the trap wrote: a delegated trap
-  // writes scause and leaves mcause untouched, so taking mcause alone would
-  // read a stale value and misclassify the trap.
-  if (handler.rvfi.name_csrs["scause"].wmask != 0)
-    cause = handler.rvfi.name_csrs["scause"].wdata;
-  else
-    cause = handler.rvfi.name_csrs["mcause"].wdata;
+  // The cause is taken from the trap itself, which the testbench packs above
+  // the trap bit (uvmt_cva6_tb.sv: rvfi_trap = trap | cause << 1). The cause
+  // CSRs cannot tell it: RVFI only flags a CSR as written when its value
+  // changes, so a trap that repeats the cause of the previous one, as a page
+  // fault retried after the handler set the A bit does, shows neither scause
+  // nor mcause written.
+  cause = XLEN'(trapping.rvfi.trap[TRAP_WL-1:1]);
 
   // Interrupts are delegated through mideleg, which this check does not cover;
   // medeleg is indexed by exception cause only.
@@ -291,7 +291,8 @@ function void uvme_cva6_sb_c::check_pc_trap(uvma_isacov_instr_c instr,
                                         : mtvec_value;
         if (mtvec_change || trap_delegated) begin
            if (cfg.xlen == 32 || trap_delegated) begin
-              if (instr.rvfi.pc_rdata[RTLCVA6Cfg.VLEN-1:2] == trap_vector[RTLCVA6Cfg.VLEN-1:2]) begin
+              // trap_vector can be narrower than the PC: compare on its width.
+              if (instr.rvfi.pc_rdata[$bits(trap_vector)-1:2] == trap_vector[$bits(trap_vector)-1:2]) begin
                  //we only support MTVEC/STVEC Direct mode
                  `uvm_info(get_type_name(), $sformatf("After a trap, PC matches the trap vector"), UVM_DEBUG)
               end
