@@ -151,6 +151,7 @@ module cva6_ptw
   // latched tag signal
   logic tag_valid_n, tag_valid_q;
   logic grant_q;
+  logic aborted_q;
   // register the ASID
   logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
   // register the VMID
@@ -327,6 +328,8 @@ module cva6_ptw
     gpte_d                    = '0;
     ptw_stage_d               = ptw_stage_q;
     global_mapping_n          = global_mapping_q;
+    // An aborted walk stays aborted until the PTW is back in IDLE
+    aborted_req_o             = aborted_q;
     // input registers
     tlb_update_asid_n         = tlb_update_asid_q;
     vaddr_n                   = vaddr_q;
@@ -675,6 +678,7 @@ module cva6_ptw
       data_rdata_q      <= '0;
       data_rvalid_q     <= 1'b0;
       grant_q           <= 1'b0;
+      aborted_q         <= 1'b0;
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= '0;
         gptw_pptr_q       <= '0;
@@ -694,6 +698,7 @@ module cva6_ptw
       data_rdata_q      <= endian_data;
       data_rvalid_q     <= ypb_mmu_ptw_rsp_i.rvalid;
       grant_q           <= ypb_mmu_ptw_rsp_i.pgnt;
+      aborted_q         <= aborted_req_o;
 
       if (CVA6Cfg.RVH) begin
         gpaddr_q          <= gpaddr_n;
