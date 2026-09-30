@@ -47,6 +47,7 @@ set_property include_dirs { \
 	"../../vendor/pulp-platform/axi/include" \
       "../../vendor/pulp-platform/obi/include" \
 	"../../core/cache_subsystem/hpdcache/rtl/include" \
+	"../../core/cache_subsystem/hpdcache/rtl/src/utils/ecc" \
 	"../register_interface/include" \
       "../instr_tracing/ITI/include" \
 	"../../core/include" \
