@@ -102,3 +102,5 @@ my_cv32a65x_scalar_toolchain:
   <<: *dummy2
 my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot_toolchain:
   <<: *dummy2
+my_cv32a6_ima_sv32_fpga_toolchain:
+  <<: *dummy2

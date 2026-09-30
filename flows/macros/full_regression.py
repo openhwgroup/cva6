@@ -122,6 +122,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi",
     # AXI PMP MMU
     "cv32a6_imac_sv32",
+    # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
+    "cv32a6_ima_sv32_fpga",
     "cv32a65x_sv32_axi",
     # Sdtrig trigger module, every trigger type and match type enabled,
     # across the three address-checking shapes: PMP only, neither PMP nor MMU,
@@ -234,6 +236,7 @@ TESTLISTS = {
         "base_rv64_p",
         "base_rv64_svnapot",
     ],
+    "cv32a6_ima_sv32_fpga": ["base_rv32_p", "base_rv32_amo_p"],
 }
 
 # Benchmark patterns, compiled with the same
