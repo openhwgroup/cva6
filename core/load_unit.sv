@@ -97,9 +97,9 @@ module load_unit
   // in order to decouple the response interface from the request interface,
   // we need a a buffer which can hold all inflight memory load requests
   typedef struct packed {
-    logic [CVA6Cfg.TRANS_ID_BITS-1:0]    trans_id;        // scoreboard identifier
-    logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] address_offset;  // least significant bits of the address
-    fu_op                                operation;       // type of load
+    logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;   // scoreboard identifier
+    logic [CVA6Cfg.VLEN-1:0]          vaddr;      // virtual address
+    fu_op                             operation;  // type of load
   } ldbuf_t;
 
 
@@ -129,6 +129,7 @@ module load_unit
   logic      ldbuf_r;
   ldbuf_t    ldbuf_rdata;
   ldbuf_id_t ldbuf_rindex;
+  logic      data_rvalid;
   ldbuf_id_t ldbuf_last_id_q;
 
   logic kill_req_d, kill_req_q;
@@ -199,10 +200,10 @@ module load_unit
       ldbuf_valid_q <= ldbuf_valid_d;
       sdtrig_trans_id_q <= sdtrig_trans_id_d;
       if (ldbuf_w) begin
-        ldbuf_last_id_q                      <= ldbuf_windex;
-        ldbuf_q[ldbuf_windex].trans_id       <= lsu_ctrl_i.trans_id;
-        ldbuf_q[ldbuf_windex].address_offset <= lsu_ctrl_i.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0];
-        ldbuf_q[ldbuf_windex].operation      <= lsu_ctrl_i.operation;
+        ldbuf_last_id_q                 <= ldbuf_windex;
+        ldbuf_q[ldbuf_windex].trans_id  <= lsu_ctrl_i.trans_id;
+        ldbuf_q[ldbuf_windex].vaddr     <= lsu_ctrl_i.vaddr;
+        ldbuf_q[ldbuf_windex].operation <= lsu_ctrl_i.operation;
       end
     end
   end
@@ -229,7 +230,13 @@ module load_unit
   assign ex_o.cause = ypb_load_rsp_i.err                ? riscv::HARDWARE_ERROR :
                       (sdtrig_load_action_i != '0)      ? sdtrig_load_action_i  :
                                                           ex_i.cause;
-  assign ex_o.tval = (CVA6Cfg.TvalEn && (sdtrig_load_action_i != '0)) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} : ex_i.tval;
+  //  On a hardware error tval is the virtual address of the load that the
+  //  response answers, held in the load buffer, as the load that caused it may
+  //  have left lsu_ctrl_i long ago.
+  assign ex_o.tval = !CVA6Cfg.TvalEn ? ex_i.tval :
+                     (data_rvalid && ypb_load_rsp_i.err) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, ldbuf_rdata.vaddr} :
+                     (sdtrig_load_action_i != '0)        ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} :
+                                                           ex_i.tval;
   assign ex_o.timing = (sdtrig_load_stall_i && ypb_load_rsp_i.rvalid && sdtrig_load_action_i != '0) ? 1'b1 : 1'b0;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
@@ -277,7 +284,7 @@ module load_unit
   logic ex_s0, ex_s1, kill_s1;
 
   logic stall_ypb, stall_translation;
-  logic data_req, data_rvalid;
+  logic data_req;
 
   assign ypb_load_req_o.kill_req = kill_req_q || kill_s1;
 
@@ -439,7 +446,10 @@ module load_unit
   // Retire Load
   // ---------------
   assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(ypb_load_rsp_i.rid) : 1'b0;
-  assign ldbuf_rdata = ldbuf_q[ldbuf_rindex];
+  assign ldbuf_rdata  = ldbuf_q[ldbuf_rindex];
+
+  logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] ldbuf_addroff;
+  assign ldbuf_addroff = ldbuf_rdata.vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0];
 
   //  read the pending load buffer
   assign ldbuf_r    = ypb_load_rsp_i.rvalid;
@@ -450,7 +460,7 @@ module load_unit
   logic [CVA6Cfg.XLEN-1:0] shifted_data;
 
   // realign as needed
-  assign shifted_data = ypb_load_rsp_i.rdata >> {ldbuf_rdata.address_offset, 3'b000};
+  assign shifted_data = ypb_load_rsp_i.rdata >> {ldbuf_addroff, 3'b000};
 
   /*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
@@ -507,9 +517,9 @@ module load_unit
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
   // In big endian mode nothing is added to the offset to reach the byte that
   // holds the sign bit: it is always the lowest addressed one.
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) && CVA6Cfg.IS_XLEN64 && (~mbe_i)) ? ldbuf_rdata.address_offset + 3 :
-                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H} && (~mbe_i))                     ? ldbuf_rdata.address_offset + 1 :
-                                                                                                                         ldbuf_rdata.address_offset;
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) && CVA6Cfg.IS_XLEN64 && (~mbe_i)) ? ldbuf_addroff + 3 :
+                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H} && (~mbe_i))                     ? ldbuf_addroff + 1 :
+                                                                                                                         ldbuf_addroff;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
     assign rdata_sign_bits[i] = ypb_load_rsp_i.rdata[(i+1)*8-1];
@@ -565,15 +575,15 @@ module load_unit
   // check invalid offsets, but only issue a warning as these conditions actually trigger a load address misaligned exception
   addr_offset0 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 5)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> ldbuf_q[ldbuf_windex_q].vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0] < 5)
   else `ASSERT_WARNING("invalid address offset used with {LW, LWU}");
   addr_offset1 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 7)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> ldbuf_q[ldbuf_windex_q].vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0] < 7)
   else `ASSERT_WARNING("invalid address offset used with {LH, LHU}");
   addr_offset2 :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
-        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_q[ldbuf_windex_q].address_offset < 8)
+        ldbuf_w_q |->  (ldbuf_q[ldbuf_windex_q].operation inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> ldbuf_q[ldbuf_windex_q].vaddr[CVA6Cfg.XLEN_ALIGN_BYTES-1:0] < 8)
   else `ASSERT_FATAL("invalid address offset used with {LB, LBU}");
   //pragma translate_on
 
