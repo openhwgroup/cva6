@@ -1,10 +1,4 @@
 coremark_cycle: 301630
 dhrystone_cycle: 21853
-# Not baselined yet: this target was just created to run Zcmp without the
-# second issue port, and its gate count and benchmark cycles have never been
-# measured. Left empty on purpose rather than carrying over the values of the
-# superscalar target it derives from.
-# GTECH synthesis (dc-shell-synth --gtech): to measure when the target
-# joins GTECH_TARGETS of the regression
-# gtech_cells:
-# gtech_registers:
+gtech_cells: 50415
+gtech_registers: 7812

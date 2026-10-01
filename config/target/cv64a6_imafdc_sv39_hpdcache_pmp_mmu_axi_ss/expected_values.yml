@@ -1,10 +1,4 @@
 coremark_cycle: 278236
 dhrystone_cycle: 18400
-# Not baselined yet: this target was just created to exercise the FPU in
-# superscalar mode, and its gate count and benchmark cycles have never been
-# measured. Left empty on purpose rather than carrying over the values of the
-# target it derives from, which the second issue port makes wrong.
-# GTECH synthesis (dc-shell-synth --gtech): to measure when the target
-# joins GTECH_TARGETS of the regression
-# gtech_cells:
-# gtech_registers:
+gtech_cells: 265728
+gtech_registers: 37838
