@@ -71,6 +71,13 @@ module macro_decoder #(
     is_compressed_o            = is_macro_instr_i ? 1'b1 : is_compressed_i;
     reg_numbers                = '0;
     stack_adj                  = '0;
+    macro_instr_type           = PUSH;
+    xreg1                      = '0;
+    xreg2                      = '0;
+    store_reg                  = '0;
+    offset_reg                 = '0;
+    itype_inst                 = '0;
+    instr_o_reg                = instr_i;
     state_d                    = state_q;
     offset_d                   = offset_q;
     reg_numbers_d              = reg_numbers_q;
