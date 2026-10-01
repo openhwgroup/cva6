@@ -133,7 +133,6 @@ module cva6_icache
     IDLE,
     READ,
     MISS,
-    KILL_ATRANS,
     KILL_MISS
   } state_e;
   state_e state_d, state_q;
@@ -317,9 +316,11 @@ module cva6_icache
               state_d = MISS;
             end
           end
-          // bail out if this request is being killed (and we missed on the TLB)
+          // bail out if this request is being killed (and we missed on the TLB):
+          // the walk in progress completes in the background and fills the ITLB,
+          // and the MMU reports its fault only to a fetch of the same page
         end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_ATRANS;
+          state_d = IDLE;
         end
       end
       //////////////////////////////////
@@ -345,16 +346,6 @@ module cva6_icache
           end else begin
             state_d = KILL_MISS;
           end
-        end
-      end
-      //////////////////////////////////
-      // killed address translation,
-      // wait until paddr is valid, and go
-      // back to idle
-      KILL_ATRANS: begin
-        areq_o.fetch_req = '1;
-        if (areq_i.fetch_valid) begin
-          state_d = IDLE;
         end
       end
       //////////////////////////////////
@@ -578,7 +569,7 @@ module cva6_icache
 
   invalid_state :
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
+    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_MISS}))
   else $fatal(1, "[l1 icache] fsm reached an invalid state");
 
   hot1 :

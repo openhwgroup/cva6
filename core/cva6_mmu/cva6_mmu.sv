@@ -515,7 +515,11 @@ module cva6_mmu
         // ITLB Miss
         // ---------//
         // watch out for exceptions happening during walking the page table
-        icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
+        // Report the walk's fault only to a fetch of the page it walked: an I$
+        // killed during the walk abandons it and may already be presenting a
+        // different request, which starts its own walk.
+        icache_areq_o.fetch_valid = (ptw_error | ptw_access_exception) &
+            (update_vaddr[CVA6Cfg.VLEN-1:12] == icache_areq_i.fetch_vaddr[CVA6Cfg.VLEN-1:12]);
         if (ptw_error) begin
           if (CVA6Cfg.RVH && ptw_error_at_g_st) begin
             icache_areq_o.fetch_exception.cause = riscv::INSTR_GUEST_PAGE_FAULT;
