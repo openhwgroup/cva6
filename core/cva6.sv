@@ -289,6 +289,13 @@ module cva6
         .noc_resp_i(noc_resp_i)
     );
 
+    // No data cache, so no ECC to scrub nor to report on
+    assign dcache_scrub_cycle = 1'b0;
+    assign dcache_dat_cor_err = 1'b0;
+    assign dcache_dat_unc_err = 1'b0;
+    assign dcache_dir_cor_err = 1'b0;
+    assign dcache_dir_unc_err = 1'b0;
+
   end else begin : gen_cache_subsystem
 
     // -------------------

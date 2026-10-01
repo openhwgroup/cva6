@@ -339,6 +339,22 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] vstval_q, vstval_d;
 
   dcache_cfg_t dcache_q, dcache_d;
+  //  The ECC presence bits are not stored: they read the configuration
+  //  whatever software wrote.
+  dcache_cfg_t dcache_csr;
+  assign dcache_csr = '{
+          eccPresent: CVA6Cfg.DcacheEccEnable,
+          eccScrubberPresent: CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable,
+          rsvd: dcache_q.rsvd,
+          dirCorErr: dcache_q.dirCorErr,
+          dirUncErr: dcache_q.dirUncErr,
+          datCorErr: dcache_q.datCorErr,
+          datUncErr: dcache_q.datUncErr,
+          scrubCycles: dcache_q.scrubCycles,
+          scrubPeriod: dcache_q.scrubPeriod,
+          scrubEn: dcache_q.scrubEn,
+          cacheEn: dcache_q.cacheEn
+      };
   logic [CVA6Cfg.XLEN-1:0] icache_q, icache_d;
   logic [CVA6Cfg.XLEN-1:0] acc_cons_q, acc_cons_d;
 
@@ -944,7 +960,7 @@ module csr_regfile
         end
 
         // custom (non RISC-V) cache control
-        riscv::CSR_DCACHE: csr_rdata = dcache_q;
+        riscv::CSR_DCACHE: csr_rdata = dcache_csr;
         riscv::CSR_ICACHE: csr_rdata = icache_q;
         // custom (non RISC-V) accelerator memory consistency mode
         riscv::CSR_ACC_CONS: begin
@@ -1166,14 +1182,10 @@ module csr_regfile
       mtval2_d = mtval2_q;
     end
 
-    fiom_d                      = fiom_q;
-    dcache_d                    = dcache_q;
-    //  Reported, not stored: these say what the hardware has, so software reads
-    //  them back whatever it wrote.
-    dcache_d.eccPresent         = CVA6Cfg.DcacheEccEnable;
-    dcache_d.eccScrubberPresent = CVA6Cfg.DcacheEccEnable && CVA6Cfg.DcacheEccScrubberEnable;
-    icache_d                    = icache_q;
-    acc_cons_d                  = acc_cons_q;
+    fiom_d     = fiom_q;
+    dcache_d   = dcache_csr;
+    icache_d   = icache_q;
+    acc_cons_d = acc_cons_q;
 
     if (CVA6Cfg.RVH) begin
       vstvec_d                 = vstvec_q;
@@ -1208,13 +1220,13 @@ module csr_regfile
     pmpcfg_d               = pmpcfg_q;
     pmpaddr_d              = pmpaddr_q;
 
-    mcbie_d                = mcbie_q;
-    scbie_d                = scbie_q;
-    hcbie_d                = hcbie_q;
+    mcbie_d                = CVA6Cfg.RVZiCbom ? mcbie_q : riscv::CBIE_ILLEGAL;
+    scbie_d                = CVA6Cfg.RVZiCbom ? scbie_q : riscv::CBIE_ILLEGAL;
+    hcbie_d                = CVA6Cfg.RVZiCbom ? hcbie_q : riscv::CBIE_ILLEGAL;
 
-    mcbcfe_d               = mcbcfe_q;
-    scbcfe_d               = scbcfe_q;
-    hcbcfe_d               = hcbcfe_q;
+    mcbcfe_d               = CVA6Cfg.RVZiCbom ? mcbcfe_q : 1'b0;
+    scbcfe_d               = CVA6Cfg.RVZiCbom ? scbcfe_q : 1'b0;
+    hcbcfe_d               = CVA6Cfg.RVZiCbom ? hcbcfe_q : 1'b0;
 
     // trigger module defaults
     tdata1_to_tm           = '0;
@@ -1969,7 +1981,10 @@ module csr_regfile
           else update_access_exception = 1'b1;
         end
 
-        riscv::CSR_DCACHE: dcache_d = csr_wdata;
+        riscv::CSR_DCACHE:
+        dcache_d = {
+          dcache_csr.eccPresent, dcache_csr.eccScrubberPresent, csr_wdata[CVA6Cfg.XLEN-3:0]
+        };
         riscv::CSR_ICACHE: icache_d = {{CVA6Cfg.XLEN - 1{1'b0}}, csr_wdata[0]};  // enable bit
         riscv::CSR_ACC_CONS: begin
           if (CVA6Cfg.EnableAccelerator) begin
@@ -2773,11 +2788,8 @@ module csr_regfile
       // or alternatively if there is no exception pending and we are not in debug mode wait here
       // for the interrupt
       //  Single-stepping must not stall on a WFI: the debugger expects the step
-      //  to complete, and an interrupt may never come. Our debug_mode already
-      //  folds in DebugEn, so the guard is on the step bit alone; upstream
-      //  spells the DebugEn case out twice.
-    end else if (!debug_mode && !(CVA6Cfg.DebugEn && dcsr_q.step) &&
-                 csr_op_i == WFI && !ex_i.valid) begin
+      //  to complete, and an interrupt may never come.
+    end else if (!debug_mode && !single_step_o && csr_op_i == WFI && !ex_i.valid) begin
       wfi_d = 1'b1;
     end
   end
