@@ -2569,12 +2569,12 @@ module csr_regfile
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
-              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
-              if (v_q) begin
-                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en] & hcounteren_q[sel_cnt_en];
-              end else begin
-                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en];
-              end
+              // U-mode needs mcounteren and scounteren, VU-mode also hcounteren. With
+              // mcounteren set, a clear hcounteren or scounteren bit in VU-mode is a
+              // virtual-instruction exception.
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] &
+                  ~(hcounteren_q[sel_cnt_en] & scounteren_q[sel_cnt_en]);
+              privilege_violation = ~mcounteren_q[sel_cnt_en] | (~v_q & ~scounteren_q[sel_cnt_en]);
             end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
               privilege_violation = 1'b0;
             end
@@ -2587,12 +2587,12 @@ module csr_regfile
               virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
               privilege_violation = ~mcounteren_q[sel_cnt_en];
             end else if (priv_lvl_o == riscv::PRIV_LVL_U && CVA6Cfg.RVU) begin
-              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] & ~hcounteren_q[sel_cnt_en];
-              if (v_q) begin
-                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en] & hcounteren_q[sel_cnt_en];
-              end else begin
-                privilege_violation = ~mcounteren_q[sel_cnt_en] & ~scounteren_q[sel_cnt_en];
-              end
+              // U-mode needs mcounteren and scounteren, VU-mode also hcounteren. With
+              // mcounteren set, a clear hcounteren or scounteren bit in VU-mode is a
+              // virtual-instruction exception.
+              virtual_privilege_violation = v_q & mcounteren_q[sel_cnt_en] &
+                  ~(hcounteren_q[sel_cnt_en] & scounteren_q[sel_cnt_en]);
+              privilege_violation = ~mcounteren_q[sel_cnt_en] | (~v_q & ~scounteren_q[sel_cnt_en]);
             end else if (priv_lvl_o == riscv::PRIV_LVL_M) begin
               privilege_violation = 1'b0;
             end
