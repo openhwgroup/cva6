@@ -1,0 +1,9 @@
+# ACT4 DUT configuration for cv64a6_imafdc_sv39_hpdcache_wb on the cva6tb testbench.
+# SPDX-License-Identifier: Apache-2.0
+name: cv64a6_imafdc_sv39_hpdcache_wb
+compiler_exe: riscv64-unknown-elf-gcc
+objdump_exe: riscv64-unknown-elf-objdump
+ref_model_exe: sail_riscv_sim
+udb_config: config.yaml
+linker_script: link.ld
+dut_include_dir: .

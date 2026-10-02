@@ -1,0 +1,933 @@
+// Sail configuration for cv64a6_imafdchxhclic_sv39_wb in the cva6tb testbench.
+// The memory map mirrors test/hw/cva6tb_pkg.sv; keep the two in step.
+// SPDX-License-Identifier: Apache-2.0
+// ACT requires Sail's simple_interrupt_generator for signature generation,
+// even though this DUT has no such device: it lives at 0x9000_0000, the first
+// address above DRAM, so it collides with nothing in hw/cva6tb_pkg.sv.
+{
+  "$schema": "https://github.com/riscv/sail-riscv/releases/download/0.14.1/sail_riscv_config_schema.json",
+  "base": {
+    "xlen": 64,
+    "E": false,
+    "writable_misa": false,
+    "writable_fiom": true,
+    // Measured on the DUT: writing all ones to mcountinhibit reads back 0x1fd,
+    // i.e. CY (0), IR (2) and the six HPM counters 3-8 that ariane_pkg's
+    // MHPMCounterNum provides. TM (1) is absent because the time CSR is not
+    // implemented. Counters 9 and above read back zero.
+    "writable_hpm_counters": {
+      "len": 32,
+      "value": "0x0000_01fd"
+    },
+    "scounteren_writable_bits": {
+      "len": 32,
+      "value": "0xFFFF_FFFF"
+    },
+    "mcounteren_writable_bits": {
+      "len": 32,
+      "value": "0xFFFF_FFFF"
+    },
+    // Measured: all 32 bits writable, as for mcounteren and scounteren.
+    "hcounteren_writable_bits": {
+      "len": 32,
+      "value": "0xFFFF_FFFF"
+    },
+    // In vectored mode csr_regfile.sv clears mtvec[7:1] on write, so the base
+    // is 256-byte aligned there -- a stricter constraint than the 4 bytes the
+    // specification requires, which it permits. Direct mode keeps the 4 bytes.
+    // stvec and vstvec are aligned the same way in vectored mode.
+    "mtvec": {
+      "direct": {
+        "supported": true,
+        "base_alignment": 2
+      },
+      "vectored": {
+        "supported": true,
+        "base_alignment": 8
+      }
+    },
+    "stvec": {
+      "direct": {
+        "supported": true
+      },
+      "vectored": {
+        "supported": true,
+        "base_alignment": 8
+      }
+    },
+    "vstvec": {
+      "direct": {
+        "supported": true
+      },
+      "vectored": {
+        "supported": true,
+        "base_alignment": 8
+      }
+    },
+    // Measured on the DUT by writing all ones to medeleg and reading back; it
+    // matches the mask built in csr_regfile.sv. Bits 0-8 and 12/13/15 are the
+    // base causes, bit 10 is the VS-mode ecall and bits 20-23 the guest page
+    // faults and virtual instruction, both groups present because RVH is set.
+    "medeleg": {
+      "delegatable_bits": {
+        "len": 64,
+        "value": "0x0000_0000_00f0_b5ff"
+      }
+    },
+    "mideleg": {
+      "delegatable_bits": {
+        "len": "xlen",
+        "value": "0x0000_2222"
+      }
+    },
+    // CVA6 sets TvalEn, so xtval carries the faulting address (or, for an
+    // illegal instruction, the encoding) for every exception the core can
+    // raise. These must agree with the REPORT_*_IN_*TVAL_ON_* parameters in
+    // config.yaml: ACT computes the expected signatures on Sail, so a "false"
+    // here would expect a zero xtval the DUT never produces.
+    // software_check, hardware_error and the reserved causes are unreachable on
+    // this core; hardware_breakpoint needs Sdtrig, which this configuration
+    // leaves out.
+    "xtval_nonzero": {
+      "illegal_instruction": true,
+      "virtual_instruction": true,
+      "load_guest_page_fault": true,
+      "samo_guest_page_fault": true,
+      "fetch_guest_page_fault": true,
+      "software_breakpoint": true,
+      "hardware_breakpoint": true,
+      "load_address_misaligned": true,
+      "load_access_fault": true,
+      "load_page_fault": true,
+      "samo_address_misaligned": true,
+      "samo_access_fault": true,
+      "samo_page_fault": true,
+      "fetch_address_misaligned": true,
+      "fetch_access_fault": true,
+      "fetch_page_fault": true,
+      "software_check": false,
+      "hardware_error": false,
+      "reserved_exceptions": false
+    },
+    "reserved_behavior": {
+      "amocas_odd_register": "AMOCAS_Illegal",
+      "fcsr_rm": "Fcsr_RM_Illegal",
+      "pmpcfg_write_only": "PMP_ClearPermissions",
+      "xenvcfg_cbie": "Xenvcfg_ClearPermissions",
+      "xtvec_mode": "Xtvec_Ignore",
+      "rv32zdinx_odd_register": "Zdinx_Illegal"
+    },
+    "mstatus": {
+      "fs_legal_states": "ExtContext_FourState",
+      "vs_legal_states": "ExtContext_Off"
+    },
+    "privileged_isa_version": "Privileged_ISA_1_12"
+  },
+  "memory": {
+    "physaddr_bits": 56,
+    "asidlen": 16,
+    "vmidlen": 14,
+    "pmp": {
+      "grain": 1,
+      "count": 16,
+      "usable_count": 8,
+      "tor_supported": true,
+      "na4_supported": false,
+      "napot_supported": true
+    },
+    "misaligned": {
+      "exceptions": {
+        "load_store": {
+          "Some": "AlignmentException"
+        },
+        "vector": {
+          "None": null
+        },
+        "amo": {
+          "Some": "AlignmentException"
+        },
+        "lrsc": {
+          "Some": "AlignmentException"
+        }
+      },
+      "default_allowed_within_exp": 0,
+      "byte_by_byte": false,
+      "order_decreasing": false
+    },
+    "dtb_address": {
+      "len": 64,
+      "value": "0x1000"
+    },
+    "regions": [
+      {
+        "base": {
+          "len": 64,
+          "value": "0x10000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x1000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": true,
+          "readable": true,
+          "writable": false,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x2040000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x40000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": false,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0xc000000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x4000000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": false,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x10000000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x3000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": false,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x10040000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x30000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": false,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x20000000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x100000"
+        },
+        "attributes": {
+          "mem_type": "MainMemory",
+          "cacheable": true,
+          "coherent": true,
+          "executable": true,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": true,
+          "write_idempotent": true,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMOArithmetic",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNonEventual",
+          "supports_cbo_zero": false,
+          "supports_pte_read": true,
+          "supports_pte_write": true
+        },
+        "include_in_device_tree": true
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x80000000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x10000000"
+        },
+        "attributes": {
+          "mem_type": "MainMemory",
+          "cacheable": true,
+          "coherent": true,
+          "executable": true,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": true,
+          "write_idempotent": true,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "None": null
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMOArithmetic",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNonEventual",
+          "supports_cbo_zero": false,
+          "supports_pte_read": true,
+          "supports_pte_write": true
+        },
+        "include_in_device_tree": true
+      },
+      {
+        "base": {
+          "len": 64,
+          "value": "0x90000000"
+        },
+        "size": {
+          "len": 64,
+          "value": "0x1000"
+        },
+        "attributes": {
+          "mem_type": "IOMemory",
+          "cacheable": false,
+          "coherent": true,
+          "executable": false,
+          "readable": true,
+          "writable": true,
+          "read_idempotent": false,
+          "write_idempotent": false,
+          "misaligned_exceptions": {
+            "load_store": {
+              "Some": "AlignmentException"
+            },
+            "vector": {
+              "Some": "AlignmentException"
+            },
+            "amo": "AlignmentException",
+            "lrsc": "AlignmentException"
+          },
+          "atomic_support": "AMONone",
+          "misaligned_atomicity_granule_size_exp": 0,
+          "vector_misaligned_atomicity_granule_size_exp": 0,
+          "reservability": "RsrvNone",
+          "supports_cbo_zero": false,
+          "supports_pte_read": false,
+          "supports_pte_write": false
+        },
+        "include_in_device_tree": false
+      }
+    ]
+  },
+  "platform": {
+    "vendorid": 1538,
+    "archid": 3,
+    "impid": 0,
+    "hartid": 0,
+    "cache_block_size_exp": 4,
+    // Measured with sw/tests/lrscprobe.S: the SC need not match the LR address
+    // within the naturally aligned 8-byte set, and a store by the same hart to
+    // the set drops the reservation.
+    "reservation": {
+      "reservation_set_size_exp": 3,
+      "require_exact_reservation_addr": false,
+      "invalidate_on_same_hart_store": true
+    },
+    "interrupts": {
+      "machine": {
+        "software": {
+          "supported": true
+        },
+        "external": {
+          "supported": true
+        },
+        "timer": {
+          "supported": true
+        }
+      },
+      "supervisor": {
+        "software": {
+          "supported": true
+        },
+        "external": {
+          "supported": true
+        },
+        "timer": {
+          "supported": true
+        }
+      }
+    },
+    "clint": {
+      "supported": true,
+      "base": 33816576,
+      "size": 262144
+    },
+    "simple_interrupt_generator": {
+      "supported": true,
+      "base": 2415919104
+    },
+    "clock_frequency": 1000000000,
+    "instructions_per_tick": 2,
+    // CVA6 does not retire WFI as a no-op: core/decoder.sv raises an illegal
+    // instruction for WFI in S-mode when mstatus.TW is set (a zero-cycle
+    // timeout) and in U-mode unconditionally, and a virtual illegal instruction
+    // in VS-mode when hstatus.VTW is set.
+    "wfi_is_nop": false,
+    "wfi_available_to_user_mode": false,
+    "max_time_to_wait": 10
+  },
+  "extensions": {
+    "M": {
+      "supported": true
+    },
+    "A": {
+      "supported": true
+    },
+    "F": {
+      "supported": true,
+      "fflags_dirty_policy": "Fflags_Dirty_Precise"
+    },
+    "D": {
+      "supported": true
+    },
+    "V": {
+      "support_level": "Disabled",
+      "vlen_exp": 7,
+      "elen_exp": 6,
+      "reserved_behavior": {
+        "illegal_vtype": "IllegalVtype_SetVill",
+        "vstart_out_of_bounds": "Vstart_Illegal"
+      },
+      "vl_use_ceil": false,
+      "max_index_eew_exp": 6,
+      "vstart": {
+        "zero_required": {
+          "arith": true,
+          "scalar_move": true
+        }
+      }
+    },
+    "B": {
+      "supported": false
+    },
+    "S": {
+      "supported": true,
+      "interrupts": {
+        "software": {
+          "supported": true
+        },
+        "external": {
+          "supported": true
+        },
+        "timer": {
+          "supported": true
+        }
+      }
+    },
+    "U": {
+      "supported": true
+    },
+    // This configuration is imafdch: RVH is set, so the hypervisor extension is
+    // present and mstatus.GVA/MPV are real writable fields. csr_regfile.sv
+    // accepts only Off and CVA6Cfg.MODE_SV in hgatp/vsatp, which is Sv39 here
+    // -- hence Sv39x4 for the G-stage and Sv39 for VS.
+    "H": {
+      "supported": true,
+      "geilen": 63,
+      "guest_page_fault_writes_htval": true,
+      "hgatp_modes": {
+        "Sv32x4": false,
+        "Sv39x4": true,
+        "Sv48x4": false,
+        "Sv57x4": false
+      },
+      "vsatp_modes": {
+        "Sv32": false,
+        "Sv39": true,
+        "Sv48": false,
+        "Sv57": false
+      }
+    },
+    "Sha": {
+      "supported": false
+    },
+    "Shcounterenw": {
+      "supported": false
+    },
+    "Shgatpa": {
+      "supported": false
+    },
+    "Shtvala": {
+      "supported": false
+    },
+    "Shvsatpa": {
+      "supported": false
+    },
+    "Shvstvala": {
+      "supported": false
+    },
+    "Shvstvecd": {
+      "supported": false
+    },
+    "Sstvecd": {
+      "supported": false
+    },
+    "Svukte": {
+      "supported": false
+    },
+    "Zilx": {
+      "supported": false
+    },
+    "Zibi": {
+      "supported": false
+    },
+    "Zicbom": {
+      "supported": false
+    },
+    "Zicbop": {
+      "supported": false
+    },
+    "Zicboz": {
+      "supported": false
+    },
+    "Ziccamoa": {
+      "supported": false
+    },
+    "Ziccamoc": {
+      "supported": false
+    },
+    "Ziccif": {
+      "supported": false
+    },
+    "Zicclsm": {
+      "supported": false
+    },
+    "Ziccrse": {
+      "supported": false
+    },
+    "Zic64b": {
+      "supported": false
+    },
+    "Zicfilp": {
+      "supported": false
+    },
+    "Zicfiss": {
+      "supported": false
+    },
+    "Zicond": {
+      "supported": true
+    },
+    "Zicntr": {
+      "supported": true
+    },
+    "Zicsr": {
+      "supported": true
+    },
+    "Zifencei": {
+      "supported": true
+    },
+    "Zihintntl": {
+      "supported": false
+    },
+    "Zihintpause": {
+      "supported": false
+    },
+    // RVZihpm is set: perf_counters.sv provides mhpmcounter3-8. This must track
+    // the Zihpm entry in config.yaml.
+    "Zihpm": {
+      "supported": true
+    },
+    "Zimop": {
+      "supported": false
+    },
+    "Zmmul": {
+      "supported": true
+    },
+    "Zaamo": {
+      "supported": true
+    },
+    "Zabha": {
+      "supported": false
+    },
+    "Zacas": {
+      "supported": false
+    },
+    "Zalrsc": {
+      "supported": true
+    },
+    "Zama16b": {
+      "supported": false
+    },
+    "Zawrs": {
+      "supported": false,
+      "nto": {
+        "is_nop": true
+      },
+      "sto": {
+        "is_nop": true
+      }
+    },
+    "Zfa": {
+      "supported": false
+    },
+    "Zfbfmin": {
+      "supported": false
+    },
+    "Zfh": {
+      "supported": false
+    },
+    "Zfhmin": {
+      "supported": false
+    },
+    "Zfinx": {
+      "supported": false
+    },
+    "Zdinx": {
+      "supported": false
+    },
+    "Zca": {
+      "supported": true
+    },
+    "Zcf": {
+      "supported": false
+    },
+    "Zcd": {
+      "supported": true
+    },
+    "Zcb": {
+      "supported": true
+    },
+    "Zcmop": {
+      "supported": false
+    },
+    "Zba": {
+      "supported": false
+    },
+    "Zbb": {
+      "supported": false
+    },
+    "Zbs": {
+      "supported": false
+    },
+    "Zbc": {
+      "supported": false
+    },
+    "Zbkb": {
+      "supported": false
+    },
+    "Zbkc": {
+      "supported": false
+    },
+    "Zbkx": {
+      "supported": false
+    },
+    "Zknd": {
+      "supported": false
+    },
+    "Zkne": {
+      "supported": false
+    },
+    "Zknh": {
+      "supported": false
+    },
+    "Zkr": {
+      "supported": false,
+      "sseed_reset_value": false,
+      "useed_reset_value": false,
+      "sseed_read_only_zero": true,
+      "useed_read_only_zero": true
+    },
+    "Zksed": {
+      "supported": false
+    },
+    "Zksh": {
+      "supported": false
+    },
+    "Zkt": {
+      "supported": false
+    },
+    "Zhinx": {
+      "supported": false
+    },
+    "Zhinxmin": {
+      "supported": false
+    },
+    "Zvabd": {
+      "supported": false
+    },
+    "Zvfbfmin": {
+      "supported": false
+    },
+    "Zvfbfwma": {
+      "supported": false
+    },
+    "Zvfh": {
+      "supported": false
+    },
+    "Zvfhmin": {
+      "supported": false
+    },
+    "Zvbb": {
+      "supported": false
+    },
+    "Zvbc": {
+      "supported": false
+    },
+    "Zvkb": {
+      "supported": false
+    },
+    "Zvkg": {
+      "supported": false
+    },
+    "Zvkned": {
+      "supported": false
+    },
+    "Zvknha": {
+      "supported": false
+    },
+    "Zvknhb": {
+      "supported": false
+    },
+    "Zvksed": {
+      "supported": false
+    },
+    "Zvksh": {
+      "supported": false
+    },
+    "Zvkt": {
+      "supported": false
+    },
+    "Ssccptr": {
+      "supported": false
+    },
+    "Sscofpmf": {
+      "supported": false
+    },
+    "Sscounterenw": {
+      "supported": false
+    },
+    "Sstc": {
+      "supported": false
+    },
+    "Sstvala": {
+      "supported": false
+    },
+    // A/D are left to software: a clear A, or a clear D on a store, faults.
+    "Svade": {
+      "supported": true
+    },
+    "Svadu": {
+      "supported": false
+    },
+    "Svinval": {
+      "supported": false
+    },
+    "Svrsw60t59b": {
+      "supported": false
+    },
+    "Svnapot": {
+      "supported": false
+    },
+    "Ssnpm": {
+      "supported": false,
+      "supported_pmlen_7": true,
+      "supported_pmlen_16": true
+    },
+    "Smnpm": {
+      "supported": false,
+      "supported_pmlen_7": true,
+      "supported_pmlen_16": true
+    },
+    "Smmpm": {
+      "supported": false,
+      "supported_pmlen_7": true,
+      "supported_pmlen_16": true
+    },
+    "Smcntrpmf": {
+      "supported": false
+    },
+    "Svbare": {
+      "supported": true,
+      "sfence_vma_illegal_if_svbare_only": true
+    },
+    "Sv32": {
+      "supported": false
+    },
+    "Sv39": {
+      "supported": true
+    },
+    "Sv48": {
+      "supported": false
+    },
+    "Sv57": {
+      "supported": false
+    },
+    "Stateen": {
+      "Smstateen": {
+        "supported": false
+      },
+      "Ssstateen": {
+        "supported": false
+      },
+      "C_readonly_zero": true,
+      "SE0_readonly_zero": true
+    },
+    "Ssqosid": {
+      "supported": false,
+      "rcid_length": 1,
+      "mcid_length": 1
+    },
+    "Svpbmt": {
+      "supported": false
+    },
+    "Svvptc": {
+      "supported": false
+    }
+  }
+}

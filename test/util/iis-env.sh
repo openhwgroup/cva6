@@ -14,6 +14,12 @@
 #   $OSEDA make -C test verilator-run HEXFILE=sw/out/hello.hex
 #   $OSEDA ./test/util/run-pulp-tests.sh verilator hello clic_simple
 #
+# The architectural tests are generated inside the container too, which has
+# GCC 15; the UDB gems need a Ruby 3.2 or later with development headers, which
+# goes first on PATH inside it:
+#
+#   $OSEDA sh -c 'PATH=<ruby>/bin:$PATH make -C test/sw arch-test CVA6_CONFIG=<cfg>'
+#
 # SPDX-License-Identifier: Apache-2.0
 
 export OSEDA="oseda -2026.04"

@@ -1,0 +1,314 @@
+# yaml-language-server: $schema=../../../external/riscv-unified-db/spec/schemas/config_schema.json
+# UDB architecture configuration for cv64a6_imafdch_sv39_wb as instantiated by
+# the cva6tb standalone testbench.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Derived from core/include/cv64a6_imafdch_sv39_wb_config_pkg.sv. The extension
+# list and the identification values are read off that package and the RTL; the
+# WARL masks marked "Measured" were established on the DUT with
+# sw/tests/csrprobe.S. sail.json must describe the same core -- see README.md.
+---
+$schema: config_schema.json#
+kind: architecture configuration
+type: fully configured
+name: cv64a6_imafdch_sv39_wb
+description: CVA6 cv64a6_imafdch_sv39_wb in the standalone testbench
+
+implemented_extensions:
+  - { name: I, version: "= 2.1" }
+  - { name: M, version: "= 2.0" }
+  - { name: Zmmul, version: "= 1.0.0" }
+  - { name: A, version: "= 2.1" }
+  - { name: Zaamo, version: "= 1.0.0" }
+  - { name: Zalrsc, version: "= 1.0.0" }
+  - { name: F, version: "= 2.2" }
+  - { name: D, version: "= 2.2" }
+  - { name: C, version: "= 2.0" }
+  - { name: Zca, version: "= 1.0.0" }
+  - { name: Zcb, version: "= 1.0.0" }
+  - { name: Zcd, version: "= 1.0.0" }
+  # RVB is set: the bit-manipulation unit decodes Zba, Zbb, Zbs and Zbc
+  # (clmul, clmulh, clmulr) together, and misa.B reads back set.
+  - { name: B, version: "= 1.0.0" }
+  - { name: Zba, version: "= 1.0.0" }
+  - { name: Zbb, version: "= 1.0.0" }
+  - { name: Zbs, version: "= 1.0.0" }
+  - { name: Zbc, version: "= 1.0.0" }
+  # UDB requires it with Zbc: clmul and clmulh are the shared subset.
+  - { name: Zbkc, version: "= 1.0.0" }
+  - { name: Zicond, version: "= 1.0.0" }
+  - { name: Zicsr, version: "= 2.0" }
+  - { name: Zifencei, version: "= 2.0" }
+  - { name: Zicntr, version: "= 2.0" }
+  # RVZihpm is set and ariane_pkg's MHPMCounterNum gives six counters, 3-8.
+  - { name: Zihpm, version: "= 2.0" }
+  - { name: Sm, version: "= 1.12.0" }
+  - { name: S, version: "= 1.12.0" }
+  - { name: U, version: "= 1.0.0" }
+  - { name: Sv39, version: "= 1.0" }
+  # The page-table walker raises a page fault when A is clear, or D is clear on
+  # a store, and never updates either bit (cva6_ptw.sv): Svade, not Svadu.
+  - { name: Svade, version: "= 1.0.0" }
+  - { name: H, version: "= 1.0.0" }
+
+params:
+  # Base and ISA mutability. CVA6 ignores writes to misa entirely
+  # (csr_regfile.sv: `CSR_MISA: ;`) and reads back a constant.
+  MXLEN: 64
+  SXLEN: [64]
+  UXLEN: [64]
+  # Required once H is implemented: the widths VS mode may run at.
+  VSXLEN: [64]
+  VUXLEN: [64]
+  MUTABLE_MISA_A: false
+  MUTABLE_MISA_B: false
+  MUTABLE_MISA_C: false
+  MUTABLE_MISA_D: false
+  MUTABLE_MISA_F: false
+  MUTABLE_MISA_M: false
+  MISA_CSR_IMPLEMENTED: true
+  MUTABLE_MISA_S: false
+  MUTABLE_MISA_U: false
+  NON_STANDARD_EXTENSION_IMPLEMENTED: false
+
+  # Addressing. Sv39 gives a 56-bit physical address (build_config_pkg.sv).
+  PHYS_ADDR_WIDTH: 56
+  M_MODE_ENDIANNESS: little
+  S_MODE_ENDIANNESS: little
+  U_MODE_ENDIANNESS: little
+  PMA_GRANULARITY: 12
+  SATP_MODE_BARE: true
+  ASID_WIDTH: 16
+
+  # Privilege and traps
+  TRAP_ON_ECALL_FROM_M: true
+  TRAP_ON_ECALL_FROM_S: true
+  TRAP_ON_ECALL_FROM_U: true
+  TRAP_ON_EBREAK: true
+  TRAP_ON_ILLEGAL_WLRL: false
+  TRAP_ON_UNIMPLEMENTED_INSTRUCTION: true
+  TRAP_ON_RESERVED_INSTRUCTION: true
+  TRAP_ON_UNIMPLEMENTED_CSR: true
+  PRECISE_SYNCHRONOUS_EXCEPTIONS: true
+  # CVA6 raises an exception on a misaligned load or store rather than
+  # completing it.
+  MISALIGNED_LDST: false
+  MISALIGNED_LDST_EXCEPTION_PRIORITY: low
+  MISALIGNED_AMO: false
+
+  # LR/SC. Measured with sw/tests/lrscprobe.S: the reservation set is the
+  # naturally aligned 8-byte word holding the address, and a store by the same
+  # hart to it drops the reservation, both of which sail.json states exactly.
+  # UDB has an option for neither; ACT reads the strategy only for coverage
+  # reporting, so the nearest one stands. CVA6 raises a misaligned exception
+  # rather than an access fault.
+  LRSC_RESERVATION_STRATEGY: reserve naturally-aligned 64-byte region
+  LRSC_MISALIGNED_BEHAVIOR: always raise misaligned exception
+  LRSC_FAIL_ON_VA_SYNONYM: false
+  LRSC_FAIL_ON_NON_EXACT_LRSC: false
+
+  # tval. This configuration has TvalEn set, unlike cv32a65x.
+  MTVAL_WIDTH: 64
+  STVAL_WIDTH: 64
+  REPORT_ENCODING_IN_STVAL_ON_ILLEGAL_INSTRUCTION: true
+  REPORT_ENCODING_IN_MTVAL_ON_ILLEGAL_INSTRUCTION: true
+  REPORT_VA_IN_MTVAL_ON_BREAKPOINT: true
+  REPORT_VA_IN_MTVAL_ON_LOAD_MISALIGNED: true
+  REPORT_VA_IN_MTVAL_ON_STORE_AMO_MISALIGNED: true
+  REPORT_VA_IN_MTVAL_ON_INSTRUCTION_MISALIGNED: true
+  REPORT_VA_IN_MTVAL_ON_LOAD_ACCESS_FAULT: true
+  REPORT_VA_IN_MTVAL_ON_STORE_AMO_ACCESS_FAULT: true
+  REPORT_VA_IN_MTVAL_ON_INSTRUCTION_ACCESS_FAULT: true
+  REPORT_VA_IN_MTVAL_ON_LOAD_PAGE_FAULT: true
+  REPORT_VA_IN_MTVAL_ON_STORE_AMO_PAGE_FAULT: true
+  REPORT_VA_IN_MTVAL_ON_INSTRUCTION_PAGE_FAULT: true
+  REPORT_VA_IN_STVAL_ON_BREAKPOINT: true
+  REPORT_VA_IN_STVAL_ON_LOAD_MISALIGNED: true
+  REPORT_VA_IN_STVAL_ON_STORE_AMO_MISALIGNED: true
+  REPORT_VA_IN_STVAL_ON_INSTRUCTION_MISALIGNED: true
+  REPORT_VA_IN_STVAL_ON_LOAD_ACCESS_FAULT: true
+  REPORT_VA_IN_STVAL_ON_STORE_AMO_ACCESS_FAULT: true
+  REPORT_VA_IN_STVAL_ON_INSTRUCTION_ACCESS_FAULT: true
+  REPORT_VA_IN_STVAL_ON_LOAD_PAGE_FAULT: true
+  REPORT_VA_IN_STVAL_ON_STORE_AMO_PAGE_FAULT: true
+  REPORT_VA_IN_STVAL_ON_INSTRUCTION_PAGE_FAULT: true
+  REPORT_ENCODING_IN_VSTVAL_ON_ILLEGAL_INSTRUCTION: true
+  REPORT_VA_IN_VSTVAL_ON_BREAKPOINT: true
+  REPORT_VA_IN_VSTVAL_ON_LOAD_MISALIGNED: true
+  REPORT_VA_IN_VSTVAL_ON_STORE_AMO_MISALIGNED: true
+  REPORT_VA_IN_VSTVAL_ON_INSTRUCTION_MISALIGNED: true
+  REPORT_VA_IN_VSTVAL_ON_LOAD_ACCESS_FAULT: true
+  REPORT_VA_IN_VSTVAL_ON_STORE_AMO_ACCESS_FAULT: true
+  REPORT_VA_IN_VSTVAL_ON_INSTRUCTION_ACCESS_FAULT: true
+  REPORT_VA_IN_VSTVAL_ON_LOAD_PAGE_FAULT: true
+  REPORT_VA_IN_VSTVAL_ON_STORE_AMO_PAGE_FAULT: true
+  REPORT_VA_IN_VSTVAL_ON_INSTRUCTION_PAGE_FAULT: true
+
+  # Trap vectors. Direct and vectored are implemented, and mtvec[1] is
+  # hardwired to zero.
+  MTVEC_ACCESS: rw
+  MTVEC_MODES: [0, 1]
+  MTVEC_BASE_ALIGNMENT_DIRECT: 0x4
+  MTVEC_BASE_ALIGNMENT_VECTORED: 0x100
+  # CVA6 does not retain the old mtvec on an illegal write. Measured: the new
+  # base is accepted and only mode bit 0 is kept, so mode 2 becomes direct and
+  # mode 3 vectored. UDB offers only "retain" or "custom", so "custom" is the
+  # honest one.
+  MTVEC_ILLEGAL_WRITE_BEHAVIOR: custom
+  STVEC_MODES: [0, 1]
+  # Measured: as for mtvec, writing vector mode clears base bits [7:2].
+  STVEC_BASE_ALIGNMENT_VECTORED: 0x100
+
+  # Eight PMP entries (CVA6ConfigNrPMPEntries), NAPOT enabled, all reset to
+  # zero. With PMP implemented and no entry matching, S-mode and U-mode
+  # accesses are denied while M-mode passes, so the entries must be declared
+  # for the tests to configure them.
+  # Architecturally 16 -- the only counts the specification allows are 0, 16 and
+  # 64 -- of which CVA6 implements 8; the rest read as zero. Sail's pmp.count
+  # and pmp.usable_count carry that distinction, see sail.json.
+  NUM_PMP_ENTRIES: 16
+  NUM_USABLE_PMP_ENTRIES: 8
+  # PMP_GRANULARITY is log2 of the granule in bytes (G+2, not G). CVA6 implements
+  # G=1 -- stated in core/pmp/src/pmp_entry.sv -- so the granule is 8 bytes and
+  # this is 3. That also rules NA4 out: the specification makes it unavailable
+  # whenever G is non-zero. TOR and NAPOT are both implemented.
+  PMP_GRANULARITY: 3
+  PMP_NA4_SUPPORTED: false
+  PMP_NAPOT_SUPPORTED: true
+  PMP_TOR_SUPPORTED: true
+
+  # Identification, from csr_regfile.sv
+  MARCHID_IMPLEMENTED: true
+  ARCH_ID_VALUE: 0x3
+  MIMPID_IMPLEMENTED: true
+  IMP_ID_VALUE: 0x0
+  VENDOR_ID_BANK: 0xC
+  VENDOR_ID_OFFSET: 0x2
+
+  # Floating point state. CVA6 implements F and D, so all four FS values are
+  # reachable; there is no vector unit, so VS is stuck at off.
+  MSTATUS_FS_LEGAL_VALUES: [3, 2, 1, 0]
+  MSTATUS_VS_LEGAL_VALUES: [0]
+  HW_MSTATUS_FS_DIRTY_UPDATE: precise
+
+  # wfi returns rather than halting, and is not available to user mode.
+  WFI_FINITE: true
+  WFI_U_MODE: false
+
+  # Interrupts. CVA6 implements every standard enable and delegation bit
+  # (csrprobe: mie 0x1eee, mideleg 0x1666), so each interrupt is implemented
+  # wherever a test can raise it. The testbench's CLINT drives mip.MSIP and
+  # mip.MTIP, which rvmodel_macros.h raises through msip and mtimecmp; ACT
+  # raises the supervisor software and timer interrupts by writing mip, whose
+  # SSIP and STIP are writable (csrprobe: mip 0x2a6, MTIP being the CLINT's).
+  # The external interrupts come from the external lines, distinct from the
+  # writable mip.SEIP, which rvmodel_macros.h raises through the testbench's
+  # external interrupt register.
+  MEI_INTR_IMPL: true
+  MSI_INTR_IMPL: true
+  MTI_INTR_IMPL: true
+  SEI_INTR_IMPL: true
+  SSI_INTR_IMPL: true
+  STI_INTR_IMPL: true
+
+  # Hypervisor. CVA6 implements H with Sv39x4 two-stage translation; tinst is
+  # not filled in, and the VS interrupts are left alone for the same reason the
+  # M and S ones are -- nothing drives them yet.
+  GSTAGE_MODE_BARE: true
+  VSSTAGE_MODE_BARE: true
+  IGNORE_INVALID_VSATP_MODE_WRITES_WHEN_V_EQ_ZERO: true
+  TRAP_ON_ECALL_FROM_VS: true
+  VMID_WIDTH: 14
+  VS_MODE_ENDIANNESS: little
+  VU_MODE_ENDIANNESS: little
+  VSTVEC_MODES: [0, 1]
+  VSEI_INTR_IMPL: false
+  VSSI_INTR_IMPL: false
+  VSTI_INTR_IMPL: false
+  TINST_VALUE_ON_LOAD_ACCESS_FAULT: always zero
+  TINST_VALUE_ON_LOAD_ADDRESS_MISALIGNED: always zero
+  TINST_VALUE_ON_LOAD_PAGE_FAULT: always zero
+  TINST_VALUE_ON_STORE_AMO_ACCESS_FAULT: always zero
+  TINST_VALUE_ON_STORE_AMO_ADDRESS_MISALIGNED: always zero
+  TINST_VALUE_ON_STORE_AMO_PAGE_FAULT: always zero
+  TINST_VALUE_ON_MCALL: always zero
+  TINST_VALUE_ON_SCALL: always zero
+  TINST_VALUE_ON_UCALL: always zero
+  TINST_VALUE_ON_VSCALL: always zero
+  TINST_VALUE_ON_VIRTUAL_INSTRUCTION: always zero
+  MUTABLE_MISA_H: false
+  CONFIG_PTR_ADDRESS: 0x0
+  # hgeie is XLEN-1 bits with bit 0 hardwired to zero (csr_regfile.sv:713).
+  NUM_EXTERNAL_GUEST_INTERRUPTS: 63
+
+  # CVA6 implements Sv39 and its two-stage counterpart, and nothing wider.
+  SV39_VSMODE_TRANSLATION: true
+  SV39X4_TRANSLATION: true
+  SV48_VSMODE_TRANSLATION: false
+  SV48X4_TRANSLATION: false
+  SV57_VSMODE_TRANSLATION: false
+  SV57X4_TRANSLATION: false
+
+  REPORT_GPA_IN_HTVAL_ON_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_INSTRUCTION_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_INTERMEDIATE_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_LOAD_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_STORE_AMO_GUEST_PAGE_FAULT: true
+  REPORT_ENCODING_IN_VSTVAL_ON_VIRTUAL_INSTRUCTION: true
+
+  TINST_VALUE_ON_BREAKPOINT: always zero
+  TINST_VALUE_ON_INSTRUCTION_ADDRESS_MISALIGNED: always zero
+  TINST_VALUE_ON_FINAL_INSTRUCTION_GUEST_PAGE_FAULT: always zero
+  TINST_VALUE_ON_FINAL_LOAD_GUEST_PAGE_FAULT: always zero
+  TINST_VALUE_ON_FINAL_STORE_AMO_GUEST_PAGE_FAULT: always zero
+  # Measured: fully writable, as are mcounteren and scounteren.
+  HCOUNTENABLE_EN:
+    [
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true ]
+
+  # Counters. cycle, instret and the six HPM counters 3-8 exist. The time CSR is
+  # not implemented in the core -- the testbench exposes the RTC through the
+  # CLINT instead.
+  # perf_counters.sv keeps each generic counter as logic [63:0].
+  HPM_COUNTER3_WIDTH: 64
+  HPM_COUNTER4_WIDTH: 64
+  HPM_COUNTER5_WIDTH: 64
+  HPM_COUNTER6_WIDTH: 64
+  HPM_COUNTER7_WIDTH: 64
+  HPM_COUNTER8_WIDTH: 64
+  HPM_EVENTS: []
+  TIME_CSR_IMPLEMENTED: false
+  MCOUNTINHIBIT_IMPLEMENTED: true
+  # Written out four times rather than shared with a YAML anchor: UDB loads these
+  # with aliases disabled and rejects the file outright if it finds one.
+  # Measured: writing all ones to mcountinhibit reads back 0x1fd -- CY, IR and
+  # the six HPM counters. TM is absent with the time CSR unimplemented.
+  COUNTINHIBIT_EN:
+    [
+      true, false, true, true, true, true, true, true,
+      true, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false ]
+  HPM_COUNTER_EN:
+    [
+      false, false, false, true, true, true, true, true,
+      true, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false ]
+  # Measured: fully writable.
+  MCOUNTENABLE_EN:
+    [
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true ]
+  # Measured: fully writable.
+  SCOUNTENABLE_EN:
+    [
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true,
+      true, true, true, true, true, true, true, true ]

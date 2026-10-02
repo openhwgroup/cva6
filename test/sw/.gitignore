@@ -2,3 +2,5 @@ out/
 deps/printf/
 deps/riscv-tests/
 deps/riscv-hyp-tests/
+deps/riscv-arch-test/
+deps/sail/

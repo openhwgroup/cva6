@@ -74,6 +74,39 @@ riscv-hyp-tests: | $(DEPS_DIR)/riscv-hyp-tests/
 	make -C $(DEPS_DIR)/riscv-hyp-tests PLAT=cva6 LOG_LEVEL=LOG_DETAIL
 	$(RV_OBJCOPY) -O verilog $(DEPS_DIR)/riscv-hyp-tests/build/cva6/rvh_test.elf $(DEPS_DIR)/riscv-hyp-tests/build/cva6/rvh_test.hex
 
+# riscv-arch-test (ACT4) generates its tests for the DUT described in
+# arch-test/<config>/ and computes their expected results on the Sail reference
+# model, fetched as a prebuilt release so no OCaml toolchain is needed. It needs
+# a RISC-V GCC 15 or later, which the rest of the software does not use:
+# ACT_RV_BINROOT, defaulting to the one on PATH.
+# master as of 2026-09-29
+RISCV_ARCH_TEST_REV := 0f5b78431abba4f3d9d984d3b323d1196c372592
+SAIL_VERSION        := 0.14.1
+ACT_DIR             := $(DEPS_DIR)/riscv-arch-test
+SAIL_DIR            ?= $(DEPS_DIR)/sail
+ACT_RV_BINROOT      ?= $(dir $(shell which riscv64-unknown-elf-gcc 2>/dev/null))
+
+$(ACT_DIR)/:
+	git clone https://github.com/riscv-non-isa/riscv-arch-test.git $(ACT_DIR)
+	cd $(ACT_DIR) && git checkout $(RISCV_ARCH_TEST_REV)
+
+$(SAIL_DIR)/bin/sail_riscv_sim:
+	mkdir -p $(SAIL_DIR)
+	curl -sSL https://github.com/riscv/sail-riscv/releases/download/$(SAIL_VERSION)/sail-riscv-Linux-x86_64.tar.gz \
+	    | tar xz -C $(SAIL_DIR) --strip-components=1
+
+# Generates the self-checking ELFs and their hex images for CVA6_CONFIG, under
+# deps/riscv-arch-test/work/<config>/elfs. The work is in ../util/gen-arch-tests.sh.
+.PHONY: arch-test
+arch-test: | $(ACT_DIR)/ $(SAIL_DIR)/bin/sail_riscv_sim
+	ACT_DIR=$(ACT_DIR) SAIL_DIR=$(SAIL_DIR) ACT_RV_BINROOT=$(ACT_RV_BINROOT) \
+	    $(SW_DIR)/../util/gen-arch-tests.sh $(CVA6_CONFIG)
+
+# Only what generation made: the work directory and the descriptions copied in.
+.PHONY: arch-test-clean
+arch-test-clean:
+	rm -rf $(ACT_DIR)/work $(addprefix $(ACT_DIR)/config/cores/,$(notdir $(wildcard $(SW_DIR)/arch-test/cv*)))
+
 .PHONY: deps
 deps: $(DEPS_DIR)/printf
 
