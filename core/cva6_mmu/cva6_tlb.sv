@@ -521,7 +521,13 @@ module cva6_tlb
     return count;
   endfunction
 
-  assert property (@(posedge clk_i) (countSetBits(lu_hit) <= 1))
+  // Only a lookup whose result is used must hit at most once. With translation
+  // disabled, ASIDs are not compared and, without H, stages are not either, so
+  // entries for one page under two ASIDs -- legal, since switching ASID needs
+  // no SFENCE.VMA -- both match an unused lookup such as an M-mode fetch.
+  logic lu_used;
+  assign lu_used = lu_access_i && (s_st_enbl_i || g_st_enbl_i);
+  assert property (@(posedge clk_i) lu_used |-> (countSetBits(lu_hit) <= 1))
   else begin
     $error("More then one hit in TLB!");
     $stop();
