@@ -221,9 +221,18 @@ module load_store_unit
   // stay stores. Everything downstream that asks "is this a store?" for the
   // sake of permissions or fault attribution must use this, not the bare
   // translation request.
+  //
+  // A cache-block operation (CBO.CLEAN/FLUSH/INVAL) also goes to the store unit
+  // and is permitted wherever a load or a store would be. Every valid PTE and
+  // PMP encoding that grants W also grants R, so that is the read permission:
+  // it too is checked as a load. Unlike LR, its faults are still reported as
+  // store faults, which the store unit does.
   logic st_translation_is_store, cva6_st_translation_is_store;
   assign cva6_st_translation_is_store = cva6_st_translation_req &&
-      !(lsu_ctrl.operation inside {ariane_pkg::AMO_LRW, ariane_pkg::AMO_LRD});
+      !(lsu_ctrl.operation inside {
+        ariane_pkg::AMO_LRW, ariane_pkg::AMO_LRD,
+        ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH, ariane_pkg::CBO_INVAL
+      });
   logic [CVA6Cfg.VLEN-1:0] ld_vaddr;
   logic [            31:0] ld_tinst;
   logic                    ld_hs_ld_st_inst;

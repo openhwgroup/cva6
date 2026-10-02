@@ -159,8 +159,18 @@ module store_unit
     st_valid_without_flush = 1'b0;
     pop_st_o               = 1'b0;
     ex_o                   = ex_i;
-    trans_id_n             = lsu_ctrl_i.trans_id;
-    state_d                = state_q;
+    // A cache-block operation is translated and PMP-checked for read permission
+    // (see load_store_unit.sv), but a fault it takes is a store fault.
+    if (CVA6Cfg.RVZiCbom && cbo_op_q != ariane_pkg::CBO_NONE) begin
+      unique case (ex_i.cause)
+        riscv::LD_ACCESS_FAULT:       ex_o.cause = riscv::ST_ACCESS_FAULT;
+        riscv::LOAD_PAGE_FAULT:       ex_o.cause = riscv::STORE_PAGE_FAULT;
+        riscv::LOAD_GUEST_PAGE_FAULT: ex_o.cause = riscv::STORE_GUEST_PAGE_FAULT;
+        default:                      ;
+      endcase
+    end
+    trans_id_n = lsu_ctrl_i.trans_id;
+    state_d    = state_q;
 
     if (sdtrig_store_stall_i && valid_i) begin
       //validation of the store architecturally but do not store any result nor commit it
