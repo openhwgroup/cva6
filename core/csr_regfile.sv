@@ -1336,6 +1336,8 @@ module csr_regfile
         riscv::CSR_VSTVEC: begin
           if (CVA6Cfg.RVH) begin
             vstvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
+            // vector mode: the same 64 * 4 byte alignment as stvec
+            if (csr_wdata[0]) vstvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
           end else begin
             update_access_exception = 1'b1;
           end
@@ -1423,8 +1425,11 @@ module csr_regfile
         end
 
         riscv::CSR_STVEC:
-        if (CVA6Cfg.RVS) stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
-        else update_access_exception = 1'b1;
+        if (CVA6Cfg.RVS) begin
+          stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:2], 1'b0, csr_wdata[0]};
+          // vector mode: trap entry replaces base bits [7:2] with the cause
+          if (csr_wdata[0]) stvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, 1'b1};
+        end else update_access_exception = 1'b1;
         riscv::CSR_SCOUNTEREN:
         if (CVA6Cfg.RVS) scounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
         else update_access_exception = 1'b1;
