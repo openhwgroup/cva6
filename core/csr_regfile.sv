@@ -2175,7 +2175,7 @@ module csr_regfile
                                     riscv::ENV_CALL_MMODE
                                   })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : ex_i.tval;
           if (CVA6Cfg.RVH) begin
-            htinst_d       = (ariane_pkg::ZERO_TVAL
+            htinst_d       = ((ariane_pkg::ZERO_TVAL
                               && (ex_i.cause inside {
                                 riscv::INSTR_ACCESS_FAULT,
                                 riscv::ILLEGAL_INSTR,
@@ -2186,10 +2186,11 @@ module csr_regfile
                                 riscv::INSTR_PAGE_FAULT,
                                 riscv::INSTR_GUEST_PAGE_FAULT,
                                 riscv::VIRTUAL_INSTRUCTION
-                              } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
+                              })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
             hstatus_d.spvp = v_q ? priv_lvl_q[0] : hstatus_d.spvp;
-            htval_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, ex_i.tval2[CVA6Cfg.GPLEN-1:2]};
-            hstatus_d.gva = ex_i.gva;
+            // an interrupt reports no guest address
+            htval_d = ex_i.cause[CVA6Cfg.XLEN-1] ? '0 : {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, ex_i.tval2[CVA6Cfg.GPLEN-1:2]};
+            hstatus_d.gva = ex_i.gva && !ex_i.cause[CVA6Cfg.XLEN-1];
             hstatus_d.spv = v_q;
           end
         end
@@ -2222,7 +2223,7 @@ module csr_regfile
         if (CVA6Cfg.RVH) begin
           // save previous virtualization mode
           mstatus_d.mpv = v_q;
-          mtinst_d       = (ariane_pkg::ZERO_TVAL
+          mtinst_d       = ((ariane_pkg::ZERO_TVAL
                             && (ex_i.cause inside {
                               riscv::INSTR_ADDR_MISALIGNED,
                               riscv::INSTR_ACCESS_FAULT,
@@ -2234,9 +2235,10 @@ module csr_regfile
                               riscv::INSTR_PAGE_FAULT,
                               riscv::INSTR_GUEST_PAGE_FAULT,
                               riscv::VIRTUAL_INSTRUCTION
-                            } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
-          mtval2_d = {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, ex_i.tval2[CVA6Cfg.GPLEN-1:2]};
-          mstatus_d.gva = ex_i.gva;
+                            })) || ex_i.cause[CVA6Cfg.XLEN-1]) ? '0 : {{CVA6Cfg.XLEN - 32 {1'b0}}, ex_i.tinst};
+          // an interrupt reports no guest address
+          mtval2_d = ex_i.cause[CVA6Cfg.XLEN-1] ? '0 : {{CVA6Cfg.XLEN - CVA6Cfg.GPLEN + 2{1'b0}}, ex_i.tval2[CVA6Cfg.GPLEN-1:2]};
+          mstatus_d.gva = ex_i.gva && !ex_i.cause[CVA6Cfg.XLEN-1];
         end
       end
 
