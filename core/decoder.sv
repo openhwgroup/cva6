@@ -1853,11 +1853,109 @@ module decoder
   // ---------------------
   logic [CVA6Cfg.XLEN-1:0] interrupt_cause;
 
+  // Pending and enabled interrupts, split by the mode they trap to
+  logic [CVA6Cfg.XLEN-1:0] irq_pending;
+  logic [CVA6Cfg.XLEN-1:0] irq_to_m, irq_to_s, irq_to_vs;
+  logic [CVA6Cfg.XLEN-1:0] irq_sel;
+  // Whether interrupts trapping to HS and to VS can be taken in the current mode
+  logic irq_s_enabled, irq_vs_enabled;
+
+  always_comb begin : interrupt_select
+    irq_pending = irq_ctrl_i.mie & irq_ctrl_i.mip;
+    // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+    // used to generate external interrupts to the supervisor
+    irq_pending[riscv::IRQ_S_EXT] = irq_ctrl_i.mie[riscv::IRQ_S_EXT] &
+        (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq]);
+    // Only the interrupts the configuration implements
+    if (!CVA6Cfg.RVS) begin
+      irq_pending[riscv::IRQ_S_SOFT]  = 1'b0;
+      irq_pending[riscv::IRQ_S_TIMER] = 1'b0;
+      irq_pending[riscv::IRQ_S_EXT]   = 1'b0;
+    end
+    if (!CVA6Cfg.RVH) begin
+      irq_pending[riscv::IRQ_VS_SOFT]  = 1'b0;
+      irq_pending[riscv::IRQ_VS_TIMER] = 1'b0;
+      irq_pending[riscv::IRQ_VS_EXT]   = 1'b0;
+      irq_pending[riscv::IRQ_HS_EXT]   = 1'b0;
+    end
+    if (!CVA6Cfg.SoftwareInterruptEn) irq_pending[riscv::IRQ_M_SOFT] = 1'b0;
+
+    irq_to_m = irq_pending & ~irq_ctrl_i.mideleg;
+    irq_to_s = irq_pending & irq_ctrl_i.mideleg & ~irq_ctrl_i.hideleg;
+    irq_to_vs = irq_pending & irq_ctrl_i.mideleg & irq_ctrl_i.hideleg;
+
+    // HS interrupts can be taken in S with SIE set, in U, and whenever V is set;
+    // VS ones only when V is set, in VS with vsstatus.SIE set or in VU. M ones
+    // are gated by irq_ctrl_i.global_enable below.
+    irq_s_enabled = (CVA6Cfg.RVH && v_i) ||
+        (CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) ||
+        (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U);
+    irq_vs_enabled = CVA6Cfg.RVH && v_i &&
+        ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U);
+
+    // Interrupts destined for a more-privileged mode are taken before those
+    // destined for a less-privileged one, whatever their causes: M, then HS,
+    // then VS. The cause order only applies among interrupts for the same mode.
+    if (|irq_to_m) begin
+      irq_sel = irq_to_m;
+    end else if (|irq_to_s && irq_s_enabled) begin
+      irq_sel = irq_to_s;
+    end else if (|irq_to_vs && irq_vs_enabled) begin
+      irq_sel = irq_to_vs;
+    end else begin
+      irq_sel = '0;
+    end
+
+    // The highest-priority cause among the selected interrupts, in decreasing
+    // order MEI, MSI, MTI, SEI, SSI, STI, SGEI, VSEI, VSSI, VSTI: a later match
+    // overrides an earlier one.
+    interrupt_cause = '0;
+    // Virtual Supervisor Timer Interrupt
+    if (irq_sel[riscv::IRQ_VS_TIMER]) begin
+      interrupt_cause = INTERRUPTS.VS_TIMER;
+    end
+    // Virtual Supervisor Software Interrupt
+    if (irq_sel[riscv::IRQ_VS_SOFT]) begin
+      interrupt_cause = INTERRUPTS.VS_SW;
+    end
+    // Virtual Supervisor External Interrupt
+    if (irq_sel[riscv::IRQ_VS_EXT]) begin
+      interrupt_cause = INTERRUPTS.VS_EXT;
+    end
+    // Hypervisor Guest External Interrupts
+    if (irq_sel[riscv::IRQ_HS_EXT]) begin
+      interrupt_cause = INTERRUPTS.HS_EXT;
+    end
+    // Supervisor Timer Interrupt
+    if (irq_sel[riscv::IRQ_S_TIMER]) begin
+      interrupt_cause = INTERRUPTS.S_TIMER;
+    end
+    // Supervisor Software Interrupt
+    if (irq_sel[riscv::IRQ_S_SOFT]) begin
+      interrupt_cause = INTERRUPTS.S_SW;
+    end
+    // Supervisor External Interrupt
+    if (irq_sel[riscv::IRQ_S_EXT]) begin
+      interrupt_cause = INTERRUPTS.S_EXT;
+    end
+    // Machine Timer Interrupt
+    if (irq_sel[riscv::IRQ_M_TIMER]) begin
+      interrupt_cause = INTERRUPTS.M_TIMER;
+    end
+    // Machine Mode Software Interrupt
+    if (irq_sel[riscv::IRQ_M_SOFT]) begin
+      interrupt_cause = INTERRUPTS.M_SW;
+    end
+    // Machine Mode External Interrupt
+    if (irq_sel[riscv::IRQ_M_EXT]) begin
+      interrupt_cause = INTERRUPTS.M_EXT;
+    end
+  end
+
   // this instruction has already executed if the exception is valid
   assign instruction_o.valid = instruction_o.ex.valid;
 
   always_comb begin : exception_handling
-    interrupt_cause = '0;
     instruction_o.ex = ex_i;
     orig_instr_o = '0;
 
@@ -1922,89 +2020,13 @@ module decoder
     // -----------------
     // Interrupt Control
     // -----------------
-    // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
-    // throw any previous exception.
-    // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
-    // for two privilege levels: Supervisor and Machine Mode
-    // Virtual Supervisor Timer Interrupt
-    if (CVA6Cfg.RVH) begin
-      if (irq_ctrl_i.mie[riscv::IRQ_VS_TIMER] && irq_ctrl_i.mip[riscv::IRQ_VS_TIMER]) begin
-        interrupt_cause = INTERRUPTS.VS_TIMER;
-      end
-      // Virtual Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_VS_SOFT] && irq_ctrl_i.mip[riscv::IRQ_VS_SOFT]) begin
-        interrupt_cause = INTERRUPTS.VS_SW;
-      end
-      // Virtual Supervisor External Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_VS_EXT] && (irq_ctrl_i.mip[riscv::IRQ_VS_EXT])) begin
-        interrupt_cause = INTERRUPTS.VS_EXT;
-      end
-      // Hypervisor Guest External Interrupts
-      if (irq_ctrl_i.mie[riscv::IRQ_HS_EXT] && irq_ctrl_i.mip[riscv::IRQ_HS_EXT]) begin
-        interrupt_cause = INTERRUPTS.HS_EXT;
-      end
-    end
-    if (CVA6Cfg.RVS) begin
-      // Supervisor Timer Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_TIMER] && irq_ctrl_i.mip[riscv::IRQ_S_TIMER]) begin
-        interrupt_cause = INTERRUPTS.S_TIMER;
-      end
-      // Supervisor Software Interrupt
-      if (irq_ctrl_i.mie[riscv::IRQ_S_SOFT] && irq_ctrl_i.mip[riscv::IRQ_S_SOFT]) begin
-        interrupt_cause = INTERRUPTS.S_SW;
-      end
-      // Supervisor External Interrupt
-      // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
-      // used to generate external interrupts to the supervisor
-      if (irq_ctrl_i.mie[riscv::IRQ_S_EXT] && (irq_ctrl_i.mip[riscv::IRQ_S_EXT] | irq_i[ariane_pkg::SupervisorIrq])) begin
-        interrupt_cause = INTERRUPTS.S_EXT;
-      end
-    end
-    // Machine Timer Interrupt
-    if (irq_ctrl_i.mip[riscv::IRQ_M_TIMER] && irq_ctrl_i.mie[riscv::IRQ_M_TIMER]) begin
-      interrupt_cause = INTERRUPTS.M_TIMER;
-    end
-    if (CVA6Cfg.SoftwareInterruptEn) begin
-      // Machine Mode Software Interrupt
-      if (irq_ctrl_i.mip[riscv::IRQ_M_SOFT] && irq_ctrl_i.mie[riscv::IRQ_M_SOFT]) begin
-        interrupt_cause = INTERRUPTS.M_SW;
-      end
-    end
-    // Machine Mode External Interrupt
-    if (irq_ctrl_i.mip[riscv::IRQ_M_EXT] && irq_ctrl_i.mie[riscv::IRQ_M_EXT]) begin
-      interrupt_cause = INTERRUPTS.M_EXT;
-    end
-
+    // The interrupt selected by interrupt_select is taken in place of the
+    // instruction and of any exception it raised. It can only be one its
+    // destination mode can take; the global enable adds mstatus.MIE in M mode
+    // and the debug-mode and single-step masks.
     if (interrupt_cause[CVA6Cfg.XLEN-1] && irq_ctrl_i.global_enable) begin
-      // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
-      // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
-      // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-      if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
-        if (CVA6Cfg.RVH) begin : hyp_int_gen
-          if (v_i && irq_ctrl_i.hideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
-            if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
-              instruction_o.ex.valid = 1'b1;
-              instruction_o.ex.cause = interrupt_cause;
-            end
-          end else if (v_i && ~irq_ctrl_i.hideleg[interrupt_cause[$clog2(CVA6Cfg.XLEN)-1:0]]) begin
-            instruction_o.ex.valid = 1'b1;
-            instruction_o.ex.cause = interrupt_cause;
-          end else if (!v_i && ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) && ~irq_ctrl_i.hideleg[interrupt_cause[$clog2(
-                  CVA6Cfg.XLEN
-              )-1:0]]) begin
-            instruction_o.ex.valid = 1'b1;
-            instruction_o.ex.cause = interrupt_cause;
-          end
-        end else begin
-          if ((CVA6Cfg.RVS && irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || (CVA6Cfg.RVU && priv_lvl_i == riscv::PRIV_LVL_U)) begin
-            instruction_o.ex.valid = 1'b1;
-            instruction_o.ex.cause = interrupt_cause;
-          end
-        end
-      end else begin
-        instruction_o.ex.valid = 1'b1;
-        instruction_o.ex.cause = interrupt_cause;
-      end
+      instruction_o.ex.valid = 1'b1;
+      instruction_o.ex.cause = interrupt_cause;
     end
 
     // a debug request has precendece over everything else
