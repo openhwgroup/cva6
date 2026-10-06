@@ -95,6 +95,7 @@ module wt_dcache_ctrl
 
   assign req_port_o.data_rdata = rd_data_i;
   assign req_port_o.data_ruser = rd_user_i;
+  assign req_port_o.data_error = 1'b0;
   assign req_port_o.data_rid = id_q;
 
   // to miss unit
