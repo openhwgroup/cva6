@@ -2038,6 +2038,18 @@ module csr_regfile
         end
         default: update_access_exception = 1'b1;
       endcase
+      // These registers decide whether an interrupt is pending and enabled, and
+      // the specification requires that decision to be made again right after an
+      // explicit write to them. Instructions decoded before the write carry the
+      // old one, so flush them as for mstatus: an interrupt the write enables is
+      // then taken before the next instruction.
+      if (conv_csr_addr.address inside {
+          riscv::CSR_MIE, riscv::CSR_MIP, riscv::CSR_MIDELEG,
+          riscv::CSR_SIE, riscv::CSR_SIP,
+          riscv::CSR_HIDELEG, riscv::CSR_HIE, riscv::CSR_HIP, riscv::CSR_HVIP, riscv::CSR_HGEIE,
+          riscv::CSR_VSIE, riscv::CSR_VSIP
+        })
+        flush_o = 1'b1;
     end
     if (CVA6Cfg.IS_XLEN64) begin
       if (CVA6Cfg.RVS) mstatus_d.sxl = riscv::XLEN_64;
