@@ -153,6 +153,7 @@ TARGETS = [
 #   base_zicbom    RVZiCbom, RVS and RVU
 #   base_zicbom_h  RVZiCbom and RVH
 #   base_rv64_h    RVH
+#   base_rv32_mmu  Sv32 with PMP entries (the tests program pmpcfg)
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr"],
@@ -197,12 +198,19 @@ TESTLISTS = {
     "cv32a6_imac_sv32_obi": [
         "base_rv32_p",
         "base_rv32_v",
+        "base_rv32_mmu",
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
         "base_csr",
     ],
-    "cv32a65x_sv32": ["base_rv32_p", "base_rv32_v", "base_pmp", "base_csr"],
+    "cv32a65x_sv32": [
+        "base_rv32_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
@@ -217,6 +225,7 @@ TESTLISTS = {
     "cv32a6_imac_sv32": [
         "base_rv32_p",
         "base_rv32_v",
+        "base_rv32_mmu",
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
@@ -226,6 +235,7 @@ TESTLISTS = {
     "cv32a65x_sv32_axi": [
         "base_rv32_p",
         "base_rv32_v",
+        "base_rv32_mmu",
         "base_pmp",
         "base_csr",
         "base_zicbom",
