@@ -436,17 +436,9 @@ module trigger_module
                         end
                       end
                     end
-                  end else begin
-                    fire_req_EA[n].valid = 1'b1;
-                    if(CVA6Cfg.SdtrigSupportedActions[0] && trigger_32_tdata1_d[i].mc6_type.action == 4'd0) begin
-                      fire_req_EA[n].action = riscv::BREAKPOINT;
-                    end
-                    else if (CVA6Cfg.SdtrigSupportedActions[1] && trigger_32_tdata1_d[i].mc6_type.action == 4'd1) begin
-                      if (CVA6Cfg.DebugEn && !debug_mode_i) begin
-                        fire_req_EA[n].action = riscv::DEBUG_REQUEST;
-                      end
-                    end
                   end
+                  // A link that is not the last of its chain only records its
+                  // match: the action is taken by the last link.
                 end else begin
                   fire_req_EA[n].valid  = 1'b1;
                   fire_req_EA[n].action = riscv::BREAKPOINT;
