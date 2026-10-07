@@ -13,6 +13,8 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
+`include "utils_macros.svh"
+
 module id_stage #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
     parameter type branchpredict_sbe_t = logic,
@@ -289,12 +291,38 @@ module id_stage #(
       assign stall_instr_fetch[0] = stall_macro_deco;
     end
   end else begin
+    // Without C there is no compressed, macro (Zcmp) or table jump (Zcmt)
+    // instruction to expand, and no compressed request for the coprocessor:
+    // every signal the RVC branch drives is tied to its idle value.
     for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
       assign is_illegal_rvc[i] = 1'b0;
       assign instruction_rvc[i] = fetch_entry_i[i].instruction;
       assign is_compressed_rvc[i] = 1'b0;
       assign stall_instr_fetch[i] = 1'b0;
+      assign is_macro_instr[i] = 1'b0;
+      assign is_zcmt_instr[i] = 1'b0;
     end
+    assign instruction_zcmp = instruction_rvc[0];
+    assign is_illegal_zcmp = is_illegal_rvc[0];
+    assign is_compressed_zcmp = is_compressed_rvc[0];
+    assign stall_macro_deco_zcmp = 1'b0;
+    assign is_last_macro_instr = 1'b0;
+    assign is_double_rd_macro_instr = 1'b0;
+    assign instruction_zcmt = instruction_rvc[0];
+    assign is_illegal_zcmt = is_illegal_rvc[0];
+    assign is_compressed_zcmt = is_compressed_rvc[0];
+    assign stall_macro_deco_zcmt = 1'b0;
+    assign jump_address = '0;
+    assign instruction_cvxif_i = instruction_rvc[0];
+    assign is_illegal_cvxif_i = is_illegal_rvc[0];
+    assign is_compressed_cvxif_i = is_compressed_rvc[0];
+    assign stall_macro_deco = 1'b0;
+    assign instruction_cvxif_o = instruction_rvc[0];
+    assign is_illegal_cvxif_o = is_illegal_rvc[0];
+    assign is_compressed_cvxif_o = is_compressed_rvc[0];
+    assign ypb_zcmt_req_o = '0;
+    assign compressed_valid_o = 1'b0;
+    assign compressed_req_o = '0;
   end
 
   // ---------------------------------------------------------
@@ -501,6 +529,27 @@ module id_stage #(
     end
   end
 
-
+  // pragma translate_off
+  // The decode flags of an instruction handed to issue, and the compressed
+  // request to the coprocessor, are known, with or without RVC.
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin : gen_issue_entry_known
+    issue_entry_flags_known :
+    assert property (@(posedge clk_i) disable iff (!rst_ni) issue_entry_valid_o[i] |-> !$isunknown(
+        {
+          issue_entry_o[i].is_compressed,
+          issue_entry_o[i].is_macro_instr,
+          issue_entry_o[i].is_last_macro_instr,
+          issue_entry_o[i].is_double_rd_macro_instr,
+          issue_entry_o[i].is_zcmt
+        }
+    ))
+    else `ASSERT_ERROR("[id_stage] decode flags of an issued instruction are unknown");
+  end
+  if (CVA6Cfg.CvxifEn) begin : gen_compressed_valid_known
+    compressed_valid_known :
+    assert property (@(posedge clk_i) disable iff (!rst_ni) !$isunknown(compressed_valid_o))
+    else `ASSERT_ERROR("[id_stage] compressed_valid_o is unknown");
+  end
+  // pragma translate_on
 
 endmodule
