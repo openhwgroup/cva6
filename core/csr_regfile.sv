@@ -1711,18 +1711,19 @@ module csr_regfile
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
-          // Mirror MBE
-          mstatus_d.sbe   = mstatus_d.mbe;
-          mstatus_d.ube   = mstatus_d.mbe;
+          // Mirror MBE, on the modes that exist: SBE and UBE are read-only
+          // zero without S-mode or U-mode
+          mstatus_d.sbe   = CVA6Cfg.RVS && mstatus_d.mbe;
+          mstatus_d.ube   = CVA6Cfg.RVU && mstatus_d.mbe;
           // this register has side-effects on other registers, flush the pipeline
           flush_o         = 1'b1;
         end
         riscv::CSR_MSTATUSH: begin
           if (CVA6Cfg.IS_XLEN32) begin
             mstatus_d.mbe = ((csr_wdata & riscv::MSTATUSH_MBE) != 0);
-            // Mirror MBE
-            mstatus_d.sbe = mstatus_d.mbe;
-            mstatus_d.ube = mstatus_d.mbe;
+            // Mirror MBE, on the modes that exist (see CSR_MSTATUS)
+            mstatus_d.sbe = CVA6Cfg.RVS && mstatus_d.mbe;
+            mstatus_d.ube = CVA6Cfg.RVU && mstatus_d.mbe;
             // this register has side-effects on other registers, flush the pipeline
             flush_o       = 1'b1;
           end else begin
