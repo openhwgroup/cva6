@@ -266,6 +266,13 @@ module cva6_rvfi
   logic [CVA6Cfg.XLEN-1:0] tval_iti;
   logic [63:0] time_iti;
 
+  // Interrupts delegated to HS mode, which the sie and sip views exclude as
+  // csr_regfile.sv does. Zero without H.
+  localparam logic [63:0] HS_DELEG_INTERRUPTS = CVA6Cfg.RVH ?
+      {{32{1'b0}}, ariane_pkg::hs_deleg_interrupts(
+      CVA6Cfg
+  )} : 64'b0;
+
   riscv::priv_lvl_t priv_lvl;
 
   logic [CVA6Cfg.VLEN-1:0] lsu_ctrl_vaddr;
@@ -605,8 +612,8 @@ module cva6_rvfi
 
     `CONNECT_RVFI_FULL(CVA6Cfg.RVS, sstatus, csr.mstatus_extended & SMODE_STATUS_READ_MASK[CVA6Cfg.XLEN-1:0])
 
-    `CONNECT_RVFI_FULL(CVA6Cfg.RVS, sie, csr.mie_q & csr.mideleg_q)
-    `CONNECT_RVFI_FULL(CVA6Cfg.RVS, sip, csr.mip_q & csr.mideleg_q)
+    `CONNECT_RVFI_FULL(CVA6Cfg.RVS, sie, csr.mie_q & csr.mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0])
+    `CONNECT_RVFI_FULL(CVA6Cfg.RVS, sip, csr.mip_q & csr.mideleg_q & ~HS_DELEG_INTERRUPTS[CVA6Cfg.XLEN-1:0])
 
     `CONNECT_RVFI_SAME(CVA6Cfg.RVS, stvec)
 
