@@ -68,15 +68,29 @@ main:
     bne  t4, t5, fail
 
     # --------------------------------------------------------------------
-    # Destination x0: the result is discarded, the consumer must still read
-    # the old value of its source and not the dropped one.
+    # Destination x0: the result is discarded, and an instruction reading x0
+    # right after must get zero, not the dropped value. The pair matches the
+    # dependency check on register numbers (rs == rd == 0), so it is what
+    # tells a forwarding that honours x0 from one that does not.
     # --------------------------------------------------------------------
+    #
+    # .insn spells each add out as R-type OP, funct3 0, funct7 0: the
+    # assembler would otherwise turn add rd, x0, rs into c.mv, which reads
+    # no x0 at all.
     li  t0, 0x55
     li  t1, 0x0A
-    add x0, t0, t1              # discarded
-    add t2, t0, t1              # t2 = 0x5F
-    li  t3, 0x5F
+    li  t3, 0x0A
+    .insn r OP, 0, 0, x0, t0, t1    # add x0, t0, t1: discarded
+    .insn r OP, 0, 0, t2, x0, t1    # add t2, x0, t1: rs1 = x0, t2 = 0x0A
     bne t2, t3, fail
+
+    .insn r OP, 0, 0, x0, t0, t1    # add x0, t0, t1: discarded
+    .insn r OP, 0, 0, t2, t1, x0    # add t2, t1, x0: rs2 = x0, t2 = 0x0A
+    bne t2, t3, fail
+
+    .insn r OP, 0, 0, x0, t0, t1    # add x0, t0, t1: discarded
+    .insn r OP, 0, 0, t2, x0, x0    # add t2, x0, x0: both, t2 = 0
+    bnez t2, fail
 
     # --------------------------------------------------------------------
     # The older instruction of the pair is a branch. A branch only issues on

@@ -65,6 +65,11 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv64ui/jal.S
 
+  - test: alu_chain_test
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/alu/alu_chain_test.S
+
   - test: be_swap_test
     iterations: 1
     <<: *custom_test_config
