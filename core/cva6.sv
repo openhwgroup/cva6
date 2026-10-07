@@ -1951,6 +1951,7 @@ module cva6
       .commit_drop_i (commit_drop_id_commit),
       .ex_commit_i   (ex_commit),
       .priv_lvl_i    (priv_lvl),
+      .v_i           (v),
 
       .lsu_ctrl_i  (rvfi_lsu_ctrl),
       .wbdata_i    (wbdata_ex_id),

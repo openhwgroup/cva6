@@ -11,6 +11,7 @@
   logic [config_pkg::NRET-1:0]                  halt; \
   logic [config_pkg::NRET*Cfg.XLEN-1:0]         intr; \
   logic [config_pkg::NRET*2-1:0]                mode; \
+  logic [config_pkg::NRET-1:0]                  virt; \
   logic [config_pkg::NRET*2-1:0]                ixl; \
   logic [config_pkg::NRET*5-1:0]                rs1_addr; \
   logic [config_pkg::NRET*5-1:0]                rs2_addr; \
@@ -134,6 +135,7 @@
   logic [Cfg.XLEN-1:0] ex_commit_cause; \
   logic ex_commit_valid; \
   riscv::priv_lvl_t priv_lvl; \
+  logic v; \
   logic [Cfg.VLEN-1:0] lsu_ctrl_vaddr; \
   ariane_pkg::fu_t lsu_ctrl_fu; \
   logic [(Cfg.XLEN/8)-1:0] lsu_ctrl_be; \

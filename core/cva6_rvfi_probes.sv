@@ -43,6 +43,7 @@ module cva6_rvfi_probes
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_drop_i,
     input exception_t ex_commit_i,
     input riscv::priv_lvl_t priv_lvl_i,
+    input logic v_i,
 
     input lsu_ctrl_t                                               lsu_ctrl_i,
     input logic      [    CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata_i,
@@ -91,6 +92,7 @@ module cva6_rvfi_probes
     end
 
     instr.priv_lvl = priv_lvl_i;
+    instr.v = CVA6Cfg.RVH ? v_i : 1'b0;
 
     instr.lsu_ctrl_vaddr = lsu_ctrl_i.vaddr;
     instr.lsu_ctrl_fu = lsu_ctrl_i.fu;
