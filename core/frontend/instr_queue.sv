@@ -264,6 +264,7 @@ module instr_queue
     /* verilator lint_off WIDTH */
     assign instr_data_in[0].instr = instr_i[0];
     assign instr_data_in[0].cf = cf_type_i[0];
+    assign instr_data_in[0].cf_valid = cf_valid_i[0];
     assign instr_data_in[0].ex = exception_i;  // exceptions hold for the whole fetch packet
     assign instr_data_in[0].ex_vaddr = exception_addr_i;
     if (CVA6Cfg.RVH) begin : gen_hyp_ex_without_C
@@ -408,6 +409,7 @@ module instr_queue
       fetch_entry_o[0].address = pc_q;
 
       fetch_entry_o[0].ex.valid = instr_data_out[0].ex != ariane_pkg::FE_NONE;
+      fetch_entry_o[0].ex.timing = 1'b0;
       if (instr_data_out[0].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
         fetch_entry_o[0].ex.cause = riscv::INSTR_ACCESS_FAULT;
       end else begin
@@ -574,6 +576,16 @@ module instr_queue
   else begin
     `ASSERT_ERROR("Output select should be one-hot encoded");
     $stop();
+  end
+
+  // The exception of a valid fetch entry has no unknown bit, whichever path
+  // (single-slot or multi-slot) built the entry.
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin : gen_fetch_entry_known
+    fetch_entry_known :
+    assert property (@(posedge clk_i) disable iff (!rst_ni) fetch_entry_valid_o[i] |-> !$isunknown(
+        fetch_entry_o[i].ex
+    ))
+    else `ASSERT_ERROR("[instr_queue] fetch entry exception has unknown bits");
   end
   // pragma translate_on
 endmodule
