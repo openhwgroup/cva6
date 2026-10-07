@@ -113,7 +113,13 @@ vm_en:
 # =======================================================================
 # Scenario 2: a targeted fence does take effect on the page it names
 # =======================================================================
-    # page_a is cached and points at frame_one; repoint it at frame_three
+    # walk page_a again so its translation to frame_one is cached (the
+    # fence of scenario 1 dropped it), then repoint it at frame_three
+    la   t0, page_a
+    lw   t1, 0(t0)
+    li   t2, 0x11111111
+    bne  t1, t2, fail
+
     la   a1, frame_three
     la   a0, page_a
     ori  a2, x0, ( PTE_LEAF_RW )
