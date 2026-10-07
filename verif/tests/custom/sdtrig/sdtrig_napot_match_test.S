@@ -13,12 +13,16 @@
 #   followed by a run of low ones, and n trailing ones select a range of
 #   2^(n+1) bytes.
 #
-#   Three properties, each of which the previous implementation got wrong:
+#   Checked, on an 8-byte range at range_base:
 #     - a range based at a real code address matches at all, rather than being
 #       rejected for having non-zero address bits;
-#     - an address inside the range matches;
-#     - an address just past the end of the range does not, which is what pins
-#       the range size and would catch it being off by a factor of two.
+#     - both words of the range match, range_base and range_base+4, so the
+#       mask is not too narrow;
+#     - range_base-4, inside the enclosing 16 bytes, does not match, so the
+#       mask is not one bit too wide;
+#     - range_base+8, just past the end, does not match.
+#   Each case records mepc, so a fire on the wrong instruction is told from a
+#   fire on the right one.
 #
 #   The trigger is disarmed inside the handler before returning, because a
 #   range trigger armed in machine mode would otherwise match the handler's own
@@ -35,87 +39,85 @@
 
     .globl main
 main:
+    mv   s9, ra                 # arm_napot is called with jal
     la   t0, trap_handler
     csrw mtvec, t0
     la   t0, fire_count
     sw   zero, 0(t0)
 
     # --------------------------------------------------------------------
-    # An 8-byte NAPOT range covering in_range_insn.
+    # Inside the range: both words of range_in, range_in and range_in+4.
     #
-    # Three trailing ones would give 2^4 = 16 bytes; two give 2^3 = 8. Use two,
-    # so tdata2 = base | 0b011 with base aligned to 8. The instruction below
-    # sits at the base, inside the range.
+    # tdata2 = range_in | 0b011: two trailing ones, so 2^3 = 8 bytes. The
+    # handler disarms the trigger on each fire, so it is armed again before
+    # the second word. Reaching it by a jump keeps range_in out of the way.
     # --------------------------------------------------------------------
-    li   t0, 0
-    csrw 0x7a0, t0              # tselect = 0
+    la   a0, range_in
+    jal  ra, arm_napot
+    j    range_in
 
-    la   t1, in_range_insn
-    andi t1, t1, -8             # align down to an 8-byte boundary
-    ori  t1, t1, 0x3            # two trailing ones: 8-byte range
-    csrw 0x7a2, t1
+    .align 3
+range_in:
+    nop                         # range_in + 0: must trap
+in_word1:
+    nop                         # range_in + 4: must trap once re-armed
+    j    in_done
 
-    # type 6, match 1 (NAPOT) in [10:7], m in [6], execute in [2], action 0
-    li   t1, 0x600000c4
-    csrw 0x7a1, t1
+    # first fire: on range_in, then re-arm and run the second word
+in_rearm:
+    la   a0, range_in
+    jal  ra, arm_napot
+    j    in_word1
 
-    .align 3                    # put the next instruction on the range base
-in_range_insn:
-    nop                         # inside the range: must trap
-
-    # The handler disarmed the trigger, so we get here once.
+in_done:
+    li   t2, 2
     la   t0, fire_count
     lw   t1, 0(t0)
-    beqz t1, fail               # nothing fired: the range never matched
+    bne  t1, t2, fail           # both words of the range must fire
+    la   t0, fire_pc
+    lw   t1, 0(t0)
+    la   t2, range_in
+    bne  t1, t2, fail           # first fire on the base
+    lw   t1, 4(t0)
+    la   t2, in_word1
+    bne  t1, t2, fail           # second fire on base + 4
 
     # --------------------------------------------------------------------
-    # Pin the size of the range, which is where an off-by-one in the mask hides.
+    # Outside the range: range_out - 4 and range_out + 8.
     #
-    # tdata2 is range_base | 0b011, and range_base is 8-byte aligned, so the run
-    # of low ones is two bits and the correct mask ignores three: the range is
-    # range_base .. range_base+7. A mask one bit wider would ignore four and the
-    # range would become the enclosing 16 bytes, which reaches *below*
-    # range_base, down to range_base-8.
-    #
-    # So the discriminating instruction sits just before the base, not after it:
-    # outside the 8-byte range, inside the 16-byte one. before_range is placed 4
-    # bytes ahead of an 8-byte aligned base for exactly that.
+    # range_out is 8-byte aligned and sits 8 bytes into a 16-byte block, so
+    # range_out - 4 is inside the enclosing 16-byte range (it would match if
+    # the mask ignored one bit too many) and range_out + 8 is the first word
+    # past the end. Neither may fire.
     # --------------------------------------------------------------------
     la   t0, fire_count
     sw   zero, 0(t0)
+    la   a0, range_out
+    jal  ra, arm_napot
+    j    below_range
 
-    li   t0, 0
-    csrw 0x7a0, t0
-
-    la   t1, range_base
-    ori  t1, t1, 0x3            # two trailing ones: 8 bytes from range_base
-    csrw 0x7a2, t1
-    li   t1, 0x600000c4
-    csrw 0x7a1, t1
-
-    j    before_range           # reach the check without entering the range
-
-    .align 4                    # 16-byte boundary, so range_base lands at +8
-before_range:
-    nop                         # at boundary+4: below range_base, inside 16
-    j    after_range
+    .align 4
+below_range:                    # range_out - 4: outside
+    nop
+    j    above_range
 
     .align 3
-range_base:                     # at boundary+8
+range_out:                      # the range, not executed
     nop
+    nop
+above_range:                    # range_out + 8: outside
     nop
 
-after_range:
     # Disarm before checking, so a spurious match cannot loop.
-    li   t0, 0
-    csrw 0x7a0, t0
+    csrw 0x7a0, zero
     csrw 0x7a1, zero
 
     la   t0, fire_count
     lw   t1, 0(t0)
-    bnez t1, fail               # fired below an 8-byte range: mask too wide
+    bnez t1, fail               # fired outside the 8-byte range
 
     # --------------------------------------------------------------------
+    mv   ra, s9
     li a0, 0
     ret
 
@@ -124,12 +126,27 @@ fail:
     li   t0, 0
     csrw 0x7a0, t0
     csrw 0x7a1, zero
+    mv   ra, s9
     li a0, 1
     ret
 
     # --------------------------------------------------------------------
-    # Counts breakpoint traps, disarms the trigger that fired, and steps over
-    # the instruction that trapped.
+    # Arms trigger 0 as an 8-byte NAPOT execute range at a0 (8-byte aligned).
+    # type 6, match 1 (NAPOT) in [10:7], m in [6], execute in [2], action 0.
+    # --------------------------------------------------------------------
+arm_napot:
+    csrw 0x7a0, zero            # tselect = 0
+    ori  a0, a0, 0x3            # two trailing ones: 8-byte range
+    csrw 0x7a2, a0
+    li   a0, 0x600000c4
+    csrw 0x7a1, a0
+    ret
+
+    # --------------------------------------------------------------------
+    # Counts breakpoint traps, records mepc, disarms the trigger that fired,
+    # and steps over the instruction that trapped. The first fire on
+    # range_in resumes at in_rearm, to arm the trigger again for the second
+    # word.
     # --------------------------------------------------------------------
     .align 6
 trap_handler:
@@ -141,18 +158,35 @@ trap_handler:
     li   t1, 3                  # breakpoint
     bne  t0, t1, handler_out
 
+    # Disarm trigger 0 first: a range trigger left armed in machine mode
+    # matches the handler itself, and the loop would never end.
+    csrw 0x7a0, zero
+    csrw 0x7a1, zero
+
+    # fire_pc[fire_count] = mepc, while there is room for it
+    la   t0, fire_count
+    lw   t1, 0(t0)
+    li   t0, 2
+    bgeu t1, t0, 1f
+    slli t0, t1, 2
+    la   t1, fire_pc
+    add  t1, t1, t0
+    csrr t0, mepc
+    sw   t0, 0(t1)
+1:
     la   t0, fire_count
     lw   t1, 0(t0)
     addi t1, t1, 1
     sw   t1, 0(t0)
 
-    # Disarm trigger 0: a range trigger left armed in machine mode matches the
-    # handler itself, and the loop would never end.
-    li   t0, 0
-    csrw 0x7a0, t0
-    csrw 0x7a1, zero
-
+    # A fire on range_in resumes at in_rearm, any other at mepc + 4.
     csrr t0, mepc
+    la   t1, range_in
+    bne  t0, t1, 2f
+    la   t0, in_rearm
+    csrw mepc, t0
+    j    handler_out
+2:
     addi t0, t0, 4
     csrw mepc, t0
 
@@ -166,3 +200,5 @@ handler_out:
     .align 2
 fire_count:
     .word 0
+fire_pc:
+    .word 0, 0

@@ -61,6 +61,10 @@ target_insn_eq:
     lw   t1, 0(t0)
     li   t2, 1
     bne  t1, t2, fail           # exactly one fire expected
+    la   t0, fire_pc
+    lw   t1, 0(t0)
+    la   t2, target_insn_eq
+    bne  t1, t2, fail           # fired, but not before target_insn_eq
 
     # Clear tdata1 and tdata2 so that no later instruction matches.
     li   t0, 0
@@ -124,6 +128,8 @@ trap_handler:
     # on is a 4-byte nop, the file being assembled with .option norvc, so
     # mepc + 4 is the next one.
     csrr t0, mepc
+    la   t1, fire_pc
+    sw   t0, 0(t1)              # last fire, checked by main
     addi t0, t0, 4
     csrw mepc, t0
 
@@ -137,4 +143,6 @@ handler_out:
     .data
     .align 2
 fire_count:
+    .word 0
+fire_pc:
     .word 0

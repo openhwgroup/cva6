@@ -28,26 +28,29 @@ testlist:
   - test: sdtrig_mcontrol6_exec_match
     <<: *common_test_config
     description: >
-      mcontrol6 execute trigger, one case per match type the CVA6
-      documentation claims: equal, NAPOT and not-equal, on the instruction
-      address, with the breakpoint action.
+      mcontrol6 execute trigger on the instruction address, equal match, with
+      the breakpoint action: it fires once, on the matched instruction (mepc),
+      and a disarmed trigger does not fire. NAPOT is in sdtrig_napot_match_test;
+      not-equal needs a debug-mode action and is not tested.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_exec_match.S
 
   - test: sdtrig_napot_match_test
     <<: *common_test_config
     description: >
-      NAPOT range match of an mcontrol6 execute trigger: a range based at a real
-      code address matches, an address inside it fires, and one past its end
-      does not, which pins the range size.
+      NAPOT range match of an mcontrol6 execute trigger, on an 8-byte range at
+      a real code address: both words of the range fire, on the right
+      instruction (mepc), and the word below and the word past the end do not.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_napot_match_test.S
 
   - test: sdtrig_mcontrol6_store
     <<: *common_test_config
     description: >
-      mcontrol6 store triggers on the store address and on the stored value,
-      checking the write has not reached memory when the trigger fires.
+      mcontrol6 store triggers on the store address and on the stored value:
+      the watched store fires, on that instruction (mepc), before the write
+      reaches memory, and a store to another address, or of another value,
+      does not fire.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_store.S
   - test: sdtrig_icount
@@ -78,7 +81,9 @@ testlist:
     <<: *common_test_config
     description: >
       mcontrol6 load trigger with select set, comparing the loaded value: the
-      break is deferred to the next instruction, so the load completes.
+      break is deferred to the next instruction (mepc), tdata1 reports it as
+      "after" (hit1:hit0 = 0b11), the load completes, and a load of another
+      value does not fire.
     iterations: 1
     asm_tests: <path_var>/custom/sdtrig/sdtrig_mcontrol6_load_data.S
 

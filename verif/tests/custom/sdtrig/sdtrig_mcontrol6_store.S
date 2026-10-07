@@ -12,6 +12,10 @@
 #     - select = 0, compare the store address;
 #     - select = 1, compare the value being stored.
 #
+#   Each comparison is checked both ways: the watched store fires, on that
+#   instruction (mepc), and a store to another address, or of another value,
+#   does not.
+#
 #   A store trigger is precise: it fires before the store reaches memory, so the
 #   test checks the memory location is still untouched inside the handler. That
 #   is the property worth having, the trigger being useless as a watchpoint if
@@ -55,6 +59,7 @@ main:
 
     la   t0, watched_word
     li   t1, 0xA5A5A5A5
+store_addr_hit:
     sw   t1, 0(t0)              # must trap before writing
 
     # The handler disarmed the trigger and stepped over the store, so the value
@@ -63,10 +68,46 @@ main:
     lw   t1, 0(t0)
     li   t2, 1
     bne  t1, t2, fail           # exactly one fire expected
+    la   t0, fire_pc
+    lw   t1, 0(t0)
+    la   t2, store_addr_hit
+    bne  t1, t2, fail           # fired, but not on the watched store
 
     la   t0, watched_word
     lw   t1, 0(t0)
     bnez t1, fail               # the store went through: not a watchpoint
+
+    # --------------------------------------------------------------------
+    # A store to another address must not fire the address trigger. This is
+    # what tells an address comparison from one that fires on every store.
+    # --------------------------------------------------------------------
+    la   t0, fire_count
+    sw   zero, 0(t0)
+
+    li   t0, 0
+    csrw 0x7a0, t0
+    la   t1, watched_word
+    csrw 0x7a2, t1
+    li   t1, 0x60000042
+    csrw 0x7a1, t1
+
+    la   t0, other_word
+    li   t1, 0x5A5A5A5A
+    sw   t1, 0(t0)              # another address: must go through
+
+    # Disarm before checking, so a spurious match cannot loop.
+    li   t0, 0
+    csrw 0x7a0, t0
+    csrw 0x7a1, zero
+
+    la   t0, fire_count
+    lw   t1, 0(t0)
+    bnez t1, fail               # fired on an address it was not watching
+
+    la   t0, other_word
+    lw   t1, 0(t0)
+    li   t2, 0x5A5A5A5A
+    bne  t1, t2, fail           # this store was supposed to go through
 
     # --------------------------------------------------------------------
     # Store data match: fire on the value being stored, at any address.
@@ -88,12 +129,17 @@ main:
 
     la   t0, other_word
     li   t1, 0xDEADBEEF
+store_data_hit:
     sw   t1, 0(t0)              # storing the watched value: must trap
 
     la   t0, fire_count
     lw   t1, 0(t0)
     li   t2, 1
     bne  t1, t2, fail
+    la   t0, fire_pc
+    lw   t1, 0(t0)
+    la   t2, store_data_hit
+    bne  t1, t2, fail           # fired, but not on the watched store
 
     la   t0, other_word
     lw   t1, 0(t0)
@@ -169,9 +215,11 @@ trap_handler:
     addi s11, s11, 1
     sw   s11, 0(s10)
 
-    csrr s10, mepc
-    addi s10, s10, 4
-    csrw mepc, s10
+    csrr s11, mepc
+    la   s10, fire_pc
+    sw   s11, 0(s10)            # last fire, checked by main
+    addi s11, s11, 4
+    csrw mepc, s11
 
 handler_out:
     mret
@@ -179,6 +227,8 @@ handler_out:
     .data
     .align 2
 fire_count:
+    .word 0
+fire_pc:
     .word 0
 watched_word:
     .word 0
