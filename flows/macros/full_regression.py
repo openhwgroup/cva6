@@ -111,6 +111,11 @@ TARGETS = [
     "cv32a65x",
     # cv32a65x without the second issue port, for Zcmp on the scalar path
     "cv32a65x_scalar",
+    # cv32a65x and cv32a65x_scalar without the C extension (nor Zcb, Zcmt and
+    # Zcmp): two 32-bit instructions per fetch, dual and single issue. No
+    # other target has RVC=0
+    "cv32a65x_noc",
+    "cv32a65x_noc_scalar",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi",
     # AXI PMP noMMU
     "cv32a60x_zcmt_pmp_axi",
@@ -176,6 +181,8 @@ TESTLISTS = {
     "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp", "base_csr"],
     "cv32a65x": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_pmp", "base_csr"],
     "cv32a65x_scalar": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_csr"],
+    "cv32a65x_noc": ["base_rv32_p", "base_pmp", "base_csr"],
+    "cv32a65x_noc_scalar": ["base_rv32_p", "base_pmp", "base_csr"],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
