@@ -286,9 +286,7 @@ module cva6_rvfi
 
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] branch_trans_id;
 
-  riscv::pmpcfg_t [15:0] pmpcfg_q, pmpcfg_d;
-
-  rvfi_probes_csr_t   csr;
+  rvfi_probes_csr_t csr;
   rvfi_probes_instr_t instr;
 
   always_comb begin
@@ -688,10 +686,11 @@ module cva6_rvfi
     `CONNECT_RVFI_FULL(1'b1, pmpcfg2, csr.pmpcfg_q[8+:CVA6Cfg.XLEN/8])
     `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, pmpcfg3, csr.pmpcfg_q[15:12])
 
-    bit [CVA6Cfg.XLEN-1:0] pmpaddr_q;
+    // The value csrr returns: bit 0 reads 1 for a NA4/NAPOT entry, as the CSR
+    // file builds it.
     genvar i;
     for (i = 0; i < 16; i++) begin
-      `CONNECT_RVFI_FULL(1'b1, pmpaddr[i], {csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1], pmpcfg_q[i].addr_mode[1]})
+      `CONNECT_RVFI_FULL(1'b1, pmpaddr[i], {csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1], CVA6Cfg.PMPNapotEn && csr.pmpcfg_q[i].addr_mode[1]})
     end
     ;
   end
