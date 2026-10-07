@@ -30,6 +30,7 @@ commit log, or write fixed size records for tools; see *Output formats*.
 | [rv_stats.h](rv_stats.h) / [rv_stats.cc](rv_stats.cc) | Optional end of run summary, written to its own file. |
 | [rv_symbols.h](rv_symbols.h) / [rv_symbols.cc](rv_symbols.cc) | Symbol table and its ELF loader. |
 | [rv_trigger.h](rv_trigger.h) / [rv_trigger.cc](rv_trigger.cc) | Start/stop conditions and the windows they delimit. |
+| [vscode/](vscode/) | Syntax highlighting for the `trace` format in VS Code. |
 
 All decoding, formatting and file I/O live on the C++ side, so the RTL half stays trivial and
 the same backend works under Verilator, QuestaSim, VCS and Xcelium. Nothing links against
@@ -232,6 +233,21 @@ and interrupt contains `!!`, so a search for it lists them all.
 
 The sources column follows the effects: the registers the instruction read, with their values,
 as `a5=0x800001b1 a2=0x800001b6`.
+
+**In VS Code**, [vscode/](vscode/) colors `.trace` files. It is a grammar and nothing else, with
+no code and no build step, and it is installed by linking it into the extensions directory and
+reloading the window. From `test/`:
+
+```sh
+ln -s $PWD/hw/tracer/vscode ~/.vscode/extensions/cva6-trace          # VS Code on this machine
+ln -s $PWD/hw/tracer/vscode ~/.vscode-server/extensions/cva6-trace   # over Remote-SSH
+```
+
+The colors come from the active theme: the time in the plain text color, the cycle as a number,
+mnemonics as keywords, the register written as a variable, memory accesses as strings, symbols
+as functions, mispredictions as escapes, the pc and the addresses of symbol headers as types,
+the encoding as a regular expression constant, a muted color in most themes, and `!!` lines as
+errors. Comment colors are left to `#` lines.
 
 ### Commit logs
 

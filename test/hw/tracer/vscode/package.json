@@ -1,0 +1,27 @@
+{
+  "name": "cva6-trace",
+  "displayName": "CVA6 trace",
+  "description": "Syntax highlighting for the instruction traces of the CVA6 tracer (.trace files)",
+  "publisher": "pulp-platform",
+  "version": "0.1.0",
+  "license": "SHL-0.51",
+  "engines": { "vscode": "^1.60.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "cva6-trace",
+        "aliases": ["CVA6 trace"],
+        "extensions": [".trace"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cva6-trace",
+        "scopeName": "source.cva6-trace",
+        "path": "./syntaxes/cva6-trace.tmLanguage.json"
+      }
+    ]
+  }
+}

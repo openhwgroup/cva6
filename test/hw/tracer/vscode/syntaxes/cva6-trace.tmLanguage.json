@@ -1,0 +1,157 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "CVA6 trace",
+  "scopeName": "source.cva6-trace",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#symbol-header"
+    },
+    {
+      "include": "#event"
+    },
+    {
+      "include": "#csr-line"
+    },
+    {
+      "include": "#instruction"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "match": "^#.*$",
+      "name": "comment.line.number-sign.cva6-trace"
+    },
+    "symbol-header": {
+      "match": "^([0-9a-f]+)\\s+(<[^>]*>):$",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.address.cva6-trace"
+        },
+        "2": {
+          "name": "entity.name.function.cva6-trace"
+        }
+      }
+    },
+    "event": {
+      "match": "^\\s+(\\S+ns)\\s+(\\d+)\\s+([UMSD])\\s+(!!.*)$",
+      "captures": {
+        "1": {
+          "name": "meta.time.cva6-trace"
+        },
+        "2": {
+          "name": "constant.numeric.cycle.cva6-trace"
+        },
+        "3": {
+          "name": "storage.modifier.privilege.cva6-trace"
+        },
+        "4": {
+          "name": "invalid.illegal.trap.cva6-trace"
+        }
+      }
+    },
+    "csr-line": {
+      "match": "^\\s+(\\S+ns)\\s+(\\d+)\\s+([UMSD])\\s+(--)(.*)$",
+      "captures": {
+        "1": {
+          "name": "meta.time.cva6-trace"
+        },
+        "2": {
+          "name": "constant.numeric.cycle.cva6-trace"
+        },
+        "3": {
+          "name": "storage.modifier.privilege.cva6-trace"
+        },
+        "4": {
+          "name": "punctuation.separator.cva6-trace"
+        },
+        "5": {
+          "patterns": [
+            {
+              "include": "#rest"
+            }
+          ]
+        }
+      }
+    },
+    "instruction": {
+      "match": "^\\s+(\\S+ns)\\s+(\\d+)\\s+([UMSD])\\s+([0-9a-f]+)\\s+([0-9a-f]+)\\s+(\\S+)(.*)$",
+      "captures": {
+        "1": {
+          "name": "meta.time.cva6-trace"
+        },
+        "2": {
+          "name": "constant.numeric.cycle.cva6-trace"
+        },
+        "3": {
+          "name": "storage.modifier.privilege.cva6-trace"
+        },
+        "4": {
+          "name": "entity.name.type.pc.cva6-trace"
+        },
+        "5": {
+          "name": "constant.regexp.encoding.cva6-trace"
+        },
+        "6": {
+          "name": "keyword.other.mnemonic.cva6-trace"
+        },
+        "7": {
+          "patterns": [
+            {
+              "include": "#rest"
+            }
+          ]
+        }
+      }
+    },
+    "rest": {
+      "patterns": [
+        {
+          "match": "#.*$",
+          "name": "comment.line.number-sign.cva6-trace"
+        },
+        {
+          "match": "!!.*$",
+          "name": "invalid.illegal.trap.cva6-trace"
+        },
+        {
+          "match": "<[^>]*>",
+          "name": "entity.name.function.cva6-trace"
+        },
+        {
+          "match": "mem\\[[^\\]]*\\]",
+          "name": "string.other.memory.cva6-trace"
+        },
+        {
+          "match": "\\b([a-z][a-z0-9]*)( += )",
+          "captures": {
+            "1": {
+              "name": "variable.other.register.written.cva6-trace"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.cva6-trace"
+            }
+          }
+        },
+        {
+          "match": "<-",
+          "name": "keyword.operator.assignment.cva6-trace"
+        },
+        {
+          "match": "\\bmispredicted\\b",
+          "name": "constant.character.escape.mispredicted.cva6-trace"
+        },
+        {
+          "match": "\\b(not taken|taken)\\b",
+          "name": "keyword.control.branch.cva6-trace"
+        },
+        {
+          "match": "-?\\b(0x[0-9a-f]+|[0-9]+)\\b",
+          "name": "constant.numeric.cva6-trace"
+        }
+      ]
+    }
+  }
+}
