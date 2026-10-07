@@ -17,10 +17,12 @@
 #   which is what the timing field of the exception carries through the
 #   scoreboard and the commit stage.
 #
-#   The test checks exactly that: the destination register must hold the loaded
-#   value when the handler runs. A precise trigger would have stopped the load
-#   and left the register alone, and that difference is the whole point of
-#   separating this case from the address one.
+#   The test checks exactly that: the break is taken on the instruction after
+#   the load (mepc), tdata1 reports it as "after" (hit1:hit0 = 0b11), and the
+#   destination register must hold the loaded value when the handler runs. A
+#   precise trigger would have stopped the load and left the register alone,
+#   and that difference is the whole point of separating this case from the
+#   address one.
 #
 #   tdata1 layout for mcontrol6 on RV32, as the module decodes it:
 #     [31:28] type = 6      [22] hit0     [21] select    [18:16] size
@@ -39,8 +41,6 @@ main:
     csrw mtvec, t0
     la   t0, break_count
     sw   zero, 0(t0)
-    la   t0, seen_value
-    sw   zero, 0(t0)
 
     # --------------------------------------------------------------------
     # Watch the value 0xCAFEBABE, which watched_word holds, then load it.
@@ -58,11 +58,27 @@ main:
     li   a4, 0x5A5A5A5A         # sentinel, must be overwritten by the load
     la   t0, watched_word
     lw   a4, 0(t0)              # brings back the watched value
+load_after:
     nop                         # the deferred break lands here
 
     la   t0, break_count
     lw   t1, 0(t0)
-    beqz t1, fail               # the value comparison never fired
+    li   t2, 1
+    bne  t1, t2, fail           # exactly one break expected
+
+    # The break is taken after the load, on the next instruction.
+    la   t0, break_pc
+    lw   t1, 0(t0)
+    la   t2, load_after
+    bne  t1, t2, fail
+
+    # tdata1 as the handler read it: hit1:hit0 = 0b11, "after" in the
+    # mcontrol6 encoding, hit1 in [25] and hit0 in [22].
+    la   t0, break_tdata1
+    lw   t1, 0(t0)
+    li   t2, (1 << 25) | (1 << 22)
+    and  t1, t1, t2
+    bne  t1, t2, fail
 
     # The break being deferred, the load completed: the register holds the
     # value, not the sentinel.
@@ -114,9 +130,12 @@ fail:
     # --------------------------------------------------------------------
     .align 6
 trap_handler:
-    li   s10, 0x60200040        # type 6 kept, load/store/execute cleared
     csrw 0x7a0, zero
+    csrr s11, 0x7a1             # tdata1 before disarming, for the hit bits
+    li   s10, 0x60200040        # type 6 kept, load/store/execute cleared
     csrw 0x7a1, s10
+    la   s10, break_tdata1
+    sw   s11, 0(s10)
 
     csrr s10, mcause
     li   s11, 3                 # breakpoint
@@ -127,9 +146,11 @@ trap_handler:
     addi s11, s11, 1
     sw   s11, 0(s10)
 
-    csrr s10, mepc
-    addi s10, s10, 4
-    csrw mepc, s10
+    csrr s11, mepc
+    la   s10, break_pc
+    sw   s11, 0(s10)
+    addi s11, s11, 4
+    csrw mepc, s11
 
 handler_out:
     mret
@@ -138,7 +159,9 @@ handler_out:
     .align 2
 break_count:
     .word 0
-seen_value:
+break_pc:
+    .word 0
+break_tdata1:
     .word 0
 watched_word:
     .word 0xCAFEBABE
