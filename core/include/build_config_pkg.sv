@@ -45,20 +45,17 @@ package build_config_pkg;
     cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
 
-    cfg.FETCH_WIDTH = unsigned'((CVA6Cfg.SuperscalarEn && !CVA6Cfg.PipelineOnly) ? 64 : 32);
+    //  A superscalar core fetches 64 bits, so that a block can hold two 32-bit
+    //  instructions: without C, a 32-bit fetch would feed one issue port only.
+    //  This holds on the OBI bus (PipelineOnly) as on AXI, the OBI fetch
+    //  interface taking its data width from FETCH_WIDTH (ObiFetchbusCfg).
+    cfg.FETCH_WIDTH = unsigned'(CVA6Cfg.SuperscalarEn ? 64 : 32);
     cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
     cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
     cfg.INSTR_PER_FETCH = cfg.FETCH_WIDTH / (CVA6Cfg.RVC ? 16 : 32);
     cfg.LOG2_INSTR_PER_FETCH = cfg.INSTR_PER_FETCH > 1 ? $clog2(cfg.INSTR_PER_FETCH) : 1;
 
-    //  Issuing two instructions per cycle requires the frontend to be able to
-    //  deliver two, which is what INSTR_PER_FETCH says. The two quantities are
-    //  computed from different fields, FETCH_WIDTH from SuperscalarEn and
-    //  PipelineOnly, INSTR_PER_FETCH additionally from RVC, so asking for a
-    //  superscalar core is not enough on its own. Disabling C on a config that
-    //  forces a 32-bit fetch leaves one instruction per fetch against two issue
-    //  ports: the second port can never be fed, yet the frontend reads it, and
-    //  the address FIFO ends up popped on an undriven control-flow bit.
+    //  Dual issue needs the frontend to deliver two instructions per fetch.
     cfg.SuperscalarEn = CVA6Cfg.SuperscalarEn && (cfg.INSTR_PER_FETCH > 1);
     cfg.NrCommitPorts = cfg.SuperscalarEn ? unsigned'(2) : CVA6Cfg.NrCommitPorts;
     cfg.NrIssuePorts = unsigned'(cfg.SuperscalarEn ? 2 : 1);
