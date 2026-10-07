@@ -25,7 +25,7 @@
 #        byte reversed. This is the discriminating check: it fails if the
 #        store swapper does nothing.
 #     3. A byte access is never swapped, whatever MBE says.
-#     4. mstatush reads back the MBE bit, and clearing it restores little
+#   4. mstatush reads back the MBE bit, and clearing it restores little
 #        endian behaviour.
 #
 #   MBE is cleared before returning. The tohost protocol the testbench watches
@@ -40,6 +40,8 @@
 #        byte reversed. This checks the 64-bit load swapper on its own, which
 #        a round trip cannot do.
 #     7. A doubleword round trip under MBE returns the value unchanged.
+#     8. (RV32) Setting MBE leaves SBE and UBE at zero when S-mode or U-mode
+#        is not implemented: they are read-only zero then.
 # ------------------------------------------------------------------------------
 
 #include "encoding.h"
@@ -51,6 +53,7 @@
     .text
     .globl main
 main:
+    mv    s1, ra                # main calls check_sbe_ube
 
 #if __riscv_xlen == 32
 
@@ -62,6 +65,7 @@ main:
     csrr  t1, MSTATUSH
     and   t2, t1, t0
     beqz  t2, fail              # the bit did not stick
+    call  check_sbe_ube
 
     # --------------------------------------------------------------------
     # Scenario 1: a round trip under MBE returns the value unchanged
@@ -171,7 +175,35 @@ main:
 
 pass:
     li    a0, 0
+    mv    ra, s1
     ret
+
+#if __riscv_xlen == 32
+    # --------------------------------------------------------------------
+    # Scenario 8, with MBE just set: SBE and UBE are read-only zero when the
+    # mode they control is not implemented (misa.S, misa.U). Leaf function:
+    # uses t1, t2, a3 only and does no memory access, MBE being set.
+    # RV32 only: every RV64 target has S-mode and U-mode, and the RV64 misa
+    # read trips the MXL coverage of the testbench register model.
+    # --------------------------------------------------------------------
+check_sbe_ube:
+    csrr  a3, misa
+    srli  t2, a3, 18            # misa.S
+    andi  t2, t2, 1
+    bnez  t2, 1f
+    csrr  t1, MSTATUSH
+    andi  t1, t1, 0x10          # mstatush.SBE
+    bnez  t1, fail
+1:
+    srli  t2, a3, 20            # misa.U
+    andi  t2, t2, 1
+    bnez  t2, 2f
+    csrr  t1, mstatus
+    andi  t1, t1, 0x40          # mstatus.UBE
+    bnez  t1, fail
+2:
+    ret
+#endif
 
 fail:
     # leave the core little endian whatever happens, so the exit path works
@@ -184,6 +216,7 @@ fail:
     csrc  mstatus, t0
 #endif
     li    a0, 1
+    mv    ra, s1
     ret
 
     .data
