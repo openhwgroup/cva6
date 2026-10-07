@@ -20,8 +20,8 @@
 #   external interrupt with the deterministic hook irq_mei_hook, and checks
 #   in the handler that mtval is zero and mcause is 11 with the interrupt bit.
 #
-#   It needs TvalEn=1: with TvalEn=0 mtval is always zero and the test cannot
-#   fail.
+#   It checks the clearing on targets with TvalEn=1 only: with TvalEn=0
+#   mtval is always zero.
 # ------------------------------------------------------------------------------
 
 #include "encoding.h"
@@ -108,7 +108,7 @@ fail:
     ret
 
 # ------------------------------------------------------------------------------
-# s9, s10 and s11 are scratch, main does not use them.
+# s10 and s11 are scratch, main does not use them.
 # ------------------------------------------------------------------------------
     .align 6
 trap_handler:
