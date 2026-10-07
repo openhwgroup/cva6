@@ -1,3 +1,8 @@
+# Sv32 virtual-memory tests: page table walk, A/D bits, permissions, MXR, SUM,
+# TVM, superpages, PTE and PMP checks, satp and sfence.vma. Most tests
+# program pmpcfg, so the testlist runs on the Sv32 targets with PMP entries
+# (flows/macros/full_regression.py).
+#
 # Copyright Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
