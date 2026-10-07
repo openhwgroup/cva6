@@ -7,6 +7,7 @@ dependencies = [
     "mako",
     "pyyaml",
     "tabulate",
+    "numpy", # `util/trace_to_perfetto.py`
     "setuptools<81", # Required by old `regtool`
 ]
 

@@ -377,6 +377,79 @@ depend on anything outside the core. The tests under `sw/tests/` write to the EO
 the simulation console, which bare spike has no model for, so they diverge as soon as they touch
 one. Self contained programs compare cleanly end to end.
 
+### Software timeline in Perfetto
+
+[`util/trace_to_perfetto.py`](../../util/trace_to_perfetto.py) turns a `binary` trace into a
+[Perfetto](https://ui.perfetto.dev) trace showing what the software did: a flame chart of the
+call stack, the mode over time, a track of traps and interrupts, and an IPC counter.
+
+```sh
+make verilator-run TRACER=1 HEXFILE=prog.hex TRACE_FORMAT=binary TRACE_FILE=trace.bin
+./util/trace_to_perfetto.py trace.bin prog.elf -o trace.pftrace
+```
+
+Then open `trace.pftrace` at <https://ui.perfetto.dev>. Several ELF files may be given, for an
+image built from more than one binary.
+
+Everything it needs is already in the binary record, so this runs on a trace that has already
+been taken and changing what is plotted costs a re-run of the script. The fixed records parse with
+no work, they are in execution order, and the `class` byte carries what the instruction is, so the
+conversion needs no RISC-V decoding.
+
+Frames come from which symbol the pc falls in, which attributes the tail calls that are common at
+`-O2` to the callee. The rules, in order: the record after a call opens a frame, a symbol already
+on the stack closes frames until it is on top, and any other change of symbol replaces the top
+frame. Traps open a frame of their own, so a handler nests inside the code it interrupted.
+
+A trap frame opens on the first instruction of the handler, which is where CVA6 flags the trap,
+or on the instruction after an `ecall`, which CVA6 reports as a retirement. It is named after
+the cause: `irq machine timer`, `irq 31` for a CLIC interrupt line, `trap illegal instruction`,
+`trap ecall from S`. The cause is the latest write of the register the handler reads, `mcause`
+in machine mode and `scause` or `vscause` in supervisor mode, from the CSR records; with no such
+write before it, an exception is named from its trap record and an interrupt plain `irq`.
+`mret`/`sret` closes the frame when one is open — `sret` also *enters* supervisor mode during
+setup in these tests.
+
+The file is loaded with numpy in one call and the per record work is vectorised, since the points
+where anything changes are a small fraction of a trace. Every pc is resolved to a symbol with one
+`searchsorted`; the mode changes, trap points, IPC windows and mispredict count are computed
+over the whole trace at once; and the frame state machine runs where the pc moves into a different
+symbol, a trap is flagged, or the previous instruction was `mret`/`sret`, the top of the stack
+already naming the current symbol everywhere else. The dtype it reads with is the one
+`read_trace.py`'s docstring gives.
+
+Symbols are read out of the ELF directly. Any symbol in an executable section is taken, since the
+assembly in `sw/tests/` carries no `.type` directive, and RISC-V `$x`/`$d` mapping symbols are
+dropped because they sit on top of real labels.
+
+`--time-unit` chooses what the Perfetto time axis counts, cycles by default because that is
+usually what one wants to read off a hardware trace; `ns` uses the record's simulation time.
+`--debug-frames` prints the same frames as indented text, which is the quickest way to check that
+the nesting came out right:
+
+```
+       273  <no symbol>
+       614    _start
+       830    main
+      1016      enable_interrupt
+      1267      wait
+      2785      trigger_interrupt
+      2862      wait
+      4487    smode_entry
+      4625      irq 31
+      4625        stvec_handler_succeed
+      4658        smode_pass
+      4728          trap ecall from S
+      4728            mtvec_handler_fail
+```
+
+[`util/perfetto_proto.py`](../../util/perfetto_proto.py) writes the trace. A Perfetto trace is a
+bare stream of length delimited `TracePacket` messages, so the subset needed for tracks, slices
+and counters is encoded here directly; field tags are constant and built once at import. That
+framing is also why two traces concatenate into one: a second producer — in simulation probes,
+say — can be merged in later as long as it takes its track uuids from a different range, which
+`--uuid-base` exists for.
+
 ### Verbosity levels
 
 `+trace_verbose` adds detail to the two formats meant to be read. In `trace`:
