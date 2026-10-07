@@ -4,3 +4,6 @@
 *.dasm
 build/
 logs/
+trace_hart_*.log
+cva6tb_trace_hart_*
+*.log

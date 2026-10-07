@@ -32,6 +32,32 @@ WAVES         ?= 0
 # suits one simulation at a time, which is the usual case.
 # For running many simulations at once, build with THREADS=1 instead.
 THREADS       ?= 2
+# CVA6's legacy tracer
+LEGACY_TRACE  ?= 0
+# Instruction tracer
+TRACER        ?= 0
+TRACER_DIR    := $(TEST_DIR)/hw/tracer
+TRACER_SRC    := $(TRACER_DIR)/cva6tb_tracer.cc $(TRACER_DIR)/rv_disasm.cc \
+                 $(TRACER_DIR)/rv_disasm_spike.cc $(TRACER_DIR)/rv_format.cc \
+                 $(TRACER_DIR)/rv_stats.cc $(TRACER_DIR)/rv_symbols.cc \
+                 $(TRACER_DIR)/rv_trigger.cc
+TRACER_HDR    := $(TRACER_DIR)/cva6tb_tracer_dpi.h $(TRACER_DIR)/rv_disasm.h \
+                 $(TRACER_DIR)/rv_format.h $(TRACER_DIR)/rv_stats.h \
+                 $(TRACER_DIR)/rv_symbols.h $(TRACER_DIR)/rv_trigger.h
+# Instruction tracer settings, each passed as the plusarg of the same name when
+# set; see hw/tracer/. Files are made absolute, since the simulation runs in its
+# build directory. Symbols default to the program's own ELF beside HEXFILE and
+# the boot ROM's, where they exist, outside the legacy format, which stays byte
+# compatible with instr_tracer's logs; TRACE_SYMBOLS= turns annotation off.
+TRACE_FORMAT  ?=
+TRACE_VERBOSE ?=
+TRACE_FILE    ?=
+TRACE_START   ?=
+TRACE_STOP    ?=
+TRACE_STATS   ?=
+TRACE_SYMBOLS ?= $(if $(filter legacy,$(TRACE_FORMAT)),, \
+                   $(wildcard $(basename $(abspath $(HEXFILE))).elf \
+                              $(TEST_DIR)/hw/bootrom/cva6tb_bootrom.elf))
 
 # Goals that must work without a resolved dependency tree.
 NODEPS_GOALS := info default %clean
@@ -69,11 +95,32 @@ ifeq ($(ZERO_SIM_MEM),1)
 BENDER_FLAGS += -D ZERO_SIM_MEM
 endif
 
-# Plusargs set through variables
+ifeq ($(TRACER),1)
+BENDER_FLAGS += -t tracer
+endif
+
+# Plusargs set through variables, the testbench's and the tracer's. They follow
+# SIM_ARGS on the command line, and the first occurrence of a plusarg is the one
+# that counts, so SIM_ARGS overrides them.
+comma := ,
+space := $(subst ,, )
 TB_ARGS = $(if $(MEM_DELAY),+MemDelay=$(MEM_DELAY))
+ifeq ($(TRACER),1)
+TRACER_ARGS = $(if $(TRACE_FORMAT),+trace_format=$(TRACE_FORMAT)) \
+              $(if $(TRACE_VERBOSE),+trace_verbose=$(TRACE_VERBOSE)) \
+              $(if $(TRACE_FILE),+trace_file=$(abspath $(TRACE_FILE))) \
+              $(if $(TRACE_START),+trace_start=$(TRACE_START)) \
+              $(if $(TRACE_STOP),+trace_stop=$(TRACE_STOP)) \
+              $(if $(TRACE_STATS),+trace_stats=$(abspath $(TRACE_STATS))) \
+              $(if $(strip $(TRACE_SYMBOLS)),+trace_symbols=$(subst $(space),$(comma),$(strip $(abspath $(TRACE_SYMBOLS)))))
+endif
 
 ifeq ($(WAVES),1)
 BENDER_FLAGS += -D CVA6TB_WAVES
+endif
+
+ifneq ($(LEGACY_TRACE),1)
+BENDER_FLAGS += -D CVA6_NO_LEGACY_TRACE
 endif
 
 ##################################
@@ -163,6 +210,9 @@ $(VSIM_BUILD_DIR):
 
 $(VSIM_BUILD_DIR)/vsim_compile.tcl: $(ROOT_DIR)/Bender.lock $(HW_DEPS) | $(VSIM_BUILD_DIR)
 	$(BENDER) script vsim $(BENDER_FLAGS) --vlog-arg="$(VLOG_FLAGS)" > $@
+ifeq ($(TRACER),1)
+	@echo 'vlog -ccflags "-std=c++17 -O2" $(TRACER_SRC)' >> $@
+endif
 	@echo 'vopt $(VOPT_FLAGS) test -o test_opt' >> $@
 
 $(VSIM_BUILD_DIR)/vsim_compile.log: $(VSIM_BUILD_DIR)/vsim_compile.tcl
@@ -182,7 +232,7 @@ vsim-build: $(VSIM_BUILD_DIR)/vsim_compile.err
 
 .PHONY: vsim-run
 vsim-run: $(VSIM_BUILD_DIR)/vsim_compile.err
-	cd $(VSIM_BUILD_DIR) && $(QUESTA) vsim $(VSIM_FLAGS) test_opt +binary=$(abspath $(HEXFILE)) +MaxCycles=$(MAX_CYCLES) $(SIM_ARGS) $(TB_ARGS)
+	cd $(VSIM_BUILD_DIR) && $(QUESTA) vsim $(VSIM_FLAGS) test_opt +binary=$(abspath $(HEXFILE)) +MaxCycles=$(MAX_CYCLES) $(strip $(SIM_ARGS) $(TB_ARGS) $(TRACER_ARGS))
 
 .PHONY: vsim-clean
 vsim-clean:
@@ -212,6 +262,10 @@ VERILATOR_WARNINGS  := -Wall -Wno-fatal -Wno-style -Wno-BLKANDNBLK -Wno-WIDTHEXP
 VERILATOR_FLAGS     := --binary -j $(VERILATOR_JOBS) --Mdir $(VERILATOR_BUILD_DIR) $(VERILATOR_WARNINGS) -O3 -f $(VERILATOR_FLIST) --assert --timing \
 	$(VERILATOR_TRACE) $(VERILATOR_THREADS) --x-assign fast --x-initial fast
 
+ifeq ($(TRACER),1)
+VERILATOR_FLAGS += $(TRACER_SRC)
+endif
+
 $(VERILATOR_LOG_DIR):
 	@mkdir -p $(VERILATOR_LOG_DIR)
 
@@ -226,10 +280,10 @@ verilator-build: $(VERILATOR_BUILD_DIR)/Vtest
 
 .PHONY: verilator-run
 verilator-run: $(VERILATOR_BUILD_DIR)/Vtest | $(VERILATOR_LOG_DIR)
-	cd $(VERILATOR_DIR) && ./$(notdir $(VERILATOR_BUILD_DIR))/Vtest +binary=$(abspath $(HEXFILE)) +MaxCycles=$(MAX_CYCLES) $(SIM_ARGS) $(TB_ARGS) 2>&1 | tee $(VERILATOR_LOG_DIR)/$(basename $(notdir $(HEXFILE))).log
+	cd $(VERILATOR_DIR) && ./$(notdir $(VERILATOR_BUILD_DIR))/Vtest +binary=$(abspath $(HEXFILE)) +MaxCycles=$(MAX_CYCLES) $(strip $(SIM_ARGS) $(TB_ARGS) $(TRACER_ARGS)) 2>&1 | tee $(VERILATOR_LOG_DIR)/$(basename $(notdir $(HEXFILE))).log
 
 .PHONY: verilator-clean
 verilator-clean:
 	rm -rf $(VERILATOR_BUILD_DIR) $(VERILATOR_LOG_DIR)
 	rm -f $(VERILATOR_FLIST)
-	cd $(VERILATOR_DIR) && rm -f *.fst *.fst.hier *.flist *.json *.dasm *.csv
+	cd $(VERILATOR_DIR) && rm -f *.fst *.fst.hier *.flist *.json *.dasm *.csv *.log cva6tb_trace_hart_*

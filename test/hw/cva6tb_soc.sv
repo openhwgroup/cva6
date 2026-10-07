@@ -230,6 +230,47 @@ module cva6tb_soc
     .noc_resp_i          ( axi_core_rsp                      )
   );
 
+`ifdef TARGET_TRACER
+
+  rvfi_instr_t [CVA6Cfg.NrCommitPorts-1:0] rvfi_instr;
+  rvfi_csr_t                               rvfi_csr;
+  rvfi_to_iti_t                            rvfi_to_iti;
+
+  cva6_rvfi #(
+    .CVA6Cfg             ( CVA6Cfg             ),
+    .rvfi_instr_t        ( rvfi_instr_t        ),
+    .rvfi_csr_t          ( rvfi_csr_t          ),
+    .rvfi_probes_instr_t ( rvfi_probes_instr_t ),
+    .rvfi_probes_csr_t   ( rvfi_probes_csr_t   ),
+    .rvfi_probes_t       ( rvfi_probes_t       ),
+    .rvfi_to_iti_t       ( rvfi_to_iti_t       )
+  ) i_cva6_rvfi (
+    .clk_i               ( clk                 ),
+    .rst_ni              ( rst_n               ),
+    .rvfi_probes_i       ( rvfi_probes         ),
+    .rvfi_instr_o        ( rvfi_instr          ),
+    .rvfi_to_iti_o       ( rvfi_to_iti         ),
+    .rvfi_csr_o          ( rvfi_csr            )
+  );
+
+  cva6tb_tracer #(
+    .CVA6Cfg             ( CVA6Cfg             ),
+    .rvfi_instr_t        ( rvfi_instr_t        ),
+    .rvfi_csr_t          ( rvfi_csr_t          ),
+    .HartId              ( 0                   )
+  ) i_cva6tb_tracer (
+    .clk_i               ( clk                    ),
+    .rst_ni              ( rst_n                  ),
+    .rvfi_i              ( rvfi_instr             ),
+    .rvfi_csr_i          ( rvfi_csr               ),
+    .trap_tval_i         ( rvfi_to_iti.tval       ),
+    .branch_valid_i      ( rvfi_to_iti.branch_valid  ),
+    .branch_taken_i      ( rvfi_to_iti.is_taken      ),
+    .branch_mispredict_i ( rvfi_to_iti.is_mispredict )
+  );
+
+`endif
+
   // CLIC interrupt controller
   clic #(
     .N_SOURCE       ( NumClicIrqs       ),

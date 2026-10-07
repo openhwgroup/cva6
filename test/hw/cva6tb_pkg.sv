@@ -98,6 +98,7 @@ package cva6tb_pkg;
     rvfi_probes_csr_t   csr;
     rvfi_probes_instr_t instr;
   };
+  localparam type rvfi_to_iti_t       = `RVFI_TO_ITI_T(CVA6Cfg);
 
   localparam type axi_addr_t   = logic [CVA6UserCfg.AxiAddrWidth-1:0];
   localparam type axi_data_t   = logic [CVA6UserCfg.AxiDataWidth-1:0];

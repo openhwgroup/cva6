@@ -1921,6 +1921,11 @@ module cva6
   );
 `endif  // PITON_ARIANE
 
+  // Built-in instruction trace: instr_tracer under event-driven simulators, a
+  // commit log for spike-dasm under Verilator. Define CVA6_NO_LEGACY_TRACE to
+  // leave it out.
+`ifndef CVA6_NO_LEGACY_TRACE
+
 `ifndef VERILATOR
 
   logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
@@ -2026,6 +2031,8 @@ module cva6
     $fclose(f);
   end
 `endif  // VERILATOR
+
+`endif  // CVA6_NO_LEGACY_TRACE
   //pragma translate_on
 
 
