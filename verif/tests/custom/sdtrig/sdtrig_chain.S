@@ -17,10 +17,11 @@
 #   execute trigger comes before a load trigger, the instruction being fetched
 #   before its memory access happens.
 #
-#   What the test checks is the conjunction. A load from the watched address
-#   coming from an instruction that is not the watched one must not fire, since
-#   only one link of the chain matched; the same load from the watched
-#   instruction must.
+#   What the test checks is the conjunction, from both sides. A load from the
+#   watched address coming from another instruction must not fire: only the
+#   load link matched. The watched instruction loading another address must
+#   not fire either: only the execute link matched. The watched instruction
+#   loading the watched address must.
 #
 #   tdata1 layout for mcontrol6 on RV32, as the module decodes it:
 #     [31:28] type = 6      [22] hit0     [21] select    [18:16] size
@@ -36,6 +37,8 @@
 
     .globl main
 main:
+    addi sp, sp, -16            # main calls chained_load_call: keep ra
+    sw   ra, 0(sp)
     la   t0, trap_handler
     csrw mtvec, t0
     la   t0, break_count
@@ -68,21 +71,48 @@ main:
 
     la   t0, break_count
     lw   t1, 0(t0)
-    bnez t1, fail               # a single link fired the chain
+    bnez t1, fail               # the load link alone fired the chain
 
     # --------------------------------------------------------------------
-    # The same load, this time from the watched instruction: both links match.
+    # The watched instruction, loading another address: only the execute link
+    # matches, so the chain must stay silent and the load must complete.
     # --------------------------------------------------------------------
-    la   t0, watched_word
-chained_load:
-    lw   a5, 0(t0)              # both links match: must fire
+    la   t0, other_word
+    li   a5, 0
+    jal  ra, chained_load_call
 
     la   t0, break_count
     lw   t1, 0(t0)
-    beqz t1, fail               # the complete chain did not fire
+    bnez t1, fail               # the execute link alone fired the chain
+    li   t1, 0x12345678
+    bne  a5, t1, fail           # the load did not complete
+
+    # --------------------------------------------------------------------
+    # The watched instruction, loading the watched address: both links match.
+    # --------------------------------------------------------------------
+    la   t0, watched_word
+    li   a5, 0
+    jal  ra, chained_load_call
+
+    la   t0, break_count
+    lw   t1, 0(t0)
+    li   t2, 1
+    bne  t1, t2, fail           # the complete chain did not fire exactly once
+    bnez a5, fail               # the breakpoint did not precede the load
 
     # --------------------------------------------------------------------
     li a0, 0
+    lw   ra, 0(sp)
+    addi sp, sp, 16
+    ret
+
+    # --------------------------------------------------------------------
+    # The watched load, reached from two call sites. The handler skips it, so
+    # a5 keeps the value it had when the breakpoint was taken before the load.
+    # --------------------------------------------------------------------
+chained_load_call:
+chained_load:
+    lw   a5, 0(t0)
     ret
 
 fail:
@@ -93,6 +123,8 @@ fail:
     csrw 0x7a0, t0
     csrw 0x7a1, t1
     li a0, 1
+    lw   ra, 0(sp)
+    addi sp, sp, 16
     ret
 
     # --------------------------------------------------------------------
@@ -130,3 +162,5 @@ break_count:
     .word 0
 watched_word:
     .word 0xCAFEBABE
+other_word:
+    .word 0x12345678
