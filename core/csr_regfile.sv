@@ -3542,13 +3542,16 @@ module csr_regfile
   assign rvfi_csr_o.dpc_q = CVA6Cfg.DebugEn ? dpc_q : '0;
   assign rvfi_csr_o.dscratch0_q = CVA6Cfg.DebugEn ? dscratch0_q : '0;
   assign rvfi_csr_o.dscratch1_q = CVA6Cfg.DebugEn ? dscratch1_q : '0;
-  assign rvfi_csr_o.mie_q = mie_q;
-  assign rvfi_csr_o.mip_q = mip_q;
-  assign rvfi_csr_o.stvec_q = CVA6Cfg.RVS ? stvec_q : '0;
+  // Reported as a read returns them, which differs in CLIC mode.
+  assign rvfi_csr_o.mie_q = (CVA6Cfg.RVSCLIC && clic_mode_o) ? '0 : mie_q;
+  assign rvfi_csr_o.mip_q = (CVA6Cfg.RVSCLIC && clic_mode_o) ? '0 : mip_q;
+  assign rvfi_csr_o.stvec_q = !CVA6Cfg.RVS ? '0 :
+      (CVA6Cfg.RVSCLIC && clic_mode_o) ? {stvec_q[CVA6Cfg.XLEN-1:6], 6'b11} : stvec_q;
   assign rvfi_csr_o.scounteren_q = CVA6Cfg.RVS ? scounteren_q : '0;
   assign rvfi_csr_o.sscratch_q = CVA6Cfg.RVS ? sscratch_q : '0;
   assign rvfi_csr_o.sepc_q = CVA6Cfg.RVS ? sepc_q : '0;
-  assign rvfi_csr_o.scause_q = CVA6Cfg.RVS ? scause_q : '0;
+  assign rvfi_csr_o.scause_q = !CVA6Cfg.RVS ? '0 : (CVA6Cfg.RVSCLIC && clic_mode_o) ?
+      {scause_q[CVA6Cfg.XLEN-1:30], 1'b0, mstatus_q.spp, mstatus_q.spie, scause_q[26:0]} : scause_q;
   assign rvfi_csr_o.stval_q = CVA6Cfg.RVS ? stval_q : '0;
   assign rvfi_csr_o.satp_q = CVA6Cfg.RVS ? satp_q : '0;
   assign rvfi_csr_o.mstatus_extended = mstatus_extended;
@@ -3558,7 +3561,8 @@ module csr_regfile
   assign rvfi_csr_o.mcounteren_q = mcounteren_q;
   assign rvfi_csr_o.mscratch_q = mscratch_q;
   assign rvfi_csr_o.mepc_q = mepc_q;
-  assign rvfi_csr_o.mcause_q = mcause_q;
+  assign rvfi_csr_o.mcause_q = (CVA6Cfg.RVSCLIC && clic_mode_o) ?
+      {mcause_q[CVA6Cfg.XLEN-1:30], mstatus_q.mpp, mstatus_q.mpie, mcause_q[26:0]} : mcause_q;
   assign rvfi_csr_o.mtval_q = CVA6Cfg.TvalEn ? mtval_q : '0;
   // RVFI historically exposed a single FIOM bit; expose MENVCFG.FIOM.
   assign rvfi_csr_o.fiom_q = mfiom_q;
@@ -3582,11 +3586,21 @@ module csr_regfile
   assign rvfi_csr_o.vstvec_q = CVA6Cfg.RVH ? vstvec_q : '0;
   assign rvfi_csr_o.vsscratch_q = CVA6Cfg.RVH ? vsscratch_q : '0;
   assign rvfi_csr_o.vsepc_q = CVA6Cfg.RVH ? vsepc_q : '0;
-  assign rvfi_csr_o.vscause_q = CVA6Cfg.RVH ? vscause_q : '0;
+  assign rvfi_csr_o.vscause_q = !CVA6Cfg.RVH ? '0 : (CVA6Cfg.RVXHCLIC && clic_mode_o) ?
+      {vscause_q[CVA6Cfg.XLEN-1:30], 1'b0, vsstatus_q.spp, vsstatus_q.spie, vscause_q[26:0]} :
+      vscause_q;
   assign rvfi_csr_o.vstval_q = CVA6Cfg.RVH ? vstval_q : '0;
   assign rvfi_csr_o.vsatp_q = CVA6Cfg.RVH ? CVA6Cfg.XLEN'(vsatp_q) : '0;
   assign rvfi_csr_o.mtinst_q = CVA6Cfg.RVH ? mtinst_q : '0;
   assign rvfi_csr_o.mtval2_q = CVA6Cfg.RVH ? mtval2_q : '0;
+  assign rvfi_csr_o.mtvt_q = CVA6Cfg.RVSCLIC ? mtvt_q : '0;
+  assign rvfi_csr_o.mintstatus_q = (CVA6Cfg.RVSCLIC && clic_mode_o) ? CVA6Cfg.XLEN'(mintstatus_q) : '0;
+  assign rvfi_csr_o.mintthresh_q = (CVA6Cfg.RVSCLIC && clic_mode_o) ? CVA6Cfg.XLEN'(mintthresh_q) : '0;
+  assign rvfi_csr_o.stvt_q = (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC && clic_mode_o) ? stvt_q : '0;
+  assign rvfi_csr_o.sintthresh_q = (CVA6Cfg.RVS && CVA6Cfg.RVSCLIC && clic_mode_o) ?
+      CVA6Cfg.XLEN'(sintthresh_q) : '0;
+  assign rvfi_csr_o.vstvt_q = (CVA6Cfg.RVXHCLIC && clic_mode_o) ? vstvt_q : '0;
+  assign rvfi_csr_o.vsintthresh_q = (CVA6Cfg.RVXHCLIC && clic_mode_o) ? CVA6Cfg.XLEN'(vsintthresh_q) : '0;
 
 
 endmodule

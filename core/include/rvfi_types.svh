@@ -108,6 +108,13 @@
   rvfi_csr_elmt_t vsatp; \
   rvfi_csr_elmt_t mtinst; \
   rvfi_csr_elmt_t mtval2; \
+  rvfi_csr_elmt_t mtvt; \
+  rvfi_csr_elmt_t mintstatus; \
+  rvfi_csr_elmt_t mintthresh; \
+  rvfi_csr_elmt_t stvt; \
+  rvfi_csr_elmt_t sintthresh; \
+  rvfi_csr_elmt_t vstvt; \
+  rvfi_csr_elmt_t vsintthresh; \
 }
 
 // RVFI PROBES
@@ -203,6 +210,13 @@
   logic [Cfg.XLEN-1:0] vsatp_q; \
   logic [Cfg.XLEN-1:0] mtinst_q; \
   logic [Cfg.XLEN-1:0] mtval2_q; \
+  logic [Cfg.XLEN-1:0] mtvt_q; \
+  logic [Cfg.XLEN-1:0] mintstatus_q; \
+  logic [Cfg.XLEN-1:0] mintthresh_q; \
+  logic [Cfg.XLEN-1:0] stvt_q; \
+  logic [Cfg.XLEN-1:0] sintthresh_q; \
+  logic [Cfg.XLEN-1:0] vstvt_q; \
+  logic [Cfg.XLEN-1:0] vsintthresh_q; \
 }
 
 `define RVFI_TO_ITI_T(Cfg) struct packed { \
