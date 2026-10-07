@@ -98,11 +98,12 @@ main:
     bne t2, t3, fail
 
 
-    # Do the EXEC "RET" test.
+    # Do the EXEC "RET" test. The word stored is the 32-bit ret
+    # (jalr x0, 0(ra)), so the test also runs on targets without C.
 
     # Exec test 1, at 0x0000_0800.
     li t0, 0xA0000800
-    li t1, 0x8082
+    li t1, 0x00008067
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
@@ -110,7 +111,7 @@ main:
 
     # Exec test 2, at 0x0001_8000.
     li t0, 0xB0018000
-    li t1, 0x8082
+    li t1, 0x00008067
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
@@ -118,7 +119,7 @@ main:
 
     # Exec test 3, at 0x9800_0000.
     li t0, 0x98000000
-    li t1, 0x8082
+    li t1, 0x00008067
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
@@ -126,7 +127,7 @@ main:
 
     # Exec test 4, at 0xA800_0000.
     li t0, 0xA8000000
-    li t1, 0x8082
+    li t1, 0x00008067
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
