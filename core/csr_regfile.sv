@@ -3229,6 +3229,23 @@ module csr_regfile
   assign rvfi_csr_o.acc_cons_q = CVA6Cfg.EnableAccelerator ? acc_cons_q : '0;
   assign rvfi_csr_o.pmpcfg_q = pmpcfg_q;
   assign rvfi_csr_o.pmpaddr_q = pmpaddr_q;
+  assign rvfi_csr_o.hstatus_q = CVA6Cfg.RVH ? hstatus_q[CVA6Cfg.XLEN-1:0] : '0;
+  assign rvfi_csr_o.hedeleg_q = CVA6Cfg.RVH ? hedeleg_q : '0;
+  assign rvfi_csr_o.hideleg_q = CVA6Cfg.RVH ? hideleg_q : '0;
+  assign rvfi_csr_o.hcounteren_q = CVA6Cfg.RVH ? hcounteren_q : '0;
+  assign rvfi_csr_o.hgeie_q = CVA6Cfg.RVH ? {hgeie_q[CVA6Cfg.XLEN-1:1], 1'b0} : '0;
+  assign rvfi_csr_o.htval_q = CVA6Cfg.RVH ? htval_q : '0;
+  assign rvfi_csr_o.htinst_q = CVA6Cfg.RVH ? htinst_q : '0;
+  assign rvfi_csr_o.hgatp_q = CVA6Cfg.RVH ? CVA6Cfg.XLEN'(hgatp_q) : '0;
+  assign rvfi_csr_o.vsstatus_q = CVA6Cfg.RVH ? vsstatus_extended : '0;
+  assign rvfi_csr_o.vstvec_q = CVA6Cfg.RVH ? vstvec_q : '0;
+  assign rvfi_csr_o.vsscratch_q = CVA6Cfg.RVH ? vsscratch_q : '0;
+  assign rvfi_csr_o.vsepc_q = CVA6Cfg.RVH ? vsepc_q : '0;
+  assign rvfi_csr_o.vscause_q = CVA6Cfg.RVH ? vscause_q : '0;
+  assign rvfi_csr_o.vstval_q = CVA6Cfg.RVH ? vstval_q : '0;
+  assign rvfi_csr_o.vsatp_q = CVA6Cfg.RVH ? CVA6Cfg.XLEN'(vsatp_q) : '0;
+  assign rvfi_csr_o.mtinst_q = CVA6Cfg.RVH ? mtinst_q : '0;
+  assign rvfi_csr_o.mtval2_q = CVA6Cfg.RVH ? mtval2_q : '0;
 
 
 endmodule

@@ -694,6 +694,24 @@ module cva6_rvfi
                                            {csr.pmpaddr_q[i][CVA6Cfg.PLEN-3:1], 1'b0})
     end
     ;
+
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hstatus)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hedeleg)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hideleg)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hcounteren)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hgeie)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, htval)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, htinst)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, hgatp)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vsstatus)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vstvec)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vsscratch)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vsepc)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vscause)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vstval)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, vsatp)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, mtinst)
+    `CONNECT_RVFI_SAME(CVA6Cfg.RVH, mtval2)
   end
   // verilog_format: on
 endmodule

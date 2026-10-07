@@ -90,6 +90,23 @@
   rvfi_csr_elmt_t pmpcfg2; \
   rvfi_csr_elmt_t pmpcfg3; \
   rvfi_csr_elmt_t [15:0] pmpaddr; \
+  rvfi_csr_elmt_t hstatus; \
+  rvfi_csr_elmt_t hedeleg; \
+  rvfi_csr_elmt_t hideleg; \
+  rvfi_csr_elmt_t hcounteren; \
+  rvfi_csr_elmt_t hgeie; \
+  rvfi_csr_elmt_t htval; \
+  rvfi_csr_elmt_t htinst; \
+  rvfi_csr_elmt_t hgatp; \
+  rvfi_csr_elmt_t vsstatus; \
+  rvfi_csr_elmt_t vstvec; \
+  rvfi_csr_elmt_t vsscratch; \
+  rvfi_csr_elmt_t vsepc; \
+  rvfi_csr_elmt_t vscause; \
+  rvfi_csr_elmt_t vstval; \
+  rvfi_csr_elmt_t vsatp; \
+  rvfi_csr_elmt_t mtinst; \
+  rvfi_csr_elmt_t mtval2; \
 }
 
 // RVFI PROBES
@@ -167,6 +184,23 @@
   logic [Cfg.XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [63:0] pmpcfg_q; \
   logic [63:0][Cfg.PLEN-3:0] pmpaddr_q; \
+  logic [Cfg.XLEN-1:0] hstatus_q; \
+  logic [Cfg.XLEN-1:0] hedeleg_q; \
+  logic [Cfg.XLEN-1:0] hideleg_q; \
+  logic [Cfg.XLEN-1:0] hcounteren_q; \
+  logic [Cfg.XLEN-1:0] hgeie_q; \
+  logic [Cfg.XLEN-1:0] htval_q; \
+  logic [Cfg.XLEN-1:0] htinst_q; \
+  logic [Cfg.XLEN-1:0] hgatp_q; \
+  logic [Cfg.XLEN-1:0] vsstatus_q; \
+  logic [Cfg.XLEN-1:0] vstvec_q; \
+  logic [Cfg.XLEN-1:0] vsscratch_q; \
+  logic [Cfg.XLEN-1:0] vsepc_q; \
+  logic [Cfg.XLEN-1:0] vscause_q; \
+  logic [Cfg.XLEN-1:0] vstval_q; \
+  logic [Cfg.XLEN-1:0] vsatp_q; \
+  logic [Cfg.XLEN-1:0] mtinst_q; \
+  logic [Cfg.XLEN-1:0] mtval2_q; \
 }
 
 `define RVFI_TO_ITI_T(Cfg) struct packed { \
