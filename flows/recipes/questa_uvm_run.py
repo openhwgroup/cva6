@@ -278,6 +278,9 @@ def questa_uvm_run(
     # Deterministic interrupts. An address of zero means the test defined no hook
     # for that channel and the agent leaves it alone. The delay is in cycles,
     # counted from the retirement of the hook instruction.
+    # A test defining load_err_word gets an error response on the load port
+    # for a load from that word (OBI testbench).
+    load_err_addr = symbols.get("load_err_word", 0)
     irq_mei_addr = symbols.get("irq_mei_hook", 0)
     irq_timer_addr = symbols.get("irq_timer_hook", 0)
     irq_ipi_addr = symbols.get("irq_ipi_hook", 0)
@@ -358,6 +361,7 @@ def questa_uvm_run(
         f"+GLOBAL_PATTERN_start={add_start_window}",
         f"+GLOBAL_PATTERN_end={add_end_window}",
         f"+irq_mei_addr={irq_mei_addr}",
+        f"+load_err_addr={load_err_addr}",
         f"+irq_mei_delay={irq_mei_delay}",
         f"+irq_timer_addr={irq_timer_addr}",
         f"+irq_timer_delay={irq_timer_delay}",

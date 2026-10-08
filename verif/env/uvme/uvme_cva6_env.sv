@@ -200,6 +200,18 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          end
          cntxt.interrupt_cntxt.mem_obi    = cntxt.mem_obi;
          `uvm_info("UVMECVA6ENV", "OBI interface is active", UVM_NONE)
+         // +load_err_addr=<hex>: the load port answers a load from that word
+         // with the OBI error bit set, once.
+         begin
+            bit [31:0] load_err_addr;
+            if ($value$plusargs("load_err_addr=%h", load_err_addr) && load_err_addr != 0) begin
+               cfg.obi_memory_load_cfg.directed_slv_err_valid    = 1;
+               cfg.obi_memory_load_cfg.directed_slv_err_addr_min = load_err_addr;
+               cfg.obi_memory_load_cfg.directed_slv_err_addr_max = load_err_addr + 3;
+               cfg.obi_memory_load_cfg.drv_slv_err_one_shot_mode = 1;
+               `uvm_info("UVMECVA6ENV", $sformatf("Load error response at 0x%08h", load_err_addr), UVM_NONE)
+            end
+         end
       end
       // get irq_addr ack from CVA6 UVM env
       cfg.interrupt_cfg.irq_addr = cfg.get_irq_addr();

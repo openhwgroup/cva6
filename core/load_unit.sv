@@ -583,6 +583,11 @@ module load_unit
   ///////////////////////////////////////////////////////
 
   //pragma translate_off
+  hardware_error_on_response :
+  assert property (@(posedge clk_i) disable iff (~rst_ni)
+        (valid_o && ex_o.valid && ex_o.cause == riscv::HARDWARE_ERROR)
+        |-> (data_rvalid && ypb_load_rsp_i.err))
+  else `ASSERT_ERROR("[load_unit] HARDWARE_ERROR reported without an errored load response");
   logic paddr_req_nonidempotent;
   assign paddr_req_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg, 64'(ypb_load_req_o.paddr)
