@@ -115,6 +115,8 @@ module ex_stage
     output logic lsu_commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // The committing instruction is dropped (speculative scoreboard) - COMMIT_STAGE
+    input logic commit_drop_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
     // No store pending - COMMIT_STAGE
@@ -582,6 +584,7 @@ module ex_stage
       .commit_i               (lsu_commit_i),
       .commit_ready_o         (lsu_commit_ready_o),
       .commit_tran_id_i,
+      .commit_drop_i,
       .enable_translation_i,
       .enable_g_translation_i,
       .en_ld_st_translation_i,

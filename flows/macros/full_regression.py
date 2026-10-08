@@ -164,6 +164,7 @@ TARGETS = [
 #   base_rv32_mmu  Sv32 with PMP entries (the tests program pmpcfg)
 #   base_be        BigEndianEn (big endian data accesses)
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
+#   base_ni        a non-idempotent region covering 0x1000
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le"],
@@ -239,6 +240,7 @@ TESTLISTS = {
         "base_rv32_amo_v",
         "base_csr",
         "base_le",
+        "base_ni",
     ],
     "cv32a65x_sv32": [
         "base_rv32_p",
@@ -247,6 +249,7 @@ TESTLISTS = {
         "base_pmp",
         "base_csr",
         "base_le",
+        "base_ni",
     ],
     "cv32a65x_sv32_be": [
         "base_rv32_p",
@@ -255,6 +258,7 @@ TESTLISTS = {
         "base_pmp",
         "base_csr",
         "base_be",
+        "base_ni",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
@@ -278,6 +282,7 @@ TESTLISTS = {
         "base_csr",
         "base_zicbom",
         "base_le",
+        "base_ni",
     ],
     "cv32a65x_sv32_axi": [
         "base_rv32_p",
@@ -287,6 +292,7 @@ TESTLISTS = {
         "base_csr",
         "base_zicbom",
         "base_le",
+        "base_ni",
     ],
     "cv32a65x_sdtrig": [
         "base_rv32_p",
@@ -302,6 +308,7 @@ TESTLISTS = {
         "testlist_sdtrig_nommu",
         "base_csr",
         "base_le",
+        "base_ni",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",

@@ -931,6 +931,7 @@ module cva6_pipeline
       .lsu_commit_i            (lsu_commit_commit_ex),           // from commit
       .lsu_commit_ready_o      (lsu_commit_ready_ex_commit),     // to commit
       .commit_tran_id_i        (lsu_commit_trans_id),            // from commit
+      .commit_drop_i           (commit_drop_id_commit[0]),       // from scoreboard
       // Accelerator
       .stall_st_pending_i      ('0  /*FIXME*/),
       .no_st_pending_o         (no_st_pending_ex),               //
