@@ -65,6 +65,11 @@ testlist:
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv64ui/jal.S
 
+  - test: fence_i_smc
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/cache/fence_i_smc.S
+
   - test: alu_chain_test
     iterations: 1
     <<: *custom_test_config
