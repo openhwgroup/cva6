@@ -80,6 +80,10 @@
      - ``bit``
      - Zihpm RISC-V extension
 
+   * - ``BigEndianEn``
+     - ``bit``
+     - Big endian data accesses: mstatus.MBE, SBE and UBE are writable
+
    * - ``RVF``
      - ``bit``
      - Floating Point

@@ -144,7 +144,7 @@ module store_unit
   logic [CVA6Cfg.XLEN-1:0] endian_data;
   always_comb begin
     endian_data = lsu_ctrl_i.data;
-    if (mbe_i) begin
+    if (CVA6Cfg.BigEndianEn && mbe_i) begin
       case (lsu_ctrl_i.operation)
         ariane_pkg::SB, ariane_pkg::HSV_B, ariane_pkg::FSB:
         endian_data[7:0] = {lsu_ctrl_i.data[7:0]};

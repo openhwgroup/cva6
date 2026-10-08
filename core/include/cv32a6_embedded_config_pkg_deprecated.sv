@@ -105,6 +105,7 @@ package cva6_config_pkg;
       RVZicntr: bit'(1),
       RVZifencei: bit'(1),
       RVZihpm: bit'(1),
+      BigEndianEn: bit'(0),
       NrScoreboardEntries: unsigned'(CVA6ConfigNrScoreboardEntries),
       PerfCounterEn: bit'(CVA6ConfigPerfCounterEn),
       MmuPresent: bit'(CVA6ConfigMmuPresent),

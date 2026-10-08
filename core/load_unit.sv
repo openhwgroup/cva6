@@ -480,15 +480,13 @@ module load_unit
         endcase
     end  */
 
-  // BIG ENDIAN CAPABLE result mux fast
+  // The internals of CVA6 are little endian. When mstatus.MBE is set the
+  // processor treats data memory as big endian, so the byte order is reversed
+  // as the data enters the core through a load.
   logic [CVA6Cfg.XLEN-1:0] endian_data;
-
-  // The internals of CVA6 are little endian. When mbe is set the processor
-  // treats data memory as big endian, so the byte order is reversed as the
-  // data enters the core through a load.
   always_comb begin
     endian_data = shifted_data;
-    if (mbe_i) begin
+    if (CVA6Cfg.BigEndianEn && mbe_i) begin
       case (ldbuf_rdata.operation)
         ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::HLV_B, ariane_pkg::HLV_BU, ariane_pkg::FLB: begin
           // a single byte needs no reordering
@@ -521,8 +519,8 @@ module load_unit
   assign rdata_is_fp_signed =   ldbuf_rdata.operation inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
   // In big endian mode nothing is added to the offset to reach the byte that
   // holds the sign bit: it is always the lowest addressed one.
-  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) && CVA6Cfg.IS_XLEN64 && (~mbe_i)) ? ldbuf_addroff + 3 :
-                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H} && (~mbe_i))                     ? ldbuf_addroff + 1 :
+  assign rdata_offset       = ((ldbuf_rdata.operation inside {ariane_pkg::LW,  ariane_pkg::FLW, ariane_pkg::HLV_W}) && CVA6Cfg.IS_XLEN64 && !(CVA6Cfg.BigEndianEn && mbe_i)) ? ldbuf_addroff + 3 :
+                                ( ldbuf_rdata.operation inside {ariane_pkg::LH,  ariane_pkg::FLH, ariane_pkg::HLV_H} && !(CVA6Cfg.BigEndianEn && mbe_i))                     ? ldbuf_addroff + 1 :
                                                                                                                          ldbuf_addroff;
 
   for (genvar i = 0; i < (CVA6Cfg.XLEN / 8); i++) begin : gen_sign_bits
