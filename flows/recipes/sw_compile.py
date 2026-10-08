@@ -329,6 +329,7 @@ def sw_compile(
     # recipes) and in the report as `0x...`.
     # irq_* label the hooks of the deterministic interrupt feature: the interrupt
     # agent raises the matching channel when that address retires.
+    # load_err_word marks a word whose load gets an error response.
     wanted_symbols = [
         "tohost",
         "GLOBAL_PATTERN_start",
@@ -336,6 +337,7 @@ def sw_compile(
         "irq_mei_hook",
         "irq_timer_hook",
         "irq_ipi_hook",
+        "load_err_word",
     ]
 
     nm_output = run_cmd(
@@ -359,7 +361,12 @@ def sw_compile(
             symbols[parts[2]] = parts[0]
 
     # Test features a test may not use: their absence is not worth a warning.
-    optional_symbols = {"irq_mei_hook", "irq_timer_hook", "irq_ipi_hook"}
+    optional_symbols = {
+        "irq_mei_hook",
+        "irq_timer_hook",
+        "irq_ipi_hook",
+        "load_err_word",
+    }
 
     for symbol_name in wanted_symbols:
         if symbol_name in symbols:

@@ -165,16 +165,18 @@ TARGETS = [
 #   base_be        BigEndianEn (big endian data accesses)
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
 #   base_ni        a non-idempotent region covering 0x1000
+#   base_obi       the OBI testbench (PipelineOnly), which injects bus errors
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
-    "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le"],
-    "cv32a60x_no_zcmt": ["base_rv32_p", "base_csr", "base_le"],
-    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt", "base_csr", "base_le"],
+    "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
+    "cv32a60x_no_zcmt": ["base_rv32_p", "base_csr", "base_le", "base_obi"],
+    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
     "cv32a60x_axi": ["base_rv32_p", "base_zcmt", "dcache_ecc", "base_csr", "base_le"],
     "cv32a60x_no_zcmt_axi": ["base_rv32_p", "base_csr", "base_le"],
@@ -192,6 +194,7 @@ TESTLISTS = {
         "base_pmp",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
     "cv32a65x": [
         "base_rv32_p",
@@ -200,10 +203,24 @@ TESTLISTS = {
         "base_pmp",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
-    "cv32a65x_scalar": ["base_rv32_p", "base_zcmt", "base_zcmp", "base_csr", "base_le"],
-    "cv32a65x_noc": ["base_rv32_p", "base_pmp", "base_csr", "base_le"],
-    "cv32a65x_noc_scalar": ["base_rv32_p", "base_pmp", "base_csr", "base_le"],
+    "cv32a65x_scalar": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_zcmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_noc": ["base_rv32_p", "base_pmp", "base_csr", "base_le", "base_obi"],
+    "cv32a65x_noc_scalar": [
+        "base_rv32_p",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
         "base_rv64_fp_p",
@@ -212,6 +229,7 @@ TESTLISTS = {
         "base_rv64_amo_p",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
     "cv32a60x_zcmt_pmp_axi": [
         "base_rv32_p",
@@ -241,6 +259,7 @@ TESTLISTS = {
         "base_csr",
         "base_le",
         "base_ni",
+        "base_obi",
     ],
     "cv32a65x_sv32": [
         "base_rv32_p",
@@ -250,6 +269,7 @@ TESTLISTS = {
         "base_csr",
         "base_le",
         "base_ni",
+        "base_obi",
     ],
     "cv32a65x_sv32_be": [
         "base_rv32_p",
@@ -259,6 +279,7 @@ TESTLISTS = {
         "base_csr",
         "base_be",
         "base_ni",
+        "base_obi",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
@@ -271,6 +292,7 @@ TESTLISTS = {
         "base_rv64_amo_v",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
     "cv32a6_imac_sv32": [
         "base_rv32_p",
@@ -300,8 +322,15 @@ TESTLISTS = {
         "testlist_sdtrig",
         "base_csr",
         "base_le",
+        "base_obi",
     ],
-    "cv32a65x_noPMP_sdtrig": ["base_rv32_p", "testlist_sdtrig", "base_csr", "base_le"],
+    "cv32a65x_noPMP_sdtrig": [
+        "base_rv32_p",
+        "testlist_sdtrig",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
     "cv32a65x_sv32_sdtrig": [
         "base_rv32_p",
         "base_rv32_v",
@@ -309,6 +338,7 @@ TESTLISTS = {
         "base_csr",
         "base_le",
         "base_ni",
+        "base_obi",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
