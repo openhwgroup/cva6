@@ -1675,7 +1675,15 @@ module csr_regfile
           end
         end
         riscv::CSR_MSTATUS: begin
-          mstatus_d    = {{64 - CVA6Cfg.XLEN{1'b0}}, csr_wdata};
+          mstatus_d = {{64 - CVA6Cfg.XLEN{1'b0}}, csr_wdata};
+          // On RV32, MBE, SBE, GVA and MPV are in mstatush, which a write of
+          // mstatus leaves alone.
+          if (CVA6Cfg.IS_XLEN32) begin
+            mstatus_d.mbe = mstatus_q.mbe;
+            mstatus_d.sbe = mstatus_q.sbe;
+            mstatus_d.gva = mstatus_q.gva;
+            mstatus_d.mpv = mstatus_q.mpv;
+          end
           mstatus_d.xs = riscv::Off;
           if (!CVA6Cfg.FpPresent) begin
             mstatus_d.fs = riscv::Off;
