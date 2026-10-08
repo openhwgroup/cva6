@@ -215,6 +215,7 @@ full regression:
       # Dashboard first: this is the link exposed in the merge request
       - artifacts/reports/pipeline_report.html
       - artifacts/reports/pipeline_report.yml
+      - artifacts/reports/docs
       - artifacts/logs
 
 # ==========================================================
