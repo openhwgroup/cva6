@@ -10,6 +10,7 @@
 # Please refer to flows/README.md to add target
 
 from pathlib import Path
+import fnmatch
 import shutil
 import typer
 from flows.utils.run_cmd import run_cmd
@@ -18,6 +19,33 @@ from flows.utils.autocompletion import autocompletion_target
 from flows.utils.recipe_report import RecipeReport
 
 app = typer.Typer()
+
+# Same scope as the CI Verible check (.github/workflows/verible.yml): the
+# CVA6 RTL under core/, without its submodules and the generated configuration
+# packages.
+FORMAT_ROOT = "core"
+FORMAT_EXCLUDE = [
+    "core/include/*_config_pkg.sv",
+    "core/cvfpu/*",
+    "core/cache_subsystem/hpdcache/*",
+]
+
+
+def files_to_format(files, repo_dir):
+    """Keep the files of `files` that belong to the formatted scope."""
+    repo_dir = Path(repo_dir).resolve()
+    kept = []
+    for f in files:
+        try:
+            rel = Path(f).resolve().relative_to(repo_dir).as_posix()
+        except ValueError:
+            continue
+        if not rel.startswith(FORMAT_ROOT + "/"):
+            continue
+        if any(fnmatch.fnmatch(rel, pat) for pat in FORMAT_EXCLUDE):
+            continue
+        kept.append(f)
+    return kept
 
 
 @app.command()
@@ -74,7 +102,12 @@ def verible_rtl_formating(
     # GET FILE LIST TO FORMAT
     # ==========================================================
 
-    analyse_files = read_config_or_exit_flist(target, report)
+    flist_files = read_config_or_exit_flist(target, report)
+    analyse_files = files_to_format(flist_files, repo_dir)
+    report.info(
+        f"{len(analyse_files)} of {len(flist_files)} filelist files in scope"
+        f" ({FORMAT_ROOT}/, without {', '.join(FORMAT_EXCLUDE)})"
+    )
 
     # ==========================================================
     # BUILD VERIBLE COMMAND
