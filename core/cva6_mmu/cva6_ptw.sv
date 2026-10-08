@@ -129,14 +129,13 @@ module cva6_ptw
   }
       ptw_stage_q, ptw_stage_d;
 
-  // Big Endian Capability Additions
   // The data coming into the page table walker from memory is byte reversed
   // when the processor is in big endian data mode, so a page table stored in
   // big endian byte order can still be walked.
   logic [CVA6Cfg.XLEN-1:0] endian_data;
   logic [CVA6Cfg.XLEN-1:0] byteSwapped_data;
   assign byteSwapped_data = {<<8{ypb_mmu_ptw_rsp_i.rdata}};
-  assign endian_data = mbe_i ? byteSwapped_data : ypb_mmu_ptw_rsp_i.rdata;
+  assign endian_data = (CVA6Cfg.BigEndianEn && mbe_i) ? byteSwapped_data : ypb_mmu_ptw_rsp_i.rdata;
 
   logic hlvx_eff;
   // The HLVX permission rule (allow read via execute-only pages) applies only to the

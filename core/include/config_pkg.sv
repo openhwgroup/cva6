@@ -101,6 +101,8 @@ package config_pkg;
     bit                          RVZifencei;
     // Zihpm RISC-V extension
     bit                          RVZihpm;
+    // Big endian data accesses: mstatus.MBE, SBE and UBE are writable
+    bit                          BigEndianEn;
     // Floating Point
     bit                          RVF;
     // Floating Point
@@ -344,6 +346,7 @@ package config_pkg;
     bit          RVZicntr;
     bit          RVZifencei;
     bit          RVZihpm;
+    bit          BigEndianEn;
 
     int unsigned NR_SB_ENTRIES;
     int unsigned TRANS_ID_BITS;
@@ -530,6 +533,9 @@ package config_pkg;
     // the two reusing the same opcodes.
     assert (!(Cfg.RVZCMP && Cfg.RVC && Cfg.RVD))
     else `ASSERT_FATAL("");
+    // AMOs are computed in the byte order of the memory subsystem, not mstatus.MBE.
+    assert (!(Cfg.BigEndianEn && Cfg.RVA))
+    else `ASSERT_FATAL("Big endian with atomic memory operations (RVA) is not supported");
     // pragma translate_on
   endfunction
 

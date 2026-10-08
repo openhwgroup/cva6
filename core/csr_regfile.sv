@@ -1550,6 +1550,7 @@ module csr_regfile
           if (CVA6Cfg.RVH) begin
             mask = ariane_pkg::HSTATUS_WRITE_MASK[CVA6Cfg.XLEN-1:0];
             hstatus_d = (hstatus_q & ~{{64-CVA6Cfg.XLEN{1'b0}}, mask}) | {{64-CVA6Cfg.XLEN{1'b0}}, (csr_wdata & mask)};
+            hstatus_d.vsbe = CVA6Cfg.BigEndianEn && hstatus_d.vsbe;
             // this instruction has side-effects
             flush_o = 1'b1;
           end else begin
@@ -1719,19 +1720,20 @@ module csr_regfile
           mstatus_d.wpri1 = 1'b0;
           mstatus_d.wpri2 = 1'b0;
           mstatus_d.wpri0 = 1'b0;
-          // Mirror MBE, on the modes that exist: SBE and UBE are read-only
-          // zero without S-mode or U-mode
-          mstatus_d.sbe   = CVA6Cfg.RVS && mstatus_d.mbe;
-          mstatus_d.ube   = CVA6Cfg.RVU && mstatus_d.mbe;
+          // MBE, SBE and UBE are read-only zero without big endian support.
+          // SBE and UBE mirror MBE on the modes that exist.
+          mstatus_d.mbe   = CVA6Cfg.BigEndianEn && mstatus_d.mbe;
+          mstatus_d.sbe   = CVA6Cfg.BigEndianEn && CVA6Cfg.RVS && mstatus_d.mbe;
+          mstatus_d.ube   = CVA6Cfg.BigEndianEn && CVA6Cfg.RVU && mstatus_d.mbe;
           // this register has side-effects on other registers, flush the pipeline
           flush_o         = 1'b1;
         end
         riscv::CSR_MSTATUSH: begin
           if (CVA6Cfg.IS_XLEN32) begin
-            mstatus_d.mbe = ((csr_wdata & riscv::MSTATUSH_MBE) != 0);
-            // Mirror MBE, on the modes that exist (see CSR_MSTATUS)
-            mstatus_d.sbe = CVA6Cfg.RVS && mstatus_d.mbe;
-            mstatus_d.ube = CVA6Cfg.RVU && mstatus_d.mbe;
+            // MBE, SBE and UBE as for CSR_MSTATUS
+            mstatus_d.mbe = CVA6Cfg.BigEndianEn && ((csr_wdata & riscv::MSTATUSH_MBE) != 0);
+            mstatus_d.sbe = CVA6Cfg.BigEndianEn && CVA6Cfg.RVS && mstatus_d.mbe;
+            mstatus_d.ube = CVA6Cfg.BigEndianEn && CVA6Cfg.RVU && mstatus_d.mbe;
             // this register has side-effects on other registers, flush the pipeline
             flush_o       = 1'b1;
           end else begin
@@ -2967,7 +2969,7 @@ module csr_regfile
   assign single_step_o = CVA6Cfg.DebugEn ? dcsr_q.step : 1'b0;
   assign mcountinhibit_o = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
 
-  assign mbe_o = mstatus_q.mbe;
+  assign mbe_o = CVA6Cfg.BigEndianEn && mstatus_q.mbe;
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin
