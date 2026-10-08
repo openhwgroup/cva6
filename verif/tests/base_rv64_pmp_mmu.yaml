@@ -23,3 +23,9 @@ testlist:
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/pmp/lsu_pipeline_store_test.S
+
+  - test: vm_noncanonical_fetch
+    iterations: 1
+    path_var: TESTS_PATH
+    gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/custom/env"
+    asm_tests: <path_var>/custom/sv39/vm_noncanonical_fetch.S
