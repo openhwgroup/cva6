@@ -498,10 +498,7 @@ module frontend
   assign ypb_fetch_req_o.vaddr = npc_fetch_address;
   assign paddr = CVA6Cfg.MmuPresent ? arsp_i.fetch_paddr : npc_fetch_address;
 
-  // Gate the fetch request during fence.i: the instruction cache flush and the
-  // data cache flush are not simultaneous, so a fetch issued in between would
-  // bring back an instruction the flush was meant to drop.
-  assign data_req = (CVA6Cfg.MmuPresent ? (fetchbuf_w || fetchbuf_w_q) && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w) && !halt_frontend_i;
+  assign data_req = (CVA6Cfg.MmuPresent ? (fetchbuf_w || fetchbuf_w_q) && !ex_s1 && arsp_i.fetch_valid: fetchbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignmen
@@ -518,7 +515,9 @@ module frontend
     areq_o.fetch_req = 1'b1;
     ypb_fetch_req_o.vreq = 1'b1;
     if (!CVA6Cfg.MmuPresent || ypb_fetch_rsp_i.vgnt) begin
-      if (stall_ni || stall_ypb || stall_instr_queue || stall_translation || fetchbuf_full) begin
+      // halt_frontend_i: no fetch while fence.i flushes the data cache. It is
+      // held before the fetch buffer, whose entries only a response frees.
+      if (stall_ni || stall_ypb || stall_instr_queue || stall_translation || fetchbuf_full || halt_frontend_i) begin
         kill_req_d = CVA6Cfg.MmuPresent ? 1'b1 :  1'b0; // MmuPresent only : next cycle is s2 but we need to kill because not ready to sent tag
       end else begin
         fetchbuf_w  = !kill_s1 && !flush_i; // record request into outstanding fetch fifo and trigger YPB physical request
