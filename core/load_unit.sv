@@ -81,6 +81,8 @@ module load_unit
     input  logic                                      store_buffer_empty_i,
     // Transaction ID of the committing instruction - COMMIT_STAGE
     input  logic          [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // The committing instruction is dropped (speculative scoreboard) - COMMIT_STAGE
+    input  logic                                      commit_drop_i,
     // Load cache response - DCACHE
     output ypb_load_req_t                             ypb_load_req_o,
     // Load cache request - DCACHE
@@ -270,6 +272,12 @@ module load_unit
   logic inflight_stores;
   logic stall_ni, stall_ni_mem;
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
+  // A non-idempotent load waits to be the committing instruction. If commit
+  // drops it (wrong path), it is retired without accessing memory.
+  logic ni_load_dropped;
+  assign ni_load_dropped = CVA6Cfg.SpeculativeSb && CVA6Cfg.NonIdemPotenceEn && valid_i &&
+                           paddr_nonidempotent && commit_drop_i &&
+                           commit_tran_id_i == lsu_ctrl_i.trans_id;
   assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
 
   typedef enum logic [1:0] {
@@ -290,7 +298,7 @@ module load_unit
 
   // Non-idempotent stall, which gates the request itself: such a load must not
   // leave until it is the oldest in flight.
-  assign stall_ni_mem = (inflight_stores || not_commit_time) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
+  assign stall_ni_mem = (inflight_stores || not_commit_time || ni_load_dropped) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
   // A trigger stall does not gate the request: the trigger module releases it
   // only on the exception this unit reports, so the request goes out and is
   // killed instead.
@@ -362,6 +370,10 @@ module load_unit
       valid_o    = 1'b1;
       ex_o.valid = 1'b1;
       pop_ld_o = !stall_translation;//1'b1; // release lsu_bypass fifo
+    end else if (ni_load_dropped) begin
+      trans_id_o = lsu_ctrl_i.trans_id;
+      valid_o    = 1'b1;
+      pop_ld_o   = 1'b1;
     end
 
   end
@@ -571,6 +583,16 @@ module load_unit
   ///////////////////////////////////////////////////////
 
   //pragma translate_off
+  logic paddr_req_nonidempotent;
+  assign paddr_req_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
+      CVA6Cfg, 64'(ypb_load_req_o.paddr)
+  );
+  ni_load_at_commit :
+  assert property (@(posedge clk_i) disable iff (~rst_ni)
+        (CVA6Cfg.NonIdemPotenceEn && ypb_load_req_o.preq && ypb_load_rsp_i.pgnt && paddr_req_nonidempotent)
+        |-> (ldbuf_q[ldbuf_windex_q].trans_id == commit_tran_id_i &&
+             !(CVA6Cfg.SpeculativeSb && commit_drop_i)))
+  else `ASSERT_ERROR("[load_unit] non-idempotent load sent to memory before its commit");
   initial
     assert (CVA6Cfg.DcacheIdWidth >= REQ_ID_BITS)
     else `ASSERT_FATAL("DcacheIdWidth parameter is not wide enough to encode pending loads");

@@ -78,6 +78,8 @@ module load_store_unit
     output logic commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // The committing instruction is dropped (speculative scoreboard) - COMMIT_STAGE
+    input logic commit_drop_i,
 
     // Enable virtual memory translation - CSR_REGFILE
     input logic enable_translation_i,
@@ -492,6 +494,7 @@ module load_store_unit
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
+      .commit_drop_i,
       // to memory arbiter
       .ypb_load_req_o       (ypb_load_req_o),
       .ypb_load_rsp_i       (ypb_load_rsp_i),
