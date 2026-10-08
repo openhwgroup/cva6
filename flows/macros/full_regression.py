@@ -347,6 +347,10 @@ GTECH_TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
 ]
 
+# Values of the --<category>-targets options other than a list of targets
+ALL_TARGETS = "all"
+NO_TARGET = "none"
+
 # Per-test simulation timeout of the hello-world and testlist jobs: a
 # hung simulation must fail on its own instead of blocking the pipeline
 SIM_TIMEOUT = 300
@@ -835,9 +839,37 @@ def _add_fpga_jobs(scheduler, target, board, elab_job, deps_job, quiet):
     )
 
 
-def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
+def _select_targets(value, default, targets):
+    """
+    Targets of one job category from its --<category>-targets option.
+
+    `value` is a comma or space separated list of targets, `all` for every
+    target of the run, `none` for no target, or empty for `default`. The
+    result keeps the order of `targets`, and a target outside the run is
+    left out: it returns the selected targets and the ones of an explicit
+    list that are not in the run (a default list narrowed by --target is
+    not worth a message).
+    """
+    names = value.replace(",", " ").split() if value else None
+    if names is None:
+        wanted = default
+    elif names == [ALL_TARGETS]:
+        wanted = targets
+    elif names == [NO_TARGET]:
+        wanted = []
+    else:
+        wanted = names
+    selected = [t for t in targets if t in wanted]
+    ignored = [t for t in wanted if t not in targets] if names else []
+    return selected, ignored
+
+
+def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, selection):
     """
     Add every pipeline job to the scheduler.
+
+    `selection` maps a job category (docs, spyglass, gtech, synth) to the
+    targets it runs on, see _select_targets().
 
     `scheduler.add()` takes the job name, the deferred call, the
     directory holding the cook_report.yml of the recipe, and returns the
@@ -885,7 +917,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
     for target in targets:
         target_dir = build / target
 
-        if target in SPYGLASS_TARGETS:
+        if target in selection["spyglass"]:
             scheduler.add(
                 f"spyglass:{target}",
                 partial(_job_spyglass, target=target, quiet=quiet),
@@ -893,7 +925,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
                 resource=SPYGLASS,
             )
 
-        if target in DOCS_TARGETS:
+        if target in selection["docs"]:
             # Depends on nothing and takes no licence, so it fills a slot
             # while the elaborations hold theirs. The rendered documents
             # stay in build/<target>/docs/, where merge-reports collects
@@ -1079,7 +1111,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
         # --- GTECH synthesis ------------------------------------------
         # After the RTL elaboration, like the bitstream: a design that
         # does not elaborate would hold a DC licence to fail the same way
-        if target in GTECH_TARGETS:
+        if target in selection["gtech"]:
             scheduler.add(
                 f"synthesis-gtech:{target}",
                 partial(_job_gtech_synth, target=target, quiet=quiet),
@@ -1090,7 +1122,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
 
         # --- ASIC synthesis and gate-level simulation -----------------
         # Needs a techno, so enabled only when --techno is given
-        if techno is not None:
+        if techno is not None and target in selection["synth"]:
             synth_job = scheduler.add(
                 f"synthesis:{target}",
                 partial(
@@ -1160,6 +1192,26 @@ def full_regression(
         None, help="Enable the synthesis stage with this techno (disabled by default)"
     ),
     period: str = typer.Option("15", help="Synthesis target period"),
+    docs_targets: str = typer.Option(
+        "",
+        help="Targets the documentation is built for: comma separated list, "
+        "'all' or 'none' (default: DOCS_TARGETS)",
+    ),
+    spyglass_targets: str = typer.Option(
+        "",
+        help="Targets of the Spyglass lint: comma separated list, 'all' or "
+        "'none' (default: SPYGLASS_TARGETS)",
+    ),
+    gtech_targets: str = typer.Option(
+        "",
+        help="Targets of the GTECH synthesis: comma separated list, 'all' or "
+        "'none' (default: GTECH_TARGETS)",
+    ),
+    synth_targets: str = typer.Option(
+        "",
+        help="Targets of the techno synthesis and gate-level simulation, with "
+        "--techno: comma separated list, 'all' or 'none' (default: all)",
+    ),
     fpga: bool = typer.Option(
         True,
         help="Build, program and boot the Xilinx FPGA images (needs Vivado and "
@@ -1185,6 +1237,19 @@ def full_regression(
     repo_dir = Path.cwd()
     targets = list(target) or TARGETS
 
+    # Targets of each job category, within the targets of the run
+    selection = {}
+    ignored = {}
+    for category, value, default in (
+        ("docs", docs_targets, DOCS_TARGETS),
+        ("spyglass", spyglass_targets, SPYGLASS_TARGETS),
+        ("gtech", gtech_targets, GTECH_TARGETS),
+        ("synth", synth_targets, targets),
+    ):
+        selection[category], ignored[category] = _select_targets(
+            value, default, targets
+        )
+
     report = RecipeReport(
         "full-regression",
         out_dir=repo_dir / "build" / "full_regression",
@@ -1200,6 +1265,10 @@ def full_regression(
             "synth_licenses": synth_licenses,
             "techno": techno,
             "period": period,
+            "docs_targets": selection["docs"],
+            "spyglass_targets": selection["spyglass"],
+            "gtech_targets": selection["gtech"],
+            "synth_targets": selection["synth"],
             "fpga": fpga,
             "altera": altera,
             "vivado_licenses": vivado_licenses,
@@ -1212,6 +1281,23 @@ def full_regression(
     unknown = [t for t in targets if not (repo_dir / "config" / "target" / t).is_dir()]
     if unknown:
         report.error_exit(f"Unknown target(s): {', '.join(unknown)}", env=True)
+
+    # A target of a category that is not a target at all is a typo, which
+    # would silently drop the job: fail. One that exists but is not run
+    # (--target narrowed the run) is only left out.
+    for category, names in ignored.items():
+        unknown = [
+            t for t in names if not (repo_dir / "config" / "target" / t).is_dir()
+        ]
+        if unknown:
+            report.error_exit(
+                f"Unknown target(s) in --{category}-targets: {', '.join(unknown)}",
+                env=True,
+            )
+        if names:
+            report.info(
+                f"--{category}-targets: not in the run, left out: {', '.join(names)}"
+            )
 
     # Recipes write to a single shared console: their output would be
     # interleaved as soon as two of them run together. In parallel mode
@@ -1257,7 +1343,7 @@ def full_regression(
         max_workers=jobs,
         on_event=on_event,
     )
-    _build_graph(scheduler, targets, techno, period, fpga, altera, sub_quiet)
+    _build_graph(scheduler, targets, techno, period, fpga, altera, sub_quiet, selection)
     total[0] = len(scheduler.jobs)
 
     missing = scheduler.unknown_deps()
