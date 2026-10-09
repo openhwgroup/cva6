@@ -230,8 +230,8 @@ module cva6_obi_adapter_subsystem
   assign obi_amo_req.rready = ypb_amo_req_i.rready;
   assign obi_amo_req.rreadypar = !ypb_amo_req_i.rready;
 
-  // With an MMU, be and aid come with the YPB virtual phase (YPB 4.1) and are
-  // held for the OBI address phase. vgnt stays low while a physical phase
+  // With TwoPhaseReq, be and aid come with the YPB first phase (YPB 4.1) and
+  // are held for the OBI address phase. vgnt stays low while a physical phase
   // waits for its grant, so they belong to the request on the bus.
   logic [CVA6Cfg.XLEN/8-1:0] load_vphase_be_q;
   logic [$bits(ypb_load_req_i.aid)-1:0] load_vphase_aid_q;
@@ -250,9 +250,9 @@ module cva6_obi_adapter_subsystem
   assign obi_load_req.reqpar = !ypb_load_req_i.preq;
   assign obi_load_req.a.addr = ypb_load_req_i.paddr;
   assign obi_load_req.a.we = ypb_load_req_i.we;
-  assign obi_load_req.a.be = CVA6Cfg.MmuPresent ? load_vphase_be_q : ypb_load_req_i.be;
+  assign obi_load_req.a.be = CVA6Cfg.TwoPhaseReq ? load_vphase_be_q : ypb_load_req_i.be;
   assign obi_load_req.a.wdata = ypb_load_req_i.wdata;
-  assign obi_load_req.a.aid = CVA6Cfg.MmuPresent ? load_vphase_aid_q : ypb_load_req_i.aid;
+  assign obi_load_req.a.aid = CVA6Cfg.TwoPhaseReq ? load_vphase_aid_q : ypb_load_req_i.aid;
   assign obi_load_req.a.a_optional.auser = '0;
   assign obi_load_req.a.a_optional.wuser = '0;
   assign obi_load_req.a.a_optional.atop = '0;
@@ -342,7 +342,7 @@ module cva6_obi_adapter_subsystem
   assign ypb_load_rsp_o.rdata = obi_load_rsp.r.rdata;
   assign ypb_load_rsp_o.rid = obi_load_rsp.r.rid;
   assign ypb_load_rsp_o.err = obi_load_rsp.r.err;
-  assign ypb_load_rsp_o.vgnt = !(CVA6Cfg.MmuPresent && ypb_load_req_i.preq && !obi_load_rsp.gnt);
+  assign ypb_load_rsp_o.vgnt = !(CVA6Cfg.TwoPhaseReq && ypb_load_req_i.preq && !obi_load_rsp.gnt);
 
   assign ypb_mmu_ptw_rsp_o.pgnt = obi_mmu_ptw_rsp.gnt;
   assign ypb_mmu_ptw_rsp_o.rvalid = obi_mmu_ptw_rsp.rvalid;

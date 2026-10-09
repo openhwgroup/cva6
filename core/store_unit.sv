@@ -160,7 +160,7 @@ module store_unit
     end
   end
   assign instr_is_amo = is_amo(lsu_ctrl_i.operation);
-  // keep the data and the byte enable for the second cycle (after address translation)
+  // With TwoPhaseReq the data and the byte enable are kept for the physical phase (s1)
   logic [CVA6Cfg.XLEN-1:0] st_data, st_data_n, st_data_q;
   logic [(CVA6Cfg.XLEN/8)-1:0] st_be, st_be_n, st_be_q;
   logic [1:0] st_data_size, st_data_size_n, st_data_size_q;
@@ -188,7 +188,7 @@ module store_unit
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
-  assign ex_s1 = CVA6Cfg.MmuPresent ? (store_buffer_valid_q || (CVA6Cfg.RVA && amo_buffer_valid_q)) && ex_i.valid : valid_i && ex_i.valid;
+  assign ex_s1 = CVA6Cfg.TwoPhaseReq ? (store_buffer_valid_q || (CVA6Cfg.RVA && amo_buffer_valid_q)) && ex_i.valid : valid_i && ex_i.valid;
 
   always_comb begin : store_control
     // default assignment
@@ -213,13 +213,13 @@ module store_unit
     end  // REQUEST
     else if (valid_i) begin
       translation_req_o = 1'b1;
-      if (!CVA6Cfg.MmuPresent || !stall_translation) begin
+      if (!stall_translation) begin
         if (CVA6Cfg.RVA && instr_is_amo) begin
           if (amo_buffer_ready) begin
             pop_st_o = 1'b1;
             amo_buffer_valid_d = !flush_i;
-            // RETIRE STORE NO MMU
-            if (!CVA6Cfg.MmuPresent) begin
+            // RETIRE STORE IN ONE PHASE
+            if (!CVA6Cfg.TwoPhaseReq) begin
               trans_id_o = lsu_ctrl_i.trans_id;
               valid_o    = 1'b1;
               ex_o.valid = ex_s1;
@@ -230,8 +230,8 @@ module store_unit
             pop_st_o = 1'b1;
             store_buffer_valid_d = !flush_i;
             store_buffer_valid_no_flush_d = 1'b1;
-            // RETIRE STORE NO MMU
-            if (!CVA6Cfg.MmuPresent) begin
+            // RETIRE STORE IN ONE PHASE
+            if (!CVA6Cfg.TwoPhaseReq) begin
               trans_id_o = lsu_ctrl_i.trans_id;
               valid_o    = 1'b1;
               ex_o.valid = ex_s1;
@@ -240,13 +240,13 @@ module store_unit
         end
       end
     end
-    // RETIRE STORE WITH MMU
-    if (CVA6Cfg.MmuPresent) begin
+    // RETIRE STORE IN TWO PHASES
+    if (CVA6Cfg.TwoPhaseReq) begin
       if (store_buffer_valid_q || (CVA6Cfg.RVA && amo_buffer_valid_q)) begin
         trans_id_o = trans_id_q;
         valid_o    = 1'b1;
         ex_o.valid = ex_s1;
-      end else if (ex_s0) begin
+      end else if (CVA6Cfg.MmuPresent && ex_s0) begin
         trans_id_o = lsu_ctrl_i.trans_id;
         valid_o    = 1'b1;
         ex_o.valid = 1'b1;
@@ -297,14 +297,14 @@ module store_unit
     end
   end
 
-  assign st_be = CVA6Cfg.MmuPresent ? st_be_q : st_be_n;
-  assign st_data = CVA6Cfg.MmuPresent ? st_data_q : st_data_n;
-  assign st_data_size = CVA6Cfg.MmuPresent ? st_data_size_q : st_data_size_n;
-  assign amo_op = CVA6Cfg.MmuPresent ? amo_op_q : amo_op_d;
-  assign cbo_op = CVA6Cfg.MmuPresent ? cbo_op_q : cbo_op_d;
-  assign store_buffer_valid = CVA6Cfg.MmuPresent ? store_buffer_valid_q && !ex_s1 : store_buffer_valid_d;
-  assign store_buffer_valid_no_flush = CVA6Cfg.MmuPresent ? store_buffer_valid_no_flush_q && !ex_s1 : store_buffer_valid_no_flush_d;
-  assign amo_buffer_valid = CVA6Cfg.MmuPresent ? amo_buffer_valid_q && !ex_s1 : amo_buffer_valid_d;
+  assign st_be = CVA6Cfg.TwoPhaseReq ? st_be_q : st_be_n;
+  assign st_data = CVA6Cfg.TwoPhaseReq ? st_data_q : st_data_n;
+  assign st_data_size = CVA6Cfg.TwoPhaseReq ? st_data_size_q : st_data_size_n;
+  assign amo_op = CVA6Cfg.TwoPhaseReq ? amo_op_q : amo_op_d;
+  assign cbo_op = CVA6Cfg.TwoPhaseReq ? cbo_op_q : cbo_op_d;
+  assign store_buffer_valid = CVA6Cfg.TwoPhaseReq ? store_buffer_valid_q && !ex_s1 : store_buffer_valid_d;
+  assign store_buffer_valid_no_flush = CVA6Cfg.TwoPhaseReq ? store_buffer_valid_no_flush_q && !ex_s1 : store_buffer_valid_no_flush_d;
+  assign amo_buffer_valid = CVA6Cfg.TwoPhaseReq ? amo_buffer_valid_q && !ex_s1 : amo_buffer_valid_d;
 
   // ---------------
   // Store Queue

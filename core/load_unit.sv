@@ -175,7 +175,7 @@ module load_unit
       ldbuf_valid_d[ldbuf_rindex] = 1'b0;
     end
     // Free on exception
-    if (CVA6Cfg.MmuPresent && (ldbuf_w_q && ex_i.valid)) begin
+    if (CVA6Cfg.TwoPhaseReq && (ldbuf_w_q && ex_i.valid)) begin
       ldbuf_valid_d[ldbuf_windex_q] = 1'b0;
     end
     //  Track a new outstanding operation in the load buffer
@@ -247,7 +247,9 @@ module load_unit
 
   logic [CVA6Cfg.PLEN-1:0] paddr;
 
-  assign paddr = CVA6Cfg.MmuPresent ? paddr_i : lsu_ctrl_i.vaddr; //paddr_i is delayed in s1, but no s1 in mode no MMU
+  // With TwoPhaseReq paddr_i belongs to the request in s1, otherwise the request
+  // carries its own address.
+  assign paddr = CVA6Cfg.TwoPhaseReq ? paddr_i : lsu_ctrl_i.vaddr;
 
   // CHECK PMA regions
 
@@ -307,18 +309,18 @@ module load_unit
   // Capture while the request is still the one being presented.
   assign sdtrig_trans_id_d = (valid_i && sdtrig_load_action_i != '0) ? lsu_ctrl_i.trans_id
                                                                     : sdtrig_trans_id_q;
-  // With an MMU the previous request presents its paddr (s1) in the cycle the
-  // new one is accepted (s0), so its grant is checked in that same cycle.
+  // With TwoPhaseReq the previous request presents its paddr (s1) in the cycle
+  // the new one is accepted (s0), so its grant is checked in that same cycle.
   assign stall_ypb = (ypb_a_state_q == REGISTRED) ||
-                     (CVA6Cfg.MmuPresent && data_req && !ypb_load_rsp_i.pgnt);
+                     (CVA6Cfg.TwoPhaseReq && data_req && !ypb_load_rsp_i.pgnt);
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
-  assign ex_s1 = ((CVA6Cfg.MmuPresent ? ldbuf_w_q : valid_i) && ex_i.valid);
-  assign kill_s1 = CVA6Cfg.MmuPresent ? ex_s1 : 1'b0;
+  assign ex_s1 = ((CVA6Cfg.TwoPhaseReq ? ldbuf_w_q : valid_i) && ex_i.valid);
+  assign kill_s1 = CVA6Cfg.TwoPhaseReq ? ex_s1 : 1'b0;
 
   assign data_rvalid = ypb_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
-  assign data_req = (CVA6Cfg.MmuPresent ? ldbuf_w_q && !ex_s1 : ldbuf_w);
+  assign data_req = (CVA6Cfg.TwoPhaseReq ? ldbuf_w_q && !ex_s1 : ldbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignment
@@ -341,11 +343,11 @@ module load_unit
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
         ypb_load_req_o.vreq = !stall_translation && !stall_ni_mem;
-        if (!CVA6Cfg.MmuPresent || ypb_load_rsp_i.vgnt) begin
+        if (!CVA6Cfg.TwoPhaseReq || ypb_load_rsp_i.vgnt) begin
           if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
-            kill_req_d = 1'b1;  // MmuPresent only: next cycle is s2 but we need to kill because not ready to send tag
+            kill_req_d = 1'b1;  // TwoPhaseReq only: the first phase is accepted, the physical one will not follow
           end else begin
-            ldbuf_w  = CVA6Cfg.MmuPresent ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger physical request
+            ldbuf_w  = CVA6Cfg.TwoPhaseReq ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger physical request
             pop_ld_o = !ex_s1;  // release lsu_bypass fifo
           end
         end
@@ -364,7 +366,7 @@ module load_unit
       // RETIRE EXCEPTION (low priority)
     end else if (ex_s1 || sdtrig_load_cancel_i) begin
       trans_id_o = (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) ? sdtrig_trans_id_q :
-                   (CVA6Cfg.MmuPresent ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id);
+                   (CVA6Cfg.TwoPhaseReq ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id);
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
       pop_ld_o = !stall_translation;  //1'b1; // release lsu_bypass fifo
@@ -386,9 +388,9 @@ module load_unit
   //default ypb state registred
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
-  // be, size and aid go with the first address phase (YPB 4.1): the virtual
-  // phase with an MMU, the physical phase without, held until it is granted.
-  assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && ypb_a_state_q == REGISTRED) ? be_q
+  // be, size and aid go with the first address phase (YPB 4.1): the first
+  // phase with TwoPhaseReq, the physical phase without, held until it is granted.
+  assign ypb_load_req_o.be = (!CVA6Cfg.TwoPhaseReq && ypb_a_state_q == REGISTRED) ? be_q
                                                                                 : lsu_ctrl_i.be;
   assign ypb_load_req_o.size = (CVA6Cfg.IS_XLEN64) ? ariane_pkg::size_gen(
       ypb_load_req_o.be
@@ -396,7 +398,7 @@ module load_unit
       ypb_load_req_o.be
   );
   assign ypb_load_req_o.wdata = '0;
-  assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && ypb_a_state_q == REGISTRED) ? aid_q
+  assign ypb_load_req_o.aid = (!CVA6Cfg.TwoPhaseReq && ypb_a_state_q == REGISTRED) ? aid_q
                                                                                  : ldbuf_windex;
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_load_req_o.cbo_op = ariane_pkg::CBO_NONE;

@@ -350,24 +350,63 @@ module load_store_unit
       assign pmp_fetch_arsp.fetch_paddr = CVA6Cfg.PLEN'(fetch_areq_i.fetch_vaddr);
     end
     assign pmp_fetch_arsp.fetch_exception = 'h0;
-    assign pmp_exception = misaligned_exception;
-    assign pmp_translation_valid = translation_req;
-    //  Without an MMU the check happens in the request cycle, so the metadata
-    //  is the request's own and there is nothing to realign.
-    assign pmp_vaddr_q = mmu_vaddr;
-    assign pmp_is_store_q = st_translation_req;
-    assign pmp_hlvx_inst_q = mmu_hlvx_inst;
-
-    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
-      assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
-    end else begin
-      assign lsu_paddr = CVA6Cfg.PLEN'(mmu_vaddr);
-    end
 
     assign itlb_miss_o = 1'b0;
     assign dtlb_miss_o = 1'b0;
-    assign dtlb_ppn    = lsu_paddr[CVA6Cfg.PLEN-1:12];
-    assign dtlb_hit    = 1'b1;
+    assign dtlb_hit = 1'b1;
+
+    if (CVA6Cfg.TwoPhaseReq) begin : gen_two_phase
+      //  As with an MMU, the physical phase (s1) follows the request (s0) by one
+      //  cycle: the address and the PMP metadata are registered for it.
+      logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_q;
+      logic lsu_req_q, lsu_is_store_q, lsu_hlvx_inst_q;
+      exception_t misaligned_ex_q;
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+          lsu_vaddr_q     <= '0;
+          lsu_req_q       <= 1'b0;
+          lsu_is_store_q  <= 1'b0;
+          lsu_hlvx_inst_q <= 1'b0;
+          misaligned_ex_q <= '0;
+        end else begin
+          lsu_vaddr_q           <= mmu_vaddr;
+          lsu_req_q             <= translation_req;
+          lsu_is_store_q        <= st_translation_req;
+          lsu_hlvx_inst_q       <= mmu_hlvx_inst;
+          misaligned_ex_q       <= misaligned_exception;
+          misaligned_ex_q.valid <= misaligned_exception.valid & translation_req;
+        end
+      end
+
+      assign pmp_translation_valid = lsu_req_q;
+      assign pmp_exception = misaligned_ex_q;
+      assign pmp_vaddr_q = lsu_vaddr_q;
+      assign pmp_is_store_q = lsu_is_store_q;
+      assign pmp_hlvx_inst_q = CVA6Cfg.RVH ? lsu_hlvx_inst_q : 1'b0;
+      if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin : gen_paddr_vlen_greater
+        assign lsu_paddr = lsu_vaddr_q[CVA6Cfg.PLEN-1:0];
+        // As the DTLB output, follows the request in s0
+        assign dtlb_ppn  = mmu_vaddr[CVA6Cfg.PLEN-1:12];
+      end else begin : gen_paddr_plen_greater
+        assign lsu_paddr = CVA6Cfg.PLEN'(lsu_vaddr_q);
+        assign dtlb_ppn  = CVA6Cfg.PPNW'(mmu_vaddr[CVA6Cfg.VLEN-1:12]);
+      end
+
+    end else begin : gen_single_phase
+      //  The PMP checks the request in the cycle it is presented.
+      assign pmp_translation_valid = translation_req;
+      assign pmp_exception = misaligned_exception;
+      assign pmp_vaddr_q = mmu_vaddr;
+      assign pmp_is_store_q = st_translation_req;
+      assign pmp_hlvx_inst_q = mmu_hlvx_inst;
+      if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin : gen_paddr_vlen_greater
+        assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
+      end else begin : gen_paddr_plen_greater
+        assign lsu_paddr = CVA6Cfg.PLEN'(mmu_vaddr);
+      end
+      assign dtlb_ppn = lsu_paddr[CVA6Cfg.PLEN-1:12];
+    end
 
   end
 
