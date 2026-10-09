@@ -161,7 +161,7 @@ module store_buffer
     end
 
     // we are ready if the speculative and the commit queue have a space left
-    ready_o = CVA6Cfg.TwoPhaseReq ? (speculative_status_cnt_n < (DEPTH_SPEC)) || commit_i : speculative_status_cnt_q < (DEPTH_SPEC);
+    ready_o = CVA6Cfg.MmuPresent ? (speculative_status_cnt_n < (DEPTH_SPEC)) || commit_i : speculative_status_cnt_q < (DEPTH_SPEC);
   end
 
   // ----------------------------------------
