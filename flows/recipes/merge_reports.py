@@ -68,18 +68,16 @@ CFG_EXTENSIONS = [
     ("U", "RVU"),
 ]
 
-# Write policy of the data cache, config_pkg::cache_type_t
-CFG_DCACHE_TYPE = {
-    "WB": "WB",
-    "WT": "WT",
-    "HPDCACHE_WT": "WT",
-    "HPDCACHE_WB": "WB",
-    "HPDCACHE_WT_WB": "WT/WB",
+# Write policy of the data cache, config_pkg::cache_write_policy_e
+CFG_CACHE_WRITE_POLICY = {
+    "CACHE_WT": "WT",
+    "CACHE_WB": "WB",
+    "CACHE_WT_WB": "WT/WB",
 }
 
 # unsigned'(8), bit'(1), int'(config_pkg::OBI_V1_6)
 CFG_FIELD_RE = re.compile(r"^\s*(\w+)\s*:\s*\w+'\(\s*([^)]*?)\s*\)\s*,?\s*$")
-# DCacheType: config_pkg::HPDCACHE_WT,  (no type cast)
+# CacheWritePolicy: config_pkg::CACHE_WT,  (no type cast)
 CFG_ENUM_RE = re.compile(r"^\s*(\w+)\s*:\s*(?:config_pkg::)?(\w+)\s*,?\s*$")
 CFG_LOCALPARAM_RE = re.compile(r"^\s*localparam\s+(\w+)\s*=\s*([^;]+);")
 
@@ -135,12 +133,12 @@ def _read_target_config(repo_dir, target):
     if isinstance(xlen, int):
         labels.append({"text": f"RV{xlen}", "group": "xlen"})
 
-    # PipelineOnly replaces the caches and the AXI interface by OBI, so a
-    # DCacheType is still declared there but drives nothing
-    pipeline_only = bool(value("PipelineOnly"))
-    labels.append({"text": "OBI" if pipeline_only else "AXI", "group": "bus"})
-    if not pipeline_only:
-        policy = CFG_DCACHE_TYPE.get(enums.get("DCacheType", ""))
+    # MEM_OBI has no cache: each memory port is an OBI bus, so a
+    # CacheWritePolicy is still declared there but drives nothing
+    mem_obi = enums.get("MemSubsystem") == "MEM_OBI"
+    labels.append({"text": "OBI" if mem_obi else "AXI", "group": "bus"})
+    if not mem_obi:
+        policy = CFG_CACHE_WRITE_POLICY.get(enums.get("CacheWritePolicy", ""))
         if policy:
             labels.append({"text": policy, "group": "mem"})
 

@@ -344,11 +344,11 @@ module cva6_hpdcache_subsystem
     userCfg.memIdWidth = CVA6Cfg.AxiIdWidth - 1;
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn =
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT) ||
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT) ||
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT_WB);
     userCfg.wbEn =
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WB) ||
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT_WB);
     userCfg.lowLatency = 1'b1;
     userCfg.eccEn = CVA6Cfg.DcacheEccEnable;
     userCfg.eccScrubberEn = CVA6Cfg.DcacheEccScrubberEnable;

@@ -252,9 +252,9 @@
      - ``int unsigned``
      - Instruction cache line width
 
-   * - ``DCacheType``
-     - ``cache_type_t``
-     - Cache Type
+   * - ``CacheWritePolicy``
+     - ``cache_write_policy_e``
+     - Write policy of the data cache
 
    * - ``DcacheIdWidth``
      - ``int unsigned``
@@ -380,9 +380,9 @@
      - ``int unsigned``
      - OBI version compliance, 0 means not compliant -> best performance
 
-   * - ``PipelineOnly``
-     - ``bit``
-     - Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
+   * - ``MemSubsystem``
+     - ``mem_subsystem_e``
+     - Memory subsystem between the pipeline and the system bus
 
    * - ``NrStoreInFlight``
      - ``int unsigned``

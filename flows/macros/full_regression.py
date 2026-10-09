@@ -165,7 +165,7 @@ TARGETS = [
 #   base_be        BigEndianEn (big endian data accesses)
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
 #   base_ni        a non-idempotent region covering 0x1000
-#   base_obi       the OBI testbench (PipelineOnly), which injects bus errors
+#   base_obi       the OBI testbench (MEM_OBI), which injects bus errors
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],

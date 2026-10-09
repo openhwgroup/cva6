@@ -59,9 +59,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Zicond extension
    rand bit                      ext_zicond_supported;
 
-   // HPDcache support
-   rand bit                      HPDCache_supported;
-
    // pmp entries
    rand int                      nr_pmp_entries;
 
@@ -86,7 +83,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         force_disable_csr_checks    , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
-      `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
       `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
@@ -149,7 +145,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == (RTLCVA6Cfg.DCacheType == 2);
 
       MmuPresent              == RTLCVA6Cfg.MmuPresent;
       sw_int_supported        == RTLCVA6Cfg.SoftwareInterruptEn;
@@ -194,7 +189,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint mem_sel_cons {
-      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) {
+      if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) {
          interrupt_cfg.mem_axi_sel == 1;
          interrupt_cfg.mem_obi_sel == 0;
       } else {
@@ -382,7 +377,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          rvfi_cfg.is_active           == UVM_PASSIVE;
          interrupt_cfg.is_active      == UVM_ACTIVE;
 
-         if (RTLCVA6Cfg.PipelineOnly) {
+         if (RTLCVA6Cfg.MemSubsystem == config_pkg::MEM_OBI) {
             obi_memory_instr_cfg.is_active == UVM_ACTIVE;
             obi_memory_store_cfg.is_active == UVM_ACTIVE;
             obi_memory_amo_cfg.is_active == UVM_ACTIVE;

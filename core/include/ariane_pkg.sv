@@ -34,12 +34,7 @@ package ariane_pkg;
   // depth of store-buffers, this needs to be a power of two
   localparam logic [2:0] DEPTH_SPEC = 'd4;
 
-  // if CVA6Cfg.DCacheType = cva6_config_pkg::WT
-  // we can use a small commit queue since we have a write buffer in the dcache
-  // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
-  // to longer paths into the commit stage
-  // if CVA6Cfg.DCacheType = cva6_config_pkg::WB
-  // allocate more space for the commit buffer to be on the safe side, this needs to be a power of two
+  // depth of the commit queue of the store buffer, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
   // Transprecision float unit

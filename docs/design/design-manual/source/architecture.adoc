@@ -32,6 +32,6 @@ include::cva6_commit_stage.adoc[]
 include::cva6_controller.adoc[]
 include::cva6_csr_regfile.adoc[]
 
-ifeval::[{PipelineOnly} == false]
+ifeval::["{MemSubsystem}" != "config_pkg::MEM_OBI"]
 include::cva6_caches.adoc[]
 endif::[]
