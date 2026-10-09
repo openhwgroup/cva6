@@ -137,6 +137,7 @@ module load_unit
   logic kill_req_d, kill_req_q;
 
   logic [CVA6Cfg.PLEN-1:0] paddr_q;
+  ldbuf_id_t aid_q;
   logic [(CVA6Cfg.XLEN/8)-1:0] be_q;
 
 
@@ -306,7 +307,10 @@ module load_unit
   // Capture while the request is still the one being presented.
   assign sdtrig_trans_id_d = (valid_i && sdtrig_load_action_i != '0) ? lsu_ctrl_i.trans_id
                                                                     : sdtrig_trans_id_q;
-  assign stall_ypb = (ypb_a_state_q == REGISTRED);  //&& !ypb_load_rsp_i.pgnt;
+  // With an MMU the previous request presents its paddr (s1) in the cycle the
+  // new one is accepted (s0), so its grant is checked in that same cycle.
+  assign stall_ypb = (ypb_a_state_q == REGISTRED) ||
+                     (CVA6Cfg.MmuPresent && data_req && !ypb_load_rsp_i.pgnt);
   assign stall_translation = CVA6Cfg.MmuPresent ? translation_req_o && !dtlb_hit_i : 1'b0;
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
@@ -382,17 +386,18 @@ module load_unit
   //default ypb state registred
   assign ypb_load_req_o.paddr = ypb_a_state_q == TRANSPARENT ? paddr : paddr_q;
   assign ypb_load_req_o.we = '0;
-  // With an MMU paddr comes from s1 while lsu_ctrl_i already presents the next
-  // request, so the registered byte enable is the one belonging to it.
-  assign ypb_load_req_o.be = (ypb_a_state_q == TRANSPARENT) && valid_i && !CVA6Cfg.MmuPresent
-                             ? lsu_ctrl_i.be : be_q;
+  // be, size and aid go with the first address phase (YPB 4.1): the virtual
+  // phase with an MMU, the physical phase without, held until it is granted.
+  assign ypb_load_req_o.be = (!CVA6Cfg.MmuPresent && ypb_a_state_q == REGISTRED) ? be_q
+                                                                                : lsu_ctrl_i.be;
   assign ypb_load_req_o.size = (CVA6Cfg.IS_XLEN64) ? ariane_pkg::size_gen(
       ypb_load_req_o.be
   ) : ariane_pkg::size_gen_32(
       ypb_load_req_o.be
   );
   assign ypb_load_req_o.wdata = '0;
-  assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && (ypb_a_state_q == TRANSPARENT)) ? ldbuf_windex : ldbuf_windex_q;
+  assign ypb_load_req_o.aid = (!CVA6Cfg.MmuPresent && ypb_a_state_q == REGISTRED) ? aid_q
+                                                                                 : ldbuf_windex;
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_load_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_load_req_o.cacheable = paddr_is_cacheable;
@@ -435,6 +440,7 @@ module load_unit
     if (~rst_ni) begin
       ypb_a_state_q <= TRANSPARENT;
       paddr_q <= '0;
+      aid_q <= '0;
       be_q <= '0;
       kill_req_q <= '0;
       ldbuf_windex_q <= '0;
@@ -442,11 +448,8 @@ module load_unit
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        // With an MMU be_q is the byte enable of the request that paddr, one
-        // stage later, belongs to: sample it only when that request enters
-        // the load buffer, so that a request presented while the previous one
-        // is still waiting for its grant does not replace it.
-        if (CVA6Cfg.MmuPresent ? ldbuf_w : valid_i) be_q <= lsu_ctrl_i.be;
+        aid_q   <= ypb_load_req_o.aid;
+        be_q    <= ypb_load_req_o.be;
       end
       ypb_a_state_q <= ypb_a_state_d;
       kill_req_q <= kill_req_d;
