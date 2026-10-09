@@ -499,8 +499,8 @@ package config_pkg;
     // A store is complete when its request is granted, without waiting for
     // a response
     bit StoreAckOnGrant;
-    // Load and store requests have two address phases: the address is
-    // registered between the first phase (s0) and the physical one (s1)
+    // Load requests have two address phases: a first phase (s0) and the
+    // physical one (s1) the next cycle
     bit TwoPhaseReq;
     int unsigned NrStoreInFlight;
 

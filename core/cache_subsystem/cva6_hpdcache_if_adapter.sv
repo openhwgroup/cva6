@@ -195,6 +195,16 @@ module cva6_hpdcache_if_adapter
       flush_on_load_port_assert :
       assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1) (cva6_dcache_flush_i == 1'b0))
       else $error("Flush unsupported on load adapters");
+      // The HPDcache reads the tag of a virtually indexed request in the cycle
+      // after it accepts it: the physical phase follows at once, or the request
+      // is killed.
+      if (CVA6Cfg.TwoPhaseReq) begin : gen_vipt_tag_next_cycle_assert
+        vipt_tag_next_cycle_assert :
+        assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
+            (ypb_load_req_i.vreq && hpdcache_req_ready_i)
+            |=> (ypb_load_req_i.preq || ypb_load_req_i.kill_req))
+        else $error("Virtually indexed load accepted without a tag or a kill in the next cycle");
+      end
       //    pragma translate_on
       //  }}}
     end  //  }}}
