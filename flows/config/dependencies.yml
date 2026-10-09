@@ -41,12 +41,23 @@ submodule_patches:
   verif/core-v-verif:
     patches:
       - "verif/patches/core-v-verif-axi-amo-synchronizer.patch"
+      - "verif/patches/core-v-verif-obi-assert-aid-queue-depth.patch"
+      - "verif/patches/core-v-verif-obi-assert-outstanding-counter.patch"
     reason: >
       uvma_axi_amo_synchronizer passes the memory value between the read and the
       write halves of an atomic through a non persistent SystemVerilog event.
       When the read half runs first the notification is lost, the write half
       blocks and the AXI slave never sends the B response, which hangs the core.
-      Still present on core-v-verif master: drop this patch once fixed upstream.
+      The OBI assertion module checks that rid mirrors aid (R-9) with a 4-entry
+      aid queue indexed by 5-bit pointers: from the fifth transaction on, writes
+      land out of range and reads return 0, so a nonzero rid is reported as an
+      error and a wrong rid of 0 goes unnoticed. The patch gives it 32 entries.
+      The OBI assertion module also checks that no response comes without an
+      outstanding address phase (R-5) with a 4-bit counter, which wraps to 0
+      at 16 outstanding transactions and then reports a valid response as an
+      error; the store port reaches that. The patch makes the counter an int.
+      All are still present on core-v-verif master: drop each patch once
+      fixed upstream.
   core/cache_subsystem/hpdcache:
     patches:
       - "verif/patches/hpdcache-blackbox-ecc-sram-port-list.patch"
