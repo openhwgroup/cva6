@@ -274,8 +274,7 @@ altera_src += $(root-dir)corev_apu/rv_plic/rtl/top_pkg.sv \
 							$(root-dir)vendor/pulp-platform/common_cells/src/cdc_fifo_gray.sv \
 							$(root-dir)riscv-dbg/src/dm_obi_top.sv \
 							$(root-dir)core/include/instr_tracer_pkg.sv \
-							$(root-dir)core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv \
-							$(root-dir)core/cache_subsystem/amo_alu.sv
+							$(root-dir)core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
 
 altera_filter := corev_apu/tb/ariane_testharness.sv \
 								corev_apu/tb/ariane_peripherals.sv \

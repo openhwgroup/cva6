@@ -14,7 +14,6 @@
  *
  * Description: Manages communication with the AXI Bus
  */
-//import std_cache_pkg::*;
 
 module axi_adapter #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,

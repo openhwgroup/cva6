@@ -9,7 +9,6 @@
 // waving these warnings since they are in vendor or core_apu
 lint_off -rule STMTDLY -file "*/corev_apu/*"
 lint_off -rule WIDTHEXPAND -file "*/common/local/util/sram.sv"
-lint_off -rule WIDTHTRUNC -file "*/core/include/std_cache_pkg.sv"
 lint_off -file "*/corev_apu/*"
 lint_off -file "*/vendor/*"
 

@@ -136,5 +136,5 @@ autocmd Filetype gitcommit setlocal spell textwidth=72s
 To format RTL files checked by GitHub , use the following command:
 
 ```
-verible-verilog-format --inplace $(git ls-tree -r HEAD --name-only core |grep '\.sv$' |grep -v '^core/include/std_cache_pkg.sv$' |grep -v cvfpu)
+verible-verilog-format --inplace $(git ls-tree -r HEAD --name-only core |grep '\.sv$' |grep -v cvfpu)
 ```
