@@ -30,7 +30,6 @@ package build_config_pkg;
     int unsigned PtLevels = IS_XLEN64 ? 3 : 2;
 
     config_pkg::cva6_cfg_t cfg;
-    cfg.ObiVersion = CVA6Cfg.ObiVersion;
     cfg.XLEN = CVA6Cfg.XLEN;
     cfg.VLEN = CVA6Cfg.VLEN;
     cfg.PLEN = IS_XLEN32 ? 34 : 56;

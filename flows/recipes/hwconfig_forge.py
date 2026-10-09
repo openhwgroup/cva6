@@ -20,7 +20,11 @@ from flows.utils.autocompletion import (
 )
 from flows.utils.recipe_report import RecipeReport
 from flows.utils.rtl_config import parse_rtl_cfg
-from flows.utils.target_config import read_config_or_exit_rtl_cfg, target_dir
+from flows.utils.target_config import (
+    HIER_OF_MEM_SUBSYSTEM,
+    read_config_or_exit_rtl_cfg,
+    target_dir,
+)
 
 app = typer.Typer()
 
@@ -93,7 +97,6 @@ def hwconfig_forge(
         "link.ld",
         "spike.yaml",
         "isa.yml",
-        "testbench_cfg.yml",
         "Flist.cva6",
         "Flist.cva6_gate",
         "Flist.cva6_synth",
@@ -196,7 +199,19 @@ def hwconfig_forge(
             report.error(f"{param} disappeared from the forged configuration")
     report.success(f"{len(forged)} parameter(s) in the forged configuration")
 
-    gen_files = [forged_config_pkg]
+    # testbench_cfg.yml is written from the forged MemSubsystem, which may
+    # differ from the reference target.
+    forged_tb_cfg = forged_target_dir / "testbench_cfg.yml"
+    hier = HIER_OF_MEM_SUBSYSTEM.get(forged.get("MemSubsystem"))
+    if hier is None:
+        report.error_exit(
+            f"Unknown MemSubsystem {forged.get('MemSubsystem')!r} in "
+            f"{forged_config_pkg}, expected one of {list(HIER_OF_MEM_SUBSYSTEM)}"
+        )
+    forged_tb_cfg.write_text(f"hier: {hier.value}\n", encoding="utf-8")
+    report.info(f"create {forged_tb_cfg} (hier: {hier.value})")
+
+    gen_files = [forged_config_pkg, forged_tb_cfg]
     for name in companion_files:
         src = target_dir(target, repo_dir) / name
         dst = forged_target_dir / name

@@ -75,7 +75,7 @@ CFG_CACHE_WRITE_POLICY = {
     "CACHE_WT_WB": "WT/WB",
 }
 
-# unsigned'(8), bit'(1), int'(config_pkg::OBI_V1_6)
+# unsigned'(8), bit'(1), int'(4)
 CFG_FIELD_RE = re.compile(r"^\s*(\w+)\s*:\s*\w+'\(\s*([^)]*?)\s*\)\s*,?\s*$")
 # CacheWritePolicy: config_pkg::CACHE_WT,  (no type cast)
 CFG_ENUM_RE = re.compile(r"^\s*(\w+)\s*:\s*(?:config_pkg::)?(\w+)\s*,?\s*$")

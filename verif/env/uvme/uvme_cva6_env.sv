@@ -528,7 +528,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : spawn_obi_instr_fw_preload_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
             if (!fw_preload_seq.randomize()) begin
                `uvm_fatal("FWPRELOAD", "Randomize failed");
@@ -538,7 +538,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : obi_instr_slv_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
             instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
             if (!instr_slv_seq.randomize()) begin
                `uvm_fatal("INSTRSLVSEQ", "Randomize failed");
@@ -547,7 +547,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_store_slv_thread
-         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE) begin
             store_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("store_slv_seq");
             if (!store_slv_seq.randomize()) begin
                `uvm_fatal("STORESLVSEQ", "Randomize failed");
@@ -556,7 +556,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_amo_slv_thread
-         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.RVA) begin
+         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.RVA) begin
             amo_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("amo_slv_seq");
             if (!amo_slv_seq.randomize()) begin
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
@@ -565,7 +565,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_zcmt_slv_thread
-         if(cfg.obi_memory_zcmt_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.RVZCMT) begin
+         if(cfg.obi_memory_zcmt_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.RVZCMT) begin
             zcmt_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("zcmt_slv_seq");
             if (!zcmt_slv_seq.randomize()) begin
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
@@ -574,7 +574,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_load_slv_thread
-         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE) begin
             load_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("load_slv_seq");
             if (!load_slv_seq.randomize()) begin
                `uvm_fatal("LOADSLVSEQ", "Randomize failed");
@@ -583,7 +583,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_mmu_ptw_slv_thread
-         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.MmuPresent) begin
+         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.MmuPresent) begin
             mmu_ptw_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("mmu_ptw_slv_seq");
             if (!mmu_ptw_slv_seq.randomize()) begin
                `uvm_fatal("MMUPTWSLVSEQ", "Randomize failed");

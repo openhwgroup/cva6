@@ -17,13 +17,6 @@ package config_pkg;
   localparam int unsigned ILEN = 32;
   localparam int unsigned NRET = 1;
 
-  // ---------------
-  // OBI
-  // ---------------
-
-  localparam int unsigned OBI_NOT_COMPLIANT = 0;
-  localparam int unsigned OBI_V1_6 = 1600;
-
   /// The NoC type is a top-level parameter, hence we need a bit more
   /// information on what protocol those type parameters are supporting.
   /// Currently two values are supported"
@@ -283,8 +276,6 @@ package config_pkg;
     int unsigned                 SharedTlbDepth;
     // Option to enable Svnapot extension
     bit                          SvnapotEn;
-    // OBI version compliance, 0 means not compliant -> best performance
-    int unsigned                 ObiVersion;
     // Memory subsystem between the pipeline and the system bus
     mem_subsystem_e              MemSubsystem;
     // Depth of the store buffer FIFO tracking the stores granted but not yet
@@ -486,7 +477,6 @@ package config_pkg;
     int unsigned X_ISSUE_REGISTER_SPLIT;
 
     int unsigned IdWidth;
-    int unsigned ObiVersion;
 
     obi_pkg::obi_cfg_t ObiFetchbusCfg;
     obi_pkg::obi_cfg_t ObiStorebusCfg;
