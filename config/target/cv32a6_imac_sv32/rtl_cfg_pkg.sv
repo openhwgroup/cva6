@@ -129,7 +129,6 @@ package cva6_config_pkg;
       NrLoadPipeRegs: int'(1),
       NrStorePipeRegs: int'(0),
       DcacheIdWidth: int'(3),
-      ObiVersion: int'(config_pkg::OBI_V1_6),
       MemSubsystem: config_pkg::MEM_HPDCACHE_AXI,
       NrStoreInFlight: unsigned'(0),
       DclsEn: bit'(0),

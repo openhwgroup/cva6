@@ -158,7 +158,6 @@ package cva6_config_pkg;
       NrLoadPipeRegs: int'(CVA6ConfigNrLoadPipeRegs),
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
-      ObiVersion: int'(1),
       MemSubsystem: config_pkg::MEM_HPDCACHE_AXI,
       DclsEn: bit'(0),
       DclsDelay : unsigned'(1),

@@ -376,10 +376,6 @@
      - ``bit``
      - Option to enable Svnapot extension
 
-   * - ``ObiVersion``
-     - ``int unsigned``
-     - OBI version compliance, 0 means not compliant -> best performance
-
    * - ``MemSubsystem``
      - ``mem_subsystem_e``
      - Memory subsystem between the pipeline and the system bus
