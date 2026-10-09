@@ -141,8 +141,8 @@ module cva6_hpdcache_if_adapter
 
       assign hpdcache_req_abort_o = ypb_load_req_i.kill_req;
 
-      if (CVA6Cfg.MmuPresent) begin
-        // When MMu is present request is done in 2 phases, s0: index, s1:tag
+      if (CVA6Cfg.TwoPhaseReq) begin
+        // The request is done in 2 phases, s0: index, s1: tag
         assign hpdcache_req.phys_indexed = 1'b0;
         assign hpdcache_req_valid_o = ypb_load_req_i.vreq;
         assign hpdcache_req.addr_offset = get_vaddr_index(ypb_load_req_i.vaddr);
@@ -161,7 +161,7 @@ module cva6_hpdcache_if_adapter
         assign ypb_load_rsp_o.pgnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
 
       end else begin
-        // When MMu is not present request is done in 1 phases, s0: index+tag
+        // The request is done in 1 phase, s0: index and tag
         assign hpdcache_req.phys_indexed = 1'b1;
         assign hpdcache_req_valid_o = ypb_load_req_i.preq;
         assign hpdcache_req.addr_offset = get_paddr_index(ypb_load_req_i.paddr);

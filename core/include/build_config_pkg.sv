@@ -329,6 +329,7 @@ package build_config_pkg;
 
     cfg.MemSubsystem = CVA6Cfg.MemSubsystem;
     cfg.StoreAckOnGrant = (CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI);
+    cfg.TwoPhaseReq = CVA6Cfg.MmuPresent;
     cfg.NrStoreInFlight = CVA6Cfg.NrStoreInFlight;
 
     cfg.DclsEn = CVA6Cfg.DclsEn;
