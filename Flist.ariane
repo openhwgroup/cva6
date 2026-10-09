@@ -102,15 +102,6 @@ core/store_unit.sv
 core/mmu_sv39/tlb.sv
 core/mmu_sv39x4/tlb_sv39x4.sv
 core/commit_stage.sv
-core/cache_subsystem/wt_dcache_ctrl.sv
-core/cache_subsystem/wt_dcache_mem.sv
-core/cache_subsystem/wt_dcache_missunit.sv
-core/cache_subsystem/wt_dcache_wbuffer.sv
-core/cache_subsystem/wt_dcache.sv
-core/cache_subsystem/cva6_icache.sv
-core/cache_subsystem/cva6_icache_axi_wrapper.sv
-core/cache_subsystem/wt_l15_adapter.sv
-core/cache_subsystem/wt_cache_subsystem.sv
 corev_apu/clint/clint.sv
 corev_apu/clint/axi_lite_interface.sv
 corev_apu/riscv-dbg/debug_rom/debug_rom.sv
