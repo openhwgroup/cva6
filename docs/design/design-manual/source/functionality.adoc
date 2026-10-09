@@ -16,10 +16,10 @@ include::instructions.adoc[]
 include::traps.adoc[]
 include::CSRs.adoc[]
 
-ifeval::[{PipelineOnly} == true]
+ifeval::["{MemSubsystem}" == "config_pkg::MEM_OBI"]
 include::OBI.adoc[]
 endif::[]
-ifeval::[{PipelineOnly} == false]
+ifeval::["{MemSubsystem}" != "config_pkg::MEM_OBI"]
 include::AXI.adoc[]
 endif::[]
 

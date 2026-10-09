@@ -164,7 +164,7 @@ module cva6_tb_wrapper import uvmt_cva6_pkg::*; #(
 
   // DUT 
 
-  if (!CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin : cva6_top
+  if (CVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin : cva6_top
 
     noc_axi_req_t  noc_axi_req;
     noc_axi_resp_t noc_axi_resp;

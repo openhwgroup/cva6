@@ -35,14 +35,23 @@ package config_pkg;
     NOC_TYPE_L15_LITTLE_ENDIAN
   } noc_type_e;
 
-  /// Cache type parameter
-  typedef enum logic [2:0] {
-    WB = 0,
-    WT = 1,
-    HPDCACHE_WT = 2,
-    HPDCACHE_WB = 3,
-    HPDCACHE_WT_WB = 4
-  } cache_type_t;
+  /// Memory subsystem between the pipeline and the system bus
+  typedef enum logic [1:0] {
+    /// No cache: each memory port of the pipeline is an OBI bus
+    MEM_OBI = 0,
+    /// HPDcache data cache and HPICache instruction cache on an AXI bus
+    MEM_HPDCACHE_AXI = 1
+  } mem_subsystem_e;
+
+  /// Write policy of the data cache
+  typedef enum logic [1:0] {
+    /// Write-through: every store is forwarded to memory
+    CACHE_WT = 0,
+    /// Write-back: stores stay in the cache until the line is evicted
+    CACHE_WB = 1,
+    /// Both, chosen per access from the PMA write policy hint
+    CACHE_WT_WB = 2
+  } cache_write_policy_e;
 
   /// Branch predictor parameter
   typedef enum logic {
@@ -203,8 +212,8 @@ package config_pkg;
     int unsigned                 IcacheSetAssoc;
     // Instruction cache line width
     int unsigned                 IcacheLineWidth;
-    // Cache Type
-    cache_type_t                 DCacheType;
+    // Write policy of the data cache
+    cache_write_policy_e         CacheWritePolicy;
     // Data cache ID
     int unsigned                 DcacheIdWidth;
     // Data cache size (in bytes)
@@ -276,8 +285,8 @@ package config_pkg;
     bit                          SvnapotEn;
     // OBI version compliance, 0 means not compliant -> best performance
     int unsigned                 ObiVersion;
-    // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
-    bit                          PipelineOnly;
+    // Memory subsystem between the pipeline and the system bus
+    mem_subsystem_e              MemSubsystem;
     // Depth of the store buffer FIFO tracking the stores granted but not yet
     // acknowledged, so that a colliding load waits for them. 0 disables the
     // tracking, which is only safe when nothing buffers the accesses between
@@ -427,7 +436,7 @@ package config_pkg;
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned ICACHE_LINE_WIDTH;
     int unsigned ICACHE_USER_LINE_WIDTH;
-    cache_type_t DCacheType;
+    cache_write_policy_e CacheWritePolicy;
     int unsigned DcacheIdWidth;
     int unsigned DCACHE_SET_ASSOC;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
@@ -486,7 +495,10 @@ package config_pkg;
     obi_pkg::obi_cfg_t ObiMmuPtwbusCfg;
     obi_pkg::obi_cfg_t ObiZcmtbusCfg;
 
-    bit PipelineOnly;
+    mem_subsystem_e MemSubsystem;
+    // A store is complete when its request is granted, without waiting for
+    // a response
+    bit StoreAckOnGrant;
     int unsigned NrStoreInFlight;
 
     bit DclsEn;

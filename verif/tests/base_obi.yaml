@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Tests that need the OBI testbench (PipelineOnly targets): its memory agents
+# Tests that need the OBI testbench (MEM_OBI targets): its memory agents
 # can answer a request with an error.
 #
 # ================================================================================

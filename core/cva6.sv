@@ -229,7 +229,7 @@ module cva6
   );
 
 
-  if (CVA6Cfg.PipelineOnly) begin : gen_obi_adapter
+  if (CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI) begin : gen_obi_adapter
 
     // -------------------
     // OBI Adapter

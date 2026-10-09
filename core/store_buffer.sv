@@ -218,10 +218,10 @@ module store_buffer
     // A full in-flight tracking holds the request back: its address could no
     // longer be reported to the load unit.
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i && !inflight_full) begin
-      ypb_store_req_o.preq = ((!CVA6Cfg.PipelineOnly || commit_is_cbo) && pending_rvalid_q) ? 1'b0 : 1'b1;
+      ypb_store_req_o.preq = ((!CVA6Cfg.StoreAckOnGrant || commit_is_cbo) && pending_rvalid_q) ? 1'b0 : 1'b1;
       if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
 
-      if (((!CVA6Cfg.PipelineOnly || commit_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && !commit_is_cbo && ypb_store_rsp_i.pgnt)) begin
+      if (((!CVA6Cfg.StoreAckOnGrant || commit_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.StoreAckOnGrant && !commit_is_cbo && ypb_store_rsp_i.pgnt)) begin
         pending_rvalid_n = 1'b0;
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
@@ -232,17 +232,17 @@ module store_buffer
     end else if (speculative_queue_q[speculative_read_pointer_q].valid) begin
       if (commit_i && (commit_write_pointer_q == speculative_read_pointer_q) &&
           !stall_st_pending_i && !inflight_full) begin
-        ypb_store_req_o.preq = ((!CVA6Cfg.PipelineOnly || spec_is_cbo) && pending_rvalid_q) ? '0 : 1'b1;
+        ypb_store_req_o.preq = ((!CVA6Cfg.StoreAckOnGrant || spec_is_cbo) && pending_rvalid_q) ? '0 : 1'b1;
         direct_req_from_speculative = 1'b1;
         if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
       end
     end
 
-    // in PipelineOnly configuration we ignore the rvalid signal for now as we assume that the store
-    // happened if we got a grant, with cache wait for rvalid
+    // With StoreAckOnGrant a store is complete once granted and its rvalid is
+    // ignored; otherwise it waits for rvalid. A CBO always waits for rvalid.
 
     // shift the store request from the speculative buffer to the non-speculative
-    if (commit_i && !((((!CVA6Cfg.PipelineOnly || spec_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && !spec_is_cbo && ypb_store_rsp_i.pgnt)) && direct_req_from_speculative)) begin
+    if (commit_i && !((((!CVA6Cfg.StoreAckOnGrant || spec_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.StoreAckOnGrant && !spec_is_cbo && ypb_store_rsp_i.pgnt)) && direct_req_from_speculative)) begin
       commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
       commit_write_pointer_n = commit_write_pointer_n + 1'b1;
       commit_status_cnt++;

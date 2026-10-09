@@ -45,10 +45,8 @@ package build_config_pkg;
     cfg.FpgaAlteraEn = CVA6Cfg.FpgaAlteraEn;
     cfg.TechnoCut = CVA6Cfg.TechnoCut;
 
-    //  A superscalar core fetches 64 bits, so that a block can hold two 32-bit
-    //  instructions: without C, a 32-bit fetch would feed one issue port only.
-    //  This holds on the OBI bus (PipelineOnly) as on AXI, the OBI fetch
-    //  interface taking its data width from FETCH_WIDTH (ObiFetchbusCfg).
+    //  A superscalar core fetches 64 bits, so that a fetch block can hold two
+    //  32-bit instructions, on OBI as on AXI.
     cfg.FETCH_WIDTH = unsigned'(CVA6Cfg.SuperscalarEn ? 64 : 32);
     cfg.FETCH_BE_WIDTH = cfg.FETCH_WIDTH / 8;
     cfg.FETCH_ALIGN_BITS = $clog2(cfg.FETCH_BE_WIDTH);
@@ -168,7 +166,7 @@ package build_config_pkg;
     cfg.ICACHE_TAG_WIDTH = cfg.PLEN - ICACHE_INDEX_WIDTH;
     cfg.ICACHE_LINE_WIDTH = CVA6Cfg.IcacheLineWidth;
     cfg.ICACHE_USER_LINE_WIDTH = (CVA6Cfg.AxiUserWidth == 1) ? 4 : CVA6Cfg.IcacheLineWidth;
-    cfg.DCacheType = CVA6Cfg.DCacheType;
+    cfg.CacheWritePolicy = CVA6Cfg.CacheWritePolicy;
     cfg.DcacheIdWidth = CVA6Cfg.DcacheIdWidth;
     cfg.DCACHE_SET_ASSOC = CVA6Cfg.DcacheSetAssoc;
     cfg.DCACHE_SET_ASSOC_WIDTH = CVA6Cfg.DcacheSetAssoc > 1 ? $clog2(CVA6Cfg.DcacheSetAssoc) :
@@ -329,7 +327,8 @@ package build_config_pkg;
     cfg.ObiZcmtbusCfg.OptionalCfg.AChkWidth = 1;
     cfg.ObiZcmtbusCfg.OptionalCfg.RChkWidth = 1;
 
-    cfg.PipelineOnly = CVA6Cfg.PipelineOnly;
+    cfg.MemSubsystem = CVA6Cfg.MemSubsystem;
+    cfg.StoreAckOnGrant = (CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI);
     cfg.NrStoreInFlight = CVA6Cfg.NrStoreInFlight;
 
     cfg.DclsEn = CVA6Cfg.DclsEn;

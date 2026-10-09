@@ -67,7 +67,7 @@ package cva6_config_pkg;
 
   localparam CVA6ConfigPerfCounterEn = 0;
 
-  localparam config_pkg::cache_type_t CVA6ConfigDcacheType = config_pkg::WT;
+  localparam config_pkg::cache_write_policy_e CVA6ConfigCacheWritePolicy = config_pkg::CACHE_WT;
 
   localparam CVA6ConfigMmuPresent = 0;
 
@@ -141,7 +141,7 @@ package cva6_config_pkg;
       IcacheByteSize: unsigned'(CVA6ConfigIcacheByteSize),
       IcacheSetAssoc: unsigned'(CVA6ConfigIcacheSetAssoc),
       IcacheLineWidth: unsigned'(CVA6ConfigIcacheLineWidth),
-      DCacheType: CVA6ConfigDcacheType,
+      CacheWritePolicy: CVA6ConfigCacheWritePolicy,
       DcacheByteSize: unsigned'(CVA6ConfigDcacheByteSize),
       DcacheSetAssoc: unsigned'(CVA6ConfigDcacheSetAssoc),
       DcacheLineWidth: unsigned'(CVA6ConfigDcacheLineWidth),
@@ -159,7 +159,7 @@ package cva6_config_pkg;
       NrStorePipeRegs: int'(CVA6ConfigNrStorePipeRegs),
       DcacheIdWidth: int'(CVA6ConfigDcacheIdWidth),
       ObiVersion: int'(1),
-      PipelineOnly: bit'(0),
+      MemSubsystem: config_pkg::MEM_HPDCACHE_AXI,
       DclsEn: bit'(0),
       DclsDelay : unsigned'(1),
       DclsCommonRegfile: bit'(0),

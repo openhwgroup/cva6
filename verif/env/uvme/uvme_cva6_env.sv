@@ -181,7 +181,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+      if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
          cntxt.axi_cntxt.mem              = cntxt.mem;
          cntxt.interrupt_cntxt.mem_axi    = cntxt.mem;
          `uvm_info("UVMECVA6ENV", "AXI interface is active", UVM_NONE)
@@ -293,7 +293,7 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
    end
    else begin
@@ -331,7 +331,7 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
      uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
    end else begin
      uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
@@ -358,7 +358,7 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
    end else begin
       obi_memory_instr_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_instr_agent", this);
@@ -419,7 +419,7 @@ function void uvme_cva6_env_c::retrieve_vif();
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
    end
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
          axi_switch_vif.active <= 0;
       end else begin
@@ -468,7 +468,7 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer    = clknrst_agent.sequencer;
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
      vsequencer.axi_vsequencer       = axi_agent.vsequencer;
    end else begin
      vsequencer.obi_memory_instr_sequencer     = obi_memory_instr_agent.sequencer;
@@ -503,7 +503,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    fork
 
       begin
-         if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+         if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
             if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
                uvma_axi_vseq_c  axi_vseq;
                axi_vseq = uvma_axi_vseq_c::type_id::create("axi_vseq");
@@ -606,7 +606,7 @@ function void uvme_cva6_env_c::connect_coverage_model();
 
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       if(cfg.axi_cfg.cov_model_enabled) begin
          axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
          axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);

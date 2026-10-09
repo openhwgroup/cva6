@@ -399,7 +399,7 @@ TIED_PORTS = [
         "1": ["dtlb_hit_i"],
         "open": ["dcache_cmo_resp_o"],
     }),
-    ("PipelineOnly", True, None, {
+    ("MemSubsystem", "config_pkg::MEM_OBI", None, {
         "0": [
             "icache_enable_o", "icache_flush_o", "dcache_enable_o", "dcache_flush_o",
             "dcache_flush_ack_i", "fetch_req_o", "fetch_rsp_i", "load_req_o",
