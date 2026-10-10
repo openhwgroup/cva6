@@ -168,9 +168,17 @@ module cva6_tlb
 
       if (CVA6Cfg.RVH) begin
         for (x_gen = 0; x_gen < CVA6Cfg.PtLevels; x_gen++) begin
-          // Identify if GPADDR matches the GPPN
-          assign vaddr_vpn_match[i_gen][HYP_EXT][x_gen] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] ==
-                                                                      gppn[i_gen][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen];
+          // Identify if GPADDR matches the GPPN. The last level also covers the
+          // supplementary bits of the GPA (cfg.GPPNW = 29 bits in Sv39x4, 27 in
+          // Sv39), as the lookup does.
+          if (x_gen == CVA6Cfg.PtLevels - 1) begin : gen_gpaddr_top_level
+            assign vaddr_vpn_match[i_gen][HYP_EXT][x_gen] =
+                gpaddr_to_be_flushed_i[12+CVA6Cfg.GPPNW-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] ==
+                gppn[i_gen][CVA6Cfg.GPPNW-1:(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen];
+          end else begin : gen_gpaddr_level
+            assign vaddr_vpn_match[i_gen][HYP_EXT][x_gen] =  gpaddr_to_be_flushed_i[12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1))-1:12+((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen)] ==
+                                                                        gppn[i_gen][    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*(x_gen+1)-1 :    (CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)*x_gen];
+          end
         end
       end
 
@@ -320,7 +328,9 @@ module cva6_tlb
           if (tags_q[i].is_page[0][0])
             gppn[i][2*(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = {tags_q[i].vpn[1], tags_q[i].vpn[0]};
         end else begin
-          gppn[i][CVA6Cfg.VpnLen-1:0] = CVA6Cfg.VpnLen'(tags_q[i].vpn);
+          // G-stage only: the tag holds the GPPN, the supplementary GPA bits in
+          // the extra VPN slot
+          gppn[i] = CVA6Cfg.GPPNW'(tags_q[i].vpn);
         end
       end
 

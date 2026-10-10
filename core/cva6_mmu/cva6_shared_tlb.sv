@@ -672,9 +672,14 @@ module cva6_shared_tlb #(
           gppn_i = CVA6Cfg.GPPNW'({shared_tag_rd[i].vpn});
         end
 
-        for (int unsigned level = 0; level < CVA6Cfg.PtLevels; level++) begin
+        for (int unsigned level = 0; level < CVA6Cfg.PtLevels - 1; level++) begin
           gpaddr_vpn_match[level] = flush_gpaddr_q[12 + VPN_SEG_W*level +: VPN_SEG_W] == gppn_i[VPN_SEG_W*level +: VPN_SEG_W];
         end
+        // The last level also covers the supplementary bits of the GPA
+        // (cfg.GPPNW = 29 bits in Sv39x4, 27 in Sv39)
+        gpaddr_vpn_match[CVA6Cfg.PtLevels-1] =
+            flush_gpaddr_q[12+CVA6Cfg.GPPNW-1:12+VPN_SEG_W*(CVA6Cfg.PtLevels-1)] ==
+            gppn_i[CVA6Cfg.GPPNW-1:VPN_SEG_W*(CVA6Cfg.PtLevels-1)];
 
         for (int unsigned level = 0; level < CVA6Cfg.PtLevels; level++) begin
           upper_levels_match = 1'b1;
