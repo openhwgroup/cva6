@@ -62,7 +62,8 @@ module trigger_module
     input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] fetch_sdtrig_instr_i,
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_o[CVA6Cfg.NrIssuePorts],
 
-    output logic sdtrig_load_stall_o,
+    // Break asked by a load data trigger on the load retiring in this cycle
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_o,
     output logic sdtrig_load_cancel_o,
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_o,
     output logic sdtrig_store_stall_o,
@@ -164,7 +165,6 @@ CVA6Cfg.NrCommitPorts
   logic
       sdtrig_commit_std_exception_valid_q,
       sdtrig_commit_std_exception_valid_d,
-      sdtrig_load_stall_s,
       sdtrig_load_cancel_d,
       sdtrig_load_cancel_q;
   logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_d, sdtrig_load_action_q;
@@ -232,7 +232,7 @@ CVA6Cfg.NrCommitPorts
     matchLA = 1'b0;
     matchLD = 1'b0;
     sdtrig_load_cancel_d = 1'b0;
-    sdtrig_load_stall_o = (ex_i.valid) ? 1'b0 : sdtrig_load_stall_s;
+    sdtrig_load_data_action_o = '0;
     sdtrig_store_stall_o = 1'b0;
     sdtrig_commit_icount_valid_d = 1'b0;
     sdtrig_commit_icount_nr_instr_d = '0;
@@ -549,8 +549,8 @@ CVA6Cfg.NrCommitPorts
             //Load trigger on data
             if (CVA6Cfg.SdtrigMcontrol6LoadData) begin
               if (trigger_32_tdata1_d[i].mc6_type.select) begin
-                matchLD = std_match(tdata2_d[i], sdtrig_load_data_i,
-                                    trigger_32_tdata1_d[i].mc6_type.match);
+                matchLD = sdtrig_load_valid_i && std_match(tdata2_d[i], sdtrig_load_data_i,
+                                                           trigger_32_tdata1_d[i].mc6_type.match);
                 // Load data match: break after the load (hit0 and hit1 set), so that the
                 // loaded value is written back first.
                 if (priv_match[i] && matchLD) begin
@@ -743,8 +743,7 @@ CVA6Cfg.NrCommitPorts
       //Priorities : load data > execute address > execute data > load address/store address/store data
       if (CVA6Cfg.SdtrigMcontrol6LoadData && fire_req_LD.valid || CVA6Cfg.SdtrigIcount && fire_req_Icount.valid || CVA6Cfg.SdtrigEtrigger && fire_req_Etrigger.valid || CVA6Cfg.SdtrigItrigger && fire_req_Itrigger.valid) begin
         if (fire_req_LD.valid) begin
-          sdtrig_load_stall_o  = 1'b1;
-          sdtrig_load_action_o = fire_req_LD.action;
+          sdtrig_load_data_action_o = fire_req_LD.action;
         end
         if (fire_req_Icount.valid) begin
           sdtrig_commit_icount_valid_d = 1'b1;
@@ -989,7 +988,6 @@ CVA6Cfg.NrCommitPorts
         sdtrig_commit_icount_valid_o <= 1'b0;
         sdtrig_commit_icount_nr_instr_o <= '0;
         sdtrig_commit_action_o <= '0;
-        sdtrig_load_stall_s <= '0;
         sdtrig_load_cancel_q <= '0;
         sdtrig_load_action_q <= '0;
         etrigger_context_saved_valid_q <= 1'b0;
@@ -1028,7 +1026,6 @@ CVA6Cfg.NrCommitPorts
         sdtrig_commit_std_exception_valid_q <= sdtrig_commit_std_exception_valid_d;
         e_matched_q                         <= e_matched_d;
         mret_reg_q                          <= mret_reg_d;
-        sdtrig_load_stall_s                 <= sdtrig_load_stall_o;
         sdtrig_load_cancel_q                <= sdtrig_load_cancel_d;
         sdtrig_load_action_q                <= sdtrig_load_action_d;
         if (CVA6Cfg.SdtrigTriggerChaining) trigger_chain_vector_q <= trigger_chain_vector_d;

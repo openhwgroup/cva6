@@ -180,9 +180,11 @@ module ex_stage
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c_o,
     output logic sdtrig_lsu_inputs_we_o,
     output logic sdtrig_lsu_inputs_valid_o,
-    input logic sdtrig_load_stall_i,
     input logic sdtrig_load_cancel_i,
     input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    output logic sdtrig_load_data_valid_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_o,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_i,
     input logic sdtrig_store_stall_i,
     input logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i,
     // accelerate port result is valid - ACC_DISPATCHER
@@ -633,9 +635,11 @@ module ex_stage
       .rvfi_lsu_ctrl_o,
       .rvfi_mem_paddr_o,
       //Trigger module command signals
-      .sdtrig_load_stall_i    (sdtrig_load_stall_i),
       .sdtrig_load_cancel_i   (sdtrig_load_cancel_i),
       .sdtrig_load_action_i   (sdtrig_load_action_i),
+      .sdtrig_load_data_valid_o,
+      .sdtrig_load_data_o,
+      .sdtrig_load_data_action_i,
       .sdtrig_store_stall_i   (sdtrig_store_stall_i),
       .sdtrig_store_action_i  (sdtrig_store_action_i)
   );

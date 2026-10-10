@@ -91,7 +91,6 @@ module load_unit
     // Presence of non-idempotent operations in the D$ write buffer - CACHES
     input logic dcache_wbuffer_not_ni_i,
     //Trigger module
-    input logic sdtrig_load_stall_i,
     input logic sdtrig_load_cancel_i,
     input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i
 );
@@ -228,22 +227,22 @@ module load_unit
   assign ypb_load_req_o.vaddr = lsu_ctrl_i.vaddr;
 
   // directly forward exception fields (valid bit is set below)
-  // A load trigger reports its own cause and the faulting address. The load
-  // data trigger is the one imprecise case: the value it compares only exists
-  // once the load has returned, so it breaks after the instruction rather than
-  // on it, which is what ex_o.timing says.
+  // A load address trigger reports its own cause and the faulting address.
   //  An error on the response takes precedence over the MMU and trigger causes.
   assign ex_o.cause = ypb_load_rsp_i.err                ? riscv::HARDWARE_ERROR :
                       (sdtrig_load_action_i != '0)      ? sdtrig_load_action_i  :
                                                           ex_i.cause;
-  //  On a hardware error tval is the virtual address of the load that the
-  //  response answers, held in the load buffer, as the load that caused it may
-  //  have left lsu_ctrl_i long ago.
+  //  On a response tval is the virtual address of the load that the response
+  //  answers, held in the load buffer, as the load that caused it may have left
+  //  lsu_ctrl_i long ago: the hardware error and the load data trigger report
+  //  it.
   assign ex_o.tval = !CVA6Cfg.TvalEn ? ex_i.tval :
-                     (data_rvalid && ypb_load_rsp_i.err) ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, ldbuf_rdata.vaddr} :
+                     data_rvalid ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, ldbuf_rdata.vaddr} :
                      (sdtrig_load_action_i != '0)        ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} :
                                                            ex_i.tval;
-  assign ex_o.timing = (sdtrig_load_stall_i && ypb_load_rsp_i.rvalid && sdtrig_load_action_i != '0) ? 1'b1 : 1'b0;
+  // The load data trigger break is added after the output register of the
+  // load store unit, see load_store_unit.
+  assign ex_o.timing = 1'b0;
   assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
   assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
   assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
@@ -276,7 +275,7 @@ module load_unit
   // Check that NI operations follow the necessary conditions
   logic not_commit_time;
   logic inflight_stores;
-  logic stall_ni, stall_ni_mem;
+  logic stall_ni_mem;
   assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
   // A non-idempotent load waits to be the committing instruction. If commit
   // drops it (wrong path), it is retired without accessing memory.
@@ -305,17 +304,12 @@ module load_unit
   // Non-idempotent stall, which gates the request itself: such a load must not
   // leave until it is the oldest in flight.
   assign stall_ni_mem = (inflight_stores || not_commit_time || ni_load_dropped) && (paddr_nonidempotent && CVA6Cfg.NonIdemPotenceEn);
-  // A trigger stall does not gate the request: the trigger module releases it
-  // only on the exception this unit reports, so the request goes out and is
-  // killed instead.
-  assign stall_ni = stall_ni_mem || sdtrig_load_stall_i;
   // A load address trigger matches on the load presented in this cycle: its
   // action comes with it and the cancel follows one cycle later. The load must
   // not reach memory, so the match holds its request back, as an exception of
   // the request cycle does.
   assign sdtrig_load_match = CVA6Cfg.SdtrigMcontrol6LoadAddr && valid_i &&
-                             !sdtrig_load_cancel_i && sdtrig_load_action_i != '0 &&
-                             !sdtrig_load_stall_i;
+                             !sdtrig_load_cancel_i && sdtrig_load_action_i != '0;
   // Capture while the request is still the one being presented.
   assign sdtrig_trans_id_d = (valid_i && sdtrig_load_action_i != '0) ? lsu_ctrl_i.trans_id
                                                                     : sdtrig_trans_id_q;
@@ -347,17 +341,13 @@ module load_unit
     ex_o.valid = 1'b0;
     pop_ld_o = 1'b0; // release lsu_bypass fifo
 
-    // A load trigger asked for a break: raise the exception at once, which is
-    // what releases the trigger stall.
-    if (sdtrig_load_stall_i && sdtrig_load_action_i != '0) ex_o.valid = 1'b1;
-
     // REQUEST
     if (valid_i) begin
       translation_req_o = 1'b1;
       if (!page_offset_matches_i) begin
         ypb_load_req_o.vreq = !stall_translation && !stall_ni_mem;
         if (!CVA6Cfg.TwoPhaseReq || ypb_load_rsp_i.vgnt) begin
-          if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
+          if (stall_translation || stall_ni_mem || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
             kill_req_d = 1'b1;  // TwoPhaseReq only: the first phase is accepted, the physical one will not follow
           end else begin
             ldbuf_w  = CVA6Cfg.TwoPhaseReq ? 1'b1 : !ex_s1 && !sdtrig_load_match;  // record request into outstanding load fifo and trigger physical request
