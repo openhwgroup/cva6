@@ -167,7 +167,7 @@ module bht #(
       //Write to RAM
       if (bht_update_i.valid && !debug_mode_i) begin
         for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-          if (update_row_index == i) begin
+          if (32'(update_row_index) == i) begin
             bht_updated[i].valid = 1'b1;
             bht_ram_we[i] = 1'b1;
             bht_ram_write_address[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
@@ -183,7 +183,7 @@ module bht #(
         if (CVA6Cfg.FpgaAlteraEn)
           bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;
 
-        if (check_update_row_index == i) begin
+        if (32'(check_update_row_index) == i) begin
           //When asynchronous RAM is used, the address can be updated on the cycle when data is read
           if (!CVA6Cfg.FpgaAlteraEn)
             bht_ram_read_address_1[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;

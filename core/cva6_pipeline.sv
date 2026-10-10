@@ -515,7 +515,9 @@ module cva6_pipeline
   logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c;
   logic sdtrig_lsu_inputs_we, sdtrig_lsu_inputs_valid;
   logic sdtrig_commit_icount_valid;
-  logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr;
+  logic [(CVA6Cfg.NrCommitPorts > 1 ? $clog2(
+CVA6Cfg.NrCommitPorts
+) : 1)-1:0] sdtrig_commit_icount_nr_instr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------

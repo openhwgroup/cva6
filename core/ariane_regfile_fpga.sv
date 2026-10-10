@@ -66,7 +66,7 @@ module ariane_regfile_fpga #(
   always_comb begin
     for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       for (int unsigned i = 0; i < NUM_WORDS; i++) begin
-        if (waddr_i[j] == i) begin
+        if (32'(waddr_i[j]) == i) begin
           we_dec[j][i] = we_i[j];
         end else begin
           we_dec[j][i] = 1'b0;

@@ -134,8 +134,8 @@ module cva6_obi_adapter_subsystem
       return 6'h0C;  // unused, not part of riscv spec, but provided in OpenPiton
       ariane_pkg::AMO_CAS2:
       return 6'h0D;  // unused, not part of riscv spec, but provided in OpenPiton
+      default: return 6'h0;
     endcase
-    return 8'b0;
   endfunction
 
   obi_fetch_req_t obi_fetch_req;
@@ -176,7 +176,7 @@ module cva6_obi_adapter_subsystem
   assign obi_fetch_req.a.we = ypb_fetch_req_i.we;
   assign obi_fetch_req.a.be = ypb_fetch_req_i.be;
   assign obi_fetch_req.a.wdata = ypb_fetch_req_i.wdata;
-  assign obi_fetch_req.a.aid = ypb_fetch_req_i.aid;
+  assign obi_fetch_req.a.aid = $bits(obi_fetch_req.a.aid)'(ypb_fetch_req_i.aid);
   assign obi_fetch_req.a.a_optional.auser = '0;
   assign obi_fetch_req.a.a_optional.wuser = '0;
   assign obi_fetch_req.a.a_optional.atop = '0;
@@ -196,7 +196,7 @@ module cva6_obi_adapter_subsystem
   assign obi_store_req.a.we = ypb_store_req_i.we;
   assign obi_store_req.a.be = ypb_store_req_i.be;
   assign obi_store_req.a.wdata = ypb_store_req_i.wdata;
-  assign obi_store_req.a.aid = ypb_store_req_i.aid;
+  assign obi_store_req.a.aid = $bits(obi_store_req.a.aid)'(ypb_store_req_i.aid);
   assign obi_store_req.a.a_optional.auser = '0;
   assign obi_store_req.a.a_optional.wuser = '0;
   assign obi_store_req.a.a_optional.atop = '0;
@@ -216,7 +216,7 @@ module cva6_obi_adapter_subsystem
   assign obi_amo_req.a.we = ypb_amo_req_i.we;
   assign obi_amo_req.a.be = ypb_amo_req_i.be;
   assign obi_amo_req.a.wdata = ypb_amo_req_i.wdata;
-  assign obi_amo_req.a.aid = ypb_amo_req_i.aid;
+  assign obi_amo_req.a.aid = $bits(obi_amo_req.a.aid)'(ypb_amo_req_i.aid);
   assign obi_amo_req.a.a_optional.auser = '0;
   assign obi_amo_req.a.a_optional.wuser = '0;
   assign obi_amo_req.a.a_optional.atop = amo_cva6_to_obi(ypb_amo_req_i.atop);
@@ -252,7 +252,9 @@ module cva6_obi_adapter_subsystem
   assign obi_load_req.a.we = ypb_load_req_i.we;
   assign obi_load_req.a.be = CVA6Cfg.TwoPhaseReq ? load_vphase_be_q : ypb_load_req_i.be;
   assign obi_load_req.a.wdata = ypb_load_req_i.wdata;
-  assign obi_load_req.a.aid = CVA6Cfg.TwoPhaseReq ? load_vphase_aid_q : ypb_load_req_i.aid;
+  assign obi_load_req.a.aid = $bits(
+      obi_load_req.a.aid
+  )'(CVA6Cfg.TwoPhaseReq ? load_vphase_aid_q : ypb_load_req_i.aid);
   assign obi_load_req.a.a_optional.auser = '0;
   assign obi_load_req.a.a_optional.wuser = '0;
   assign obi_load_req.a.a_optional.atop = '0;
@@ -272,7 +274,7 @@ module cva6_obi_adapter_subsystem
   assign obi_mmu_ptw_req.a.we = ypb_mmu_ptw_req_i.we;
   assign obi_mmu_ptw_req.a.be = ypb_mmu_ptw_req_i.be;
   assign obi_mmu_ptw_req.a.wdata = ypb_mmu_ptw_req_i.wdata;
-  assign obi_mmu_ptw_req.a.aid = ypb_mmu_ptw_req_i.aid;
+  assign obi_mmu_ptw_req.a.aid = $bits(obi_mmu_ptw_req.a.aid)'(ypb_mmu_ptw_req_i.aid);
   assign obi_mmu_ptw_req.a.a_optional.auser = '0;
   assign obi_mmu_ptw_req.a.a_optional.wuser = '0;
   assign obi_mmu_ptw_req.a.a_optional.atop = '0;
@@ -292,7 +294,7 @@ module cva6_obi_adapter_subsystem
   assign obi_zcmt_req.a.we = ypb_zcmt_req_i.we;
   assign obi_zcmt_req.a.be = ypb_zcmt_req_i.be;
   assign obi_zcmt_req.a.wdata = ypb_zcmt_req_i.wdata;
-  assign obi_zcmt_req.a.aid = ypb_zcmt_req_i.aid;
+  assign obi_zcmt_req.a.aid = $bits(obi_zcmt_req.a.aid)'(ypb_zcmt_req_i.aid);
   assign obi_zcmt_req.a.a_optional.auser = '0;
   assign obi_zcmt_req.a.a_optional.wuser = '0;
   assign obi_zcmt_req.a.a_optional.atop = '0;
@@ -319,42 +321,42 @@ module cva6_obi_adapter_subsystem
   assign ypb_fetch_rsp_o.pgnt = obi_fetch_rsp.gnt;
   assign ypb_fetch_rsp_o.rvalid = obi_fetch_rsp.rvalid;
   assign ypb_fetch_rsp_o.rdata = obi_fetch_rsp.r.rdata;
-  assign ypb_fetch_rsp_o.rid = obi_fetch_rsp.r.rid;
+  assign ypb_fetch_rsp_o.rid = $bits(ypb_fetch_rsp_o.rid)'(obi_fetch_rsp.r.rid);
   assign ypb_fetch_rsp_o.err = obi_fetch_rsp.r.err;
   assign ypb_fetch_rsp_o.vgnt = '1;
 
   assign ypb_store_rsp_o.pgnt = obi_store_rsp.gnt;
   assign ypb_store_rsp_o.rvalid = obi_store_rsp.rvalid;
   assign ypb_store_rsp_o.rdata = obi_store_rsp.r.rdata;
-  assign ypb_store_rsp_o.rid = obi_store_rsp.r.rid;
+  assign ypb_store_rsp_o.rid = $bits(ypb_store_rsp_o.rid)'(obi_store_rsp.r.rid);
   assign ypb_store_rsp_o.err = obi_store_rsp.r.err;
   assign ypb_store_rsp_o.vgnt = '1;
 
   assign ypb_amo_rsp_o.pgnt = obi_amo_rsp.gnt;
   assign ypb_amo_rsp_o.rvalid = obi_amo_rsp.rvalid;
   assign ypb_amo_rsp_o.rdata = obi_amo_rsp.r.rdata;
-  assign ypb_amo_rsp_o.rid = obi_amo_rsp.r.rid;
+  assign ypb_amo_rsp_o.rid = $bits(ypb_amo_rsp_o.rid)'(obi_amo_rsp.r.rid);
   assign ypb_amo_rsp_o.err = obi_amo_rsp.r.err;
   assign ypb_amo_rsp_o.vgnt = '1;
 
   assign ypb_load_rsp_o.pgnt = obi_load_rsp.gnt;
   assign ypb_load_rsp_o.rvalid = obi_load_rsp.rvalid;
   assign ypb_load_rsp_o.rdata = obi_load_rsp.r.rdata;
-  assign ypb_load_rsp_o.rid = obi_load_rsp.r.rid;
+  assign ypb_load_rsp_o.rid = $bits(ypb_load_rsp_o.rid)'(obi_load_rsp.r.rid);
   assign ypb_load_rsp_o.err = obi_load_rsp.r.err;
   assign ypb_load_rsp_o.vgnt = !(CVA6Cfg.TwoPhaseReq && ypb_load_req_i.preq && !obi_load_rsp.gnt);
 
   assign ypb_mmu_ptw_rsp_o.pgnt = obi_mmu_ptw_rsp.gnt;
   assign ypb_mmu_ptw_rsp_o.rvalid = obi_mmu_ptw_rsp.rvalid;
   assign ypb_mmu_ptw_rsp_o.rdata = obi_mmu_ptw_rsp.r.rdata;
-  assign ypb_mmu_ptw_rsp_o.rid = obi_mmu_ptw_rsp.r.rid;
+  assign ypb_mmu_ptw_rsp_o.rid = $bits(ypb_mmu_ptw_rsp_o.rid)'(obi_mmu_ptw_rsp.r.rid);
   assign ypb_mmu_ptw_rsp_o.err = obi_mmu_ptw_rsp.r.err;
   assign ypb_mmu_ptw_rsp_o.vgnt = '1;
 
   assign ypb_zcmt_rsp_o.pgnt = obi_zcmt_rsp.gnt;
   assign ypb_zcmt_rsp_o.rvalid = obi_zcmt_rsp.rvalid;
   assign ypb_zcmt_rsp_o.rdata = obi_zcmt_rsp.r.rdata;
-  assign ypb_zcmt_rsp_o.rid = obi_zcmt_rsp.r.rid;
+  assign ypb_zcmt_rsp_o.rid = $bits(ypb_zcmt_rsp_o.rid)'(obi_zcmt_rsp.r.rid);
   assign ypb_zcmt_rsp_o.err = obi_zcmt_rsp.r.err;
   assign ypb_zcmt_rsp_o.vgnt = '1;
 

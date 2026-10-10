@@ -104,7 +104,7 @@ module btb #(
 
       if (btb_update_i.valid && !debug_mode_i) begin
         for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-          if (update_row_index == i) begin
+          if (32'(update_row_index) == i) begin
             btb_ram_csel_update[i] = 1'b1;
             btb_ram_we_update[i] = 1'b1;
             btb_ram_addr_update[i*$clog2(NR_ROWS)+:$clog2(NR_ROWS)] = update_pc;

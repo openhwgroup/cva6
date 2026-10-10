@@ -97,7 +97,7 @@ module cva6_tlb
   logic [TLB_ENTRIES-1:0] napot_tag_match;
   pte_cva6_t patched_pte;
   logic [TLB_ENTRIES-1:0] vpn0_napot_match;
-  assign v_st_enbl = (CVA6Cfg.RVH) ? {v_i, g_st_enbl_i, s_st_enbl_i} : '1;
+  assign v_st_enbl = (CVA6Cfg.RVH) ? $bits(v_st_enbl)'({v_i, g_st_enbl_i, s_st_enbl_i}) : '1;
   //-------------
   // Translation
   //-------------
@@ -164,7 +164,7 @@ module cva6_tlb
 
       // Identify if the input virtual address matches a stored NAPOT tag
       assign vpn0_napot_match[i_gen] = lu_vaddr_i[12 + (CVA6Cfg.VpnLen / CVA6Cfg.PtLevels) - 1 : 16] == tags_q[i_gen].vpn[0][(CVA6Cfg.VpnLen / CVA6Cfg.PtLevels)-1 : 4];
-      assign napot_tag_match[i_gen] = (CVA6Cfg.SvnapotEn && tags_q[i_gen].is_napot_64k) ? vpn_match[i_gen][2] && vpn_match[i_gen][1] && vpn0_napot_match[i_gen] : 1'b0;
+      assign napot_tag_match[i_gen] = (CVA6Cfg.SvnapotEn && tags_q[i_gen].is_napot_64k) ? &vpn_match[i_gen][CVA6Cfg.PtLevels-1:1] && vpn0_napot_match[i_gen] : 1'b0;
 
       if (CVA6Cfg.RVH) begin
         for (x_gen = 0; x_gen < CVA6Cfg.PtLevels; x_gen++) begin
@@ -188,6 +188,7 @@ module cva6_tlb
     lu_hit_o       = 1'b0;
     lu_content_o   = '{default: 0};
     lu_g_content_o = '{default: 0};
+    patched_pte    = '0;
     lu_is_page_o   = '{default: 0};
     match_asid     = '{default: 0};
     match_vmid     = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
@@ -227,7 +228,7 @@ module cva6_tlb
             // S-stage Normal page
             lu_gpaddr_o = {content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0], lu_vaddr_i[11:0]};
             // S-stage Mega page
-            if (tags_q[i].is_page[1][0])
+            if (CVA6Cfg.PtLevels > 2 && tags_q[i].is_page[CVA6Cfg.PtLevels>2?1 : 0][0])
               lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12] = lu_vaddr_i[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
             // S-stage Giga page
             if (tags_q[i].is_page[0][0])
@@ -243,7 +244,7 @@ module cva6_tlb
             // here again, we should not overwrite useful bits.
             lu_g_content_o = content_q[i].gpte;
             // Mega page
-            if (tags_q[i].is_page[1][HYP_EXT])
+            if (CVA6Cfg.PtLevels > 2 && tags_q[i].is_page[CVA6Cfg.PtLevels>2?1 : 0][HYP_EXT])
               lu_g_content_o.ppn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:0] = lu_gpaddr_o[12+(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1:12];
             // Giga page
             if (tags_q[i].is_page[0][HYP_EXT])
@@ -276,8 +277,8 @@ module cva6_tlb
     end
   end
 
-  logic [HYP_EXT:0] asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
-  logic [HYP_EXT:0] vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
+  logic asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2) is 0, active high
+  logic vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1) is 0, active high
   logic vmid_to_be_flushed_is0;  // indicates that the VMID provided is 0, active high
   logic gpaddr_to_be_flushed_is0;  // indicates that the GPADDR provided is 0, active high
   logic flush_addr_napot_match;
@@ -296,8 +297,14 @@ module cva6_tlb
   // Update and Flush
   // ------------------
   always_comb begin : update_flush
-    tags_n    = tags_q;
-    content_n = content_q;
+    tags_n                 = tags_q;
+    content_n              = content_q;
+    flush_addr_napot_match = 1'b0;
+    flush_addr_matches     = 1'b0;
+    temp_stored_vpn        = '0;
+    flush_vpn_masked       = '0;
+    stored_vpn_masked      = '0;
+    vpn_to_store           = '0;
 
     for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
 
@@ -307,7 +314,7 @@ module cva6_tlb
         if (tags_q[i].v_st_enbl[0]) begin
           gppn[i] = content_q[i].pte.ppn[(CVA6Cfg.GPPNW-1):0];
           // Mega Page
-          if (tags_q[i].is_page[1][0])
+          if (CVA6Cfg.PtLevels > 2 && tags_q[i].is_page[CVA6Cfg.PtLevels>2?1 : 0][0])
             gppn[i][CVA6Cfg.VpnLen/CVA6Cfg.PtLevels-1:0] = tags_q[i].vpn[0];
           // Giga Page
           if (tags_q[i].is_page[0][0])
@@ -318,7 +325,7 @@ module cva6_tlb
       end
 
       if (tags_q[i].is_napot_64k && CVA6Cfg.SvnapotEn) begin
-        temp_stored_vpn = {tags_q[i].vpn[2], tags_q[i].vpn[1], tags_q[i].vpn[0]};
+        temp_stored_vpn = CVA6Cfg.VpnLen'(tags_q[i].vpn[CVA6Cfg.PtLevels-1:0]);  // VPN2..VPN0
         // Mask the lower 4 bits of the VPN (addr[15:12]) for comparison
         flush_vpn_masked = vaddr_to_be_flushed_i[CVA6Cfg.VpnLen+11:12] & ~'hF;
         stored_vpn_masked = temp_stored_vpn & ~'hF;
@@ -406,6 +413,7 @@ module cva6_tlb
   logic [2*(TLB_ENTRIES-1)-1:0] plru_tree_q, plru_tree_n;
   always_comb begin : plru_replacement
     plru_tree_n = plru_tree_q;
+    replace_en  = '0;
     // The PLRU-tree indexing:
     // lvl0        0
     //            / \
@@ -432,7 +440,7 @@ module cva6_tlb
     for (
         int unsigned i = 0; i < TLB_ENTRIES; i++
     ) begin
-      automatic int unsigned idx_base, shift, new_index;
+      automatic int unsigned idx_base = 0, shift = 0, new_index = 0;
       // we got a hit so update the pointer as it was least recently used
       if (lu_hit[i] & lu_access_i) begin
         // Set the nodes to the values we would expect
@@ -461,9 +469,8 @@ module cva6_tlb
     // the corresponding bit of the entry's index, this is
     // the next entry to replace.
     for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
-      automatic logic en;
-      automatic int unsigned idx_base, shift, new_index;
-      en = 1'b1;
+      automatic logic en = 1'b1;
+      automatic int unsigned idx_base = 0, shift = 0, new_index = 0;
       for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
         idx_base = $unsigned((2 ** lvl) - 1);
         // lvl0 <=> MSB, lvl1 <=> MSB-1, ...

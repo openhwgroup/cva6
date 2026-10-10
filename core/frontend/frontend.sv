@@ -131,12 +131,12 @@ module frontend
   logic [CVA6Cfg.PLEN-1:0] paddr_d, paddr_q;
 
   // shift amount
-  logic [$clog2(CVA6Cfg.INSTR_PER_FETCH)-1:0] shamt;
+  logic [(CVA6Cfg.INSTR_PER_FETCH > 1 ? $clog2(CVA6Cfg.INSTR_PER_FETCH) : 1)-1:0] shamt;
   // address will always be 16 bit aligned, make this explicit here
   if (CVA6Cfg.RVC) begin : gen_shamt
     assign shamt = fetch_vaddr_d[$clog2(CVA6Cfg.INSTR_PER_FETCH):1];
   end else begin
-    assign shamt = 1'b0;
+    assign shamt = '0;
   end
 
   // -----------------------

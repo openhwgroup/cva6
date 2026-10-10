@@ -335,7 +335,7 @@ module id_stage #(
     instruction_deco[0]   = CVA6Cfg.RVC ? instruction_rvc[0] : fetch_entry_i[0].instruction;
     is_compressed_deco = CVA6Cfg.RVC ? is_compressed_rvc : '0;
     if (CVA6Cfg.SuperscalarEn) begin
-      instruction_deco[1] = CVA6Cfg.RVC ? instruction_rvc[1] : fetch_entry_i[1].instruction;
+      instruction_deco[CVA6Cfg.NrIssuePorts-1] = CVA6Cfg.RVC ? instruction_rvc[CVA6Cfg.NrIssuePorts-1] : fetch_entry_i[CVA6Cfg.NrIssuePorts-1].instruction;
     end
 
     if (CVA6Cfg.RVC) begin

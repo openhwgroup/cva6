@@ -644,9 +644,7 @@ module load_store_unit
   // the misaligned exception is passed to the functional unit via the MMU, which in case
   // can augment the exception if other memory related exceptions like a page fault or access errors
   always_comb begin : data_misaligned_detection
-    misaligned_exception = {
-      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.GPLEN{1'b0}}, {32{1'b0}}, 1'b0, 1'b0
-    };
+    misaligned_exception = '0;
     data_misaligned = 1'b0;
 
     if (lsu_ctrl.valid) begin

@@ -42,7 +42,7 @@ module dcls_common #(
         .alarms_o(alarms_o)
     );
   end else begin : gen_dcls_no_common_regfile
-    assign alarm_o = '0;
+    assign alarms_o = '0;
     assign to_main_o.regfile_rdata = '0;
     assign to_shadow_o.regfile_rdata = '0;
   end
