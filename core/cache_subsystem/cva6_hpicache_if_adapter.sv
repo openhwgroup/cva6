@@ -149,6 +149,7 @@ module cva6_hpicache_if_adapter
           phys_indexed: 1'b1,
           addr_tag: get_icache_addr_tag(ypb_fetch_req_i.paddr),
           pma: '{
+              bufferable: ypb_fetch_req_i.bufferable,
               uncacheable: !ypb_fetch_req_i.cacheable,
               io: 1'b0,
               wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -169,6 +170,7 @@ module cva6_hpicache_if_adapter
           need_rsp: 1'b1,
           phys_indexed: 1'b0,
           pma: '{
+              bufferable: 1'b0,
               uncacheable: 1'b0,
               io: 1'b0,
               wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -179,6 +181,7 @@ module cva6_hpicache_if_adapter
   assign hpicache_req = forward_flush ? hpicache_req_flush : hpicache_req_fetch; //flush has higher priority
   assign hpicache_req_abort_o = 1'b0;  // unused on physically indexed requests
   assign hpicache_req_tag_o = '0;  // unused on physically indexed requests
+  assign hpicache_req_pma_o.bufferable = 1'b0;
   assign hpicache_req_pma_o.uncacheable = 1'b0;
   assign hpicache_req_pma_o.io = 1'b0;
   assign hpicache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;

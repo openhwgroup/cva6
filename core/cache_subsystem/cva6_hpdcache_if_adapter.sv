@@ -144,10 +144,12 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
         assign hpdcache_req.pma.uncacheable = 1'b0;  // unused on virtually indexed request
+        assign hpdcache_req.pma.bufferable = 1'b0;  // unused on virtually indexed request
         assign hpdcache_req.pma.io = 1'b0;  // unused on virtually indexed request
         assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;  // unused on virtually indexed request
 
         assign hpdcache_req_pma_o.uncacheable = !ypb_load_req_i.cacheable;
+        assign hpdcache_req_pma_o.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req_pma_o.io = 1'b0;
         assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
         assign hpdcache_req_tag_o = get_paddr_tag(ypb_load_req_i.paddr);
@@ -163,10 +165,12 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
         assign hpdcache_req.pma.uncacheable = !ypb_load_req_i.cacheable;
+        assign hpdcache_req.pma.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req.pma.io = 1'b0;
         assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
         assign hpdcache_req_pma_o.uncacheable = '0;  // unused on physically indexed request
+        assign hpdcache_req_pma_o.bufferable = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.io = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
         ;  // unused on physically indexed request
@@ -222,6 +226,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req.phys_indexed = 1'b0;
       assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.uncacheable = 1'b0;  // unused on virtually indexed request
+      assign hpdcache_req.pma.bufferable = 1'b0;  // unused on virtually indexed request
       assign hpdcache_req.pma.io = 1'b0;  // unused on virtually indexed request
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -229,6 +234,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_tag_o = get_paddr_tag(ypb_mmu_ptw_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_mmu_ptw_req_i.cacheable;
+      assign hpdcache_req_pma_o.bufferable = ypb_mmu_ptw_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -266,6 +272,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req.phys_indexed = 1'b0;
       assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.uncacheable = '0;  // unused on virtually indexed request
+      assign hpdcache_req.pma.bufferable = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.io = 1'b0;
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -273,6 +280,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_tag_o = get_paddr_tag(ypb_zcmt_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_zcmt_req_i.cacheable;
+      assign hpdcache_req_pma_o.bufferable = ypb_zcmt_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -422,6 +430,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               phys_indexed: 1'b1,
               addr_tag: get_paddr_tag(ypb_amo_req_i.paddr),
               pma: '{
+                  bufferable: ypb_amo_req_i.bufferable,
                   uncacheable: !ypb_amo_req_i.cacheable,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -440,6 +449,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               phys_indexed: 1'b1,
               addr_tag: get_paddr_tag(ypb_store_req_i.paddr),
               pma: '{
+                  bufferable: ypb_store_req_i.bufferable,
                   uncacheable: !ypb_store_req_i.cacheable,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -463,6 +473,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               need_rsp: 1'b1,
               phys_indexed: 1'b0,
               pma: '{
+                  bufferable: 1'b0,
                   uncacheable: 1'b0,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -480,6 +491,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_abort_o = 1'b0;  // unused on physically indexed requests
       assign hpdcache_req_tag_o = '0;  // unused on physically indexed requests
       assign hpdcache_req_pma_o.uncacheable = 1'b0;
+      assign hpdcache_req_pma_o.bufferable = 1'b0;
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
       //  }}}

@@ -82,6 +82,30 @@ module  uvmt_cva6_axi_assert#(config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_
       @(posedge axi_assert_if.clk && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |-> (axi_assert_if.aw_atop[5:4] == 0 || axi_assert_if.aw_atop[5:4] == 2 || axi_assert_if.aw_atop[5:4] == 3) && axi_assert_if.aw_atop[3] == 0;
    endproperty
 
+   //Memory type of a transaction (AxCACHE) against the PMA of its address:
+   //modifiable always, bufferable in a bufferable region, read and write
+   //allocate in a cacheable one. An exclusive access is normal non-cacheable
+   //non-bufferable. An atomic transaction (AWATOP), which the memory executes,
+   //is non-cacheable with the bufferable attribute of its region. A
+   //transaction never crosses a region: it is at most a cache line.
+   function automatic logic [3:0] pma_cache(logic [63:0] addr);
+      return {{2{config_pkg::is_inside_cacheable_regions(CVA6Cfg, addr)}},
+              1'b1,
+              config_pkg::is_inside_bufferable_regions(CVA6Cfg, addr)};
+   endfunction
+
+   property AXI4_CVA6_ARCACHE;
+      @(posedge axi_assert_if.clk && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.ar_valid |->
+         axi_assert_if.ar_cache == (axi_assert_if.ar_lock ? 4'b0010 : pma_cache(64'(axi_assert_if.ar_addr)));
+   endproperty
+
+   property AXI4_CVA6_AWCACHE;
+      @(posedge axi_assert_if.clk && axi_assert_if.axi_assertion_enabled) disable iff (!axi_assert_if.rst_n) axi_assert_if.aw_valid |->
+         axi_assert_if.aw_cache == (axi_assert_if.aw_lock ? 4'b0010 :
+                                    (axi_assert_if.aw_atop != 0) ? (pma_cache(64'(axi_assert_if.aw_addr)) & 4'b0011) :
+                                    pma_cache(64'(axi_assert_if.aw_addr)));
+   endproperty
+
 /********************************************** Assert Property ******************************************************/
 
    cva6_aruser              : assert property (AXI4_CVA6_ARUSER)
@@ -123,6 +147,12 @@ module  uvmt_cva6_axi_assert#(config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_
    cva6_awatop              : assert property (AXI4_CVA6_AWATOP)
                          else `uvm_error (" AXI4 protocol checks assertion ", "Violation of AXI4_CVA6_AWATOP");
 
+   cva6_arcache             : assert property (AXI4_CVA6_ARCACHE)
+                         else `uvm_error (" AXI4 protocol checks assertion ", "Violation of AXI4_CVA6_ARCACHE");
+
+   cva6_awcache             : assert property (AXI4_CVA6_AWCACHE)
+                         else `uvm_error (" AXI4 protocol checks assertion ", "Violation of AXI4_CVA6_AWCACHE");
+
 /********************************************** Cover Property ******************************************************/
 
    cov_cva6_aruser      : cover property(AXI4_CVA6_ARUSER);
@@ -150,5 +180,9 @@ module  uvmt_cva6_axi_assert#(config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_
    cov_cva6_awlen       : cover property(AXI4_CVA6_AWLEN);
 
    cov_cva6_awatop       : cover property(AXI4_CVA6_AWATOP);
+
+   cov_cva6_arcache      : cover property(AXI4_CVA6_ARCACHE);
+
+   cov_cva6_awcache      : cover property(AXI4_CVA6_AWCACHE);
 
 endmodule : uvmt_cva6_axi_assert
