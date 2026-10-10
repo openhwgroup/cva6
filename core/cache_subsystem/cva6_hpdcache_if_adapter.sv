@@ -110,6 +110,16 @@ module cva6_hpdcache_if_adapter
     return addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
   endfunction
 
+  // Write policy of a request. A data cache with both policies writes back in
+  // a bufferable region and writes through elsewhere; a data cache with a
+  // single policy applies it.
+  function automatic hpdcache_pkg::hpdcache_wr_policy_hint_t get_wr_policy_hint(logic bufferable);
+    if (CVA6Cfg.CacheWritePolicy != config_pkg::CACHE_WT_WB) begin
+      return hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+    end
+    return bufferable ? hpdcache_pkg::HPDCACHE_WR_POLICY_WB : hpdcache_pkg::HPDCACHE_WR_POLICY_WT;
+  endfunction
+
   logic forward_store, forward_amo;
   logic hpdcache_req_is_uncacheable;
   hpdcache_req_t hpdcache_req;
@@ -151,7 +161,7 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req_pma_o.uncacheable = !ypb_load_req_i.cacheable;
         assign hpdcache_req_pma_o.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req_pma_o.io = 1'b0;
-        assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_load_req_i.bufferable);
         assign hpdcache_req_tag_o = get_paddr_tag(ypb_load_req_i.paddr);
         assign ypb_load_rsp_o.vgnt = hpdcache_req_ready_i;
         assign ypb_load_rsp_o.pgnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
@@ -167,7 +177,7 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req.pma.uncacheable = !ypb_load_req_i.cacheable;
         assign hpdcache_req.pma.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req.pma.io = 1'b0;
-        assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        assign hpdcache_req.pma.wr_policy_hint = get_wr_policy_hint(ypb_load_req_i.bufferable);
 
         assign hpdcache_req_pma_o.uncacheable = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.bufferable = '0;  // unused on physically indexed request
@@ -236,7 +246,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_pma_o.uncacheable = !ypb_mmu_ptw_req_i.cacheable;
       assign hpdcache_req_pma_o.bufferable = ypb_mmu_ptw_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
-      assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+      assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_mmu_ptw_req_i.bufferable);
 
       //    Response forwarding
       assign ypb_mmu_ptw_rsp_o.rvalid = hpdcache_rsp_valid_i;
@@ -282,7 +292,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_pma_o.uncacheable = !ypb_zcmt_req_i.cacheable;
       assign hpdcache_req_pma_o.bufferable = ypb_zcmt_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
-      assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+      assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_zcmt_req_i.bufferable);
 
       //    Response forwarding
       assign ypb_zcmt_rsp_o.rvalid = hpdcache_rsp_valid_i;
@@ -433,7 +443,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
                   bufferable: ypb_amo_req_i.bufferable,
                   uncacheable: !ypb_amo_req_i.cacheable,
                   io: 1'b0,
-                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+                  wr_policy_hint: get_wr_policy_hint(ypb_amo_req_i.bufferable)
               }
           };
 
@@ -452,7 +462,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
                   bufferable: ypb_store_req_i.bufferable,
                   uncacheable: !ypb_store_req_i.cacheable,
                   io: 1'b0,
-                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+                  wr_policy_hint: get_wr_policy_hint(ypb_store_req_i.bufferable)
               }
           };
 
