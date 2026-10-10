@@ -406,6 +406,9 @@ module load_unit
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_load_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_load_req_o.cacheable = paddr_is_cacheable;
+  assign ypb_load_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_load_req_o.paddr}
+  );
   assign ypb_load_req_o.access_type = 1'b1;  //data
 
 

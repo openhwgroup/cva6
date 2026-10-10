@@ -74,6 +74,9 @@ module amo_buffer #(
   assign ypb_amo_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr}  //TO DO CHECK GRANULARITY
   );
+  assign ypb_amo_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr}
+  );
   assign ypb_amo_req_o.access_type = 1'b1;  //1 = data
   assign ypb_amo_req_o.rready = amo_valid_commit_i;
 
