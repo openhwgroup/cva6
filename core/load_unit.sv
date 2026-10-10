@@ -135,6 +135,9 @@ module load_unit
   ldbuf_id_t ldbuf_last_id_q;
 
   logic kill_req_d, kill_req_q;
+  // Load address trigger: match on the presented load, its registered copy
+  // for the physical phase, and the kill of that phase
+  logic sdtrig_load_match, sdtrig_match_q, sdtrig_kill_s1;
 
   logic [CVA6Cfg.PLEN-1:0] paddr_q;
   ldbuf_id_t aid_q;
@@ -174,8 +177,8 @@ module load_unit
     if (ldbuf_r && (!LDBUF_FALLTHROUGH || !ldbuf_w)) begin
       ldbuf_valid_d[ldbuf_rindex] = 1'b0;
     end
-    // Free on exception
-    if (CVA6Cfg.TwoPhaseReq && (ldbuf_w_q && ex_i.valid)) begin
+    // Free on exception, or when a load trigger cancels the physical phase
+    if (CVA6Cfg.TwoPhaseReq && (ldbuf_w_q && (ex_i.valid || sdtrig_kill_s1))) begin
       ldbuf_valid_d[ldbuf_windex_q] = 1'b0;
     end
     //  Track a new outstanding operation in the load buffer
@@ -306,6 +309,13 @@ module load_unit
   // only on the exception this unit reports, so the request goes out and is
   // killed instead.
   assign stall_ni = stall_ni_mem || sdtrig_load_stall_i;
+  // A load address trigger matches on the load presented in this cycle: its
+  // action comes with it and the cancel follows one cycle later. The load must
+  // not reach memory, so the match holds its request back, as an exception of
+  // the request cycle does.
+  assign sdtrig_load_match = CVA6Cfg.SdtrigMcontrol6LoadAddr && valid_i &&
+                             !sdtrig_load_cancel_i && sdtrig_load_action_i != '0 &&
+                             !sdtrig_load_stall_i;
   // Capture while the request is still the one being presented.
   assign sdtrig_trans_id_d = (valid_i && sdtrig_load_action_i != '0) ? lsu_ctrl_i.trans_id
                                                                     : sdtrig_trans_id_q;
@@ -317,10 +327,13 @@ module load_unit
 
   assign ex_s0 = CVA6Cfg.MmuPresent && stall_translation && ex_i.valid;
   assign ex_s1 = ((CVA6Cfg.TwoPhaseReq ? ldbuf_w_q : valid_i) && ex_i.valid);
-  assign kill_s1 = CVA6Cfg.TwoPhaseReq ? ex_s1 : 1'b0;
+  // With TwoPhaseReq a matched load is already accepted in its first phase:
+  // its physical phase is killed instead of sent.
+  assign sdtrig_kill_s1 = CVA6Cfg.TwoPhaseReq && ldbuf_w_q && sdtrig_match_q;
+  assign kill_s1 = CVA6Cfg.TwoPhaseReq ? ex_s1 || sdtrig_kill_s1 : 1'b0;
 
   assign data_rvalid = ypb_load_rsp_i.rvalid && !ldbuf_flushed_q[ldbuf_rindex];
-  assign data_req = (CVA6Cfg.TwoPhaseReq ? ldbuf_w_q && !ex_s1 : ldbuf_w);
+  assign data_req = (CVA6Cfg.TwoPhaseReq ? ldbuf_w_q && !ex_s1 && !sdtrig_kill_s1 : ldbuf_w);
 
   always_comb begin : p_fsm_common
     // default assignment
@@ -347,8 +360,8 @@ module load_unit
           if (stall_translation || stall_ni || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
             kill_req_d = 1'b1;  // TwoPhaseReq only: the first phase is accepted, the physical one will not follow
           end else begin
-            ldbuf_w  = CVA6Cfg.TwoPhaseReq ? 1'b1 : !ex_s1;  // record request into outstanding load fifo and trigger physical request
-            pop_ld_o = !ex_s1;  // release lsu_bypass fifo
+            ldbuf_w  = CVA6Cfg.TwoPhaseReq ? 1'b1 : !ex_s1 && !sdtrig_load_match;  // record request into outstanding load fifo and trigger physical request
+            pop_ld_o = !ex_s1 && !sdtrig_load_match;  // release lsu_bypass fifo
           end
         end
       end
@@ -447,6 +460,7 @@ module load_unit
       kill_req_q <= '0;
       ldbuf_windex_q <= '0;
       ldbuf_w_q <= '0;
+      sdtrig_match_q <= 1'b0;
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
@@ -458,6 +472,7 @@ module load_unit
       //if (!ex_s1) begin
       ldbuf_windex_q <= ldbuf_windex;
       ldbuf_w_q <= ldbuf_w;
+      sdtrig_match_q <= sdtrig_load_match;
       //end
     end
   end
@@ -597,6 +612,15 @@ module load_unit
   assign paddr_req_nonidempotent = config_pkg::is_inside_nonidempotent_regions(
       CVA6Cfg, 64'(ypb_load_req_o.paddr)
   );
+  // A load whose address matched a load trigger does not reach memory.
+  logic sdtrig_matched_pending;
+  assign sdtrig_matched_pending = CVA6Cfg.TwoPhaseReq ? (ldbuf_w_q && sdtrig_match_q)
+                                                      : sdtrig_load_match;
+  sdtrig_load_addr_no_access :
+  assert property (@(posedge clk_i) disable iff (~rst_ni)
+        (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_matched_pending && ypb_a_state_q == TRANSPARENT)
+        |-> !ypb_load_req_o.preq)
+  else `ASSERT_ERROR("[load_unit] load sent to memory although its address matched a load trigger");
   ni_load_at_commit :
   assert property (@(posedge clk_i) disable iff (~rst_ni)
         (CVA6Cfg.NonIdemPotenceEn && ypb_load_req_o.preq && ypb_load_rsp_i.pgnt && paddr_req_nonidempotent)
