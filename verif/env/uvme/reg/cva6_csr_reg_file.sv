@@ -644,7 +644,7 @@ class reg_mhpmevent3 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -706,7 +706,7 @@ class reg_mhpmevent4 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -768,7 +768,7 @@ class reg_mhpmevent5 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -830,7 +830,7 @@ class reg_mhpmevent6 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -892,7 +892,7 @@ class reg_mhpmevent7 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -954,7 +954,7 @@ class reg_mhpmevent8 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1016,7 +1016,7 @@ class reg_mhpmevent9 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1078,7 +1078,7 @@ class reg_mhpmevent10 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1140,7 +1140,7 @@ class reg_mhpmevent11 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1202,7 +1202,7 @@ class reg_mhpmevent12 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1264,7 +1264,7 @@ class reg_mhpmevent13 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1326,7 +1326,7 @@ class reg_mhpmevent14 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1388,7 +1388,7 @@ class reg_mhpmevent15 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1450,7 +1450,7 @@ class reg_mhpmevent16 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1512,7 +1512,7 @@ class reg_mhpmevent17 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1574,7 +1574,7 @@ class reg_mhpmevent18 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1636,7 +1636,7 @@ class reg_mhpmevent19 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1698,7 +1698,7 @@ class reg_mhpmevent20 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1760,7 +1760,7 @@ class reg_mhpmevent21 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1822,7 +1822,7 @@ class reg_mhpmevent22 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1884,7 +1884,7 @@ class reg_mhpmevent23 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -1946,7 +1946,7 @@ class reg_mhpmevent24 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2008,7 +2008,7 @@ class reg_mhpmevent25 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2070,7 +2070,7 @@ class reg_mhpmevent26 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2132,7 +2132,7 @@ class reg_mhpmevent27 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2194,7 +2194,7 @@ class reg_mhpmevent28 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2256,7 +2256,7 @@ class reg_mhpmevent29 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2318,7 +2318,7 @@ class reg_mhpmevent30 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -2380,7 +2380,7 @@ class reg_mhpmevent31 extends csr_reg;
       option.per_instance = 1;
       mhpmevent: coverpoint data[31:0] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4539,7 +4539,7 @@ class reg_mhpmcounter3 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4601,7 +4601,7 @@ class reg_mhpmcounter4 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4663,7 +4663,7 @@ class reg_mhpmcounter5 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4725,7 +4725,7 @@ class reg_mhpmcounter6 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4787,7 +4787,7 @@ class reg_mhpmcounter7 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4849,7 +4849,7 @@ class reg_mhpmcounter8 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
      }
   endgroup
 
@@ -4911,7 +4911,7 @@ class reg_mhpmcounter9 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -4973,7 +4973,7 @@ class reg_mhpmcounter10 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5035,7 +5035,7 @@ class reg_mhpmcounter11 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5097,7 +5097,7 @@ class reg_mhpmcounter12 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5159,7 +5159,7 @@ class reg_mhpmcounter13 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5221,7 +5221,7 @@ class reg_mhpmcounter14 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5283,7 +5283,7 @@ class reg_mhpmcounter15 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5345,7 +5345,7 @@ class reg_mhpmcounter16 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5407,7 +5407,7 @@ class reg_mhpmcounter17 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5469,7 +5469,7 @@ class reg_mhpmcounter18 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5531,7 +5531,7 @@ class reg_mhpmcounter19 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5593,7 +5593,7 @@ class reg_mhpmcounter20 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5655,7 +5655,7 @@ class reg_mhpmcounter21 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5717,7 +5717,7 @@ class reg_mhpmcounter22 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5779,7 +5779,7 @@ class reg_mhpmcounter23 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5841,7 +5841,7 @@ class reg_mhpmcounter24 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5903,7 +5903,7 @@ class reg_mhpmcounter25 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -5965,7 +5965,7 @@ class reg_mhpmcounter26 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6027,7 +6027,7 @@ class reg_mhpmcounter27 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6089,7 +6089,7 @@ class reg_mhpmcounter28 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6151,7 +6151,7 @@ class reg_mhpmcounter29 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6213,7 +6213,7 @@ class reg_mhpmcounter30 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6275,7 +6275,7 @@ class reg_mhpmcounter31 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6337,7 +6337,7 @@ class reg_mhpmcounterh3 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6399,7 +6399,7 @@ class reg_mhpmcounterh4 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6461,7 +6461,7 @@ class reg_mhpmcounterh5 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6523,7 +6523,7 @@ class reg_mhpmcounterh6 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6585,7 +6585,7 @@ class reg_mhpmcounterh7 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6647,7 +6647,7 @@ class reg_mhpmcounterh8 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6709,7 +6709,7 @@ class reg_mhpmcounterh9 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6771,7 +6771,7 @@ class reg_mhpmcounterh10 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6833,7 +6833,7 @@ class reg_mhpmcounterh11 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6895,7 +6895,7 @@ class reg_mhpmcounterh12 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -6957,7 +6957,7 @@ class reg_mhpmcounterh13 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-          illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+          illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
      }
   endgroup
 
@@ -7019,7 +7019,7 @@ class reg_mhpmcounterh14 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7081,7 +7081,7 @@ class reg_mhpmcounterh15 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7143,7 +7143,7 @@ class reg_mhpmcounterh16 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7205,7 +7205,7 @@ class reg_mhpmcounterh17 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7267,7 +7267,7 @@ class reg_mhpmcounterh18 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7329,7 +7329,7 @@ class reg_mhpmcounterh19 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7391,7 +7391,7 @@ class reg_mhpmcounterh20 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7453,7 +7453,7 @@ class reg_mhpmcounterh21 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7515,7 +7515,7 @@ class reg_mhpmcounterh22 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7577,7 +7577,7 @@ class reg_mhpmcounterh23 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7639,7 +7639,7 @@ class reg_mhpmcounterh24 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7701,7 +7701,7 @@ class reg_mhpmcounterh25 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7763,7 +7763,7 @@ class reg_mhpmcounterh26 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7825,7 +7825,7 @@ class reg_mhpmcounterh27 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7887,7 +7887,7 @@ class reg_mhpmcounterh28 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -7949,7 +7949,7 @@ class reg_mhpmcounterh29 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -8011,7 +8011,7 @@ class reg_mhpmcounterh30 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
@@ -8073,7 +8073,7 @@ class reg_mhpmcounterh31 extends csr_reg;
       option.per_instance = 1;
       count: coverpoint data[31:0] {
          bins reset_value  = {0};
-         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values  = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.PerfCounterEn);
       }
   endgroup
 
