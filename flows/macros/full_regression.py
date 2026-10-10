@@ -152,6 +152,9 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot",
     # AXI PMP MMU with the write-back HPDcache
     "cv64a6_imafdc_sv39_hpdcache_wb",
+    # AXI PMP MMU with an HPDcache that writes back in a bufferable region and
+    # writes through in the rest of the cacheable memory
+    "cv64a6_imafdc_sv39_hpdcache_wtwb",
     # AXI PMP MMU with the hypervisor extension
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the hypervisor extension and the shared TLB
@@ -175,6 +178,8 @@ TARGETS = [
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
 #   base_ni        a non-idempotent region covering 0x1000
 #   base_obi       the OBI testbench (MEM_OBI), which injects bus errors
+#   dcache_wt, dcache_wb, dcache_wt_wb  CacheWritePolicy of an HPDcache with
+#                  RVZiCbom
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
 TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
@@ -380,6 +385,7 @@ TESTLISTS = {
         "base_rv64_amo_v",
         "base_csr",
         "base_zicbom",
+        "dcache_wt",
         "base_le",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
@@ -437,6 +443,16 @@ TESTLISTS = {
         "base_rv64_amo_p",
         "base_csr",
         "base_zicbom",
+        "dcache_wb",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_wtwb": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt_wb",
         "base_le",
     ],
 }

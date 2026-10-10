@@ -53,10 +53,12 @@ supports three main access properties:
   yes       yes        write-back
   ========= ========== ===================================================
 
-  A data cache that only writes back (``CACHE_WB``) requires every cacheable
-  region to be bufferable; a data cache that only writes through
-  (``CACHE_WT``) writes through in every cacheable region and reports the
-  attribute of the region on the memory interface.
+  A data cache with both write policies (``CacheWritePolicy`` =
+  ``CACHE_WT_WB``) writes back in the cacheable bufferable regions and writes
+  through in the other cacheable regions. A data cache that only writes back
+  (``CACHE_WB``) requires every cacheable region to be bufferable; a data cache
+  that only writes through (``CACHE_WT``) writes through in every cacheable
+  region and reports the attribute of the region on the memory interface.
 
 The regions are instantiation-time parameters, they can not be changed during
 runtime. CVA6 uses the following fields in the ``cva6_cfg_t`` configuration
