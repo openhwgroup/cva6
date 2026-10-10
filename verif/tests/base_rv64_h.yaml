@@ -40,6 +40,11 @@ testlist:
     <<: *p_test_config
     asm_tests: <path_var>/custom/hlvx_gstage/gstage_store_pt_ro.S
 
+  - test: rv64h-p-hfence-gvma-gpa-high-bits
+    iterations: 1
+    <<: *p_test_config
+    asm_tests: <path_var>/custom/hlvx_gstage/hfence_gvma_gpa_high_bits.S
+
   - test: pmp-hlvx-access-fault
     iterations: 1
     <<: *custom_test_config
