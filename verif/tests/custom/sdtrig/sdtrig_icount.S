@@ -30,6 +30,8 @@
 #   Requires Sdtrig and SdtrigIcount.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
@@ -50,7 +52,7 @@ main:
     li   t0, 0
     csrw 0x7a0, t0              # tselect = 0
 
-    li   t1, 0x30000e00
+    li   t1, TDATA1_VAL(3, 0, 0, 0x0000e00)
     csrw 0x7a1, t1
 
     nop
@@ -92,7 +94,7 @@ main:
     ret
 
 fail:
-    li   t0, 0x31fffe00         # type 3 kept, hit set, count reloaded
+    li   t0, TDATA1_VAL(3, 0, 0, 0x1fffe00)         # type 3 kept, hit set, count reloaded
     csrw 0x7a0, zero
     csrw 0x7a1, t0
     li a0, 1
@@ -108,7 +110,7 @@ fail:
 trap_handler:
     # type 3, count 0x3fff, hit set, m:
     #   (3 << 28) | (0x3fff << 10) | (1 << 24) | (1 << 9)
-    li   s10, 0x31fffe00
+    li   s10, TDATA1_VAL(3, 0, 0, 0x1fffe00)
     csrw 0x7a0, zero
     csrw 0x7a1, s10
 

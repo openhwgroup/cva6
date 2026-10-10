@@ -29,6 +29,8 @@
 #   Requires Sdtrig, SdtrigMcontrol6 and SdtrigMcontrol6ExecData.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
@@ -53,7 +55,7 @@ main:
     csrw 0x7a2, t1              # tdata2 = the instruction word to watch
 
     # type 6, match 0, m in [6], execute in [2], action 0, select = 1 in [21]
-    li   t1, 0x60200044
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200044)
     csrw 0x7a1, t1
 
 first_site:
@@ -69,7 +71,7 @@ first_site:
     csrw 0x7a0, t0
     li   t1, 0x12300e13
     csrw 0x7a2, t1
-    li   t1, 0x60200044
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200044)
     csrw 0x7a1, t1
 
 second_site:
@@ -91,7 +93,7 @@ second_site:
     csrw 0x7a0, t0
     li   t1, 0x12300e13
     csrw 0x7a2, t1
-    li   t1, 0x60200044
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200044)
     csrw 0x7a1, t1
 
     addi t3, zero, 0x456        # a different encoding
@@ -99,7 +101,7 @@ second_site:
     nop
 
     # Disarm: keep the type, drop the operation bits.
-    li   t1, 0x60200040
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200040)
     csrw 0x7a1, t1
 
     la   t0, break_count
@@ -114,7 +116,7 @@ second_site:
     ret
 
 fail:
-    li   t1, 0x60200040         # keep the type, drop the operation bits
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200040)         # keep the type, drop the operation bits
     csrw 0x7a1, t1
     li a0, 1
     ret
@@ -125,7 +127,7 @@ fail:
     # --------------------------------------------------------------------
     .align 6
 trap_handler:
-    li   s10, 0x60200040        # type 6 kept, execute/store/load cleared
+    li   s10, TDATA1_VAL(6, 0, 0, 0x0200040)        # type 6 kept, execute/store/load cleared
     csrw 0x7a0, zero
     csrw 0x7a1, s10
 

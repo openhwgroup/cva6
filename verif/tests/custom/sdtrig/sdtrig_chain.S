@@ -32,13 +32,15 @@
 #   SdtrigMcontrol6LoadAddr, SdtrigTriggerChaining and at least two triggers.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
     .globl main
 main:
     addi sp, sp, -16            # main calls chained_load_call: keep ra
-    sw   ra, 0(sp)
+    SREG ra, 0(sp)
     la   t0, trap_handler
     csrw mtvec, t0
     la   t0, break_count
@@ -52,14 +54,14 @@ main:
     csrw 0x7a0, t0              # tselect = 0
     la   t1, chained_load
     csrw 0x7a2, t1              # match the address of the load instruction
-    li   t1, 0x60000844         # type 6, chain in [11], m, execute
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000844)         # type 6, chain in [11], m, execute
     csrw 0x7a1, t1
 
     li   t0, 1
     csrw 0x7a0, t0              # tselect = 1
     la   t1, watched_word
     csrw 0x7a2, t1              # match the address the load reads
-    li   t1, 0x60000041         # type 6, chain clear, m, load, action 0
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000041)         # type 6, chain clear, m, load, action 0
     csrw 0x7a1, t1
 
     # --------------------------------------------------------------------
@@ -102,7 +104,7 @@ main:
 
     # --------------------------------------------------------------------
     li a0, 0
-    lw   ra, 0(sp)
+    LREG ra, 0(sp)
     addi sp, sp, 16
     ret
 
@@ -116,14 +118,14 @@ chained_load:
     ret
 
 fail:
-    li   t1, 0x60000040         # keep the type, drop the operation bits
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000040)         # keep the type, drop the operation bits
     csrw 0x7a0, zero
     csrw 0x7a1, t1
     li   t0, 1
     csrw 0x7a0, t0
     csrw 0x7a1, t1
     li a0, 1
-    lw   ra, 0(sp)
+    LREG ra, 0(sp)
     addi sp, sp, 16
     ret
 
@@ -133,7 +135,7 @@ fail:
     # --------------------------------------------------------------------
     .align 6
 trap_handler:
-    li   s10, 0x60000040        # type 6 kept, operation bits cleared
+    li   s10, TDATA1_VAL(6, 0, 0, 0x0000040)        # type 6 kept, operation bits cleared
     csrw 0x7a0, zero
     csrw 0x7a1, s10
     li   s11, 1

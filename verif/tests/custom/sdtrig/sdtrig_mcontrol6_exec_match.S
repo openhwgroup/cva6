@@ -26,6 +26,8 @@
 #   enabled, and the match types enabled in SdtrigSupportedMatch.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     # Keep every instruction 4 bytes wide: the handler steps over the trapping
     # instruction with mepc + 4, and with C a bare nop would assemble to a
@@ -50,7 +52,7 @@ main:
     csrw 0x7a2, t1              # tdata2 = address to match
 
     # type 6, match 0 (equal), m = 1, execute = 1, action 0 (breakpoint)
-    li   t1, 0x60000044         # [31:28]=6 [6]=m [2]=execute
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000044)         # [31:28]=6 [6]=m [2]=execute
     csrw 0x7a1, t1
 
 target_insn_eq:
@@ -62,7 +64,7 @@ target_insn_eq:
     li   t2, 1
     bne  t1, t2, fail           # exactly one fire expected
     la   t0, fire_pc
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     la   t2, target_insn_eq
     bne  t1, t2, fail           # fired, but not before target_insn_eq
 
@@ -129,7 +131,7 @@ trap_handler:
     # mepc + 4 is the next one.
     csrr t0, mepc
     la   t1, fire_pc
-    sw   t0, 0(t1)              # last fire, checked by main
+    SREG t0, 0(t1)              # last fire, checked by main
     addi t0, t0, 4
     csrw mepc, t0
 
@@ -144,5 +146,6 @@ handler_out:
     .align 2
 fire_count:
     .word 0
+    .align 3
 fire_pc:
-    .word 0
+    PTRWORD 0

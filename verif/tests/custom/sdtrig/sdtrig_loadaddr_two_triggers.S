@@ -37,9 +37,11 @@
 #define TDATA1  0x7a1
 #define TDATA2  0x7a2
 
-#define MC6_LOAD_M_ACT0 0x60000041   /* type 6, m, load, action 0 */
-#define MC6_LOAD_M_ACT1 0x60001041   /* type 6, m, load, action 1 */
-#define MC6_DISARMED    0x60000040   /* type 6, m, no operation   */
+#include "sdtrig_xlen.h"
+
+#define MC6_LOAD_M_ACT0 TDATA1_VAL(6, 0, 0, 0x0000041)  /* type 6, m, load, action 0 */
+#define MC6_LOAD_M_ACT1 TDATA1_VAL(6, 0, 0, 0x0001041)  /* type 6, m, load, action 1 */
+#define MC6_DISARMED    TDATA1_VAL(6, 0, 0, 0x0000040)  /* type 6, m, no operation   */
 #define MC6_HIT0        (1 << 22)
 
     .text
@@ -137,6 +139,9 @@ main:
     li   t2, 0x33334444
     bne  a6, t2, fail
     li   t2, 0xCAFEBABE
+#if __riscv_xlen == 64
+    sext.w t2, t2                # lw sign-extends the word
+#endif
     bne  a7, t2, fail
 
     li   a0, 0

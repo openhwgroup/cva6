@@ -32,6 +32,8 @@
 #   SdtrigSupportedMatch.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     # The handler steps over the trapping instruction with mepc + 4, so every
     # instruction it can land on has to be four bytes wide.
@@ -75,10 +77,10 @@ in_done:
     lw   t1, 0(t0)
     bne  t1, t2, fail           # both words of the range must fire
     la   t0, fire_pc
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     la   t2, range_in
     bne  t1, t2, fail           # first fire on the base
-    lw   t1, 4(t0)
+    LREG t1, REGBYTES(t0)
     la   t2, in_word1
     bne  t1, t2, fail           # second fire on base + 4
 
@@ -138,7 +140,7 @@ arm_napot:
     csrw 0x7a0, zero            # tselect = 0
     ori  a0, a0, 0x3            # two trailing ones: 8-byte range
     csrw 0x7a2, a0
-    li   a0, 0x600000c4
+    li   a0, TDATA1_VAL(6, 0, 0, 0x00000c4)
     csrw 0x7a1, a0
     ret
 
@@ -168,11 +170,11 @@ trap_handler:
     lw   t1, 0(t0)
     li   t0, 2
     bgeu t1, t0, 1f
-    slli t0, t1, 2
+    slli t0, t1, (REGBYTES / 4 + 1)
     la   t1, fire_pc
     add  t1, t1, t0
     csrr t0, mepc
-    sw   t0, 0(t1)
+    SREG t0, 0(t1)
 1:
     la   t0, fire_count
     lw   t1, 0(t0)
@@ -200,5 +202,6 @@ handler_out:
     .align 2
 fire_count:
     .word 0
+    .align 3
 fire_pc:
-    .word 0, 0
+    PTRWORD 0, 0

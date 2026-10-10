@@ -32,6 +32,15 @@
 #   Requires Sdtrig, SdtrigMcontrol6 and SdtrigMcontrol6LoadData.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
+// The word in watched_word. The load trigger compares it zero-extended to the
+// register width, so it is loaded with lwu, which on RV32 is lw.
+#define WATCHED_VALUE 0xCAFEBABE
+#if __riscv_xlen == 32
+#define lwu lw
+#endif
+
     .text
     .option norvc
 
@@ -48,16 +57,16 @@ main:
     li   t0, 0
     csrw 0x7a0, t0              # tselect = 0
 
-    li   t1, 0xCAFEBABE
+    li   t1, WATCHED_VALUE
     csrw 0x7a2, t1              # tdata2 = the value to watch for
 
     # type 6, match 0, m in [6], load in [0], action 0, select = 1 in [21]
-    li   t1, 0x60200041
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200041)
     csrw 0x7a1, t1
 
     li   a4, 0x5A5A5A5A         # sentinel, must be overwritten by the load
     la   t0, watched_word
-    lw   a4, 0(t0)              # brings back the watched value
+    lwu  a4, 0(t0)              # brings back the watched value
 load_after:
     nop                         # the deferred break lands here
 
@@ -68,21 +77,21 @@ load_after:
 
     # The break is taken after the load, on the next instruction.
     la   t0, break_pc
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     la   t2, load_after
     bne  t1, t2, fail
 
     # tdata1 as the handler read it: hit1:hit0 = 0b11, "after" in the
     # mcontrol6 encoding, hit1 in [25] and hit0 in [22].
     la   t0, break_tdata1
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     li   t2, (1 << 25) | (1 << 22)
     and  t1, t1, t2
     bne  t1, t2, fail
 
     # The break being deferred, the load completed: the register holds the
     # value, not the sentinel.
-    li   t2, 0xCAFEBABE
+    li   t2, WATCHED_VALUE
     bne  a4, t2, fail           # the load was stopped: not a deferred break
 
     # --------------------------------------------------------------------
@@ -93,9 +102,9 @@ load_after:
 
     li   t0, 0
     csrw 0x7a0, t0
-    li   t1, 0xCAFEBABE
+    li   t1, WATCHED_VALUE
     csrw 0x7a2, t1
-    li   t1, 0x60200041
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200041)
     csrw 0x7a1, t1
 
     la   t0, other_word         # holds 0x11112222
@@ -104,7 +113,7 @@ load_after:
     nop
 
     # Disarm: keep the type, drop the operation bits.
-    li   t1, 0x60200040
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200040)
     csrw 0x7a1, t1
 
     la   t0, break_count
@@ -119,7 +128,7 @@ load_after:
     ret
 
 fail:
-    li   t1, 0x60200040         # keep the type, drop the operation bits
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200040)         # keep the type, drop the operation bits
     csrw 0x7a1, t1
     li a0, 1
     ret
@@ -132,10 +141,10 @@ fail:
 trap_handler:
     csrw 0x7a0, zero
     csrr s11, 0x7a1             # tdata1 before disarming, for the hit bits
-    li   s10, 0x60200040        # type 6 kept, load/store/execute cleared
+    li   s10, TDATA1_VAL(6, 0, 0, 0x0200040)        # type 6 kept, load/store/execute cleared
     csrw 0x7a1, s10
     la   s10, break_tdata1
-    sw   s11, 0(s10)
+    SREG s11, 0(s10)
 
     csrr s10, mcause
     li   s11, 3                 # breakpoint
@@ -148,7 +157,7 @@ trap_handler:
 
     csrr s11, mepc
     la   s10, break_pc
-    sw   s11, 0(s10)
+    SREG s11, 0(s10)
     addi s11, s11, 4
     csrw mepc, s11
 
@@ -159,11 +168,12 @@ handler_out:
     .align 2
 break_count:
     .word 0
+    .align 3
 break_pc:
-    .word 0
+    PTRWORD 0
 break_tdata1:
-    .word 0
+    PTRWORD 0
 watched_word:
-    .word 0xCAFEBABE
+    .word WATCHED_VALUE
 other_word:
     .word 0x11112222

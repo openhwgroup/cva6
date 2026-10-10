@@ -29,6 +29,8 @@
 #   Requires Sdtrig, SdtrigMcontrol6 and SdtrigMcontrol6Store.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     # The handler steps over the trapping instruction with mepc + 4, so every
     # instruction it can land on has to be four bytes wide.
@@ -54,7 +56,7 @@ main:
     csrw 0x7a2, t1              # tdata2 = the address to watch
 
     # type 6, match 0 (equal), m, store, action 0 (breakpoint), select = 0
-    li   t1, 0x60000042
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000042)
     csrw 0x7a1, t1
 
     la   t0, watched_word
@@ -69,7 +71,7 @@ store_addr_hit:
     li   t2, 1
     bne  t1, t2, fail           # exactly one fire expected
     la   t0, fire_pc
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     la   t2, store_addr_hit
     bne  t1, t2, fail           # fired, but not on the watched store
 
@@ -88,7 +90,7 @@ store_addr_hit:
     csrw 0x7a0, t0
     la   t1, watched_word
     csrw 0x7a2, t1
-    li   t1, 0x60000042
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000042)
     csrw 0x7a1, t1
 
     la   t0, other_word
@@ -124,7 +126,7 @@ store_addr_hit:
     csrw 0x7a2, t1              # tdata2 = the value to watch for
 
     # same, with select = 1 in [21] so the comparison is against the data
-    li   t1, 0x60200042
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200042)
     csrw 0x7a1, t1
 
     la   t0, other_word
@@ -137,7 +139,7 @@ store_data_hit:
     li   t2, 1
     bne  t1, t2, fail
     la   t0, fire_pc
-    lw   t1, 0(t0)
+    LREG t1, 0(t0)
     la   t2, store_data_hit
     bne  t1, t2, fail           # fired, but not on the watched store
 
@@ -156,7 +158,7 @@ store_data_hit:
     csrw 0x7a0, t0
     li   t1, 0xDEADBEEF
     csrw 0x7a2, t1
-    li   t1, 0x60200042
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0200042)
     csrw 0x7a1, t1
 
     la   t0, other_word
@@ -217,7 +219,7 @@ trap_handler:
 
     csrr s11, mepc
     la   s10, fire_pc
-    sw   s11, 0(s10)            # last fire, checked by main
+    SREG s11, 0(s10)            # last fire, checked by main
     addi s11, s11, 4
     csrw mepc, s11
 
@@ -228,8 +230,9 @@ handler_out:
     .align 2
 fire_count:
     .word 0
+    .align 3
 fire_pc:
-    .word 0
+    PTRWORD 0
 watched_word:
     .word 0
 other_word:
