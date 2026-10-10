@@ -564,6 +564,9 @@ module frontend
   assign ypb_fetch_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_fetch_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_fetch_req_o.cacheable = paddr_is_cacheable;
+  assign ypb_fetch_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_fetch_req_o.paddr}
+  );
   assign ypb_fetch_req_o.access_type = '0;  //  0 = fetch
   assign ypb_fetch_req_o.rready = '1;  //always ready  TODO maybe manage instr_queue_ready & replay with this signal
 

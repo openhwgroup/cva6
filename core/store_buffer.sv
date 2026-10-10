@@ -189,6 +189,13 @@ module store_buffer
         direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
       }  //TO DO CHECK GRANULARITY
   );
+  assign ypb_store_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg,
+      {
+        {64 - CVA6Cfg.PLEN{1'b0}},
+        direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
+      }
+  );
   assign ypb_store_req_o.access_type = 1'b1;  //1 = data
 
   assign ypb_store_req_o.rready = '1;  //always ready

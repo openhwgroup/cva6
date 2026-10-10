@@ -208,6 +208,18 @@
      - ``logic [NrMaxRules-1:0][63:0]``
      - PMA cache region rules
 
+   * - ``NrBufferableRegionRules``
+     - ``int unsigned``
+     - PMA regions with bufferable rules number
+
+   * - ``BufferableRegionAddrBase``
+     - ``logic [NrMaxRules-1:0][63:0]``
+     - PMA bufferable region base address
+
+   * - ``BufferableRegionLength``
+     - ``logic [NrMaxRules-1:0][63:0]``
+     - PMA bufferable region length
+
    * - ``CvxifEn``
      - ``bit``
      - CV-X-IF coprocessor interface enable

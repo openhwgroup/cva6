@@ -10,6 +10,7 @@
 // Description: CVA6 Interface adapter YPB to OBI
 
 `include "obi/typedef.svh"
+`include "utils_macros.svh"
 
 module cva6_obi_adapter_subsystem
 //  Parameters
@@ -180,7 +181,7 @@ module cva6_obi_adapter_subsystem
   assign obi_fetch_req.a.a_optional.auser = '0;
   assign obi_fetch_req.a.a_optional.wuser = '0;
   assign obi_fetch_req.a.a_optional.atop = '0;
-  assign obi_fetch_req.a.a_optional.memtype[0] = '0;
+  assign obi_fetch_req.a.a_optional.memtype[0] = ypb_fetch_req_i.bufferable;
   assign obi_fetch_req.a.a_optional.memtype[1] = ypb_fetch_req_i.cacheable;
   assign obi_fetch_req.a.a_optional.mid = '0;
   assign obi_fetch_req.a.a_optional.prot[0] = ypb_fetch_req_i.access_type;
@@ -200,7 +201,7 @@ module cva6_obi_adapter_subsystem
   assign obi_store_req.a.a_optional.auser = '0;
   assign obi_store_req.a.a_optional.wuser = '0;
   assign obi_store_req.a.a_optional.atop = '0;
-  assign obi_store_req.a.a_optional.memtype[0] = '0;
+  assign obi_store_req.a.a_optional.memtype[0] = ypb_store_req_i.bufferable;
   assign obi_store_req.a.a_optional.memtype[1] = ypb_store_req_i.cacheable;
   assign obi_store_req.a.a_optional.mid = '0;
   assign obi_store_req.a.a_optional.prot[0] = ypb_store_req_i.access_type;
@@ -220,7 +221,7 @@ module cva6_obi_adapter_subsystem
   assign obi_amo_req.a.a_optional.auser = '0;
   assign obi_amo_req.a.a_optional.wuser = '0;
   assign obi_amo_req.a.a_optional.atop = amo_cva6_to_obi(ypb_amo_req_i.atop);
-  assign obi_amo_req.a.a_optional.memtype[0] = '0;
+  assign obi_amo_req.a.a_optional.memtype[0] = ypb_amo_req_i.bufferable;
   assign obi_amo_req.a.a_optional.memtype[1] = ypb_amo_req_i.cacheable;
   assign obi_amo_req.a.a_optional.mid = '0;
   assign obi_amo_req.a.a_optional.prot[0] = ypb_amo_req_i.access_type;
@@ -258,7 +259,7 @@ module cva6_obi_adapter_subsystem
   assign obi_load_req.a.a_optional.auser = '0;
   assign obi_load_req.a.a_optional.wuser = '0;
   assign obi_load_req.a.a_optional.atop = '0;
-  assign obi_load_req.a.a_optional.memtype[0] = '0;
+  assign obi_load_req.a.a_optional.memtype[0] = ypb_load_req_i.bufferable;
   assign obi_load_req.a.a_optional.memtype[1] = ypb_load_req_i.cacheable;
   assign obi_load_req.a.a_optional.mid = '0;
   assign obi_load_req.a.a_optional.prot[0] = ypb_load_req_i.access_type;
@@ -278,7 +279,7 @@ module cva6_obi_adapter_subsystem
   assign obi_mmu_ptw_req.a.a_optional.auser = '0;
   assign obi_mmu_ptw_req.a.a_optional.wuser = '0;
   assign obi_mmu_ptw_req.a.a_optional.atop = '0;
-  assign obi_mmu_ptw_req.a.a_optional.memtype[0] = '0;
+  assign obi_mmu_ptw_req.a.a_optional.memtype[0] = ypb_mmu_ptw_req_i.bufferable;
   assign obi_mmu_ptw_req.a.a_optional.memtype[1] = ypb_mmu_ptw_req_i.cacheable;
   assign obi_mmu_ptw_req.a.a_optional.mid = '0;
   assign obi_mmu_ptw_req.a.a_optional.prot[0] = ypb_mmu_ptw_req_i.access_type;
@@ -298,7 +299,7 @@ module cva6_obi_adapter_subsystem
   assign obi_zcmt_req.a.a_optional.auser = '0;
   assign obi_zcmt_req.a.a_optional.wuser = '0;
   assign obi_zcmt_req.a.a_optional.atop = '0;
-  assign obi_zcmt_req.a.a_optional.memtype[0] = '0;
+  assign obi_zcmt_req.a.a_optional.memtype[0] = ypb_zcmt_req_i.bufferable;
   assign obi_zcmt_req.a.a_optional.memtype[1] = ypb_zcmt_req_i.cacheable;
   assign obi_zcmt_req.a.a_optional.mid = '0;
   assign obi_zcmt_req.a.a_optional.prot[0] = ypb_zcmt_req_i.access_type;
@@ -360,5 +361,53 @@ module cva6_obi_adapter_subsystem
   assign ypb_zcmt_rsp_o.err = obi_zcmt_rsp.r.err;
   assign ypb_zcmt_rsp_o.vgnt = '1;
 
+
+  //pragma translate_off
+  // memtype carries the PMA of the address of a request: bit 1 cacheable,
+  // bit 0 bufferable.
+  function automatic logic [1:0] pma_memtype(logic [CVA6Cfg.PLEN-1:0] addr);
+    return {
+      config_pkg::is_inside_cacheable_regions(CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, addr}),
+      config_pkg::is_inside_bufferable_regions(CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, addr})
+    };
+  endfunction
+
+  memtype_fetch_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_fetch_req.req
+        |-> obi_fetch_req.a.a_optional.memtype == pma_memtype(
+      obi_fetch_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] fetch memtype differs from the PMA of its address");
+  memtype_store_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_store_req.req
+        |-> obi_store_req.a.a_optional.memtype == pma_memtype(
+      obi_store_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] store memtype differs from the PMA of its address");
+  memtype_amo_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_amo_req.req
+        |-> obi_amo_req.a.a_optional.memtype == pma_memtype(
+      obi_amo_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] AMO memtype differs from the PMA of its address");
+  memtype_load_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_load_req.req
+        |-> obi_load_req.a.a_optional.memtype == pma_memtype(
+      obi_load_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] load memtype differs from the PMA of its address");
+  memtype_mmu_ptw_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_mmu_ptw_req.req
+        |-> obi_mmu_ptw_req.a.a_optional.memtype == pma_memtype(
+      obi_mmu_ptw_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] page table walk memtype differs from the PMA of its address");
+  memtype_zcmt_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_zcmt_req.req
+        |-> obi_zcmt_req.a.a_optional.memtype == pma_memtype(
+      obi_zcmt_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] Zcmt memtype differs from the PMA of its address");
+  //pragma translate_on
 
 endmodule : cva6_obi_adapter_subsystem

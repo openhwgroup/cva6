@@ -26,6 +26,7 @@
     ariane_pkg::fu_op                 cbo_op;        \
     logic                             access_type;   \
     logic                             cacheable;     \
+    logic                             bufferable;    \
     logic                             kill_req;      \
     logic                             rready;        \
   }

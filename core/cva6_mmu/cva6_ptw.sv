@@ -182,6 +182,9 @@ module cva6_ptw
   assign ypb_mmu_ptw_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_mmu_ptw_req_o.paddr}  //TO DO CHECK GRANULARITY
   );
+  assign ypb_mmu_ptw_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_mmu_ptw_req_o.paddr}
+  );
   assign ypb_mmu_ptw_req_o.rready = '1;
   assign ypb_mmu_ptw_req_o.access_type = 1'b1;  //1 = data
   assign ypb_mmu_ptw_req_o.atop = ariane_pkg::AMO_NONE;

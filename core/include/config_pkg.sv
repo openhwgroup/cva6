@@ -183,6 +183,12 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     // PMA cache region rules
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    // PMA regions with bufferable rules number
+    int unsigned                 NrBufferableRegionRules;
+    // PMA bufferable region base address
+    logic [NrMaxRules-1:0][63:0] BufferableRegionAddrBase;
+    // PMA bufferable region length
+    logic [NrMaxRules-1:0][63:0] BufferableRegionLength;
     // CV-X-IF coprocessor interface enable
     bit                          CvxifEn;
     // Coprocessor type
@@ -416,6 +422,9 @@ package config_pkg;
     int unsigned NrCachedRegionRules;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    int unsigned NrBufferableRegionRules;
+    logic [NrMaxRules-1:0][63:0] BufferableRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] BufferableRegionLength;
     int unsigned MaxOutstandingStores;
     bit DebugEn;
     bit NonIdemPotenceEn;  // Currently only used by V extension (Ara)
@@ -505,6 +514,38 @@ package config_pkg;
   /// you develop a module that resides within the core, assign this constant.
   localparam cva6_cfg_t cva6_cfg_empty = cva6_cfg_t'(0);
 
+  function automatic logic range_check(logic [63:0] base, logic [63:0] len, logic [63:0] address);
+    // if len is a power of two, and base is properly aligned, this check could be simplified
+    // Extend base by one bit to prevent an overflow.
+    return (address >= base) && (({1'b0, address}) < (65'(base) + len));
+  endfunction : range_check
+
+  // Bufferable attribute of the memory interface (OBI memtype[0], AXI AxCACHE[0]):
+  // a cacheable bufferable region is write-back, a cacheable non-bufferable one
+  // write-through, a non-cacheable bufferable one accepts writes acknowledged
+  // before they reach their destination.
+  function automatic logic is_inside_bufferable_regions(cva6_cfg_t Cfg, logic [63:0] address);
+    automatic logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    for (int unsigned k = 0; k < Cfg.NrBufferableRegionRules; k++) begin
+      pass[k] =
+          range_check(Cfg.BufferableRegionAddrBase[k], Cfg.BufferableRegionLength[k], address);
+    end
+    return |pass;
+  endfunction : is_inside_bufferable_regions
+
+  // The region [base, base+len) lies inside a single bufferable region.
+  function automatic logic is_region_inside_bufferable_regions(cva6_cfg_t Cfg, logic [63:0] base,
+                                                               logic [63:0] len);
+    automatic logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    for (int unsigned k = 0; k < Cfg.NrBufferableRegionRules; k++) begin
+      pass[k] = (base >= Cfg.BufferableRegionAddrBase[k]) &&
+          ((65'(base) + len) <= (65'(Cfg.BufferableRegionAddrBase[k]) + Cfg.BufferableRegionLength[k]));
+    end
+    return |pass;
+  endfunction : is_region_inside_bufferable_regions
+
   /// Utility function being called to check parameters. Not all values make
   /// sense for all parameters, here is the place to sanity check them.
   function automatic void check_cfg(cva6_cfg_t Cfg);
@@ -521,6 +562,17 @@ package config_pkg;
     else `ASSERT_FATAL("");
     assert (Cfg.NrCachedRegionRules <= NrMaxRules)
     else `ASSERT_FATAL("");
+    assert (Cfg.NrBufferableRegionRules <= NrMaxRules)
+    else `ASSERT_FATAL("");
+    // A data cache that only writes back cannot honour a cacheable region
+    // that is not bufferable (write-through).
+    for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
+      assert (!(Cfg.MemSubsystem != MEM_OBI && Cfg.CacheWritePolicy == CACHE_WB) ||
+              is_region_inside_bufferable_regions(
+          Cfg, Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k]
+      ))
+      else `ASSERT_FATAL("A write-back only data cache needs every cacheable region bufferable");
+    end
     assert (Cfg.NrPMPEntries <= 64)
     else `ASSERT_FATAL("");
     assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
@@ -543,13 +595,6 @@ package config_pkg;
     else `ASSERT_FATAL("Big endian with atomic memory operations (RVA) is not supported");
     // pragma translate_on
   endfunction
-
-  function automatic logic range_check(logic [63:0] base, logic [63:0] len, logic [63:0] address);
-    // if len is a power of two, and base is properly aligned, this check could be simplified
-    // Extend base by one bit to prevent an overflow.
-    return (address >= base) && (({1'b0, address}) < (65'(base) + len));
-  endfunction : range_check
-
 
   function automatic logic is_inside_nonidempotent_regions(cva6_cfg_t Cfg, logic [63:0] address);
     logic [NrMaxRules-1:0] pass;
