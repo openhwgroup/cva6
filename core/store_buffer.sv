@@ -359,7 +359,9 @@ module store_buffer
   // registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_spec
     if (~rst_ni) begin
-      speculative_queue_q         <= '{default: 0};
+      for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
+        speculative_queue_q[i] <= '0;
+      end
       speculative_read_pointer_q  <= '0;
       speculative_write_pointer_q <= '0;
       speculative_status_cnt_q    <= '0;
@@ -376,7 +378,9 @@ module store_buffer
   // registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_commit
     if (~rst_ni) begin
-      commit_queue_q         <= '{default: 0};
+      for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
+        commit_queue_q[i] <= '0;
+      end
       commit_read_pointer_q  <= '0;
       commit_write_pointer_q <= '0;
       commit_status_cnt_q    <= '0;

@@ -240,7 +240,7 @@ module cva6_shared_tlb #(
 
       assign vpn0_napot_match[i] = lu_vpn[(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1 : 4] == shared_tag_rd[i].vpn[0][(CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-1 : 4];
       assign napot_tag_match[i] = (CVA6Cfg.SvnapotEn && shared_tag_rd[i].is_napot_64k) ?
-                                  (vpn_match[i][2] && vpn_match[i][1] && vpn0_napot_match[i]) : 1'b0;
+                                  (&vpn_match[i][CVA6Cfg.PtLevels-1:1] && vpn0_napot_match[i]) : 1'b0;
     end
   endgenerate
 
@@ -330,6 +330,7 @@ module cva6_shared_tlb #(
     shared_tlb_hit_d = 1'b0;
     dtlb_update_o    = '0;
     itlb_update_o    = '0;
+    patched_pte      = '0;
     match_asid       = '{default: 0};
     match_vmid       = CVA6Cfg.RVH ? '{default: 0} : '{default: 1};
 
@@ -649,7 +650,7 @@ module cva6_shared_tlb #(
     gvma_match_way = '0;
 
     for (int unsigned i = 0; i < SHARED_TLB_WAYS; i++) begin
-      logic [CVA6Cfg.VpnLen-1:0] gppn_i;
+      logic [CVA6Cfg.GPPNW-1:0] gppn_i;
       logic [CVA6Cfg.PtLevels-1:0] gpaddr_vpn_match;
       logic [CVA6Cfg.PtLevels-1:0] gpaddr_level_match;
       logic upper_levels_match;
@@ -663,11 +664,12 @@ module cva6_shared_tlb #(
         if (shared_tag_rd[i].v_st_enbl[0]) begin
           gppn_i[CVA6Cfg.GPPNW-1:0] = pte[i][0].ppn[CVA6Cfg.GPPNW-1:0];
 
-          if (shared_tag_rd[i].is_page[1][0]) gppn_i[VPN_SEG_W-1:0] = shared_tag_rd[i].vpn[0];
+          if (CVA6Cfg.PtLevels > 2 && shared_tag_rd[i].is_page[CVA6Cfg.PtLevels>2?1 : 0][0])
+            gppn_i[VPN_SEG_W-1:0] = shared_tag_rd[i].vpn[0];
           if (shared_tag_rd[i].is_page[0][0])
             gppn_i[2*VPN_SEG_W-1:0] = {shared_tag_rd[i].vpn[1], shared_tag_rd[i].vpn[0]};
         end else begin
-          gppn_i[CVA6Cfg.VpnLen-1:0] = CVA6Cfg.VpnLen'({shared_tag_rd[i].vpn});
+          gppn_i = CVA6Cfg.GPPNW'({shared_tag_rd[i].vpn});
         end
 
         for (int unsigned level = 0; level < CVA6Cfg.PtLevels; level++) begin

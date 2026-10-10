@@ -67,7 +67,7 @@ module cvxif_fu
     x_exception_o.valid = x_illegal_i;
     x_exception_o.cause = x_illegal_i ? riscv::ILLEGAL_INSTR : '0;
     //  TODO Optimization : Set exception in IRO.
-    x_exception_o.tval = CVA6Cfg.TvalEn ? x_off_instr_i : '0;
+    x_exception_o.tval = CVA6Cfg.TvalEn ? CVA6Cfg.XLEN'(x_off_instr_i) : '0;
     // Hypervisor exception fields
     x_exception_o.tval2 = {CVA6Cfg.GPLEN{1'b0}};
     x_exception_o.tinst = '0;

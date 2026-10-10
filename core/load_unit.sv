@@ -353,7 +353,7 @@ module load_unit
         end
       end
     end else begin
-      kill_req_d = ldbuf_flushed_q;  //if there was a flush, a request might have started s0
+      kill_req_d = ldbuf_flushed_q[0];  //if there was a flush, a request might have started s0
     end
     // RETIRE LOAD
     // we got an rvalid and its corresponding request was not flushed
@@ -398,8 +398,8 @@ module load_unit
       ypb_load_req_o.be
   );
   assign ypb_load_req_o.wdata = '0;
-  assign ypb_load_req_o.aid = (!CVA6Cfg.TwoPhaseReq && ypb_a_state_q == REGISTRED) ? aid_q
-                                                                                 : ldbuf_windex;
+  assign ypb_load_req_o.aid = (!CVA6Cfg.TwoPhaseReq && ypb_a_state_q == REGISTRED) ?
+      CVA6Cfg.IdWidth'(aid_q) : CVA6Cfg.IdWidth'(ldbuf_windex);
   assign ypb_load_req_o.atop = ariane_pkg::AMO_NONE;
   assign ypb_load_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_load_req_o.cacheable = paddr_is_cacheable;
@@ -450,7 +450,7 @@ module load_unit
     end else begin
       if (ypb_a_state_q == TRANSPARENT) begin
         paddr_q <= paddr;
-        aid_q   <= ypb_load_req_o.aid;
+        aid_q   <= ldbuf_id_t'(ypb_load_req_o.aid);
         be_q    <= ypb_load_req_o.be;
       end
       ypb_a_state_q <= ypb_a_state_d;
@@ -466,7 +466,7 @@ module load_unit
   // ---------------
   // Retire Load
   // ---------------
-  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(ypb_load_rsp_i.rid) : 1'b0;
+  assign ldbuf_rindex = (CVA6Cfg.NrLoadBufEntries > 1) ? ldbuf_id_t'(ypb_load_rsp_i.rid) : '0;
   assign ldbuf_rdata  = ldbuf_q[ldbuf_rindex];
 
   logic [CVA6Cfg.XLEN_ALIGN_BYTES-1:0] ldbuf_addroff;

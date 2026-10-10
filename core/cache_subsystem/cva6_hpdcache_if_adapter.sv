@@ -92,12 +92,6 @@ module cva6_hpdcache_if_adapter
   // ----------------------
   // Addr split Functions
   // ----------------------
-  // extract tag from vlen addr
-  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_vaddr_tag(
-      logic [CVA6Cfg.VLEN-1:0] addr);
-    return addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1 : CVA6Cfg.DCACHE_INDEX_WIDTH];
-  endfunction
-
   // extract tag from plen addr
   function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_paddr_tag(
       logic [CVA6Cfg.PLEN-1:0] addr);

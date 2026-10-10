@@ -76,11 +76,12 @@ module cva6_fifo_v3 #(
   // read and write queue logic
   always_comb begin : read_write_comb
     // default assignment
-    read_pointer_n  = read_pointer_q;
-    write_pointer_n = write_pointer_q;
-    status_cnt_n    = status_cnt_q;
-    if (FPGA_EN && FPGA_ALTERA) data_ft_n = data_ft_q;
-    if (FPGA_EN && FPGA_ALTERA) first_word_n = first_word_q;
+    read_pointer_n        = read_pointer_q;
+    write_pointer_n       = write_pointer_q;
+    status_cnt_n          = status_cnt_q;
+    data_ft_n             = (FPGA_EN && FPGA_ALTERA) ? data_ft_q : '0;
+    first_word_n          = (FPGA_EN && FPGA_ALTERA) ? first_word_q : '0;
+    fifo_ram_read_address = '0;
     if (FPGA_EN) begin
       fifo_ram_we            = '0;
       fifo_ram_write_address = '0;

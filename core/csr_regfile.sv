@@ -222,7 +222,9 @@ module csr_regfile
 
     //Commit <- trigger module
     output logic sdtrig_commit_icount_valid_o,
-    output logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_o,
+    output logic [(CVA6Cfg.NrCommitPorts > 1 ? $clog2(
+CVA6Cfg.NrCommitPorts
+) : 1)-1:0] sdtrig_commit_icount_nr_instr_o,
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_o,
     output logic sdtrig_commit_std_exception_valid_o
 );
@@ -454,6 +456,10 @@ module csr_regfile
   // Assignments
   // ----------------
   assign csr_addr = riscv::csr_t'(csr_addr_i);
+  // Entry offsets of the PMP configuration and address registers being accessed
+  logic [11:0] pmpcfg_index, pmpaddr_index;
+  assign pmpcfg_index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
+  assign pmpaddr_index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
   assign conv_csr_addr = (CVA6Cfg.RVH) ? riscv::convert_vs_access_csr(
       (riscv::csr_t'(csr_addr_i)), v_q
   ) : csr_addr;
@@ -715,7 +721,7 @@ module csr_regfile
         // machine mode registers
         riscv::CSR_MSTATUS: csr_rdata = mstatus_extended;
         riscv::CSR_MSTATUSH:
-        if (CVA6Cfg.IS_XLEN32) csr_rdata = mstatush;
+        if (CVA6Cfg.IS_XLEN32) csr_rdata = CVA6Cfg.XLEN'(mstatush);
         else read_access_exception = 1'b1;
         riscv::CSR_MISA: csr_rdata = IsaCode;
         riscv::CSR_MEDELEG:
@@ -988,12 +994,11 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
-          // if index is not even and XLEN==64, raise exception
-          if (CVA6Cfg.IS_XLEN64 && index[0] == 1'b1) read_access_exception = 1'b1;
+          // if pmpcfg_index is not even and XLEN==64, raise exception
+          if (CVA6Cfg.IS_XLEN64 && pmpcfg_index[0] == 1'b1) read_access_exception = 1'b1;
           else begin
-            csr_rdata = pmpcfg_q[index*4+:CVA6Cfg.XLEN/8];
+            csr_rdata = pmpcfg_q[pmpcfg_index*4+:CVA6Cfg.XLEN/8];
           end
         end
         // PMPADDR
@@ -1062,14 +1067,13 @@ module csr_regfile
                 riscv::CSR_PMPADDR62,
                 riscv::CSR_PMPADDR63: begin
           // index is calculated using PMPADDR0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // Important: we only support granularity 8 bytes (G=1)
           // -> last bit of pmpaddr must be set 0/1 based on the mode:
           // NA4, NAPOT: 1
           // TOR, OFF:   0
-          if (CVA6Cfg.PMPNapotEn && pmpcfg_q[index].addr_mode[1] == 1'b1)
-            csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b1};
-          else csr_rdata = {pmpaddr_q[index][CVA6Cfg.PLEN-3:1], 1'b0};
+          if (CVA6Cfg.PMPNapotEn && pmpcfg_q[pmpaddr_index].addr_mode[1] == 1'b1)
+            csr_rdata = {pmpaddr_q[pmpaddr_index][CVA6Cfg.PLEN-3:1], 1'b1};
+          else csr_rdata = {pmpaddr_q[pmpaddr_index][CVA6Cfg.PLEN-3:1], 1'b0};
         end
         default: read_access_exception = 1'b1;
       endcase
@@ -1085,7 +1089,15 @@ module csr_regfile
     automatic hgatp_t hgatp;
     automatic logic [63:0] instret;
 
-    mtval_d = '0;
+    mtval_d                  = '0;
+    mask                     = '0;
+    trap_to_priv_lvl         = riscv::PRIV_LVL_M;
+    trap_to_v                = 1'b0;
+    en_ld_st_translation_d   = en_ld_st_translation_q;
+    ld_st_priv_lvl_o         = priv_lvl_o;
+    ld_st_v_o                = 1'b0;
+    en_ld_st_translation_o   = en_ld_st_translation_q;
+    en_ld_st_g_translation_o = 1'b0;
 
     if (CVA6Cfg.RVS) begin
       satp = satp_q;
@@ -1731,11 +1743,11 @@ module csr_regfile
         riscv::CSR_MSTATUSH: begin
           if (CVA6Cfg.IS_XLEN32) begin
             // MBE, SBE and UBE as for CSR_MSTATUS
-            mstatus_d.mbe = CVA6Cfg.BigEndianEn && ((csr_wdata & riscv::MSTATUSH_MBE) != 0);
+            mstatus_d.mbe = CVA6Cfg.BigEndianEn && ((csr_wdata & CVA6Cfg.XLEN'(riscv::MSTATUSH_MBE)) != 0);
             mstatus_d.sbe = CVA6Cfg.BigEndianEn && CVA6Cfg.RVS && mstatus_d.mbe;
             mstatus_d.ube = CVA6Cfg.BigEndianEn && CVA6Cfg.RVU && mstatus_d.mbe;
             // this register has side-effects on other registers, flush the pipeline
-            flush_o       = 1'b1;
+            flush_o = 1'b1;
           end else begin
             update_access_exception = 1'b1;
           end
@@ -2025,13 +2037,13 @@ module csr_regfile
                 riscv::CSR_PMPCFG14,
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
 
-          // if index is not even and XLEN==64, raise exception
-          if (CVA6Cfg.IS_XLEN64 && index[0] == 1'b1) update_access_exception = 1'b1;
+          // if pmpcfg_index is not even and XLEN==64, raise exception
+          if (CVA6Cfg.IS_XLEN64 && pmpcfg_index[0] == 1'b1) update_access_exception = 1'b1;
           else begin
             for (int i = 0; i < CVA6Cfg.XLEN / 8; i++) begin
-              if (!pmpcfg_q[index*4+i].locked) pmpcfg_d[index*4+i] = csr_wdata[i*8+:8];
+              if (!pmpcfg_q[pmpcfg_index*4+i].locked)
+                pmpcfg_d[pmpcfg_index*4+i] = csr_wdata[i*8+:8];
             end
           end
         end
@@ -2100,17 +2112,16 @@ module csr_regfile
                 riscv::CSR_PMPADDR62,
                 riscv::CSR_PMPADDR63: begin
           // index is calculated using PMPADDR0 as the offset
-          automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
           // check if the entry or the entry above is locked
-          // the successor entry only exists below the last index, pmpcfg_q[64]
+          // the successor entry only exists below the last pmpaddr_index, pmpcfg_q[64]
           // would be out of the declared array
-          if (CVA6Cfg.NrPMPEntries == 0 || !pmpcfg_q[index].locked) begin
-            if (index < 63) begin
-              if (!(pmpcfg_q[index+1].locked && pmpcfg_q[index+1].addr_mode == riscv::TOR)) begin
-                pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+          if (CVA6Cfg.NrPMPEntries == 0 || !pmpcfg_q[pmpaddr_index].locked) begin
+            if (pmpaddr_index < 63) begin
+              if (!(pmpcfg_q[pmpaddr_index+1].locked && pmpcfg_q[pmpaddr_index+1].addr_mode == riscv::TOR)) begin
+                pmpaddr_d[pmpaddr_index] = csr_wdata[CVA6Cfg.PLEN-3:0];
               end
             end else begin
-              pmpaddr_d[index] = csr_wdata[CVA6Cfg.PLEN-3:0];
+              pmpaddr_d[pmpaddr_index] = csr_wdata[CVA6Cfg.PLEN-3:0];
             end
           end
         end

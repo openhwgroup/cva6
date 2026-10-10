@@ -37,7 +37,9 @@ module commit_stage
     input logic single_step_i,
     // Trigger module
     input logic sdtrig_commit_icount_valid_i,
-    input logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_i,
+    input logic [(CVA6Cfg.NrCommitPorts > 1 ? $clog2(
+CVA6Cfg.NrCommitPorts
+) : 1)-1:0] sdtrig_commit_icount_nr_instr_i,
     input logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_i,
     input logic sdtrig_commit_std_exception_valid_i,
     // The instruction we want to commit - ISSUE_STAGE
@@ -339,7 +341,7 @@ module commit_stage
                                 && !flush_dcache_i
                                 && !(CVA6Cfg.RVA && instr_0_is_amo)
                                 && !single_step_i
-                                && !(CVA6Cfg.Sdtrig && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i < CVA6Cfg.NrCommitPorts)
+                                && !(CVA6Cfg.Sdtrig && sdtrig_commit_icount_valid_i && 32'(sdtrig_commit_icount_nr_instr_i) < CVA6Cfg.NrCommitPorts)
                                 && (CVA6Cfg.SdtrigMcontrol6LoadData ? !commit_instr_i[0].ex.timing : 1'b1)) begin
         // only if the first instruction didn't throw an exception and this instruction won't throw an exception
         // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
