@@ -32,6 +32,8 @@
 #   Requires Sdtrig and SdtrigEtrigger.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
@@ -56,7 +58,7 @@ main:
     li   t1, 0x4                # cause 2, illegal instruction
     csrw 0x7a2, t1
 
-    li   t1, 0x50000200
+    li   t1, TDATA1_VAL(5, 0, 0, 0x0000200)
     csrw 0x7a1, t1
 
     .word 0x00000000            # illegal: traps, reported as a breakpoint

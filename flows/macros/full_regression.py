@@ -140,6 +140,9 @@ TARGETS = [
     "cv32a65x_sdtrig",
     "cv32a65x_noPMP_sdtrig",
     "cv32a65x_sv32_sdtrig",
+    # Sdtrig on RV64: the 64-bit tdata1 layout, with two-phase loads and the
+    # load output register (NrLoadPipeRegs = 1)
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
@@ -339,6 +342,15 @@ TESTLISTS = {
         "base_csr",
         "base_le",
         "base_ni",
+        "base_obi",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig": [
+        "base_rv64_p",
+        "base_rv64_v",
+        "base_rv64_pmp_mmu",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+        "base_le",
         "base_obi",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [

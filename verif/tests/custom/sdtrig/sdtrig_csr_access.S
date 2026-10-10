@@ -17,6 +17,8 @@
 #   raise an illegal instruction, which is what sdtrig_disabled_test covers.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .globl main
 main:
@@ -116,10 +118,10 @@ main:
     # --------------------------------------------------------------------
     li   t0, 0
     csrw 0x7a0, t0
-    li   t1, 0x60000000         # type = 6, mcontrol6 (RV32 layout)
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000000)         # type = 6, mcontrol6 (RV32 layout)
     csrw 0x7a1, t1
     csrr t2, 0x7a1
-    srli t2, t2, 28
+    srli t2, t2, TDATA1_TYPE_SHIFT
     li   t3, 6
     bne  t2, t3, fail
 

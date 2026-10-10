@@ -28,6 +28,8 @@
 #   Requires Sdtrig, SdtrigMcontrol6 and SdtrigMcontrol6LoadAddr.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
@@ -48,7 +50,7 @@ main:
     csrw 0x7a2, t1              # tdata2 = address to watch
 
     # type 6, match 0, m in [6], load in [0], action 0, select = 0
-    li   t1, 0x60000041
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000041)
     csrw 0x7a1, t1
 
     li   a4, 0x5A5A5A5A         # sentinel
@@ -74,14 +76,14 @@ main:
     csrw 0x7a0, t0
     la   t1, watched_word
     csrw 0x7a2, t1
-    li   t1, 0x60000041
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000041)
     csrw 0x7a1, t1
 
     la   t0, other_word         # a different address
     lw   a6, 0(t0)
 
     # Disarm: keep the type, drop the operation bits.
-    li   t1, 0x60000040
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000040)
     csrw 0x7a1, t1
 
     la   t0, break_count
@@ -96,7 +98,7 @@ main:
     ret
 
 fail:
-    li   t1, 0x60000040         # keep the type, drop the operation bits
+    li   t1, TDATA1_VAL(6, 0, 0, 0x0000040)         # keep the type, drop the operation bits
     csrw 0x7a1, t1
     li a0, 1
     ret
@@ -110,7 +112,7 @@ fail:
     # --------------------------------------------------------------------
     .align 6
 trap_handler:
-    li   s10, 0x60000040        # type 6 kept, load/store/execute cleared
+    li   s10, TDATA1_VAL(6, 0, 0, 0x0000040)        # type 6 kept, load/store/execute cleared
     csrw 0x7a0, zero
     csrw 0x7a1, s10
 

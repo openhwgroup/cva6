@@ -37,6 +37,8 @@
 #   firing.
 # ------------------------------------------------------------------------------
 
+#include "sdtrig_xlen.h"
+
     .text
     .option norvc
 
@@ -63,7 +65,7 @@ main:
     csrw 0x7a0, t0              # tselect = 0
     li   t1, 0x800
     csrw 0x7a2, t1
-    li   t1, 0x40000200
+    li   t1, TDATA1_VAL(4, 0, 0, 0x0000200)
     csrw 0x7a1, t1
 
     # Let machine external interrupts through.
@@ -100,7 +102,7 @@ wait_loop:
     ret
 
 fail:
-    li   t1, 0x44000200         # type 4 kept, hit set
+    li   t1, TDATA1_VAL(4, 0, 1, 0x0000200)         # type 4 kept, hit set
     csrw 0x7a0, zero
     csrw 0x7a1, t1
     csrw mie, zero
@@ -124,7 +126,7 @@ trap_handler:
     addi s11, s11, 1
     sw   s11, 0(s10)
 
-    li   s10, 0x44000200        # spend the trigger: type kept, hit set
+    li   s10, TDATA1_VAL(4, 0, 1, 0x0000200)        # spend the trigger: type kept, hit set
     csrw 0x7a0, zero
     csrw 0x7a1, s10
     csrw mie, zero
