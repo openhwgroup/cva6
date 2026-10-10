@@ -506,11 +506,13 @@ module cva6_pipeline
   logic
       sdtrig_commit_std_exception_valid,
       sdtrig_sb_std_exception_valid,
-      sdtrig_load_stall,
       sdtrig_load_cancel,
       sdtrig_store_stall;
   logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action[CVA6Cfg.NrIssuePorts];
   logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action, sdtrig_store_action, sdtrig_commit_action;
+  // Load data trigger: data of the load retiring in the load unit, and the break
+  logic sdtrig_load_data_valid;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data, sdtrig_load_data_action;
   logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_operand_a;
   logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c;
   logic sdtrig_lsu_inputs_we, sdtrig_lsu_inputs_valid;
@@ -1020,9 +1022,11 @@ CVA6Cfg.NrCommitPorts
       .sdtrig_lsu_inputs_operand_c_o(sdtrig_lsu_inputs_operand_c),
       .sdtrig_lsu_inputs_we_o       (sdtrig_lsu_inputs_we),
       .sdtrig_lsu_inputs_valid_o    (sdtrig_lsu_inputs_valid),
-      .sdtrig_load_stall_i          (sdtrig_load_stall),
       .sdtrig_load_cancel_i         (sdtrig_load_cancel),
       .sdtrig_load_action_i         (sdtrig_load_action),
+      .sdtrig_load_data_valid_o     (sdtrig_load_data_valid),
+      .sdtrig_load_data_o           (sdtrig_load_data),
+      .sdtrig_load_data_action_i    (sdtrig_load_data_action),
       .sdtrig_store_stall_i         (sdtrig_store_stall),
       .sdtrig_store_action_i        (sdtrig_store_action)
   );
@@ -1211,9 +1215,9 @@ CVA6Cfg.NrCommitPorts
       .sdtrig_lsu_inputs_data_i           (sdtrig_lsu_inputs_operand_c),
       .sdtrig_lsu_inputs_fu_i             (sdtrig_lsu_inputs_we),
       .sdtrig_lsu_inputs_valid_i          (sdtrig_lsu_inputs_valid),
-      .sdtrig_load_data_i                 (load_result_ex_id),
-      .sdtrig_load_valid_i                (load_valid_ex_id),
-      .sdtrig_load_stall_o                (sdtrig_load_stall),
+      .sdtrig_load_data_i                 (sdtrig_load_data),
+      .sdtrig_load_valid_i                (sdtrig_load_data_valid),
+      .sdtrig_load_data_action_o          (sdtrig_load_data_action),
       .sdtrig_load_cancel_o               (sdtrig_load_cancel),
       .sdtrig_load_action_o               (sdtrig_load_action),
       .sdtrig_store_stall_o               (sdtrig_store_stall),

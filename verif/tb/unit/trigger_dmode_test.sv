@@ -73,7 +73,7 @@ module trigger_dmode_test;
       .fetch_sdtrig_pc_i('0),
       .fetch_sdtrig_instr_i('0),
       .sdtrig_decoder_action_o(),
-      .sdtrig_load_stall_o(),
+      .sdtrig_load_data_action_o(),
       .sdtrig_load_cancel_o(),
       .sdtrig_load_action_o(),
       .sdtrig_store_stall_o(),

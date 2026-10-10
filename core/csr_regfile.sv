@@ -207,9 +207,9 @@ module csr_regfile
     input logic sdtrig_lsu_inputs_valid_i,
     input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_i,
     input logic sdtrig_load_valid_i,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_o,
 
     //LSU <-> trigger module communication
-    output logic sdtrig_load_stall_o,
     output logic sdtrig_load_cancel_o,
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_o,
     output logic sdtrig_store_stall_o,
@@ -3259,7 +3259,7 @@ CVA6Cfg.NrCommitPorts
           .sdtrig_commit_std_exception_valid_o(sdtrig_commit_std_exception_valid),
           .fetch_sdtrig_pc_i                  (fetch_sdtrig_pc_i),
           .sdtrig_decoder_action_o            (sdtrig_decoder_action_o),
-          .sdtrig_load_stall_o                (sdtrig_load_stall_o),
+          .sdtrig_load_data_action_o          (sdtrig_load_data_action_o),
           .sdtrig_load_cancel_o               (sdtrig_load_cancel_o),
           .sdtrig_load_action_o               (sdtrig_load_action_o),
           .sdtrig_store_stall_o               (sdtrig_store_stall_o),
@@ -3280,7 +3280,7 @@ CVA6Cfg.NrCommitPorts
       assign sdtrig_etrigger_context_mcause = '0;
       assign sdtrig_etrigger_context_mtval = '0;
       for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) assign sdtrig_decoder_action_o[i] = '0;
-      assign sdtrig_load_stall_o = '0;
+      assign sdtrig_load_data_action_o = '0;
       assign sdtrig_load_cancel_o = '0;
       assign sdtrig_load_action_o = '0;
       assign sdtrig_store_stall_o = '0;

@@ -173,9 +173,11 @@ module load_store_unit
     // RVFI information - RVFI
     output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
     //Trigger module communication
-    input  logic                         sdtrig_load_stall_i,
     input  logic                         sdtrig_load_cancel_i,
     input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    output logic                         sdtrig_load_data_valid_o,
+    output logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_data_o,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_i,
     input  logic                         sdtrig_store_stall_i,
     input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
@@ -525,7 +527,6 @@ module load_store_unit
       .ypb_load_rsp_i       (ypb_load_rsp_i),
       .dcache_wbuffer_not_ni_i,
       //sdtrig
-      .sdtrig_load_stall_i  (sdtrig_load_stall_i),
       .sdtrig_load_cancel_i (sdtrig_load_cancel_i),
       .sdtrig_load_action_i (sdtrig_load_action_i)
   );
@@ -537,6 +538,8 @@ module load_store_unit
   // amount of pipeline registers inserted for load/store return path
   // can be tuned to trade-off IPC vs. cycle time
 
+  exception_t load_exception;
+
   shift_reg #(
       .dtype(logic [$bits(ld_valid) + $bits(ld_trans_id) + $bits(ld_result) + $bits(ld_ex) - 1:0]),
       .Depth(CVA6Cfg.NrLoadPipeRegs)
@@ -544,8 +547,24 @@ module load_store_unit
       .clk_i,
       .rst_ni,
       .d_i({ld_valid, ld_trans_id, ld_result, ld_ex}),
-      .d_o({load_valid_o, load_trans_id_o, load_result_o, load_exception_o})
+      .d_o({load_valid_o, load_trans_id_o, load_result_o, load_exception})
   );
+
+  // Load data trigger: the result is compared as it leaves the output
+  // register, with the load it belongs to, so the break and the load retire
+  // together whatever NrLoadPipeRegs. It breaks after the load: the load
+  // writes its result and the commit stage raises the break on the next
+  // instruction (exception timing). A load that raised an exception has no
+  // data to compare.
+  assign sdtrig_load_data_valid_o = CVA6Cfg.SdtrigMcontrol6LoadData && load_valid_o && !load_exception.valid;
+  assign sdtrig_load_data_o = load_result_o;
+  always_comb begin
+    load_exception_o = load_exception;
+    if (sdtrig_load_data_valid_o && sdtrig_load_data_action_i != '0) begin
+      load_exception_o.cause  = sdtrig_load_data_action_i;
+      load_exception_o.timing = 1'b1;
+    end
+  end
 
   shift_reg #(
       .dtype(logic [$bits(st_valid) + $bits(st_trans_id) + $bits(st_result) + $bits(st_ex) - 1:0]),
@@ -816,6 +835,16 @@ module load_store_unit
   // the store buffer / AMO buffer. Pairing it with the access it belongs to is
   // done in cva6_rvfi.sv, no RVFI logic lives in the CPU RTL.
   assign rvfi_mem_paddr_o = mmu_paddr;
+
+  //pragma translate_off
+  // A load data trigger break goes with the load it matched, which leaves the
+  // output register in the same cycle and carries it.
+  sdtrig_load_data_on_its_load :
+  assert property (@(posedge clk_i) disable iff (~rst_ni)
+        (CVA6Cfg.SdtrigMcontrol6LoadData && sdtrig_load_data_action_i != '0)
+        |-> (load_valid_o && !load_exception.valid && load_exception_o.timing))
+  else $error("[load_store_unit] load data trigger break without the load it matched");
+  //pragma translate_on
 
 endmodule
 
