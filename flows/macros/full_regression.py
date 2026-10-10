@@ -152,6 +152,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_wb",
     # AXI PMP MMU with the hypervisor extension
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
+    # AXI PMP MMU with the hypervisor extension and the shared TLB
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_stlb",
     # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss",
 ]
@@ -390,6 +392,14 @@ TESTLISTS = {
         "base_rv64_pmp_mmu",
         "base_rv64_h",
         "base_zicbom",
+        "base_zicbom_h",
+        "base_le",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_stlb": [
+        "base_rv64_p",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
         "base_zicbom_h",
         "base_le",
     ],
