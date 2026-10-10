@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-# Big endian data accesses (BigEndianEn): load and store byte swapping, and
-# page table walks of big endian page tables. The MMU test needs Sv32 and
-# S-mode.
+# Big endian data accesses (BigEndianEn): load and store byte swapping, on
+# RV32 and RV64. The page table walks of big endian page tables are in
+# base_rv32_be_mmu (Sv32) and base_rv64_be_mmu (Sv39).
 #
 # ================================================================================
 #                  Regression test list format
@@ -26,19 +26,8 @@ custom_test_config: &custom_test_config
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
   llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
 
-sv32_test_config: &sv32_test_config
-  path_var: TESTS_PATH
-  gcc_opts: "-DXLEN=32 -DTEST_CASE_1=True -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-arch-test/riscv-test-suite/env/ -I<path_var>/riscv-arch-test/riscv-target/spike/ -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True"
-
 testlist:
   - test: be_swap_test
     iterations: 1
     <<: *custom_test_config
     asm_tests: <path_var>/custom/be/be_swap_test.S
-
-  - test: rv32_vm_big_endian
-    iterations: 1
-    march: rv32izicsr
-    mabi: ilp32
-    <<: *sv32_test_config
-    asm_tests: <path_var>/custom/sv32/vm_big_endian.S

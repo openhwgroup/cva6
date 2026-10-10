@@ -129,6 +129,8 @@ TARGETS = [
     # target with the A extension can have
     "cv32a65x_sv32_be",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi",
+    # cv64a6 OBI PMP MMU without the A extension, with big endian data accesses
+    "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
     # AXI PMP MMU
     "cv32a6_imac_sv32",
     # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
@@ -169,6 +171,7 @@ TARGETS = [
 #   base_rv64_h    RVH
 #   base_rv32_mmu  Sv32 with PMP entries (the tests program pmpcfg)
 #   base_be        BigEndianEn (big endian data accesses)
+#   base_rv32_be_mmu, base_rv64_be_mmu  BigEndianEn with Sv32, Sv39
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
 #   base_ni        a non-idempotent region covering 0x1000
 #   base_obi       the OBI testbench (MEM_OBI), which injects bus errors
@@ -284,6 +287,7 @@ TESTLISTS = {
         "base_pmp",
         "base_csr",
         "base_be",
+        "base_rv32_be_mmu",
         "base_ni",
         "base_obi",
     ],
@@ -298,6 +302,16 @@ TESTLISTS = {
         "base_rv64_amo_v",
         "base_csr",
         "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be": [
+        "base_rv64_p",
+        "base_rv64_v",
+        "base_rv64_pmp_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_be",
+        "base_rv64_be_mmu",
         "base_obi",
     ],
     "cv32a6_imac_sv32": [
