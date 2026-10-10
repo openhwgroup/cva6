@@ -181,8 +181,8 @@ module cva6_shared_tlb #(
 
   pte_cva6_t [SHARED_TLB_WAYS-1:0][HYP_EXT:0] pte;
 
-  logic [CVA6Cfg.VLEN-1-12:0] itlb_vpn_q;
-  logic [CVA6Cfg.VLEN-1-12:0] dtlb_vpn_q;
+  logic [CVA6Cfg.VpnLen-1:0] itlb_vpn_q;
+  logic [CVA6Cfg.VpnLen-1:0] dtlb_vpn_q;
 
   logic [CVA6Cfg.ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_d;
   logic [CVA6Cfg.VMID_WIDTH-1:0] tlb_update_vmid_q, tlb_update_vmid_d;
@@ -256,9 +256,9 @@ module cva6_shared_tlb #(
 
   if (CVA6Cfg.RVH)  //THIS UPDATES THE EXTRA BITS OF VPN IN SV39x4
     assign vpn_d[CVA6Cfg.PtLevels] = ((|v_st_enbl[1][HYP_EXT:0]) && itlb_access_i && ~itlb_hit_i && ~dtlb_access_i) ? //
-        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, itlb_vaddr_i[CVA6Cfg.VpnLen-1:CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} :  //
+        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, itlb_vaddr_i[12+CVA6Cfg.VpnLen-1:12+CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} :  //
         (((|v_st_enbl[0][HYP_EXT:0]) && dtlb_access_i && ~dtlb_hit_i) ?  //
-        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, dtlb_vaddr_i[CVA6Cfg.VpnLen-1: CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} : //
+        {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, dtlb_vaddr_i[12+CVA6Cfg.VpnLen-1:12+CVA6Cfg.VpnLen-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)]} : //
         {{(((CVA6Cfg.VpnLen/CVA6Cfg.PtLevels)-(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels))){1'b0}}, vpn_q[CVA6Cfg.PtLevels][(CVA6Cfg.VpnLen%CVA6Cfg.PtLevels)-1:0]});
 
   ///////////////////////////////////////////////////////
@@ -434,8 +434,8 @@ module cva6_shared_tlb #(
       flush_vmid_q <= '0;
       flush_gpaddr_q <= '0;
     end else begin
-      itlb_vpn_q <= itlb_vaddr_i[CVA6Cfg.SV-1:12];
-      dtlb_vpn_q <= dtlb_vaddr_i[CVA6Cfg.SV-1:12];
+      itlb_vpn_q <= itlb_vaddr_i[12+CVA6Cfg.VpnLen-1:12];
+      dtlb_vpn_q <= dtlb_vaddr_i[12+CVA6Cfg.VpnLen-1:12];
       tlb_update_asid_q <= tlb_update_asid_d;
       shared_tlb_access_q <= shared_tlb_access_d;
       shared_tlb_vaddr_q <= shared_tlb_vaddr_d;
