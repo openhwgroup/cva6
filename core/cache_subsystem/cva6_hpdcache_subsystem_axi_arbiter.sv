@@ -159,6 +159,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
   assign mem_req_read_idext_arb.mem_req_command = mem_req_read_arb.mem_req_command;
   assign mem_req_read_idext_arb.mem_req_atomic = mem_req_read_arb.mem_req_atomic;
   assign mem_req_read_idext_arb.mem_req_cacheable = mem_req_read_arb.mem_req_cacheable;
+  assign mem_req_read_idext_arb.mem_req_bufferable = mem_req_read_arb.mem_req_bufferable;
   //  }}}
 
   //Add prefix to write requests index from data cache (only data writes, so all...)
@@ -170,6 +171,7 @@ module cva6_hpdcache_subsystem_axi_arbiter
   assign dcache_write_idx.mem_req_command = dcache_write_i.mem_req_command;
   assign dcache_write_idx.mem_req_atomic = dcache_write_i.mem_req_atomic;
   assign dcache_write_idx.mem_req_cacheable = dcache_write_i.mem_req_cacheable;
+  assign dcache_write_idx.mem_req_bufferable = dcache_write_i.mem_req_bufferable;
   //  Read response demultiplexor
   //  {{{
   //

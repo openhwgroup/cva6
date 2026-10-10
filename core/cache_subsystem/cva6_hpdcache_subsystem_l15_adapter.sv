@@ -181,7 +181,8 @@ module cva6_hpdcache_subsystem_l15_adapter
       icache_miss_req_wdata.mem_req_id = icache_miss_i.tid,
       icache_miss_req_wdata.mem_req_command = hpdcache_pkg::HPDCACHE_MEM_READ,
       icache_miss_req_wdata.mem_req_atomic = hpdcache_pkg::hpdcache_mem_atomic_e'(0),
-      icache_miss_req_wdata.mem_req_cacheable = ~icache_miss_i.nc;
+      icache_miss_req_wdata.mem_req_cacheable = ~icache_miss_i.nc,
+      icache_miss_req_wdata.mem_req_bufferable = 1'b0;
   //    }}}
 
 
