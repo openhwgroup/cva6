@@ -135,6 +135,36 @@ module cva6
   ypb_zcmt_rsp_t ypb_zcmt_rsp;
 
   // -------------------
+  // Supported configurations
+  // -------------------
+  // Checked at elaboration: the units they concern do not build, or compute
+  // wrong results, for these configurations.
+  // D and the non-standard XF16, XF16ALT and XF8 formats (smallFloat) extend
+  // F: they use its FP register file, FPU and fcsr.
+  if ((CVA6Cfg.RVD || CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && !CVA6Cfg.RVF)
+  begin : gen_unsupported_fp_without_f
+    $fatal(1, "D, XF16, XF16ALT and XF8 need F (RVF)");
+  end
+  // With FLEN 32 the division and square root unit of fpnew that serves
+  // several formats (THMULTI) takes every operand for a NaN.
+  if ((CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && CVA6Cfg.IS_XLEN32)
+  begin : gen_unsupported_rv32_smallfloat
+    $fatal(1, "XF16, XF16ALT and XF8 are only supported on RV64");
+  end
+  // The FPU takes its operands from and returns its result on the XLEN-wide
+  // execution datapath, and the FP register file is FLEN bits wide: the
+  // floating-point extensions are supported when FLEN equals XLEN, F on RV32
+  // and F with D on RV64. RV32 with D (FLEN 64) and RV64 with F alone (FLEN 32)
+  // are not.
+  if (CVA6Cfg.FpPresent && CVA6Cfg.FLen != CVA6Cfg.XLEN) begin : gen_unsupported_flen
+    $fatal(1, "The floating-point extensions need FLEN == XLEN: F on RV32, F and D on RV64");
+  end
+  // The hypervisor extension is only implemented on RV64 (Sv39x4).
+  if (CVA6Cfg.RVH && CVA6Cfg.IS_XLEN32) begin : gen_unsupported_rv32h
+    $fatal(1, "The hypervisor extension (RVH) is only supported on RV64");
+  end
+
+  // -------------------
   // Pipeline
   // -------------------
 
