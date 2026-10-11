@@ -38,6 +38,10 @@ dummy2: &dummy2
     NM: "riscv32-unknown-elf-nm"
     TARGET_TOOLCHAIN: "riscv32-unknown-elf"
 
+# Toolchain of the targets without a my_<target>_toolchain entry below
+default_toolchain:
+  <<: *dummy2
+
 # Reference toolchain used to compile the benchmarks (coremark/dhrystone)
 # on every target in CI, so that performance numbers are comparable
 # across targets.

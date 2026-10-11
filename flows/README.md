@@ -420,6 +420,9 @@ gcc-14:
 - `TOOLS_PATH`: Directory containing the toolchain
 - Set `None` for `GCC` if using Clang, and vice versa
 - Configuration name (e.g., `llvm-20-1-8`) is used with `-c` option in commands
+- `full-regression` compiles the software of a target with the
+  `my_<target>_toolchain` entry, or with the `default_toolchain` entry when the target
+  has none, so a configuration created on the fly needs no new entry
 
 ### Techno Configuration (`techno.yml`)
 
