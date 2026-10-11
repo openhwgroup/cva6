@@ -84,9 +84,10 @@ class reg_mstatus extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_mstatus__read_cg";
       option.per_instance = 1;
+      // SD summarizes a dirty FS: it is only stuck at 0 without an FPU.
       SD: coverpoint data[31:31] {
          bins legal_values[] = {0};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {0}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {0})) iff (!RTLCVA6Cfg.FpPresent);
       }
       TSR: coverpoint data[22:22] {
          bins legal_values[] = {0};
