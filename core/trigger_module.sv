@@ -59,7 +59,7 @@ module trigger_module
     output logic [CVA6Cfg.XLEN-1:0] etrigger_context_mtval_o,
 
     input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] fetch_sdtrig_pc_i,
-    input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] fetch_sdtrig_instr_i,
+    input logic [CVA6Cfg.NrIssuePorts-1:0][31:0] fetch_sdtrig_instr_i,
     output logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action_o[CVA6Cfg.NrIssuePorts],
 
     // Break asked by a load data trigger on the load retiring in this cycle
@@ -76,6 +76,12 @@ module trigger_module
 CVA6Cfg.NrCommitPorts
 ) : 1)-1:0] sdtrig_commit_icount_nr_instr_o
 );
+
+  // tdata2 holds one bit per exception or interrupt cause
+  function automatic logic cause_selected(input logic [CVA6Cfg.XLEN-1:0] tdata2,
+                                          input logic [CVA6Cfg.XLEN-1:0] cause);
+    return tdata2[cause[$clog2(CVA6Cfg.XLEN)-1:0]];
+  endfunction
 
   function automatic logic std_match(input logic [CVA6Cfg.XLEN-1:0] tdata2_ref,
                                      input logic [CVA6Cfg.XLEN-1:0] comp_val,
@@ -309,7 +315,7 @@ CVA6Cfg.NrCommitPorts
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].icount_type.s && CVA6Cfg.SdtrigSupportTextra) begin
             if (CVA6Cfg.IS_XLEN32) begin
               scontext_match[i] = match_scontext32(
-                scontext_i,
+                scontext_i[31:0],
                 textra32_tdata3_d[i].sselect,
                 textra32_tdata3_d[i].sbytemask,
                 textra32_tdata3_d[i].svalue,
@@ -317,7 +323,7 @@ CVA6Cfg.NrCommitPorts
               );
             end else begin
               scontext_match[i] = match_scontext64(
-                scontext_i,
+                scontext_i[31:0],
                 textra64_tdata3_d[i].sselect,
                 textra64_tdata3_d[i].sbytemask,
                 textra64_tdata3_d[i].svalue,
@@ -381,7 +387,7 @@ CVA6Cfg.NrCommitPorts
           if (CVA6Cfg.SdtrigSupportTextra && priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].mc6_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
               scontext_match[i] = match_scontext32(
-                scontext_i,
+                scontext_i[31:0],
                 textra32_tdata3_d[i].sselect,
                 textra32_tdata3_d[i].sbytemask,
                 textra32_tdata3_d[i].svalue,
@@ -389,7 +395,7 @@ CVA6Cfg.NrCommitPorts
               );
             end else if (CVA6Cfg.IS_XLEN64) begin
               scontext_match[i] = match_scontext64(
-                scontext_i,
+                scontext_i[31:0],
                 textra64_tdata3_d[i].sselect,
                 textra64_tdata3_d[i].sbytemask,
                 textra64_tdata3_d[i].svalue,
@@ -419,8 +425,11 @@ CVA6Cfg.NrCommitPorts
               //Execute trigger on data
               if (CVA6Cfg.SdtrigMcontrol6ExecData) begin
                 if (trigger_32_tdata1_d[i].mc6_type.select) begin
-                  matchED = std_match(tdata2_d[i], fetch_sdtrig_instr_i[n],
-                                      trigger_32_tdata1_d[i].mc6_type.match);
+                  matchED = std_match(
+                    tdata2_d[i],
+                    CVA6Cfg.XLEN'(fetch_sdtrig_instr_i[n]),
+                    trigger_32_tdata1_d[i].mc6_type.match
+                  );
                 end
               end
               //Request fire
@@ -641,7 +650,7 @@ CVA6Cfg.NrCommitPorts
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].etrigger_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
               scontext_match[i] = match_scontext32(
-                scontext_i,
+                scontext_i[31:0],
                 textra32_tdata3_d[i].sselect,
                 textra32_tdata3_d[i].sbytemask,
                 textra32_tdata3_d[i].svalue,
@@ -649,7 +658,7 @@ CVA6Cfg.NrCommitPorts
               );
             end else begin
               scontext_match[i] = match_scontext64(
-                scontext_i,
+                scontext_i[31:0],
                 textra64_tdata3_d[i].sselect,
                 textra64_tdata3_d[i].sbytemask,
                 textra64_tdata3_d[i].svalue,
@@ -658,7 +667,9 @@ CVA6Cfg.NrCommitPorts
             end
             priv_match[i] &= scontext_match[i];
           end
-          if (tdata2_d[i][ex_i.cause] && priv_match[i] && !etrigger_context_saved_valid_q) begin
+          if (cause_selected(
+                  tdata2_d[i], ex_i.cause
+              ) && priv_match[i] && !etrigger_context_saved_valid_q) begin
             e_matched_d = 1'd1;
           end
           if (e_matched_q && !trigger_32_tdata1_q[i].etrigger_type.hit) begin
@@ -696,7 +707,7 @@ CVA6Cfg.NrCommitPorts
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].itrigger_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
               scontext_match[i] = match_scontext32(
-                scontext_i,
+                scontext_i[31:0],
                 textra32_tdata3_d[i].sselect,
                 textra32_tdata3_d[i].sbytemask,
                 textra32_tdata3_d[i].svalue,
@@ -704,7 +715,7 @@ CVA6Cfg.NrCommitPorts
               );
             end else begin
               scontext_match[i] = match_scontext64(
-                scontext_i,
+                scontext_i[31:0],
                 textra64_tdata3_d[i].sselect,
                 textra64_tdata3_d[i].sbytemask,
                 textra64_tdata3_d[i].svalue,
@@ -714,7 +725,9 @@ CVA6Cfg.NrCommitPorts
             priv_match[i] &= scontext_match[i];
           end
           if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
-            if (tdata2_d[i][ex_i.cause[4:0]] && !etrigger_context_saved_valid_q)
+            if (cause_selected(
+                    tdata2_d[i], CVA6Cfg.XLEN'(ex_i.cause[4:0])
+                ) && !etrigger_context_saved_valid_q)
               e_matched_d = 1'b1; // checking etrigger context valid bit avoids conflicts and context loss because of concurrent triggering by different types
           end
           if (mret_i || sret_i) mret_reg_d = 1'b1;
@@ -778,7 +791,7 @@ CVA6Cfg.NrCommitPorts
 
     // Trigger module CSRs
     if (tselect_we) begin
-      tselect_d = (tselect_i < CVA6Cfg.SdtrigNrTriggers) ?
+      tselect_d = (tselect_i < CVA6Cfg.XLEN'(CVA6Cfg.SdtrigNrTriggers)) ?
           tselect_i[$clog2(CVA6Cfg.SdtrigNrTriggers)-1:0] : tselect_q;
     end
     //  A trigger whose dmode is set belongs to the debugger: machine mode
