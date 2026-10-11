@@ -159,6 +159,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig",
     # Sdtrig on RV64 with the HPDcache on AXI
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig",
+    # Sdtrig with the hypervisor extension: the vs and vu mode bits
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
@@ -198,6 +200,7 @@ TARGETS = [
 #   dcache_wt, dcache_wb, dcache_wt_wb  CacheWritePolicy of an HPDcache with
 #                  RVZiCbom
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
+#   testlist_sdtrig_h  Sdtrig and RVH
 TESTLISTS = {
     "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
     "cv32a60x_no_zcmt": ["base_rv32_p", "base_csr", "base_le", "base_obi"],
@@ -500,6 +503,14 @@ TESTLISTS = {
         "base_rv64_pmp_mmu",
         "base_rv64_h",
         "base_zicbom_h",
+        "base_le",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
+        "base_rv64_p",
+        "base_rv64_h",
+        "base_zicbom_h",
+        "testlist_sdtrig_nommu",
+        "testlist_sdtrig_h",
         "base_le",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot": [
