@@ -131,6 +131,8 @@ TARGETS = [
     # target with the A extension can have
     "cv32a65x_sv32_be",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi",
+    # cv64a6 OBI PMP MMU with the hypervisor extension
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi",
     # cv64a6 OBI PMP MMU without the A extension, with big endian data accesses
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
     # AXI PMP MMU
@@ -147,6 +149,8 @@ TARGETS = [
     # Sdtrig on RV64: the 64-bit tdata1 layout, with two-phase loads and the
     # load output register (NrLoadPipeRegs = 1)
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig",
+    # Sdtrig on RV64 with the HPDcache on AXI
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
@@ -311,6 +315,14 @@ TESTLISTS = {
         "base_le",
         "base_obi",
     ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi": [
+        "base_rv64_p",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
+        "base_rv64_amo_p",
+        "base_le",
+        "base_obi",
+    ],
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be": [
         "base_rv64_p",
         "base_rv64_v",
@@ -375,6 +387,15 @@ TESTLISTS = {
         "base_csr",
         "base_le",
         "base_obi",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
+        "base_rv64_p",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+        "base_zicbom",
+        "base_le",
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
