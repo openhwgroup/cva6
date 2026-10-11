@@ -207,6 +207,8 @@ def verilator_testharness_comp(
         "-Werror-PINMISSING",
         "-Werror-IMPLICIT",
         "-Wno-fatal",
+        # $fatal at elaboration (unsupported configurations) stops the build
+        "-Werror-USERFATAL",
         "-Wno-PINCONNECTEMPTY",
         "-Wno-ASSIGNDLY",
         "-Wno-DECLFILENAME",

@@ -683,6 +683,7 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     -Werror-PINMISSING                                                                           \
                     -Werror-IMPLICIT                                                                             \
                     -Wno-fatal                                                                                   \
+                    -Werror-USERFATAL                                                                            \
                     -Wno-PINCONNECTEMPTY                                                                         \
                     -Wno-ASSIGNDLY                                                                               \
                     -Wno-DECLFILENAME                                                                            \
