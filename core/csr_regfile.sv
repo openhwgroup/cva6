@@ -3230,6 +3230,7 @@ CVA6Cfg.NrCommitPorts
           .sdtrig_load_data_i                 (sdtrig_load_data_i),
           .sdtrig_load_valid_i                (sdtrig_load_valid_i),
           .priv_lvl_i                         (priv_lvl_o),
+          .v_i                                (v_o),
           .debug_mode_i                       (debug_mode_q),
           .mret_i                             (mret),
           .sret_i                             (sret),
