@@ -142,6 +142,8 @@ TARGETS = [
     "cv32a65x_sv32_axi",
     # cv32a65x_sv32_axi with big endian data accesses, through the HPDcache
     "cv32a65x_sv32_be_axi",
+    # cv32a65x_sv32_axi with the write-back HPDcache
+    "cv32a65x_sv32_wb_axi",
     # Sdtrig trigger module, every trigger type and match type enabled,
     # across the three address-checking shapes: PMP only, neither PMP nor MMU,
     # and MMU.
@@ -368,6 +370,17 @@ TESTLISTS = {
         "base_rv32_be_mmu",
         "base_ni",
     ],
+    "cv32a65x_sv32_wb_axi": [
+        "base_rv32_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wb",
+        "base_le",
+        "base_ni",
+    ],
     "cv32a65x_sdtrig": [
         "base_rv32_p",
         "base_zcmp",
@@ -476,6 +489,8 @@ TESTLISTS = {
     "cv64a6_imafdc_sv39_hpdcache_wb": [
         "base_rv64_p",
         "base_rv64_fp_p",
+        "base_pmp",
+        "base_rv64_pmp",
         "base_rv64_amo_p",
         "base_csr",
         "base_zicbom",
