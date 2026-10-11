@@ -13,6 +13,8 @@
 // Description: Commits to the architectural state resulting from the scoreboard.
 
 
+`include "utils_macros.svh"
+
 module commit_stage
   import ariane_pkg::*;
 #(
@@ -138,6 +140,11 @@ CVA6Cfg.NrCommitPorts
   // Exception of a load data trigger, held back one cycle so it lands on the
   // instruction after the load whose value it matched.
   exception_t ex_next_instr_d, ex_next_instr_q;
+  // A deferred load data break is taken on the next valid instruction of port
+  // 0: the scoreboard may still be empty the cycle after the load commits.
+  logic sdtrig_load_data_break;
+  assign sdtrig_load_data_break = CVA6Cfg.SdtrigMcontrol6LoadData && ex_next_instr_q.timing &&
+      commit_instr_i[0].valid && !commit_instr_i[0].ex.timing;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_macro_ack;
   assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
 
@@ -409,7 +416,7 @@ CVA6Cfg.NrCommitPorts
           ex_next_instr_d = commit_instr_i[1].ex;
         end
       end
-      if (ex_next_instr_q.timing && !commit_instr_i[0].ex.timing) begin
+      if (sdtrig_load_data_break) begin
         ex_next_instr_d = '0;
       end
     end
@@ -456,15 +463,25 @@ CVA6Cfg.NrCommitPorts
       exception_o.tval  = (CVA6Cfg.TvalEn) ? commit_instr_i[0].pc : '0;
     end
 
-    // The load data trigger is imprecise: it fires once the loaded value is
-    // known, which is after the instruction. The exception was held back a
-    // cycle, so raise it now, on the instruction that follows.
-    if (CVA6Cfg.SdtrigMcontrol6LoadData && ex_next_instr_q.timing && !commit_instr_i[0].ex.timing) begin
+    // A load data trigger fires once the loaded value is known, after the load:
+    // its exception is held until the next instruction commits, and raised on
+    // that one, whose pc is the epc.
+    if (sdtrig_load_data_break) begin
       exception_o        = ex_next_instr_q;
       exception_o.timing = 1'b0;
       exception_o.valid  = 1'b1;
     end
   end
+
+  //pragma translate_off
+  // A deferred load data break is raised with the pc of a valid instruction.
+  sdtrig_load_data_break_on_valid_instr :
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+        (CVA6Cfg.SdtrigMcontrol6LoadData && exception_o.valid && ex_next_instr_q.timing
+         && !commit_instr_i[0].ex.timing && !halt_i)
+        |-> commit_instr_i[0].valid)
+  else `ASSERT_ERROR("[commit_stage] load data trigger break raised without a valid instruction");
+  //pragma translate_on
 
   if (CVA6Cfg.SdtrigMcontrol6LoadData) begin : gen_sdtrig_ex_next_instr
     always_ff @(posedge clk_i, negedge rst_ni) begin
