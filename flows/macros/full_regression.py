@@ -140,6 +140,8 @@ TARGETS = [
     # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
     "cv32a6_ima_sv32_fpga",
     "cv32a65x_sv32_axi",
+    # cv32a65x_sv32_axi with big endian data accesses, through the HPDcache
+    "cv32a65x_sv32_be_axi",
     # Sdtrig trigger module, every trigger type and match type enabled,
     # across the three address-checking shapes: PMP only, neither PMP nor MMU,
     # and MMU.
@@ -353,6 +355,17 @@ TESTLISTS = {
         "base_csr",
         "base_zicbom",
         "base_le",
+        "base_ni",
+    ],
+    "cv32a65x_sv32_be_axi": [
+        "base_rv32_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+        "base_be",
+        "base_rv32_be_mmu",
         "base_ni",
     ],
     "cv32a65x_sdtrig": [
