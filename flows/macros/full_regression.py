@@ -581,12 +581,26 @@ def _recipe(recipe, **kwargs):
             raise JobFailure(f"recipe failed (exit code {code})") from exc
 
 
+# Toolchain of a target that has no my_<target>_toolchain entry in
+# $CONFIG_DIR/compiler.yml, so a configuration created on the fly runs
+# without editing it
+DEFAULT_TOOLCHAIN = "default_toolchain"
+
+
 def _toolchain(name):
     "Resolve a toolchain name declared in $CONFIG_DIR/compiler.yml"
     try:
         return ToolchainOption(name)
     except ValueError as exc:
         raise JobFailure(f"unknown toolchain: {name}") from exc
+
+
+def _target_toolchain(target):
+    "Toolchain of a target: its own entry, else the default one"
+    try:
+        return ToolchainOption(f"my_{target}_toolchain")
+    except ValueError:
+        return _toolchain(DEFAULT_TOOLCHAIN)
 
 
 def _yaml_key(path, key):
@@ -797,7 +811,7 @@ def _job_sw_compile(target, quiet):
     _recipe(
         hello_world,
         target=target,
-        toolchain=_toolchain(f"my_{target}_toolchain"),
+        toolchain=_target_toolchain(target),
         march=None,
         mabi=None,
         quiet=quiet,
@@ -877,7 +891,7 @@ def _job_testlist_compile(target, quiet):
             _recipe(
                 sw_compile_testlist,
                 target=target,
-                toolchain=_toolchain(f"my_{target}_toolchain"),
+                toolchain=_target_toolchain(target),
                 testlist=f"verif/tests/{testlist}.yaml",
                 test_name=None,
                 march=march,
