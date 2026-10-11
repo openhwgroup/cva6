@@ -70,11 +70,13 @@ from flows.recipes.vcs_uvm_run import vcs_uvm_run
 from flows.recipes.verible_rtl_formating import verible_rtl_formating
 from flows.recipes.verilator_testharness_comp import verilator_testharness_comp
 from flows.recipes.verilator_testharness_run import verilator_testharness_run
+from flows.recipes.yosys_synth import yosys_synth
 from flows.recipes.vivado_fpga_build import vivado_fpga_build
 from flows.recipes.vivado_fpga_program import vivado_fpga_program
 from flows.utils.job_scheduler import JobFailure, Scheduler
 from flows.utils.fpga_board import is_altera_board
 from flows.utils.recipe_report import RecipeReport
+from flows.utils.rtl_config import parse_rtl_cfg
 from flows.utils.uart_boot import DEFAULT_EXPECT
 from flows.utils.autocompletion import (
     AlteraBoard,
@@ -647,6 +649,15 @@ def _march_with_f(target, quiet):
 # graph below. A job that chains several recipes fails as soon as one of
 # them fails, except the testlist loops: every testlist is played, then
 # the job fails.
+
+
+def _rtl_cfg_bool(target, name):
+    "A bit field of the configuration package of `target`, False when unread"
+    cfg = Path.cwd() / "config" / "target" / target / "rtl_cfg_pkg.sv"
+    try:
+        return bool(parse_rtl_cfg(cfg).get(name))
+    except OSError:
+        return False
 
 
 def _hier(target):
@@ -1285,6 +1296,20 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
             if fpga_target != target:
                 continue
             _add_fpga_jobs(scheduler, target, board, elab_job, deps_job, quiet)
+
+        # --- Open-source synthesis -------------------------------------
+        # Every target, no licence: after the RTL elaboration, like the
+        # GTECH synthesis, so a design that does not elaborate fails once.
+        # Not the FPGA targets: their memories are the dual-port RAMs of the
+        # FPGA vendors, written from two processes, which only an FPGA
+        # synthesis infers
+        if not _rtl_cfg_bool(target, "FpgaEn"):
+            scheduler.add(
+                f"yosys-synth:{target}",
+                partial(_recipe, yosys_synth, target=target, quiet=quiet),
+                target_dir / "synthesis_yosys",
+                deps=[elab_job],
+            )
 
         # --- GTECH synthesis ------------------------------------------
         # After the RTL elaboration, like the bitstream: a design that

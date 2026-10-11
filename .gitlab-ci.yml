@@ -102,7 +102,7 @@ variables:
   # recipes running at once; the *_LICENSES variables cap each CAD license
   # pool independently, so the pipeline never asks for more licenses than
   # the site owns (see the macro docstring).
-  MY_JOBS: "8"
+  MY_JOBS: "16"
   MY_VCS_LICENSES: "10"
   MY_SPYGLASS_LICENSES: "1"
   MY_SYNTH_LICENSES: "1"

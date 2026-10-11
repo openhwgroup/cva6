@@ -5,3 +5,5 @@ dhrystone_cycle: 17385
 # joins GTECH_TARGETS of the regression
 # gtech_cells:
 # gtech_registers:
+yosys_cells: 103985
+yosys_registers: 7771
