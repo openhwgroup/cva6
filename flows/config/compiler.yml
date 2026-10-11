@@ -134,3 +134,5 @@ my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc_toolchain:
   <<: *dummy2
 my_cv32a6_imafc_sv32_toolchain:
   <<: *dummy2
+my_cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp_toolchain:
+  <<: *dummy2

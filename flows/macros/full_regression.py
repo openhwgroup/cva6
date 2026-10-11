@@ -133,6 +133,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi",
     # cv64a6 OBI PMP MMU with the hypervisor extension
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi",
+    # cv64a6 OBI PMP MMU without FPU, with Zcmp (which excludes Zcd)
+    "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp",
     # cv64a6 OBI PMP MMU without the A extension, with big endian data accesses
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
     # AXI PMP MMU
@@ -192,6 +194,7 @@ TARGETS = [
 #   base_le        not BigEndianEn (endianness control bits read-only zero)
 #   base_ni        a non-idempotent region covering 0x1000
 #   base_obi       the OBI testbench (MEM_OBI), which injects bus errors
+#   base_zcmp, base_rv64_zcmp  RVZCMP on RV32, RV64
 #   dcache_wt, dcache_wb, dcache_wt_wb  CacheWritePolicy of an HPDcache with
 #                  RVZiCbom
 #   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
@@ -328,6 +331,16 @@ TESTLISTS = {
         "base_rv64_pmp_mmu",
         "base_rv64_h",
         "base_rv64_amo_p",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp": [
+        "base_rv64_p",
+        "base_rv64_v",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_zcmp",
+        "base_csr",
         "base_le",
         "base_obi",
     ],
