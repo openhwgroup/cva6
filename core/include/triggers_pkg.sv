@@ -117,8 +117,8 @@ package triggers_pkg;
     match = 1'b1;
     if (sselect == 2'd1) begin
       max_bytes = (flag) ? 4 : 2;
-      for (int b = 0; b < max_bytes; b++) begin
-        if (!sbytemask[b]) begin
+      for (int b = 0; b < 4; b++) begin
+        if (b < max_bytes && !sbytemask[b]) begin
           if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
         end
       end
@@ -134,8 +134,8 @@ package triggers_pkg;
     match = 1'b1;
     if (sselect == 2'd1) begin
       max_bytes = (flag) ? 4 : 2;
-      for (int b = 0; b < max_bytes; b++) begin
-        if (!sbytemask[b]) begin
+      for (int b = 0; b < 4; b++) begin
+        if (b < max_bytes && !sbytemask[b]) begin
           if (scontext[8*b+:8] != svalue[8*b+:8]) match = 1'b0;
         end
       end
