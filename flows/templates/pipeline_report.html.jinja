@@ -261,6 +261,7 @@ function jobClass(j) {
   const test = String(ctx.test_name || "").toLowerCase();
   const gate = String(ctx.comp_mode || "").startsWith("gate");
   if (/^spyglass/.test(r)) return "spyglass";
+  if (r === "rtl-lint") return "rtl_lint";
   /* The TestHarness is another testbench: its elaboration and its runs
    * are verdicts of their own, next to those of the UVM one. */
   if (r === "vcs-testharness-comp") return "th_vcs_elab";
@@ -416,7 +417,9 @@ function rtlConfigDetails(t) {
  * claims (lint, setup, other) stays out of the matrix and is listed in
  * the job detail, so the global view only shows actual verdicts. */
 const MATRIX_MODEL = [
-  ["Lint",       [["", { classes: ["spyglass"] }]]],
+  /* Spyglass on the targets it is clean on, slang + Verilator on all */
+  ["Lint",       [["Spyglass", { classes: ["spyglass"] }],
+                  ["slang/Verilator", { classes: ["rtl_lint"], statusOnly: true }]]],
   /* One elaboration per testbench and simulator: the TestHarness ones
    * are on the AXI targets only. */
   ["Elab",       [["VCS UVM", { classes: ["rtl_elab"] }],
@@ -464,7 +467,7 @@ const MATRIX_GROUPS = MATRIX_MODEL
   .filter((g) => g.cols.length);
 
 /* Per-target details: static topology of collapsed cards, rendered by
- * targetSections() below (Spyglass, RTL elaboration, Helloworld,
+ * targetSections() below (Lint, RTL elaboration, Helloworld,
  * Testlists, Coremark, Dhrystone, Synthesis, Post simulation). */
 /* PASS with a non-blocking tandem mismatch: the job (or one of its
  * testlist children) ran on a Spike-incompatible ISA and the tandem
@@ -530,13 +533,15 @@ function kpiOver(k) {
 /* =====================================================================
  * RENDER — MATRIX
  * ===================================================================== */
-function matrixStageCell(jobs) {
+function matrixStageCell(jobs, statusOnly) {
   if (!jobs.length) return `<td class="cell-status">${STATUS_BADGE.none}</td>`;
   const status = worstStatus(jobs);
   const tip = jobs.map((j) => `${j.title || j.recipe}: ${(jobLabel(j) || j.status || "?").toUpperCase()}`)
                   .join("&#10;");
   let label = null;
-  if (jobs.length === 1) {
+  if (statusOnly) {
+    label = null;  /* the label (diagnostic counts) stays in the tooltip */
+  } else if (jobs.length === 1) {
     label = jobs[0].label;
   } else {
     const nPass = jobs.filter((j) => j.status === "pass").length;
@@ -621,7 +626,7 @@ function matrixKpiCell(t, name, jobs) {  const found = targetKpis(t).find(([n]) 
           cells += matrixTestlistCell(picked);
         } else {
           populated = populated || picked.length > 0;
-          cells += matrixStageCell(picked);
+          cells += matrixStageCell(picked, c.statusOnly);
         }
       }
     }
@@ -1070,7 +1075,9 @@ function testlistCards(jobs) {
 function targetSections(jobs) {
   const by = (...cls) => jobs.filter((j) => cls.includes(j._class));
   let html = "";
-  html += jobsCard("Spyglass", by("spyglass"));
+  html += groupCard("Lint", [
+    ["Spyglass", by("spyglass")],
+    ["slang + Verilator", by("rtl_lint")]]);
   html += jobsCard("RTL elaboration", by("rtl_elab"));
   html += groupCard("Helloworld", [
     ["Compilation", by("hello_comp")],
@@ -1099,7 +1106,7 @@ function targetSections(jobs) {
   const post = [["Netlist elaboration", by("postsim_elab")],
                 ["Netlist run simulation", by("postsim_run")]];
   if (post.some(([, js]) => js.length)) html += groupCard("Post simulation", post);
-  const placedCls = ["spyglass", "rtl_elab", "hello_comp", "spike", "hello_run",
+  const placedCls = ["spyglass", "rtl_lint", "rtl_elab", "hello_comp", "spike", "hello_run",
     "hello_run_stall", "th_vcs_elab", "th_vcs_run", "th_elab", "th_run",
     "testlist_comp", "testlist_run", "coremark_comp", "coremark_run",
     "dhrystone_comp", "dhrystone_run", "synthesis", "docs",

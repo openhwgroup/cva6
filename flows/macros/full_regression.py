@@ -57,6 +57,7 @@ from flows.recipes.quartus_fpga_build import quartus_fpga_build
 from flows.recipes.quartus_fpga_program import quartus_fpga_program
 from flows.recipes.report_html import report_html
 from flows.recipes.riscv_isa_modify import riscv_isa_modify
+from flows.recipes.rtl_lint import rtl_lint
 from flows.recipes.self_check import self_check
 from flows.recipes.spyglass_design_read import spyglass_design_read
 from flows.recipes.spyglass_run import spyglass_run, RunType
@@ -1008,6 +1009,16 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
 
     for target in targets:
         target_dir = build / target
+
+        # Open-source lint of every target: no licence, a minute or two, so
+        # the targets Spyglass skips are linted too (those it covers get both)
+        scheduler.add(
+            f"rtl-lint:{target}",
+            partial(
+                _recipe, rtl_lint, target=target, update_baseline=False, quiet=quiet
+            ),
+            target_dir / "rtl_lint",
+        )
 
         if target in selection["spyglass"]:
             scheduler.add(

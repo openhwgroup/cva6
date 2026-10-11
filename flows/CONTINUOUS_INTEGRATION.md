@@ -167,6 +167,16 @@ machine without Vivado or without the board. The Intel/Altera images of
 `ALTERA_TARGETS` are run only with `--altera`, no runner carrying their
 board yet.
 
+Every target is linted by `rtl-lint`: slang, then Verilator in lint
+mode, from the same top as Spyglass. It takes no licence, so it covers the
+targets Spyglass leaves out, and the targets of `SPYGLASS_TARGETS` get
+both. As for Spyglass, the verdict is a comparison with a baseline, here
+`config/target/<target>/expected_lint.yml`: any error fails, and so does a
+new rule or a higher count. Once a warning is fixed, lower the baseline
+with `./cook.py rtl-lint -t <target> --update-baseline`. slang is the
+binary when it is in the path, else the pyslang module of
+`flows/requirements.txt`.
+
 The targets of `GTECH_TARGETS` (cv32a60x, cv32a65x_noPMP_axi and
 cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi) are synthesised on the GTECH cells
 of dc_shell (`dc-shell-synth --gtech`), which needs no PDK, once their RTL
