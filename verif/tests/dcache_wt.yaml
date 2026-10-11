@@ -14,8 +14,8 @@
 
 custom_test_config: &custom_test_config
   path_var: TESTS_PATH
-  gcc_opts: "-DWB_WORD_WRITES_BACK=0 -DWT_WORD_WRITES_BACK=0 -Wl,--section-start=.write_policy_wb=0x80100000 -Wl,--section-start=.write_policy_wt=0x80200000 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
-  llvm_opts: "-DWB_WORD_WRITES_BACK=0 -DWT_WORD_WRITES_BACK=0 -Wl,--section-start=.write_policy_wb=0x80100000 -Wl,--section-start=.write_policy_wt=0x80200000 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
+  gcc_opts: "-DWB_WORD_WRITES_BACK=0 -DWT_WORD_WRITES_BACK=0 -Wl,-T,<path_var>/custom/cache/write_policy.ld -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
+  llvm_opts: "-DWB_WORD_WRITES_BACK=0 -DWT_WORD_WRITES_BACK=0 -Wl,-T,<path_var>/custom/cache/write_policy.ld -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
 
 testlist:
   - test: write_policy
