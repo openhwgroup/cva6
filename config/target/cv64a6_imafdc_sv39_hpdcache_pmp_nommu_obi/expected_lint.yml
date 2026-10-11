@@ -9,5 +9,5 @@ verilator:
   warning:
     LITENDIAN: 72
     SELRANGE: 58
-    WIDTHEXPAND: 189
+    WIDTHEXPAND: 185
     WIDTHTRUNC: 50
