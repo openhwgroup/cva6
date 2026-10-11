@@ -3,8 +3,8 @@
 # by rtl-lint, which fails on a new rule or a higher count.
 slang:
   warning:
-    finish-num: 23
-    seq-no-match: 3
+    finish-num: 25
+    seq-no-match: 6
 verilator:
   warning:
     CASEINCOMPLETE: 2

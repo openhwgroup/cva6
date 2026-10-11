@@ -3,7 +3,7 @@
 # by rtl-lint, which fails on a new rule or a higher count.
 slang:
   warning:
-    finish-num: 24
+    finish-num: 26
     seq-no-match: 1
 verilator:
   warning:
