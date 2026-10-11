@@ -100,6 +100,8 @@ main:
 
     # Do the EXEC "RET" test. The word stored is the 32-bit ret
     # (jalr x0, 0(ra)), so the test also runs on targets without C.
+    # fence.i makes each stored ret visible to the instruction fetch: with
+    # a write-back data cache the store stays in the cache until then.
 
     # Exec test 1, at 0x0000_0800.
     li t0, 0xA0000800
@@ -107,6 +109,7 @@ main:
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
+    fence.i
     jalr t0
 
     # Exec test 2, at 0x0001_8000.
@@ -115,6 +118,7 @@ main:
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
+    fence.i
     jalr t0
 
     # Exec test 3, at 0x9800_0000.
@@ -123,6 +127,7 @@ main:
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
+    fence.i
     jalr t0
 
     # Exec test 4, at 0xA800_0000.
@@ -131,6 +136,7 @@ main:
     sw t1, 0(t0)
     LW_UNSIGNED t2, 0(t0)
     bne t1, t2, fail
+    fence.i
     jalr t0
     
 
