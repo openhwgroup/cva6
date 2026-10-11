@@ -137,6 +137,8 @@ TARGETS = [
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
     # AXI PMP MMU
     "cv32a6_imac_sv32",
+    # cv32a6_imac_sv32 with single-precision floating point (RVF)
+    "cv32a6_imafc_sv32",
     # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
     "cv32a6_ima_sv32_fpga",
     "cv32a65x_sv32_axi",
@@ -341,6 +343,19 @@ TESTLISTS = {
     ],
     "cv32a6_imac_sv32": [
         "base_rv32_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a6_imafc_sv32": [
+        "base_rv32_p",
+        "base_rv32_fp_p",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
