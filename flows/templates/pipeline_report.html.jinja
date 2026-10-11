@@ -289,6 +289,7 @@ function jobClass(j) {
     return "hello_comp";
   }
   if (r === "dc-shell-synth") return "synthesis";
+  if (r === "yosys-synth") return "synthesis_yosys";
   if (r === "docs-build") return "docs";
   /* One class per step of the FPGA flow, grouped in the detail of the
    * target; the matrix gathers them in a single column. */
@@ -425,7 +426,10 @@ const MATRIX_MODEL = [
   ["Elab",       [["VCS UVM", { classes: ["rtl_elab"] }],
                   ["VCS TH", { classes: ["th_vcs_elab"] }],
                   ["Verilator TH", { classes: ["th_elab"] }]]],
-  ["Synth",      [["", { classes: ["synthesis"] }]]],
+  /* DC on the targets it runs on, Yosys on all: each with the label of
+   * its report, the total cell count */
+  ["Synth",      [["DC", { classes: ["synthesis"] }],
+                  ["Yosys", { classes: ["synthesis_yosys"] }]]],
   /* The runs show their cycle count, the label of their report. The
    * stalling UVM run of the OBI targets is in the detail only. */
   ["HelloWorld", [["SW Comp", { classes: ["hello_comp"] }],
@@ -911,10 +915,12 @@ function hierRings(rows) {
   /* Chart.js draws the first dataset outermost */
   return rings.reverse();
 }
-/* Donut data: "Hierarchies details" rows metric of a synthesis job */
+/* Donut data: "Hierarchies details" rows metric of a synthesis job, the
+ * DC one when the target has both */
 function donutJob(t) {
-  return TARGET_JOBS.get(t).find((j) =>
+  const withHier = TARGET_JOBS.get(t).filter((j) =>
     (j.metrics || []).some((m) => m.name === "Hierarchies details" && m.kind === "rows"));
+  return withHier.find((j) => j._class === "synthesis") || withHier[0];
 }
 /* Failed-job alerts: failing Summary lines shown before the job list */
 function targetIssues(t) {
@@ -1095,7 +1101,9 @@ function targetSections(jobs) {
   html += groupCard("Dhrystone", [
     ["Compilation", by("dhrystone_comp")],
     ["Run simulation", by("dhrystone_run")]]);
-  html += jobsCard("Synthesis", by("synthesis"));
+  html += groupCard("Synthesis", [
+    ["DC", by("synthesis")],
+    ["Yosys", by("synthesis_yosys")]]);
   html += jobsCard("Documentation", by("docs"));
   html += groupCard("FPGA", [
     ["Bootloader compilation", by("fpga_bootrom_comp")],
@@ -1109,7 +1117,7 @@ function targetSections(jobs) {
   const placedCls = ["spyglass", "rtl_lint", "rtl_elab", "hello_comp", "spike", "hello_run",
     "hello_run_stall", "th_vcs_elab", "th_vcs_run", "th_elab", "th_run",
     "testlist_comp", "testlist_run", "coremark_comp", "coremark_run",
-    "dhrystone_comp", "dhrystone_run", "synthesis", "docs",
+    "dhrystone_comp", "dhrystone_run", "synthesis", "synthesis_yosys", "docs",
     "fpga_bootrom_comp", "fpga_bootrom", "fpga_build", "fpga_program", "fpga_boot",
     "postsim_elab", "postsim_run"];
   const leftover = jobs.filter((j) => !placedCls.includes(j._class));

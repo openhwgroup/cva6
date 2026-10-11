@@ -51,6 +51,7 @@ Running the flows from a CI engine:
 - Elaborate and simulate RTL
 - Run synthesis
 - Execute static analysis tools (Spyglass, slang and Verilator lint, Verible, Pylint)
+- Synthesise the RTL (Design Compiler, and Yosys on generic cells)
 - Generate performance and area reports
 - Automate complete flows via macros
 

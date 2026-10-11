@@ -177,6 +177,13 @@ with `./cook.py rtl-lint -t <target> --update-baseline`. slang is the
 binary when it is in the path, else the pyslang module of
 `flows/requirements.txt`.
 
+Every target is also synthesised by `yosys-synth`, on the generic cells of
+Yosys, once its RTL elaborates: no licence and no PDK, the open-source
+counterpart of the GTECH synthesis below. The SystemVerilog is read by the
+slang plugin of Yosys, the hierarchy is kept for the cells of each block,
+and the job fails on any latch or on cell and register counts away from
+`yosys_cells` and `yosys_registers` of `expected_values.yml`.
+
 The targets of `GTECH_TARGETS` (cv32a60x, cv32a65x_noPMP_axi and
 cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi) are synthesised on the GTECH cells
 of dc_shell (`dc-shell-synth --gtech`), which needs no PDK, once their RTL
@@ -238,7 +245,7 @@ are described in the [Reports](README.md#reports) section of the README.
 
 **Optional:**
 - `-t, --target TEXT` - CVA6 user configuration, repeatable (default: every target of the CI matrix)
-- `-j, --jobs INTEGER` - Maximum number of recipes running at the same time (default: 8)
+- `-j, --jobs INTEGER` - Maximum number of recipes running at the same time (default: 8, 16 in `.gitlab-ci.yml`)
 - `--vcs-licenses INTEGER` - Concurrent VCS jobs (default: 10)
 - `--spyglass-licenses INTEGER` - Concurrent Spyglass jobs (default: 1)
 - `--synth-licenses INTEGER` - Concurrent DC Shell synthesis jobs (default: 1)

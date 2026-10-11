@@ -3,3 +3,5 @@ coremark_cycle: 215303
 dhrystone_cycle: 16908
 gtech_cells: 49640
 gtech_registers: 7330
+yosys_cells: 98126
+yosys_registers: 8463

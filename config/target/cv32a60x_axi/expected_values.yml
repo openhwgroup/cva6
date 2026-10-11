@@ -4,3 +4,5 @@ dhrystone_cycle: 25113
 # GTECH synthesis (dc-shell-synth --gtech): not measured yet
 # gtech_cells:
 # gtech_registers:
+yosys_cells: 103073
+yosys_registers: 12257
