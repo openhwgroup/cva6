@@ -38,6 +38,7 @@ module trigger_dmode_test;
       .commit_ack_i('0),
       .ex_i('0),
       .priv_lvl_i(riscv::PRIV_LVL_M),
+      .v_i(1'b0),
       .debug_mode_i(debug_mode),
       .mret_i(1'b0),
       .sret_i(1'b0),

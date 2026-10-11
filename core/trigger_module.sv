@@ -21,6 +21,7 @@ module trigger_module
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
     input exception_t ex_i,
     input riscv::priv_lvl_t priv_lvl_i,
+    input logic v_i,
     input logic debug_mode_i,
     input logic mret_i,
     input logic sret_i,
@@ -206,6 +207,17 @@ CVA6Cfg.NrCommitPorts
 
   assign instr_count_offset = (CVA6Cfg.SdtrigIcount) ? instr_count_d - instr_count_q : '0;
 
+  // A trigger fires in the privilege mode the current one maps to: M, S/HS or
+  // U outside virtualization, VS or VU (vs, vu) when the hart is virtualized.
+  function automatic logic mode_match(logic m, logic s, logic u, logic vs, logic vu);
+    unique case (priv_lvl_i)
+      riscv::PRIV_LVL_M: return m;
+      riscv::PRIV_LVL_S: return (CVA6Cfg.RVH && v_i) ? vs : s;
+      riscv::PRIV_LVL_U: return (CVA6Cfg.RVH && v_i) ? vu : u;
+      default: return 1'b0;
+    endcase
+  endfunction
+
   always_comb begin : in_trap
     if (CVA6Cfg.SdtrigIcount) begin
       in_trap_handler_d = in_trap_handler_q;
@@ -305,12 +317,13 @@ CVA6Cfg.NrCommitPorts
         priv_match[i] = 1'b0;
         // icount match logic
         if (trigger_type_d[i] == 4'd3 && CVA6Cfg.SdtrigIcount) begin
-          case(priv_lvl_i) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (trigger_32_tdata1_d[i].icount_type.m) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_S: if (trigger_32_tdata1_d[i].icount_type.s) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_U: if (trigger_32_tdata1_d[i].icount_type.u) priv_match[i] = 1'b1;
-            default: priv_match[i] = 1'b0;
-          endcase
+          priv_match[i] = mode_match(
+            trigger_32_tdata1_d[i].icount_type.m,
+            trigger_32_tdata1_d[i].icount_type.s,
+            trigger_32_tdata1_d[i].icount_type.u,
+            trigger_32_tdata1_d[i].icount_type.vs,
+            trigger_32_tdata1_d[i].icount_type.vu
+          );
           // S_MODE context match check
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].icount_type.s && CVA6Cfg.SdtrigSupportTextra) begin
             if (CVA6Cfg.IS_XLEN32) begin
@@ -377,12 +390,13 @@ CVA6Cfg.NrCommitPorts
         end
         // mcontrol6 match logic
         if (trigger_type_d[i] == 4'd6 && CVA6Cfg.SdtrigMcontrol6) begin
-          case(priv_lvl_i) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (trigger_32_tdata1_d[i].mc6_type.m) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_S: if (trigger_32_tdata1_d[i].mc6_type.s) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_U: if (trigger_32_tdata1_d[i].mc6_type.u) priv_match[i] = 1'b1;
-            default: priv_match[i] = 1'b0;
-          endcase
+          priv_match[i] = mode_match(
+            trigger_32_tdata1_d[i].mc6_type.m,
+            trigger_32_tdata1_d[i].mc6_type.s,
+            trigger_32_tdata1_d[i].mc6_type.u,
+            trigger_32_tdata1_d[i].mc6_type.vs,
+            trigger_32_tdata1_d[i].mc6_type.vu
+          );
           // S_MODE context match check
           if (CVA6Cfg.SdtrigSupportTextra && priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].mc6_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
@@ -640,12 +654,13 @@ CVA6Cfg.NrCommitPorts
         end
         // etrigger match logic
         if (trigger_type_d[i] == 4'd5 && CVA6Cfg.SdtrigEtrigger) begin
-          case(priv_lvl_i) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (trigger_32_tdata1_d[i].etrigger_type.m) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_S: if (trigger_32_tdata1_d[i].etrigger_type.s) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_U: if (trigger_32_tdata1_d[i].etrigger_type.u) priv_match[i] = 1'b1;
-            default: priv_match[i] = 1'b0;
-          endcase
+          priv_match[i] = mode_match(
+            trigger_32_tdata1_d[i].etrigger_type.m,
+            trigger_32_tdata1_d[i].etrigger_type.s,
+            trigger_32_tdata1_d[i].etrigger_type.u,
+            trigger_32_tdata1_d[i].etrigger_type.vs,
+            trigger_32_tdata1_d[i].etrigger_type.vu
+          );
           // S_MODE context match check
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].etrigger_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
@@ -697,12 +712,13 @@ CVA6Cfg.NrCommitPorts
         end
         // itrigger match logic
         if (trigger_type_d[i] == 4'd4 && CVA6Cfg.SdtrigItrigger) begin
-          case(priv_lvl_i) // trigger will only fire if current priv lvl is same as the trigger configuration
-            riscv::PRIV_LVL_M: if (trigger_32_tdata1_d[i].itrigger_type.m) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_S: if (trigger_32_tdata1_d[i].itrigger_type.s) priv_match[i] = 1'b1;
-            riscv::PRIV_LVL_U: if (trigger_32_tdata1_d[i].itrigger_type.u) priv_match[i] = 1'b1;
-            default: priv_match[i] = 1'b0;
-          endcase
+          priv_match[i] = mode_match(
+            trigger_32_tdata1_d[i].itrigger_type.m,
+            trigger_32_tdata1_d[i].itrigger_type.s,
+            trigger_32_tdata1_d[i].itrigger_type.u,
+            trigger_32_tdata1_d[i].itrigger_type.vs,
+            trigger_32_tdata1_d[i].itrigger_type.vu
+          );
           // S_MODE context match check
           if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].itrigger_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
@@ -809,8 +825,8 @@ CVA6Cfg.NrCommitPorts
           if (CVA6Cfg.SdtrigIcount && trigger_type_d[tselect_q] == 4'd3) begin
             trigger_32_tdata1_d[tselect_q].icount_type.t_type = trigger_type_d[tselect_q];
             trigger_32_tdata1_d[tselect_q].icount_type.dmode = debug_mode_i && tdata1_i[27];
-            trigger_32_tdata1_d[tselect_q].icount_type.vs = 0;
-            trigger_32_tdata1_d[tselect_q].icount_type.vu = 0;
+            trigger_32_tdata1_d[tselect_q].icount_type.vs = CVA6Cfg.RVH && tdata1_i[26];
+            trigger_32_tdata1_d[tselect_q].icount_type.vu = CVA6Cfg.RVH && tdata1_i[25];
             trigger_32_tdata1_d[tselect_q].icount_type.hit = tdata1_i[24];
             trigger_32_tdata1_d[tselect_q].icount_type.count = tdata1_i[23:10];
             trigger_32_tdata1_d[tselect_q].icount_type.m = tdata1_i[9];
@@ -824,8 +840,8 @@ CVA6Cfg.NrCommitPorts
             trigger_32_tdata1_d[tselect_q].mc6_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].mc6_type.uncertain = 0;
             trigger_32_tdata1_d[tselect_q].mc6_type.hit1 = tdata1_i[25];
-            trigger_32_tdata1_d[tselect_q].mc6_type.vs = 0;
-            trigger_32_tdata1_d[tselect_q].mc6_type.vu = 0;
+            trigger_32_tdata1_d[tselect_q].mc6_type.vs = CVA6Cfg.RVH && tdata1_i[24];
+            trigger_32_tdata1_d[tselect_q].mc6_type.vu = CVA6Cfg.RVH && tdata1_i[23];
             trigger_32_tdata1_d[tselect_q].mc6_type.hit0 = tdata1_i[22];
             trigger_32_tdata1_d[tselect_q].mc6_type.select = tdata1_i[21];
             trigger_32_tdata1_d[tselect_q].mc6_type.zeroes = '0;
@@ -846,8 +862,8 @@ CVA6Cfg.NrCommitPorts
             trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].etrigger_type.hit = tdata1_i[26];
             trigger_32_tdata1_d[tselect_q].etrigger_type.zeroes = '0;
-            trigger_32_tdata1_d[tselect_q].etrigger_type.vs = 0;
-            trigger_32_tdata1_d[tselect_q].etrigger_type.vu = 0;
+            trigger_32_tdata1_d[tselect_q].etrigger_type.vs = CVA6Cfg.RVH && tdata1_i[12];
+            trigger_32_tdata1_d[tselect_q].etrigger_type.vu = CVA6Cfg.RVH && tdata1_i[11];
             trigger_32_tdata1_d[tselect_q].etrigger_type.zeroed = 0;
             trigger_32_tdata1_d[tselect_q].etrigger_type.m = tdata1_i[9];
             trigger_32_tdata1_d[tselect_q].etrigger_type.zero = 0;
@@ -859,8 +875,8 @@ CVA6Cfg.NrCommitPorts
             trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].itrigger_type.hit = tdata1_i[26];
             trigger_32_tdata1_d[tselect_q].itrigger_type.zeroed = '0;
-            trigger_32_tdata1_d[tselect_q].itrigger_type.vs = 0;
-            trigger_32_tdata1_d[tselect_q].itrigger_type.vu = 0;
+            trigger_32_tdata1_d[tselect_q].itrigger_type.vs = CVA6Cfg.RVH && tdata1_i[12];
+            trigger_32_tdata1_d[tselect_q].itrigger_type.vu = CVA6Cfg.RVH && tdata1_i[11];
             trigger_32_tdata1_d[tselect_q].itrigger_type.nmi = 0;
             trigger_32_tdata1_d[tselect_q].itrigger_type.m = tdata1_i[9];
             trigger_32_tdata1_d[tselect_q].itrigger_type.zero = 0;
@@ -874,8 +890,8 @@ CVA6Cfg.NrCommitPorts
           trigger_type_d[tselect_q] = tdata1_w[63:60];
           trigger_32_tdata1_d[tselect_q].icount_type.t_type  = (tdata1_w[63:60] == 4'd3 || tdata1_w[63:60] == 4'd15) ? tdata1_w[63:60] : trigger_type_q[tselect_q];
           trigger_32_tdata1_d[tselect_q].icount_type.dmode = debug_mode_i && tdata1_w[59];
-          trigger_32_tdata1_d[tselect_q].icount_type.vs = 0;
-          trigger_32_tdata1_d[tselect_q].icount_type.vu = 0;
+          trigger_32_tdata1_d[tselect_q].icount_type.vs = CVA6Cfg.RVH && tdata1_w[26];
+          trigger_32_tdata1_d[tselect_q].icount_type.vu = CVA6Cfg.RVH && tdata1_w[25];
           trigger_32_tdata1_d[tselect_q].icount_type.hit = tdata1_w[24];
           trigger_32_tdata1_d[tselect_q].icount_type.count = tdata1_w[23:10];
           trigger_32_tdata1_d[tselect_q].icount_type.m = tdata1_w[9];
@@ -890,8 +906,8 @@ CVA6Cfg.NrCommitPorts
           trigger_32_tdata1_d[tselect_q].mc6_type.dmode = debug_mode_i && tdata1_w[59];
           trigger_32_tdata1_d[tselect_q].mc6_type.uncertain = 0;
           trigger_32_tdata1_d[tselect_q].mc6_type.hit1 = tdata1_w[25];
-          trigger_32_tdata1_d[tselect_q].mc6_type.vs = 0;
-          trigger_32_tdata1_d[tselect_q].mc6_type.vu = 0;
+          trigger_32_tdata1_d[tselect_q].mc6_type.vs = CVA6Cfg.RVH && tdata1_w[24];
+          trigger_32_tdata1_d[tselect_q].mc6_type.vu = CVA6Cfg.RVH && tdata1_w[23];
           trigger_32_tdata1_d[tselect_q].mc6_type.hit0 = tdata1_w[22];
           trigger_32_tdata1_d[tselect_q].mc6_type.select = tdata1_w[21];
           trigger_32_tdata1_d[tselect_q].mc6_type.zeroes = '0;
@@ -913,8 +929,8 @@ CVA6Cfg.NrCommitPorts
           trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = debug_mode_i && tdata1_w[59];
           trigger_32_tdata1_d[tselect_q].etrigger_type.hit = tdata1_w[58];
           trigger_32_tdata1_d[tselect_q].etrigger_type.zeroes = '0;
-          trigger_32_tdata1_d[tselect_q].etrigger_type.vs = 0;
-          trigger_32_tdata1_d[tselect_q].etrigger_type.vu = 0;
+          trigger_32_tdata1_d[tselect_q].etrigger_type.vs = CVA6Cfg.RVH && tdata1_w[12];
+          trigger_32_tdata1_d[tselect_q].etrigger_type.vu = CVA6Cfg.RVH && tdata1_w[11];
           trigger_32_tdata1_d[tselect_q].etrigger_type.zeroed = 0;
           trigger_32_tdata1_d[tselect_q].etrigger_type.m = tdata1_w[9];
           trigger_32_tdata1_d[tselect_q].etrigger_type.zero = 0;
@@ -927,8 +943,8 @@ CVA6Cfg.NrCommitPorts
           trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = debug_mode_i && tdata1_w[59];
           trigger_32_tdata1_d[tselect_q].itrigger_type.hit = tdata1_w[58];
           trigger_32_tdata1_d[tselect_q].itrigger_type.zeroed = '0;
-          trigger_32_tdata1_d[tselect_q].itrigger_type.vs = 0;
-          trigger_32_tdata1_d[tselect_q].itrigger_type.vu = 0;
+          trigger_32_tdata1_d[tselect_q].itrigger_type.vs = CVA6Cfg.RVH && tdata1_w[12];
+          trigger_32_tdata1_d[tselect_q].itrigger_type.vu = CVA6Cfg.RVH && tdata1_w[11];
           trigger_32_tdata1_d[tselect_q].itrigger_type.nmi = 0;
           trigger_32_tdata1_d[tselect_q].itrigger_type.m = tdata1_w[9];
           trigger_32_tdata1_d[tselect_q].itrigger_type.zero = 0;
