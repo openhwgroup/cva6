@@ -160,6 +160,8 @@ TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
     # AXI PMP MMU with Svnapot, without the shared TLB
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot",
+    # AXI PMP MMU with the data cache ECC and scrubber
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc",
     # AXI PMP MMU with the write-back HPDcache
     "cv64a6_imafdc_sv39_hpdcache_wb",
     # AXI PMP MMU with an HPDcache that writes back in a bufferable region and
@@ -484,6 +486,21 @@ TESTLISTS = {
         "base_rv32_amo_p",
         "base_csr",
         "base_zicbom",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc": [
+        "base_rv64_p",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_ecc",
+        "dcache_wt",
         "base_le",
     ],
     "cv64a6_imafdc_sv39_hpdcache_wb": [

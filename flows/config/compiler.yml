@@ -130,3 +130,5 @@ my_cv32a65x_sv32_be_axi_toolchain:
   <<: *dummy2
 my_cv32a65x_sv32_wb_axi_toolchain:
   <<: *dummy2
+my_cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc_toolchain:
+  <<: *dummy2
