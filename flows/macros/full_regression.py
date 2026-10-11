@@ -506,7 +506,12 @@ SIM_TIMEOUT = 300
 # that passes, cm_push_pop_all, whose length depends on the memory stalls
 # the OBI agent draws; the benchmarks are much longer and keep the testbench
 # default.
-SIM_CYCLE_TIMEOUT = 300000
+SIM_CYCLE_TIMEOUT = 200000
+
+# Cycle budget of the testlists run in virtual memory (name ending in _v):
+# their environment builds the page tables and walks every page before the
+# test, through the MMU and the memory stalls. Twice the longest that passes.
+SIM_CYCLE_TIMEOUT_V = 600000
 
 # Benchmarks are long: they keep the default recipe timeout
 BENCHMARK_SIM_TIMEOUT = 3000
@@ -907,7 +912,11 @@ def _job_testlist_run(target, quiet):
                 run_opts=[],
                 uvm_seed=str(random.getrandbits(31)),
                 sim_timeout=SIM_TIMEOUT,
-                cycle_timeout=SIM_CYCLE_TIMEOUT,
+                cycle_timeout=(
+                    SIM_CYCLE_TIMEOUT_V
+                    if testlist.endswith("_v")
+                    else SIM_CYCLE_TIMEOUT
+                ),
                 quiet=quiet,
             )
         except JobFailure:
