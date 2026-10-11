@@ -64,7 +64,8 @@ def self_check(
         ("vsim", "Questa/ModelSim - Siemens simulator"),
         ("vlog", "Questa/ModelSim - Verilog compiler"),
         ("vopt", "Questa/ModelSim - Optimizer"),
-        ("verilator", "Verilator - open-source simulator, TestHarness only"),
+        ("verilator", "Verilator - open-source simulator, TestHarness and RTL lint"),
+        ("slang", "slang - SystemVerilog compiler, RTL lint (else pyslang)"),
         ("dc_shell", "Design Compiler - Synopsys synthesis"),
         ("pt_shell", "PrimeTime - Synopsys STA"),
         ("aipk_read", "Spyglass - Synopsys static analysis"),
@@ -101,6 +102,21 @@ def self_check(
         else:
             report.warning(f"{tool_name} ({description}): Not found")
             tool_results.add_row(tool=tool_name, description=description, path="")
+
+    # rtl-lint falls back on the pyslang module when the slang binary is
+    # not installed: only both missing leaves the lint without slang
+    if "slang" not in found:
+        try:
+            import pyslang  # pylint: disable=import-outside-toplevel
+
+            report.success(
+                f"pyslang {getattr(pyslang, '__version__', '')}: replaces slang for rtl-lint"
+            )
+        except ImportError:
+            report.warning(
+                "pyslang: Not found either, rtl-lint cannot run "
+                "(pip3 install -r flows/requirements.txt)"
+            )
 
     if not found.intersection(simulators):
         report.error(

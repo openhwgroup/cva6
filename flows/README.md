@@ -50,7 +50,7 @@ Running the flows from a CI engine:
 - Compile software programs for CVA6 targets
 - Elaborate and simulate RTL
 - Run synthesis
-- Execute static analysis tools (Spyglass, Verible, Pylint)
+- Execute static analysis tools (Spyglass, slang and Verilator lint, Verible, Pylint)
 - Generate performance and area reports
 - Automate complete flows via macros
 
