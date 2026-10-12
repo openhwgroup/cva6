@@ -1794,7 +1794,7 @@ module decoder
     };  // JAL, AUIPC, sign extended to 64 bit
     //  if zcmt then xlen jump address assign to immediate
     if (CVA6Cfg.RVZCMT && is_zcmt_i) begin
-      imm_uj_type = {{CVA6Cfg.XLEN - 32{jump_address_i[31]}}, jump_address_i[31:0]};
+      imm_uj_type = jump_address_i;
     end else begin
       imm_uj_type = {
         {CVA6Cfg.XLEN - 20{instruction_i[31]}},
