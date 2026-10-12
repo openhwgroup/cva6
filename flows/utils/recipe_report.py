@@ -246,7 +246,9 @@ class KpiMetric(Metric):
     KPIs are also collected in the top-level `kpi:` dict of the report.
     """
 
-    def __init__(self, name, value, unit=None, expected=None, better=None):
+    def __init__(
+        self, name, value, unit=None, expected=None, better=None, tolerance=None
+    ):
         super().__init__(name)
         self.values = {"value": _serialize(value)}
         if unit is not None:
@@ -255,6 +257,8 @@ class KpiMetric(Metric):
             self.values["expected"] = _serialize(expected)
         if better is not None:
             self.values["better"] = str(better)
+        if tolerance is not None:
+            self.values["tolerance"] = _serialize(tolerance)
 
     def _kind(self):
         return "kpi"
@@ -630,7 +634,7 @@ class RecipeReport:
         else:
             self._print_rows(metric.name, metric.values, metric.fmt)
 
-    def kpi(self, name, value, unit=None, expected=None, better=None):
+    def kpi(self, name, value, unit=None, expected=None, better=None, tolerance=None):
         """
         Add a key performance indicator (print + record).
 
@@ -645,11 +649,13 @@ class RecipeReport:
             expected: baseline value, typically read from
                       `config/target/<target>/expected_values.yml`
             better: "lower" or "higher", direction of improvement
+            tolerance: relative deviation from `expected` still on target
+                       (e.g. 0.03), for the dashboard colour
 
         Recording a KPI emits no verdict: checking the value against the
         expected one (and calling `error(...)`) is up to the recipe.
         """
-        metric = KpiMetric(name, value, unit, expected, better)
+        metric = KpiMetric(name, value, unit, expected, better, tolerance)
         self._metrics.append(metric)
         if not self.quiet:
             text = f"KPI {name}: {formats.render(value, 'num')}"

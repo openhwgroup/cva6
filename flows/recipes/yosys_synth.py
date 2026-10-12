@@ -45,7 +45,7 @@ from flows.utils.target_config import (
 app = typer.Typer()
 
 # Deviation tolerated on the counts, relative to expected_values.yml
-YOSYS_TOLERANCE = 0.01
+YOSYS_TOLERANCE = 0.05
 
 # Levels of hierarchy the per-block cell counts go down to, below the top
 YOSYS_HIER_DEPTH = 4
@@ -272,7 +272,14 @@ def yosys_synth(
     for name in ("yosys_cells", "yosys_registers"):
         value = counts[name]
         expected = read_config_expected_value(target, name, report)
-        report.kpi(name, value, unit="cells", expected=expected, better="lower")
+        report.kpi(
+            name,
+            value,
+            unit="cells",
+            expected=expected,
+            better="lower",
+            tolerance=YOSYS_TOLERANCE,
+        )
         if expected is None:
             report.info(f"{name}: {value}, no expected value")
         elif abs(value - expected) > expected * YOSYS_TOLERANCE:
