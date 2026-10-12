@@ -21,6 +21,10 @@ from flows.utils.recipe_report import RecipeReport
 
 app = typer.Typer()
 
+# The recipe tells a git failure from its output ("error:", "fatal:"): a
+# localised git would print them translated, and a failure would pass
+GIT_ENV = {"LC_ALL": "C"}
+
 
 def _apply_patch(patch_file, patch_cwd, report, repo_dir):
     """
@@ -34,7 +38,7 @@ def _apply_patch(patch_file, patch_cwd, report, repo_dir):
     already = run_cmd(
         cmd=["git", "apply", "--reverse", "--check", str(patch_file)],
         cwd=patch_cwd,
-        env=None,
+        env=GIT_ENV,
         error_patterns=None,
         warning_patterns=None,
         highlight_patterns=None,
@@ -51,7 +55,7 @@ def _apply_patch(patch_file, patch_cwd, report, repo_dir):
     result = run_cmd(
         cmd=["git", "apply", str(patch_file)],
         cwd=patch_cwd,
-        env=None,
+        env=GIT_ENV,
         error_patterns=None,
         warning_patterns=None,
         highlight_patterns=None,
@@ -71,7 +75,32 @@ def _apply_patch(patch_file, patch_cwd, report, repo_dir):
     return True
 
 
-def _patch_submodules(dependencies, report, repo_dir):
+def submodule_patches(repo_dir):
+    """
+    Patches of the Git submodules, `(submodule, patch file, directory)`.
+
+    Read from flows/config/dependencies.yml of the repository, never from
+    $CONFIG_DIR: the patches come with the code they fix, so a site copy of
+    the file would miss the ones added since it was made.
+    """
+    config_file = repo_dir / "flows" / "config" / "dependencies.yml"
+    with config_file.open("r") as f:
+        declared = (yaml.safe_load(f) or {}).get("submodule_patches") or {}
+    patches = []
+    for sub_path, sub_config in declared.items():
+        for patch_spec in (sub_config or {}).get("patches", []):
+            patch_file_rel, _, patch_subdir = patch_spec.partition(":")
+            patches.append(
+                (
+                    sub_path,
+                    repo_dir / patch_file_rel,
+                    repo_dir / sub_path / patch_subdir,
+                )
+            )
+    return patches
+
+
+def _patch_submodules(report, repo_dir):
     """
     Apply the patches declared for the Git submodules.
 
@@ -79,20 +108,18 @@ def _patch_submodules(dependencies, report, repo_dir):
     `git submodule update`. Patches that are not merged upstream yet are kept
     out of the submodule history so its pointer keeps tracking upstream.
     """
-    submodule_patches = dependencies.get("submodule_patches") or {}
-    if not submodule_patches:
+    by_submodule = {}
+    for sub_path, patch_file, patch_cwd in submodule_patches(repo_dir):
+        by_submodule.setdefault(sub_path, []).append((patch_file, patch_cwd))
+    if not by_submodule:
         return True
 
     report.step("Patching Git submodules")
     results = report.metric("Submodule patches")
     all_success = True
 
-    for sub_path, sub_config in submodule_patches.items():
+    for sub_path, patches in by_submodule.items():
         sub_dir = repo_dir / sub_path
-        patches = (sub_config or {}).get("patches", [])
-        if not patches:
-            continue
-
         if not sub_dir.exists() or not any(sub_dir.iterdir()):
             report.error(
                 f"Submodule not initialised: {sub_path}. "
@@ -104,15 +131,7 @@ def _patch_submodules(dependencies, report, repo_dir):
             continue
 
         sub_ok = True
-        for patch_spec in patches:
-            if ":" in patch_spec:
-                patch_file_rel, patch_subdir = patch_spec.split(":", 1)
-                patch_cwd = sub_dir / patch_subdir
-            else:
-                patch_file_rel = patch_spec
-                patch_cwd = sub_dir
-
-            patch_file = repo_dir / patch_file_rel
+        for patch_file, patch_cwd in patches:
             if not patch_file.exists():
                 report.error(f"Patch file not found: {patch_file}", env=True)
                 sub_ok = False
@@ -156,8 +175,9 @@ def git_dependencies(
     This recipe clones external test repositories (riscv-tests, riscv-compliance, riscv-arch-test)
     as defined in flows/config/dependencies.yml. These are NOT Git submodules.
 
-    It also applies the patches declared under submodule_patches on the Git
-    submodules, which are checked out by `git submodule update`. Those patches
+    It also applies the patches declared under submodule_patches of the
+    repository flows/config/dependencies.yml on the Git submodules, which are
+    checked out by `git submodule update`. Those patches
     carry fixes that are not merged upstream yet, so the submodule pointer keeps
     tracking upstream. Applying them is idempotent: a patch already in place is
     skipped, so the recipe can be run repeatedly.
@@ -204,8 +224,8 @@ def git_dependencies(
     if not dependencies:
         report.error_exit("No dependencies found in configuration file", env=True)
 
-    # submodule_patches is not a repository to clone, it is handled separately
-    # at the end of the recipe
+    # submodule_patches is not a repository to clone: it is read from the
+    # repository at the end of the recipe, whatever $CONFIG_DIR holds
     clonable = {k: v for k, v in dependencies.items() if k != "submodule_patches"}
 
     report.success(f"Loaded {len(clonable)} dependency definitions")
@@ -297,7 +317,7 @@ def git_dependencies(
             result = run_cmd(
                 cmd=clone_cmd,
                 cwd=repo_dir,
-                env=None,
+                env=GIT_ENV,
                 error_patterns=None,
                 warning_patterns=None,
                 highlight_patterns=None,
@@ -334,7 +354,7 @@ def git_dependencies(
                 result = run_cmd(
                     cmd=checkout_cmd,
                     cwd=dest_path,
-                    env=None,
+                    env=GIT_ENV,
                     error_patterns=None,
                     warning_patterns=None,
                     highlight_patterns=None,
@@ -371,7 +391,7 @@ def git_dependencies(
                 result = run_cmd(
                     cmd=submodule_cmd,
                     cwd=dest_path,
-                    env=None,
+                    env=GIT_ENV,
                     error_patterns=None,
                     warning_patterns=None,
                     highlight_patterns=None,
@@ -488,7 +508,7 @@ def git_dependencies(
     # ==========================================================
     # Patch the Git submodules
     # ==========================================================
-    if not _patch_submodules(dependencies, report, repo_dir):
+    if not _patch_submodules(report, repo_dir):
         all_success = False
 
     # ==========================================================

@@ -293,7 +293,8 @@ also applies the patches declared on the Git submodules, so run it after
 ```
 
 Running it again is harmless: an existing clone is kept and a patch already
-applied is skipped.
+applied is skipped. Run it again after a pull that brings a new submodule
+patch: until then, `cook.py` stops with the list of the patches not applied.
 
 ## cook.py configuration
 
@@ -338,7 +339,8 @@ Four files, all read from `$CONFIG_DIR` (default: `flows/config/`):
 - **`setenv.sh`** - where the tools are (required, see below)
 - **`compiler.yml`** - toolchain configurations (required)
 - **`techno.yml`** - technology libraries for synthesis
-- **`dependencies.yml`** - external git repositories and submodule patches
+- **`dependencies.yml`** - external git repositories (the submodule patches
+  are always read from `flows/config/dependencies.yml` of the repository)
 
 The three `.yml` are read by the recipes themselves; `setenv.sh` is a shell
 script **you** source before calling `cook.py`.
@@ -2059,13 +2061,15 @@ Install the external test repositories and patch the Git submodules.
 ./cook.py git-dependencies [OPTIONS]
 ```
 
-Two things, both driven by `$CONFIG_DIR/dependencies.yml`:
+Two things:
 
-- **clone** the external test repositories (riscv-tests, riscv-compliance,
-  riscv-arch-test) at the pinned commit and apply their patches. These are
+- **clone** the external test repositories of `$CONFIG_DIR/dependencies.yml`
+  (riscv-tests, riscv-compliance, riscv-arch-test) at the pinned commit and apply their patches. These are
   *not* submodules: an existing destination is left untouched unless
   `--force` is passed;
-- **patch the Git submodules** listed under `submodule_patches`. They are
+- **patch the Git submodules** listed under `submodule_patches` of
+  `flows/config/dependencies.yml` in the repository, whatever `$CONFIG_DIR`
+  holds: the patches come with the code they fix. They are
   checked out by `git submodule update`, so a fix that is not merged
   upstream yet lives here as a patch rather than as a commit in the
   submodule, and its pointer keeps tracking upstream.
@@ -2074,6 +2078,12 @@ Applying a patch is idempotent, so the recipe can be run repeatedly: a
 patch already in place is skipped. A submodule that is not initialised is
 an environment error telling you to run `git submodule update --init
 --recursive`.
+
+Every other `cook.py` command first checks, with `git apply --reverse
+--check`, that these patches are in place, and stops with the list of the
+missing ones otherwise: a pull that brings a new patch is never used
+unpatched. `self-check` and `full-regression`, which runs this recipe first,
+skip the check.
 
 **Optional:**
 - `-r, --repo TEXT` - Install only this dependency, repeatable (default: all)
@@ -2096,7 +2106,7 @@ an environment error telling you to run `git submodule update --init
 ./cook.py git-dependencies --repo riscv-tests --force
 ```
 
-To declare a patch on a submodule, add it to `dependencies.yml` with the
+To declare a patch on a submodule, add it to `flows/config/dependencies.yml` with the
 reason it exists and what to watch for upstream, so it can be dropped once
 the fix lands there:
 

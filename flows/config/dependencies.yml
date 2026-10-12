@@ -35,7 +35,8 @@
 #         dropped once the fix lands there.
 #
 # This keeps a fix that is not merged upstream yet out of the submodule history,
-# so its pointer keeps tracking upstream.
+# so its pointer keeps tracking upstream. The submodule_patches section is
+# always read from this file of the repository, never from $CONFIG_DIR.
 
 submodule_patches:
   verif/core-v-verif:
