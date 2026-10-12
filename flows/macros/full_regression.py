@@ -194,6 +194,8 @@ TARGETS = [
 #   base_rv32_amo_p, base_rv64_amo_p  RVA; base_rv32_amo_v, base_rv64_amo_v
 #                  RVA and an MMU
 #   base_zcmt      RVZCMT
+#   base_rv32_ma_fetch, base_rv64_ma_fetch  every target built with GCC (the
+#                  test does not build with LLVM)
 #   base_csr       every target without RVH (base_rv64_h holds the RVH variant)
 #   base_zicbom    RVZiCbom, RVS and RVU
 #   base_zicbom_h  RVZiCbom and RVH
@@ -215,6 +217,7 @@ TESTLISTS = {
     "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
         "base_csr",
@@ -244,6 +247,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_amo_p",
         "base_csr",
@@ -277,9 +281,17 @@ TESTLISTS = {
         "base_le",
         "base_obi",
     ],
-    "cv32a65x_noc": ["base_rv32_p", "base_pmp", "base_csr", "base_le", "base_obi"],
+    "cv32a65x_noc": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
     "cv32a65x_noc_scalar": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_pmp",
         "base_csr",
         "base_le",
@@ -287,6 +299,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_pmp",
@@ -305,6 +318,7 @@ TESTLISTS = {
     ],
     "cv32a65x_axi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_zcmt",
         "base_pmp",
         "base_csr",
@@ -313,6 +327,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_pmp",
         "base_rv64_pmp",
@@ -324,6 +339,7 @@ TESTLISTS = {
     ],
     "cv32a6_imac_sv32_obi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -336,6 +352,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -346,6 +363,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32_be": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -357,6 +375,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -370,6 +389,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -383,6 +403,7 @@ TESTLISTS = {
     ],
     "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_v",
         "base_pmp",
         "base_rv64_pmp",
@@ -396,6 +417,7 @@ TESTLISTS = {
     ],
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_rv64_pmp_mmu",
@@ -407,6 +429,7 @@ TESTLISTS = {
     ],
     "cv32a6_imac_sv32": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -420,6 +443,7 @@ TESTLISTS = {
     ],
     "cv32a6_imafc_sv32": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_fp_p",
         "base_rv32_v",
         "base_rv32_mmu",
@@ -434,6 +458,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32_axi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -445,6 +470,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32_be_axi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -457,6 +483,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32_wb_axi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -468,6 +495,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sdtrig": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_zcmt",
         "base_zcmp",
         "base_pmp",
@@ -478,6 +506,7 @@ TESTLISTS = {
     ],
     "cv32a65x_noPMP_sdtrig": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_zcmt",
         "testlist_sdtrig",
         "base_csr",
@@ -486,6 +515,7 @@ TESTLISTS = {
     ],
     "cv32a65x_sv32_sdtrig": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_mmu",
         "base_pmp",
@@ -497,6 +527,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -511,6 +542,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -526,6 +558,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -540,6 +573,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -554,6 +588,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -568,6 +603,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -583,6 +619,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_stlb": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -598,6 +635,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -615,6 +653,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -630,6 +669,7 @@ TESTLISTS = {
     ],
     "cv32a6_ima_sv32_fpga": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
@@ -640,6 +680,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -655,6 +696,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_wb": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
@@ -669,6 +711,7 @@ TESTLISTS = {
     ],
     "cv64a6_imafdc_sv39_hpdcache_wtwb": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
         "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
