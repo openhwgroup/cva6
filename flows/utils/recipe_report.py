@@ -33,7 +33,8 @@ value type (see flows/utils/formats.py), with optional `fmt` overrides.
 Report structure mirrors the recipe console structure: each recorded
 message is attached to the current recipe step (see `step()`). The global
 verdict is the top-level `status: pass|fail` key; each Summary row also
-carries its own `status` column (pass/fail/env).
+carries its own `status` column (pass/warn/fail/env); a warn row does not
+fail the report.
 
 Errors are classified with the `fail_kind` top-level key:
 - "environment": python/linux/license/tool/prerequisite problem, the run
@@ -221,7 +222,7 @@ class RowsMetric(Metric):
     Table built from rows (one dict per row, columns = the dict keys).
 
     The row verdict is an ordinary
-    `status` column ("pass", "fail" or "env"); a fail/env row marks the
+    `status` column ("pass", "warn", "fail" or "env"); a fail/env row marks the
     metric (and thus the report) as failed at write time.
     """
 
@@ -535,9 +536,10 @@ class RecipeReport:
         self._details.add_value(f"[{self._step}] {msg}" if self._step else str(msg))
 
     def warning(self, msg):
-        "Print a warning message and record it in the report details"
+        "Print a warning message and record a WARN line in the report summary"
         if not self.quiet:
             console.print(f"{msg}", style="yellow", highlight=False)
+        self._summary.add_row(status="warn", step=self._step, message=str(msg))
         self._details.add_value(
             f"[{self._step}] WARNING: {msg}" if self._step else f"WARNING: {msg}"
         )
@@ -598,7 +600,7 @@ class RecipeReport:
         The metric kind is chosen from the data:
         - dict -> `table`: two-column name/value table
         - list of dicts -> `rows`: one dict per row, columns = the keys.
-          A `status` key ("pass"/"fail"/"env") holds the row verdict; a
+          A `status` key ("pass"/"warn"/"fail"/"env") holds the row verdict; a
           fail/env row marks the whole report as failed at write time.
         - None -> empty `rows` metric, to be filled with `add_row(...)`
           (incremental rows are recorded but not printed)

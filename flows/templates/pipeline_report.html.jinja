@@ -196,6 +196,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const STATUS_BADGE = {
   pass: '<span class="badge bg-success">PASS</span>',
+  warn: '<span class="badge bg-warning text-dark">WARN</span>',
   fail: '<span class="badge bg-danger">FAIL</span>',
   env:  '<span class="badge bg-warning text-dark">ENV</span>',
   "pass-tandem": '<span class="badge bg-tandem" title="Tandem mismatch (non-blocking)">PASS</span>',
@@ -204,7 +205,8 @@ const STATUS_BADGE = {
 function badge(status, label) {
   if (!status) return STATUS_BADGE.none;
   if (!label) return STATUS_BADGE[status] || STATUS_BADGE.none;
-  const cls = { pass: "bg-success", fail: "bg-danger", env: "bg-warning text-dark",
+  const cls = { pass: "bg-success", warn: "bg-warning text-dark", fail: "bg-danger",
+                env: "bg-warning text-dark",
                 "pass-tandem": "bg-tandem" }[status]
               || "bg-secondary";
   return `<span class="badge ${cls}">${esc(label)}</span>`;
@@ -215,7 +217,7 @@ function fmtNum(v) {
 }
 function inferFmt(key, v) {
   const k = String(key).toLowerCase();
-  const isStatus = typeof v === "string" && ["pass", "fail", "env"].includes(v.toLowerCase());
+  const isStatus = typeof v === "string" && ["pass", "warn", "fail", "env"].includes(v.toLowerCase());
   if (k === "status" || isStatus) return "status";
   if (typeof v === "number") return "num";
   if (typeof v === "string" && v.toLowerCase().startsWith("0x")) return "hex";
@@ -932,7 +934,7 @@ function targetIssues(t) {
     if (j.status === "pass") continue;
     const summary = (j.metrics || []).find((m) => m.name === "Summary");
     const lines = ((summary && summary.data) || [])
-      .filter((r) => String(r.status).toLowerCase() !== "pass")
+      .filter((r) => ["fail", "env"].includes(String(r.status).toLowerCase()))
       .map((r) => (r.step ? `[${r.step}] ` : "") + (r.message || ""));
     html += `<div class="alert alert-${j.fail_kind === "environment" ? "warning" : "danger"}
                   py-2 px-3 mb-2">
