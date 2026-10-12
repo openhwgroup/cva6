@@ -372,7 +372,10 @@ module load_unit
                    (CVA6Cfg.TwoPhaseReq ? ldbuf_q[ldbuf_windex_q].trans_id : lsu_ctrl_i.trans_id);
       valid_o = 1'b1;
       ex_o.valid = 1'b1;
-      pop_ld_o = !stall_translation;  //1'b1; // release lsu_bypass fifo
+      // With TwoPhaseReq the faulting load released its lsu_bypass entry in its
+      // first phase: only a load accepted in this cycle is released here.
+      pop_ld_o = (CVA6Cfg.TwoPhaseReq && !sdtrig_load_cancel_i) ? ldbuf_w && !sdtrig_load_match
+                                                                : !stall_translation;
       // RETIRE EXCEPTION (low priority)
     end else if (CVA6Cfg.MmuPresent && ex_s0) begin
       trans_id_o = lsu_ctrl_i.trans_id;
