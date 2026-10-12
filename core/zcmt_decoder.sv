@@ -84,11 +84,12 @@ module zcmt_decoder #(
     jump_address_o          = '0;  // cache request port
     req_addr_d              = req_addr_q;
     drop_d                  = drop_q;
-    ypb_zcmt_req_o.paddr    = req_addr_q;
+    ypb_zcmt_req_o.paddr    = CVA6Cfg.PLEN'(req_addr_q);
     ypb_zcmt_req_o.preq     = 1'b0;
     ypb_zcmt_req_o.we       = 1'b0;
-    ypb_zcmt_req_o.be       = 4'b1111;
-    ypb_zcmt_req_o.size     = 2'b10;
+    // One XLEN-bit table entry
+    ypb_zcmt_req_o.be       = '1;
+    ypb_zcmt_req_o.size     = CVA6Cfg.IS_XLEN64 ? 2'b11 : 2'b10;
     ypb_zcmt_req_o.wdata    = '0;
     ypb_zcmt_req_o.rready   = '1;
     ypb_zcmt_req_o.aid      = 1'b0;
@@ -101,13 +102,14 @@ module zcmt_decoder #(
         fetch_stall_o = 1'b0;
         ypb_zcmt_req_o.preq = 1'b0;
         if (is_zcmt_instr_i) begin
-          if (CVA6Cfg.IS_XLEN32) begin
-            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[9:2], 2'b00};
-            ypb_zcmt_req_o.paddr = req_addr_d;
-            ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
-            fetch_stall_o = 1'b1;
-            drop_d = flush_i;
-          end else illegal_instr_o = 1'b1;
+          // table_address = jvt.base + (index << log2(XLEN/8))
+          req_addr_d = {jvt_i.base, 6'b000000} +
+              (CVA6Cfg.IS_XLEN64 ? CVA6Cfg.VLEN'({instr_i[9:2], 3'b000}) :
+                                   CVA6Cfg.VLEN'({instr_i[9:2], 2'b00}));
+          ypb_zcmt_req_o.paddr = CVA6Cfg.PLEN'(req_addr_d);
+          ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
+          fetch_stall_o = 1'b1;
+          drop_d = flush_i;
           if (!ypb_zcmt_rsp_i.pgnt) begin
             state_d = TABLE_WAIT_GNT;
           end else begin
