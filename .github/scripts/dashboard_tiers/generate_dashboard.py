@@ -290,13 +290,10 @@ def main():
         "repo": args.repo,
         "workflows": workflows,
         "matrix_data": matrix_data,
-        "matrix_data_json": json.dumps(matrix_data),
         "matrix_configs": matrix_configs,
-        "matrix_configs_json": json.dumps(matrix_configs),
         "matrix_suites": matrix_suites,
-        "matrix_suites_json": json.dumps(matrix_suites),
         "default_matrix_wf": default_matrix_wf,
-        "chart_data_json": json.dumps(chart_data),
+        "chart_data": chart_data,
         "trend_count": TREND_COUNT,
     }
 

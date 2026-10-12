@@ -355,10 +355,12 @@
 <script>
 // ============================================================
 // Matrix data (all workflows combined) - injected by Jinja2
+// tojson (not |safe) escapes < and >: config and suite names come from the job
+// names of PR runs, which must not be able to close this <script>
 // ============================================================
-const matrixData   = {{ matrix_data_json|safe }};
-const matrixConfigs = {{ matrix_configs_json|safe }};
-const matrixSuites  = {{ matrix_suites_json|safe }};
+const matrixData   = {{ matrix_data|tojson }};
+const matrixConfigs = {{ matrix_configs|tojson }};
+const matrixSuites  = {{ matrix_suites|tojson }};
 
 /**
  * Render the test matrix table for a given workflow.
@@ -435,7 +437,7 @@ renderMatrix('{{ default_matrix_wf }}');
 // ============================================================
 // Chart.js Trend Charts
 // ============================================================
-const chartData = {{ chart_data_json|safe }};
+const chartData = {{ chart_data|tojson }};
 
 Object.keys(chartData).forEach(key => {
   const wf = chartData[key];
