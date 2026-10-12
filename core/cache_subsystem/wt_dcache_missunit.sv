@@ -73,7 +73,14 @@ module wt_dcache_missunit
     input dcache_rtrn_t mem_rtrn_i,
     output logic mem_data_req_o,
     input logic mem_data_ack_i,
-    output dcache_req_t mem_data_o
+    output dcache_req_t mem_data_o,
+    //Oussama
+    input logic [3:0] enclave_id_i,
+    input logic       countermeasure_active_i,
+    input logic [3:0] rd_enclave_id_tag [CVA6Cfg.DCACHE_SET_ASSOC-1:0],
+    input logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0]     rd_secure_flag,
+    output logic [NumPorts-1:0] miss_force_nc_o
+    //Fin Oussama
 );
 
   // functions
@@ -132,7 +139,7 @@ module wt_dcache_missunit
   logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] repl_way, inv_way, rnd_way;
   logic mshr_vld_d, mshr_vld_q, mshr_vld_q1;
   logic mshr_allocate;
-  logic update_lfsr, all_ways_valid;
+  logic update_lfsr;
 
   logic enable_d, enable_q;
   logic flush_ack_d, flush_ack_q;
@@ -187,13 +194,26 @@ module wt_dcache_missunit
   // MSHR and way replacement logic (only for read ops)
   ///////////////////////////////////////////////////////
 
+  //Oussama 
+  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] alt_repl_way;
+  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] our_line_index;
+  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] nonsc_line_index;
+  logic found_our_line, found_nonsc_line;
+  logic [(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] cur_vld_bits;
+  localparam int unsigned PROTECTED_WAYS = 2; // way0 & way1
+
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] way_allow_mask;
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] inv_allow_vec;
+  logic all_allow_ways_valid;
+  logic [$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rnd_way_allowed;
+
   // find invalid cache line
   lzc #(
       .WIDTH(CVA6Cfg.DCACHE_SET_ASSOC)
   ) i_lzc_inv (
-      .in_i   (~miss_vld_bits_i[miss_port_idx]),
+      .in_i   (invalid_mask),
       .cnt_o  (inv_way),
-      .empty_o(all_ways_valid)
+      .empty_o(all_allow_ways_valid)
   );
 
   // generate random cacheline index
@@ -206,21 +226,106 @@ module wt_dcache_missunit
       .en_i  (update_lfsr),
       .out_o (rnd_way)
   );
+   
+  assign way_allow_mask =
+   (countermeasure_active_i && (enclave_id_i != 4'b0000)) ?
+    ~(((1 << PROTECTED_WAYS) - 1)) : 
+    {CVA6Cfg.DCACHE_SET_ASSOC{1'b1}}; 
+  
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] invalid_mask;
 
-  assign repl_way             = (all_ways_valid) ? rnd_way : inv_way;
+  assign cur_vld_bits = miss_vld_bits_i[miss_port_idx];
+  assign invalid_mask = (~miss_vld_bits_i[miss_port_idx]) & way_allow_mask;
+  
+  int idx;
 
+  always_comb begin
+    rnd_way_allowed = '0;
+
+    for (int i=0;i<CVA6Cfg.DCACHE_SET_ASSOC;i++) begin
+      if (way_allow_mask[(rnd_way+i)%CVA6Cfg.DCACHE_SET_ASSOC]) begin
+        rnd_way_allowed = (rnd_way+i)%CVA6Cfg.DCACHE_SET_ASSOC;
+        break;
+      end
+    end
+  end
+
+  always_comb begin
+    // init
+    found_our_line    = 1'b0;
+    our_line_index    = '0;
+    found_nonsc_line  = 1'b0;
+    nonsc_line_index  = '0;
+    alt_repl_way      = inv_way;
+
+    // 1) Priorité aux lignes invalides 
+    if (!all_allow_ways_valid) begin
+      alt_repl_way = inv_way;
+    end else begin
+      // 2) Chercher une ligne appartenant à la même enclave
+      for (int i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin
+        if (way_allow_mask[i]) begin
+          if (rd_enclave_id_tag[i] == enclave_id_i) begin
+            found_our_line = 1'b1;
+            our_line_index = i[$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0];
+          break;
+          end
+        end
+      end
+      if (found_our_line) begin
+        alt_repl_way = our_line_index;
+      end else begin
+        // 3) Chercher une ligne non-sécurisée (secure flag == 0)
+        for (int j = 0; j < CVA6Cfg.DCACHE_SET_ASSOC; j++) begin
+          if (way_allow_mask[j]) begin
+            if (cur_vld_bits[j] && (rd_secure_flag[j] == 1'b0)) begin
+              found_nonsc_line = 1'b1;
+              nonsc_line_index = j[$clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0];
+              break;
+            end
+          end
+        end
+      end
+      if (found_nonsc_line) begin
+          alt_repl_way = nonsc_line_index;
+      end else begin
+          alt_repl_way = rnd_way_allowed; // fallback safe si rien trouvé
+      end
+    end
+  end
+
+  logic force_nc_sel;
+  assign force_nc_sel = (countermeasure_active_i && (enclave_id_i != 4'b0000)) &&
+                      (|miss_req_masked_d) &&
+                      (!miss_is_write) &&
+                      (all_allow_ways_valid) &&
+                      (!found_our_line) &&
+                      (!found_nonsc_line);
+
+  always_comb begin
+    miss_force_nc_o = '0;
+    miss_force_nc_o[miss_port_idx] = force_nc_sel;
+  end
+
+  //assign repl_way             = (all_ways_valid) ? rnd_way : inv_way;
+  assign repl_way = (countermeasure_active_i && enclave_id_i != 4'b0000) ?
+                    alt_repl_way :
+                    ((all_allow_ways_valid) ? rnd_way : inv_way);
+  
+  //Fin Oussama
+  
   assign mshr_d.size          = (mshr_allocate) ? miss_size_i[miss_port_idx] : mshr_q.size;
   assign mshr_d.paddr         = (mshr_allocate) ? miss_paddr_i[miss_port_idx] : mshr_q.paddr;
   assign mshr_d.vld_bits      = (mshr_allocate) ? miss_vld_bits_i[miss_port_idx] : mshr_q.vld_bits;
   assign mshr_d.id            = (mshr_allocate) ? miss_id_i[miss_port_idx] : mshr_q.id;
-  assign mshr_d.nc            = (mshr_allocate) ? miss_nc_i[miss_port_idx] : mshr_q.nc;
+  assign mshr_d.nc            = (mshr_allocate) ? (miss_nc_i[miss_port_idx] | force_nc_sel) : mshr_q.nc;
   assign mshr_d.repl_way      = (mshr_allocate) ? repl_way : mshr_q.repl_way;
   assign mshr_d.miss_port_idx = (mshr_allocate) ? miss_port_idx : mshr_q.miss_port_idx;
 
   // currently we only have one outstanding read TX, hence an incoming load clears the MSHR
   assign mshr_vld_d           = (mshr_allocate) ? 1'b1 : (load_ack) ? 1'b0 : mshr_vld_q;
 
-  assign miss_o               = (mshr_allocate) ? ~miss_nc_i[miss_port_idx] : 1'b0;
+  assign miss_o               = (mshr_allocate) ? ~(miss_nc_i[miss_port_idx] | force_nc_sel) : 1'b0;
 
 
   for (genvar k = 0; k < NumPorts; k++) begin : gen_rdrd_collision
@@ -296,7 +401,7 @@ module wt_dcache_missunit
 
   // outgoing memory requests (AMOs are always uncached)
   assign mem_data_o.tid = (CVA6Cfg.RVA && amo_sel) ? AmoTxId : miss_id_i[miss_port_idx];
-  assign mem_data_o.nc = (CVA6Cfg.RVA && amo_sel) ? 1'b1 : miss_nc_i[miss_port_idx];
+  assign mem_data_o.nc = (CVA6Cfg.RVA && amo_sel) ? 1'b1 : (miss_nc_i[miss_port_idx] | force_nc_sel);
   assign mem_data_o.way = (CVA6Cfg.RVA && amo_sel) ? '0 : repl_way;
   assign mem_data_o.data = (CVA6Cfg.RVA && amo_sel) ? amo_data : miss_wdata_i[miss_port_idx];
   assign mem_data_o.user = (CVA6Cfg.RVA && amo_sel) ? amo_user : miss_wuser_i[miss_port_idx];
@@ -488,7 +593,7 @@ module wt_dcache_missunit
             end else if (!tx_rdwr_collision) begin
               mem_data_req_o   = 1'b1;
               mem_data_o.rtype = DCACHE_LOAD_REQ;
-              update_lfsr      = all_ways_valid & mem_data_ack_i;  // need to evict a random way
+              update_lfsr      = all_allow_ways_valid & mem_data_ack_i;  // need to evict a random way
               mshr_allocate    = mem_data_ack_i;
               if (!mem_data_ack_i) begin
                 state_d = LOAD_WAIT;
@@ -514,7 +619,7 @@ module wt_dcache_missunit
         mem_data_req_o   = 1'b1;
         mem_data_o.rtype = DCACHE_LOAD_REQ;
         if (mem_data_ack_i) begin
-          update_lfsr   = all_ways_valid;  // need to evict a random way
+          update_lfsr   = all_allow_ways_valid;  // need to evict a random way
           mshr_allocate = 1'b1;
           state_d       = IDLE;
         end
@@ -534,7 +639,7 @@ module wt_dcache_missunit
           state_d = IDLE;
         end
       end
-      //////////////////////////////////
+      /////////////////////////////////
       // flush the cache
       FLUSH: begin
         // internal flush signal
@@ -642,6 +747,12 @@ module wt_dcache_missunit
           1, "[l1 dcache missunit] at least two ports are required (one read port, one write port)"
       );
   end
+
+  initial begin
+    assert(CVA6Cfg.DCACHE_SET_ASSOC > PROTECTED_WAYS)
+    else $fatal("Protected ways exceed associativity");
+  end
+
 `endif
   //pragma translate_on
 

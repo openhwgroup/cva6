@@ -73,7 +73,15 @@ module wt_dcache_mem
     input logic [(CVA6Cfg.XLEN/8)-1:0] wr_data_be_i,
 
     // forwarded wbuffer
-    input wbuffer_t [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_data_i
+    input wbuffer_t [CVA6Cfg.WtDcacheWbufDepth-1:0] wbuffer_data_i,
+
+    //Oussama
+    input logic [3:0] enclave_id_i,
+    input logic countermeasure_active_i,
+    output logic [3:0] rd_enclave_id_tag_o [CVA6Cfg.DCACHE_SET_ASSOC-1:0],
+    output logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] rd_secure_flag_o,
+    input logic  flush_enclave_i
+    //Fin Oussama
 );
 
   localparam DCACHE_NUM_BANKS = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
@@ -129,6 +137,11 @@ module wt_dcache_mem
   logic rd_acked;
   logic [NumPorts-1:0] bank_collision, rd_req_masked, rd_req_prio;
 
+  //Oussama
+  logic [3:0] enclave_id_lat_q;
+  logic [3:0] enclave_id_eff;
+  //FIn Oussama
+
   ///////////////////////////////////////////////////////
   // arbiter
   ///////////////////////////////////////////////////////
@@ -154,12 +167,19 @@ module wt_dcache_mem
   end
 
   assign vld_wdata     = wr_vld_bits_i;
-  assign vld_addr      = (wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d];
+  assign vld_addr = (flush_read)  ? flush_idx_q  :
+                    (flush_eval)  ? flush_addr_q :
+                    (flush_write) ? flush_addr_q :
+                    (wr_cl_vld_i) ? wr_cl_idx_i  :
+                                    rd_idx_i[vld_sel_d];
   assign rd_tag        = rd_tag_i[vld_sel_q];  //delayed by one cycle
   assign bank_off_d    = (wr_cl_vld_i) ? wr_cl_off_i : rd_off_i[vld_sel_d];
   assign bank_idx_d    = (wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d];
-  assign vld_req       = (wr_cl_vld_i) ? wr_cl_we_i : (rd_acked) ? '1 : '0;
-
+  assign vld_req  = (flush_read)  ? '1 :
+                    (flush_eval)  ? '0 :
+                    (flush_write) ? flush_way_mask_q :
+                    (wr_cl_vld_i) ? wr_cl_we_i :
+                    (rd_acked)    ? '1 : '0;
 
   // priority masking
   // disable low prio requests when any of the high prio reqs is present
@@ -187,7 +207,7 @@ module wt_dcache_mem
   assign rd_acked = rd_req & ~wr_cl_vld_i;
 
   always_comb begin : p_bank_req
-    vld_we   = wr_cl_vld_i;
+    vld_we   = flush_write ? (|flush_way_mask_q) : wr_cl_vld_i;
     bank_req = '0;
     wr_ack_o = '0;
     bank_we  = '0;
@@ -231,6 +251,13 @@ module wt_dcache_mem
   logic [CVA6Cfg.DCACHE_OFFSET_WIDTH-CVA6Cfg.XLEN_ALIGN_BYTES-1:0] wr_cl_nc_off;
   logic [                   $clog2(CVA6Cfg.WtDcacheWbufDepth)-1:0] wbuffer_hit_idx;
   logic [                    $clog2(CVA6Cfg.DCACHE_SET_ASSOC)-1:0] rd_hit_idx;
+  logic [3:0] enclave_id_tag_q [CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  logic secure_flag_q [CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  
+  // Oussama
+  logic [3:0] enclave_id_tag [CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] secure_flag_o;
+  // Fin Oussama
 
   assign cmp_en_d = (|vld_req) & ~vld_we;
 
@@ -240,7 +267,13 @@ module wt_dcache_mem
   // hit generation
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_cmpsel
     // tag comparison of ways >0
-    assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) & rd_vld_bits_o[i] & cmp_en_q;
+    //assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) & rd_vld_bits_o[i] & cmp_en_q;
+    //Oussama
+    assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) &
+                          rd_vld_bits_o[i] &
+                          cmp_en_q &
+                          ((secure_flag_q[i]) ? (enclave_id_tag_q[i] == enclave_id_i) : 1'b1);
+    //Fin Oussama
     // byte offset mux of ways >0
     assign rdata_cl[i] = bank_rdata[bank_off_q[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
     assign ruser_cl[i] = bank_ruser[bank_off_q[CVA6Cfg.DCACHE_OFFSET_WIDTH-1:CVA6Cfg.XLEN_ALIGN_BYTES]][i];
@@ -300,8 +333,13 @@ module wt_dcache_mem
   ///////////////////////////////////////////////////////
   // memory arrays and regs
   ///////////////////////////////////////////////////////
+  
+  // Oussama: TAG + ENCLAVE(4) + SECURE(1) + VALID(1)
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH+5:0] vld_tag_rdata [CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  logic [CVA6Cfg.DCACHE_TAG_WIDTH+5:0] tagline_flush [CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  // Fin Oussama
 
-  logic [CVA6Cfg.DCACHE_TAG_WIDTH:0] vld_tag_rdata[CVA6Cfg.DCACHE_SET_ASSOC-1:0];
+  //logic [CVA6Cfg.DCACHE_TAG_WIDTH:0] vld_tag_rdata[CVA6Cfg.DCACHE_SET_ASSOC-1:0];
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
@@ -327,14 +365,28 @@ module wt_dcache_mem
   end
 
   for (genvar i = 0; i < CVA6Cfg.DCACHE_SET_ASSOC; i++) begin : gen_tag_srams
+    
+    //Oussama
+    logic [CVA6Cfg.DCACHE_TAG_WIDTH+5:0] tagline;
 
-    assign tag_rdata[i]     = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
-    assign rd_vld_bits_o[i] = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH];
+    assign rd_vld_bits_o[i]    = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH+5];
+    assign secure_flag_o[i]    = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH+4];
+    assign enclave_id_tag[i]   = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH+3:CVA6Cfg.DCACHE_TAG_WIDTH];
+    assign tag_rdata[i]        = vld_tag_rdata[i][CVA6Cfg.DCACHE_TAG_WIDTH-1:0];
+    
+    assign rd_secure_flag_o[i]    = secure_flag_o[i];
+    assign rd_enclave_id_tag_o[i] = enclave_id_tag[i];
+    
+    assign tagline = (flush_write)
+                   ? {1'b0,1'b0,4'b0000,{CVA6Cfg.DCACHE_TAG_WIDTH{1'b0}}}
+                   : (wr_cl_vld_i)
+                   ? {vld_wdata[i], countermeasure_active_i, enclave_id_i, wr_cl_tag_i}
+                   : vld_tag_rdata[i];
 
     // Tag RAM
     sram_cache #(
-        // tag + valid bit
-        .DATA_WIDTH (CVA6Cfg.DCACHE_TAG_WIDTH + 1),
+        // tag + valid bit + Oussama (5)
+        .DATA_WIDTH (CVA6Cfg.DCACHE_TAG_WIDTH + 6),
         .BYTE_ACCESS(0),
         .TECHNO_CUT (CVA6Cfg.TechnoCut),
         .NUM_WORDS  (CVA6Cfg.DCACHE_NUM_WORDS)
@@ -345,7 +397,8 @@ module wt_dcache_mem
         .we_i   (vld_we),
         .addr_i (vld_addr),
         .wuser_i('0),
-        .wdata_i({vld_wdata[i], wr_cl_tag_i}),
+        //.wdata_i({vld_wdata[i], wr_cl_tag_i}),
+        .wdata_i(tagline), //Oussama
         .be_i   ('1),
         .ruser_o(),
         .rdata_o(vld_tag_rdata[i])
@@ -358,11 +411,146 @@ module wt_dcache_mem
       bank_off_q <= '0;
       vld_sel_q  <= '0;
       cmp_en_q   <= '0;
+      for (int i=0;i<CVA6Cfg.DCACHE_SET_ASSOC;i++) begin
+        enclave_id_tag_q[i] <= '0;
+        secure_flag_q[i] <= '0;
+      end
     end else begin
       bank_idx_q <= bank_idx_d;
       bank_off_q <= bank_off_d;
       vld_sel_q  <= vld_sel_d;
       cmp_en_q   <= cmp_en_d;
+      for (int i=0;i<CVA6Cfg.DCACHE_SET_ASSOC;i++) begin
+        enclave_id_tag_q[i] <= enclave_id_tag[i];
+        secure_flag_q[i] <= secure_flag_o[i];
+      end
+    end
+  end
+
+
+  ///////////////////////////////////////////////////////
+  // HermiCache: selective FLUSH (data + metadata) 
+  ///////////////////////////////////////////////////////
+
+  typedef enum logic [2:0] {
+    FLUSH_IDLE,
+    FLUSH_READ,
+    FLUSH_EVAL,
+    FLUSH_WRITE,
+    FLUSH_DONE
+  } flush_state_e;
+
+  flush_state_e flush_state_q, flush_state_d;
+  logic [$clog2(CVA6Cfg.DCACHE_NUM_WORDS)-1:0] flush_idx_q, flush_idx_d;
+
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] flush_way_mask_q, flush_way_mask_d;
+  logic [$clog2(CVA6Cfg.DCACHE_NUM_WORDS)-1:0] flush_addr_q, flush_addr_d; 
+
+  logic start_flush; 
+
+  assign enclave_id_eff = (flush_state_q == FLUSH_IDLE) ? enclave_id_i : enclave_id_lat_q;
+
+  logic [CVA6Cfg.DCACHE_SET_ASSOC-1:0] flush_way_mask_now;
+  
+  logic flush_read, flush_write, flush_eval;
+  assign flush_read  = (flush_state_q == FLUSH_READ);
+  assign flush_eval  = (flush_state_q == FLUSH_EVAL);
+  assign flush_write = (flush_state_q == FLUSH_WRITE);
+
+  always_comb begin
+    flush_way_mask_now = '0;
+    for (int w = 0; w < CVA6Cfg.DCACHE_SET_ASSOC; w++) begin
+      flush_way_mask_now[w] = secure_flag_q[w] && (enclave_id_tag_q[w] == enclave_id_eff);
+    end
+  end
+
+  assign start_flush = (flush_state_q == FLUSH_IDLE) && flush_enclave_i;
+
+  always_comb begin
+    flush_state_d    = flush_state_q;
+    flush_idx_d      = flush_idx_q;
+    flush_addr_d     = flush_addr_q;
+    flush_way_mask_d = flush_way_mask_q;
+
+    case (flush_state_q)
+
+      FLUSH_IDLE: begin
+        if (start_flush) begin
+          flush_idx_d   = '0;
+          flush_way_mask_d = '0;
+          flush_state_d = FLUSH_READ;
+        end
+      end
+
+      // Lance la lecture du set flush_idx_q
+      FLUSH_READ: begin
+        flush_addr_d  = flush_idx_q;
+        flush_state_d = FLUSH_EVAL;
+      end
+
+      // Données stables -> calcule masque
+      FLUSH_EVAL: begin
+        flush_way_mask_d = flush_way_mask_now;
+
+        if (flush_way_mask_now == '0) begin
+          // rien à effacer -> set suivant direct
+          if (flush_idx_q == CVA6Cfg.DCACHE_NUM_WORDS - 1) begin
+            flush_state_d = FLUSH_DONE;
+          end else begin
+            flush_idx_d   = flush_idx_q + 1;
+            flush_state_d = FLUSH_READ;
+          end
+        end else begin
+          // match -> écrire
+          flush_state_d = FLUSH_WRITE;
+        end
+      end
+
+      // Écriture clear uniquement sur les ways matchées
+      FLUSH_WRITE: begin
+        if (flush_idx_q == CVA6Cfg.DCACHE_NUM_WORDS - 1) begin
+          flush_state_d = FLUSH_DONE;
+        end else begin
+          flush_idx_d   = flush_idx_q + 1;
+          flush_state_d = FLUSH_READ;
+        end
+      end
+
+      FLUSH_DONE: begin
+        if (!flush_enclave_i) begin
+          flush_state_d = FLUSH_IDLE;
+        end
+      end
+
+      default: flush_state_d = FLUSH_IDLE;
+
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      // Reset global
+      flush_state_q     <= FLUSH_IDLE;
+      flush_idx_q       <= '0;
+      flush_way_mask_q  <= '0;
+      flush_addr_q      <= '0;
+      enclave_id_lat_q  <= 4'b0000;
+    end else begin
+      // Avancement de la machine à états
+      flush_state_q <= flush_state_d;
+      flush_idx_q   <= flush_idx_d;
+      flush_way_mask_q <= flush_way_mask_d;
+      flush_addr_q     <= flush_addr_d;
+
+      // Capture de l'enclave au début du flush
+      if (start_flush) begin
+        enclave_id_lat_q <= enclave_id_i;
+      end
+
+      // Nettoyage après fin de flush
+      if ((flush_state_q == FLUSH_DONE) && !flush_enclave_i) begin
+        enclave_id_lat_q <= 4'b0000;
+      end
     end
   end
 

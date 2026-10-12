@@ -471,6 +471,11 @@ module cva6
   // CSR
   logic [CVA6Cfg.NrIssuePorts-1:0] csr_valid_id_ex;
   logic csr_hs_ld_st_inst_ex;
+  //Oussama
+  logic countermeasure_active;
+  logic [3:0] enclave_id;
+  logic flush_enclave;
+  //Fin Oussama
   // CVXIF
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] x_trans_id_ex_id;
   logic [CVA6Cfg.XLEN-1:0] x_result_ex_id;
@@ -1199,7 +1204,12 @@ module cva6
         .miss_vld_bits_i    (miss_vld_bits),
         .i_tlb_flush_i      (flush_tlb_ctrl_ex),
         .stall_issue_i      (stall_issue),
-        .mcountinhibit_i    (mcountinhibit_csr_perf)
+        .mcountinhibit_i    (mcountinhibit_csr_perf),
+        //Oussama
+        .countermeasure_active_o(countermeasure_active),
+        .enclave_id_o(enclave_id),
+        .flush_enclave(flush_enclave)
+        //Fin Oussama
     );
   end : gen_perf_counter
   else begin : gen_no_perf_counter
@@ -1324,7 +1334,12 @@ module cva6
         .noc_resp_i        (noc_resp_i),
         .inval_addr_i      (inval_addr),
         .inval_valid_i     (inval_valid),
-        .inval_ready_o     (inval_ready)
+        .inval_ready_o     (inval_ready),
+        //Oussama
+        .enclave_id_i      (enclave_id),
+        .countermeasure_active_i (countermeasure_active),
+        .flush_enclave_i (flush_enclave)
+        //Fin Oussama
     );
   end else if (CVA6Cfg.DCacheType == config_pkg::HPDCACHE) begin : gen_cache_hpd
     cva6_hpdcache_subsystem #(
