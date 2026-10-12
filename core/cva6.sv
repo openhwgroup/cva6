@@ -15,6 +15,7 @@
 `include "rvfi_types.svh"
 `include "cvxif_types.svh"
 `include "ypb_types.svh"
+`include "utils_macros.svh"
 
 module cva6
   import ariane_pkg::*;
@@ -139,30 +140,67 @@ module cva6
   // -------------------
   // Checked at elaboration: the units they concern do not build, or compute
   // wrong results, for these configurations.
+  `CVA6_CFG_CHECK(ras_depth, CVA6Cfg.RASDepth > 0, "RASDepth must be at least 1")
+  `CVA6_CFG_CHECK(btb_entries, (CVA6Cfg.BTBEntries & (CVA6Cfg.BTBEntries - 1)) == 0,
+                  "BTBEntries must be 0 or a power of two")
+  `CVA6_CFG_CHECK(bht_entries, (CVA6Cfg.BHTEntries & (CVA6Cfg.BHTEntries - 1)) == 0,
+                  "BHTEntries must be 0 or a power of two")
+  `CVA6_CFG_CHECK(nr_nonidempotent_rules, CVA6Cfg.NrNonIdempotentRules <= config_pkg::NrMaxRules,
+                  "NrNonIdempotentRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_execute_region_rules, CVA6Cfg.NrExecuteRegionRules <= config_pkg::NrMaxRules,
+                  "NrExecuteRegionRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_cached_region_rules, CVA6Cfg.NrCachedRegionRules <= config_pkg::NrMaxRules,
+                  "NrCachedRegionRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_bufferable_region_rules,
+                  CVA6Cfg.NrBufferableRegionRules <= config_pkg::NrMaxRules,
+                  "NrBufferableRegionRules must be at most NrMaxRules")
+  // A data cache that only writes back cannot honour a cacheable region that
+  // is not bufferable (write-through).
+  for (genvar k = 0; k < CVA6Cfg.NrCachedRegionRules; k++) begin : gen_cached_region
+    localparam bit Bufferable = config_pkg::is_region_inside_bufferable_regions(
+        CVA6Cfg, CVA6Cfg.CachedRegionAddrBase[k], CVA6Cfg.CachedRegionLength[k]
+    );
+    `CVA6_CFG_CHECK(write_back_bufferable,
+                    CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI ||
+                    CVA6Cfg.CacheWritePolicy != config_pkg::CACHE_WB || Bufferable,
+                    "A write-back only data cache needs every cacheable region bufferable")
+  end
+  `CVA6_CFG_CHECK(nr_pmp_entries, CVA6Cfg.NrPMPEntries <= 64, "NrPMPEntries must be at most 64")
+  `CVA6_CFG_CHECK(fetch_width, CVA6Cfg.FETCH_WIDTH == 32 || CVA6Cfg.FETCH_WIDTH == 64,
+                  "The fetch width must be 32 or 64 bits")
+  // Disabling MIP.MSIP and MIE.MSIE is only supported with M-mode alone.
+  `CVA6_CFG_CHECK(rvs_software_interrupt, !CVA6Cfg.RVS || CVA6Cfg.SoftwareInterruptEn,
+                  "Supervisor mode (RVS) needs SoftwareInterruptEn")
+  `CVA6_CFG_CHECK(rvh_software_interrupt, !CVA6Cfg.RVH || CVA6Cfg.SoftwareInterruptEn,
+                  "The hypervisor extension (RVH) needs SoftwareInterruptEn")
+  `CVA6_CFG_CHECK(zcmt_mmu, !(CVA6Cfg.RVZCMT && CVA6Cfg.MmuPresent),
+                  "Zcmt (RVZCMT) is not supported with an MMU")
+  // Zcmp reuses the opcodes of Zcd, present whenever C and D are.
+  `CVA6_CFG_CHECK(zcmp_zcd, !(CVA6Cfg.RVZCMP && CVA6Cfg.RVC && CVA6Cfg.RVD),
+                  "Zcmp (RVZCMP) is not supported with C and D (Zcd)")
+  // AMOs are computed in the byte order of the memory subsystem, not mstatus.MBE.
+  `CVA6_CFG_CHECK(big_endian_amo, !(CVA6Cfg.BigEndianEn && CVA6Cfg.RVA),
+                  "Big endian with atomic memory operations (RVA) is not supported")
   // D and the non-standard XF16, XF16ALT and XF8 formats (smallFloat) extend
   // F: they use its FP register file, FPU and fcsr.
-  if ((CVA6Cfg.RVD || CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && !CVA6Cfg.RVF)
-  begin : gen_unsupported_fp_without_f
-    $fatal(1, "D, XF16, XF16ALT and XF8 need F (RVF)");
-  end
+  `CVA6_CFG_CHECK(fp_needs_f,
+                  CVA6Cfg.RVF || !(CVA6Cfg.RVD || CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8),
+                  "D, XF16, XF16ALT and XF8 need F (RVF)")
   // With FLEN 32 the division and square root unit of fpnew that serves
   // several formats (THMULTI) takes every operand for a NaN.
-  if ((CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && CVA6Cfg.IS_XLEN32)
-  begin : gen_unsupported_rv32_smallfloat
-    $fatal(1, "XF16, XF16ALT and XF8 are only supported on RV64");
-  end
+  `CVA6_CFG_CHECK(smallfloat_rv64,
+                  !((CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && CVA6Cfg.IS_XLEN32),
+                  "XF16, XF16ALT and XF8 are only supported on RV64")
   // The FPU takes its operands from and returns its result on the XLEN-wide
   // execution datapath, and the FP register file is FLEN bits wide: the
   // floating-point extensions are supported when FLEN equals XLEN, F on RV32
   // and F with D on RV64. RV32 with D (FLEN 64) and RV64 with F alone (FLEN 32)
   // are not.
-  if (CVA6Cfg.FpPresent && CVA6Cfg.FLen != CVA6Cfg.XLEN) begin : gen_unsupported_flen
-    $fatal(1, "The floating-point extensions need FLEN == XLEN: F on RV32, F and D on RV64");
-  end
+  `CVA6_CFG_CHECK(flen_xlen, !CVA6Cfg.FpPresent || CVA6Cfg.FLen == CVA6Cfg.XLEN,
+                  "The floating-point extensions need FLEN == XLEN: F on RV32, F and D on RV64")
   // The hypervisor extension is only implemented on RV64 (Sv39x4).
-  if (CVA6Cfg.RVH && CVA6Cfg.IS_XLEN32) begin : gen_unsupported_rv32h
-    $fatal(1, "The hypervisor extension (RVH) is only supported on RV64");
-  end
+  `CVA6_CFG_CHECK(rvh_rv64, !(CVA6Cfg.RVH && CVA6Cfg.IS_XLEN32),
+                  "The hypervisor extension (RVH) is only supported on RV64")
 
   // -------------------
   // Pipeline

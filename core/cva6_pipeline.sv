@@ -1330,13 +1330,6 @@ CVA6Cfg.NrCommitPorts
   );
 
   // -------------------
-  // Parameter Check
-  // -------------------
-  // pragma translate_off
-  initial config_pkg::check_cfg(CVA6Cfg);
-  // pragma translate_on
-
-  // -------------------
   // Instruction Tracer
   // -------------------
 

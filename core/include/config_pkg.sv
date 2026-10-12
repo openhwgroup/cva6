@@ -7,8 +7,6 @@
 //
 // Original Author: Jean-Roch COULON - Thales
 
-`include "../include/utils_macros.svh"
-
 package config_pkg;
 
   // ---------------
@@ -545,56 +543,6 @@ package config_pkg;
     end
     return |pass;
   endfunction : is_region_inside_bufferable_regions
-
-  /// Utility function being called to check parameters. Not all values make
-  /// sense for all parameters, here is the place to sanity check them.
-  function automatic void check_cfg(cva6_cfg_t Cfg);
-    // pragma translate_off
-    assert (Cfg.RASDepth > 0)
-    else `ASSERT_FATAL("");
-    assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries))
-    else `ASSERT_FATAL("");
-    assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries))
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrNonIdempotentRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrExecuteRegionRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrCachedRegionRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrBufferableRegionRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    // A data cache that only writes back cannot honour a cacheable region
-    // that is not bufferable (write-through).
-    for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
-      assert (!(Cfg.MemSubsystem != MEM_OBI && Cfg.CacheWritePolicy == CACHE_WB) ||
-              is_region_inside_bufferable_regions(
-          Cfg, Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k]
-      ))
-      else `ASSERT_FATAL("A write-back only data cache needs every cacheable region bufferable");
-    end
-    assert (Cfg.NrPMPEntries <= 64)
-    else `ASSERT_FATAL("");
-    assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
-    else `ASSERT_FATAL("[frontend] fetch width != not supported");
-    // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
-    // Software Interrupt can be disabled when there is only M machine mode in CVA6.
-    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn))
-    else `ASSERT_FATAL("");
-    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
-    else `ASSERT_FATAL("");
-    assert (!(Cfg.RVZCMT && Cfg.MmuPresent))
-    else `ASSERT_FATAL("");
-    // Zcmp is incompatible with Zcd (compressed double-precision FP loads and
-    // stores, automatically present whenever both C and D are implemented),
-    // the two reusing the same opcodes.
-    assert (!(Cfg.RVZCMP && Cfg.RVC && Cfg.RVD))
-    else `ASSERT_FATAL("");
-    // AMOs are computed in the byte order of the memory subsystem, not mstatus.MBE.
-    assert (!(Cfg.BigEndianEn && Cfg.RVA))
-    else `ASSERT_FATAL("Big endian with atomic memory operations (RVA) is not supported");
-    // pragma translate_on
-  endfunction
 
   function automatic logic is_inside_nonidempotent_regions(cva6_cfg_t Cfg, logic [63:0] address);
     logic [NrMaxRules-1:0] pass;
