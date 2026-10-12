@@ -47,7 +47,8 @@ REPORTS_DIR = Path("artifacts") / "reports"
 PIPELINE_REPORT = "pipeline_report.yml"
 
 # Bit fields yielding a label when set, in display order. They all belong to
-# the "ext" group, the width, the bus and the memory ones being built apart.
+# the "ext" group, the width, the bus, the memory and the hardware option
+# ones being built apart.
 CFG_EXTENSIONS = [
     ("ZCMT", "RVZCMT"),
     ("ZCB", "RVZCB"),
@@ -152,11 +153,59 @@ def _read_target_config(repo_dir, target):
     if isinstance(value("NrPMPEntries"), int) and value("NrPMPEntries") > 0:
         labels.append({"text": "PMP", "group": "mem"})
 
+    labels += _hw_labels(cfg_file)
+
     for text_, field in CFG_EXTENSIONS:
         val = value(field)
         if isinstance(val, int) and val > 0:
             labels.append({"text": text_, "group": "ext"})
     return labels or None
+
+
+def _hw_labels(cfg_file):
+    """Labels of the hardware options of a target, in the "hw" group.
+
+    Only the options that change the structure of the core are shown, and
+    only away from their usual value, so that two targets of a same family
+    differ by the labels they show.
+    """
+    try:
+        p = parse_rtl_cfg(cfg_file)
+    except OSError:
+        return []
+    labels = []
+
+    def add(text_):
+        labels.append({"text": text_, "group": "hw"})
+
+    if p.get("SuperscalarEn"):
+        add("SS+BYPASS" if p.get("ALUBypass") else "SS")
+    elif p.get("NrCommitPorts") == 1:
+        add("1 COMMIT")
+    if p.get("Sdtrig"):
+        # bit 1 of SdtrigSupportedActions: a trigger can enter debug mode
+        add("SDTRIG" if p.get("SdtrigSupportedActions", 0) & 2 else "SDTRIG-NODBG")
+    if p.get("DebugEn"):
+        add("DEBUG")
+    if p.get("CvxifEn"):
+        add("CVXIF")
+    if p.get("MmuPresent") and p.get("UseSharedTlb"):
+        add("SHARED TLB")
+    if p.get("SvnapotEn"):
+        add("SVNAPOT")
+    if p.get("BigEndianEn"):
+        add("BIG ENDIAN")
+    if p.get("DcacheEccEnable") and "MEM_OBI" not in str(p.get("MemSubsystem")):
+        add("ECC")
+    if not p.get("BHTEntries"):
+        add("NO BP")
+    elif "PH_BHT" in str(p.get("BPType")):
+        add("PH-BHT")
+    if not p.get("TvalEn"):
+        add("NO TVAL")
+    if p.get("FpgaEn"):
+        add("FPGA")
+    return labels
 
 
 def _child_paths(doc):
