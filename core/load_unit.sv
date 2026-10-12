@@ -126,6 +126,12 @@ module load_unit
   // the trigger module reports its cancel one cycle later, when lsu_ctrl_i
   // already presents the next request.
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] sdtrig_trans_id_d, sdtrig_trans_id_q;
+  // With TwoPhaseReq, an exception of a load in its second phase that meets
+  // the response of an earlier load waits here for the output to be free.
+  logic ex_s1_held_d, ex_s1_held_q;
+  logic [CVA6Cfg.TRANS_ID_BITS-1:0] ex_s1_held_trans_id_d, ex_s1_held_trans_id_q;
+  exception_t ex_s1_held_ex_d, ex_s1_held_ex_q;
+  exception_t ex_s1_src;
   ldbuf_id_t ldbuf_windex, ldbuf_windex_q;
   logic      ldbuf_r;
   ldbuf_t    ldbuf_rdata;
@@ -200,10 +206,16 @@ module load_unit
       ldbuf_last_id_q   <= '0;
       ldbuf_q           <= '0;
       sdtrig_trans_id_q <= '0;
+      ex_s1_held_q <= 1'b0;
+      ex_s1_held_trans_id_q <= '0;
+      ex_s1_held_ex_q <= '0;
     end else begin
       ldbuf_flushed_q <= ldbuf_flushed_d;
       ldbuf_valid_q <= ldbuf_valid_d;
       sdtrig_trans_id_q <= sdtrig_trans_id_d;
+      ex_s1_held_q <= ex_s1_held_d && !flush_i;
+      ex_s1_held_trans_id_q <= ex_s1_held_trans_id_d;
+      ex_s1_held_ex_q <= ex_s1_held_ex_d;
       if (ldbuf_w) begin
         ldbuf_last_id_q                 <= ldbuf_windex;
         ldbuf_q[ldbuf_windex].trans_id  <= lsu_ctrl_i.trans_id;
@@ -229,23 +241,24 @@ module load_unit
   // directly forward exception fields (valid bit is set below)
   // A load address trigger reports its own cause and the faulting address.
   //  An error on the response takes precedence over the MMU and trigger causes.
+  assign ex_s1_src = ex_s1_held_q ? ex_s1_held_ex_q : ex_i;
   assign ex_o.cause = ypb_load_rsp_i.err                ? riscv::HARDWARE_ERROR :
                       (sdtrig_load_action_i != '0)      ? sdtrig_load_action_i  :
-                                                          ex_i.cause;
+                                                          ex_s1_src.cause;
   //  On a response tval is the virtual address of the load that the response
   //  answers, held in the load buffer, as the load that caused it may have left
   //  lsu_ctrl_i long ago: the hardware error and the load data trigger report
   //  it.
-  assign ex_o.tval = !CVA6Cfg.TvalEn ? ex_i.tval :
+  assign ex_o.tval = !CVA6Cfg.TvalEn ? ex_s1_src.tval :
                      data_rvalid ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, ldbuf_rdata.vaddr} :
                      (sdtrig_load_action_i != '0)        ? {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{1'b0}}, lsu_ctrl_i.vaddr} :
-                                                           ex_i.tval;
+                                                           ex_s1_src.tval;
   // The load data trigger break is added after the output register of the
   // load store unit, see load_store_unit.
   assign ex_o.timing = 1'b0;
-  assign ex_o.tval2 = CVA6Cfg.RVH ? ex_i.tval2 : '0;
-  assign ex_o.tinst = CVA6Cfg.RVH ? ex_i.tinst : '0;
-  assign ex_o.gva = CVA6Cfg.RVH ? ex_i.gva : 1'b0;
+  assign ex_o.tval2 = CVA6Cfg.RVH ? ex_s1_src.tval2 : '0;
+  assign ex_o.tinst = CVA6Cfg.RVH ? ex_s1_src.tinst : '0;
+  assign ex_o.gva = CVA6Cfg.RVH ? ex_s1_src.gva : 1'b0;
 
   logic [CVA6Cfg.PLEN-1:0] paddr;
 
@@ -340,6 +353,9 @@ module load_unit
     valid_o    = 1'b0;
     ex_o.valid = 1'b0;
     pop_ld_o = 1'b0; // release lsu_bypass fifo
+    ex_s1_held_d = ex_s1_held_q;
+    ex_s1_held_trans_id_d = ex_s1_held_trans_id_q;
+    ex_s1_held_ex_d = ex_s1_held_ex_q;
 
     // REQUEST
     if (valid_i) begin
@@ -347,7 +363,8 @@ module load_unit
       if (!page_offset_matches_i) begin
         ypb_load_req_o.vreq = !stall_translation && !stall_ni_mem;
         if (!CVA6Cfg.TwoPhaseReq || ypb_load_rsp_i.vgnt) begin
-          if (stall_translation || stall_ni_mem || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i) begin
+          if (stall_translation || stall_ni_mem || stall_ypb || ldbuf_full || flush_i || sdtrig_load_cancel_i ||
+              (CVA6Cfg.TwoPhaseReq && ex_s1_held_q)) begin
             kill_req_d = 1'b1;  // TwoPhaseReq only: the first phase is accepted, the physical one will not follow
           end else begin
             ldbuf_w  = CVA6Cfg.TwoPhaseReq ? 1'b1 : !ex_s1 && !sdtrig_load_match;  // record request into outstanding load fifo and trigger physical request
@@ -366,6 +383,19 @@ module load_unit
       //  The response carries an error: retire the load as an exception rather
       //  than writing a corrupt value back.
       ex_o.valid = ypb_load_rsp_i.err;
+      //  The output is taken: hold the second phase exception of this cycle.
+      if (CVA6Cfg.TwoPhaseReq && ex_s1 && !ex_s1_held_q) begin
+        ex_s1_held_d = 1'b1;
+        ex_s1_held_trans_id_d = ldbuf_q[ldbuf_windex_q].trans_id;
+        ex_s1_held_ex_d = ex_i;
+        pop_ld_o = ldbuf_w && !sdtrig_load_match;
+      end
+      // RETIRE A HELD EXCEPTION
+    end else if (CVA6Cfg.TwoPhaseReq && ex_s1_held_q) begin
+      trans_id_o = ex_s1_held_trans_id_q;
+      valid_o = 1'b1;
+      ex_o.valid = 1'b1;
+      ex_s1_held_d = 1'b0;
       // RETIRE EXCEPTION (low priority)
     end else if (ex_s1 || sdtrig_load_cancel_i) begin
       trans_id_o = (CVA6Cfg.SdtrigMcontrol6LoadAddr && sdtrig_load_cancel_i) ? sdtrig_trans_id_q :
