@@ -916,11 +916,12 @@ function hierRings(rows) {
   return rings.reverse();
 }
 /* Donut data: "Hierarchies details" rows metric of a synthesis job, the
- * DC one when the target has both */
+ * Yosys one when the target has both: it runs on every target, so the
+ * charts compare across targets */
 function donutJob(t) {
   const withHier = TARGET_JOBS.get(t).filter((j) =>
     (j.metrics || []).some((m) => m.name === "Hierarchies details" && m.kind === "rows"));
-  return withHier.find((j) => j._class === "synthesis") || withHier[0];
+  return withHier.find((j) => j._class === "synthesis_yosys") || withHier[0];
 }
 /* Failed-job alerts: failing Summary lines shown before the job list */
 function targetIssues(t) {
