@@ -120,10 +120,16 @@ TARGETS = [
     "cv32a65x_noc",
     "cv32a65x_noc_scalar",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi",
+    # cv64a6 OBI PMP noMMU without FPU, with Zcmt (which needs no MMU), and
+    # with Zcmp and Zcmt
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmt",
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmp_zcmt",
     # AXI PMP noMMU
     "cv32a60x_zcmt_pmp_axi",
     "cv32a65x_axi",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi",
+    # cv64a6 AXI PMP noMMU without FPU, with Zcmt
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt",
     # OBI PMP MMU
     "cv32a6_imac_sv32_obi",
     "cv32a65x_sv32",
@@ -137,6 +143,8 @@ TARGETS = [
     "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp",
     # cv64a6 OBI PMP MMU without the A extension, with big endian data accesses
     "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
+    # cv32a65x with Zcmp and without Zcmt
+    "cv32a65x_zcmp",
     # AXI PMP MMU
     "cv32a6_imac_sv32",
     # cv32a6_imac_sv32 with single-precision floating point (RVF)
@@ -162,6 +170,8 @@ TARGETS = [
     # Sdtrig with the hypervisor extension: the vs and vu mode bits
     "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
+    # AXI PMP MMU without the C extension
+    "cv64a6_imafd_sv39_hpdcache_pmp_mmu_axi_noc",
     # AXI PMP MMU with the alternative half-precision format and AXI burst writes
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
     # AXI PMP MMU with Svnapot, without the shared TLB
@@ -193,7 +203,7 @@ TARGETS = [
 #   base_rv64_pmp_mmu  PMP entries and an MMU on RV64
 #   base_rv32_amo_p, base_rv64_amo_p  RVA; base_rv32_amo_v, base_rv64_amo_v
 #                  RVA and an MMU
-#   base_zcmt      RVZCMT
+#   base_zcmt, base_rv64_zcmt  RVZCMT on RV32, RV64
 #   base_rv32_ma_fetch, base_rv64_ma_fetch  every target built with GCC (the
 #                  test does not build with LLVM)
 #   base_csr       every target without RVH (base_rv64_h holds the RVH variant)
@@ -722,6 +732,64 @@ TESTLISTS = {
         "base_csr",
         "base_zicbom",
         "dcache_wt_wb",
+        "base_le",
+    ],
+    "cv32a65x_zcmp": [
+        "base_rv32_p",
+        "base_zcmp",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmp_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmp",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafd_sv39_hpdcache_pmp_mmu_axi_noc": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
         "base_le",
     ],
 }
