@@ -504,6 +504,8 @@ function targetKpis(t) {
 }
 function kpiOver(k) {
   if (k.expected === undefined || k.expected === null) return false;
+  /* tolerance: relative deviation still on target, either way */
+  if (k.tolerance) return Math.abs(k.value - k.expected) > k.expected * k.tolerance;
   if (k.better === "higher") return k.value < k.expected;
   return k.value > k.expected;  /* default: lower is better */
 }

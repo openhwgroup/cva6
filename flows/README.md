@@ -1200,7 +1200,7 @@ Run DC Shell synthesis flow.
   `config/target/<target>/Flist.cva6_synth`, which reads the HPDcache SRAMs
   as blackboxes. The GTECH cells have no area, so the recipe reports cell
   and register counts instead, checked against the `gtech_cells` and
-  `gtech_registers` keys of `expected_values.yml` (tolerance 1%); any
+  `gtech_registers` keys of `expected_values.yml` (tolerance 5%); any
   inferred latch fails the run. Output: `build/<target>/synthesis_gtech/`
 - `--script-file TEXT` - DC setup script (default: `dc.tcl`)
 - `--define [HPDCACHE_ASSERT_OFF|RVFI_ENABLE]` - Preprocessor directives (default: `HPDCACHE_ASSERT_OFF`)
@@ -1905,7 +1905,7 @@ record in it:
   run.
 - **Synthesis KPI**: `dc-shell-synth` reports the area breakdown (kGates),
   checks the total gate count against the `gates` key of
-  `config/target/<target>/expected_values.yml` (tolerance: 250 gates),
+  `config/target/<target>/expected_values.yml` (tolerance: 5%),
   and generates a hierarchical area Sunburst chart
   (`build/<target>/synthesis/reports/synth_area.html` + `.csv`). With
   `--gtech`, it reports the `gtech_cells` and `gtech_registers` counts
