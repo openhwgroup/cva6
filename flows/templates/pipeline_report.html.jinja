@@ -68,6 +68,7 @@
     .cfg-bus  { background: #d9ecff; color: #0a58ca; border-color: #b6d9ff; }
     .cfg-feat { background: #fde2d3; color: #a33b08; border-color: #f7c2a4; font-weight: 600; }
     .cfg-mem  { background: #d7f2e3; color: #0f6b43; border-color: #aee3c8; }
+    .cfg-hw   { background: #fff3cd; color: #7a5a00; border-color: #f5dc8f; }
     .cfg-ext  { background: #eceef1; color: #5c636a; border-color: #d9dde1;
                 font-weight: 500; }
     /* Hidden on narrow screens: the matrix columns matter more */
@@ -334,7 +335,7 @@ if (TARGETS.includes(CROSS_TARGET)) {  /* cross-target jobs shown first */
 /* Configuration labels of a target (bus, MMU, PMP, extensions), read from
  * its rtl_cfg_pkg.sv by merge-reports. Absent for the cross-target group. */
 const TARGET_CONFIG = PIPELINE.target_config || {};
-const CFG_GROUPS = ["xlen", "bus", "feat", "mem", "ext"];
+const CFG_GROUPS = ["xlen", "bus", "feat", "mem", "hw", "ext"];
 function configTags(t, groups) {
   let tags = TARGET_CONFIG[t];
   if (!tags || !tags.length) return "";
@@ -641,7 +642,7 @@ function matrixKpiCell(t, name, jobs) {  const found = targetKpis(t).find(([n]) 
     if (!populated) continue;  /* e.g. lint-only cross-target group */
     html += `<tr class="clickable" data-target="${esc(t)}">
       <td class="text-start cell-target"><span class="target-name" title="${esc(t)}">${esc(t)}</span>
-      ${configTags(t, ["xlen", "bus", "feat", "mem"])}</td>
+      ${configTags(t, ["xlen", "bus", "feat", "mem", "hw"])}</td>
       ${cells}</tr>`;
   }
   document.getElementById("matrix").innerHTML = html + "</tbody>";
