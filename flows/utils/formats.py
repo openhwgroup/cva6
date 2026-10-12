@@ -19,7 +19,7 @@ report rendering. This module defines each format once for both.
 Available formats:
 
     text    default, printed as-is
-    status  pass/fail/env verdict badge
+    status  pass/warn/fail/env verdict badge
     num     number (thousands separator, 2 decimals for floats)
     cycles  cycle count (number + "cycles")
     hex     hexadecimal address
@@ -36,6 +36,7 @@ format from the column name and the value type. Use an explicit
 # Console styles (rich color names) for the status format values
 STATUS_STYLES = {
     "pass": "green",
+    "warn": "yellow",
     "fail": "red",
     "env": "yellow",
 }
@@ -49,7 +50,7 @@ def infer_fmt(key, value):
     Infer the display format of a value from its column name and type.
 
     Rules (first match wins):
-    - key "status" or a pass/fail/env string value -> "status"
+    - key "status" or a pass/warn/fail/env string value -> "status"
     - int/float value -> "num"
     - string value starting with "0x" -> "hex"
     - key ending with log/report/path/file -> "path"
