@@ -33,8 +33,6 @@ Parameters
 
 - ``SuperscalarEn``:
 
-   - Not compatible with floating point (``RVF``, ``RVD``, ``XF16``, ``XF16ALT``, ``XF8``, ``XFVec``) yet.
-   - Not compatible with macro instructions (``RVZCMP``) yet.
    - Recommended to set ``NrScoreboardEntries`` to at least 8 for performance.
 
 - Floating point (``RVF``, ``RVD``):
