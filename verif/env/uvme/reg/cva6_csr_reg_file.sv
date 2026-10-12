@@ -283,9 +283,11 @@ class reg_misa extends csr_reg;
   covergroup reg_rd_cg with function sample(uvm_reg_data_t data);
       option.name = "csr_misa__read_cg";
       option.per_instance = 1;
+      // The register model sees the low 32 bits of a CSR: MXL is in them on
+      // RV32 only.
       MXL: coverpoint data[31:30] {
          bins legal_values[] = {1};
-         illegal_bins illegal_values = {[0:$]} with (!(item inside {1}));
+         illegal_bins illegal_values = {[0:$]} with (!(item inside {1})) iff (RTLCVA6Cfg.IS_XLEN32);
       }
       Extensions: coverpoint data[25:0] {
          bins legal_values[] = {26'h0001106};
