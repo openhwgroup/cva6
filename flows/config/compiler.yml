@@ -138,3 +138,13 @@ my_cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp_toolchain:
   <<: *dummy2
 my_cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig_toolchain:
   <<: *dummy2
+my_cv32a65x_zcmp_toolchain:
+  <<: *dummy2
+my_cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmt_toolchain:
+  <<: *dummy2
+my_cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmp_zcmt_toolchain:
+  <<: *dummy2
+my_cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt_toolchain:
+  <<: *dummy2
+my_cv64a6_imafd_sv39_hpdcache_pmp_mmu_axi_noc_toolchain:
+  <<: *dummy2
