@@ -30,4 +30,11 @@
     `else\
         $fatal("%0t: ASSERT FAILED %0s", $time, msg)\
     `endif
+
+// Stops the elaboration with msg when the configuration does not meet cond.
+// Placed in a module body; name makes the generate block name unique.
+`define CVA6_CFG_CHECK(name, cond, msg)\
+    if (!(cond)) begin : gen_cfg_check_``name\
+        $fatal(1, msg);\
+    end
 `endif
