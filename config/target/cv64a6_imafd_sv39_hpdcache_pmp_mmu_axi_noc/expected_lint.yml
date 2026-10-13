@@ -9,6 +9,5 @@ verilator:
   warning:
     CASEINCOMPLETE: 2
     LITENDIAN: 73
-    SELRANGE: 58
     WIDTHEXPAND: 206
-    WIDTHTRUNC: 67
+    WIDTHTRUNC: 66

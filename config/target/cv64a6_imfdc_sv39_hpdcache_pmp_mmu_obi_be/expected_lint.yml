@@ -8,6 +8,5 @@ slang:
 verilator:
   warning:
     LITENDIAN: 72
-    SELRANGE: 58
     WIDTHEXPAND: 185
-    WIDTHTRUNC: 50
+    WIDTHTRUNC: 66

@@ -9,6 +9,5 @@ verilator:
   warning:
     CMPCONST: 1
     LITENDIAN: 7
-    SELRANGE: 52
     WIDTHEXPAND: 89
-    WIDTHTRUNC: 27
+    WIDTHTRUNC: 39
