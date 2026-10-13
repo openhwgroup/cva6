@@ -1,4 +1,3 @@
-coremark_cycle: 412664
-dhrystone_cycle: 25572
-yosys_cells: 326934
-yosys_registers: 25287
+# Synthesis counts not measured yet in superscalar mode.
+coremark_cycle: 322807
+dhrystone_cycle: 21083

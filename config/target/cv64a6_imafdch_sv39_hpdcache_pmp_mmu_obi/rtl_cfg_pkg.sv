@@ -84,7 +84,7 @@ package cva6_config_pkg;
       FpgaEn: bit'(0),  // for Xilinx and Altera
       FpgaAlteraEn: bit'(0),  // for Altera (only)
       TechnoCut: bit'(0),
-      SuperscalarEn: bit'(0),
+      SuperscalarEn: bit'(1),
       ALUBypass: bit'(0),
       NrCommitPorts: unsigned'(2),
       AxiAddrWidth: unsigned'(CVA6ConfigAxiAddrWidth),

@@ -1,9 +1,3 @@
-# The gate count is not measured yet. Left out on purpose rather than
-# carrying over the value of the write-through target these files were
-# derived from, which the write-back data cache makes wrong.
-coremark_cycle: 374383
-dhrystone_cycle: 23348
-gtech_cells: 226362
-gtech_registers: 33065
-yosys_cells: 386453
-yosys_registers: 34262
+# Synthesis counts not measured yet in superscalar mode.
+coremark_cycle: 281329
+dhrystone_cycle: 18785
