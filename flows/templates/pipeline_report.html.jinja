@@ -42,7 +42,7 @@
     /* Target column: the name on its own line, truncated with the full one
        on hover, and the configuration pills below it. Side by side, a long
        name and its pills overflowed the column. */
-    .matrix-wrap td.cell-target { max-width: 26ch; }
+    .matrix-wrap td.cell-target { max-width: 30ch; }
     .cell-target .target-name { display: block; max-width: 100%; }
     .cell-target .cfg-tags { display: flex; margin-top: .15em; }
     .target-name {
@@ -73,6 +73,14 @@
                 font-weight: 500; }
     /* Hidden on narrow screens: the matrix columns matter more */
     @media (max-width: 900px) { tr .cfg-tags { display: none; } }
+    /* Matrix: one line per target, three fixed pills */
+    .cell-target .cfg-sig { display: flex; flex-wrap: nowrap; gap: .25em; margin-top: .15em; }
+    /* Detail header: three labelled lines, each wrapping on its own */
+    .cfg-block { display: grid; grid-template-columns: 4.5em 1fr; gap: .15em .5em;
+                 width: 100%; font-size: .9em; margin-top: .25em; }
+    .cfg-block .cfg-key { color: #6c757d; font-size: .75em; font-weight: 600;
+                          text-transform: uppercase; padding-top: .2em; }
+    .cfg-block .cfg-tags { display: flex; }
 
     /* Specifications of a target, at the top of its detail. Cards, so the
        link has room for the title and the description of the manual. */
@@ -335,17 +343,6 @@ if (TARGETS.includes(CROSS_TARGET)) {  /* cross-target jobs shown first */
 /* Configuration labels of a target (bus, MMU, PMP, extensions), read from
  * its rtl_cfg_pkg.sv by merge-reports. Absent for the cross-target group. */
 const TARGET_CONFIG = PIPELINE.target_config || {};
-const CFG_GROUPS = ["xlen", "bus", "feat", "mem", "hw", "ext"];
-function configTags(t, groups) {
-  let tags = TARGET_CONFIG[t];
-  if (!tags || !tags.length) return "";
-  if (groups) tags = tags.filter((x) => groups.includes(x.group));
-  if (!tags.length) return "";
-  return `<span class="cfg-tags">` + tags.map((x) => {
-    const g = CFG_GROUPS.includes(x.group) ? x.group : "ext";
-    return `<span class="cfg-tag cfg-${g}">${esc(x.text)}</span>`;
-  }).join("") + `</span>`;
-}
 
 /* Specifications of a target, published next to this page by
  * merge-reports under docs/<target>/<document>. A target no docs-build job
@@ -372,6 +369,56 @@ const MANUAL_DOC = {
           "each module, ports tied to a constant listed apart.",
   },
 };
+
+/* Short signature of a target for the matrix: ISA, memory, pipeline */
+const ISA_ORDER = ["I", "M", "A", "F", "D", "C", "H", "V"];
+function cfgTexts(t, group) {
+  return (TARGET_CONFIG[t] || []).filter((x) => x.group === group).map((x) => x.text);
+}
+function isaShort(t) {
+  const xlen = cfgTexts(t, "xlen")[0] || "RV?";
+  const ext = new Set(cfgTexts(t, "ext"));
+  let letters = "IM";
+  for (const l of ["A", "F", "D", "C", "H"]) if (ext.has(l)) letters += l;
+  letters = letters.replace("IMAFD", "G");
+  return xlen + letters;
+}
+function memShort(t) {
+  const bus = cfgTexts(t, "bus")[0] || "";
+  const pol = cfgTexts(t, "mem").find((x) => ["WT", "WB", "WT/WB"].includes(x));
+  return pol ? `${bus}·${pol}` : bus;
+}
+function coreShort(t) {
+  return cfgTexts(t, "hw").find((x) => x.startsWith("SS")) || "";
+}
+function matrixSignature(t) {
+  if (!TARGET_CONFIG[t]) return "";
+  const pills = [[isaShort(t), "xlen"], [memShort(t), "bus"], [coreShort(t), "hw"]]
+    .filter(([x]) => x);
+  const all = (TARGET_CONFIG[t] || []).map((x) => x.text).join(" ");
+  return `<span class="cfg-sig" title="${esc(all)}">` + pills.map(([x, g]) =>
+    `<span class="cfg-tag cfg-${g}">${esc(x)}</span>`).join("") + `</span>`;
+}
+/* Detail header: ISA, Memory and Core on three labelled lines */
+function pill(text, g) { return `<span class="cfg-tag cfg-${g}">${esc(text)}</span>`; }
+function configBlock(t) {
+  const c = TARGET_CONFIG[t];
+  if (!c) return "";
+  const ext = cfgTexts(t, "ext");
+  const std = ISA_ORDER.filter((l) => l === "I" || l === "M" || ext.includes(l));
+  const z = ext.filter((x) => x.startsWith("Z") || x === "B");
+  const modes = ext.filter((x) => x === "S" || x === "U");
+  const isa = [pill(cfgTexts(t, "xlen")[0] || "", "xlen"), pill(std.join(""), "xlen")]
+    .concat(z.map((x) => pill(x, "ext"))).concat(modes.map((x) => pill(`${x}-mode`, "ext")));
+  const memHw = ["SHARED TLB", "SVNAPOT", "BIG ENDIAN", "ECC"];
+  const mem = cfgTexts(t, "bus").map((x) => pill(x, "bus"))
+    .concat(cfgTexts(t, "mem").map((x) => pill(x, "mem")))
+    .concat(cfgTexts(t, "hw").filter((x) => memHw.includes(x)).map((x) => pill(x, "mem")));
+  const core = cfgTexts(t, "feat").map((x) => pill(x, "feat"))
+    .concat(cfgTexts(t, "hw").filter((x) => !memHw.includes(x)).map((x) => pill(x, "hw")));
+  const line = (k, v) => `<span class="cfg-key">${k}</span><span class="cfg-tags">${v.join("")}</span>`;
+  return `<div class="cfg-block">${line("ISA", isa)}${line("Memory", mem)}${line("Core", core)}</div>`;
+}
 
 const TARGET_DOCS = PIPELINE.target_docs || {};
 function docLinks(t) {  const docs = TARGET_DOCS[t];
@@ -642,7 +689,7 @@ function matrixKpiCell(t, name, jobs) {  const found = targetKpis(t).find(([n]) 
     if (!populated) continue;  /* e.g. lint-only cross-target group */
     html += `<tr class="clickable" data-target="${esc(t)}">
       <td class="text-start cell-target"><span class="target-name" title="${esc(t)}">${esc(t)}</span>
-      ${configTags(t, ["xlen", "bus", "feat", "mem", "hw"])}</td>
+      ${matrixSignature(t)}</td>
       ${cells}</tr>`;
   }
   document.getElementById("matrix").innerHTML = html + "</tbody>";
@@ -1146,8 +1193,8 @@ function targetSections(jobs) {
            data-bs-toggle="collapse" data-bs-target="#${cid}">
         ${badge(worstStatus(jobs))}
         <span class="fw-bold mono" style="word-break: break-all">${esc(t)}</span>
-        ${configTags(t)}
         <span class="text-muted small ms-auto">${nPass}/${jobs.length} jobs</span>
+        ${configBlock(t)}
       </div>
       <div class="collapse" id="${cid}" data-target-name="${esc(t)}">
         <div class="card-body">
