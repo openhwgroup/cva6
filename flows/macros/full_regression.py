@@ -132,6 +132,9 @@ TARGETS = [
     "cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt",
     # OBI PMP MMU
     "cv32a6_imac_sv32_obi",
+    # cv32a6_imac_sv32_obi in superscalar mode with the ALU bypass: atomics and
+    # Sv32 with dual issue over OBI
+    "cv32a6_imac_sv32_obi_ss",
     "cv32a65x_sv32",
     # cv32a65x_sv32 with big endian data accesses (BigEndianEn), which no
     # target with the A extension can have
@@ -149,6 +152,9 @@ TARGETS = [
     "cv32a6_imac_sv32",
     # cv32a6_imac_sv32 with single-precision floating point (RVF)
     "cv32a6_imafc_sv32",
+    # cv32a6_imafc_sv32 in superscalar mode: the FPU and ALU2 sharing the
+    # writeback of the second issue port with FLEN 32
+    "cv32a6_imafc_sv32_ss",
     # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
     "cv32a6_ima_sv32_fpga",
     "cv32a65x_sv32_axi",
@@ -360,6 +366,19 @@ TESTLISTS = {
         "base_ni",
         "base_obi",
     ],
+    "cv32a6_imac_sv32_obi_ss": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_le",
+        "base_ni",
+        "base_obi",
+    ],
     "cv32a65x_sv32": [
         "base_rv32_p",
         "base_rv32_ma_fetch",
@@ -452,6 +471,21 @@ TESTLISTS = {
         "base_ni",
     ],
     "cv32a6_imafc_sv32": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_fp_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a6_imafc_sv32_ss": [
         "base_rv32_p",
         "base_rv32_ma_fetch",
         "base_rv32_fp_p",
