@@ -155,6 +155,7 @@ module trigger_module
   logic [$clog2(CVA6Cfg.SdtrigNrTriggers)-1:0] previous_trigg_i;
   logic sdtrig_commit_icount_valid_d;
   logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_d;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_d, sdtrig_load_action_q;
   logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_d;
   logic e_matched_q, e_matched_d;
   logic
@@ -233,7 +234,8 @@ module trigger_module
     sdtrig_commit_icount_nr_instr_d = '0;
     sdtrig_commit_action_d = '0;
     sdtrig_commit_std_exception_valid_d = 1'b0;
-    sdtrig_load_action_o = '0;
+    sdtrig_load_action_d = sdtrig_load_action_q;
+    sdtrig_load_action_o = sdtrig_load_cancel_q ? sdtrig_load_action_q : '0;
     sdtrig_store_action_o = '0;
     flush_o = 1'b0;
 
@@ -593,7 +595,7 @@ module trigger_module
                                       trigger_32_tdata1_d[i].mc6_type.match);
                 end
                 //Load trigger on address fire logic
-                if (priv_match[i] && matchLA || sdtrig_load_cancel_q) begin
+                if (priv_match[i] && matchLA) begin
                   trigger_32_tdata1_d[i].mc6_type.hit0 = 1'b1;  //before
                   trigger_32_tdata1_d[i].mc6_type.hit1 = 1'b0;
                   if (CVA6Cfg.SdtrigTriggerChaining) begin
@@ -766,7 +768,8 @@ module trigger_module
       if (CVA6Cfg.SdtrigMcontrol6LoadAddr && fire_req_LA.valid || CVA6Cfg.SdtrigMcontrol6Store && fire_req_SX.valid) begin
         if (CVA6Cfg.SdtrigMcontrol6LoadAddr && fire_req_LA.valid) begin
           sdtrig_load_cancel_d = (sdtrig_load_cancel_q) ? 1'b0 : 1'b1;
-          sdtrig_load_action_o = fire_req_LA.action;
+          if (!sdtrig_load_cancel_q) sdtrig_load_action_d = fire_req_LA.action;
+          sdtrig_load_action_o = sdtrig_load_cancel_q ? sdtrig_load_action_q : fire_req_LA.action;
         end
         if (CVA6Cfg.SdtrigMcontrol6Store && fire_req_SX.valid) begin
           sdtrig_store_action_o = fire_req_SX.action;
@@ -780,7 +783,7 @@ module trigger_module
       tselect_d = (tselect_i < CVA6Cfg.SdtrigNrTriggers) ?
           tselect_i[$clog2(CVA6Cfg.SdtrigNrTriggers)-1:0] : tselect_q;
     end
-    if (tdata1_we) begin
+    if (tdata1_we && (!trigger_32_tdata1_q[tselect_q].tdata1_type[27] || debug_mode_i)) begin
       if (CVA6Cfg.IS_XLEN32) begin
         if (CVA6Cfg.Sdtrig && CVA6Cfg.SdtrigNrTriggers > 0) begin
           if(   CVA6Cfg.SdtrigIcount && tdata1_i[31:28] == 4'd3
@@ -792,7 +795,7 @@ module trigger_module
           end
           if (CVA6Cfg.SdtrigIcount && trigger_type_d[tselect_q] == 4'd3) begin
             trigger_32_tdata1_d[tselect_q].icount_type.t_type = trigger_type_d[tselect_q];
-            trigger_32_tdata1_d[tselect_q].icount_type.dmode = tdata1_i[27];
+            trigger_32_tdata1_d[tselect_q].icount_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].icount_type.vs = 0;
             trigger_32_tdata1_d[tselect_q].icount_type.vu = 0;
             trigger_32_tdata1_d[tselect_q].icount_type.hit = tdata1_i[24];
@@ -805,7 +808,7 @@ module trigger_module
             flush_o = 1'b1;
           end else if (CVA6Cfg.SdtrigMcontrol6 && trigger_type_d[tselect_q] == 4'd6) begin
             trigger_32_tdata1_d[tselect_q].mc6_type.t_type = trigger_type_d[tselect_q];
-            trigger_32_tdata1_d[tselect_q].mc6_type.dmode = tdata1_i[27];
+            trigger_32_tdata1_d[tselect_q].mc6_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].mc6_type.uncertain = 0;
             trigger_32_tdata1_d[tselect_q].mc6_type.hit1 = tdata1_i[25];
             trigger_32_tdata1_d[tselect_q].mc6_type.vs = 0;
@@ -827,7 +830,7 @@ module trigger_module
             flush_o = 1'b1;
           end else if (CVA6Cfg.SdtrigEtrigger && trigger_type_d[tselect_q] == 4'd5) begin
             trigger_32_tdata1_d[tselect_q].etrigger_type.t_type = trigger_type_d[tselect_q];
-            trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = tdata1_i[27];
+            trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].etrigger_type.hit = tdata1_i[26];
             trigger_32_tdata1_d[tselect_q].etrigger_type.zeroes = '0;
             trigger_32_tdata1_d[tselect_q].etrigger_type.vs = 0;
@@ -840,7 +843,7 @@ module trigger_module
             trigger_32_tdata1_d[tselect_q].etrigger_type.action = tdata1_i[5:0];
           end else if (CVA6Cfg.SdtrigItrigger && trigger_type_d[tselect_q] == 4'd4) begin
             trigger_32_tdata1_d[tselect_q].itrigger_type.t_type = trigger_type_d[tselect_q];
-            trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = tdata1_i[27];
+            trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = debug_mode_i && tdata1_i[27];
             trigger_32_tdata1_d[tselect_q].itrigger_type.hit = tdata1_i[26];
             trigger_32_tdata1_d[tselect_q].itrigger_type.zeroed = '0;
             trigger_32_tdata1_d[tselect_q].itrigger_type.vs = 0;
@@ -857,7 +860,7 @@ module trigger_module
         if (CVA6Cfg.SdtrigIcount && tdata1_i[63:60] == 4'd3) begin
           trigger_type_d[tselect_q] = tdata1_i[63:60];
           trigger_32_tdata1_d[tselect_q].icount_type.t_type  = (tdata1_i[63:60] == 4'd3 || tdata1_i[63:60] == 4'd15) ? tdata1_i[63:60] : trigger_type_q[tselect_q];
-          trigger_32_tdata1_d[tselect_q].icount_type.dmode = tdata1_i[59];
+          trigger_32_tdata1_d[tselect_q].icount_type.dmode = debug_mode_i && tdata1_i[59];
           trigger_32_tdata1_d[tselect_q].icount_type.vs = 0;
           trigger_32_tdata1_d[tselect_q].icount_type.vu = 0;
           trigger_32_tdata1_d[tselect_q].icount_type.hit = tdata1_i[24];
@@ -871,7 +874,7 @@ module trigger_module
         end else if (CVA6Cfg.SdtrigMcontrol6 && tdata1_i[63:60] == 4'd6) begin
           trigger_type_d[tselect_q] = tdata1_i[63:60];
           trigger_32_tdata1_d[tselect_q].mc6_type.t_type  = (tdata1_i[63:60] == 4'd6 || tdata1_i[63:60] == 4'd15) ? tdata1_i[63:60] : trigger_type_q[tselect_q];
-          trigger_32_tdata1_d[tselect_q].mc6_type.dmode = tdata1_i[59];
+          trigger_32_tdata1_d[tselect_q].mc6_type.dmode = debug_mode_i && tdata1_i[59];
           trigger_32_tdata1_d[tselect_q].mc6_type.uncertain = 0;
           trigger_32_tdata1_d[tselect_q].mc6_type.hit1 = tdata1_i[25];
           trigger_32_tdata1_d[tselect_q].mc6_type.vs = 0;
@@ -894,7 +897,7 @@ module trigger_module
         end else if (CVA6Cfg.SdtrigEtrigger && tdata1_i[63:60] == 4'd5) begin
           trigger_type_d[tselect_q] = tdata1_i[63:60];
           trigger_32_tdata1_d[tselect_q].etrigger_type.t_type  = (tdata1_i[63:60] == 4'd5 || tdata1_i[63:60] == 4'd15) ? tdata1_i[63:60] : trigger_type_q[tselect_q];
-          trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = tdata1_i[59];
+          trigger_32_tdata1_d[tselect_q].etrigger_type.dmode = debug_mode_i && tdata1_i[59];
           trigger_32_tdata1_d[tselect_q].etrigger_type.hit = tdata1_i[58];
           trigger_32_tdata1_d[tselect_q].etrigger_type.zeroes = '0;
           trigger_32_tdata1_d[tselect_q].etrigger_type.vs = 0;
@@ -908,7 +911,7 @@ module trigger_module
         end else if (CVA6Cfg.SdtrigItrigger && tdata1_i[63:60] == 4'd4) begin
           trigger_type_d[tselect_q] = tdata1_i[63:60];
           trigger_32_tdata1_d[tselect_q].itrigger_type.t_type  = (tdata1_i[63:60] == 4'd4 || tdata1_i[63:60] == 4'd15) ? tdata1_i[63:60] : trigger_type_q[tselect_q];
-          trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = tdata1_i[59];
+          trigger_32_tdata1_d[tselect_q].itrigger_type.dmode = debug_mode_i && tdata1_i[59];
           trigger_32_tdata1_d[tselect_q].itrigger_type.hit = tdata1_i[58];
           trigger_32_tdata1_d[tselect_q].itrigger_type.zeroed = '0;
           trigger_32_tdata1_d[tselect_q].itrigger_type.vs = 0;
@@ -924,11 +927,11 @@ module trigger_module
         end
       end
     end
-    if (tdata2_we) begin
+    if (tdata2_we && (!trigger_32_tdata1_q[tselect_q].tdata1_type[27] || debug_mode_i)) begin
       tdata2_d[tselect_q] = tdata2_i;
       flush_o = 1'b1;
     end
-    if (CVA6Cfg.SdtrigSupportTextra && tdata3_we) begin
+    if (CVA6Cfg.SdtrigSupportTextra && tdata3_we && (!trigger_32_tdata1_q[tselect_q].tdata1_type[27] || debug_mode_i)) begin
       if (CVA6Cfg.IS_XLEN32) begin
         textra32_tdata3_d[tselect_q].mhvalue   = '0;
         textra32_tdata3_d[tselect_q].mhselect  = '0;
@@ -987,6 +990,7 @@ module trigger_module
         sdtrig_commit_action_o <= '0;
         sdtrig_load_stall_s <= '0;
         sdtrig_load_cancel_q <= '0;
+        sdtrig_load_action_q <= '0;
         etrigger_context_saved_valid_q <= 1'b0;
         etrigger_context_mepc_q <= '0;
         etrigger_context_mcause_q <= '0;
@@ -1027,6 +1031,7 @@ module trigger_module
         mret_reg_q                          <= mret_reg_d;
         sdtrig_load_stall_s                 <= sdtrig_load_stall_o;
         sdtrig_load_cancel_q                <= sdtrig_load_cancel_d;
+        sdtrig_load_action_q                <= sdtrig_load_action_d;
         if (CVA6Cfg.SdtrigTriggerChaining) trigger_chain_vector_q <= trigger_chain_vector_d;
       end
     end

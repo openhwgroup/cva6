@@ -250,6 +250,7 @@ module axi_adapter #(
       // ~> from single write
       WAIT_AW_READY: begin
         axi_req_o.aw_valid = 1'b1;
+        axi_req_o.aw.lock  = amo_i == ariane_pkg::AMO_SC;
 
         if (axi_resp_i.aw_ready) begin
           gnt_o   = 1'b1;

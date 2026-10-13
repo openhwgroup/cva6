@@ -336,6 +336,8 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
           $(CVA6_REPO_DIR)/verif/tb/core/ \
           $(CVA6_REPO_DIR)/core/include/ \
+          $(HPDCACHE_DIR)/rtl/include \
+          $(HPDCACHE_DIR)/rtl/src/utils/ecc \
           $(CVA6_REPO_DIR)/corev_apu/instr_tracing/ITI/include \
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
@@ -533,6 +535,8 @@ XRUN_RUN_LOG       ?= xrun_run.log
 CVA6_HOME	   ?= $(realpath -s $(root-dir))
 
 XRUN_INCDIR :=+incdir+$(CVA6_HOME)/core/include 			\
+	+incdir+$(HPDCACHE_DIR)/rtl/include				\
+	+incdir+$(HPDCACHE_DIR)/rtl/src/utils/ecc			\
 	+incdir+$(CVA6_HOME)/vendor/pulp-platform/axi/include/		\
 	+incdir+$(CVA6_HOME)/corev_apu/register_interface/include
 

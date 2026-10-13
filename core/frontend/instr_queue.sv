@@ -74,8 +74,10 @@ module instr_queue
     input logic exception_gva_i,
     // Branch predict - FRONTEND
     input logic [CVA6Cfg.VLEN-1:0] predict_address_i,
-    // Instruction predict address - FRONTEND
+    // Instruction control-flow prediction type - FRONTEND
     input ariane_pkg::cf_t [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type_i,
+    // Instruction control-flow prediction valid - FRONTEND
+    input logic [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_valid_i,
     // Replay instruction because one of the FIFO was full - FRONTEND
     output logic replay_o,
     // Address at which to replay the fetch - FRONTEND
@@ -93,7 +95,8 @@ module instr_queue
 
   typedef struct packed {
     logic [31:0]                     instr;      // instruction word
-    ariane_pkg::cf_t                 cf;         // branch was taken
+    ariane_pkg::cf_t                 cf;         // branch prediction type
+    logic                            cf_valid;   // valid branch prediction
     ariane_pkg::frontend_exception_t ex;         // exception happened
     logic [CVA6Cfg.VLEN-1:0]         ex_vaddr;   // lower VLEN bits of tval for exception
     logic [CVA6Cfg.GPLEN-1:0]        ex_gpaddr;  // lower GPLEN bits of tval2 for exception
@@ -143,6 +146,7 @@ module instr_queue
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] fifo_pos;
   logic [CVA6Cfg.INSTR_PER_FETCH*2-1:0][31:0] instr;
   ariane_pkg::cf_t [CVA6Cfg.INSTR_PER_FETCH*2-1:0] cf;
+  logic [CVA6Cfg.INSTR_PER_FETCH*2-1:0] cf_valid;
   // replay interface
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] instr_overflow_fifo;
 
@@ -151,7 +155,7 @@ module instr_queue
   if (CVA6Cfg.RVC) begin : gen_multiple_instr_per_fetch_with_C
 
     for (genvar i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin : gen_unpack_taken
-      assign taken[i] = cf_type_i[i] != ariane_pkg::NoCF;
+      assign taken[i] = cf_valid_i[i];
     end
 
     // calculate a branch mask, e.g.: get the first taken branch
@@ -208,6 +212,8 @@ module instr_queue
       assign instr[i+CVA6Cfg.INSTR_PER_FETCH] = instr_i[i];
       assign cf[i] = cf_type_i[i];
       assign cf[i+CVA6Cfg.INSTR_PER_FETCH] = cf_type_i[i];
+      assign cf_valid[i] = cf_valid_i[i];
+      assign cf_valid[i+CVA6Cfg.INSTR_PER_FETCH] = cf_valid_i[i];
     end
 
     // shift the inputs
@@ -215,6 +221,7 @@ module instr_queue
       /* verilator lint_off WIDTH */
       assign instr_data_in[i].instr = instr[CVA6Cfg.INSTR_PER_FETCH+i-idx_is_q];
       assign instr_data_in[i].cf = cf[CVA6Cfg.INSTR_PER_FETCH+i-idx_is_q];
+      assign instr_data_in[i].cf_valid = cf_valid[CVA6Cfg.INSTR_PER_FETCH+i-idx_is_q];
       assign instr_data_in[i].ex = exception_i;  // exceptions hold for the whole fetch packet
       assign instr_data_in[i].ex_vaddr = exception_addr_i;
       if (CVA6Cfg.RVH) begin : gen_hyp_ex_with_C
@@ -333,6 +340,7 @@ module instr_queue
         fetch_entry_o[i].ex.timing = '0;
         fetch_entry_o[i].branch_predict.predict_address = address_out;
         fetch_entry_o[i].branch_predict.cf = ariane_pkg::NoCF;
+        fetch_entry_o[i].branch_predict.valid = 1'b0;
       end
 
       // output mux select
@@ -358,6 +366,7 @@ module instr_queue
             fetch_entry_o[0].ex.gva   = instr_data_out[i].ex_gva;
           end
           fetch_entry_o[0].branch_predict.cf = instr_data_out[i].cf;
+          fetch_entry_o[0].branch_predict.valid = instr_data_out[i].cf_valid;
           pop_instr[i] = fetch_entry_fire[0];
         end
 
@@ -372,6 +381,7 @@ module instr_queue
             fetch_entry_o[NID].ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
             fetch_entry_o[NID].ex.tval = {{64 - CVA6Cfg.VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
             fetch_entry_o[NID].branch_predict.cf = instr_data_out[i].cf;
+            fetch_entry_o[NID].branch_predict.valid = instr_data_out[i].cf_valid;
             // Cannot output two CF the same cycle.
             pop_instr[i] = fetch_entry_fire[NID];
           end
@@ -414,13 +424,14 @@ module instr_queue
 
       fetch_entry_o[0].branch_predict.predict_address = address_out;
       fetch_entry_o[0].branch_predict.cf = instr_data_out[0].cf;
+      fetch_entry_o[0].branch_predict.valid = instr_data_out[0].cf_valid;
 
       pop_instr[0] = fetch_entry_valid_o[0] & fetch_entry_ready_i[0];
     end
   end
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; i++) begin
-    assign fetch_entry_is_cf[i] = fetch_entry_o[i].branch_predict.cf != ariane_pkg::NoCF;
+    assign fetch_entry_is_cf[i] = fetch_entry_o[i].branch_predict.valid;
     assign fetch_entry_fire[i]  = fetch_entry_valid_o[i] & fetch_entry_ready_i[i];
   end
 
@@ -486,7 +497,7 @@ module instr_queue
     push_address = 1'b0;
     // check if we are pushing a ctrl flow change, if so save the address
     for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) begin
-      push_address |= push_instr[i] & (instr_data_in[i].cf != ariane_pkg::NoCF);
+      push_address |= push_instr[i] & instr_data_in[i].cf_valid;
     end
   end
 

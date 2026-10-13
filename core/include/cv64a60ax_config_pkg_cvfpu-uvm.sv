@@ -121,6 +121,8 @@ package cva6_config_pkg;
       DcacheFlushOnFence: bit'(0),
       DcacheFlushOnFenceI: bit'(0),
       DcacheInvalidateOnFlush: bit'(0),
+      DcacheEccEnable: bit'(0),
+      DcacheEccScrubberEnable: bit'(0),
       DataUserEn: unsigned'(0),
       WtDcacheWbufDepth: int'(8),
       FetchUserWidth: unsigned'(32),

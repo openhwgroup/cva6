@@ -82,6 +82,11 @@ module macro_decoder #(
       unique case (instr_i[12:10])
         // push or pop
         3'b110: begin
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = PUSH;
@@ -97,6 +102,11 @@ module macro_decoder #(
         end
         // popret or popretz
         3'b111: begin
+          if (instr_i[7:4] < 4'b0100) begin
+            illegal_instr_o = 1'b1;
+            instr_o_reg     = instr_i;
+          end
+
           unique case (instr_i[9:8])
             2'b00: begin
               macro_instr_type = POPRETZ;
@@ -133,7 +143,7 @@ module macro_decoder #(
 
       // Calculate xreg1 & xreg2 for move instructions
       if (macro_instr_type == MVSA01 || macro_instr_type == MVA01S) begin
-        if (instr_i[9:7] != instr_i[4:2]) begin
+        if (macro_instr_type == MVA01S || instr_i[9:7] != instr_i[4:2]) begin
           xreg1 = {instr_i[9:8] > 0, instr_i[9:8] == 0, instr_i[9:7]};
           xreg2 = {instr_i[4:3] > 0, instr_i[4:3] == 0, instr_i[4:2]};
         end else begin
@@ -272,7 +282,7 @@ module macro_decoder #(
 
     unique case (state_q)
       IDLE: begin
-        if (is_macro_instr_i) begin
+        if (is_macro_instr_i && !illegal_instr_o) begin
           reg_numbers_d = reg_numbers - 1'b1;
           state_d = issue_ack_i ? INIT : IDLE;
           case (macro_instr_type)
@@ -311,7 +321,9 @@ module macro_decoder #(
             is_double_rd_macro_instr_o = 1;
             // addi xreg1, a0, 0
             instr_o_reg = {12'h0, 5'hA, 3'h0, xreg1, riscv::OpcodeOpImm};
-            state_d = MOVE;
+            if (issue_ack_i) begin
+              state_d = MOVE;
+            end
           end
 
           if (macro_instr_type == MVA01S) begin
@@ -319,7 +331,9 @@ module macro_decoder #(
             is_double_rd_macro_instr_o = 1;
             // addi a0, xreg1, 0
             instr_o_reg = {12'h0, xreg1, 3'h0, 5'hA, riscv::OpcodeOpImm};
-            state_d = MOVE;
+            if (issue_ack_i) begin
+              state_d = MOVE;
+            end
           end
 
           if (macro_instr_type == PUSH) begin
@@ -336,7 +350,9 @@ module macro_decoder #(
                   7'b1111111, 5'h1, 5'h2, 3'h2, 5'b11100, riscv::OpcodeStore
                 };  // sw store_reg, -4(sp)
               end
-              state_d = PUSH_ADDI;
+              if (issue_ack_i) begin
+                state_d = PUSH_ADDI;
+              end
             end
 
             if (reg_numbers == 4'b0010) begin
@@ -363,7 +379,7 @@ module macro_decoder #(
                 instr_o_reg = {7'b1111111, store_reg, 5'h2, 3'h2, 5'b11100, riscv::OpcodeStore};
               end
 
-              if (reg_numbers == 12) begin
+              if (reg_numbers == 12 && issue_ack_i) begin
                 state_d = PUSH_POP_INSTR_2;
               end
             end
@@ -381,15 +397,17 @@ module macro_decoder #(
                   offset_reg, 5'h2, 3'h2, 5'h1, riscv::OpcodeLoad
                 };  // lw store_reg, Imm(sp)
               end
-              unique case (macro_instr_type)
-                PUSH, POP, POPRET: begin
-                  state_d = PUSH_ADDI;
-                end
-                POPRETZ: begin
-                  state_d = POPRETZ_1;
-                end
-                default: ;
-              endcase
+              if (issue_ack_i) begin
+                unique case (macro_instr_type)
+                  PUSH, POP, POPRET: begin
+                    state_d = PUSH_ADDI;
+                  end
+                  POPRETZ: begin
+                    state_d = POPRETZ_1;
+                  end
+                  default: ;
+                endcase
+              end
             end
 
             if (reg_numbers == 2) begin
@@ -415,7 +433,7 @@ module macro_decoder #(
                 instr_o_reg = {offset_reg, 5'h2, 3'h2, store_reg, riscv::OpcodeLoad};
               end
 
-              if (reg_numbers == 12) begin
+              if (reg_numbers == 12 && issue_ack_i) begin
                 state_d = PUSH_POP_INSTR_2;
               end
             end

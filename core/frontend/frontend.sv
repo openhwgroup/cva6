@@ -152,6 +152,7 @@ module frontend
   // Instruction FIFO
   logic [           CVA6Cfg.VLEN-1:0] predict_address;
   cf_t  [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_type;
+  logic [CVA6Cfg.INSTR_PER_FETCH-1:0] cf_valid;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvi_cf;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
@@ -200,7 +201,6 @@ module frontend
   // for the return address stack it doesn't matter as we have the
   // address of the call/return already
   logic bp_valid;
-
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_branch;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_call;
   logic [CVA6Cfg.INSTR_PER_FETCH-1:0] is_jump;
@@ -227,6 +227,7 @@ module frontend
     predict_address = '0;
 
     for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) cf_type[i] = ariane_pkg::NoCF;
+    for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++) cf_valid[i] = 1'b0;
 
     ras_push = 1'b0;
     ras_pop = 1'b0;
@@ -240,11 +241,12 @@ module frontend
         4'b0000: ;  // regular instruction e.g.: no branch
         // unconditional jump to register, we need the BTB to resolve this
         4'b0001: begin
-          ras_pop  = 1'b0;
+          ras_pop = 1'b0;
           ras_push = 1'b0;
+          cf_type[i] = ariane_pkg::JumpR;
           if (CVA6Cfg.BTBEntries != 0 && btb_prediction_shifted[i].valid) begin
             predict_address = btb_prediction_shifted[i].target_address;
-            cf_type[i] = ariane_pkg::JumpR;
+            cf_valid[i] = 1'b1;
           end
         end
         // its an unconditional jump to an immediate
@@ -254,6 +256,7 @@ module frontend
           taken_rvi_cf[i] = rvi_jump[i];
           taken_rvc_cf[i] = rvc_jump[i];
           cf_type[i] = ariane_pkg::Jump;
+          cf_valid[i] = rvi_jump[i] || rvc_jump[i];
         end
         // return
         4'b0100: begin
@@ -262,6 +265,7 @@ module frontend
           ras_push = 1'b0;
           predict_address = ras_predict.ra;
           cf_type[i] = ariane_pkg::Return;
+          cf_valid[i] = ras_predict.valid;
         end
         // branch prediction
         4'b1000: begin
@@ -278,7 +282,8 @@ module frontend
             taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][CVA6Cfg.VLEN-1];
           end
           if (taken_rvi_cf[i] || taken_rvc_cf[i]) begin
-            cf_type[i] = ariane_pkg::Branch;
+            cf_type[i]  = ariane_pkg::Branch;
+            cf_valid[i] = 1'b1;
           end
         end
         default: ;
@@ -296,15 +301,8 @@ module frontend
       end
     end
   end
-  // or reduce struct
-  always_comb begin
-    bp_valid = 1'b0;
-    // BP cannot be valid if we have a return instruction and the RAS is not giving a valid address
-    // Check that we encountered a control flow and that for a return the RAS
-    // contains a valid prediction.
-    for (int i = 0; i < CVA6Cfg.INSTR_PER_FETCH; i++)
-    bp_valid |= ((cf_type[i] != NoCF & cf_type[i] != Return) | ((cf_type[i] == Return) & ras_predict.valid));
-  end
+  // Or reduce struct
+  assign bp_valid = |cf_valid;
   assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
   // Cache interface
@@ -580,6 +578,7 @@ module frontend
       .exception_gva_i    (icache_gva_q),
       .predict_address_i  (predict_address),
       .cf_type_i          (cf_type),
+      .cf_valid_i         (cf_valid),
       .valid_i            (instruction_valid),     // from re-aligner
       .consumed_o         (instr_queue_consumed),
       .ready_o            (instr_queue_ready),
