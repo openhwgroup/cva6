@@ -35,6 +35,11 @@ pip3 install --user -r flows/requirements.txt
 # Initialize submodules
 git submodule update --init --recursive
 
+# Patch the submodules and clone the external test suites (riscv-tests, ...).
+# Required: cook.py stops while a submodule patch of
+# flows/config/dependencies.yml is not applied. Run it again after a pull.
+./cook.py git-dependencies
+
 # Install Spike ISA simulator (requires: gcc, g++, device-tree-compiler, libboost-dev)
 # See verif/regress/install-spike.sh for details
 (cd verif/regress && source ./install-spike.sh)
@@ -86,6 +91,9 @@ git clone https://github.com/openhwgroup/cva6.git
 cd cva6
 git submodule update --init --recursive
 ```
+Then apply the submodule patches of `flows/config/dependencies.yml`, without
+which the design does not build: `./cook.py git-dependencies` (Python
+dependencies in `flows/requirements.txt`).
 
 2. Install the GCC Toolchain [build prerequisites](util/toolchain-builder/README.md#Prerequisites) then [the toolchain itself](util/toolchain-builder/README.md#Getting-started).
 
