@@ -10,7 +10,7 @@ on: [ pull_request, workflow_dispatch ]
 jobs:
   cheshire-integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 200
+    timeout-minutes: 330
     # Skip on forks due to missing secrets.
     if: github.repository == 'pulp-platform/cva6' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     steps:
@@ -23,3 +23,6 @@ jobs:
           base-ref: cva6/pulp-v3.0.0
           token: ${{ secrets.CHESHIRE_TOKEN }}
           lifetime: 14
+          # Cheshire's CI includes FPGA implementation and boot; poll once a minute for up to 5 h
+          poll-count: 300
+          poll-period: 60
