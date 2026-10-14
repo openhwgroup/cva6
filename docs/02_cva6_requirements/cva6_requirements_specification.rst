@@ -1,9 +1,9 @@
 ===============================
 CVA6 Requirement Specification
 ===============================
-Editor: **Jerome Quevremont**
+Editor: **Jérôme Quévremont**
 
-Revision 1.0.1
+.. Revision 1.0.1
 
 .. _license:
 
@@ -35,20 +35,19 @@ configured as a 32- or 64-bit core (RV32 or RV64). It includes L1
 caches, optional MMU, optional PMP and optional FPU.
 
 It is an industrial evolution of ARIANE created by ETH Zürich and the
-University of Bologna. It is written in SystemVerilog and maintained by
-the OpenHW Group.
+University of Bologna. It is written in SystemVerilog and maintained at
+the OpenHW Foundation, part of Eclipse Foundation.
 
 This specification is organized as requirements that apply to the “Scope
 of the IP”.
 
-The requirement list is to be approved by the OpenHW Group Technical
-Work Group (TWG), as well as its change requests.
+The requirement list is maintained by the project committers.
 
-The specification will be complemented by a user’s guide.
+The specification is complemented by a user’s guide.
 
-Revision 1.0.0 refers to the product of the first CVA6 project led at
-OpenHW Group. It is a placeholder in case of future evolutions after
-project freeze (PF gate).
+.. Revision 1.0.0 refers to the product of the first CVA6 project led at
+.. OpenHW Group. It is a placeholder in case of future evolutions after
+.. project freeze (PF gate).
 
 A list of abbreviations is available at the end of this document.
 
@@ -79,7 +78,7 @@ As displayed in the picture above, the IP comprises:
 
 -  The CVA6 core;
 
--  L1 write-through cache;
+-  L1 caches;
 
 -  Optional FPU;
 
@@ -117,7 +116,7 @@ support…​”, “…​should reduce latency…​”).
 These are not in the scope of this specification:
 
 -  SW layers, such as compiler and OSes (that can however be part of the
-   OpenHW Group CVA6 project);
+   OpenHW Foundation CVA6 project);
 
 -  SW emulation of RISC-V optional extensions ( feasible but the scope
    of the IP is the core hardware);
@@ -136,19 +135,22 @@ Initial Release
 
 The CVA6 is highly configurable via SystemVerilog parameters.
 It is not practical to fully document and verify all possible combinations of parameters, so a set of "viable IP configurations" has been defined.
-The full list of parameters for this configuration will be detailed in the users’ guide.
+
+The full list of parameters for these configuration are detailed in the users’ guide.
 
 Below are the configuration of the first releases of the CVA6.
 
-+--------------------+---------+---------+------+-------+---------+---------+---------+---------+
-| Release ID         | Target  | ISA     | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
-+====================+=========+=========+======+=======+=========+=========+=========+=========+
-| ``CV32A60X``       | ASIC    | IMC     |  32  | No    | Yes     | None    | 2 kB    | 2 kB    |
-+--------------------+---------+---------+------+-------+---------+---------+---------+---------+
-| ``CV32A60AX``      | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | 16kB    | 16 kB   |
-+--------------------+---------+---------+------+-------+---------+---------+---------+---------+
++--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
+| Release ID         | Target  | ISA (main ext.) | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
++====================+=========+=================+======+=======+=========+=========+=========+=========+
+| ``CV32A60X``       | ASIC    | IMC             |  32  | No    | Yes     | None    | None    | None    |
++--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
+| ``CV32A60AX``      | ASIC    | IMC             |  32  | No    | Yes     | Sv32    | 16kB    | 16 kB   |
++--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
+| ``CV64A60AX``      | ASIC    | IMACFDB         |  64  | Yes   | Yes     | Sv39    | 32kB    | 32 kB   |
++--------------------+---------+-----------------+------+-------+---------+---------+---------+---------+
 
-CV32A60X could evolve to CV32A65X if the team decides to integrate the dual-issue optional architectural feature.
+.. note:: CV32A60X is the first fully verified (TRL-5) configuration of CVA6.
 
 .. Possible Future Releases
 .. ------------------------
@@ -359,6 +361,11 @@ The MMU includes a TLB and a hardware PTW.
 |                                   | **option** the **H** extension    |
 |                                   | (hypervisor) version 1.0.         |
 +-----------------------------------+-----------------------------------+
+| PVL‑70                            | CVA6 shall support as an          |
+|                                   | **option** the **Svnapot**        |
+|                                   | (NAPOT Translation Contiguity)    |
+|                                   | extension version 1.0.            |
++-----------------------------------+-----------------------------------+
 
 .. _csr:
 
@@ -366,7 +373,7 @@ CSR
 ---
 
 There are no requirements related to CSR as they derive from other
-requirements, such as PVL-10, PVL-60… Details of CSRs will be available
+requirements, such as PVL-10, PVL-60… Details of CSRs are available
 in the user’s manual.
 
 .. _performance_counters:
@@ -450,7 +457,7 @@ applications.
 |                                   | counterparts in CV32A6).          |
 +-----------------------------------+-----------------------------------+
 
-The user’s manual will detail the list of counters, events and related
+The user’s manual details the list of counters, events and related
 controls.
 
 .. _cache_requirements:
@@ -487,11 +494,8 @@ where a high level of timing predictability is needed.
 |                                   | cycles. The upper-bound is fixed  |
 |                                   | but not specified here.           |
 +-----------------------------------+-----------------------------------+
-| L1W‑20                            | L1WTD shall not change the order  |
-|                                   | of write accesses to the external |
-|                                   | memory with respect to the order  |
-|                                   | of write accesses (stores)        |
-|                                   | received from the CVA6 core.      |
+| L1W‑20                            | L1WTD shall support RISC-V        |
+|                                   | Weak Memory Ordering (RVWMO).     |
 +-----------------------------------+-----------------------------------+
 | L1W‑30                            | L1WTD should offer the            |
 |                                   | following size/ways               |
@@ -544,6 +548,10 @@ Cache counters are defined in the performance counters.
 size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1W-80.
+
+These L1WTD requirements apply to the HPDCache in write-through mode.
+Note that the HPDCache has more features, such as write-back options, that
+are beyond the scope of this specification.
 
 .. _l1_instruction_cache:
 
@@ -602,6 +610,8 @@ Cache counters are defined in the performance counters section.
 size/ways configurations may be implemented in the design.
 
 The design will support one replacement policy allowed by L1I-50.
+
+These requirements apply to the HPICache, a modified version of HPDCache.
 
 .. _fence_t_custom_instruction:
 
@@ -790,6 +800,12 @@ If technology-dependent blocks are used, e.g. to improve PPA on certain
 targets, the equivalent technology-independent block should be
 available. Parameters can be used to select between the implementations.
 
+Also refer to https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md
+for contribution guidelines.
+
+.. attention::
+   RUL-10 is not supported by CVA6 as of now.
+
 .. _list_of_abbreviations:
 
 List of abbreviations
@@ -815,6 +831,7 @@ List of abbreviations
 | LFSR: Linear Feedback Shift Register
 | LRU: Least Recently Used
 | MMU: Memory Management Unit
+| NAPOT: Naturally aligned power-of-two
 | OS: Operating System
 | PF: Project Freeze
 | PPA: Power Performance Area
@@ -823,7 +840,6 @@ List of abbreviations
 | RW: Read Write
 | SW: Software
 | TLB: Translation Lookaside Buffer
-| TWG: Technical Work Group
 | WB: Write-Back
 | WT: Write-Through
 
