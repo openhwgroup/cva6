@@ -78,7 +78,7 @@ submodule_patches:
       upstream.
 
 riscv-tests:
-  repo: "https://github.com/riscv/riscv-tests.git"
+  repo: "https://github.com/riscv-software-src/riscv-tests.git"
   branch: "master"
   commit: "f92842f91644092960ac7946a61ec2895e543cec"
   destination: "verif/tests/riscv-tests"
