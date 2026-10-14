@@ -40,7 +40,7 @@ The current limitation of documentation on CVA6 is well understood.
 Rather than regretting this, the reader is encouraged to contribute to it to make CVA6 an even better core.
 To contribute to the project, refer to the Contributing_ guidelines and get in touch with the team.
 
-.. _Contributing: https://github.com/jquevremont/cva6/blob/master/CONTRIBUTING.md
+.. _Contributing: https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md
 
 Target Audience
 ---------------
