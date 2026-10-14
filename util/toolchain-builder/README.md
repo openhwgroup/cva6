@@ -53,6 +53,13 @@ upstream toolchain (default: GCC 13.1.0) for bare-metal 32-bit and 64-bit applic
     # 3. Build and install the toolchain (requires write+create permissions for $INSTALL_DIR.)
     bash build-toolchain.sh $INSTALL_DIR
 
+Additionally, after getting the GCC toolchain, you can apply
+`gcc-cva6-tune.patch` to add support for the `-mtune=cva6` option in GCC.
+
+```bash
+cd util/toolchain-builder/src/gcc && git apply ../../gcc-cva6-tune.patch
+```
+
 ## File and directory structure
 
 The base infrastructure for building compilation toolchains consists of two scripts

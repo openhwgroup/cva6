@@ -1,0 +1,178 @@
+diff --git a/gcc/config/riscv/cva6.md b/gcc/config/riscv/cva6.md
+new file mode 100644
+index 000000000..2dc397ee1
+--- /dev/null
++++ b/gcc/config/riscv/cva6.md
+@@ -0,0 +1,98 @@
++(define_automaton "cva6")
++
++;; CVA6 core
++;; This has 4 functional unit groups:
++;; - ALU + Branch unit + Mult/Div + CSR
++;; - Load unit
++;; - Store Unit
++;; - FPU + ALU2 (for the superscalar configuration)
++
++;; Issue ports
++(define_cpu_unit "cva6_issue0" "cva6")
++(define_cpu_unit "cva6_issue1" "cva6") ;; if superscalar
++
++;; Fixed-latency (or so-called) functional units
++(define_cpu_unit "cva6_alu0" "cva6") ;; Includes the result bus
++(define_cpu_unit "cva6_branch" "cva6")
++(define_cpu_unit "cva6_mul" "cva6")
++(define_cpu_unit "cva6_div" "cva6")
++;; FIXME add CSR unit? (define_cpu_unit "cva6_csr" "cva6")
++
++;; Accelerator/CV-X-IF functional unit
++(define_cpu_unit "cva6_cvxif" "cva6")
++
++;; Load-Store Unit
++(define_cpu_unit "cva6_load" "cva6")
++(define_cpu_unit "cva6_store" "cva6")
++
++;; FPU and ALU2 units
++(define_cpu_unit "cva6_fpu" "cva6")
++(define_cpu_unit "cva6_alu2" "cva6") ;; if superscalar
++
++;; ISSUE can be either ISSUE0 or ISSUE1
++(define_reservation "cva6_issue" "cva6_issue0|cva6_issue1")
++
++;; ALU can be either ALU0 or ALU2, and ALU2 is preferred (if available)
++(define_reservation "cva6_alu" "cva6_alu2|cva6_alu0")
++
++;; Most (integer) instructions are dispatched to the ALUs
++;; (All instructions need an issue port first)
++(define_insn_reservation "cva6_int" 1
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "const,arith,logical,shift,slt,move,fmove,auipc,nop,bitmanip,rotate,condmove"))
++  "cva6_issue, cva6_alu")
++;; ALU-ALU forwarding is possible between integer instructions
++;;(define_bypass 0 "cva6_int" "cva6_int")
++;; Actually disabled as it decreases performance for now
++
++;; Branches/jumps/calls use the branch unit and the first ALU
++(define_insn_reservation "cva6_branch" 1
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "branch,jump,call"))
++  "cva6_issue, cva6_branch+cva6_alu0")
++;; When a branch is used, then the store unit is locked
++(absence_set "cva6_store" "cva6_branch")
++
++;; Multiplications use the multiplier, then the result bus of the ALU
++(define_insn_reservation "cva6_mul" 2 ;; 2 cycles before the result is available
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "imul"))
++  "cva6_issue, cva6_mul, cva6_alu0")
++
++;; Divisions make the divider busy for a long time
++(define_insn_reservation "cva6_div" 42 ;; FIXME use a realistic duration instead of 42
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "idiv"))
++  "cva6_issue, cva6_div*42") ;; FIXME use a realistic duration instead of 42
++;; FIXME the duration of the division can be XLEN-dependent
++;; Using the divider prevents from using alu0 and mul (and vice versa)
++(exclusion_set "cva6_div" "cva6_alu0,cva6_mul")
++
++;; Unknown/custom and accelerator transfer instructions use CV-X-IF
++(define_insn_reservation "cva6_cvxif" 1 ;; FIXME update duration
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "mfc,mtc,unknown,multi"))
++  "cva6_issue, cva6_cvxif")
++
++;; Load instructions, (int or float) use the load unit
++(define_insn_reservation "cva6_load" 2 ;; latency = 2 cycles...
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "load,fpload"))
++  "cva6_issue, cva6_load") ;; ... pipelined: unit busy for 1 cycle only
++
++;; Store instructions, (int or float) use the store unit
++(define_insn_reservation "cva6_store" 2 ;; latency = 2 cycles...
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "store,fpstore"))
++  "cva6_issue, cva6_store") ;; ... pipelined: unit busy for 1 cycle only
++;; Cannot use load and store units simultaneously
++(exclusion_set "cva6_load" "cva6_store")
++
++;; Floating point processing use the FPU for a long time
++(define_insn_reservation "cva6_fp" 42 ;; FIXME use a realistic value instead of 42
++  (and (eq_attr "tune" "cva6")
++       (eq_attr "type" "fadd,fmul,fmadd,fdiv,fcmp,fcvt,fsqrt"))
++  "cva6_fpu*42") ;; FIXME use a realistic value instead of 42
++;; FIXME the duration of the FP ops can be XLEN-dependent
++;; Using the FPU prevents from using alu2 (and vice versa)
++(exclusion_set "cva6_fpu" "cva6_alu2") ;; if superscalar
++
++;; FIXME define reservation for the following instructions:
++;; sfb_alu atomic
+diff --git a/gcc/config/riscv/riscv-cores.def b/gcc/config/riscv/riscv-cores.def
+index 7d87ab7ce..b0993fd48 100644
+--- a/gcc/config/riscv/riscv-cores.def
++++ b/gcc/config/riscv/riscv-cores.def
+@@ -37,6 +37,7 @@ RISCV_TUNE("rocket", generic, rocket_tune_info)
+ RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
+ RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)
+ RISCV_TUNE("sifive-7-series", sifive_7, sifive_7_tune_info)
++RISCV_TUNE("cva6", cva6, cva6_tune_info)
+ RISCV_TUNE("thead-c906", generic, thead_c906_tune_info)
+ RISCV_TUNE("size", generic, optimize_size_tune_info)
+ 
+diff --git a/gcc/config/riscv/riscv-opts.h b/gcc/config/riscv/riscv-opts.h
+index cf0cd669b..ff2a5ce33 100644
+--- a/gcc/config/riscv/riscv-opts.h
++++ b/gcc/config/riscv/riscv-opts.h
+@@ -52,7 +52,8 @@ extern enum riscv_isa_spec_class riscv_isa_spec;
+ /* Keep this list in sync with define_attr "tune" in riscv.md.  */
+ enum riscv_microarchitecture_type {
+   generic,
+-  sifive_7
++  sifive_7,
++  cva6
+ };
+ extern enum riscv_microarchitecture_type riscv_microarchitecture;
+ 
+diff --git a/gcc/config/riscv/riscv.cc b/gcc/config/riscv/riscv.cc
+index e88fa2d63..46a61b6b8 100644
+--- a/gcc/config/riscv/riscv.cc
++++ b/gcc/config/riscv/riscv.cc
+@@ -339,6 +339,20 @@ static const struct riscv_tune_param sifive_7_tune_info = {
+   true,						/* slow_unaligned_access */
+ };
+ 
++/* Costs to use when optimizing for CVA6.  */
++static const struct riscv_tune_param cva6_tune_info = {
++  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
++  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
++  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
++  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
++  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
++  2,						/* issue_rate */
++  6,						/* branch_cost */
++  2,						/* memory_cost */
++  8,						/* fmv_cost */
++  false,					/* slow_unaligned_access */
++};
++
+ /* Costs to use when optimizing for T-HEAD c906.  */
+ static const struct riscv_tune_param thead_c906_tune_info = {
+   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_add */
+diff --git a/gcc/config/riscv/riscv.md b/gcc/config/riscv/riscv.md
+index bc384d9ae..f4dacff34 100644
+--- a/gcc/config/riscv/riscv.md
++++ b/gcc/config/riscv/riscv.md
+@@ -437,7 +437,7 @@
+ ;; Microarchitectures we know how to tune for.
+ ;; Keep this in sync with enum riscv_microarchitecture.
+ (define_attr "tune"
+-  "generic,sifive_7"
++  "generic,sifive_7,cva6"
+   (const (symbol_ref "((enum attr_tune) riscv_microarchitecture)")))
+ 
+ ;; Describe a user's asm statement.
+@@ -3145,5 +3145,6 @@
+ (include "pic.md")
+ (include "generic.md")
+ (include "sifive-7.md")
++(include "cva6.md")
+ (include "thead.md")
+ (include "vector.md")
