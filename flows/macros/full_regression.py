@@ -1249,6 +1249,7 @@ def _job_run(
         sim_profile=False,
         interactive_gui=False,
         run_opts=[],
+        irq_delay=[],
         uvm_seed=str(random.getrandbits(31)),
         sim_timeout=timeout,
         cycle_timeout=cycle_timeout,
