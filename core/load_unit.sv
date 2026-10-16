@@ -201,14 +201,14 @@ module load_unit
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : ldbuf_ff
     if (!rst_ni) begin
-      ldbuf_flushed_q   <= '0;
-      ldbuf_valid_q     <= '0;
-      ldbuf_last_id_q   <= '0;
-      ldbuf_q           <= '0;
-      sdtrig_trans_id_q <= '0;
-      ex_s1_held_q <= 1'b0;
+      ldbuf_flushed_q       <= '0;
+      ldbuf_valid_q         <= '0;
+      ldbuf_last_id_q       <= '0;
+      ldbuf_q               <= '0;
+      sdtrig_trans_id_q     <= '0;
+      ex_s1_held_q          <= 1'b0;
       ex_s1_held_trans_id_q <= '0;
-      ex_s1_held_ex_q <= '0;
+      ex_s1_held_ex_q       <= '0;
     end else begin
       ldbuf_flushed_q <= ldbuf_flushed_d;
       ldbuf_valid_q <= ldbuf_valid_d;
