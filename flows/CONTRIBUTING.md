@@ -400,6 +400,7 @@ build/
 │   │   └── *.html               # Specifications of the target
 │   ├── riscv_isa_modify/        # Derived ISA strings
 │   └── verible/                 # RTL formatting
+│       ├── verible-check.log    # Files that needed formatting
 │       └── verible-cmd.log
 ├── bootrom/                     # FPGA bootloader, per board (fpga-bootrom)
 │   └── <board>/                 # bootrom_<XLEN>.sv, .dts, .dtb

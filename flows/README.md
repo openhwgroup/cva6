@@ -1714,7 +1714,9 @@ the new reference.
 
 #### `verible-rtl-formating`
 
-Format CVA6 RTL files with Verible formatter.
+Format CVA6 RTL files with Verible formatter. The recipe fails if any file
+was not formatted: the files are reformatted in place and the ones that needed
+it are listed in `build/<target>/verible/verible-check.log`.
 
 ```bash
 ./cook.py verible-rtl-formating [OPTIONS]
