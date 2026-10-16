@@ -230,13 +230,15 @@ def uvm_run_testlist(
                         stats=stats,
                         sim_profile=sim_profile,
                         run_opts=run_opts,
+                        irq_delay=[],
                         uvm_seed=uvm_seed,
                         sim_timeout=sim_timeout,
                         cycle_timeout=cycle_timeout,
                         # Each test already has its own output directory.
-                        # Passed explicitly: an option left out of a recipe
-                        # called as a plain function arrives as the Typer
-                        # descriptor, which is truthy, not as its default.
+                        # run_name and irq_delay are passed explicitly: an
+                        # option left out of a recipe called as a plain
+                        # function arrives as the Typer descriptor, not as
+                        # its default.
                         run_name=None,
                         quiet=quiet,
                     )
@@ -253,6 +255,7 @@ def uvm_run_testlist(
                         interactive_gui=interactive_gui,
                         stats=stats,
                         run_opts=run_opts,
+                        irq_delay=[],
                         uvm_seed=uvm_seed,
                         sim_timeout=sim_timeout,
                         run_name=None,

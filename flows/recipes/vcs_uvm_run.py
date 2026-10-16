@@ -306,11 +306,6 @@ def vcs_uvm_run(
         )
 
     # --irq_delay mei=20 --irq_delay timer=5
-    #  This recipe is also called directly as a Python function, by
-    #  uvm-run-testlist among others, and such callers do not pass irq_delay.
-    #  The parameter default is then the typer OptionInfo, not a list.
-    if not isinstance(irq_delay, list):
-        irq_delay = []
     irq_delays: dict[str, int] = {}
     for spec in irq_delay:
         channel, _, cycles = spec.partition("=")
