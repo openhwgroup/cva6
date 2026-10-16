@@ -84,7 +84,7 @@ make verilator-build CVA6_CONFIG=cv64a6_imafdchxhclic_sv39_wb
 | `CVA6_CONFIG` | `cv64a6_imafdchsclic_sv39_wb` | CVA6 configuration target passed to Bender; a 64-bit one, with CLIC for the CLIC tests |
 | `HEXFILE` | `sw/out/hello.hex` | Verilog hex image to preload |
 | `MAX_CYCLES` | `10000` | Simulation timeout in core cycles |
-| `MEM_DELAY` | `10` | Main memory delay per AXI channel, 0 to 16, passed as `+MemDelay` |
+| `MEM_DELAY` | `10` | Main memory delay per AXI channel, 0 to 100, passed as `+MemDelay` |
 | `TEST` | `test_simple` | Testbench top (currently the only one) |
 | `ZERO_SIM_MEM` | unset | Initialise simulation memories to zero instead of random |
 | `TRACER` | `0` | Build in the [instruction tracer](hw/tracer/) (`1` also elaborates `cva6_rvfi`) |
@@ -173,7 +173,7 @@ The testbench passes when the EOC register is set and the return code equals `Re
 | `+binary=<path>` | — | Verilog hex image to preload |
 | `+MaxCycles=<n>` | `10000` | Cycle timeout |
 | `+RetCodeSuccess=<n>` | `0` | Return code that counts as a pass |
-| `+MemDelay=<n>` | `10` | Main memory delay per AXI channel, 0 to 16; each channel takes n+2 cycles |
+| `+MemDelay=<n>` | `10` | Main memory delay per AXI channel, 0 to 100; each channel takes n+2 cycles |
 
 The [instruction tracer](hw/tracer/) adds `+notrace`, `+trace_file=`, `+trace_verbose=`,
 `+trace_format=`, `+trace_stats=`, `+trace_start=`, `+trace_stop=`, `+trace_symbols=`, `+trace_symbol_mode=`,

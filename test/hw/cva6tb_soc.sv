@@ -100,7 +100,10 @@ module cva6tb_soc
 
   // Main memory latency: the delay the AXI delayer applies to each channel, set
   // by the test before reset. A delay of n adds n+2 cycles to every channel.
-  localparam int unsigned MemMaxDelay = 16;
+  // Each channel buffers more transfers than it can hold over the longest
+  // delay, so a delay adds latency at full bandwidth.
+  localparam int unsigned MemMaxDelay = 100;
+  localparam int unsigned MemDelayDepth = 128;
   logic [$clog2(MemMaxDelay):0] mem_delay = 'd10;
 
   function automatic void set_mem_delay(int unsigned delay);
@@ -562,11 +565,11 @@ module cva6tb_soc
     .r_chan_t   ( axi_slv_r_chan_t  ),
     .axi_req_t  ( axi_slv_req_t     ),
     .axi_resp_t ( axi_slv_rsp_t     ),
-    .DepthAR    ( 16                ),
-    .DepthAW    ( 16                ),
-    .DepthR     ( 16                ),
-    .DepthW     ( 16                ),
-    .DepthB     ( 16                ),
+    .DepthAR    ( MemDelayDepth     ),
+    .DepthAW    ( MemDelayDepth     ),
+    .DepthR     ( MemDelayDepth     ),
+    .DepthW     ( MemDelayDepth     ),
+    .DepthB     ( MemDelayDepth     ),
     .MaxDelay   ( MemMaxDelay       )
   ) i_axi_mem_delayer (
     .clk_i      ( clk               ),

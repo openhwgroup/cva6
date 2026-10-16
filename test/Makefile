@@ -20,7 +20,7 @@ VERILATOR ?= verilator
 CVA6_CONFIG   ?= cv64a6_imafdchsclic_sv39_wb
 HEXFILE       ?= $(TEST_DIR)/sw/out/hello.hex
 MAX_CYCLES    ?= 10000
-# Main memory delay per AXI channel, 0 to 16, passed as +MemDelay when set
+# Main memory delay per AXI channel, 0 to 100, passed as +MemDelay when set
 MEM_DELAY     ?=
 # Extra plusargs forwarded to the simulation, e.g. SIM_ARGS="+fst"
 SIM_ARGS      ?=
