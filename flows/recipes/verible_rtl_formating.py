@@ -62,7 +62,8 @@ def verible_rtl_formating(
     ),
 ):
     """
-    Format CVA6 RTL files with Verible (mandatory for submit PR)
+    Format CVA6 RTL files with Verible, failing if any file was not formatted
+    (mandatory for submit PR)
     """
 
     repo_dir = Path.cwd()
@@ -113,8 +114,32 @@ def verible_rtl_formating(
     # BUILD VERIBLE COMMAND
     # ==========================================================
 
-    verible_cmd = ["verible-verilog-format", "--inplace"]
-    verible_cmd += analyse_files
+    # With --verify, Verible only reports the files that would change and
+    # returns 1 if there is any; without it, --inplace always returns 0. The
+    # check runs first, then the formatting. Several files require --inplace.
+    check_cmd = ["verible-verilog-format", "--inplace", "--verify"] + analyse_files
+    verible_cmd = ["verible-verilog-format", "--inplace"] + analyse_files
+
+    # ==========================================================
+    # CHECK FORMATTING
+    # ==========================================================
+    report.step("Check formatting")
+
+    check_log = verible_dir / "verible-check.log"
+
+    run_cmd(
+        cmd=check_cmd,
+        report=report,
+        cwd=None,
+        env=None,
+        error_patterns=["Needs formatting"],
+        warning_patterns=None,
+        highlight_patterns=None,
+        log_file=check_log,
+        timeout=300,
+        check=True,
+        capture_output=False,
+    )
 
     # ==========================================================
     # LAUNCH VERIBLE
@@ -133,17 +158,23 @@ def verible_rtl_formating(
         highlight_patterns=None,
         log_file=log_file,
         timeout=300,
-        check=False,
+        check=True,
         capture_output=False,
     )
 
-    report.success(f"Formatted {len(analyse_files)} RTL files")
+    if report.failed:
+        report.error(
+            "Verible formatting check failed: the files were reformatted,"
+            " commit them"
+        )
+    else:
+        report.success(f"All {len(analyse_files)} RTL files properly formatted")
 
     # ==========================================================
     # List
     # ==========================================================
 
-    gen_files = [log_file]
+    gen_files = [check_log, log_file]
 
     report.step("Generated files")
     for genfile in gen_files:
