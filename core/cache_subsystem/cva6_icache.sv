@@ -37,7 +37,12 @@ module cva6_icache
     parameter type icache_req_t = logic,
     parameter type icache_rtrn_t = logic,
     /// ID to be used for read transactions
-    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0
+    parameter logic [CVA6Cfg.MEM_TID_WIDTH-1:0] RdTxId = 0,
+    /// Allow a new fetch request to be issued immediately after a kill, before the
+    /// in-flight (killed) memory response has returned. Only safe if the memory
+    /// adapter behind mem_data_req_o/mem_rtrn_vld_i can have multiple requests
+    /// outstanding and discards stale responses via mem_kill_req_o.
+    parameter bit SupportOutstandingKillReq = 1'b0
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -62,7 +67,8 @@ module cva6_icache
     input  icache_rtrn_t mem_rtrn_i,
     output logic         mem_data_req_o,
     input  logic         mem_data_ack_i,
-    output icache_req_t  mem_data_o
+    output icache_req_t  mem_data_o,
+    output logic         mem_kill_req_o
 );
 
   localparam ICACHE_OFFSET_WIDTH = $clog2(CVA6Cfg.ICACHE_LINE_WIDTH / 8);
@@ -222,6 +228,8 @@ module cva6_icache
       inv_en = 1'b1;
     end
 
+    mem_kill_req_o = 1'b0;
+
     unique case (state_q)
       //////////////////////////////////
       // this clears all valid bits
@@ -331,7 +339,12 @@ module cva6_icache
           end
           // bail out if this request is being killed
         end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d = KILL_MISS;
+          if (SupportOutstandingKillReq) begin
+            mem_kill_req_o = 1'b1;
+            state_d = IDLE;
+          end else begin
+            state_d = KILL_MISS;
+          end
         end
       end
       //////////////////////////////////

@@ -77,6 +77,9 @@ module cva6_icache_axi_wrapper
   logic [CVA6Cfg.ICACHE_LINE_WIDTH/CVA6Cfg.AxiDataWidth-1:0][CVA6Cfg.AxiDataWidth-1:0]
       rd_shift_d, rd_shift_q;
 
+  logic icache_kill_req;
+  logic [4:0] kill_count_d, kill_count_q;
+
   // Keep read request asserted until we have an AXI grant. This is not guaranteed by icache (but
   // required by AXI).
   assign req_valid_d           = ~axi_rd_gnt & (icache_mem_data_req | req_valid_q);
@@ -99,11 +102,29 @@ module cva6_icache_axi_wrapper
   assign icache_mem_data_ack   = icache_mem_data_req;
 
   // Return data as soon as last word arrives
-  assign icache_mem_rtrn_vld   = axi_rd_valid & axi_rd_last;
+  assign icache_mem_rtrn_vld   = axi_rd_valid & axi_rd_last & ~(|kill_count_q);
   assign icache_mem_rtrn.data  = rd_shift_d;
   assign icache_mem_rtrn.tid   = req_data_q.tid;
   assign icache_mem_rtrn.rtype = wt_cache_pkg::ICACHE_IFILL_ACK;
   assign icache_mem_rtrn.inv   = '0;
+
+  always_comb begin
+    kill_count_d = kill_count_q;
+    if (icache_kill_req) begin
+      kill_count_d += 1;
+    end
+    if (axi_rd_valid & axi_rd_last & |kill_count_q) begin
+      kill_count_d -= 1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      kill_count_q <= '0;
+    end else begin
+      kill_count_q <= kill_count_d;
+    end
+  end
 
   // -------
   // I-Cache
@@ -117,7 +138,8 @@ module cva6_icache_axi_wrapper
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId(0)
+      .RdTxId(0),
+      .SupportOutstandingKillReq(1'b1)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -135,7 +157,8 @@ module cva6_icache_axi_wrapper
       .mem_rtrn_i    (icache_mem_rtrn),
       .mem_data_req_o(icache_mem_data_req),
       .mem_data_ack_i(icache_mem_data_ack),
-      .mem_data_o    (icache_mem_data)
+      .mem_data_o    (icache_mem_data),
+      .mem_kill_req_o(icache_kill_req)
   );
 
   // --------

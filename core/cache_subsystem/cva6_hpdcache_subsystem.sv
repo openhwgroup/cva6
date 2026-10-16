@@ -153,6 +153,35 @@ module cva6_hpdcache_subsystem
   logic icache_miss_resp_valid;
   icache_rtrn_t icache_miss_resp;
 
+  // A fetch killed while its refill is outstanding (by a misprediction or an
+  // interrupt redirect) need not wait for that refill: with
+  // SupportOutstandingKillReq the I$ returns to IDLE at once and serves the
+  // next request. The adapter then discards the killed refill's response, which
+  // belongs to no request the I$ still serves.
+  //
+  // The AXI arbiter keeps a single I$ miss outstanding (its one-entry miss FIFO
+  // accepts no new miss until the previous response has been delivered), so the
+  // first response after a kill is always the killed one: one flag is enough to
+  // drop it. The arbiter still sees the response and frees its FIFO entry. The
+  // option is enabled for the AXI interconnect, whose arbiter keeps this order.
+  localparam bit IcacheOutstandingKill = (CVA6Cfg.NOCType == config_pkg::NOC_TYPE_AXI4_ATOP);
+  logic icache_mem_kill_req;
+  logic icache_miss_killed_q;
+  logic icache_miss_resp_valid_to_icache;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : icache_killed_miss
+    if (!rst_ni) begin
+      icache_miss_killed_q <= 1'b0;
+    end else if (icache_mem_kill_req) begin
+      icache_miss_killed_q <= 1'b1;
+    end else if (icache_miss_resp_valid) begin
+      icache_miss_killed_q <= 1'b0;
+    end
+  end
+
+  assign icache_miss_resp_valid_to_icache =
+      icache_miss_resp_valid & ~(IcacheOutstandingKill & icache_miss_killed_q);
+
   localparam int ICACHE_RDTXID = 1 << (CVA6Cfg.MEM_TID_WIDTH - 1);
 
   cva6_icache #(
@@ -163,7 +192,8 @@ module cva6_hpdcache_subsystem
       .icache_drsp_t(icache_drsp_t),
       .icache_req_t(icache_req_t),
       .icache_rtrn_t(icache_rtrn_t),
-      .RdTxId(ICACHE_RDTXID)
+      .RdTxId(ICACHE_RDTXID),
+      .SupportOutstandingKillReq(IcacheOutstandingKill)
   ) i_cva6_icache (
       .clk_i         (clk_i),
       .rst_ni        (rst_ni),
@@ -177,11 +207,12 @@ module cva6_hpdcache_subsystem
       .areq_o        (icache_areq_o),
       .dreq_i        (icache_dreq_i),
       .dreq_o        (icache_dreq_o),
-      .mem_rtrn_vld_i(icache_miss_resp_valid),
+      .mem_rtrn_vld_i(icache_miss_resp_valid_to_icache),
       .mem_rtrn_i    (icache_miss_resp),
       .mem_data_req_o(icache_miss_valid),
       .mem_data_ack_i(icache_miss_ready),
-      .mem_data_o    (icache_miss)
+      .mem_data_o    (icache_miss),
+      .mem_kill_req_o(icache_mem_kill_req)
   );
   //  }}}
 

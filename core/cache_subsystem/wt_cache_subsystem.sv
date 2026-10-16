@@ -118,6 +118,9 @@ module wt_cache_subsystem
 
   logic icache_busy;
   logic dcache_busy;
+  // unused: wt_axi_adapter/wt_l15_adapter cannot discard stale kill responses, so
+  // SupportOutstandingKillReq stays disabled below and this never fires
+  logic icache_mem_kill_req;
 
   assign busy_o = dcache_busy | icache_busy;
 
@@ -148,7 +151,8 @@ module wt_cache_subsystem
       .mem_rtrn_i    (adapter_icache),
       .mem_data_req_o(icache_adapter_data_req),
       .mem_data_ack_i(adapter_icache_data_ack),
-      .mem_data_o    (icache_adapter)
+      .mem_data_o    (icache_adapter),
+      .mem_kill_req_o(icache_mem_kill_req)
   );
 
 
