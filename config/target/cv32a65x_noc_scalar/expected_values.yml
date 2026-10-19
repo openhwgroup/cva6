@@ -1,4 +1,4 @@
-coremark_cycle: 299262
+coremark_cycle: 298883
 dhrystone_cycle: 23272
 # Gate count not measured yet.
 # GTECH synthesis (dc-shell-synth --gtech): to measure when the target
