@@ -12,6 +12,28 @@
 
 #undef strcmp
 
+// Called in the measured loop of Dhrystone: first in the file, so their
+// address does not move with the size of the code below.
+int strcmp(const char* s1, const char* s2)
+{
+  unsigned char c1, c2;
+
+  do {
+    c1 = *s1++;
+    c2 = *s2++;
+  } while (c1 != 0 && c1 == c2);
+
+  return c1 - c2;
+}
+
+char* strcpy(char* dest, const char* src)
+{
+  char* d = dest;
+  while ((*d++ = *src++))
+    ;
+  return dest;
+}
+
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
@@ -480,26 +502,6 @@ size_t strnlen(const char *s, size_t n)
   while (n-- && *p)
     p++;
   return p - s;
-}
-
-int strcmp(const char* s1, const char* s2)
-{
-  unsigned char c1, c2;
-
-  do {
-    c1 = *s1++;
-    c2 = *s2++;
-  } while (c1 != 0 && c1 == c2);
-
-  return c1 - c2;
-}
-
-char* strcpy(char* dest, const char* src)
-{
-  char* d = dest;
-  while ((*d++ = *src++))
-    ;
-  return dest;
 }
 
 long atol(const char* str)

@@ -1,6 +1,6 @@
 gates: 97499
 coremark_cycle: 321011
-dhrystone_cycle: 25113
+dhrystone_cycle: 24168
 gtech_cells: 72396
 gtech_registers: 12078
 yosys_cells: 112288
