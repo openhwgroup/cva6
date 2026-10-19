@@ -210,7 +210,7 @@ module decoder
 
           unique case (instr.itype.funct3)
             3'b000: begin
-              // check if the RD and and RS1 fields are zero, this may be reset for the SENCE.VMA instruction
+              // check if the RD and and RS1 fields are zero, this may be reset for the SFENCE.VMA instruction
               if (instr.itype.rs1 != '0 || instr.itype.rd != '0) begin
                 if (CVA6Cfg.RVH && v_i) begin
                   virtual_illegal_instr = 1'b1;
