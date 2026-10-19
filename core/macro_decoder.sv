@@ -27,7 +27,7 @@ module macro_decoder #(
     output logic [31:0] instr_o,
     output logic        illegal_instr_o,
     output logic        is_compressed_o,
-    output logic        fetch_stall_o,              //Wait while push/pop/move instructions expand
+    output logic        fetch_stall_o,              // Wait while push/pop/move instructions expand
     output logic        is_last_macro_instr_o,
     output logic        is_double_rd_macro_instr_o
 );

@@ -711,7 +711,7 @@ CVA6Cfg.NrCommitPorts
   assign ex_ex_ex_id[FPU_WB]    = fpu_exception_ex_id;
   assign wt_valid_ex_id[FPU_WB] = fpu_valid_ex_id;
 
-  always_comb begin : gen_cvxif_input_assignement
+  always_comb begin : gen_cvxif_input_assignment
     x_compressed_ready = cvxif_resp_i.compressed_ready;
     x_compressed_resp  = cvxif_resp_i.compressed_resp;
     x_issue_ready      = cvxif_resp_i.issue_ready;
@@ -721,7 +721,7 @@ CVA6Cfg.NrCommitPorts
     x_result           = cvxif_resp_i.result;
   end
   if (CVA6Cfg.CvxifEn) begin
-    always_comb begin : gen_cvxif_output_assignement
+    always_comb begin : gen_cvxif_output_assignment
       cvxif_req.compressed_valid = x_compressed_valid;
       cvxif_req.compressed_req   = x_compressed_req;
       cvxif_req.issue_valid      = x_issue_valid;
