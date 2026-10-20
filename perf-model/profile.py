@@ -203,7 +203,7 @@ class Stat:
         return (self.cc, self.nc, self.tt, self.ct, callers)
 
     def add_caller(self, caller, c_cc, c_nc, c_tt, c_ct):
-        (cc, nc, tt, ct) = (
+        cc, nc, tt, ct = (
             self.callers[caller] if caller in self.callers else (0, 0, 0, 0)
         )
 
