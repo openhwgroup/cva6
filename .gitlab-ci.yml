@@ -189,7 +189,14 @@ full regression:
     # restore a consistent VCS_HOME (a mismatch makes VCS abort at
     # elaboration without writing anything to its log).
     - source $SYN_VCS_BASHRC
-    - pip3 install -r flows/requirements.txt
+    # The flows need Python 3.12, whatever the Python of the image: uv
+    # creates the virtual environment with an interpreter of its own,
+    # downloaded once into its cache on the runner.
+    - command -v uv || pip3 install --user uv
+    - export PATH=$HOME/.local/bin:$PATH
+    - uv venv --allow-existing -p 3.12 .venv
+    - . .venv/bin/activate
+    - uv pip install -r flows/requirements.txt
     # Point at the Spike built by the `build spike` job: it lives in a
     # shared directory keyed by the core-v-verif commit, so nothing has to
     # transit through artifacts.

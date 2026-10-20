@@ -321,6 +321,12 @@ and reaches the board through `$HW_SERVER_URL` for the JTAG and
 `$UART_SERIAL` for the console, see the FPGA section of the
 [README](README.md).
 
+The job creates the Python 3.12 virtual environment of the flows with
+[uv](https://docs.astral.sh/uv/), installed with `pip3 install --user` when
+the image lacks it: uv downloads the interpreter, so the image needs no
+Python 3.12 of its own. The environment is kept in the working directory
+of the runner, and the interpreter and the packages in the cache of uv.
+
 ### Artifacts
 
 Everything the regression does happens in the single `full regression`

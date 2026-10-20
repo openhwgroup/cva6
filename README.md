@@ -24,13 +24,10 @@ For detailed information on available targets, configuration file formats, and h
 git clone https://github.com/openhwgroup/cva6.git
 cd cva6
 
-# Install Python dependencies (use pip3 if pip is not available)
-pip3 install --user -r flows/requirements.txt
-# Note: --user installs packages to ~/.local/lib/python*/site-packages
-# Ensure ~/.local/bin is in your PATH for black and pylint commands
-# Or, to keep them out of the home directory, in a virtual environment:
-#   python3 -m venv .venv && . .venv/bin/activate
-#   pip3 install -r flows/requirements.txt
+# Python 3.12 or later, in a virtual environment. uv downloads the
+# interpreter, whatever the Python of the system (pip3 install --user uv):
+uv venv -p 3.12 .venv && . .venv/bin/activate
+uv pip install -r flows/requirements.txt
 
 # Initialize submodules
 git submodule update --init --recursive
