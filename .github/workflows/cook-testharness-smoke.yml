@@ -39,7 +39,7 @@ jobs:
           printf '%s\n' "$BASE_SHA" > ci-results/event-base.txt
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install Cook dependencies
         run: |
           python3 -m pip install -c .github/cook/constraints.txt -r flows/requirements.txt

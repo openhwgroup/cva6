@@ -27,13 +27,14 @@ git submodule update --init --recursive
 
 **2. Install the Python dependencies**
 
-```bash
-pip3 install -r flows/requirements.txt
-```
+Python 3.12 or later, in a virtual environment. [uv](https://docs.astral.sh/uv/)
+creates it with an interpreter of its own, whatever the Python of the system:
 
-Without write access to the system packages, use `pip3 install --user`
-and add `~/.local/bin` to the `PATH`, or work in a virtual environment
-(`python3 -m venv .venv && . .venv/bin/activate`).
+```bash
+pip3 install --user uv
+uv venv -p 3.12 .venv && . .venv/bin/activate
+uv pip install -r flows/requirements.txt
+```
 
 **3. Install a RISC-V toolchain**
 

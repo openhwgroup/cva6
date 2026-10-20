@@ -301,16 +301,19 @@ patch: until then, `cook.py` stops with the list of the patches not applied.
 
 ### Python Environment
 
-**Python 3.9 or later.** Everything the flows import is listed in
-`flows/requirements.txt`, installed in one go:
+**Python 3.12 or later**, which `cook.py` checks before anything else.
+Everything the flows import is listed in `flows/requirements.txt`. The
+virtual environment does not depend on the Python of the system:
+[uv](https://docs.astral.sh/uv/) downloads the interpreter it is created
+with.
 
 ```bash
-pip3 install -r flows/requirements.txt
+pip3 install --user uv     # or any other way of installing uv
+uv venv -p 3.12 .venv && . .venv/bin/activate
+uv pip install -r flows/requirements.txt
 
-# Without write access to the system site-packages, either
-pip3 install --user -r flows/requirements.txt   # then add ~/.local/bin to PATH
-# or, preferred, in a virtual environment
-python3 -m venv .venv && . .venv/bin/activate
+# With a Python 3.12 already installed, the standard tools do the same
+python3.12 -m venv .venv && . .venv/bin/activate
 pip3 install -r flows/requirements.txt
 ```
 
