@@ -242,7 +242,8 @@ machine without them still builds the CVA6 documentation.
 - **riscv-arch-test** - Official RISC-V architecture tests
 - **riscv-compliance** - Compliance test suite
 - **riscv-dv** - Random instruction generator
-- **Proxy kernel** - system calls (optional)
+- **riscv-pk** - RISC-V proxy kernel, built per target by `pk-build`
+  (optional, see [Proxy kernel](#proxy-kernel))
 
 ## Installation
 
@@ -549,6 +550,34 @@ Build the Dhrystone performance benchmark.
 ```bash
 ./cook.py dhrystone -t cv32a65x -c gcc-14
 ```
+
+#### `pk-hello-world`
+
+Build the Hello world program to run under the RISC-V proxy kernel (see
+[Proxy kernel](#proxy-kernel)). It is a plain user program of the
+toolchain: newlib start files and default linker script, `printf` going
+through the `write` system call of pk.
+
+```bash
+./cook.py pk-hello-world [OPTIONS]
+```
+
+**Required Options:**
+- `-t, --target TEXT` - CVA6 user configuration, with `pk-build` run first
+- `-c, --toolchain [gcc-15|...]` - GCC toolchain defined in `$CONFIG_DIR/compiler.yml`
+
+The program is compiled for the march/mabi pk was built for, and its
+manifest records the pk-build directory: the TestHarness run recipes then
+load pk and give it the program as its argument.
+
+**Example:**
+```bash
+./cook.py pk-build -t cv32a6_imac_sv32 -c gcc-15
+./cook.py pk-hello-world -t cv32a6_imac_sv32 -c gcc-15
+./cook.py verilator-testharness-run -t cv32a6_imac_sv32 -n pk-hello-world
+```
+
+**Output:** `build/<target>/compile/pk-hello-world/`
 
 ---
 
@@ -922,6 +951,26 @@ In both cases a log carrying `*** FAILED ***`, `SIMULATION FAILED`,
 Verilator and VCS are verified; the Questa and Xcelium recipes are
 **not verified**.
 
+#### Proxy kernel
+
+A test built to run under the RISC-V proxy kernel (`pk-hello-world`) runs
+on the TestHarness only, on Verilator and VCS. pk runs in M-mode, loads
+the program in U-mode and serves its system calls through HTIF, which
+reaches the core through the debug module (SimDTM):
+
+- the target needs U-mode (`RVU`) and the debug module (`DebugEn`);
+- the run loads pk, gives it the program as argument, keeps the debug
+  module enabled (no `+debug_disable`) and raises the RVFI tracer cycle
+  limit to 20M (`+time_out`): pk boots before it runs the program;
+- the test ends with the `exit` system call of the program, which the
+  SimDTM reports to the harness;
+- VCS loads the SimDTM library of `pk-build` ahead of the Spike ones, so
+  that HTIF does not write the preloaded pk again through the debug
+  module, eight bytes per debug session. Questa and Xcelium refuse such a
+  test.
+
+Hello world takes about 2.5M cycles: 2 minutes on Verilator, 4 on VCS.
+
 Common to all of them:
 
 - **AXI targets only**: those whose configuration declares `hier: axi`.
@@ -977,6 +1026,28 @@ Run one test on the Verilator model.
 - `--run-name TEXT` - Name of the output directory (default: the test name)
 
 **Output:** `build/<target>/simulation/sim_rtl_verilator_testharness/<run>/`
+
+#### `pk-build`
+
+Build the RISC-V proxy kernel of a target, from the sources `git-dependencies
+--repo riscv-pk` clones in `tools/riscv-pk`, for the march/mabi of the
+target. It also builds `libpk_dtm.so`, the SimDTM library VCS loads under
+pk (`corev_apu/tb/dpi/pk_dtm.cc`, against the fesvr library of
+`tools/spike`).
+
+```bash
+./cook.py pk-build [OPTIONS]
+```
+
+**Required Options:**
+- `-t, --target TEXT` - CVA6 user configuration, with U-mode
+- `-c, --toolchain [gcc-15|...]` - GCC toolchain defined in `$CONFIG_DIR/compiler.yml`
+
+**Optional:**
+- `-j, --jobs INTEGER` - Parallel make jobs (default: 8)
+
+**Output:** `build/<target>/pk/`: `install/<host>/bin/pk`, `libpk_dtm.so`,
+and the manifest the run recipes read (pk, its `tohost`, the library)
 
 #### `vcs-testharness-comp`
 
@@ -2066,7 +2137,7 @@ Install the external test repositories and patch the Git submodules.
 Two things:
 
 - **clone** the external test repositories of `$CONFIG_DIR/dependencies.yml`
-  (riscv-tests, riscv-compliance, riscv-arch-test) at the pinned commit and apply their patches. These are
+  (riscv-tests, riscv-compliance, riscv-arch-test, riscv-pk) at the pinned commit and apply their patches. These are
   *not* submodules: an existing destination is left untouched unless
   `--force` is passed;
 - **patch the Git submodules** listed under `submodule_patches` of
@@ -2095,7 +2166,7 @@ skip the check.
 **Generated files:**
 - the destinations declared in `dependencies.yml`
   (`verif/tests/riscv-tests`, `verif/tests/riscv-compliance`,
-  `verif/tests/riscv-arch-test`)
+  `verif/tests/riscv-arch-test`, `tools/riscv-pk`)
 - `build/git_dependencies/cook_report.yml` - status of every dependency
   and of every submodule patch
 
