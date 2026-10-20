@@ -43,6 +43,19 @@ python3 cva6.py --target cv32a60x --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml \
 
 You can run either assembly programs (check `verif/test/custom/hello_world/custom_test_template.S`) or C programs. Run `python3 cva6.py --help` to have more information on the available parameters.
 
+## Simulating with the RISC-V proxy kernel
+When running C programs, a common requirement is to use standard library functions like printf. On a bare-metal core, these functions do not work because they rely on underlying system calls that have no operating system to handle them. The [RISC-V proxy kernel](https://github.com/riscv-software-src/riscv-pk) (pk) solves this: it loads the program and serves its system calls through the host, here the TestHarness (e.g. to properly display printf output).
+
+The flow runs with cook.py, on the Verilator or VCS TestHarness, for a target with U-mode and the debug module. For instance on a 32-bit target:
+```sh
+./cook.py git-dependencies --repo riscv-pk
+./cook.py pk-build -t cv32a6_imac_sv32 -c gcc-15
+./cook.py pk-hello-world -t cv32a6_imac_sv32 -c gcc-15
+./cook.py verilator-testharness-comp -t cv32a6_imac_sv32
+./cook.py verilator-testharness-run -t cv32a6_imac_sv32 -n pk-hello-world
+```
+The program prints its text in `build/cv32a6_imac_sv32/simulation/sim_rtl_verilator_testharness/pk-hello-world/testharness.log`, confirming that the printf statement was executed properly. See the `pk-build` and `pk-hello-world` recipes in [flows/README.md](../flows/README.md) for the details.
+
 ## Simulating with VCS and Verdi
 
 You can set the environment variable `VERDI` as such if you want to launch Verdi while simulating with VCS:
