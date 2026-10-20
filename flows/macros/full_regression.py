@@ -46,12 +46,14 @@ from flows.patterns.coremark import coremark
 from flows.patterns.dhrystone import dhrystone
 from flows.patterns.fpga_bootrom import fpga_bootrom
 from flows.patterns.hello_world import hello_world
+from flows.patterns.pk_hello_world import pk_hello_world
 from flows.recipes.black_python_formating import black_python_formating
 from flows.recipes.dc_shell_synth import dc_shell_synth, PreProcOption
 from flows.recipes.docs_build import docs_build
 from flows.recipes.fpga_linux_boot import BOOT_TIMEOUT, fpga_linux_boot
 from flows.recipes.git_dependencies import git_dependencies
 from flows.recipes.merge_reports import merge_reports
+from flows.recipes.pk_build import pk_build
 from flows.recipes.pylint_run import pylint_run
 from flows.recipes.quartus_fpga_build import quartus_fpga_build
 from flows.recipes.quartus_fpga_program import quartus_fpga_program
@@ -854,6 +856,19 @@ SPYGLASS_TARGETS = [
     "cv32a65x_noPMP",
 ]
 
+# Hello world under the RISC-V proxy kernel, on the TestHarness: a target
+# with U-mode and the debug module, through which pk talks to HTIF. Each
+# one on one simulator, pk running about 2.5M cycles.
+PK_TARGETS = {
+    "cv32a6_imac_sv32": "verilator",
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": "vcs",
+}
+PK_TOOLCHAIN = "gcc-15"
+PK_TEST = "pk-hello-world"
+PK_BUILD_JOBS = 4
+# Wall clock limit of a run under pk: about 2 minutes on Verilator, 4 on VCS
+PK_SIM_TIMEOUT = 1200
+
 # Targets of the GTECH synthesis, which needs dc_shell but no PDK: the
 # smallest core, the best CoreMark/MHz, and the 64-bit core with an MMU
 # and the HPDcache. A licence at a time, 2 to 10 minutes each.
@@ -1058,7 +1073,7 @@ def _job_verilator_comp(target, quiet):
     )
 
 
-def _job_verilator_run(target, test_name, quiet):
+def _job_verilator_run(target, test_name, quiet, timeout=SIM_TIMEOUT):
     "Single test on the Verilator model of the TestHarness"
     _recipe(
         verilator_testharness_run,
@@ -1067,7 +1082,7 @@ def _job_verilator_run(target, test_name, quiet):
         comp_mode=CompMode.rtl,
         trace_mode=TraceMode.notrace,
         interactive_gui=False,
-        sim_timeout=SIM_TIMEOUT,
+        sim_timeout=timeout,
         run_name=None,
         quiet=quiet,
     )
@@ -1165,7 +1180,7 @@ def _job_vcs_testharness_comp(target, quiet):
     )
 
 
-def _job_vcs_testharness_run(target, test_name, quiet):
+def _job_vcs_testharness_run(target, test_name, quiet, timeout=SIM_TIMEOUT):
     "Single test on the VCS elaboration of the TestHarness"
     _recipe(
         vcs_testharness_run,
@@ -1174,9 +1189,23 @@ def _job_vcs_testharness_run(target, test_name, quiet):
         comp_mode=CompMode.rtl,
         trace_mode=TraceMode.notrace,
         uvm_verbosity=UvmVerbosity.low,
-        sim_timeout=SIM_TIMEOUT,
+        sim_timeout=timeout,
         run_name=None,
         quiet=quiet,
+    )
+
+
+def _job_pk_compile(target, quiet):
+    "Proxy kernel of the target, then the Hello world program it runs"
+    _recipe(
+        pk_build,
+        target=target,
+        toolchain=_toolchain(PK_TOOLCHAIN),
+        jobs=PK_BUILD_JOBS,
+        quiet=quiet,
+    )
+    _recipe(
+        pk_hello_world, target=target, toolchain=_toolchain(PK_TOOLCHAIN), quiet=quiet
     )
 
 
@@ -1441,7 +1470,11 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
     deps_job = scheduler.add(
         "git-dependencies",
         partial(
-            _recipe, git_dependencies, repo=["riscv-tests"], force=False, quiet=quiet
+            _recipe,
+            git_dependencies,
+            repo=["riscv-tests", "riscv-pk"],
+            force=False,
+            quiet=quiet,
         ),
         build / "git_dependencies",
     )
@@ -1591,6 +1624,34 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
                 / "hello-world",
                 deps=[verilator_comp, compile_job],
             )
+            if target in PK_TARGETS:
+                pk_compile = scheduler.add(
+                    f"pk-hello-world:{target}",
+                    partial(_job_pk_compile, target=target, quiet=quiet),
+                    target_dir / "compile" / PK_TEST,
+                    deps=[deps_job],
+                )
+                simulator = PK_TARGETS[target]
+                run_job, comp_job, resource = {
+                    "verilator": (_job_verilator_run, verilator_comp, None),
+                    "vcs": (_job_vcs_testharness_run, vcs_th_comp, VCS),
+                }[simulator]
+                scheduler.add(
+                    f"{simulator}-testharness-run:{target}:{PK_TEST}",
+                    partial(
+                        run_job,
+                        target=target,
+                        test_name=PK_TEST,
+                        timeout=PK_SIM_TIMEOUT,
+                        quiet=quiet,
+                    ),
+                    target_dir
+                    / "simulation"
+                    / f"sim_rtl_{simulator}_testharness"
+                    / PK_TEST,
+                    deps=[comp_job, pk_compile],
+                    resource=resource,
+                )
         elif _hier(target) == "obi":
             scheduler.add(
                 f"run-sim-stall:{target}",
