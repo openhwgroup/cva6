@@ -262,6 +262,12 @@ You can read or write device memory by using:
 ```
 
 
+## Preliminary Support for OpenPiton Cache System
+
+CVA6 has preliminary support for the OpenPiton distributed cache system from Princeton University. The L1 caches are the HPDcache and the HPICache, connected to the OpenPiton L1.5 cache through `core/cache_subsystem/cva6_hpdcache_subsystem_l15_adapter.sv`, selected with the `NOCType` parameter of the configuration (`NOC_TYPE_L15_BIG_ENDIAN` or `NOC_TYPE_L15_LITTLE_ENDIAN`).
+
+The adapter is not connected to the HPDcache subsystem yet, and no target of `config/target/` uses it. The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use CVA6 in the OpenPiton setting.
+
 ## Re-generating the Bootcode (ZSBL)
 
 The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argument register `a0` and `a1` respectively.
