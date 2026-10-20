@@ -286,6 +286,7 @@ def fpga_bootrom(
         ],
         benchmark_iterations=None,
         test_name=test_name,
+        pk_dir=None,
         quiet=quiet,
     )
 
