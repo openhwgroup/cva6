@@ -63,6 +63,7 @@ CVA6_ROOT_DIR/
 │   ├── patterns/                # Pre-configured basic tests
 │   │   ├── hello_world.py
 │   │   ├── pk_hello_world.py    # Hello world under the proxy kernel
+│   │   ├── zephyr_hello_world.py # Hello world of the Zephyr RTOS
 │   │   ├── coremark.py
 │   │   └── dhrystone.py
 │   ├── macros/                  # Multi-recipe automation
