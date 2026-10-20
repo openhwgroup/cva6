@@ -87,6 +87,16 @@ riscv-tests:
     - "verif/regress/riscv-tests-env.patch:env"  # Apply in env/ subdirectory
   submodules: true  # Clone submodules recursively
 
+riscv-pk:
+  # RISC-V proxy kernel: runs a user program and serves its system calls
+  # through HTIF. Built per target by the pk-build recipe.
+  repo: "https://github.com/riscv-software-src/riscv-pk.git"
+  branch: "master"
+  commit: "e5563d1044bd6790325c4602c49f89e1182fa91a"
+  destination: "tools/riscv-pk"
+  patches: []
+  submodules: false
+
 riscv-compliance:
   repo: "https://github.com/riscv-non-isa/riscv-arch-test.git"
   branch: "main"
