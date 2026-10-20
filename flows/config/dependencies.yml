@@ -97,6 +97,16 @@ riscv-pk:
   patches: []
   submodules: false
 
+zephyr:
+  # Zephyr RTOS: kernel and build system of the applications built by the
+  # zephyr-build recipe. No module (HAL) is needed for the CVA6 boards.
+  repo: "https://github.com/zephyrproject-rtos/zephyr.git"
+  branch: "v4.3.0"
+  commit: "3568e1b6d5cdd51a6b964a2a1d6d29200fea2056"
+  destination: "tools/zephyr"
+  patches: []
+  submodules: false
+
 riscv-compliance:
   repo: "https://github.com/riscv-non-isa/riscv-arch-test.git"
   branch: "main"
