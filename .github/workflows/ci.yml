@@ -128,29 +128,29 @@ jobs:
 #        retention-days: 10
 #
 #
-#  execute-riscv32-tests:
-#    name: execute-riscv32-tests
-#    runs-on: ubuntu-latest
-#    env:
-#      SPIKE_TANDEM: 1
-#    strategy:
-#      matrix:
-#        testcase:  [ dv-riscv-arch-test, cv32a6_tests ]
-#        config:    [ cv32a65x_axi ]
-#        simulator: [ veri-testharness ]
-#    needs:
-#      build-riscv-tests
-#    steps:
-#    - uses: actions/checkout@v4
-#      with:
-#        submodules: recursive
-#
-#    - name: Get specific submodule hash
-#      id: core-v-submodule-hash
-#      run: |
-#        cd verif/core-v-verif
-#        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-#
+  execute-riscv32-tests:
+    name: execute-riscv32-tests
+    runs-on: ubuntu-latest
+    env:
+      SPIKE_TANDEM: 1
+    strategy:
+      matrix:
+        testcase:  [ dv-riscv-arch-test, cv32a6_tests ]
+        config:    [ cv32a65x_axi ]
+        simulator: [ veri-testharness ]
+    needs:
+      build-riscv-tests
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get specific submodule hash
+      id: core-v-submodule-hash
+      run: |
+        cd verif/core-v-verif
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
 #    - name: Cache toolchain
 #      id: cache-toolchain
 #      uses: actions/cache@v3
