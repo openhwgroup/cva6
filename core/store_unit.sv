@@ -256,7 +256,8 @@ module store_unit
       // we got an address translation exception (access rights, misaligned or page fault)
       if (ex_i.valid && (state_q != IDLE)) begin
         // the only difference is that we do not want to store this request
-        pop_st_o = 1'b1;
+        // (in VALID_STORE the faulting store was already popped when it was accepted)
+        pop_st_o = (state_q != VALID_STORE);
         st_valid = 1'b0;
         state_d  = IDLE;
         valid_o  = 1'b1;
