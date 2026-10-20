@@ -158,6 +158,12 @@ The TestHarness is AXI only, and AXI gets no stalling run: the AXI agent
 of the UVM testbench is held in zero delay mode whatever the run, so it
 would repeat the first one. The bus is the `hier` of `testbench_cfg.yml`.
 
+The targets of `PK_TARGETS` also run Hello world under the RISC-V proxy
+kernel on the TestHarness: `pk-build` then `pk-hello-world`, and the run
+on one simulator, cv32a6_imac_sv32 on Verilator and
+cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi on VCS. pk needs U-mode and the
+debug module, through which it talks to HTIF.
+
 The FPGA images of `FPGA_TARGETS` are built once the RTL of their target
 elaborates: a design that does not elaborate in simulation would spend
 hours of Vivado to fail in synthesis. The bootloader of the board comes
