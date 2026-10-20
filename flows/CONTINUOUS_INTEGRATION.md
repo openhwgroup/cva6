@@ -164,6 +164,11 @@ on one simulator, cv32a6_imac_sv32 on Verilator and
 cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi on VCS. pk needs U-mode and the
 debug module, through which it talks to HTIF.
 
+The targets of `ZEPHYR_TARGETS` run the Hello world of the Zephyr RTOS on
+the TestHarness: `zephyr-hello-world`, built with the `zephyr-sdk`
+toolchain, then the run on cv32a6_imac_sv32 on Verilator and on
+cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi on VCS.
+
 The FPGA images of `FPGA_TARGETS` are built once the RTL of their target
 elaborates: a design that does not elaborate in simulation would spend
 hours of Vivado to fail in synthesis. The bootloader of the board comes

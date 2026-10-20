@@ -244,6 +244,9 @@ machine without them still builds the CVA6 documentation.
 - **riscv-dv** - Random instruction generator
 - **riscv-pk** - RISC-V proxy kernel, built per target by `pk-build`
   (optional, see [Proxy kernel](#proxy-kernel))
+- **Zephyr** - RTOS sources, for `zephyr-build` (optional, see
+  [`zephyr-build`](#zephyr-build)); also needs the RISC-V toolchain of the
+  Zephyr SDK
 
 ## Installation
 
@@ -325,8 +328,9 @@ worked on. Leave `VENV_PATH` unset to manage the interpreter yourself.
 What it covers: the CLI itself (`typer`, `rich`), the configuration and
 report files (`pyyaml`, `jinja2`), the charts of the reports (`plotly`,
 `pandas`, `matplotlib`, `scipy`), the serial console of the FPGA boot
-(`pyserial`), the code quality recipes (`black`, `pylint`) and the
-documentation (`sphinx`, `sphinx-rtd-theme`, `recommonmark`).
+(`pyserial`), the code quality recipes (`black`, `pylint`), the
+documentation (`sphinx`, `sphinx-rtd-theme`, `recommonmark`) and the build
+scripts of Zephyr (`pyelftools`, `pykwalify`, `jsonschema`, `packaging`).
 
 The set is what ReadTheDocs installs on its own (`flows/requirements.txt`
 is the `requirements` of its config), so a machine set up for the flows
@@ -582,11 +586,61 @@ load pk and give it the program as its argument.
 
 **Output:** `build/<target>/compile/pk-hello-world/`
 
+#### `zephyr-hello-world`
+
+Build the Hello world application of the Zephyr RTOS
+(`verif/tests/custom/zephyr/hello_world`) with `zephyr-build`. It prints
+through the UART and ends the simulation by writing `tohost`, so that the
+TestHarness run recipes run it as any other test.
+
+```bash
+./cook.py zephyr-hello-world -t cv32a6_imac_sv32 -c zephyr-sdk
+./cook.py verilator-testharness-run -t cv32a6_imac_sv32 -n zephyr-hello-world
+```
+
+**Output:** `build/<target>/compile/zephyr-hello-world/`
+
 ---
 
 ### Software Compilation
 
 Compile C/Assembly programs for CVA6 targets.
+
+#### `zephyr-build`
+
+Build a Zephyr application for a target, with the sources `git-dependencies
+--repo zephyr` clones in `tools/zephyr`. Zephyr supports the CVA6 SoC of
+the Genesys 2 board, whose memory map is the one of the TestHarness (DRAM
+at 0x8000_0000, ns16550 UART at 0x1000_0000, CLINT, PLIC); the board
+follows from the target:
+
+| Target | Zephyr board |
+| --- | --- |
+| 32-bit, with A | `cv32a6_genesys_2` (rv32ima) |
+| 64-bit, with A, F and D | `cv64a6_genesys_2` (rv64imafdc) |
+
+Other targets are refused. Zephyr runs in M-mode and needs no MMU.
+
+```bash
+./cook.py zephyr-build [OPTIONS]
+```
+
+**Required Options:**
+- `-t, --target TEXT` - CVA6 user configuration
+- `-c, --toolchain TEXT` - GCC toolchain of `$CONFIG_DIR/compiler.yml` whose
+  libgcc is built for `-mcmodel=medany`, which the code above 2 GB needs:
+  the RISC-V toolchain of the [Zephyr SDK](https://github.com/zephyrproject-rtos/sdk-ng/releases)
+  (`toolchain_linux-x86_64_riscv64-zephyr-elf`), declared for instance as
+  `zephyr-sdk` with `GCC: riscv64-zephyr-elf-gcc`
+- `--app TEXT` - Application directory, with its `CMakeLists.txt`
+- `--out TEXT` - Test name
+
+The build runs CMake and Ninja with the Python of `cook.py`, without west
+and without any Zephyr module. The application must define and write
+`tohost` to end the simulation. The output is laid out as the one of
+`sw-compile`, so the run recipes take the test name.
+
+**Output:** `build/<target>/compile/<test>/`
 
 #### `sw-compile`
 
@@ -2140,7 +2194,7 @@ Install the external test repositories and patch the Git submodules.
 Two things:
 
 - **clone** the external test repositories of `$CONFIG_DIR/dependencies.yml`
-  (riscv-tests, riscv-compliance, riscv-arch-test, riscv-pk) at the pinned commit and apply their patches. These are
+  (riscv-tests, riscv-compliance, riscv-arch-test, riscv-pk, zephyr) at the pinned commit and apply their patches. These are
   *not* submodules: an existing destination is left untouched unless
   `--force` is passed;
 - **patch the Git submodules** listed under `submodule_patches` of
@@ -2169,7 +2223,7 @@ skip the check.
 **Generated files:**
 - the destinations declared in `dependencies.yml`
   (`verif/tests/riscv-tests`, `verif/tests/riscv-compliance`,
-  `verif/tests/riscv-arch-test`, `tools/riscv-pk`)
+  `verif/tests/riscv-arch-test`, `tools/riscv-pk`, `tools/zephyr`)
 - `build/git_dependencies/cook_report.yml` - status of every dependency
   and of every submodule patch
 

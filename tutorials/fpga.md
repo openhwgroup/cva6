@@ -110,6 +110,14 @@ To this end, *after building the application*, use the provided script:
 
 You can then insert the SD card into the board and have the zero-stage boot loader load and run zephyr.
 
+A zephyr application also runs in simulation, on the TestHarness, whose memory map is the one of these boards. The `zephyr-hello-world` pattern of cook.py builds a Hello world that ends the simulation, without west:
+```bash
+./cook.py git-dependencies --repo zephyr
+./cook.py zephyr-hello-world -t cv32a6_imac_sv32 -c zephyr-sdk
+./cook.py verilator-testharness-run -t cv32a6_imac_sv32 -n zephyr-hello-world
+```
+See the `zephyr-build` recipe in [flows/README.md](../flows/README.md) for the toolchain and the Python it needs.
+
 
 
 ## Generating a Bitstream
