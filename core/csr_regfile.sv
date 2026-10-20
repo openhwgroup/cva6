@@ -1946,6 +1946,8 @@ module csr_regfile
                 riscv::CSR_PMPCFG15: begin
           // index is calculated using PMPCFG0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPCFG0;
+          // younger loads and stores may already have been checked against the old PMP settings
+          flush_o = 1'b1;
 
           // if index is not even and XLEN==64, raise exception
           if (CVA6Cfg.IS_XLEN64 && index[0] == 1'b1) update_access_exception = 1'b1;
@@ -2021,6 +2023,8 @@ module csr_regfile
                 riscv::CSR_PMPADDR63: begin
           // index is calculated using PMPADDR0 as the offset
           automatic logic [11:0] index = csr_addr.address[11:0] - riscv::CSR_PMPADDR0;
+          // younger loads and stores may already have been checked against the old PMP settings
+          flush_o = 1'b1;
           // check if the entry or the entry above is locked
           if (!pmpcfg_q[index].locked) begin
             if (index < 63) begin
