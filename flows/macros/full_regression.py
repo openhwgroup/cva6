@@ -47,6 +47,7 @@ from flows.patterns.dhrystone import dhrystone
 from flows.patterns.fpga_bootrom import fpga_bootrom
 from flows.patterns.hello_world import hello_world
 from flows.patterns.pk_hello_world import pk_hello_world
+from flows.patterns.zephyr_hello_world import zephyr_hello_world
 from flows.recipes.black_python_formating import black_python_formating
 from flows.recipes.dc_shell_synth import dc_shell_synth, PreProcOption
 from flows.recipes.docs_build import docs_build
@@ -866,6 +867,16 @@ PK_TARGETS = {
 PK_TOOLCHAIN = "gcc-15"
 PK_TEST = "pk-hello-world"
 PK_BUILD_JOBS = 4
+
+# Hello world of Zephyr on the TestHarness, for a target Zephyr has a board
+# for: the Genesys 2 SoCs, whose memory map is the one of the harness. The
+# SDK toolchain: Zephyr needs a libgcc built for -mcmodel=medany.
+ZEPHYR_TARGETS = {
+    "cv32a6_imac_sv32": "verilator",
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": "vcs",
+}
+ZEPHYR_TOOLCHAIN = "zephyr-sdk"
+ZEPHYR_TEST = "zephyr-hello-world"
 # Wall clock limit of a run under pk: about 2 minutes on Verilator, 4 on VCS
 PK_SIM_TIMEOUT = 1200
 
@@ -1209,6 +1220,16 @@ def _job_pk_compile(target, quiet):
     )
 
 
+def _job_zephyr_compile(target, quiet):
+    "Hello world application of Zephyr"
+    _recipe(
+        zephyr_hello_world,
+        target=target,
+        toolchain=_toolchain(ZEPHYR_TOOLCHAIN),
+        quiet=quiet,
+    )
+
+
 def _job_spyglass(target, quiet):
     "Design read then lint run, holding a single Spyglass license"
     _recipe(spyglass_design_read, target=target, quiet=quiet)
@@ -1472,7 +1493,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
         partial(
             _recipe,
             git_dependencies,
-            repo=["riscv-tests", "riscv-pk"],
+            repo=["riscv-tests", "riscv-pk", "zephyr"],
             force=False,
             quiet=quiet,
         ),
@@ -1650,6 +1671,33 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, select
                     / f"sim_rtl_{simulator}_testharness"
                     / PK_TEST,
                     deps=[comp_job, pk_compile],
+                    resource=resource,
+                )
+            if target in ZEPHYR_TARGETS:
+                zephyr_compile = scheduler.add(
+                    f"zephyr-hello-world:{target}",
+                    partial(_job_zephyr_compile, target=target, quiet=quiet),
+                    target_dir / "compile" / ZEPHYR_TEST,
+                    deps=[deps_job],
+                )
+                simulator = ZEPHYR_TARGETS[target]
+                run_job, comp_job, resource = {
+                    "verilator": (_job_verilator_run, verilator_comp, None),
+                    "vcs": (_job_vcs_testharness_run, vcs_th_comp, VCS),
+                }[simulator]
+                scheduler.add(
+                    f"{simulator}-testharness-run:{target}:{ZEPHYR_TEST}",
+                    partial(
+                        run_job,
+                        target=target,
+                        test_name=ZEPHYR_TEST,
+                        quiet=quiet,
+                    ),
+                    target_dir
+                    / "simulation"
+                    / f"sim_rtl_{simulator}_testharness"
+                    / ZEPHYR_TEST,
+                    deps=[comp_job, zephyr_compile],
                     resource=resource,
                 )
         elif _hier(target) == "obi":
