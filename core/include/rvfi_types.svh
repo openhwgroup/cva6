@@ -86,7 +86,6 @@
   rvfi_csr_elmt_t instreth; \
   rvfi_csr_elmt_t dcache; \
   rvfi_csr_elmt_t icache; \
-  rvfi_csr_elmt_t acc_cons; \
   rvfi_csr_elmt_t pmpcfg0; \
   rvfi_csr_elmt_t pmpcfg1; \
   rvfi_csr_elmt_t pmpcfg2; \
@@ -167,7 +166,6 @@
   logic [63:0] instret_q; \
   logic [Cfg.XLEN-1:0] dcache_q; \
   logic [Cfg.XLEN-1:0] icache_q; \
-  logic [Cfg.XLEN-1:0] acc_cons_q; \
   riscv::pmpcfg_t [63:0] pmpcfg_q; \
   logic [63:0][Cfg.PLEN-3:0] pmpaddr_q; \
 }
