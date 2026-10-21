@@ -438,7 +438,8 @@ module ex_stage
   ) i_mult (
       .clk_i,
       .rst_ni,
-      .flush_i,
+      // Mispredicts cancel slot-1 ops issued with the branch. Abort them in mult too.
+      .flush_i        (flush_i | (CVA6Cfg.SpeculativeSb && resolved_branch.valid && resolved_branch.is_mispredict && mult_valid_i[CVA6Cfg.NrIssuePorts-1])),
       .mult_valid_i   (|mult_valid_i),
       .fu_data_i      (mult_data),
       .result_o       (mult_result),

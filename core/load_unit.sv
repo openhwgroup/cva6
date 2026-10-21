@@ -281,7 +281,7 @@ module load_unit
               // don't start the translation for speculative loads that miss on tlb
               translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
               // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-              if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+              if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni && !lsu_ctrl_i.is_speculative_load_miss)) begin
                 // check if the page offset matches with a store, if it does then stall and wait
                 if (!page_offset_matches_i) begin
                   // make a load request to memory
@@ -371,7 +371,7 @@ module load_unit
             // don't start the translation for speculative loads that miss on tlb
             translation_req_o = (!CVA6Cfg.SpeculativeSb || dtlb_hit_i || !lsu_ctrl_i.is_speculative_load);
             // check if load is speculative and non idempotent, if it is then stall and wait for branch result
-            if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni)) begin
+            if (!CVA6Cfg.SpeculativeSb || !lsu_ctrl_i.is_speculative_load || (dtlb_hit_i && !paddr_ni && !lsu_ctrl_i.is_speculative_load_miss)) begin
               // check if the page offset matches with a store, if it does stall and wait
               if (!page_offset_matches_i) begin
                 // make a load request to memory

@@ -231,6 +231,8 @@ module scoreboard #(
       if (bmiss) begin
         if (after_flu_wb != issue_pointer[0]) begin
           mem_n[after_flu_wb].cancelled = 1'b1;
+          // Cancelled MULT ops are aborted in ex_stage and never write back. Let commit drop them now.
+          if (mem_q[after_flu_wb].sbe.fu == ariane_pkg::MULT) mem_n[after_flu_wb].sbe.valid = 1'b1;
         end
       end
     end
