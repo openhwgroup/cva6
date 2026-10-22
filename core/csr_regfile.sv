@@ -2107,7 +2107,7 @@ module csr_regfile
     trap_to_v = 1'b0;
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
-    if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
+    if ((CVA6Cfg.DebugEn && !debug_mode_q && !(ex_i.cause inside {riscv::DEBUG_REQUEST, riscv::DEBUG_TRIGGER}) && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -2292,7 +2292,7 @@ module csr_regfile
       end
 
       // we've got a debug request
-      if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
+      if (ex_i.valid && ex_i.cause inside {riscv::DEBUG_REQUEST, riscv::DEBUG_TRIGGER}) begin
         dcsr_d.prv = priv_lvl_o;
         dcsr_d.v = (!CVA6Cfg.RVH) ? 1'b0 : v_q;
         // save the PC
@@ -2301,8 +2301,8 @@ module csr_regfile
         debug_mode_d = 1'b1;
         // jump to the base address
         set_debug_pc_o = 1'b1;
-        // save the cause as external debug request
-        dcsr_d.cause = ariane_pkg::CauseRequest;
+        // save the cause: a trigger or an external debug request
+        dcsr_d.cause = (ex_i.cause == riscv::DEBUG_TRIGGER) ? ariane_pkg::CauseTrigger : ariane_pkg::CauseRequest;
       end
 
       // single step enable and we just retired an instruction
