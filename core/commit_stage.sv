@@ -434,8 +434,10 @@ module commit_stage
       exception_o.valid = 1'b0;
     end
 
-    if ((CVA6Cfg.SdtrigIcount && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i == 'd0)
-    || ((CVA6Cfg.SdtrigEtrigger || CVA6Cfg.SdtrigItrigger) && sdtrig_commit_std_exception_valid_i && commit_instr_i[0].valid)) begin
+    // The trigger action is taken on a valid instruction, when the commit stage is not halted
+    if (commit_instr_i[0].valid && !halt_i
+    && ((CVA6Cfg.SdtrigIcount && sdtrig_commit_icount_valid_i && sdtrig_commit_icount_nr_instr_i == 'd0)
+    || ((CVA6Cfg.SdtrigEtrigger || CVA6Cfg.SdtrigItrigger) && sdtrig_commit_std_exception_valid_i))) begin
       exception_o.valid = 1'b1;
       exception_o.cause = sdtrig_commit_action_i;
       // icount, itrigger and etrigger write 0 to tval
