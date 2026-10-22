@@ -136,6 +136,12 @@ module trigger_module
     return (CVA6Cfg.SdtrigSupportedActions[1] && dmode && action == 6'd1) ? 6'd1 : 6'd0;
   endfunction
 
+  // Bit "code" of tdata2 selects the trap with this code. The codes from XLEN up are not selected.
+  function automatic logic cause_selected(input logic [CVA6Cfg.XLEN-1:0] tdata2,
+                                          input logic [CVA6Cfg.XLEN-1:0] cause);
+    return (cause[CVA6Cfg.XLEN-2:$clog2(CVA6Cfg.XLEN)] == '0) && tdata2[cause[$clog2(CVA6Cfg.XLEN)-1:0]];
+  endfunction
+
   typedef struct packed {
     logic valid;
     logic [CVA6Cfg.XLEN-1:0] action;
@@ -163,7 +169,7 @@ module trigger_module
   logic [CVA6Cfg.XLEN-1:0] sdtrig_commit_action_d;
   logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_d, sdtrig_load_action_q;
   logic [$clog2(CVA6Cfg.NrCommitPorts)-1:0] sdtrig_commit_icount_nr_instr_d;
-  logic e_matched_q, e_matched_d;
+  logic [CVA6Cfg.SdtrigNrTriggers-1:0] e_matched_q, e_matched_d;
   logic
       sdtrig_commit_std_exception_valid_q,
       sdtrig_commit_std_exception_valid_d,
@@ -207,6 +213,10 @@ module trigger_module
     assign fire_req_EA_action[i] = fire_req_EA[i].action;
     assign fire_req_ED_action[i] = fire_req_ED[i].action;
   end
+
+  // A trap is taken. A Debug Mode entry is not a trap. An exception in Debug Mode is not a trap.
+  logic trap_taken;
+  assign trap_taken = ex_i.valid && !debug_mode_i && !(ex_i.cause inside {riscv::DEBUG_REQUEST, riscv::DEBUG_TRIGGER});
 
   assign instr_count_offset = (CVA6Cfg.SdtrigIcount) ? instr_count_d - instr_count_q : '0;
 
@@ -652,7 +662,7 @@ module trigger_module
             default: priv_match[i] = 1'b0;
           endcase
           // S_MODE context match check
-          if (priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].etrigger_type.s) begin
+          if (CVA6Cfg.SdtrigSupportTextra && priv_lvl_i == riscv::PRIV_LVL_S && trigger_32_tdata1_d[i].etrigger_type.s) begin
             if (CVA6Cfg.IS_XLEN32) begin
               scontext_match[i] = match_scontext32(
                 scontext_i,
@@ -672,10 +682,12 @@ module trigger_module
             end
             priv_match[i] &= scontext_match[i];
           end
-          if (tdata2_d[i][ex_i.cause] && priv_match[i] && !etrigger_context_saved_valid_q) begin
-            e_matched_d = 1'd1;
+          // Only an exception matches, not an interrupt
+          if (trap_taken && !ex_i.cause[CVA6Cfg.XLEN-1] && cause_selected(tdata2_d[i], ex_i.cause)
+              && priv_match[i] && !etrigger_context_saved_valid_q) begin
+            e_matched_d[i] = 1'b1;
           end
-          if (e_matched_q && !trigger_32_tdata1_q[i].etrigger_type.hit) begin
+          if (e_matched_q[i] && !trigger_32_tdata1_q[i].etrigger_type.hit) begin
             fire_req_Etrigger.valid = 1'b1;
             unique case (trigger_32_tdata1_d[i].etrigger_type.action)
               6'd0:
@@ -686,12 +698,12 @@ module trigger_module
               default: ;
             endcase
           end
-          if (sdtrig_commit_std_exception_valid_q && (ex_i.valid || debug_mode_i)) begin
+          if (e_matched_q[i] && sdtrig_commit_std_exception_valid_q && (ex_i.valid || debug_mode_i)) begin
             trigger_32_tdata1_d[i].etrigger_type.hit = 1'b1;
-            e_matched_d = 1'b0;
+            e_matched_d[i] = 1'b0;
             fire_req_Etrigger.valid = 1'b0;
           end
-          if (e_matched_d && ex_i.valid) begin
+          if (e_matched_d[i] && ex_i.valid) begin
             etrigger_context_saved_valid_d = 1'b1;
             etrigger_context_mepc_d = mepc_i;
             etrigger_context_mcause_d = mcause_i;
@@ -729,11 +741,11 @@ module trigger_module
           end
           if (ex_i.cause[CVA6Cfg.XLEN-1]) begin
             if (tdata2_d[i][ex_i.cause[4:0]] && !etrigger_context_saved_valid_q)
-              e_matched_d = 1'b1; // checking etrigger context valid bit avoids conflicts and context loss because of concurrent triggering by different types
+              e_matched_d[i] = 1'b1; // checking etrigger context valid bit avoids conflicts and context loss because of concurrent triggering by different types
           end
           if (mret_i || sret_i) mret_reg_d = 1'b1;
-          if (e_matched_q && priv_match[i] && mret_reg_q && (commit_ack_i != 2'b00) || sdtrig_commit_std_exception_valid_q) begin
-            e_matched_d = 1'b0;
+          if (e_matched_q[i] && priv_match[i] && mret_reg_q && (commit_ack_i != 2'b00) || sdtrig_commit_std_exception_valid_q) begin
+            e_matched_d[i] = 1'b0;
             trigger_32_tdata1_d[i].itrigger_type.hit = 1'b1;
             fire_req_Itrigger.valid = 1'b1;
             case (trigger_32_tdata1_d[i].itrigger_type.action)
@@ -1006,7 +1018,7 @@ module trigger_module
     if (~rst_ni) begin
       if (CVA6Cfg.Sdtrig) begin
         tselect_q <= '0;
-        e_matched_q <= 1'b0;
+        e_matched_q <= '0;
         mret_reg_q <= 1'b0;
         sdtrig_commit_std_exception_valid_q <= 0;
         sdtrig_commit_icount_valid_o <= 1'b0;
