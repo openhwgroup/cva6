@@ -86,4 +86,35 @@ if [ "$zcmt_jalt_lsb_status" -ne 0 ]; then
   return "$zcmt_jalt_lsb_status" 2>/dev/null || exit "$zcmt_jalt_lsb_status"
 fi
 
+# Check that a virtual-instruction exception writes zero to mtinst.
+# Explicitly disable SPIKE_TANDEM so ZERO_TVAL cannot mask issue #3496.
+env -u SPIKE_TANDEM python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test mtinst-zero-virtual-instruction-rv64 \
+  --iss_yaml cva6.yaml \
+  --target cv64a6_imafdch_sv39 \
+  --iss=veri-testharness
+
+mtinst_status=$?
+if [ "$mtinst_status" -ne 0 ]; then
+  echo "Error: mtinst virtual-instruction regression failed"
+  cd ../..
+  return "$mtinst_status" 2>/dev/null || exit "$mtinst_status"
+fi
+
+# Check that an interrupt always writes zero to mtinst.
+env -u SPIKE_TANDEM python3 cva6.py \
+  --testlist=../tests/testlist_issues.yaml \
+  --test mtinst-zero-interrupt-rv64 \
+  --iss_yaml cva6.yaml \
+  --target cv64a6_imafdch_sv39 \
+  --iss=veri-testharness
+
+mtinst_interrupt_status=$?
+if [ "$mtinst_interrupt_status" -ne 0 ]; then
+  echo "Error: mtinst interrupt regression failed"
+  cd ../..
+  return "$mtinst_interrupt_status" 2>/dev/null || exit "$mtinst_interrupt_status"
+fi
+
 cd -
