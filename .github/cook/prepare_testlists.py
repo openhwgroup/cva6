@@ -14,7 +14,17 @@ _RV32_PROFILE = {
     "mabi": "ilp32",
     "environment": "upstream-riscv-tests-p",
     "suites": {
-        "basic": {"source": "verif/tests/base_rv32_p.yaml", "enabled": 5},
+        "basic": {
+            "source": "verif/tests/base_rv32_p.yaml",
+            "tests": [
+                "rv32ui-p-add",
+                "rv32ui-p-lw",
+                "rv32ui-p-sw",
+                "rv32ui-p-beq",
+                "rv32ui-p-jal",
+            ],
+            "enabled": 5,
+        },
         "integer-extra": {
             "source": "verif/tests/testlist_riscv-tests-cv32a60x-p.yaml",
             "tests": ["rv32ui-p-sub", "rv32ui-p-xor", "rv32ui-p-sll"],
@@ -34,7 +44,17 @@ REGRESSION_CONFIG = {
             "march": "rv64imc_zicsr_zifencei",
             "mabi": "lp64",
             "suites": {
-                "basic": {"source": "verif/tests/base_rv64_p.yaml", "enabled": 5},
+                "basic": {
+                    "source": "verif/tests/base_rv64_p.yaml",
+                    "tests": [
+                        "rv64ui-p-add",
+                        "rv64ui-p-lw",
+                        "rv64ui-p-sw",
+                        "rv64ui-p-beq",
+                        "rv64ui-p-jal",
+                    ],
+                    "enabled": 5,
+                },
                 "integer-extra": {
                     "source": "verif/tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml",
                     "tests": ["rv64ui-p-sub", "rv64ui-p-xor", "rv64ui-p-sll"],
