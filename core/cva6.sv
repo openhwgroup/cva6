@@ -15,6 +15,7 @@
 `include "rvfi_types.svh"
 `include "cvxif_types.svh"
 `include "ypb_types.svh"
+`include "utils_macros.svh"
 
 module cva6
   import ariane_pkg::*;
@@ -42,13 +43,13 @@ module cva6
     localparam type hartid_t = `HARTID_T(CVA6Cfg),
     localparam type x_compressed_req_t = `X_COMPRESSED_REQ_T(CVA6Cfg, hartid_t),
     localparam type x_compressed_resp_t = `X_COMPRESSED_RESP_T(CVA6Cfg),
-    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartit_t, id_t),
+    localparam type x_issue_req_t = `X_ISSUE_REQ_T(CVA6Cfg, hartid_t, id_t),
     localparam type x_issue_resp_t = `X_ISSUE_RESP_T(CVA6Cfg, writeregflags_t, readregflags_t),
     localparam type x_register_t = `X_REGISTER_T(CVA6Cfg, hartid_t, id_t, readregflags_t),
     localparam type x_commit_t = `X_COMMIT_T(CVA6Cfg, hartid_t, id_t),
     localparam type x_result_t = `X_RESULT_T(CVA6Cfg, hartid_t, id_t, writeregflags_t),
     localparam type cvxif_req_t =
-    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t),
+    `CVXIF_REQ_T(CVA6Cfg, x_compressed_req_t, x_issue_req_t, x_register_t, x_commit_t),
     localparam type cvxif_resp_t =
     `CVXIF_RESP_T(CVA6Cfg, x_compressed_resp_t, x_issue_resp_t, x_result_t)
 ) (
@@ -103,6 +104,11 @@ module cva6
   logic icache_miss;
 
   logic dcache_enable;
+  logic dcache_scrub_enable;
+  logic [5:0] dcache_scrub_period;
+  logic dcache_scrub_cycle;
+  logic dcache_dat_cor_err, dcache_dat_unc_err;
+  logic dcache_dir_cor_err, dcache_dir_unc_err;
   logic dcache_flush;
   logic dcache_flush_ack;
   logic dcache_miss;
@@ -128,6 +134,73 @@ module cva6
 
   ypb_zcmt_req_t ypb_zcmt_req;
   ypb_zcmt_rsp_t ypb_zcmt_rsp;
+
+  // -------------------
+  // Supported configurations
+  // -------------------
+  // Checked at elaboration: the units they concern do not build, or compute
+  // wrong results, for these configurations.
+  `CVA6_CFG_CHECK(ras_depth, CVA6Cfg.RASDepth > 0, "RASDepth must be at least 1")
+  `CVA6_CFG_CHECK(btb_entries, (CVA6Cfg.BTBEntries & (CVA6Cfg.BTBEntries - 1)) == 0,
+                  "BTBEntries must be 0 or a power of two")
+  `CVA6_CFG_CHECK(bht_entries, (CVA6Cfg.BHTEntries & (CVA6Cfg.BHTEntries - 1)) == 0,
+                  "BHTEntries must be 0 or a power of two")
+  `CVA6_CFG_CHECK(nr_nonidempotent_rules, CVA6Cfg.NrNonIdempotentRules <= config_pkg::NrMaxRules,
+                  "NrNonIdempotentRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_execute_region_rules, CVA6Cfg.NrExecuteRegionRules <= config_pkg::NrMaxRules,
+                  "NrExecuteRegionRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_cached_region_rules, CVA6Cfg.NrCachedRegionRules <= config_pkg::NrMaxRules,
+                  "NrCachedRegionRules must be at most NrMaxRules")
+  `CVA6_CFG_CHECK(nr_bufferable_region_rules,
+                  CVA6Cfg.NrBufferableRegionRules <= config_pkg::NrMaxRules,
+                  "NrBufferableRegionRules must be at most NrMaxRules")
+  // A data cache that only writes back cannot honour a cacheable region that
+  // is not bufferable (write-through).
+  for (genvar k = 0; k < CVA6Cfg.NrCachedRegionRules; k++) begin : gen_cached_region
+    localparam bit Bufferable = config_pkg::is_region_inside_bufferable_regions(
+        CVA6Cfg, CVA6Cfg.CachedRegionAddrBase[k], CVA6Cfg.CachedRegionLength[k]
+    );
+    `CVA6_CFG_CHECK(write_back_bufferable,
+                    CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI ||
+                    CVA6Cfg.CacheWritePolicy != config_pkg::CACHE_WB || Bufferable,
+                    "A write-back only data cache needs every cacheable region bufferable")
+  end
+  `CVA6_CFG_CHECK(nr_pmp_entries, CVA6Cfg.NrPMPEntries <= 64, "NrPMPEntries must be at most 64")
+  `CVA6_CFG_CHECK(fetch_width, CVA6Cfg.FETCH_WIDTH == 32 || CVA6Cfg.FETCH_WIDTH == 64,
+                  "The fetch width must be 32 or 64 bits")
+  // Disabling MIP.MSIP and MIE.MSIE is only supported with M-mode alone.
+  `CVA6_CFG_CHECK(rvs_software_interrupt, !CVA6Cfg.RVS || CVA6Cfg.SoftwareInterruptEn,
+                  "Supervisor mode (RVS) needs SoftwareInterruptEn")
+  `CVA6_CFG_CHECK(rvh_software_interrupt, !CVA6Cfg.RVH || CVA6Cfg.SoftwareInterruptEn,
+                  "The hypervisor extension (RVH) needs SoftwareInterruptEn")
+  `CVA6_CFG_CHECK(zcmt_mmu, !(CVA6Cfg.RVZCMT && CVA6Cfg.MmuPresent),
+                  "Zcmt (RVZCMT) is not supported with an MMU")
+  // Zcmp reuses the opcodes of Zcd, present whenever C and D are.
+  `CVA6_CFG_CHECK(zcmp_zcd, !(CVA6Cfg.RVZCMP && CVA6Cfg.RVC && CVA6Cfg.RVD),
+                  "Zcmp (RVZCMP) is not supported with C and D (Zcd)")
+  // AMOs are computed in the byte order of the memory subsystem, not mstatus.MBE.
+  `CVA6_CFG_CHECK(big_endian_amo, !(CVA6Cfg.BigEndianEn && CVA6Cfg.RVA),
+                  "Big endian with atomic memory operations (RVA) is not supported")
+  // D and the non-standard XF16, XF16ALT and XF8 formats (smallFloat) extend
+  // F: they use its FP register file, FPU and fcsr.
+  `CVA6_CFG_CHECK(fp_needs_f,
+                  CVA6Cfg.RVF || !(CVA6Cfg.RVD || CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8),
+                  "D, XF16, XF16ALT and XF8 need F (RVF)")
+  // With FLEN 32 the division and square root unit of fpnew that serves
+  // several formats (THMULTI) takes every operand for a NaN.
+  `CVA6_CFG_CHECK(smallfloat_rv64,
+                  !((CVA6Cfg.XF16 || CVA6Cfg.XF16ALT || CVA6Cfg.XF8) && CVA6Cfg.IS_XLEN32),
+                  "XF16, XF16ALT and XF8 are only supported on RV64")
+  // The FPU takes its operands from and returns its result on the XLEN-wide
+  // execution datapath, and the FP register file is FLEN bits wide: the
+  // floating-point extensions are supported when FLEN equals XLEN, F on RV32
+  // and F with D on RV64. RV32 with D (FLEN 64) and RV64 with F alone (FLEN 32)
+  // are not.
+  `CVA6_CFG_CHECK(flen_xlen, !CVA6Cfg.FpPresent || CVA6Cfg.FLen == CVA6Cfg.XLEN,
+                  "The floating-point extensions need FLEN == XLEN: F on RV32, F and D on RV64")
+  // The hypervisor extension is only implemented on RV64 (Sv39x4).
+  `CVA6_CFG_CHECK(rvh_rv64, !(CVA6Cfg.RVH && CVA6Cfg.IS_XLEN32),
+                  "The hypervisor extension (RVH) is only supported on RV64")
 
   // -------------------
   // Pipeline
@@ -194,10 +267,17 @@ module cva6
 
       // FROM/TO DCACHE SUBSYSTEM
 
-      .dcache_enable_o   (dcache_enable),
-      .dcache_flush_o    (dcache_flush),
-      .dcache_flush_ack_i(dcache_flush_ack),
-      .dcache_miss_i     (dcache_miss),
+      .dcache_enable_o      (dcache_enable),
+      .dcache_scrub_enable_o(dcache_scrub_enable),
+      .dcache_scrub_period_o(dcache_scrub_period),
+      .dcache_scrub_cycle_i (dcache_scrub_cycle),
+      .dcache_dat_cor_err_i (dcache_dat_cor_err),
+      .dcache_dat_unc_err_i (dcache_dat_unc_err),
+      .dcache_dir_cor_err_i (dcache_dir_cor_err),
+      .dcache_dir_unc_err_i (dcache_dir_unc_err),
+      .dcache_flush_o       (dcache_flush),
+      .dcache_flush_ack_i   (dcache_flush_ack),
+      .dcache_miss_i        (dcache_miss),
 
       .ypb_store_req_o  (ypb_store_req),
       .ypb_store_rsp_i  (ypb_store_rsp),
@@ -217,7 +297,7 @@ module cva6
   );
 
 
-  if (CVA6Cfg.PipelineOnly) begin : gen_obi_adapter
+  if (CVA6Cfg.MemSubsystem == config_pkg::MEM_OBI) begin : gen_obi_adapter
 
     // -------------------
     // OBI Adapter
@@ -277,6 +357,13 @@ module cva6
         .noc_resp_i(noc_resp_i)
     );
 
+    // No data cache, so no ECC to scrub nor to report on
+    assign dcache_scrub_cycle = 1'b0;
+    assign dcache_dat_cor_err = 1'b0;
+    assign dcache_dat_unc_err = 1'b0;
+    assign dcache_dir_cor_err = 1'b0;
+    assign dcache_dir_unc_err = 1'b0;
+
   end else begin : gen_cache_subsystem
 
     // -------------------
@@ -298,9 +385,7 @@ module cva6
         .ypb_zcmt_req_t   (ypb_zcmt_req_t),
         .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
         .noc_req_t        (noc_req_t),
-        .noc_resp_t       (noc_resp_t),
-        .cmo_req_t        (logic  /*FIXME*/),
-        .cmo_rsp_t        (logic  /*FIXME*/)
+        .noc_resp_t       (noc_resp_t)
     ) i_cache_subsystem (
         .clk_i (clk_i),
         .rst_ni(rst_ni),
@@ -318,10 +403,17 @@ module cva6
 
         // FROM/TO LSU
 
-        .dcache_enable_i   (dcache_enable),
-        .dcache_flush_i    (dcache_flush),
-        .dcache_flush_ack_o(dcache_flush_ack),
-        .dcache_miss_o     (dcache_miss),
+        .dcache_enable_i      (dcache_enable),
+        .dcache_scrub_enable_i(dcache_scrub_enable),
+        .dcache_scrub_period_i(dcache_scrub_period),
+        .dcache_scrub_cycle_o (dcache_scrub_cycle),
+        .dcache_dat_cor_err_o (dcache_dat_cor_err),
+        .dcache_dat_unc_err_o (dcache_dat_unc_err),
+        .dcache_dir_cor_err_o (dcache_dir_cor_err),
+        .dcache_dir_unc_err_o (dcache_dir_unc_err),
+        .dcache_flush_i       (dcache_flush),
+        .dcache_flush_ack_o   (dcache_flush_ack),
+        .dcache_miss_o        (dcache_miss),
 
         // DATA FROM/TO PIPELINE (YPB)
 
@@ -338,11 +430,6 @@ module cva6
 
         .wbuffer_empty_o (wbuffer_empty),
         .wbuffer_not_ni_o(wbuffer_not_ni),
-
-        // FROM/TO CMO
-
-        .dcache_cmo_req_i('0  /*FIXME*/),
-        .dcache_cmo_rsp_o(  /*FIXME*/),
 
         // FROM/TO HW PREFETCHER
 

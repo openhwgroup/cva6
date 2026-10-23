@@ -28,7 +28,7 @@ FRONTEND can fetch up to {instr-per-fetch} instructions per cycle, but DECODE mo
 
 The module is connected to:
 
-* CACHES module provides fethed instructions to FRONTEND.
+* CACHES module provides fetched instructions to FRONTEND.
 * DECODE module receives instructions from FRONTEND.
 * CONTROLLER module can order to flush and to halt FRONTEND PC gen stage
 * EXECUTE, CONTROLLER, CSR and COMMIT modules trigger PC jumping due to

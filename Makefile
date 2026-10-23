@@ -167,7 +167,7 @@ src :=  $(if $(spike-tandem),verif/tb/core/uvma_core_cntrl_pkg.sv)              
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
         $(wildcard corev_apu/fpga/src/apb_timer/*.sv)                                \
         $(wildcard corev_apu/fpga/src/axi_slice/src/*.sv)                            \
-        $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
+        $(wildcard vendor/pulp-platform/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         $(wildcard corev_apu/riscv-dbg/src/*.sv)                                     \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
@@ -274,8 +274,7 @@ altera_src += $(root-dir)corev_apu/rv_plic/rtl/top_pkg.sv \
 							$(root-dir)vendor/pulp-platform/common_cells/src/cdc_fifo_gray.sv \
 							$(root-dir)riscv-dbg/src/dm_obi_top.sv \
 							$(root-dir)core/include/instr_tracer_pkg.sv \
-							$(root-dir)core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv \
-							$(root-dir)core/cache_subsystem/amo_alu.sv
+							$(root-dir)core/cvfpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
 
 altera_filter := corev_apu/tb/ariane_testharness.sv \
 								corev_apu/tb/ariane_peripherals.sv \
@@ -311,7 +310,7 @@ tbs := $(top_level_path) corev_apu/tb/ariane_testharness.sv core/cva6_rvfi.sv
 tbs := $(addprefix $(root-dir), $(tbs))
 
 # RISCV asm tests and benchmark setup (used for CI)
-# there is a definesd test-list with selected CI tests
+# there is a defined test-list with selected CI tests
 riscv-test-dir            := tmp/riscv-tests/build/isa/
 riscv-benchmarks-dir      := tmp/riscv-tests/build/benchmarks/
 riscv-asm-tests-list      := ci/riscv-asm-tests.list
@@ -336,6 +335,8 @@ incdir := $(CVA6_REPO_DIR)/vendor/pulp-platform/common_cells/include/ $(CVA6_REP
           $(CVA6_REPO_DIR)/verif/core-v-verif/lib/uvm_agents/uvma_core_cntrl/ \
           $(CVA6_REPO_DIR)/verif/tb/core/ \
           $(CVA6_REPO_DIR)/core/include/ \
+          $(HPDCACHE_DIR)/rtl/include \
+          $(HPDCACHE_DIR)/rtl/src/utils/ecc \
           $(CVA6_REPO_DIR)/corev_apu/instr_tracing/ITI/include \
           $(SPIKE_INSTALL_DIR)/include/disasm/
 
@@ -534,6 +535,8 @@ CVA6_HOME	   ?= $(realpath -s $(root-dir))
 
 XRUN_INCDIR :=+incdir+$(CVA6_HOME)/core/include 			\
 	+incdir+$(CVA6_HOME)/vendor/pulp-platform/axi/include/		\
+	+incdir+$(HPDCACHE_DIR)/rtl/include				\
+	+incdir+$(HPDCACHE_DIR)/rtl/src/utils/ecc			\
 	+incdir+$(CVA6_HOME)/corev_apu/register_interface/include
 
 XRUN_TB := $(addprefix $(CVA6_HOME)/, corev_apu/tb/ariane_tb.sv)
@@ -680,6 +683,7 @@ verilate_command := $(verilator) --no-timing verilator_config.vlt               
                     -Werror-PINMISSING                                                                           \
                     -Werror-IMPLICIT                                                                             \
                     -Wno-fatal                                                                                   \
+                    -Werror-USERFATAL                                                                            \
                     -Wno-PINCONNECTEMPTY                                                                         \
                     -Wno-ASSIGNDLY                                                                               \
                     -Wno-DECLFILENAME                                                                            \

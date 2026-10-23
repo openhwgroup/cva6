@@ -92,12 +92,6 @@ module cva6_hpdcache_if_adapter
   // ----------------------
   // Addr split Functions
   // ----------------------
-  // extract tag from vlen addr
-  function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_vaddr_tag(
-      logic [CVA6Cfg.VLEN-1:0] addr);
-    return addr[CVA6Cfg.DCACHE_TAG_WIDTH+CVA6Cfg.DCACHE_INDEX_WIDTH-1 : CVA6Cfg.DCACHE_INDEX_WIDTH];
-  endfunction
-
   // extract tag from plen addr
   function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_paddr_tag(
       logic [CVA6Cfg.PLEN-1:0] addr);
@@ -114,6 +108,16 @@ module cva6_hpdcache_if_adapter
   function automatic logic [CVA6Cfg.DCACHE_TAG_WIDTH-1:0] get_paddr_index(
       logic [CVA6Cfg.PLEN-1:0] addr);
     return addr[CVA6Cfg.DCACHE_INDEX_WIDTH-1:0];
+  endfunction
+
+  // Write policy of a request. A data cache with both policies writes back in
+  // a bufferable region and writes through elsewhere; a data cache with a
+  // single policy applies it.
+  function automatic hpdcache_pkg::hpdcache_wr_policy_hint_t get_wr_policy_hint(logic bufferable);
+    if (CVA6Cfg.CacheWritePolicy != config_pkg::CACHE_WT_WB) begin
+      return hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+    end
+    return bufferable ? hpdcache_pkg::HPDCACHE_WR_POLICY_WB : hpdcache_pkg::HPDCACHE_WR_POLICY_WT;
   endfunction
 
   logic forward_store, forward_amo;
@@ -141,8 +145,8 @@ module cva6_hpdcache_if_adapter
 
       assign hpdcache_req_abort_o = ypb_load_req_i.kill_req;
 
-      if (CVA6Cfg.MmuPresent) begin
-        // When MMu is present request is done in 2 phases, s0: index, s1:tag
+      if (CVA6Cfg.TwoPhaseReq) begin
+        // The request is done in 2 phases, s0: index, s1: tag
         assign hpdcache_req.phys_indexed = 1'b0;
         assign hpdcache_req_valid_o = ypb_load_req_i.vreq;
         assign hpdcache_req.addr_offset = get_vaddr_index(ypb_load_req_i.vaddr);
@@ -150,18 +154,20 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
         assign hpdcache_req.pma.uncacheable = 1'b0;  // unused on virtually indexed request
+        assign hpdcache_req.pma.bufferable = 1'b0;  // unused on virtually indexed request
         assign hpdcache_req.pma.io = 1'b0;  // unused on virtually indexed request
         assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;  // unused on virtually indexed request
 
         assign hpdcache_req_pma_o.uncacheable = !ypb_load_req_i.cacheable;
+        assign hpdcache_req_pma_o.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req_pma_o.io = 1'b0;
-        assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_load_req_i.bufferable);
         assign hpdcache_req_tag_o = get_paddr_tag(ypb_load_req_i.paddr);
         assign ypb_load_rsp_o.vgnt = hpdcache_req_ready_i;
         assign ypb_load_rsp_o.pgnt = 1'b1;  //if hpdcache is always ready to accept tag in s1
 
       end else begin
-        // When MMu is not present request is done in 1 phases, s0: index+tag
+        // The request is done in 1 phase, s0: index and tag
         assign hpdcache_req.phys_indexed = 1'b1;
         assign hpdcache_req_valid_o = ypb_load_req_i.preq;
         assign hpdcache_req.addr_offset = get_paddr_index(ypb_load_req_i.paddr);
@@ -169,10 +175,12 @@ module cva6_hpdcache_if_adapter
         assign hpdcache_req.be = ypb_load_req_i.be;
         assign hpdcache_req.tid = ypb_load_req_i.aid;
         assign hpdcache_req.pma.uncacheable = !ypb_load_req_i.cacheable;
+        assign hpdcache_req.pma.bufferable = ypb_load_req_i.bufferable;
         assign hpdcache_req.pma.io = 1'b0;
-        assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+        assign hpdcache_req.pma.wr_policy_hint = get_wr_policy_hint(ypb_load_req_i.bufferable);
 
         assign hpdcache_req_pma_o.uncacheable = '0;  // unused on physically indexed request
+        assign hpdcache_req_pma_o.bufferable = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.io = '0;  // unused on physically indexed request
         assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
         ;  // unused on physically indexed request
@@ -186,7 +194,7 @@ module cva6_hpdcache_if_adapter
 
       assign ypb_load_rsp_o.rvalid = hpdcache_rsp_valid_i && !hpdcache_rsp_i.aborted;
       assign ypb_load_rsp_o.rid = hpdcache_rsp_i.tid;
-      assign ypb_load_rsp_o.err = '0;
+      assign ypb_load_rsp_o.err = hpdcache_rsp_i.error;
       assign ypb_load_rsp_o.rdata = hpdcache_rsp_i.rdata;
 
       //  Assertions
@@ -195,6 +203,16 @@ module cva6_hpdcache_if_adapter
       flush_on_load_port_assert :
       assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1) (cva6_dcache_flush_i == 1'b0))
       else $error("Flush unsupported on load adapters");
+      // The HPDcache reads the tag of a virtually indexed request in the cycle
+      // after it accepts it: the physical phase follows at once, or the request
+      // is killed.
+      if (CVA6Cfg.TwoPhaseReq) begin : gen_vipt_tag_next_cycle_assert
+        vipt_tag_next_cycle_assert :
+        assert property (@(posedge clk_i) disable iff (rst_ni !== 1'b1)
+            (ypb_load_req_i.vreq && hpdcache_req_ready_i)
+            |=> (ypb_load_req_i.preq || ypb_load_req_i.kill_req))
+        else $error("Virtually indexed load accepted without a tag or a kill in the next cycle");
+      end
       //    pragma translate_on
       //  }}}
     end  //  }}}
@@ -218,6 +236,7 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req.phys_indexed = 1'b0;
       assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.uncacheable = 1'b0;  // unused on virtually indexed request
+      assign hpdcache_req.pma.bufferable = 1'b0;  // unused on virtually indexed request
       assign hpdcache_req.pma.io = 1'b0;  // unused on virtually indexed request
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -225,8 +244,9 @@ module cva6_hpdcache_if_adapter
       assign hpdcache_req_tag_o = get_paddr_tag(ypb_mmu_ptw_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_mmu_ptw_req_i.cacheable;
+      assign hpdcache_req_pma_o.bufferable = ypb_mmu_ptw_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
-      assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+      assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_mmu_ptw_req_i.bufferable);
 
       //    Response forwarding
       assign ypb_mmu_ptw_rsp_o.rvalid = hpdcache_rsp_valid_i;
@@ -262,6 +282,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req.phys_indexed = 1'b0;
       assign hpdcache_req.addr_tag = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.uncacheable = '0;  // unused on virtually indexed request
+      assign hpdcache_req.pma.bufferable = '0;  // unused on virtually indexed request
       assign hpdcache_req.pma.io = 1'b0;
       assign hpdcache_req.pma.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
 
@@ -269,8 +290,9 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_tag_o = get_paddr_tag(ypb_zcmt_req_i.paddr);
 
       assign hpdcache_req_pma_o.uncacheable = !ypb_zcmt_req_i.cacheable;
+      assign hpdcache_req_pma_o.bufferable = ypb_zcmt_req_i.bufferable;
       assign hpdcache_req_pma_o.io = 1'b0;
-      assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
+      assign hpdcache_req_pma_o.wr_policy_hint = get_wr_policy_hint(ypb_zcmt_req_i.bufferable);
 
       //    Response forwarding
       assign ypb_zcmt_rsp_o.rvalid = hpdcache_rsp_valid_i;
@@ -310,6 +332,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
 
       logic forward_store, forward_amo, forward_flush;
       logic flush_not_sent;
+      hpdcache_pkg::hpdcache_req_op_t store_op;
 
       //  DCACHE flush request
       //  {{{
@@ -355,6 +378,22 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       end
       //  }}}
 
+      // CBO logic
+      //  {{{
+      always_comb begin : store_cmo_comb
+        store_op = hpdcache_pkg::HPDCACHE_REQ_STORE;
+
+        if (CVA6Cfg.RVZiCbom) begin
+          case (ypb_store_req_i.cbo_op)
+            ariane_pkg::CBO_INVAL: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_INVAL_NLINE;
+            ariane_pkg::CBO_CLEAN: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_NLINE;
+            ariane_pkg::CBO_FLUSH: store_op = hpdcache_pkg::HPDCACHE_REQ_CMO_FLUSH_INVAL_NLINE;
+            default: ;  // store - above
+          endcase
+        end
+      end
+      //  }}}
+
       //  AMO logic
       //  {{{
 
@@ -381,7 +420,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign amo_data_size = ypb_amo_req_i.size;
       assign amo_is_word = (amo_data_size == 2'b10);
       assign amo_is_word_hi = ypb_amo_req_i.paddr[2];
-      if (CVA6Cfg.XLEN == 64) begin : amo_data_64_gen
+      if (CVA6Cfg.IS_XLEN64) begin : amo_data_64_gen
         assign amo_data = amo_is_word ? {2{ypb_amo_req_i.wdata[0+:32]}} : ypb_amo_req_i.wdata;
         assign amo_data_be = amo_is_word_hi ? 8'hf0 : amo_is_word ? 8'h0f : 8'hff;
       end else begin : amo_data_32_gen
@@ -401,16 +440,17 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               phys_indexed: 1'b1,
               addr_tag: get_paddr_tag(ypb_amo_req_i.paddr),
               pma: '{
+                  bufferable: ypb_amo_req_i.bufferable,
                   uncacheable: !ypb_amo_req_i.cacheable,
                   io: 1'b0,
-                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+                  wr_policy_hint: get_wr_policy_hint(ypb_amo_req_i.bufferable)
               }
           };
 
       assign hpdcache_req_store = '{
               addr_offset: get_paddr_index(ypb_store_req_i.paddr),
               wdata: ypb_store_req_i.wdata,
-              op: hpdcache_pkg::HPDCACHE_REQ_STORE,
+              op: store_op,
               be: ypb_store_req_i.be,
               size: ypb_store_req_i.size,
               sid: hpdcache_req_sid_i,
@@ -419,9 +459,10 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               phys_indexed: 1'b1,
               addr_tag: get_paddr_tag(ypb_store_req_i.paddr),
               pma: '{
+                  bufferable: ypb_store_req_i.bufferable,
                   uncacheable: !ypb_store_req_i.cacheable,
                   io: 1'b0,
-                  wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
+                  wr_policy_hint: get_wr_policy_hint(ypb_store_req_i.bufferable)
               }
           };
 
@@ -442,6 +483,7 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
               need_rsp: 1'b1,
               phys_indexed: 1'b0,
               pma: '{
+                  bufferable: 1'b0,
                   uncacheable: 1'b0,
                   io: 1'b0,
                   wr_policy_hint: hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO
@@ -459,13 +501,14 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
       assign hpdcache_req_abort_o = 1'b0;  // unused on physically indexed requests
       assign hpdcache_req_tag_o = '0;  // unused on physically indexed requests
       assign hpdcache_req_pma_o.uncacheable = 1'b0;
+      assign hpdcache_req_pma_o.bufferable = 1'b0;
       assign hpdcache_req_pma_o.io = 1'b0;
       assign hpdcache_req_pma_o.wr_policy_hint = hpdcache_pkg::HPDCACHE_WR_POLICY_AUTO;
       //  }}}
 
       //  Response forwarding
       //  {{{
-      if (CVA6Cfg.XLEN == 64) begin : amo_resp_64_gen
+      if (CVA6Cfg.IS_XLEN64) begin : amo_resp_64_gen
         assign amo_resp_word = amo_is_word_hi
                              ? hpdcache_rsp_i.rdata[0][32 +: 32]
                              : hpdcache_rsp_i.rdata[0][0  +: 32];
@@ -502,9 +545,10 @@ else if (IsZcmtPort == 1'b1) begin : zcmt_port_gen
         if (!rst_ni) begin
           amo_pending_q <= 1'b0;
         end else begin
+          //  Set when a new atomic request is accepted, held until its response.
           amo_pending_q <=
-              ( ypb_amo_req_i.preq  & hpdcache_req_ready_i & ~amo_pending_q) |
-              (~ypb_amo_valid & amo_pending_q);
+              (~amo_pending_q &  ypb_amo_req_i.preq & hpdcache_req_ready_i) |
+              ( amo_pending_q & ~ypb_amo_valid);
         end
       end
 

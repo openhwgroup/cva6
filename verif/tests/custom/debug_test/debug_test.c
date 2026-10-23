@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     check_debug_status(0,0);
     printf("------------------------\n");
     printf(" Test2.1: check access to Debug and Trigger registers\n");
-    // debug specifcation 13.2: 4.8 Core Debug Registers are not accessable unless in debug mode
+    // debug specification 13.2: 4.8 Core Debug Registers are not accessable unless in debug mode
 
     // ----------------------
     // Check Debug Write Access
@@ -495,7 +495,7 @@ int main(int argc, char *argv[])
     glb_expect_irq_entry = 1;
     glb_hart_status = 20;
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    // 170 halts on first instuction in interrupt handler
+    // 170 halts on first instruction in interrupt handler
     // 175 gives same timing for interrupt and debug_req_i
     mm_ram_assert_irq(0x40000000, 175+20);
 

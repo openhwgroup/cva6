@@ -30,6 +30,7 @@ CVA6 User Manual
    PMA
    PMP
    Traps_Interrupts_Exceptions
+   Trigger_Module
    Compiler_Command_Lines
    RISCV_Instructions
    RV32I <RISCV_Instructions_RV32I>
@@ -42,6 +43,12 @@ CVA6 User Manual
    RVZbb <RISCV_Instructions_RVZbb>
    RVZbc <RISCV_Instructions_RVZbc>
    RVZbs <RISCV_Instructions_RVZbs>
+   RVZbkb <RISCV_Instructions_RVZbkb>
+   RVZbkc <RISCV_Instructions_RVZbkc>
+   RVZbkx <RISCV_Instructions_RVZbkx>
+   RVZkne <RISCV_Instructions_RVZkne>
+   RVZknd <RISCV_Instructions_RVZknd>
+   RVZknh <RISCV_Instructions_RVZknh>
    RVZicsr <RISCV_Instructions_RVZicsr>
    RVZifencei <RISCV_Instructions_RVZifencei>
    RVZicond <RISCV_Instructions_RVZicond>

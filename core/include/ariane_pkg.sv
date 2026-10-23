@@ -34,12 +34,7 @@ package ariane_pkg;
   // depth of store-buffers, this needs to be a power of two
   localparam logic [2:0] DEPTH_SPEC = 'd4;
 
-  // if CVA6Cfg.DCacheType = cva6_config_pkg::WT
-  // we can use a small commit queue since we have a write buffer in the dcache
-  // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
-  // to longer paths into the commit stage
-  // if CVA6Cfg.DCacheType = cva6_config_pkg::WB
-  // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
+  // depth of the commit queue of the store buffer, this needs to be a power of two
   localparam logic [2:0] DEPTH_COMMIT = 'd4;
 
   // Transprecision float unit
@@ -54,6 +49,7 @@ package ariane_pkg;
 
   localparam logic [31:0] OPENHWGROUP_MVENDORID = 32'h0602;
   localparam logic [31:0] ARIANE_MARCHID = 32'd3;
+  localparam logic [31:0] ARIANE_MIMPID = 32'd0;
 
   // 32 registers
   localparam REG_ADDR_SIZE = 5;
@@ -108,11 +104,12 @@ package ariane_pkg;
   localparam bit ZERO_TVAL = 1'b0;
 `endif
 
-  // read mask for SSTATUS over MMSTATUS
+  // read mask for SSTATUS over MSTATUS
   function automatic logic [63:0] smode_status_read_mask(config_pkg::cva6_cfg_t Cfg);
     return riscv::SSTATUS_UIE
     | riscv::SSTATUS_SIE
     | riscv::SSTATUS_SPIE
+    | riscv::SSTATUS_UBE
     | riscv::SSTATUS_SPP
     | riscv::SSTATUS_FS
     | riscv::SSTATUS_XS
@@ -253,6 +250,7 @@ package ariane_pkg;
   localparam int unsigned ICACHE_SET_ASSOC = `CONFIG_L1I_ASSOCIATIVITY;
   localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
   localparam int unsigned ICACHE_TAG_WIDTH = riscv::PLEN - ICACHE_INDEX_WIDTH;
+  localparam int unsigned AXI_USER_WIDTH = 64;
   localparam int unsigned ICACHE_USER_LINE_WIDTH = (AXI_USER_WIDTH == 1) ? 4 : 128;  // in bit
   // D$
   localparam int unsigned DCACHE_LINE_WIDTH = `CONFIG_L1D_CACHELINE_WIDTH;
@@ -362,6 +360,11 @@ package ariane_pkg;
     AMO_MAXDU,
     AMO_MIND,
     AMO_MINDU,
+    // cache block operations (CBO)
+    CBO_CLEAN,
+    CBO_FLUSH,
+    CBO_INVAL,
+    CBO_NONE,
     // Multiplications
     MUL,
     MULH,
@@ -532,6 +535,11 @@ package ariane_pkg;
     SHA512SUM1
   } fu_op;
 
+  typedef struct packed {
+    logic rs1_from_rd;
+    logic rs2_from_rd;
+  } alu_bypass_t;
+
   function automatic logic op_is_branch(input fu_op op);
     unique case (op) inside
       EQ, NE, LTS, GES, LTU, GEU: return 1'b1;
@@ -567,7 +575,7 @@ package ariane_pkg;
       [FSD : FSB],  // FP Stores
       [FADD : FMIN_MAX],  // Computational Operations (no sqrt)
       [FMADD : FNMADD],  // Fused Computational Operations
-      FCVT_F2F,  // Vectorial F2F Conversions requrie target
+      FCVT_F2F,  // Vectorial F2F Conversions require target
       [FSGNJ : FMV_F2X],  // Sign Injections and moves mapped to SGNJ
       FCMP,  // Comparisons
       [VFMIN : VFCPKCD_D]:
@@ -834,6 +842,7 @@ package ariane_pkg;
       end
       LH, LHU, HLV_H, HLV_HU, HLVX_HU, SH, HSV_H, FLH, FSH: return 2'b01;
       LB, LBU, HLV_B, HLV_BU, SB, HSV_B, FLB, FSB:          return 2'b00;
+      CBO_CLEAN, CBO_FLUSH, CBO_INVAL:                      return 2'b00;
       default:                                              return 2'b11;
     endcase
   endfunction
@@ -887,5 +896,13 @@ package ariane_pkg;
     end
     return gppn;
   endfunction : make_gppn
+
+  // ----------------------
+  // Helper functions
+  // ----------------------
+  // Avoid negative array slices when defining parametrized sizes
+  function automatic int unsigned avoid_neg(int n);
+    return (n < 0) ? 0 : n;
+  endfunction : avoid_neg
 
 endpackage

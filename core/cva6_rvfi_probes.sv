@@ -131,11 +131,11 @@ module cva6_rvfi_probes
     rvfi_probes_o = '0;
 
     if ($bits(rvfi_probes_o.instr) == $bits(instr)) begin
-      rvfi_probes_o.instr = instr;
+      rvfi_probes_o.instr = $bits(rvfi_probes_o.instr)'(instr);
     end
 
     if ($bits(rvfi_probes_o.csr) == $bits(csr)) begin
-      rvfi_probes_o.csr = csr;
+      rvfi_probes_o.csr = $bits(rvfi_probes_o.csr)'(csr);
     end
 
   end

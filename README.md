@@ -1,4 +1,4 @@
-# CVA6 RISC-V CPU [![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml) [![CVA6 dashboard](https://riscv-ci.pages.thales-invia.fr/dashboard/badge_cv32a60x.svg)](https://riscv-ci.pages.thales-invia.fr/dashboard/dashboard_cv32a60x) [![Documentation Status](https://readthedocs.com/projects/openhw-group-cva6-user-manual/badge/?version=latest)](https://docs.openhwgroup.org/projects/cva6-user-manual/?badge=latest) [![GitHub release](https://img.shields.io/github/release/openhwgroup/cva6?include_prereleases=&sort=semver&color=blue)](https://github.com/openhwgroup/cva6/releases/)
+# CVA6 RISC-V CPU [![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml) [![master_candidate](https://riscv-ci.pages.thales-invia.fr/cva6-dashboard/latest/badge.svg)](https://riscv-ci.pages.thales-invia.fr/cva6-dashboard/latest/) [![Documentation Status](https://readthedocs.com/projects/openhw-group-cva6-user-manual/badge/?version=latest)](https://docs.openhwgroup.org/projects/cva6-user-manual/?badge=latest) [![GitHub release](https://img.shields.io/github/release/openhwgroup/cva6?include_prereleases=&sort=semver&color=blue)](https://github.com/openhwgroup/cva6/releases/)
 
 CVA6 is a 6-stage, single-issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore, it is compliant to the draft external debug spec 0.13.
 
@@ -34,6 +34,11 @@ pip3 install --user -r flows/requirements.txt
 
 # Initialize submodules
 git submodule update --init --recursive
+
+# Patch the submodules and clone the external test suites (riscv-tests, ...).
+# Required: cook.py stops while a submodule patch of
+# flows/config/dependencies.yml is not applied. Run it again after a pull.
+./cook.py git-dependencies
 
 # Install Spike ISA simulator (requires: gcc, g++, device-tree-compiler, libboost-dev)
 # See verif/regress/install-spike.sh for details
@@ -86,6 +91,9 @@ git clone https://github.com/openhwgroup/cva6.git
 cd cva6
 git submodule update --init --recursive
 ```
+Then apply the submodule patches of `flows/config/dependencies.yml`, without
+which the design does not build: `./cook.py git-dependencies` (Python
+dependencies in `flows/requirements.txt`).
 
 2. Install the GCC Toolchain [build prerequisites](util/toolchain-builder/README.md#Prerequisites) then [the toolchain itself](util/toolchain-builder/README.md#Getting-started).
 
@@ -452,15 +460,6 @@ You can read or write device memory by using:
 (gdb) set {int} 0x1000 = 22
 (gdb) set $pc = 0x1000
 ```
-
-
-## Preliminary Support for OpenPiton Cache System
-
-CVA6 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
-
-The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use CVA6 in the OpenPiton setting.
-
-To activate the different cache system, compile your code with the macro `DCACHE_TYPE`.
 
 
 ## Re-generating the Bootcode (ZSBL)

@@ -153,6 +153,14 @@ def _load_target_yaml(target, filename, report, or_exit):
         return {}
 
 
+# The testbench flavour each memory subsystem needs, as parse_rtl_cfg returns
+# the MemSubsystem value of rtl_cfg_pkg.sv
+HIER_OF_MEM_SUBSYSTEM = {
+    "config_pkg::MEM_OBI": Cva6Hier.obi,
+    "config_pkg::MEM_HPDCACHE_AXI": Cva6Hier.axi,
+}
+
+
 def read_config_or_exit_testbench_cfg(target, report, record=True):
     """
     Return the testbench hierarchy flavour of `target` as a Cva6Hier.
@@ -177,6 +185,25 @@ def read_config_or_exit_testbench_cfg(target, report, record=True):
             f"expected one of {[h.value for h in Cva6Hier]}",
             env=True,
         )
+    # The testbench flavour must follow the memory subsystem: the OBI testbench
+    # drives the memory ports of MEM_OBI, the AXI one the bus of the caches.
+    rtl_path = target_dir(target) / "rtl_cfg_pkg.sv"
+    if rtl_path.exists():
+        mem_subsystem = parse_rtl_cfg(rtl_path).get("MemSubsystem")
+        expected = HIER_OF_MEM_SUBSYSTEM.get(mem_subsystem)
+        if expected is None:
+            report.error_exit(
+                f"Unknown MemSubsystem {mem_subsystem!r} in {rtl_path}, "
+                f"expected one of {list(HIER_OF_MEM_SUBSYSTEM)}",
+                env=True,
+            )
+        if cva6_hier != expected:
+            report.error_exit(
+                f"hier {cva6_hier.value!r} in {path} does not match "
+                f"MemSubsystem {mem_subsystem} in {rtl_path}, which needs "
+                f"hier {expected.value!r}",
+                env=True,
+            )
     if record:
         report.add_context({"cva6_hier": cva6_hier.value}, table="Testbench parameters")
     return cva6_hier

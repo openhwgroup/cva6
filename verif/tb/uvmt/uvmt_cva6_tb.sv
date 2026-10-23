@@ -104,10 +104,10 @@ module uvmt_cva6_tb;
                                          .reset_n(clknrst_if.reset_n)
                                 );
 
-   if (!CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (CVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       //bind assertion module for axi interface
       bind uvmt_cva6_dut_wrap
-         uvmt_axi_assert #(CVA6Cfg.DCacheType)           axi_assert(.axi_assert_if(axi_if));
+         uvmt_axi_assert #(CVA6Cfg)                      axi_assert(.axi_assert_if(axi_if));
    end else begin
       //bind assertion module for obi interface
       bind uvmt_cva6_dut_wrap uvma_obi_memory_assert_if_wrp #(
@@ -302,6 +302,8 @@ module uvmt_cva6_tb;
    `RVFI_CSR_ASSIGN(mepc)
    `RVFI_CSR_ASSIGN(mcause)
    `RVFI_CSR_ASSIGN(mtval)
+   `RVFI_CSR_ASSIGN(mtinst)
+   `RVFI_CSR_ASSIGN(mtval2)
    `RVFI_CSR_ASSIGN(mip)
    `RVFI_CSR_ASSIGN(menvcfg)
    `RVFI_CSR_ASSIGN(menvcfgh)
@@ -386,6 +388,8 @@ module uvmt_cva6_tb;
          `RVFI_CSR_UVM_CONFIG_DB_SET(mepc, i)
          `RVFI_CSR_UVM_CONFIG_DB_SET(mcause, i)
          `RVFI_CSR_UVM_CONFIG_DB_SET(mtval, i)
+         `RVFI_CSR_UVM_CONFIG_DB_SET(mtinst, i)
+         `RVFI_CSR_UVM_CONFIG_DB_SET(mtval2, i)
          `RVFI_CSR_UVM_CONFIG_DB_SET(mip, i)
          `RVFI_CSR_UVM_CONFIG_DB_SET(menvcfg, i)
          `RVFI_CSR_UVM_CONFIG_DB_SET(menvcfgh, i)
@@ -475,7 +479,7 @@ module uvmt_cva6_tb;
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
 
-     if (!CVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+     if (CVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
         axi_if.aw_assertion_enabled      = 1;
         axi_if.w_assertion_enabled       = 1;
         axi_if.b_assertion_enabled       = 1;

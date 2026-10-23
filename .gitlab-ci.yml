@@ -39,31 +39,39 @@
 #
 # See flows/CONTINUOUS_INTEGRATION.md to add a job, a target or a testlist.
 
+# Targets of each job category of the macro, per pipeline kind (see the
+# MY_*_TARGETS variables below). Development branches and merge requests
+# keep the lists of the macro (DOCS_TARGETS, SPYGLASS_TARGETS and
+# GTECH_TARGETS of flows/macros/full_regression.py, to be kept in sync);
+# master_candidate takes the same lists but synthesises every target.
+.targets_dev: &targets_dev
+  MY_DOCS_TARGETS: "cv32a60x"
+  MY_SPYGLASS_TARGETS: "cv32a60x,cv32a60x_no_zcmt,cv32a65x_noPMP"
+  MY_GTECH_TARGETS: "cv32a60x,cv32a65x_noPMP_axi,cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi"
+  MY_SYNTH_TARGETS: "all"
+
 # PAGES_PREFIX is set here, next to the pipeline kind it belongs to: it
 # selects the GitLab Pages parallel deployment the dashboard is published
 # to (see the `pages` job). An empty prefix is the root of the site and is
 # reserved for the reference run on the default branch.
 workflow:
   rules:
-    - if:
-        $CI_PIPELINE_SOURCE == "web"
-        # CI_KIND need to be set in web interface
+    - if: $CI_PIPELINE_SOURCE == "web"
       variables:
         PAGES_PREFIX: "br-$CI_COMMIT_REF_SLUG"
         PAGES_EXPIRE: "1 month"
     - if: $CI_PIPELINE_SOURCE == "schedule"
       variables:
-        CI_KIND: verif
         PAGES_PREFIX: ""
         PAGES_EXPIRE: never
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       variables:
-        CI_KIND: dev
+        <<: *targets_dev
         PAGES_PREFIX: "mr-$CI_MERGE_REQUEST_IID"
         PAGES_EXPIRE: "1 month"
     - if: $CI_PIPELINE_SOURCE == "/.*_PR_.*/"
       variables:
-        CI_KIND: dev
+        <<: *targets_dev
         PAGES_PREFIX: "br-$CI_COMMIT_REF_SLUG"
         PAGES_EXPIRE: "1 month"
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
@@ -72,9 +80,12 @@ workflow:
       variables:
         PAGES_PREFIX: ""
         PAGES_EXPIRE: never
+        # The reference run (master_candidate) synthesises every target
+        <<: *targets_dev
+        MY_GTECH_TARGETS: "all"
     - if: $CI_COMMIT_BRANCH =~ /^dev.*/
       variables:
-        CI_KIND: dev
+        <<: *targets_dev
         PAGES_PREFIX: "br-$CI_COMMIT_REF_SLUG"
         PAGES_EXPIRE: "1 month"
     - when: never
@@ -91,25 +102,26 @@ variables:
   # recipes running at once; the *_LICENSES variables cap each CAD license
   # pool independently, so the pipeline never asks for more licenses than
   # the site owns (see the macro docstring).
-  MY_JOBS: "8"
+  MY_JOBS: "16"
   MY_VCS_LICENSES: "10"
   MY_SPYGLASS_LICENSES: "1"
   MY_SYNTH_LICENSES: "1"
   MY_VIVADO_LICENSES: "1"
+  # Targets of each job category of the macro: a comma separated list,
+  # "all" or "none". Set per pipeline kind by the workflow rules above
+  # (.targets_dev); empty, as for a web or a scheduled
+  # pipeline unless set by hand, keeps the default list of the macro. The
+  # techno synthesis only runs with --techno.
+  MY_DOCS_TARGETS: ""
+  MY_SPYGLASS_TARGETS: ""
+  MY_GTECH_TARGETS: ""
+  MY_SYNTH_TARGETS: ""
   #PYTHONUNBEFFERED: "1"
 
 stages:
   - build
   - regression
   - deploy
-
-.rules_verif_regress_dev:
-  rules:
-    - if: $CI_KIND == "verif"
-    - if: $CI_KIND == "regress"
-    - if: $CI_KIND == "dev"
-    - when: manual
-      allow_failure: true
 
 # ==========================================================
 # BUILD
@@ -121,8 +133,6 @@ stages:
 build spike:
   stage: build
   tags: [$TAGS_MC_RUNNER_SIMU]
-  extends:
-    - .rules_verif_regress_dev
   needs: []
   before_script:
     - source $CONFIG_DIR/setenv.sh
@@ -141,8 +151,6 @@ build spike:
 full regression:
   stage: regression
   tags: [$TAGS_MC_RUNNER_SIMU]
-  extends:
-    - .rules_verif_regress_dev
   needs:
     - job: build spike
       artifacts: false
@@ -195,6 +203,10 @@ full regression:
       --spyglass-licenses $MY_SPYGLASS_LICENSES
       --synth-licenses $MY_SYNTH_LICENSES
       --vivado-licenses $MY_VIVADO_LICENSES
+      --docs-targets="$MY_DOCS_TARGETS"
+      --spyglass-targets="$MY_SPYGLASS_TARGETS"
+      --gtech-targets="$MY_GTECH_TARGETS"
+      --synth-targets="$MY_SYNTH_TARGETS"
   # Gather the per-recipe reports and tool logs under artifacts/, keeping
   # their build/ tree structure. Done here rather than through globs in
   # `artifacts:paths` because `expose_as` rejects wildcards, and in
@@ -215,6 +227,7 @@ full regression:
       # Dashboard first: this is the link exposed in the merge request
       - artifacts/reports/pipeline_report.html
       - artifacts/reports/pipeline_report.yml
+      - artifacts/reports/docs
       - artifacts/logs
 
 # ==========================================================
@@ -236,8 +249,6 @@ full regression:
 pages:
   stage: deploy
   tags: [$TAGS_MC_RUNNER_SIMU]
-  extends:
-    - .rules_verif_regress_dev
   needs:
     - job: full regression
       artifacts: true

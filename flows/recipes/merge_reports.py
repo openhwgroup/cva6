@@ -47,7 +47,8 @@ REPORTS_DIR = Path("artifacts") / "reports"
 PIPELINE_REPORT = "pipeline_report.yml"
 
 # Bit fields yielding a label when set, in display order. They all belong to
-# the "ext" group, the width, the bus and the memory ones being built apart.
+# the "ext" group, the width, the bus, the memory and the hardware option
+# ones being built apart.
 CFG_EXTENSIONS = [
     ("ZCMT", "RVZCMT"),
     ("ZCB", "RVZCB"),
@@ -68,18 +69,16 @@ CFG_EXTENSIONS = [
     ("U", "RVU"),
 ]
 
-# Write policy of the data cache, config_pkg::cache_type_t
-CFG_DCACHE_TYPE = {
-    "WB": "WB",
-    "WT": "WT",
-    "HPDCACHE_WT": "WT",
-    "HPDCACHE_WB": "WB",
-    "HPDCACHE_WT_WB": "WT/WB",
+# Write policy of the data cache, config_pkg::cache_write_policy_e
+CFG_CACHE_WRITE_POLICY = {
+    "CACHE_WT": "WT",
+    "CACHE_WB": "WB",
+    "CACHE_WT_WB": "WT/WB",
 }
 
-# unsigned'(8), bit'(1), int'(config_pkg::OBI_V1_6)
+# unsigned'(8), bit'(1), int'(4)
 CFG_FIELD_RE = re.compile(r"^\s*(\w+)\s*:\s*\w+'\(\s*([^)]*?)\s*\)\s*,?\s*$")
-# DCacheType: config_pkg::HPDCACHE_WT,  (no type cast)
+# CacheWritePolicy: config_pkg::CACHE_WT,  (no type cast)
 CFG_ENUM_RE = re.compile(r"^\s*(\w+)\s*:\s*(?:config_pkg::)?(\w+)\s*,?\s*$")
 CFG_LOCALPARAM_RE = re.compile(r"^\s*localparam\s+(\w+)\s*=\s*([^;]+);")
 
@@ -135,12 +134,12 @@ def _read_target_config(repo_dir, target):
     if isinstance(xlen, int):
         labels.append({"text": f"RV{xlen}", "group": "xlen"})
 
-    # PipelineOnly replaces the caches and the AXI interface by OBI, so a
-    # DCacheType is still declared there but drives nothing
-    pipeline_only = bool(value("PipelineOnly"))
-    labels.append({"text": "OBI" if pipeline_only else "AXI", "group": "bus"})
-    if not pipeline_only:
-        policy = CFG_DCACHE_TYPE.get(enums.get("DCacheType", ""))
+    # MEM_OBI has no cache: each memory port is an OBI bus, so a
+    # CacheWritePolicy is still declared there but drives nothing
+    mem_obi = enums.get("MemSubsystem") == "MEM_OBI"
+    labels.append({"text": "OBI" if mem_obi else "AXI", "group": "bus"})
+    if not mem_obi:
+        policy = CFG_CACHE_WRITE_POLICY.get(enums.get("CacheWritePolicy", ""))
         if policy:
             labels.append({"text": policy, "group": "mem"})
 
@@ -154,11 +153,59 @@ def _read_target_config(repo_dir, target):
     if isinstance(value("NrPMPEntries"), int) and value("NrPMPEntries") > 0:
         labels.append({"text": "PMP", "group": "mem"})
 
+    labels += _hw_labels(cfg_file)
+
     for text_, field in CFG_EXTENSIONS:
         val = value(field)
         if isinstance(val, int) and val > 0:
             labels.append({"text": text_, "group": "ext"})
     return labels or None
+
+
+def _hw_labels(cfg_file):
+    """Labels of the hardware options of a target, in the "hw" group.
+
+    Only the options that change the structure of the core are shown, and
+    only away from their usual value, so that two targets of a same family
+    differ by the labels they show.
+    """
+    try:
+        p = parse_rtl_cfg(cfg_file)
+    except OSError:
+        return []
+    labels = []
+
+    def add(text_):
+        labels.append({"text": text_, "group": "hw"})
+
+    if p.get("SuperscalarEn"):
+        add("SS+BYPASS" if p.get("ALUBypass") else "SS")
+    elif p.get("NrCommitPorts") == 1:
+        add("1 COMMIT")
+    if p.get("Sdtrig"):
+        # bit 1 of SdtrigSupportedActions: a trigger can enter debug mode
+        add("SDTRIG" if p.get("SdtrigSupportedActions", 0) & 2 else "SDTRIG-NODBG")
+    if p.get("DebugEn"):
+        add("DEBUG")
+    if p.get("CvxifEn"):
+        add("CVXIF")
+    if p.get("MmuPresent") and p.get("UseSharedTlb"):
+        add("SHARED TLB")
+    if p.get("SvnapotEn"):
+        add("SVNAPOT")
+    if p.get("BigEndianEn"):
+        add("BIG ENDIAN")
+    if p.get("DcacheEccEnable") and "MEM_OBI" not in str(p.get("MemSubsystem")):
+        add("ECC")
+    if not p.get("BHTEntries"):
+        add("NO BP")
+    elif "PH_BHT" in str(p.get("BPType")):
+        add("PH-BHT")
+    if not p.get("TvalEn"):
+        add("NO TVAL")
+    if p.get("FpgaEn"):
+        add("FPGA")
+    return labels
 
 
 def _child_paths(doc):

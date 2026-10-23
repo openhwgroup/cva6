@@ -42,7 +42,7 @@
     /* Target column: the name on its own line, truncated with the full one
        on hover, and the configuration pills below it. Side by side, a long
        name and its pills overflowed the column. */
-    .matrix-wrap td.cell-target { max-width: 26ch; }
+    .matrix-wrap td.cell-target { max-width: 30ch; }
     .cell-target .target-name { display: block; max-width: 100%; }
     .cell-target .cfg-tags { display: flex; margin-top: .15em; }
     .target-name {
@@ -68,10 +68,19 @@
     .cfg-bus  { background: #d9ecff; color: #0a58ca; border-color: #b6d9ff; }
     .cfg-feat { background: #fde2d3; color: #a33b08; border-color: #f7c2a4; font-weight: 600; }
     .cfg-mem  { background: #d7f2e3; color: #0f6b43; border-color: #aee3c8; }
+    .cfg-hw   { background: #fff3cd; color: #7a5a00; border-color: #f5dc8f; }
     .cfg-ext  { background: #eceef1; color: #5c636a; border-color: #d9dde1;
                 font-weight: 500; }
     /* Hidden on narrow screens: the matrix columns matter more */
     @media (max-width: 900px) { tr .cfg-tags { display: none; } }
+    /* Matrix: one line per target, three fixed pills */
+    .cell-target .cfg-sig { display: flex; flex-wrap: nowrap; gap: .25em; margin-top: .15em; }
+    /* Detail header: three labelled lines, each wrapping on its own */
+    .cfg-block { display: grid; grid-template-columns: 4.5em 1fr; gap: .15em .5em;
+                 width: 100%; font-size: .9em; margin-top: .25em; }
+    .cfg-block .cfg-key { color: #6c757d; font-size: .75em; font-weight: 600;
+                          text-transform: uppercase; padding-top: .2em; }
+    .cfg-block .cfg-tags { display: flex; }
 
     /* Specifications of a target, at the top of its detail. Cards, so the
        link has room for the title and the description of the manual. */
@@ -196,6 +205,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const STATUS_BADGE = {
   pass: '<span class="badge bg-success">PASS</span>',
+  warn: '<span class="badge bg-warning text-dark">WARN</span>',
   fail: '<span class="badge bg-danger">FAIL</span>',
   env:  '<span class="badge bg-warning text-dark">ENV</span>',
   "pass-tandem": '<span class="badge bg-tandem" title="Tandem mismatch (non-blocking)">PASS</span>',
@@ -204,7 +214,8 @@ const STATUS_BADGE = {
 function badge(status, label) {
   if (!status) return STATUS_BADGE.none;
   if (!label) return STATUS_BADGE[status] || STATUS_BADGE.none;
-  const cls = { pass: "bg-success", fail: "bg-danger", env: "bg-warning text-dark",
+  const cls = { pass: "bg-success", warn: "bg-warning text-dark", fail: "bg-danger",
+                env: "bg-warning text-dark",
                 "pass-tandem": "bg-tandem" }[status]
               || "bg-secondary";
   return `<span class="badge ${cls}">${esc(label)}</span>`;
@@ -215,7 +226,7 @@ function fmtNum(v) {
 }
 function inferFmt(key, v) {
   const k = String(key).toLowerCase();
-  const isStatus = typeof v === "string" && ["pass", "fail", "env"].includes(v.toLowerCase());
+  const isStatus = typeof v === "string" && ["pass", "warn", "fail", "env"].includes(v.toLowerCase());
   if (k === "status" || isStatus) return "status";
   if (typeof v === "number") return "num";
   if (typeof v === "string" && v.toLowerCase().startsWith("0x")) return "hex";
@@ -261,6 +272,7 @@ function jobClass(j) {
   const test = String(ctx.test_name || "").toLowerCase();
   const gate = String(ctx.comp_mode || "").startsWith("gate");
   if (/^spyglass/.test(r)) return "spyglass";
+  if (r === "rtl-lint") return "rtl_lint";
   /* The TestHarness is another testbench: its elaboration and its runs
    * are verdicts of their own, next to those of the UVM one. */
   if (r === "vcs-testharness-comp") return "th_vcs_elab";
@@ -288,6 +300,7 @@ function jobClass(j) {
     return "hello_comp";
   }
   if (r === "dc-shell-synth") return "synthesis";
+  if (r === "yosys-synth") return "synthesis_yosys";
   if (r === "docs-build") return "docs";
   /* One class per step of the FPGA flow, grouped in the detail of the
    * target; the matrix gathers them in a single column. */
@@ -330,17 +343,6 @@ if (TARGETS.includes(CROSS_TARGET)) {  /* cross-target jobs shown first */
 /* Configuration labels of a target (bus, MMU, PMP, extensions), read from
  * its rtl_cfg_pkg.sv by merge-reports. Absent for the cross-target group. */
 const TARGET_CONFIG = PIPELINE.target_config || {};
-const CFG_GROUPS = ["xlen", "bus", "feat", "mem", "ext"];
-function configTags(t, groups) {
-  let tags = TARGET_CONFIG[t];
-  if (!tags || !tags.length) return "";
-  if (groups) tags = tags.filter((x) => groups.includes(x.group));
-  if (!tags.length) return "";
-  return `<span class="cfg-tags">` + tags.map((x) => {
-    const g = CFG_GROUPS.includes(x.group) ? x.group : "ext";
-    return `<span class="cfg-tag cfg-${g}">${esc(x.text)}</span>`;
-  }).join("") + `</span>`;
-}
 
 /* Specifications of a target, published next to this page by
  * merge-reports under docs/<target>/<document>. A target no docs-build job
@@ -367,6 +369,56 @@ const MANUAL_DOC = {
           "each module, ports tied to a constant listed apart.",
   },
 };
+
+/* Short signature of a target for the matrix: ISA, memory, pipeline */
+const ISA_ORDER = ["I", "M", "A", "F", "D", "C", "H", "V"];
+function cfgTexts(t, group) {
+  return (TARGET_CONFIG[t] || []).filter((x) => x.group === group).map((x) => x.text);
+}
+function isaShort(t) {
+  const xlen = cfgTexts(t, "xlen")[0] || "RV?";
+  const ext = new Set(cfgTexts(t, "ext"));
+  let letters = "IM";
+  for (const l of ["A", "F", "D", "C", "H"]) if (ext.has(l)) letters += l;
+  letters = letters.replace("IMAFD", "G");
+  return xlen + letters;
+}
+function memShort(t) {
+  const bus = cfgTexts(t, "bus")[0] || "";
+  const pol = cfgTexts(t, "mem").find((x) => ["WT", "WB", "WT/WB"].includes(x));
+  return pol ? `${bus}·${pol}` : bus;
+}
+function coreShort(t) {
+  return cfgTexts(t, "hw").find((x) => x.startsWith("SS")) || "";
+}
+function matrixSignature(t) {
+  if (!TARGET_CONFIG[t]) return "";
+  const pills = [[isaShort(t), "xlen"], [memShort(t), "bus"], [coreShort(t), "hw"]]
+    .filter(([x]) => x);
+  const all = (TARGET_CONFIG[t] || []).map((x) => x.text).join(" ");
+  return `<span class="cfg-sig" title="${esc(all)}">` + pills.map(([x, g]) =>
+    `<span class="cfg-tag cfg-${g}">${esc(x)}</span>`).join("") + `</span>`;
+}
+/* Detail header: ISA, Memory and Core on three labelled lines */
+function pill(text, g) { return `<span class="cfg-tag cfg-${g}">${esc(text)}</span>`; }
+function configBlock(t) {
+  const c = TARGET_CONFIG[t];
+  if (!c) return "";
+  const ext = cfgTexts(t, "ext");
+  const std = ISA_ORDER.filter((l) => l === "I" || l === "M" || ext.includes(l));
+  const z = ext.filter((x) => x.startsWith("Z") || x === "B");
+  const modes = ext.filter((x) => x === "S" || x === "U");
+  const isa = [pill(cfgTexts(t, "xlen")[0] || "", "xlen"), pill(std.join(""), "xlen")]
+    .concat(z.map((x) => pill(x, "ext"))).concat(modes.map((x) => pill(`${x}-mode`, "ext")));
+  const memHw = ["SHARED TLB", "SVNAPOT", "BIG ENDIAN", "ECC"];
+  const mem = cfgTexts(t, "bus").map((x) => pill(x, "bus"))
+    .concat(cfgTexts(t, "mem").map((x) => pill(x, "mem")))
+    .concat(cfgTexts(t, "hw").filter((x) => memHw.includes(x)).map((x) => pill(x, "mem")));
+  const core = cfgTexts(t, "feat").map((x) => pill(x, "feat"))
+    .concat(cfgTexts(t, "hw").filter((x) => !memHw.includes(x)).map((x) => pill(x, "hw")));
+  const line = (k, v) => `<span class="cfg-key">${k}</span><span class="cfg-tags">${v.join("")}</span>`;
+  return `<div class="cfg-block">${line("ISA", isa)}${line("Memory", mem)}${line("Core", core)}</div>`;
+}
 
 const TARGET_DOCS = PIPELINE.target_docs || {};
 function docLinks(t) {  const docs = TARGET_DOCS[t];
@@ -416,13 +468,18 @@ function rtlConfigDetails(t) {
  * claims (lint, setup, other) stays out of the matrix and is listed in
  * the job detail, so the global view only shows actual verdicts. */
 const MATRIX_MODEL = [
-  ["Lint",       [["", { classes: ["spyglass"] }]]],
+  /* Spyglass on the targets it is clean on, slang + Verilator on all */
+  ["Lint",       [["Spyglass", { classes: ["spyglass"] }],
+                  ["slang/Verilator", { classes: ["rtl_lint"], statusOnly: true }]]],
   /* One elaboration per testbench and simulator: the TestHarness ones
    * are on the AXI targets only. */
   ["Elab",       [["VCS UVM", { classes: ["rtl_elab"] }],
                   ["VCS TH", { classes: ["th_vcs_elab"] }],
                   ["Verilator TH", { classes: ["th_elab"] }]]],
-  ["Synth",      [["", { classes: ["synthesis"] }]]],
+  /* DC on the targets it runs on, Yosys on all: each with the label of
+   * its report, the total cell count */
+  ["Synth",      [["DC", { classes: ["synthesis"] }],
+                  ["Yosys", { classes: ["synthesis_yosys"] }]]],
   /* The runs show their cycle count, the label of their report. The
    * stalling UVM run of the OBI targets is in the detail only. */
   ["HelloWorld", [["SW Comp", { classes: ["hello_comp"] }],
@@ -464,7 +521,7 @@ const MATRIX_GROUPS = MATRIX_MODEL
   .filter((g) => g.cols.length);
 
 /* Per-target details: static topology of collapsed cards, rendered by
- * targetSections() below (Spyglass, RTL elaboration, Helloworld,
+ * targetSections() below (Lint, RTL elaboration, Helloworld,
  * Testlists, Coremark, Dhrystone, Synthesis, Post simulation). */
 /* PASS with a non-blocking tandem mismatch: the job (or one of its
  * testlist children) ran on a Spike-incompatible ISA and the tandem
@@ -497,6 +554,8 @@ function targetKpis(t) {
 }
 function kpiOver(k) {
   if (k.expected === undefined || k.expected === null) return false;
+  /* tolerance: relative deviation still on target, either way */
+  if (k.tolerance) return Math.abs(k.value - k.expected) > k.expected * k.tolerance;
   if (k.better === "higher") return k.value < k.expected;
   return k.value > k.expected;  /* default: lower is better */
 }
@@ -530,13 +589,15 @@ function kpiOver(k) {
 /* =====================================================================
  * RENDER — MATRIX
  * ===================================================================== */
-function matrixStageCell(jobs) {
+function matrixStageCell(jobs, statusOnly) {
   if (!jobs.length) return `<td class="cell-status">${STATUS_BADGE.none}</td>`;
   const status = worstStatus(jobs);
   const tip = jobs.map((j) => `${j.title || j.recipe}: ${(jobLabel(j) || j.status || "?").toUpperCase()}`)
                   .join("&#10;");
   let label = null;
-  if (jobs.length === 1) {
+  if (statusOnly) {
+    label = null;  /* the label (diagnostic counts) stays in the tooltip */
+  } else if (jobs.length === 1) {
     label = jobs[0].label;
   } else {
     const nPass = jobs.filter((j) => j.status === "pass").length;
@@ -621,14 +682,14 @@ function matrixKpiCell(t, name, jobs) {  const found = targetKpis(t).find(([n]) 
           cells += matrixTestlistCell(picked);
         } else {
           populated = populated || picked.length > 0;
-          cells += matrixStageCell(picked);
+          cells += matrixStageCell(picked, c.statusOnly);
         }
       }
     }
     if (!populated) continue;  /* e.g. lint-only cross-target group */
     html += `<tr class="clickable" data-target="${esc(t)}">
       <td class="text-start cell-target"><span class="target-name" title="${esc(t)}">${esc(t)}</span>
-      ${configTags(t, ["xlen", "bus", "feat", "mem"])}</td>
+      ${matrixSignature(t)}</td>
       ${cells}</tr>`;
   }
   document.getElementById("matrix").innerHTML = html + "</tbody>";
@@ -906,10 +967,13 @@ function hierRings(rows) {
   /* Chart.js draws the first dataset outermost */
   return rings.reverse();
 }
-/* Donut data: "Hierarchies details" rows metric of a synthesis job */
+/* Donut data: "Hierarchies details" rows metric of a synthesis job, the
+ * Yosys one when the target has both: it runs on every target, so the
+ * charts compare across targets */
 function donutJob(t) {
-  return TARGET_JOBS.get(t).find((j) =>
+  const withHier = TARGET_JOBS.get(t).filter((j) =>
     (j.metrics || []).some((m) => m.name === "Hierarchies details" && m.kind === "rows"));
+  return withHier.find((j) => j._class === "synthesis_yosys") || withHier[0];
 }
 /* Failed-job alerts: failing Summary lines shown before the job list */
 function targetIssues(t) {
@@ -918,7 +982,7 @@ function targetIssues(t) {
     if (j.status === "pass") continue;
     const summary = (j.metrics || []).find((m) => m.name === "Summary");
     const lines = ((summary && summary.data) || [])
-      .filter((r) => String(r.status).toLowerCase() !== "pass")
+      .filter((r) => ["fail", "env"].includes(String(r.status).toLowerCase()))
       .map((r) => (r.step ? `[${r.step}] ` : "") + (r.message || ""));
     html += `<div class="alert alert-${j.fail_kind === "environment" ? "warning" : "danger"}
                   py-2 px-3 mb-2">
@@ -1070,7 +1134,9 @@ function testlistCards(jobs) {
 function targetSections(jobs) {
   const by = (...cls) => jobs.filter((j) => cls.includes(j._class));
   let html = "";
-  html += jobsCard("Spyglass", by("spyglass"));
+  html += groupCard("Lint", [
+    ["Spyglass", by("spyglass")],
+    ["slang + Verilator", by("rtl_lint")]]);
   html += jobsCard("RTL elaboration", by("rtl_elab"));
   html += groupCard("Helloworld", [
     ["Compilation", by("hello_comp")],
@@ -1088,7 +1154,9 @@ function targetSections(jobs) {
   html += groupCard("Dhrystone", [
     ["Compilation", by("dhrystone_comp")],
     ["Run simulation", by("dhrystone_run")]]);
-  html += jobsCard("Synthesis", by("synthesis"));
+  html += groupCard("Synthesis", [
+    ["DC", by("synthesis")],
+    ["Yosys", by("synthesis_yosys")]]);
   html += jobsCard("Documentation", by("docs"));
   html += groupCard("FPGA", [
     ["Bootloader compilation", by("fpga_bootrom_comp")],
@@ -1099,10 +1167,10 @@ function targetSections(jobs) {
   const post = [["Netlist elaboration", by("postsim_elab")],
                 ["Netlist run simulation", by("postsim_run")]];
   if (post.some(([, js]) => js.length)) html += groupCard("Post simulation", post);
-  const placedCls = ["spyglass", "rtl_elab", "hello_comp", "spike", "hello_run",
+  const placedCls = ["spyglass", "rtl_lint", "rtl_elab", "hello_comp", "spike", "hello_run",
     "hello_run_stall", "th_vcs_elab", "th_vcs_run", "th_elab", "th_run",
     "testlist_comp", "testlist_run", "coremark_comp", "coremark_run",
-    "dhrystone_comp", "dhrystone_run", "synthesis", "docs",
+    "dhrystone_comp", "dhrystone_run", "synthesis", "synthesis_yosys", "docs",
     "fpga_bootrom_comp", "fpga_bootrom", "fpga_build", "fpga_program", "fpga_boot",
     "postsim_elab", "postsim_run"];
   const leftover = jobs.filter((j) => !placedCls.includes(j._class));
@@ -1125,8 +1193,8 @@ function targetSections(jobs) {
            data-bs-toggle="collapse" data-bs-target="#${cid}">
         ${badge(worstStatus(jobs))}
         <span class="fw-bold mono" style="word-break: break-all">${esc(t)}</span>
-        ${configTags(t)}
         <span class="text-muted small ms-auto">${nPass}/${jobs.length} jobs</span>
+        ${configBlock(t)}
       </div>
       <div class="collapse" id="${cid}" data-target-name="${esc(t)}">
         <div class="card-body">

@@ -27,6 +27,7 @@ module pmp_data_if
     input logic [CVA6Cfg.VLEN-1:0] lsu_vaddr_i,  // virtual address in, for tval only
     input exception_t lsu_exception_i,  // lsu exception coming from MMU, or misaligned exception
     input logic lsu_is_store_i,  // the translation is requested by a store
+    input logic lsu_hlvx_inst_i,  // the access is an HLVX, which reads instruction memory
     output logic lsu_valid_o,  // translation is valid
     output logic [CVA6Cfg.PLEN-1:0] lsu_paddr_o,  // translated address
     output exception_t lsu_exception_o,  // address translation threw an exception
@@ -36,8 +37,8 @@ module pmp_data_if
     input riscv::priv_lvl_t ld_st_priv_lvl_i,
     input logic ld_st_v_i,
     // PMP
-    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
-    input logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
+    input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg_i,
+    input logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i
 );
   // virtual address causing the exception
   logic [CVA6Cfg.XLEN-1:0] fetch_vaddr_xlen, lsu_vaddr_xlen;
@@ -78,18 +79,25 @@ module pmp_data_if
 
     // if it didn't match any execute region throw an `Instruction Access Fault` (PMA)
     // or if PMP reject the access
-    if (!match_any_execute_region || !pmp_if_allow) begin
-      icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
-      icache_areq_o.fetch_exception.valid = 1'b1;
-      // For exception, the virtual address is required for tval, if no MMU is
-      // instantiated then it will be equal to physical address
-      if (CVA6Cfg.TvalEn) begin
-        icache_areq_o.fetch_exception.tval = fetch_vaddr_xlen;
-      end
-      if (CVA6Cfg.RVH) begin
-        icache_areq_o.fetch_exception.tval2 = '0;
-        icache_areq_o.fetch_exception.tinst = '0;
-        icache_areq_o.fetch_exception.gva   = v_i;
+    // Per RISCV privilege spec, a page fault has higher priority than access
+    // fault, therefore do not change the exception type in case of double
+    // exception
+    if (icache_areq_i.fetch_valid) begin
+      if (icache_areq_o.fetch_exception.cause != riscv::INSTR_PAGE_FAULT) begin
+        if (!match_any_execute_region || !pmp_if_allow) begin
+          icache_areq_o.fetch_exception.cause = riscv::INSTR_ACCESS_FAULT;
+          icache_areq_o.fetch_exception.valid = 1'b1;
+          // For exception, the virtual address is required for tval, if no MMU is
+          // instantiated then it will be equal to physical address
+          if (CVA6Cfg.TvalEn) begin
+            icache_areq_o.fetch_exception.tval = fetch_vaddr_xlen;
+          end
+          if (CVA6Cfg.RVH) begin
+            icache_areq_o.fetch_exception.tval2 = '0;
+            icache_areq_o.fetch_exception.tinst = '0;
+            icache_areq_o.fetch_exception.gva   = v_i;
+          end
+        end
       end
     end
   end
@@ -116,10 +124,23 @@ module pmp_data_if
     lsu_valid_o     = lsu_valid_i;
     lsu_paddr_o     = lsu_paddr_i;
     lsu_exception_o = lsu_exception_i;
-    pmp_access_type = lsu_is_store_i ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+    //  HLVX reads instruction memory, so the region must be executable as well
+    //  as readable; checking it as a plain load lets an execute-only region be
+    //  read, and a no-execute one be fetched from.
+    if (lsu_is_store_i) begin
+      pmp_access_type = riscv::ACCESS_WRITE;
+    end else if (lsu_hlvx_inst_i) begin
+      pmp_access_type = riscv::pmp_access_t'(riscv::ACCESS_READ | riscv::ACCESS_EXEC);
+    end else begin
+      pmp_access_type = riscv::ACCESS_READ;
+    end
 
     // If translation is not enabled, check the paddr immediately against PMPs
-    if (lsu_valid_i && !data_allow_o) begin
+    // A misaligned exception has higher priority than an access fault, so don't
+    // overwrite it (RISC-V privilege spec, simultaneous trap cause priority).
+    if (lsu_valid_i && !data_allow_o &&
+        !(lsu_exception_i.valid &&
+          (lsu_exception_i.cause inside {riscv::LD_ADDR_MISALIGNED, riscv::ST_ADDR_MISALIGNED}))) begin
       lsu_exception_o.valid = 1'b1;
 
       if (CVA6Cfg.TvalEn) begin

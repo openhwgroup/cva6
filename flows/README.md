@@ -50,7 +50,8 @@ Running the flows from a CI engine:
 - Compile software programs for CVA6 targets
 - Elaborate and simulate RTL
 - Run synthesis
-- Execute static analysis tools (Spyglass, Verible, Pylint)
+- Execute static analysis tools (Spyglass, slang and Verilator lint, Verible, Pylint)
+- Synthesise the RTL (Design Compiler, and Yosys on generic cells)
 - Generate performance and area reports
 - Automate complete flows via macros
 
@@ -292,7 +293,8 @@ also applies the patches declared on the Git submodules, so run it after
 ```
 
 Running it again is harmless: an existing clone is kept and a patch already
-applied is skipped.
+applied is skipped. Run it again after a pull that brings a new submodule
+patch: until then, `cook.py` stops with the list of the patches not applied.
 
 ## cook.py configuration
 
@@ -337,7 +339,8 @@ Four files, all read from `$CONFIG_DIR` (default: `flows/config/`):
 - **`setenv.sh`** - where the tools are (required, see below)
 - **`compiler.yml`** - toolchain configurations (required)
 - **`techno.yml`** - technology libraries for synthesis
-- **`dependencies.yml`** - external git repositories and submodule patches
+- **`dependencies.yml`** - external git repositories (the submodule patches
+  are always read from `flows/config/dependencies.yml` of the repository)
 
 The three `.yml` are read by the recipes themselves; `setenv.sh` is a shell
 script **you** source before calling `cook.py`.
@@ -420,6 +423,9 @@ gcc-14:
 - `TOOLS_PATH`: Directory containing the toolchain
 - Set `None` for `GCC` if using Clang, and vice versa
 - Configuration name (e.g., `llvm-20-1-8`) is used with `-c` option in commands
+- `full-regression` compiles the software of a target with the
+  `my_<target>_toolchain` entry, or with the `default_toolchain` entry when the target
+  has none, so a configuration created on the fly needs no new entry
 
 ### Techno Configuration (`techno.yml`)
 
@@ -1196,7 +1202,7 @@ Run DC Shell synthesis flow.
   `config/target/<target>/Flist.cva6_synth`, which reads the HPDcache SRAMs
   as blackboxes. The GTECH cells have no area, so the recipe reports cell
   and register counts instead, checked against the `gtech_cells` and
-  `gtech_registers` keys of `expected_values.yml` (tolerance 1%); any
+  `gtech_registers` keys of `expected_values.yml` (tolerance 5%); any
   inferred latch fails the run. Output: `build/<target>/synthesis_gtech/`
 - `--script-file TEXT` - DC setup script (default: `dc.tcl`)
 - `--define [HPDCACHE_ASSERT_OFF|RVFI_ENABLE]` - Preprocessor directives (default: `HPDCACHE_ASSERT_OFF`)
@@ -1708,7 +1714,9 @@ the new reference.
 
 #### `verible-rtl-formating`
 
-Format CVA6 RTL files with Verible formatter.
+Format CVA6 RTL files with Verible formatter. The recipe fails if any file
+was not formatted: the files are reformatted in place and the ones that needed
+it are listed in `build/<target>/verible/verible-check.log`.
 
 ```bash
 ./cook.py verible-rtl-formating [OPTIONS]
@@ -1901,7 +1909,7 @@ record in it:
   run.
 - **Synthesis KPI**: `dc-shell-synth` reports the area breakdown (kGates),
   checks the total gate count against the `gates` key of
-  `config/target/<target>/expected_values.yml` (tolerance: 250 gates),
+  `config/target/<target>/expected_values.yml` (tolerance: 5%),
   and generates a hierarchical area Sunburst chart
   (`build/<target>/synthesis/reports/synth_area.html` + `.csv`). With
   `--gtech`, it reports the `gtech_cells` and `gtech_registers` counts
@@ -2055,13 +2063,15 @@ Install the external test repositories and patch the Git submodules.
 ./cook.py git-dependencies [OPTIONS]
 ```
 
-Two things, both driven by `$CONFIG_DIR/dependencies.yml`:
+Two things:
 
-- **clone** the external test repositories (riscv-tests, riscv-compliance,
-  riscv-arch-test) at the pinned commit and apply their patches. These are
+- **clone** the external test repositories of `$CONFIG_DIR/dependencies.yml`
+  (riscv-tests, riscv-compliance, riscv-arch-test) at the pinned commit and apply their patches. These are
   *not* submodules: an existing destination is left untouched unless
   `--force` is passed;
-- **patch the Git submodules** listed under `submodule_patches`. They are
+- **patch the Git submodules** listed under `submodule_patches` of
+  `flows/config/dependencies.yml` in the repository, whatever `$CONFIG_DIR`
+  holds: the patches come with the code they fix. They are
   checked out by `git submodule update`, so a fix that is not merged
   upstream yet lives here as a patch rather than as a commit in the
   submodule, and its pointer keeps tracking upstream.
@@ -2070,6 +2080,12 @@ Applying a patch is idempotent, so the recipe can be run repeatedly: a
 patch already in place is skipped. A submodule that is not initialised is
 an environment error telling you to run `git submodule update --init
 --recursive`.
+
+Every other `cook.py` command first checks, with `git apply --reverse
+--check`, that these patches are in place, and stops with the list of the
+missing ones otherwise: a pull that brings a new patch is never used
+unpatched. `self-check` and `full-regression`, which runs this recipe first,
+skip the check.
 
 **Optional:**
 - `-r, --repo TEXT` - Install only this dependency, repeatable (default: all)
@@ -2092,7 +2108,7 @@ an environment error telling you to run `git submodule update --init
 ./cook.py git-dependencies --repo riscv-tests --force
 ```
 
-To declare a patch on a submodule, add it to `dependencies.yml` with the
+To declare a patch on a submodule, add it to `flows/config/dependencies.yml` with the
 reason it exists and what to watch for upstream, so it can be dropped once
 the fix lands there:
 

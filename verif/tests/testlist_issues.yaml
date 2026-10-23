@@ -33,8 +33,8 @@
 # --------------------------------------------------------------------------------
 common_test_config: &common_test_config
   path_var: TESTS_PATH
-  gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld -lgcc"
-  llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -T ../../config/gen_from_riscv_config/linker/link.ld"
+  gcc_opts: "-static -misa-spec=2.2 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
+  llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
 
 testlist:
   - test: compressed-fpreg-commits-rv64
@@ -47,3 +47,16 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/compressed-fpreg-commits-rv32.S
 
+  - test: decoder-zip-unzip-rv64
+    <<: *common_test_config
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
+
+  - test: load-misaligned-warning
+    <<: *common_test_config
+    description: >
+      Check that misaligned word and halfword loads raise load-address-
+      misaligned exceptions without terminating simulation in load_unit
+      offset assertions.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/load-misaligned-warning.S

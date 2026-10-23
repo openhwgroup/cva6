@@ -57,7 +57,7 @@ The specification of the CV-X-IF bus protocol can be found at [CV-X-IF].
 CV-X-IF aims to:
 
 * Create interfaces to connect a coprocessor to the CVA6 to execute instructions.
-* Offload CVA6 illegal instrutions to the coprocessor to be executed.
+* Offload CVA6 illegal instructions to the coprocessor to be executed.
 * Get the results of offloaded instructions from the coprocessor so they are written back into the CVA6 register file.
 * Add standard RISC-V instructions unsupported by CVA6 or custom instructions and implement them in a coprocessor.
 * Kill offloaded instructions to allow speculative execution in the coprocessor. (Unsupported in CVA6 yet)

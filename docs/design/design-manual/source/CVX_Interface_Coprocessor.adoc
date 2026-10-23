@@ -44,7 +44,7 @@ The specification of the CV-X-IF bus protocol can be found at [CV-X-IF].
 CV-X-IF aims to:
 
 * Create interfaces to connect a coprocessor to the CVA6 to execute instructions.
-* Offload CVA6 illegal instrutions to the coprocessor to be executed.
+* Offload CVA6 illegal instructions to the coprocessor to be executed.
 * Get the results of offloaded instructions from the coprocessor so they are written back into the CVA6 register file.
 * Add standard RISC-V instructions unsupported by CVA6 or custom instructions and implement them in a coprocessor.
 * Kill offloaded instructions to allow speculative execution in the coprocessor. (Unsupported in CVA6 yet)
@@ -209,7 +209,7 @@ Here is _how_ and _to what_ CV-X-IF interfaces are connected to the CVA6.
   ** Id signal of commit interface is connected to issue interface id signal
   (i.e. scoreboard id).
   ** Killing of offload instruction is never set. (Unsupported feature)
-  ** Therefore all accepted offloaded instructions are commited to their
+  ** Therefore all accepted offloaded instructions are committed to their
   execution and no killing of instruction is possible in this implementation.
 * Result interface:
   ** Request:

@@ -25,6 +25,7 @@ pycryptodome==3.23.0
 pygments==2.21.0
 pylint==4.0.8
 pyparsing==3.3.2
+pyslang==8.1.0
 python-dateutil==2.9.0.post0
 pytokens==0.4.1
 pyyaml==6.0.3

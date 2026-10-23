@@ -15,7 +15,7 @@ Introduction
 ------------
 In this chapter, we describe in detail the restriction that apply to the supported features.
 
-In order to understand how the AXI memory interface behaves in CVA6, it is necessary to read the AMBA AXI and ACE Protocol Specification (https://developer.arm.com/documentation/ihi0022/hc) and this chapter.
+In order to understand how the AXI memory interface behaves in CVA6, it is necessary to read the AXI and ACE Protocol Specification (https://developer.arm.com/documentation/ihi0022/hc) and this chapter.
 
 *Applicability of this chapter to configurations:*
 
@@ -30,7 +30,7 @@ In order to understand how the AXI memory interface behaves in CVA6, it is neces
 About the AXI4 protocol
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The AMBA AXI protocol supports high-performance, high-frequency system designs for communication between Manager and Subordinate components.
+The AXI protocol supports high-performance, high-frequency system designs for communication between Manager and Subordinate components.
 
 The AXI protocol features are:
 
@@ -59,7 +59,7 @@ AXI4 and CVA6
 
 The AXI bus protocol is used with the CVA6 processor as a memory interface. Since the processor is the one that initiates the connection with the memory, it will have a manager interface to send requests to the subordinate, which will be the memory.
 
-Features supported by CVA6 are the ones in the AMBA AXI4 specification and the Atomic Operation feature from AXI5. With restriction that apply to some features.
+Features supported by CVA6 are the ones in the AXI4 specification and the Atomic Operation feature from AXI5. With restriction that apply to some features.
 
 This doesn’t mean that all the full set of signals available on an AXI interface are supported by the CVA6. Nevertheless, all required AXI signals are implemented.
 
@@ -510,7 +510,7 @@ for each 8 bits of the write data bus, therefore ``WSTRB[n]`` corresponds to ``W
 
 *The size of transactions performed by cva6 is equal to the number of data byte lanes containing valid information.*
 *This means 1, 2, 4, ... or (AXI_DATA_WIDTH/8) byte lanes containing valid information.*
-*CVA6 doesn't perform unaligned memory acces, therefore the WSTRB take only combination of aligned access*
+*CVA6 doesn't perform unaligned memory access, therefore the WSTRB take only combination of aligned access*
 *If(RV32) WSTRB < 255 (Since AWSIZE lower than 3, so the data bus cannot have more than 4 valid byte lanes)*
 
 
@@ -596,7 +596,7 @@ If the CVA6 requires ordering between transactions that have no ordering guarant
 Memory locations and Peripheral regions (Section A6.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The address map in AMBA is made up of Memory locations and Peripheral regions. But the AXI is associated to the memory interface of CVA6.
+The address maps in some bus specifications can differentiate Memory locations and Peripheral regions. But the AXI is associated to the memory interface of CVA6.
 
 A Memory location has all of the following properties:
 
@@ -640,7 +640,7 @@ An interface that exhibits Ordered Write Observation gives guarantees for write 
 Atomic transactions (Section E1.1)
 -----------------------------------
 
-AMBA 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
+AXI 5 introduces Atomic transactions, which perform more than just a single access and have an operation that is associated with the transaction. Atomic transactions enable sending the operation to the data, permitting the operation to be performed closer to where the data is located. Atomic transactions are suited to situations where the data is located a significant distance from the agent that must perform the operation.
 
 *If(RVA) AWATOP = 0 (If AMO instructions are not supported, CVA6 cannot perform Atomic transaction)*
 

@@ -83,7 +83,7 @@ module acc_dispatcher
     output logic acc_valid_ex_o,  // FU executed
     // Interface with the commit stage
     input logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack_i,
-    input logic commit_st_barrier_i,  // A store barrier was commited
+    input logic commit_st_barrier_i,  // A store barrier was committed
     // Interface with the load/store unit
     output logic acc_stall_st_pending_o,
     input logic acc_no_st_pending_i,
@@ -209,8 +209,6 @@ module acc_dispatcher
 
     // We received a new instruction
     if (acc_valid_q) insn_pending_d[acc_data.trans_id] = 1'b1;
-    // Flush all received instructions
-    if (flush_ex_i) insn_pending_d = '0;
 
     // An accelerator instruction is no longer speculative.
     if (acc_commit && insn_pending_q[acc_commit_trans_id]) begin
@@ -220,6 +218,13 @@ module acc_dispatcher
 
     // An accelerator instruction was issued.
     if (acc_req_o.req_valid) insn_ready_d[acc_req_o.trans_id] = 1'b0;
+
+    // Flush all received instructions. Last, so that it overrides a
+    // simultaneous acc_commit.
+    if (flush_ex_i) begin
+      insn_pending_d = '0;
+      insn_ready_d   = '0;
+    end
   end : p_non_speculative_ff
 
   /*************************
@@ -344,7 +349,7 @@ module acc_dispatcher
    *  Accelerator barriers  *
    **************************/
 
-  // On a store barrier (i.e. any barrier that requires preceeding stores to complete
+  // On a store barrier (i.e. any barrier that requires preceding stores to complete
   // before continuing execution), halt execution while there are pending stores in
   // the accelerator pipeline.
   logic wait_acc_store_d, wait_acc_store_q;

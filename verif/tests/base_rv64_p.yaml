@@ -34,6 +34,11 @@ common_test_config: &common_test_config
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/ -lgcc"
   llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
 
+custom_test_config: &custom_test_config
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
+  llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
+
 testlist:
   - test: rv64ui-p-add
     iterations: 1
@@ -59,3 +64,28 @@ testlist:
     iterations: 1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv64ui/jal.S
+
+  - test: fence_i_smc
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/cache/fence_i_smc.S
+
+  - test: alu_chain_test
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/alu/alu_chain_test.S
+
+  - test: irq_mtval_zero
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/interrupt/irq_mtval_zero.S
+
+  - test: mcause_warl
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/CSR/mcause_warl.S
+
+  - test: xret-mprv-clear
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/issues/xret-mprv-clear-rv64.S

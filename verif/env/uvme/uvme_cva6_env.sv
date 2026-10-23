@@ -181,7 +181,7 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cva6_cntxt_c::type_id::create("cntxt");
       end
 
-      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+      if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
          cntxt.axi_cntxt.mem              = cntxt.mem;
          cntxt.interrupt_cntxt.mem_axi    = cntxt.mem;
          `uvm_info("UVMECVA6ENV", "AXI interface is active", UVM_NONE)
@@ -200,9 +200,32 @@ function void uvme_cva6_env_c::build_phase(uvm_phase phase);
          end
          cntxt.interrupt_cntxt.mem_obi    = cntxt.mem_obi;
          `uvm_info("UVMECVA6ENV", "OBI interface is active", UVM_NONE)
+         // +load_err_addr=<hex>: the load port answers a load from that word
+         // with the OBI error bit set, once.
+         begin
+            bit [31:0] load_err_addr;
+            if ($value$plusargs("load_err_addr=%h", load_err_addr) && load_err_addr != 0) begin
+               cfg.obi_memory_load_cfg.directed_slv_err_valid    = 1;
+               cfg.obi_memory_load_cfg.directed_slv_err_addr_min = load_err_addr;
+               cfg.obi_memory_load_cfg.directed_slv_err_addr_max = load_err_addr + 3;
+               cfg.obi_memory_load_cfg.drv_slv_err_one_shot_mode = 1;
+               `uvm_info("UVMECVA6ENV", $sformatf("Load error response at 0x%08h", load_err_addr), UVM_NONE)
+            end
+         end
       end
       // get irq_addr ack from CVA6 UVM env
       cfg.interrupt_cfg.irq_addr = cfg.get_irq_addr();
+
+      // The deterministic interrupt mode watches retired instructions to know
+      // when a hook address commits, so the interrupt agent needs the same
+      // instruction interface the scoreboard and the coverage models use.
+      if (!uvm_config_db#(virtual uvma_rvfi_instr_if)::get(this, "", "instr_vif0",
+                                                          cntxt.interrupt_cntxt.rvfi_instr_vif)) begin
+         if (cfg.interrupt_cfg.irq_deterministic) begin
+            `uvm_fatal("UVMECVA6ENV",
+                       "Deterministic interrupts asked for but instr_vif0 is not available")
+         end
+      end
 
       if ($test$plusargs("tandem_enabled"))
           $value$plusargs("tandem_enabled=%b",cfg.tandem_enabled);
@@ -270,7 +293,7 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       uvm_config_db#(uvma_axi_cfg_c)::set(this, "*axi_agent", "cfg", cfg.axi_cfg);
    end
    else begin
@@ -308,7 +331,7 @@ function void uvme_cva6_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cva6_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
      uvm_config_db#(uvma_axi_cntxt_c)::set(this, "axi_agent", "cntxt", cntxt.axi_cntxt);
    end else begin
      uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
@@ -335,7 +358,7 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       axi_agent     = uvma_axi_agent_c::type_id::create("axi_agent", this);
    end else begin
       obi_memory_instr_agent      = uvma_obi_memory_agent_c::type_id::create("obi_memory_instr_agent", this);
@@ -396,7 +419,7 @@ function void uvme_cva6_env_c::retrieve_vif();
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(axi_switch_vif)), UVM_DEBUG)
    end
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       if(cfg.axi_cfg.is_active == UVM_PASSIVE) begin
          axi_switch_vif.active <= 0;
       end else begin
@@ -445,7 +468,7 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer    = clknrst_agent.sequencer;
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
      vsequencer.axi_vsequencer       = axi_agent.vsequencer;
    end else begin
      vsequencer.obi_memory_instr_sequencer     = obi_memory_instr_agent.sequencer;
@@ -480,7 +503,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
    fork
 
       begin
-         if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+         if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
             if(cfg.axi_cfg.is_active == UVM_ACTIVE) begin
                uvma_axi_vseq_c  axi_vseq;
                axi_vseq = uvma_axi_vseq_c::type_id::create("axi_vseq");
@@ -490,7 +513,8 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin
-         if(cfg.interrupt_cfg.is_active == UVM_ACTIVE) begin
+         if(cfg.interrupt_cfg.is_active == UVM_ACTIVE
+            && (cfg.interrupt_cfg.enable_interrupt || cfg.interrupt_cfg.irq_deterministic)) begin
             uvma_interrupt_seq_c  interrupt_seq;
             interrupt_seq = uvma_interrupt_seq_c::type_id::create("interrupt_seq");
             interrupt_seq.start(interrupt_agent.sequencer);
@@ -504,7 +528,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : spawn_obi_instr_fw_preload_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
             if (!fw_preload_seq.randomize()) begin
                `uvm_fatal("FWPRELOAD", "Randomize failed");
@@ -514,7 +538,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
       end
 
       begin : obi_instr_slv_thread
-         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_instr_cfg.is_active == UVM_ACTIVE) begin
             instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
             if (!instr_slv_seq.randomize()) begin
                `uvm_fatal("INSTRSLVSEQ", "Randomize failed");
@@ -523,7 +547,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_store_slv_thread
-         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_store_cfg.is_active == UVM_ACTIVE) begin
             store_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("store_slv_seq");
             if (!store_slv_seq.randomize()) begin
                `uvm_fatal("STORESLVSEQ", "Randomize failed");
@@ -532,7 +556,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_amo_slv_thread
-         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.RVA) begin
+         if(cfg.obi_memory_amo_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.RVA) begin
             amo_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("amo_slv_seq");
             if (!amo_slv_seq.randomize()) begin
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
@@ -541,7 +565,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_zcmt_slv_thread
-         if(cfg.obi_memory_zcmt_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.RVZCMT) begin
+         if(cfg.obi_memory_zcmt_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.RVZCMT) begin
             zcmt_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("zcmt_slv_seq");
             if (!zcmt_slv_seq.randomize()) begin
                `uvm_fatal("AMOSLVSEQ", "Randomize failed");
@@ -550,7 +574,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_load_slv_thread
-         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT) begin
+         if(cfg.obi_memory_load_cfg.is_active == UVM_ACTIVE) begin
             load_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("load_slv_seq");
             if (!load_slv_seq.randomize()) begin
                `uvm_fatal("LOADSLVSEQ", "Randomize failed");
@@ -559,7 +583,7 @@ task uvme_cva6_env_c::run_phase(uvm_phase phase);
          end
       end
       begin : obi_mmu_ptw_slv_thread
-         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && !config_pkg::OBI_NOT_COMPLIANT && RTLCVA6Cfg.MmuPresent) begin
+         if(cfg.obi_memory_mmu_ptw_cfg.is_active == UVM_ACTIVE && RTLCVA6Cfg.MmuPresent) begin
             mmu_ptw_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("mmu_ptw_slv_seq");
             if (!mmu_ptw_slv_seq.randomize()) begin
                `uvm_fatal("MMUPTWSLVSEQ", "Randomize failed");
@@ -582,7 +606,7 @@ function void uvme_cva6_env_c::connect_coverage_model();
 
    clknrst_agent.mon_ap.connect(cov_model.reset_export);
 
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       if(cfg.axi_cfg.cov_model_enabled) begin
          axi_agent.monitor.m_uvma_axi_write_rsp_packets_collected.connect(cov_model.axi_covg.uvme_axi_cov_b_resp_fifo.analysis_export);
          axi_agent.monitor.m_uvma_axi_read_rsp_packets_collected .connect(cov_model.axi_covg.uvme_axi_cov_r_resp_fifo.analysis_export);

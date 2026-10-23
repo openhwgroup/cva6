@@ -37,7 +37,7 @@ _FIELD_RE = re.compile(r"^\s*(?P<name>\w+)\s*:\s*(?P<value>.*?),?\s*$")
 # A `localparam` a field may refer to
 _PARAM_RE = re.compile(r"^\s*localparam\b.*?\b(?P<name>\w+)\s*=\s*(?P<value>[^;]+);")
 
-# `bit'(1)`, `unsigned'(8)`, `int'(config_pkg::OBI_V1_6)`
+# `bit'(1)`, `unsigned'(8)`, `unsigned'(CVA6ConfigXlen)`
 _CAST_RE = re.compile(r"^(?P<type>\w+)\s*'\((?P<value>.*)\)$")
 
 # `32'h8000_0000`, `3'b101`, `'d42`

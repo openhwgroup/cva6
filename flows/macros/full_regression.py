@@ -57,6 +57,7 @@ from flows.recipes.quartus_fpga_build import quartus_fpga_build
 from flows.recipes.quartus_fpga_program import quartus_fpga_program
 from flows.recipes.report_html import report_html
 from flows.recipes.riscv_isa_modify import riscv_isa_modify
+from flows.recipes.rtl_lint import rtl_lint
 from flows.recipes.self_check import self_check
 from flows.recipes.spyglass_design_read import spyglass_design_read
 from flows.recipes.spyglass_run import spyglass_run, RunType
@@ -69,11 +70,13 @@ from flows.recipes.vcs_uvm_run import vcs_uvm_run
 from flows.recipes.verible_rtl_formating import verible_rtl_formating
 from flows.recipes.verilator_testharness_comp import verilator_testharness_comp
 from flows.recipes.verilator_testharness_run import verilator_testharness_run
+from flows.recipes.yosys_synth import yosys_synth
 from flows.recipes.vivado_fpga_build import vivado_fpga_build
 from flows.recipes.vivado_fpga_program import vivado_fpga_program
 from flows.utils.job_scheduler import JobFailure, Scheduler
 from flows.utils.fpga_board import is_altera_board
 from flows.utils.recipe_report import RecipeReport
+from flows.utils.rtl_config import parse_rtl_cfg
 from flows.utils.uart_boot import DEFAULT_EXPECT
 from flows.utils.autocompletion import (
     AlteraBoard,
@@ -109,78 +112,722 @@ TARGETS = [
     # OBI PMP noMMU
     "cv32a60x_zcmt_pmp",
     "cv32a65x",
+    # cv32a65x without the second issue port, for Zcmp on the scalar path
+    "cv32a65x_scalar",
+    # cv32a65x and cv32a65x_scalar without the C extension (nor Zcb, Zcmt and
+    # Zcmp): two 32-bit instructions per fetch, dual and single issue. No
+    # other target has RVC=0
+    "cv32a65x_noc",
+    "cv32a65x_noc_scalar",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi",
+    # cv64a6 OBI PMP noMMU without FPU, with Zcmt (which needs no MMU), and
+    # with Zcmp and Zcmt
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmt",
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmp_zcmt",
     # AXI PMP noMMU
     "cv32a60x_zcmt_pmp_axi",
     "cv32a65x_axi",
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi",
+    # cv64a6 AXI PMP noMMU without FPU, with Zcmt
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt",
     # OBI PMP MMU
     "cv32a6_imac_sv32_obi",
+    # cv32a6_imac_sv32_obi in superscalar mode with the ALU bypass: atomics and
+    # Sv32 with dual issue over OBI
+    "cv32a6_imac_sv32_obi_ss",
     "cv32a65x_sv32",
+    # cv32a65x_sv32 with big endian data accesses (BigEndianEn), which no
+    # target with the A extension can have
+    "cv32a65x_sv32_be",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi",
+    # cv64a6 OBI PMP MMU with the hypervisor extension
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi",
+    # cv64a6 OBI PMP MMU without FPU, with Zcmp (which excludes Zcd)
+    "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp",
+    # cv64a6 OBI PMP MMU without the A extension, with big endian data accesses
+    "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be",
+    # cv32a65x with Zcmp and without Zcmt
+    "cv32a65x_zcmp",
     # AXI PMP MMU
     "cv32a6_imac_sv32",
+    # cv32a6_imac_sv32 with single-precision floating point (RVF)
+    "cv32a6_imafc_sv32",
+    # cv32a6_imafc_sv32 in superscalar mode: the FPU and ALU2 sharing the
+    # writeback of the second issue port with FLEN 32
+    "cv32a6_imafc_sv32_ss",
+    # Sv32 without the B and Zkn extensions, one commit port, FpgaEn set
+    "cv32a6_ima_sv32_fpga",
     "cv32a65x_sv32_axi",
+    # cv32a65x_sv32_axi with big endian data accesses, through the HPDcache
+    "cv32a65x_sv32_be_axi",
+    # cv32a65x_sv32_axi with the write-back HPDcache
+    "cv32a65x_sv32_wb_axi",
+    # Sdtrig trigger module, every trigger type and match type enabled,
+    # across the three address-checking shapes: PMP only, neither PMP nor MMU,
+    # and MMU.
+    "cv32a65x_sdtrig",
+    "cv32a65x_noPMP_sdtrig",
+    "cv32a65x_sv32_sdtrig",
+    # Sdtrig on RV64: the 64-bit tdata1 layout, with two-phase loads and the
+    # load output register (NrLoadPipeRegs = 1)
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig",
+    # Sdtrig on RV64 with the HPDcache on AXI
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig",
+    # Sdtrig with the hypervisor extension: the vs and vu mode bits
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig",
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
+    # AXI PMP MMU without the C extension
+    "cv64a6_imafd_sv39_hpdcache_pmp_mmu_axi_noc",
+    # AXI PMP MMU with the alternative half-precision format and AXI burst writes
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt",
+    # AXI PMP MMU with Svnapot, without the shared TLB
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot",
+    # AXI PMP MMU with the data cache ECC and scrubber
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc",
+    # AXI PMP MMU with the write-back HPDcache
+    "cv64a6_imafdc_sv39_hpdcache_wb",
+    # AXI PMP MMU with an HPDcache that writes back in a bufferable region and
+    # writes through in the rest of the cacheable memory
+    "cv64a6_imafdc_sv39_hpdcache_wtwb",
+    # AXI PMP MMU with the hypervisor extension
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi",
+    # AXI PMP MMU with the hypervisor extension and the shared TLB
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_stlb",
+    # AXI PMP MMU in superscalar mode, with the FPU on both issue ports
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss",
 ]
 
 # Testlists run per target. A testlist whose
 # name ends with `_v` (virtual memory tests) needs the F extension, added
 # to the target ISA by the riscv-isa-modify recipe before compiling.
+#
+# Feature testlists follow the configuration of the target:
+#   base_rv32_fp_p, base_rv64_fp_p  RVF on RV32, RVD on RV64
+#   base_rv32_v, base_rv64_v  an MMU
+#   base_pmp       PMP entries
+#   base_rv64_pmp  PMP entries and RVA on RV64 (one test runs an AMO)
+#   base_rv64_pmp_mmu  PMP entries and an MMU on RV64
+#   base_rv32_amo_p, base_rv64_amo_p  RVA; base_rv32_amo_v, base_rv64_amo_v
+#                  RVA and an MMU
+#   base_zcmt, base_rv64_zcmt  RVZCMT on RV32, RV64
+#   base_rv32_ma_fetch, base_rv64_ma_fetch  every target built with GCC (the
+#                  test does not build with LLVM)
+#   base_csr       every target without RVH (base_rv64_h holds the RVH variant)
+#   base_zicbom    RVZiCbom, RVS and RVU
+#   base_zicbom_h  RVZiCbom and RVH
+#   base_rv64_h    RVH
+#   base_rv32_mmu  Sv32 with PMP entries (the tests program pmpcfg)
+#   base_be        BigEndianEn (big endian data accesses)
+#   base_rv32_be_mmu, base_rv64_be_mmu  BigEndianEn with Sv32, Sv39
+#   base_le        not BigEndianEn (endianness control bits read-only zero)
+#   base_ni        a non-idempotent region covering 0x1000
+#   base_obi       the OBI testbench (MEM_OBI), which injects bus errors
+#   base_zcmp, base_rv64_zcmp  RVZCMP on RV32, RV64
+#   dcache_wt, dcache_wb, dcache_wt_wb  CacheWritePolicy of an HPDcache with
+#                  RVZiCbom
+#   testlist_sdtrig, testlist_sdtrig_nommu  Sdtrig
+#   testlist_sdtrig_h  Sdtrig and RVH
 TESTLISTS = {
-    "cv32a60x": ["base_rv32_p", "base_zcmt"],
-    "cv32a60x_no_zcmt": ["base_rv32_p"],
-    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": ["base_rv64_p"],
-    "cv32a60x_axi": ["base_rv32_p", "base_zcmt"],
-    "cv32a60x_no_zcmt_axi": ["base_rv32_p"],
-    "cv32a65x_noPMP_axi": ["base_rv32_p", "base_zcmt"],
-    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": ["base_rv64_p"],
-    "cv32a60x_zcmt_pmp": ["base_rv32_p", "base_zcmt", "base_pmp"],
-    "cv32a65x": ["base_rv32_p", "base_zcmt", "base_pmp"],
+    "cv32a60x": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
+    "cv32a60x_no_zcmt": ["base_rv32_p", "base_csr", "base_le", "base_obi"],
+    "cv32a65x_noPMP": ["base_rv32_p", "base_zcmt", "base_csr", "base_le", "base_obi"],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_obi": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a60x_axi": [
+        "base_rv32_p",
+        "base_zcmt",
+        "dcache_ecc",
+        "base_csr",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv32a60x_no_zcmt_axi": [
+        "base_rv32_p",
+        "base_csr",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv32a65x_noPMP_axi": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_csr",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_nopmp_nommu_axi": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv32a60x_zcmt_pmp": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_zcmp",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_scalar": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_zcmp",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_noc": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_noc_scalar": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
         "base_pmp",
+        "base_rv64_pmp",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
     ],
-    "cv32a60x_zcmt_pmp_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
-    "cv32a65x_axi": ["base_rv32_p", "base_zcmt", "base_pmp"],
+    "cv32a60x_zcmt_pmp_axi": [
+        "base_rv32_p",
+        "base_zcmt",
+        "base_pmp",
+        "base_csr",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv32a65x_axi": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_zcmt",
+        "base_pmp",
+        "base_csr",
+        "dcache_wt",
+        "base_le",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_nommu_axi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
         "base_pmp",
+        "base_rv64_pmp",
         "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
     ],
     "cv32a6_imac_sv32_obi": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
+        "base_rv32_mmu",
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
+        "base_csr",
+        "base_le",
+        "base_ni",
+        "base_obi",
     ],
-    "cv32a65x_sv32": ["base_rv32_p", "base_rv32_v", "base_pmp"],
+    "cv32a6_imac_sv32_obi_ss": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_le",
+        "base_ni",
+        "base_obi",
+    ],
+    "cv32a65x_sv32": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_ni",
+        "base_obi",
+    ],
+    "cv32a65x_sv32_be": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_be",
+        "base_rv32_be_mmu",
+        "base_ni",
+        "base_obi",
+    ],
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_obi": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_mmu_obi_zcmp": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_zcmp",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imfdc_sv39_hpdcache_pmp_mmu_obi_be": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_rv64_pmp_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_be",
+        "base_rv64_be_mmu",
+        "base_obi",
     ],
     "cv32a6_imac_sv32": [
         "base_rv32_p",
+        "base_rv32_ma_fetch",
         "base_rv32_v",
+        "base_rv32_mmu",
         "base_pmp",
         "base_rv32_amo_p",
         "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+        "base_ni",
     ],
-    "cv32a65x_sv32_axi": ["base_rv32_p", "base_rv32_v", "base_pmp"],
-    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
+    "cv32a6_imafc_sv32": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_fp_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a6_imafc_sv32_ss": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_fp_p",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a65x_sv32_axi": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a65x_sv32_be_axi": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_be",
+        "base_rv32_be_mmu",
+        "base_ni",
+    ],
+    "cv32a65x_sv32_wb_axi": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wb",
+        "base_le",
+        "base_ni",
+    ],
+    "cv32a65x_sdtrig": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_zcmt",
+        "base_zcmp",
+        "base_pmp",
+        "testlist_sdtrig",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_noPMP_sdtrig": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_zcmt",
+        "testlist_sdtrig",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv32a65x_sv32_sdtrig": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_mmu",
+        "base_pmp",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+        "base_le",
+        "base_ni",
+        "base_obi",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_obi_sdtrig": [
         "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
         "base_rv64_v",
         "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
         "base_rv64_amo_p",
         "base_rv64_amo_v",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "testlist_sdtrig_nommu",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_fpalt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ss": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_zicbom",
+        "base_zicbom_h",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_stlb": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_zicbom",
+        "base_zicbom_h",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdch_sv39_hpdcache_pmp_mmu_axi_sdtrig": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_h",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_zicbom",
+        "base_zicbom_h",
+        "testlist_sdtrig_nommu",
+        "testlist_sdtrig_h",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_napot": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_svnapot",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv32a6_ima_sv32_fpga": [
+        "base_rv32_p",
+        "base_rv32_ma_fetch",
+        "base_rv32_v",
+        "base_rv32_amo_p",
+        "base_rv32_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi_ecc": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_ecc",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_wb": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wb",
+        "base_le",
+    ],
+    "cv64a6_imafdc_sv39_hpdcache_wtwb": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt_wb",
+        "base_le",
+    ],
+    "cv32a65x_zcmp": [
+        "base_rv32_p",
+        "base_zcmp",
+        "base_pmp",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_obi_zcmp_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmp",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_le",
+        "base_obi",
+    ],
+    "cv64a6_imac_sv39_hpdcache_pmp_nommu_axi_zcmt": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_zcmt",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_amo_p",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
+    ],
+    "cv64a6_imafd_sv39_hpdcache_pmp_mmu_axi_noc": [
+        "base_rv64_p",
+        "base_rv64_ma_fetch",
+        "base_rv64_fp_p",
+        "base_rv64_v",
+        "base_pmp",
+        "base_rv64_pmp",
+        "base_rv64_pmp_mmu",
+        "base_rv64_amo_p",
+        "base_rv64_amo_v",
+        "base_csr",
+        "base_zicbom",
+        "dcache_wt",
+        "base_le",
     ],
 }
+
 
 # Benchmark patterns, compiled with the same
 # toolchain for every target so the scores stay comparable
@@ -216,6 +863,10 @@ GTECH_TARGETS = [
     "cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi",
 ]
 
+# Values of the --<category>-targets options other than a list of targets
+ALL_TARGETS = "all"
+NO_TARGET = "none"
+
 # Per-test simulation timeout of the hello-world and testlist jobs: a
 # hung simulation must fail on its own instead of blocking the pipeline
 SIM_TIMEOUT = 300
@@ -226,7 +877,12 @@ SIM_TIMEOUT = 300
 # that passes, cm_push_pop_all, whose length depends on the memory stalls
 # the OBI agent draws; the benchmarks are much longer and keep the testbench
 # default.
-SIM_CYCLE_TIMEOUT = 300000
+SIM_CYCLE_TIMEOUT = 200000
+
+# Cycle budget of the testlists run in virtual memory (name ending in _v):
+# their environment builds the page tables and walks every page before the
+# test, through the MMU and the memory stalls. Twice the longest that passes.
+SIM_CYCLE_TIMEOUT_V = 600000
 
 # Benchmarks are long: they keep the default recipe timeout
 BENCHMARK_SIM_TIMEOUT = 3000
@@ -296,12 +952,26 @@ def _recipe(recipe, **kwargs):
             raise JobFailure(f"recipe failed (exit code {code})") from exc
 
 
+# Toolchain of a target that has no my_<target>_toolchain entry in
+# $CONFIG_DIR/compiler.yml, so a configuration created on the fly runs
+# without editing it
+DEFAULT_TOOLCHAIN = "default_toolchain"
+
+
 def _toolchain(name):
     "Resolve a toolchain name declared in $CONFIG_DIR/compiler.yml"
     try:
         return ToolchainOption(name)
     except ValueError as exc:
         raise JobFailure(f"unknown toolchain: {name}") from exc
+
+
+def _target_toolchain(target):
+    "Toolchain of a target: its own entry, else the default one"
+    try:
+        return ToolchainOption(f"my_{target}_toolchain")
+    except ValueError:
+        return _toolchain(DEFAULT_TOOLCHAIN)
 
 
 def _yaml_key(path, key):
@@ -348,6 +1018,15 @@ def _march_with_f(target, quiet):
 # graph below. A job that chains several recipes fails as soon as one of
 # them fails, except the testlist loops: every testlist is played, then
 # the job fails.
+
+
+def _rtl_cfg_bool(target, name):
+    "A bit field of the configuration package of `target`, False when unread"
+    cfg = Path.cwd() / "config" / "target" / target / "rtl_cfg_pkg.sv"
+    try:
+        return bool(parse_rtl_cfg(cfg).get(name))
+    except OSError:
+        return False
 
 
 def _hier(target):
@@ -512,7 +1191,7 @@ def _job_sw_compile(target, quiet):
     _recipe(
         hello_world,
         target=target,
-        toolchain=_toolchain(f"my_{target}_toolchain"),
+        toolchain=_target_toolchain(target),
         march=None,
         mabi=None,
         quiet=quiet,
@@ -570,6 +1249,7 @@ def _job_run(
         sim_profile=False,
         interactive_gui=False,
         run_opts=[],
+        irq_delay=[],
         uvm_seed=str(random.getrandbits(31)),
         sim_timeout=timeout,
         cycle_timeout=cycle_timeout,
@@ -592,7 +1272,7 @@ def _job_testlist_compile(target, quiet):
             _recipe(
                 sw_compile_testlist,
                 target=target,
-                toolchain=_toolchain(f"my_{target}_toolchain"),
+                toolchain=_target_toolchain(target),
                 testlist=f"verif/tests/{testlist}.yaml",
                 test_name=None,
                 march=march,
@@ -627,7 +1307,11 @@ def _job_testlist_run(target, quiet):
                 run_opts=[],
                 uvm_seed=str(random.getrandbits(31)),
                 sim_timeout=SIM_TIMEOUT,
-                cycle_timeout=SIM_CYCLE_TIMEOUT,
+                cycle_timeout=(
+                    SIM_CYCLE_TIMEOUT_V
+                    if testlist.endswith("_v")
+                    else SIM_CYCLE_TIMEOUT
+                ),
                 quiet=quiet,
             )
         except JobFailure:
@@ -704,9 +1388,37 @@ def _add_fpga_jobs(scheduler, target, board, elab_job, deps_job, quiet):
     )
 
 
-def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
+def _select_targets(value, default, targets):
+    """
+    Targets of one job category from its --<category>-targets option.
+
+    `value` is a comma or space separated list of targets, `all` for every
+    target of the run, `none` for no target, or empty for `default`. The
+    result keeps the order of `targets`, and a target outside the run is
+    left out: it returns the selected targets and the ones of an explicit
+    list that are not in the run (a default list narrowed by --target is
+    not worth a message).
+    """
+    names = value.replace(",", " ").split() if value else None
+    if names is None:
+        wanted = default
+    elif names == [ALL_TARGETS]:
+        wanted = targets
+    elif names == [NO_TARGET]:
+        wanted = []
+    else:
+        wanted = names
+    selected = [t for t in targets if t in wanted]
+    ignored = [t for t in wanted if t not in targets] if names else []
+    return selected, ignored
+
+
+def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet, selection):
     """
     Add every pipeline job to the scheduler.
+
+    `selection` maps a job category (docs, spyglass, gtech, synth) to the
+    targets it runs on, see _select_targets().
 
     `scheduler.add()` takes the job name, the deferred call, the
     directory holding the cook_report.yml of the recipe, and returns the
@@ -754,7 +1466,17 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
     for target in targets:
         target_dir = build / target
 
-        if target in SPYGLASS_TARGETS:
+        # Open-source lint of every target: no licence, a minute or two, so
+        # the targets Spyglass skips are linted too (those it covers get both)
+        scheduler.add(
+            f"rtl-lint:{target}",
+            partial(
+                _recipe, rtl_lint, target=target, update_baseline=False, quiet=quiet
+            ),
+            target_dir / "rtl_lint",
+        )
+
+        if target in selection["spyglass"]:
             scheduler.add(
                 f"spyglass:{target}",
                 partial(_job_spyglass, target=target, quiet=quiet),
@@ -762,7 +1484,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
                 resource=SPYGLASS,
             )
 
-        if target in DOCS_TARGETS:
+        if target in selection["docs"]:
             # Depends on nothing and takes no licence, so it fills a slot
             # while the elaborations hold theirs. The rendered documents
             # stay in build/<target>/docs/, where merge-reports collects
@@ -945,10 +1667,24 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
                 continue
             _add_fpga_jobs(scheduler, target, board, elab_job, deps_job, quiet)
 
+        # --- Open-source synthesis -------------------------------------
+        # Every target, no licence: after the RTL elaboration, like the
+        # GTECH synthesis, so a design that does not elaborate fails once.
+        # Not the FPGA targets: their memories are the dual-port RAMs of the
+        # FPGA vendors, written from two processes, which only an FPGA
+        # synthesis infers
+        if not _rtl_cfg_bool(target, "FpgaEn"):
+            scheduler.add(
+                f"yosys-synth:{target}",
+                partial(_recipe, yosys_synth, target=target, quiet=quiet),
+                target_dir / "synthesis_yosys",
+                deps=[elab_job],
+            )
+
         # --- GTECH synthesis ------------------------------------------
         # After the RTL elaboration, like the bitstream: a design that
         # does not elaborate would hold a DC licence to fail the same way
-        if target in GTECH_TARGETS:
+        if target in selection["gtech"]:
             scheduler.add(
                 f"synthesis-gtech:{target}",
                 partial(_job_gtech_synth, target=target, quiet=quiet),
@@ -959,7 +1695,7 @@ def _build_graph(scheduler, targets, techno, period, fpga, altera, quiet):
 
         # --- ASIC synthesis and gate-level simulation -----------------
         # Needs a techno, so enabled only when --techno is given
-        if techno is not None:
+        if techno is not None and target in selection["synth"]:
             synth_job = scheduler.add(
                 f"synthesis:{target}",
                 partial(
@@ -1029,6 +1765,26 @@ def full_regression(
         None, help="Enable the synthesis stage with this techno (disabled by default)"
     ),
     period: str = typer.Option("15", help="Synthesis target period"),
+    docs_targets: str = typer.Option(
+        "",
+        help="Targets the documentation is built for: comma separated list, "
+        "'all' or 'none' (default: DOCS_TARGETS)",
+    ),
+    spyglass_targets: str = typer.Option(
+        "",
+        help="Targets of the Spyglass lint: comma separated list, 'all' or "
+        "'none' (default: SPYGLASS_TARGETS)",
+    ),
+    gtech_targets: str = typer.Option(
+        "",
+        help="Targets of the GTECH synthesis: comma separated list, 'all' or "
+        "'none' (default: GTECH_TARGETS)",
+    ),
+    synth_targets: str = typer.Option(
+        "",
+        help="Targets of the techno synthesis and gate-level simulation, with "
+        "--techno: comma separated list, 'all' or 'none' (default: all)",
+    ),
     fpga: bool = typer.Option(
         True,
         help="Build, program and boot the Xilinx FPGA images (needs Vivado and "
@@ -1054,6 +1810,19 @@ def full_regression(
     repo_dir = Path.cwd()
     targets = list(target) or TARGETS
 
+    # Targets of each job category, within the targets of the run
+    selection = {}
+    ignored = {}
+    for category, value, default in (
+        ("docs", docs_targets, DOCS_TARGETS),
+        ("spyglass", spyglass_targets, SPYGLASS_TARGETS),
+        ("gtech", gtech_targets, GTECH_TARGETS),
+        ("synth", synth_targets, targets),
+    ):
+        selection[category], ignored[category] = _select_targets(
+            value, default, targets
+        )
+
     report = RecipeReport(
         "full-regression",
         out_dir=repo_dir / "build" / "full_regression",
@@ -1069,6 +1838,10 @@ def full_regression(
             "synth_licenses": synth_licenses,
             "techno": techno,
             "period": period,
+            "docs_targets": selection["docs"],
+            "spyglass_targets": selection["spyglass"],
+            "gtech_targets": selection["gtech"],
+            "synth_targets": selection["synth"],
             "fpga": fpga,
             "altera": altera,
             "vivado_licenses": vivado_licenses,
@@ -1081,6 +1854,23 @@ def full_regression(
     unknown = [t for t in targets if not (repo_dir / "config" / "target" / t).is_dir()]
     if unknown:
         report.error_exit(f"Unknown target(s): {', '.join(unknown)}", env=True)
+
+    # A target of a category that is not a target at all is a typo, which
+    # would silently drop the job: fail. One that exists but is not run
+    # (--target narrowed the run) is only left out.
+    for category, names in ignored.items():
+        unknown = [
+            t for t in names if not (repo_dir / "config" / "target" / t).is_dir()
+        ]
+        if unknown:
+            report.error_exit(
+                f"Unknown target(s) in --{category}-targets: {', '.join(unknown)}",
+                env=True,
+            )
+        if names:
+            report.info(
+                f"--{category}-targets: not in the run, left out: {', '.join(names)}"
+            )
 
     # Recipes write to a single shared console: their output would be
     # interleaved as soon as two of them run together. In parallel mode
@@ -1126,7 +1916,7 @@ def full_regression(
         max_workers=jobs,
         on_event=on_event,
     )
-    _build_graph(scheduler, targets, techno, period, fpga, altera, sub_quiet)
+    _build_graph(scheduler, targets, techno, period, fpga, altera, sub_quiet, selection)
     total[0] = len(scheduler.jobs)
 
     missing = scheduler.unknown_deps()

@@ -426,7 +426,7 @@ Address register for Physical Memory Protection.
 | --- | ----------- | ------------       | ------ | -------------------------------------------------------------------- |
 | 31:0 | address | Address | read-write,WARL  | Address register for Physical Memory Protection\.|
 
-## Instuction Cache Register 
+## Instruction Cache Register 
 ### *AddressOffset*: 'h7C0 
 ### *Description*:
 Custom Register to enable/disable for Icache [bit 0]

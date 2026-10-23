@@ -59,9 +59,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    // Zicond extension
    rand bit                      ext_zicond_supported;
 
-   // HPDcache support
-   rand bit                      HPDCache_supported;
-
    // pmp entries
    rand int                      nr_pmp_entries;
 
@@ -86,7 +83,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         force_disable_csr_checks    , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zicond_supported        , UVM_DEFAULT          )
-      `uvm_field_int (                         HPDCache_supported          , UVM_DEFAULT          )
       `uvm_field_int (                         nr_pmp_entries              , UVM_DEFAULT          )
       `uvm_field_int (                         ext_zihpm_supported         , UVM_DEFAULT          )
       `uvm_field_int (                         MmuPresent                  , UVM_DEFAULT          )
@@ -135,7 +131,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zihpm_supported    == 0;
       ext_zicond_supported   == RTLCVA6Cfg.RVZiCond;
 
-      nr_pmp_entries         == 64;
+      nr_pmp_entries         == RTLCVA6Cfg.NrPMPEntries;
 
       unaligned_access_supported     == 0;
       unaligned_access_amo_supported == 0;
@@ -149,7 +145,6 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
       dm_halt_addr_valid      == 1;
       dm_exception_addr_valid == 1;
       nmi_addr_valid          == 1;
-      HPDCache_supported      == (RTLCVA6Cfg.DCacheType == 2);
 
       MmuPresent              == RTLCVA6Cfg.MmuPresent;
       sw_int_supported        == RTLCVA6Cfg.SoftwareInterruptEn;
@@ -166,7 +161,9 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          nr_pmp_entries == 0;
       }
       else {
-         nr_pmp_entries inside {0, 16, 64};
+         //  NrPMPEntries is free-form in the RTL configuration, 8 among others,
+         //  so the count is taken from it rather than from a fixed list.
+         nr_pmp_entries inside {[0:64]};
       }
    }
 
@@ -192,7 +189,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint mem_sel_cons {
-      if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) {
+      if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) {
          interrupt_cfg.mem_axi_sel == 1;
          interrupt_cfg.mem_obi_sel == 0;
       } else {
@@ -380,7 +377,7 @@ class uvme_cva6_cfg_c extends uvma_core_cntrl_cfg_c;
          rvfi_cfg.is_active           == UVM_PASSIVE;
          interrupt_cfg.is_active      == UVM_ACTIVE;
 
-         if (RTLCVA6Cfg.PipelineOnly) {
+         if (RTLCVA6Cfg.MemSubsystem == config_pkg::MEM_OBI) {
             obi_memory_instr_cfg.is_active == UVM_ACTIVE;
             obi_memory_store_cfg.is_active == UVM_ACTIVE;
             obi_memory_amo_cfg.is_active == UVM_ACTIVE;
@@ -584,18 +581,13 @@ function void uvme_cva6_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[uvma_core_cntrl_pkg::MINSTRETH] = 1;
    end
 
-   // Remove unsupported pmp CSRs
-   if (nr_pmp_entries == 0) begin
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'hffff;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'hffffffffffffffff;
+   // Remove the pmp CSRs beyond NrPMPEntries: one pmpaddr register per entry,
+   // four entries per pmpcfg register on RV32.
+   for (int i = 0; i < 64; i++) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+i] = (i >= nr_pmp_entries);
    end
-   else if (nr_pmp_entries == 16) begin
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG4+:12]   = 12'hfff;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR16+:48] = 48'hffffffffffff;
-   end
-   else if (nr_pmp_entries == 64) begin //if pmp entries is 64 we support all the pmp CSRs
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+:16]  = 16'h0;
-       unsupported_csr_mask[uvma_core_cntrl_pkg::PMPADDR0+:64] = 64'h0;
+   for (int i = 0; i < 16; i++) begin
+      unsupported_csr_mask[uvma_core_cntrl_pkg::PMPCFG0+i] = (i * 4 >= nr_pmp_entries);
    end
 
 endfunction : set_unsupported_csr_mask

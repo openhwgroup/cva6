@@ -64,8 +64,10 @@ def self_check(
         ("vsim", "Questa/ModelSim - Siemens simulator"),
         ("vlog", "Questa/ModelSim - Verilog compiler"),
         ("vopt", "Questa/ModelSim - Optimizer"),
-        ("verilator", "Verilator - open-source simulator, TestHarness only"),
+        ("verilator", "Verilator - open-source simulator, TestHarness and RTL lint"),
+        ("slang", "slang - SystemVerilog compiler, RTL lint (else pyslang)"),
         ("dc_shell", "Design Compiler - Synopsys synthesis"),
+        ("yosys", "Yosys - open-source synthesis, with its slang plugin"),
         ("pt_shell", "PrimeTime - Synopsys STA"),
         ("aipk_read", "Spyglass - Synopsys static analysis"),
         ("aipk_run", "Spyglass - Synopsys static analysis"),
@@ -101,6 +103,37 @@ def self_check(
         else:
             report.warning(f"{tool_name} ({description}): Not found")
             tool_results.add_row(tool=tool_name, description=description, path="")
+
+    # rtl-lint falls back on the pyslang module when the slang binary is
+    # not installed: only both missing leaves the lint without slang
+    if "slang" not in found:
+        try:
+            import pyslang  # pylint: disable=import-outside-toplevel
+
+            report.success(
+                f"pyslang {getattr(pyslang, '__version__', '')}: replaces slang for rtl-lint"
+            )
+        except ImportError:
+            report.warning(
+                "pyslang: Not found either, rtl-lint cannot run "
+                "(pip3 install -r flows/requirements.txt)"
+            )
+
+    # yosys-synth reads the SystemVerilog through the slang plugin, which a
+    # plain Yosys build does not carry
+    if "yosys" in found:
+        output = run_cmd(
+            cmd=["yosys", "-q", "-p", "plugin -i slang"],
+            report=report,
+            check=False,
+            capture_output=True,
+            log_file=None,
+            timeout=60,
+        )
+        if "ERROR" in (output or ""):
+            report.warning("yosys: no slang plugin, yosys-synth cannot read the RTL")
+        else:
+            report.success("yosys: slang plugin loads")
 
     if not found.intersection(simulators):
         report.error(

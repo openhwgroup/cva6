@@ -10,6 +10,7 @@
 // Description: CVA6 Interface adapter YPB to OBI
 
 `include "obi/typedef.svh"
+`include "utils_macros.svh"
 
 module cva6_obi_adapter_subsystem
 //  Parameters
@@ -134,8 +135,8 @@ module cva6_obi_adapter_subsystem
       return 6'h0C;  // unused, not part of riscv spec, but provided in OpenPiton
       ariane_pkg::AMO_CAS2:
       return 6'h0D;  // unused, not part of riscv spec, but provided in OpenPiton
+      default: return 6'h0;
     endcase
-    return 8'b0;
   endfunction
 
   obi_fetch_req_t obi_fetch_req;
@@ -176,11 +177,11 @@ module cva6_obi_adapter_subsystem
   assign obi_fetch_req.a.we = ypb_fetch_req_i.we;
   assign obi_fetch_req.a.be = ypb_fetch_req_i.be;
   assign obi_fetch_req.a.wdata = ypb_fetch_req_i.wdata;
-  assign obi_fetch_req.a.aid = ypb_fetch_req_i.aid;
+  assign obi_fetch_req.a.aid = $bits(obi_fetch_req.a.aid)'(ypb_fetch_req_i.aid);
   assign obi_fetch_req.a.a_optional.auser = '0;
   assign obi_fetch_req.a.a_optional.wuser = '0;
   assign obi_fetch_req.a.a_optional.atop = '0;
-  assign obi_fetch_req.a.a_optional.memtype[0] = '0;
+  assign obi_fetch_req.a.a_optional.memtype[0] = ypb_fetch_req_i.bufferable;
   assign obi_fetch_req.a.a_optional.memtype[1] = ypb_fetch_req_i.cacheable;
   assign obi_fetch_req.a.a_optional.mid = '0;
   assign obi_fetch_req.a.a_optional.prot[0] = ypb_fetch_req_i.access_type;
@@ -196,11 +197,11 @@ module cva6_obi_adapter_subsystem
   assign obi_store_req.a.we = ypb_store_req_i.we;
   assign obi_store_req.a.be = ypb_store_req_i.be;
   assign obi_store_req.a.wdata = ypb_store_req_i.wdata;
-  assign obi_store_req.a.aid = ypb_store_req_i.aid;
+  assign obi_store_req.a.aid = $bits(obi_store_req.a.aid)'(ypb_store_req_i.aid);
   assign obi_store_req.a.a_optional.auser = '0;
   assign obi_store_req.a.a_optional.wuser = '0;
   assign obi_store_req.a.a_optional.atop = '0;
-  assign obi_store_req.a.a_optional.memtype[0] = '0;
+  assign obi_store_req.a.a_optional.memtype[0] = ypb_store_req_i.bufferable;
   assign obi_store_req.a.a_optional.memtype[1] = ypb_store_req_i.cacheable;
   assign obi_store_req.a.a_optional.mid = '0;
   assign obi_store_req.a.a_optional.prot[0] = ypb_store_req_i.access_type;
@@ -216,11 +217,11 @@ module cva6_obi_adapter_subsystem
   assign obi_amo_req.a.we = ypb_amo_req_i.we;
   assign obi_amo_req.a.be = ypb_amo_req_i.be;
   assign obi_amo_req.a.wdata = ypb_amo_req_i.wdata;
-  assign obi_amo_req.a.aid = ypb_amo_req_i.aid;
+  assign obi_amo_req.a.aid = $bits(obi_amo_req.a.aid)'(ypb_amo_req_i.aid);
   assign obi_amo_req.a.a_optional.auser = '0;
   assign obi_amo_req.a.a_optional.wuser = '0;
   assign obi_amo_req.a.a_optional.atop = amo_cva6_to_obi(ypb_amo_req_i.atop);
-  assign obi_amo_req.a.a_optional.memtype[0] = '0;
+  assign obi_amo_req.a.a_optional.memtype[0] = ypb_amo_req_i.bufferable;
   assign obi_amo_req.a.a_optional.memtype[1] = ypb_amo_req_i.cacheable;
   assign obi_amo_req.a.a_optional.mid = '0;
   assign obi_amo_req.a.a_optional.prot[0] = ypb_amo_req_i.access_type;
@@ -230,17 +231,35 @@ module cva6_obi_adapter_subsystem
   assign obi_amo_req.rready = ypb_amo_req_i.rready;
   assign obi_amo_req.rreadypar = !ypb_amo_req_i.rready;
 
+  // With TwoPhaseReq, be and aid come with the YPB first phase (YPB 4.1) and
+  // are held for the OBI address phase. vgnt stays low while a physical phase
+  // waits for its grant, so they belong to the request on the bus.
+  logic [CVA6Cfg.XLEN/8-1:0] load_vphase_be_q;
+  logic [$bits(ypb_load_req_i.aid)-1:0] load_vphase_aid_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      load_vphase_be_q  <= '0;
+      load_vphase_aid_q <= '0;
+    end else if (ypb_load_req_i.vreq && ypb_load_rsp_o.vgnt) begin
+      load_vphase_be_q  <= ypb_load_req_i.be;
+      load_vphase_aid_q <= ypb_load_req_i.aid;
+    end
+  end
+
   assign obi_load_req.req = ypb_load_req_i.preq;
   assign obi_load_req.reqpar = !ypb_load_req_i.preq;
   assign obi_load_req.a.addr = ypb_load_req_i.paddr;
   assign obi_load_req.a.we = ypb_load_req_i.we;
-  assign obi_load_req.a.be = ypb_load_req_i.be;
+  assign obi_load_req.a.be = CVA6Cfg.TwoPhaseReq ? load_vphase_be_q : ypb_load_req_i.be;
   assign obi_load_req.a.wdata = ypb_load_req_i.wdata;
-  assign obi_load_req.a.aid = ypb_load_req_i.aid;
+  assign obi_load_req.a.aid = $bits(
+      obi_load_req.a.aid
+  )'(CVA6Cfg.TwoPhaseReq ? load_vphase_aid_q : ypb_load_req_i.aid);
   assign obi_load_req.a.a_optional.auser = '0;
   assign obi_load_req.a.a_optional.wuser = '0;
   assign obi_load_req.a.a_optional.atop = '0;
-  assign obi_load_req.a.a_optional.memtype[0] = '0;
+  assign obi_load_req.a.a_optional.memtype[0] = ypb_load_req_i.bufferable;
   assign obi_load_req.a.a_optional.memtype[1] = ypb_load_req_i.cacheable;
   assign obi_load_req.a.a_optional.mid = '0;
   assign obi_load_req.a.a_optional.prot[0] = ypb_load_req_i.access_type;
@@ -256,11 +275,11 @@ module cva6_obi_adapter_subsystem
   assign obi_mmu_ptw_req.a.we = ypb_mmu_ptw_req_i.we;
   assign obi_mmu_ptw_req.a.be = ypb_mmu_ptw_req_i.be;
   assign obi_mmu_ptw_req.a.wdata = ypb_mmu_ptw_req_i.wdata;
-  assign obi_mmu_ptw_req.a.aid = ypb_mmu_ptw_req_i.aid;
+  assign obi_mmu_ptw_req.a.aid = $bits(obi_mmu_ptw_req.a.aid)'(ypb_mmu_ptw_req_i.aid);
   assign obi_mmu_ptw_req.a.a_optional.auser = '0;
   assign obi_mmu_ptw_req.a.a_optional.wuser = '0;
   assign obi_mmu_ptw_req.a.a_optional.atop = '0;
-  assign obi_mmu_ptw_req.a.a_optional.memtype[0] = '0;
+  assign obi_mmu_ptw_req.a.a_optional.memtype[0] = ypb_mmu_ptw_req_i.bufferable;
   assign obi_mmu_ptw_req.a.a_optional.memtype[1] = ypb_mmu_ptw_req_i.cacheable;
   assign obi_mmu_ptw_req.a.a_optional.mid = '0;
   assign obi_mmu_ptw_req.a.a_optional.prot[0] = ypb_mmu_ptw_req_i.access_type;
@@ -276,11 +295,11 @@ module cva6_obi_adapter_subsystem
   assign obi_zcmt_req.a.we = ypb_zcmt_req_i.we;
   assign obi_zcmt_req.a.be = ypb_zcmt_req_i.be;
   assign obi_zcmt_req.a.wdata = ypb_zcmt_req_i.wdata;
-  assign obi_zcmt_req.a.aid = ypb_zcmt_req_i.aid;
+  assign obi_zcmt_req.a.aid = $bits(obi_zcmt_req.a.aid)'(ypb_zcmt_req_i.aid);
   assign obi_zcmt_req.a.a_optional.auser = '0;
   assign obi_zcmt_req.a.a_optional.wuser = '0;
   assign obi_zcmt_req.a.a_optional.atop = '0;
-  assign obi_zcmt_req.a.a_optional.memtype[0] = '0;
+  assign obi_zcmt_req.a.a_optional.memtype[0] = ypb_zcmt_req_i.bufferable;
   assign obi_zcmt_req.a.a_optional.memtype[1] = ypb_zcmt_req_i.cacheable;
   assign obi_zcmt_req.a.a_optional.mid = '0;
   assign obi_zcmt_req.a.a_optional.prot[0] = ypb_zcmt_req_i.access_type;
@@ -303,44 +322,92 @@ module cva6_obi_adapter_subsystem
   assign ypb_fetch_rsp_o.pgnt = obi_fetch_rsp.gnt;
   assign ypb_fetch_rsp_o.rvalid = obi_fetch_rsp.rvalid;
   assign ypb_fetch_rsp_o.rdata = obi_fetch_rsp.r.rdata;
-  assign ypb_fetch_rsp_o.rid = obi_fetch_rsp.r.rid;
+  assign ypb_fetch_rsp_o.rid = $bits(ypb_fetch_rsp_o.rid)'(obi_fetch_rsp.r.rid);
   assign ypb_fetch_rsp_o.err = obi_fetch_rsp.r.err;
   assign ypb_fetch_rsp_o.vgnt = '1;
 
   assign ypb_store_rsp_o.pgnt = obi_store_rsp.gnt;
   assign ypb_store_rsp_o.rvalid = obi_store_rsp.rvalid;
   assign ypb_store_rsp_o.rdata = obi_store_rsp.r.rdata;
-  assign ypb_store_rsp_o.rid = obi_store_rsp.r.rid;
+  assign ypb_store_rsp_o.rid = $bits(ypb_store_rsp_o.rid)'(obi_store_rsp.r.rid);
   assign ypb_store_rsp_o.err = obi_store_rsp.r.err;
   assign ypb_store_rsp_o.vgnt = '1;
 
   assign ypb_amo_rsp_o.pgnt = obi_amo_rsp.gnt;
   assign ypb_amo_rsp_o.rvalid = obi_amo_rsp.rvalid;
   assign ypb_amo_rsp_o.rdata = obi_amo_rsp.r.rdata;
-  assign ypb_amo_rsp_o.rid = obi_amo_rsp.r.rid;
+  assign ypb_amo_rsp_o.rid = $bits(ypb_amo_rsp_o.rid)'(obi_amo_rsp.r.rid);
   assign ypb_amo_rsp_o.err = obi_amo_rsp.r.err;
   assign ypb_amo_rsp_o.vgnt = '1;
 
   assign ypb_load_rsp_o.pgnt = obi_load_rsp.gnt;
   assign ypb_load_rsp_o.rvalid = obi_load_rsp.rvalid;
   assign ypb_load_rsp_o.rdata = obi_load_rsp.r.rdata;
-  assign ypb_load_rsp_o.rid = obi_load_rsp.r.rid;
+  assign ypb_load_rsp_o.rid = $bits(ypb_load_rsp_o.rid)'(obi_load_rsp.r.rid);
   assign ypb_load_rsp_o.err = obi_load_rsp.r.err;
-  assign ypb_load_rsp_o.vgnt = '1;
+  assign ypb_load_rsp_o.vgnt = !(CVA6Cfg.TwoPhaseReq && ypb_load_req_i.preq && !obi_load_rsp.gnt);
 
   assign ypb_mmu_ptw_rsp_o.pgnt = obi_mmu_ptw_rsp.gnt;
   assign ypb_mmu_ptw_rsp_o.rvalid = obi_mmu_ptw_rsp.rvalid;
   assign ypb_mmu_ptw_rsp_o.rdata = obi_mmu_ptw_rsp.r.rdata;
-  assign ypb_mmu_ptw_rsp_o.rid = obi_mmu_ptw_rsp.r.rid;
+  assign ypb_mmu_ptw_rsp_o.rid = $bits(ypb_mmu_ptw_rsp_o.rid)'(obi_mmu_ptw_rsp.r.rid);
   assign ypb_mmu_ptw_rsp_o.err = obi_mmu_ptw_rsp.r.err;
   assign ypb_mmu_ptw_rsp_o.vgnt = '1;
 
   assign ypb_zcmt_rsp_o.pgnt = obi_zcmt_rsp.gnt;
   assign ypb_zcmt_rsp_o.rvalid = obi_zcmt_rsp.rvalid;
   assign ypb_zcmt_rsp_o.rdata = obi_zcmt_rsp.r.rdata;
-  assign ypb_zcmt_rsp_o.rid = obi_zcmt_rsp.r.rid;
+  assign ypb_zcmt_rsp_o.rid = $bits(ypb_zcmt_rsp_o.rid)'(obi_zcmt_rsp.r.rid);
   assign ypb_zcmt_rsp_o.err = obi_zcmt_rsp.r.err;
   assign ypb_zcmt_rsp_o.vgnt = '1;
 
+
+  //pragma translate_off
+  // memtype carries the PMA of the address of a request: bit 1 cacheable,
+  // bit 0 bufferable.
+  function automatic logic [1:0] pma_memtype(logic [CVA6Cfg.PLEN-1:0] addr);
+    return {
+      config_pkg::is_inside_cacheable_regions(CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, addr}),
+      config_pkg::is_inside_bufferable_regions(CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, addr})
+    };
+  endfunction
+
+  memtype_fetch_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_fetch_req.req
+        |-> obi_fetch_req.a.a_optional.memtype == pma_memtype(
+      obi_fetch_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] fetch memtype differs from the PMA of its address");
+  memtype_store_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_store_req.req
+        |-> obi_store_req.a.a_optional.memtype == pma_memtype(
+      obi_store_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] store memtype differs from the PMA of its address");
+  memtype_amo_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_amo_req.req
+        |-> obi_amo_req.a.a_optional.memtype == pma_memtype(
+      obi_amo_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] AMO memtype differs from the PMA of its address");
+  memtype_load_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_load_req.req
+        |-> obi_load_req.a.a_optional.memtype == pma_memtype(
+      obi_load_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] load memtype differs from the PMA of its address");
+  memtype_mmu_ptw_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_mmu_ptw_req.req
+        |-> obi_mmu_ptw_req.a.a_optional.memtype == pma_memtype(
+      obi_mmu_ptw_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] page table walk memtype differs from the PMA of its address");
+  memtype_zcmt_pma :
+  assert property (@(posedge clk_i) disable iff (!rst_ni) obi_zcmt_req.req
+        |-> obi_zcmt_req.a.a_optional.memtype == pma_memtype(
+      obi_zcmt_req.a.addr
+  ))
+  else `ASSERT_ERROR("[obi_adapter] Zcmt memtype differs from the PMA of its address");
+  //pragma translate_on
 
 endmodule : cva6_obi_adapter_subsystem

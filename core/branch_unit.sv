@@ -100,7 +100,7 @@ module branch_unit #(
       end
       if (fu_data_i.operation == ariane_pkg::JALR
           // check if the address of the jump register is correct and that we actually predicted
-          && (branch_predict_i.cf == ariane_pkg::NoCF || target_address != branch_predict_i.predict_address)) begin
+          && (!branch_predict_i.valid || target_address != branch_predict_i.predict_address)) begin
         resolved_branch_o.is_mispredict = 1'b1;
         // update BTB only if this wasn't a return
         if (branch_predict_i.cf != ariane_pkg::Return)
@@ -120,7 +120,9 @@ module branch_unit #(
     branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
     branch_exception_o.valid = 1'b0;
     if (CVA6Cfg.TvalEn)
-      branch_exception_o.tval = {{CVA6Cfg.XLEN - CVA6Cfg.VLEN{pc_i[CVA6Cfg.VLEN-1]}}, pc_i};
+      branch_exception_o.tval = {
+        {CVA6Cfg.XLEN - CVA6Cfg.VLEN{target_address[CVA6Cfg.VLEN-1]}}, target_address
+      };
     else branch_exception_o.tval = '0;
     branch_exception_o.tval2 = {CVA6Cfg.GPLEN{1'b0}};
     branch_exception_o.tinst = '0;

@@ -97,7 +97,7 @@ function uvme_cva6_cntxt_c::new(string name="uvme_cva6_cntxt");
 
    clknrst_cntxt      = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
    core_cntrl_cntxt   = uvma_cva6_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       axi_cntxt          = uvma_axi_cntxt_c::type_id::create("axi_cntxt");
    end else begin
       obi_memory_instr_cntxt       = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");

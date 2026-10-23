@@ -33,10 +33,10 @@ pip3 install -r requirements.txt
 ##  Usage 
 
 ```bash
-#Generate Restructred-text documentation for Control and Status Registers (CSR)
+#Generate Restructured-text documentation for Control and Status Registers (CSR)
 python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -c <../riscv-config/Config_Name/generated/custom_gen>.yaml -d <../riscv-config/Config_Name/generated/debug_gen>.yaml -m <updaters/Config_Name/csr_updater>.yaml -t < Config_Name>
 
-#Generate Restructred-text documentation for ISA extensions
+#Generate Restructured-text documentation for ISA extensions
 python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/isa_gen>.yaml -i <templates/isa_template>.yaml -m <updaters/Config_Name/isa_updater>.yaml -t < Config_Name>
 
 #Generate  the Yaml spike configuration file 
@@ -47,10 +47,10 @@ python3 <scripts/riscv_config_gen>.py -s <../riscv-config/Config_Name/generated/
 ##  Usage with cv32a65x 
 
 ```bash
-#Generate  the Restructred-text documentation for Control and Status Registers (CSR)
+#Generate  the Restructured-text documentation for Control and Status Registers (CSR)
 python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -c ../riscv-config/cv32a65x/generated/custom_gen.yaml  -d ../riscv-config/cv32a65x/generated/debug_gen.yaml -m updaters/cv32a65x/csr_updater.yaml -t cv32a65x
 
-#Generate  the Restructred-text documentation for ISA extensions
+#Generate  the Restructured-text documentation for ISA extensions
 python3 scripts/riscv_config_gen.py -s ../riscv-config/cv32a65x/generated/isa_gen.yaml -i templates/isa_template.yaml -m updaters/cv32a65x/isa_updater.yaml -t cv32a65x
 
 #Generate  the Yaml spike configuration file  

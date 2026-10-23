@@ -70,7 +70,7 @@ module instr_scan #(
   endfunction
 
   logic rv32_rvc_jal;
-  assign rv32_rvc_jal = (CVA6Cfg.XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & (instr_i[1:0] == riscv::OpcodeC1));
+  assign rv32_rvc_jal = (CVA6Cfg.IS_XLEN32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & (instr_i[1:0] == riscv::OpcodeC1));
 
   logic is_xret;
   assign is_xret = logic'(instr_i[31:30] == 2'b00) & logic'(instr_i[28:0] == 29'b10000001000000000000001110011);
@@ -78,7 +78,7 @@ module instr_scan #(
   // check that rs1 is either x1 or x5 and that rd is not rs1
   assign rvi_return_o = rvi_jalr_o & ((instr_i[19:15] == 5'd1) | instr_i[19:15] == 5'd5)
                                      & (instr_i[19:15] != instr_i[11:7]);
-  // Opocde is JAL[R] and destination register is either x1 or x5
+  // Opcode is JAL[R] and destination register is either x1 or x5
   assign rvi_call_o = (rvi_jalr_o | rvi_jump_o) & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5);
   // differentiates between JAL and BRANCH opcode, JALR comes from BHT
   assign rvi_imm_o = is_xret ? '0 : (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
@@ -92,6 +92,7 @@ module instr_scan #(
   // always links to register 0
   logic is_jal_r;
   assign is_jal_r     = (instr_i[15:13] == riscv::OpcodeC2JalrMvAdd)
+                        & (instr_i[11:7] != 5'b00000)
                         & (instr_i[6:2] == 5'b00000)
                         & (instr_i[1:0] == riscv::OpcodeC2);
   assign rvc_jr_o = is_jal_r & ~instr_i[12];

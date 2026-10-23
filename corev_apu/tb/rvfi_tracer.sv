@@ -162,8 +162,8 @@ module rvfi_tracer #(
             (rvfi_i[i].insn[6:0] == 7'b1010011 && rvfi_i[i].insn[31:26] != 6'b111000
                                                && rvfi_i[i].insn[31:26] != 6'b101000
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
-            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.XLEN == 64) ||
-                                           (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.XLEN == 32) ))) begin
+            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && CVA6Cfg.IS_XLEN64) ||
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && CVA6Cfg.IS_XLEN32) ))) begin
           if (fp_instr_writes_gpr(rvfi_i[i].insn)) begin
             dest_is_fp = 1'b0;
           end else begin
@@ -200,7 +200,12 @@ module rvfi_tracer #(
             32'h5: cause = "LD_ACCESS_FAULT";
             32'h6: cause = "ST_ADDR_MISALIGNED";
             32'h7: cause = "ST_ACCESS_FAULT";
+            32'h8: cause = "ENV_CALL_UMODE";
+            32'h9: cause = "ENV_CALL_SMODE";
             32'hb: cause = "ENV_CALL_MMODE";
+            32'hc: cause = "INSTR_PAGE_FAULT";
+            32'hd: cause = "LOAD_PAGE_FAULT";
+            32'hf: cause = "STORE_PAGE_FAULT";
           endcase;
           if (rvfi_i[i].insn[1:0] != 2'b11) begin
             $fwrite(f, "%s exception @ 0x%h (0x%h)\n", cause, pc64, rvfi_i[i].insn[15:0]);
@@ -224,12 +229,13 @@ module rvfi_tracer #(
 
   // Trace any custom signals
   // Define signals to be traced by adding them into debug and name arrays
-  string name[0:10];
-  logic[63:0] debug[0:10], debug_previous[0:10];
+  localparam int unsigned DEBUG_SIZE = 11;
+  string name [0:DEBUG_SIZE-1];
+  logic [63:0] debug [0:DEBUG_SIZE-1], debug_previous [0:DEBUG_SIZE-1];
 
   always_ff @(posedge clk_i) begin
     if (cycles > DEBUG_START && cycles < DEBUG_STOP)
-      for (int index = 0; index < 100; index++)
+      for (int index = 0; index < DEBUG_SIZE; index++)
         if (debug_previous[index] != debug[index])
           $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
     debug_previous <= debug;

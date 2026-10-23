@@ -10,7 +10,7 @@ if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
-[ -d $ROOT/tmp/riscv-tests ] || git clone https://github.com/riscv/riscv-tests.git
+[ -d $ROOT/tmp/riscv-tests ] || git clone https://github.com/riscv-software-src/riscv-tests.git
 cd riscv-tests
 git checkout $VERSION
 git submodule update --init --recursive

@@ -37,10 +37,7 @@ module cva6_hpdcache_subsystem
     parameter int NrHwPrefetchers = 4,
 
     parameter type noc_req_t  = logic,
-    parameter type noc_resp_t = logic,
-
-    parameter type cmo_req_t = logic,
-    parameter type cmo_rsp_t = logic
+    parameter type noc_resp_t = logic
 )
 //  }}}
 
@@ -67,7 +64,7 @@ module cva6_hpdcache_subsystem
     input logic icache_enable_i,
     // Flush the instruction cache - CONTROLLER
     input logic icache_flush_i,
-    // instructino cache miss - PERF_COUNTERS
+    // instruction cache miss - PERF_COUNTERS
     output logic icache_miss_o,
     // Fetch Request channel - FRONTEND
     input ypb_fetch_req_t ypb_fetch_req_i,
@@ -79,18 +76,28 @@ module cva6_hpdcache_subsystem
     //  {{{
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input  logic dcache_enable_i,
+    input logic dcache_enable_i,
+    // Data cache scrubber enable - CSR_REGFILE
+    input logic dcache_scrub_enable_i,
+    // Data cache scrubber period - CSR_REGFILE
+    input logic [5:0] dcache_scrub_period_i,
+    // Data cache scrubber completed a cycle - CSR_REGFILE
+    output logic dcache_scrub_cycle_o,
+    // Data cache data error corrected - CSR_REGFILE
+    output logic dcache_dat_cor_err_o,
+    // Data cache data error detected but not corrected - CSR_REGFILE
+    output logic dcache_dat_unc_err_o,
+    // Data cache tag error corrected - CSR_REGFILE
+    output logic dcache_dir_cor_err_o,
+    // Data cache tag error detected but not corrected - CSR_REGFILE
+    output logic dcache_dir_unc_err_o,
     // Data cache flush - CONTROLLER
-    input  logic dcache_flush_i,
+    input logic dcache_flush_i,
     // Flush acknowledge - CONTROLLER
     output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
-    // CMO interface request - TO_BE_COMPLETED
-    input  cmo_req_t dcache_cmo_req_i,
-    // CMO interface response - TO_BE_COMPLETED
-    output cmo_rsp_t dcache_cmo_rsp_o,
 
     // Store cache response - CACHES
     input ypb_store_req_t ypb_store_req_i,
@@ -173,7 +180,7 @@ module cva6_hpdcache_subsystem
     userCfg.reqTransIdWidth = 1;
     userCfg.reqSrcIdWidth = 1;
     userCfg.victimSel = hpdcache_pkg::HPDCACHE_VICTIM_RANDOM;
-    userCfg.dataWaysPerRamWord = __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / userCfg.wordWidth);
+    userCfg.dataWaysPerRamWord = __minu(CVA6Cfg.ICACHE_SET_ASSOC, 128 / userCfg.wordWidth);
     userCfg.dataSetsPerRam = userCfg.sets;
     userCfg.dataRamByteEnable = 1'b1;
     userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / userCfg.wordWidth, userCfg.reqWords);
@@ -289,18 +296,15 @@ module cva6_hpdcache_subsystem
   //    .
   //    .
   //    .
-  //    NumPorts: CMO
-  //    NumPorts + 1: Hardware Memory Prefetcher (hwpf)
-  localparam int HPDCACHE_ENABLE_CMO = 0;
-  localparam int HPDCACHE_NREQUESTERS = 3 + (HPDCACHE_ENABLE_CMO ? 1:0) + (CVA6Cfg.MmuPresent ? 1:0) + (CVA6Cfg.RVZCMT ? 1:0);
-  localparam int NUM_SNOOP_PORTS = HPDCACHE_ENABLE_CMO ? 3 : 2;
+  //    NumPorts: Hardware Memory Prefetcher (hwpf)
+  localparam int HPDCACHE_NREQUESTERS = 3 + (CVA6Cfg.MmuPresent ? 1 : 0) + (CVA6Cfg.RVZCMT ? 1 : 0);
+  localparam int NUM_SNOOP_PORTS = 2;
 
   localparam int MMU_PTW_INDEX = 0;
   localparam int ZCMT_INDEX = (CVA6Cfg.MmuPresent ? 1 : 0);
   localparam int LOAD_INDEX = (CVA6Cfg.RVZCMT ? ZCMT_INDEX + 1 : ZCMT_INDEX);
   localparam int STORE_AMO_INDEX = LOAD_INDEX + 1;
-  localparam int CMO_INDEX = STORE_AMO_INDEX + 1;
-  localparam int HWPF_INDEX = (HPDCACHE_ENABLE_CMO ? CMO_INDEX + 1 : CMO_INDEX);
+  localparam int HWPF_INDEX = STORE_AMO_INDEX + 1;
 
   function automatic hpdcache_pkg::hpdcache_user_cfg_t hpdcacheSetConfig();
     hpdcache_pkg::hpdcache_user_cfg_t userCfg = '0;
@@ -309,7 +313,7 @@ module cva6_hpdcache_subsystem
     userCfg.wordWidth = CVA6Cfg.XLEN;
     userCfg.sets = CVA6Cfg.DCACHE_NUM_WORDS;
     userCfg.ways = CVA6Cfg.DCACHE_SET_ASSOC;
-    userCfg.clWords = CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.XLEN;
+    userCfg.clWords = CVA6Cfg.DCACHE_LINE_WIDTH / userCfg.wordWidth;
     userCfg.reqWords = 1;
     userCfg.reqTransIdWidth = CVA6Cfg.DcacheIdWidth;
     userCfg.reqSrcIdWidth = 3;  // Up to 8 requesters
@@ -317,7 +321,7 @@ module cva6_hpdcache_subsystem
     userCfg.dataWaysPerRamWord = __minu(CVA6Cfg.DCACHE_SET_ASSOC, 128 / CVA6Cfg.XLEN);
     userCfg.dataSetsPerRam = CVA6Cfg.DCACHE_NUM_WORDS;
     userCfg.dataRamByteEnable = 1'b1;
-    userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / CVA6Cfg.XLEN, 1  /*reqWords*/);
+    userCfg.accessWords = __maxu(CVA6Cfg.AxiDataWidth / userCfg.wordWidth, userCfg.reqWords);
     userCfg.mshrSets = CVA6Cfg.NrLoadBufEntries < 16 ? 1 : CVA6Cfg.NrLoadBufEntries / 2;
     userCfg.mshrWays = CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2;
     userCfg.mshrWaysPerRamWord = CVA6Cfg.NrLoadBufEntries < 16 ? CVA6Cfg.NrLoadBufEntries : 2;
@@ -326,7 +330,9 @@ module cva6_hpdcache_subsystem
     userCfg.mshrUseRegbank = (CVA6Cfg.NrLoadBufEntries < 16);
     userCfg.cbufEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.refillCoreRspFeedthrough = 1'b1;
-    userCfg.refillFifoDepth = 2;
+    //  Deep enough to hold a whole cache line in flight: two beats per NoC
+    //  transfer, and a line takes DCACHE_LINE_WIDTH / AxiDataWidth of them.
+    userCfg.refillFifoDepth = 2 * (CVA6Cfg.DCACHE_LINE_WIDTH / CVA6Cfg.AxiDataWidth);
     userCfg.wbufDirEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufDataEntries = CVA6Cfg.WtDcacheWbufDepth;
     userCfg.wbufWords = 1;
@@ -338,14 +344,14 @@ module cva6_hpdcache_subsystem
     userCfg.memIdWidth = CVA6Cfg.AxiIdWidth - 1;
     userCfg.memDataWidth = CVA6Cfg.AxiDataWidth;
     userCfg.wtEn =
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT) ||
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT) ||
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT_WB);
     userCfg.wbEn =
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WB) ||
-        (CVA6Cfg.DCacheType == config_pkg::HPDCACHE_WT_WB);
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WB) ||
+        (CVA6Cfg.CacheWritePolicy == config_pkg::CACHE_WT_WB);
     userCfg.lowLatency = 1'b1;
-    userCfg.eccEn = 1'b0;  /*FIXME add additional CVA6 parameter*/
-    userCfg.eccScrubberEn = 1'b0;  /*FIXME: add additional CVA6 parameter*/
+    userCfg.eccEn = CVA6Cfg.DcacheEccEnable;
+    userCfg.eccScrubberEn = CVA6Cfg.DcacheEccScrubberEnable;
     return userCfg;
   endfunction
 
@@ -399,19 +405,15 @@ module cva6_hpdcache_subsystem
       .ypb_zcmt_req_t   (ypb_zcmt_req_t),
       .ypb_zcmt_rsp_t   (ypb_zcmt_rsp_t),
 
-      .HPDCACHE_ENABLE_CMO (HPDCACHE_ENABLE_CMO),
       .HPDCACHE_NREQUESTERS(HPDCACHE_NREQUESTERS),
       .NUM_SNOOP_PORTS     (NUM_SNOOP_PORTS),
       .MMU_PTW_INDEX       (MMU_PTW_INDEX),
       .ZCMT_INDEX          (ZCMT_INDEX),
       .LOAD_INDEX          (LOAD_INDEX),
       .STORE_AMO_INDEX     (STORE_AMO_INDEX),
-      .CMO_INDEX           (CMO_INDEX),
       .HWPF_INDEX          (HWPF_INDEX),
 
       .NrHwPrefetchers        (NrHwPrefetchers),
-      .cmo_req_t              (cmo_req_t),
-      .cmo_rsp_t              (cmo_rsp_t),
       .hpdcache_mem_addr_t    (hpdcache_mem_addr_t),
       .hpdcache_mem_id_t      (hpdcache_mem_id_t),
       .hpdcache_mem_data_t    (hpdcache_mem_data_t),
@@ -435,11 +437,16 @@ module cva6_hpdcache_subsystem
       .clk_i(clk_i),
       .rst_ni(rst_ni),
       .dcache_enable_i(dcache_enable_i),
+      .dcache_scrub_enable_i(dcache_scrub_enable_i),
+      .dcache_scrub_period_i(dcache_scrub_period_i),
+      .dcache_scrub_cycle_o(dcache_scrub_cycle_o),
+      .dcache_dat_cor_err_o(dcache_dat_cor_err_o),
+      .dcache_dat_unc_err_o(dcache_dat_unc_err_o),
+      .dcache_dir_cor_err_o(dcache_dir_cor_err_o),
+      .dcache_dir_unc_err_o(dcache_dir_unc_err_o),
       .dcache_flush_i(dcache_flush_i),
       .dcache_flush_ack_o(dcache_flush_ack_o),
       .dcache_miss_o(dcache_miss_o),
-      .dcache_cmo_req_i(dcache_cmo_req_i),
-      .dcache_cmo_rsp_o(dcache_cmo_rsp_o),
       .ypb_store_req_i(ypb_store_req_i),
       .ypb_store_rsp_o(ypb_store_rsp_o),
       .ypb_amo_req_i(ypb_amo_req_i),

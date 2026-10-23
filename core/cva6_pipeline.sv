@@ -95,12 +95,26 @@ module cva6_pipeline
     // D$
     // Data cache enable - CSR_REGFILE
     output logic dcache_enable_o,
+    // Data cache scrubber enable - CSR_REGFILE
+    output logic dcache_scrub_enable_o,
+    // Data cache scrubber period - CSR_REGFILE
+    output logic [5:0] dcache_scrub_period_o,
+    // Data cache scrubber completed a cycle - CACHES
+    input logic dcache_scrub_cycle_i,
+    // Data cache data error corrected - CACHES
+    input logic dcache_dat_cor_err_i,
+    // Data cache data error detected but not corrected - CACHES
+    input logic dcache_dat_unc_err_i,
+    // Data cache tag error corrected - CACHES
+    input logic dcache_dir_cor_err_i,
+    // Data cache tag error detected but not corrected - CACHES
+    input logic dcache_dir_unc_err_i,
     // Data cache flush (high until acknowledged)- CONTROLLER
     output logic dcache_flush_o,
     // Flush acknowledge (send a single cycle acknowledge signal when the cache is flushed) - CONTROLLER
-    input  logic dcache_flush_ack_i,
+    input logic dcache_flush_ack_i,
     // Load or store miss - PERF_COUNTERS
-    input  logic dcache_miss_i,
+    input logic dcache_miss_i,
 
     // Memory interfaces
     // Fetch YPB request ports - FRONTEND
@@ -153,6 +167,11 @@ module cva6_pipeline
     logic [31:0] tinst;  // transformed instruction information
     logic gva;  // signals when a guest virtual address is written to tval
     logic valid;
+    // Timing of the exception. 0 breaks on the instruction itself, 1 breaks
+    // immediately after it, letting that one instruction commit first. Only
+    // the mcontrol6 load data trigger needs the latter: the value it compares
+    // does not exist until the load has returned.
+    logic timing;
   };
 
   // Fetch  address translation requests
@@ -171,6 +190,7 @@ module cva6_pipeline
   // this is the struct which we will inject into the pipeline to guide the various
   // units towards the correct branch decision and resolve
   localparam type branchpredict_sbe_t = struct packed {
+    logic                    valid;            // valid control flow prediction
     cf_t                     cf;               // type of control flow prediction
     logic [CVA6Cfg.VLEN-1:0] predict_address;  // target address at which to jump, or not
   };
@@ -273,37 +293,13 @@ module cva6_pipeline
     logic [CVA6Cfg.TRANS_ID_BITS-1:0] trans_id;
   };
 
-  localparam type interrupts_t = struct packed {
-    logic [CVA6Cfg.XLEN-1:0] S_SW;
-    logic [CVA6Cfg.XLEN-1:0] VS_SW;
-    logic [CVA6Cfg.XLEN-1:0] M_SW;
-    logic [CVA6Cfg.XLEN-1:0] S_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] VS_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] M_TIMER;
-    logic [CVA6Cfg.XLEN-1:0] S_EXT;
-    logic [CVA6Cfg.XLEN-1:0] VS_EXT;
-    logic [CVA6Cfg.XLEN-1:0] M_EXT;
-    logic [CVA6Cfg.XLEN-1:0] HS_EXT;
-  };
-
-  localparam interrupts_t INTERRUPTS = '{
-      S_SW: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_SOFT),
-      VS_SW: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_SOFT),
-      M_SW: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_SOFT),
-      S_TIMER: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_TIMER),
-      VS_TIMER: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_TIMER),
-      M_TIMER: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_TIMER),
-      S_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_S_EXT),
-      VS_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_VS_EXT),
-      M_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_M_EXT),
-      HS_EXT: (1 << (CVA6Cfg.XLEN - 1)) | CVA6Cfg.XLEN'(riscv::IRQ_HS_EXT)
-  };
 
   // ------------------------------------------
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
   riscv::priv_lvl_t                               priv_lvl;
+  logic                                           mbe;  // data endianness of the processor
   logic                                           v;
   exception_t                                     ex_commit;  // exception from commit stage
   bp_resolve_t                                    resolved_branch;
@@ -364,6 +360,7 @@ module cva6_pipeline
   logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] rvfi_rs2;
 
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_id_ex;
+  alu_bypass_t alu_bypass_id_ex;
   logic [CVA6Cfg.VLEN-1:0] pc_id_ex;
   logic zcmt_id_ex;
   logic is_compressed_instr_id_ex;
@@ -400,6 +397,7 @@ module cva6_pipeline
   logic [CVA6Cfg.NrIssuePorts-1:0] mult_valid_id_ex;
   // FPU
   logic fpu_ready_ex_id;
+  logic fpu_early_valid_ex_id;
   logic [CVA6Cfg.NrIssuePorts-1:0] fpu_valid_id_ex;
   logic [1:0] fpu_fmt_id_ex;
   logic [2:0] fpu_rm_id_ex;
@@ -435,6 +433,7 @@ module cva6_pipeline
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic no_st_pending_ex;
   logic no_st_pending_commit;
+  logic shared_tlb_flush_busy_ex;
   logic amo_valid_commit;
   // --------------
   // ID <-> COMMIT
@@ -490,17 +489,37 @@ module cva6_pipeline
   logic vtw_csr_id;
   logic tsr_csr_id;
   logic hu;
+  riscv::cbie_t mcbie, scbie, hcbie;
+  logic mcbcfe, scbcfe, hcbcfe;
   irq_ctrl_t irq_ctrl_csr_id;
   logic dcache_en_csr_nbdcache;
   logic csr_write_fflags_commit_cs;
   logic icache_en_csr;
   logic debug_mode;
   logic single_step_csr_commit;
-  riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg;
-  logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr;
+  riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg;
+  logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
   //jvt
   jvt_t jvt;
+  // trigger module
+  logic
+      sdtrig_commit_std_exception_valid,
+      sdtrig_sb_std_exception_valid,
+      sdtrig_load_cancel,
+      sdtrig_store_stall;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_decoder_action[CVA6Cfg.NrIssuePorts];
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action, sdtrig_store_action, sdtrig_commit_action;
+  // Load data trigger: data of the load retiring in the load unit, and the break
+  logic sdtrig_load_data_valid;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data, sdtrig_load_data_action;
+  logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_operand_a;
+  logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c;
+  logic sdtrig_lsu_inputs_we, sdtrig_lsu_inputs_valid;
+  logic sdtrig_commit_icount_valid;
+  logic [(CVA6Cfg.NrCommitPorts > 1 ? $clog2(
+CVA6Cfg.NrCommitPorts
+) : 1)-1:0] sdtrig_commit_icount_nr_instr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -533,6 +552,7 @@ module cva6_pipeline
   logic hfence_vvma_commit_controller;
   logic hfence_gvma_commit_controller;
   logic halt_ctrl;
+  logic halt_frontend_ctrl;
   logic halt_csr_ctrl;
   logic dcache_flush_ctrl_cache;
   logic dcache_flush_ack_cache_ctrl;
@@ -569,9 +589,10 @@ module cva6_pipeline
       .clk_i,
       .rst_ni,
       .boot_addr_i           (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .flush_bp_i            (1'b0),
-      .flush_i               (flush_ctrl_if),                  // not entirely correct
+      .flush_bp_i            ((CVA6Cfg.RVU || CVA6Cfg.RVS) ? flush_ctrl_bp : 1'b0),
+      .flush_i               (flush_ctrl_if),
       .halt_i                (halt_ctrl),
+      .halt_frontend_i       (halt_frontend_ctrl),
       .set_pc_commit_i       (set_pc_ctrl_pcgen),
       .pc_commit_i           (pc_commit),
       .ex_valid_i            (ex_commit.valid),
@@ -612,8 +633,6 @@ module cva6_pipeline
       .jvt_t(jvt_t),
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS),
       .x_compressed_req_t(x_compressed_req_t),
       .x_compressed_resp_t(x_compressed_resp_t)
   ) id_stage_i (
@@ -622,9 +641,10 @@ module cva6_pipeline
       .flush_i(flush_ctrl_if),
       .debug_req_i,
 
-      .fetch_entry_i      (fetch_entry_if_id),
-      .fetch_entry_valid_i(fetch_valid_if_id),
-      .fetch_entry_ready_o(fetch_ready_id_if),
+      .fetch_entry_i          (fetch_entry_if_id),
+      .sdtrig_decoder_action_i(sdtrig_decoder_action),
+      .fetch_entry_valid_i    (fetch_valid_if_id),
+      .fetch_entry_ready_o    (fetch_ready_id_if),
 
       .issue_entry_o       (issue_entry_id_issue),
       .issue_entry_o_prev  (issue_entry_id_issue_prev),
@@ -648,6 +668,12 @@ module cva6_pipeline
       .vtw_i               (vtw_csr_id),
       .tsr_i               (tsr_csr_id),
       .hu_i                (hu),
+      .mcbie_i             (mcbie),
+      .scbie_i             (scbie),
+      .hcbie_i             (hcbie),
+      .mcbcfe_i            (mcbcfe),
+      .scbcfe_i            (scbcfe),
+      .hcbcfe_i            (hcbcfe),
       .hart_id_i           (hart_id_i),
       .jvt_i               (jvt),
       .compressed_ready_i  (x_compressed_ready),
@@ -754,6 +780,7 @@ module cva6_pipeline
       .rs1_forwarding_o        (rs1_forwarding_id_ex),
       .rs2_forwarding_o        (rs2_forwarding_id_ex),
       .fu_data_o               (fu_data_id_ex),
+      .alu_bypass_o            (alu_bypass_id_ex),
       .pc_o                    (pc_id_ex),
       .is_zcmt_o               (zcmt_id_ex),
       .is_compressed_instr_o   (is_compressed_instr_id_ex),
@@ -774,6 +801,7 @@ module cva6_pipeline
       .mult_valid_o            (mult_valid_id_ex),
       // FPU
       .fpu_ready_i             (fpu_ready_ex_id),
+      .fpu_early_valid_i       (fpu_early_valid_ex_id),
       .fpu_valid_o             (fpu_valid_id_ex),
       .fpu_fmt_o               (fpu_fmt_id_ex),
       .fpu_rm_o                (fpu_rm_id_ex),
@@ -863,6 +891,7 @@ module cva6_pipeline
       .rs1_forwarding_i(rs1_forwarding_id_ex),
       .rs2_forwarding_i(rs2_forwarding_id_ex),
       .fu_data_i(fu_data_id_ex),
+      .alu_bypass_i(alu_bypass_id_ex),
       .pc_i(pc_id_ex),
       .is_zcmt_i(zcmt_id_ex),
       .is_compressed_instr_i(is_compressed_instr_id_ex),
@@ -906,11 +935,15 @@ module cva6_pipeline
       .lsu_commit_i            (lsu_commit_commit_ex),           // from commit
       .lsu_commit_ready_o      (lsu_commit_ready_ex_commit),     // to commit
       .commit_tran_id_i        (lsu_commit_trans_id),            // from commit
+      .commit_drop_i           (commit_drop_id_commit[0]),       // from scoreboard
       // Accelerator
       .stall_st_pending_i      ('0  /*FIXME*/),
       .no_st_pending_o         (no_st_pending_ex),               //
+      .mbe_i                   (mbe),                            // from CSR
+      .shared_tlb_flush_busy_o (shared_tlb_flush_busy_ex),
       // FPU
       .fpu_ready_o             (fpu_ready_ex_id),
+      .fpu_early_valid_o       (fpu_early_valid_ex_id),
       .fpu_valid_i             (fpu_valid_id_ex),
       .fpu_fmt_i               (fpu_fmt_id_ex),
       .fpu_rm_i                (fpu_rm_id_ex),
@@ -976,14 +1009,26 @@ module cva6_pipeline
       .ypb_mmu_ptw_req_o       (ypb_mmu_ptw_req_o),
       .ypb_mmu_ptw_rsp_i       (ypb_mmu_ptw_rsp_i),
 
-      .dcache_wbuffer_empty_i (dcache_wbuffer_empty_i),
-      .dcache_wbuffer_not_ni_i(dcache_wbuffer_not_ni_i),
+      .dcache_wbuffer_empty_i       (dcache_wbuffer_empty_i),
+      .dcache_wbuffer_not_ni_i      (dcache_wbuffer_not_ni_i),
       // PMP
-      .pmpcfg_i               (pmpcfg),
-      .pmpaddr_i              (pmpaddr),
+      .pmpcfg_i                     (pmpcfg),
+      .pmpaddr_i                    (pmpaddr),
       //RVFI
-      .rvfi_lsu_ctrl_o        (rvfi_lsu_ctrl),
-      .rvfi_mem_paddr_o       (rvfi_mem_paddr)
+      .rvfi_lsu_ctrl_o              (rvfi_lsu_ctrl),
+      .rvfi_mem_paddr_o             (rvfi_mem_paddr),
+      //Trigger module
+      .sdtrig_lsu_inputs_operand_a_o(sdtrig_lsu_inputs_operand_a),
+      .sdtrig_lsu_inputs_operand_c_o(sdtrig_lsu_inputs_operand_c),
+      .sdtrig_lsu_inputs_we_o       (sdtrig_lsu_inputs_we),
+      .sdtrig_lsu_inputs_valid_o    (sdtrig_lsu_inputs_valid),
+      .sdtrig_load_cancel_i         (sdtrig_load_cancel),
+      .sdtrig_load_action_i         (sdtrig_load_action),
+      .sdtrig_load_data_valid_o     (sdtrig_load_data_valid),
+      .sdtrig_load_data_o           (sdtrig_load_data),
+      .sdtrig_load_data_action_i    (sdtrig_load_data_action),
+      .sdtrig_store_stall_i         (sdtrig_store_stall),
+      .sdtrig_store_action_i        (sdtrig_store_action)
   );
 
   // ---------
@@ -1002,38 +1047,44 @@ module cva6_pipeline
   ) commit_stage_i (
       .clk_i,
       .rst_ni,
-      .halt_i            (halt_ctrl),
-      .flush_dcache_i    (dcache_flush_o),
-      .exception_o       (ex_commit),
-      .dirty_fp_state_o  (dirty_fp_state),
-      .single_step_i     (single_step_csr_commit),         // // Accelerator /*FIXME*/
-      .commit_instr_i    (commit_instr_id_commit),
-      .commit_drop_i     (commit_drop_id_commit),
-      .commit_ack_o      (commit_ack_commit_id),
+      .halt_i(halt_ctrl),
+      .flush_dcache_i(dcache_flush_o),
+      .exception_o(ex_commit),
+      .dirty_fp_state_o(dirty_fp_state),
+      .single_step_i(single_step_csr_commit),  // // Accelerator /*FIXME*/
+      .commit_instr_i(commit_instr_id_commit),
+      .commit_drop_i(commit_drop_id_commit),
+      .commit_ack_o(commit_ack_commit_id),
       .commit_macro_ack_o(commit_macro_ack),
-      .waddr_o           (waddr_commit_id),
-      .wdata_o           (wdata_commit_id),
-      .we_gpr_o          (we_gpr_commit_id),
-      .we_fpr_o          (we_fpr_commit_id),
-      .ypb_amo_rsp_i     (ypb_amo_rsp_i),
-      .pc_o              (pc_commit),
-      .csr_op_o          (csr_op_commit_csr),
-      .csr_wdata_o       (csr_wdata_commit_csr),
-      .csr_rdata_i       (csr_rdata_csr_commit),
+      .waddr_o(waddr_commit_id),
+      .wdata_o(wdata_commit_id),
+      .we_gpr_o(we_gpr_commit_id),
+      .we_fpr_o(we_fpr_commit_id),
+      .ypb_amo_rsp_i(ypb_amo_rsp_i),
+      .pc_o(pc_commit),
+      .csr_op_o(csr_op_commit_csr),
+      .csr_wdata_o(csr_wdata_commit_csr),
+      .csr_rdata_i(csr_rdata_csr_commit),
       .csr_write_fflags_o(csr_write_fflags_commit_cs),
-      .csr_exception_i   (csr_exception_csr_commit),
-      .commit_lsu_o      (lsu_commit_commit_ex),
+      .csr_exception_i(csr_exception_csr_commit),
+      .commit_lsu_o(lsu_commit_commit_ex),
       .commit_lsu_ready_i(lsu_commit_ready_ex_commit),
-      .commit_tran_id_o  (lsu_commit_trans_id),
+      .commit_tran_id_o(lsu_commit_trans_id),
       .amo_valid_commit_o(amo_valid_commit),
-      .no_st_pending_i   (no_st_pending_commit),
-      .commit_csr_o      (csr_commit_commit_ex),
-      .fence_i_o         (fence_i_commit_controller),
-      .fence_o           (fence_commit_controller),
-      .flush_commit_o    (flush_commit),
-      .sfence_vma_o      (sfence_vma_commit_controller),
-      .hfence_vvma_o     (hfence_vvma_commit_controller),
-      .hfence_gvma_o     (hfence_gvma_commit_controller)
+      .no_st_pending_i(no_st_pending_commit),
+      .shared_tlb_flush_busy_i(shared_tlb_flush_busy_ex),
+      .commit_csr_o(csr_commit_commit_ex),
+      .fence_i_o(fence_i_commit_controller),
+      .fence_o(fence_commit_controller),
+      .flush_commit_o(flush_commit),
+      .sfence_vma_o(sfence_vma_commit_controller),
+      .hfence_vvma_o(hfence_vvma_commit_controller),
+      .hfence_gvma_o(hfence_gvma_commit_controller),
+      //Trigger module
+      .sdtrig_commit_icount_valid_i(sdtrig_commit_icount_valid),
+      .sdtrig_commit_icount_nr_instr_i(sdtrig_commit_icount_nr_instr),
+      .sdtrig_commit_action_i(sdtrig_commit_action),
+      .sdtrig_commit_std_exception_valid_i(sdtrig_commit_std_exception_valid)
   );
 
   if (CVA6Cfg.SpeculativeSb) begin
@@ -1045,6 +1096,14 @@ module cva6_pipeline
   // ---------
   // CSR
   // ---------
+  //Trigger Module assignments
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] fetch_sdtrig_pc;
+  logic [CVA6Cfg.NrIssuePorts-1:0][31:0] fetch_sdtrig_instr;
+  for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin : gen_fetch_sdtrig
+    assign fetch_sdtrig_pc[i] = CVA6Cfg.SdtrigMcontrol6ExecAddr ? fetch_entry_if_id[i].address : '0;
+    assign fetch_sdtrig_instr[i] = CVA6Cfg.SdtrigMcontrol6ExecData ? fetch_entry_if_id[i].instruction : '0;
+  end
+
   csr_regfile #(
       .CVA6Cfg           (CVA6Cfg),
       .exception_t       (exception_t),
@@ -1057,80 +1116,116 @@ module cva6_pipeline
       .clk_i,
       .rst_ni,
       .time_irq_i,
-      .flush_o                 (flush_csr_ctrl),
-      .halt_csr_o              (halt_csr_ctrl),
-      .commit_instr_i          (commit_instr_id_commit[0]),
-      .commit_ack_i            (commit_ack),
-      .boot_addr_i             (boot_addr_i[CVA6Cfg.VLEN-1:0]),
-      .hart_id_i               (hart_id_i[CVA6Cfg.XLEN-1:0]),
-      .ex_i                    (ex_commit),
-      .csr_op_i                (csr_op_commit_csr),
-      .csr_addr_i              (csr_addr_ex_csr),
-      .csr_wdata_i             (csr_wdata_commit_csr),
-      .csr_rdata_o             (csr_rdata_csr_commit),
-      .dirty_fp_state_i        (dirty_fp_state),
-      .csr_write_fflags_i      (csr_write_fflags_commit_cs),
+      .flush_o                            (flush_csr_ctrl),
+      .halt_csr_o                         (halt_csr_ctrl),
+      .commit_instr_i                     (commit_instr_id_commit[0]),
+      .commit_ack_i                       (commit_ack),
+      .boot_addr_i                        (boot_addr_i[CVA6Cfg.VLEN-1:0]),
+      .hart_id_i                          (hart_id_i[CVA6Cfg.XLEN-1:0]),
+      .ex_i                               (ex_commit),
+      .csr_op_i                           (csr_op_commit_csr),
+      .csr_addr_i                         (csr_addr_ex_csr),
+      .csr_wdata_i                        (csr_wdata_commit_csr),
+      .csr_rdata_o                        (csr_rdata_csr_commit),
+      .dirty_fp_state_i                   (dirty_fp_state),
+      .csr_write_fflags_i                 (csr_write_fflags_commit_cs),
       // Accelerator
-      .dirty_v_state_i         ('0  /*FIXME*/),
-      .pc_i                    (pc_commit),
-      .csr_exception_o         (csr_exception_csr_commit),
-      .epc_o                   (epc_commit_pcgen),
-      .eret_o                  (eret),
-      .trap_vector_base_o      (trap_vector_base_commit_pcgen),
-      .priv_lvl_o              (priv_lvl),
-      .v_o                     (v),
+      .dirty_v_state_i                    ('0  /*FIXME*/),
+      .pc_i                               (pc_commit),
+      .csr_exception_o                    (csr_exception_csr_commit),
+      .epc_o                              (epc_commit_pcgen),
+      .eret_o                             (eret),
+      .trap_vector_base_o                 (trap_vector_base_commit_pcgen),
+      .priv_lvl_o                         (priv_lvl),
+      .mbe_o                              (mbe),
+      .v_o                                (v),
       // Accelerator
-      .acc_fflags_ex_i         ('0  /*FIXME*/),
-      .acc_fflags_ex_valid_i   ('0  /*FIXME*/),
-      .fs_o                    (fs),
-      .vfs_o                   (vfs),
-      .fflags_o                (fflags_csr_commit),
-      .frm_o                   (frm_csr_id_issue_ex),
-      .fprec_o                 (fprec_csr_ex),
-      .vs_o                    (vs),
-      .irq_ctrl_o              (irq_ctrl_csr_id),
-      .en_translation_o        (enable_translation_csr_ex),
-      .en_g_translation_o      (enable_g_translation_csr_ex),
-      .en_ld_st_translation_o  (en_ld_st_translation_csr_ex),
-      .en_ld_st_g_translation_o(en_ld_st_g_translation_csr_ex),
-      .ld_st_priv_lvl_o        (ld_st_priv_lvl_csr_ex),
-      .ld_st_v_o               (ld_st_v_csr_ex),
-      .csr_hs_ld_st_inst_i     (csr_hs_ld_st_inst_ex),
-      .sum_o                   (sum_csr_ex),
-      .vs_sum_o                (vs_sum_csr_ex),
-      .mxr_o                   (mxr_csr_ex),
-      .vmxr_o                  (vmxr_csr_ex),
-      .satp_ppn_o              (satp_ppn_csr_ex),
-      .asid_o                  (asid_csr_ex),
-      .vsatp_ppn_o             (vsatp_ppn_csr_ex),
-      .vs_asid_o               (vs_asid_csr_ex),
-      .hgatp_ppn_o             (hgatp_ppn_csr_ex),
-      .vmid_o                  (vmid_csr_ex),
+      .acc_fflags_ex_i                    ('0  /*FIXME*/),
+      .acc_fflags_ex_valid_i              ('0  /*FIXME*/),
+      .fs_o                               (fs),
+      .vfs_o                              (vfs),
+      .fflags_o                           (fflags_csr_commit),
+      .frm_o                              (frm_csr_id_issue_ex),
+      .fprec_o                            (fprec_csr_ex),
+      .vs_o                               (vs),
+      .irq_ctrl_o                         (irq_ctrl_csr_id),
+      .en_translation_o                   (enable_translation_csr_ex),
+      .en_g_translation_o                 (enable_g_translation_csr_ex),
+      .en_ld_st_translation_o             (en_ld_st_translation_csr_ex),
+      .en_ld_st_g_translation_o           (en_ld_st_g_translation_csr_ex),
+      .ld_st_priv_lvl_o                   (ld_st_priv_lvl_csr_ex),
+      .ld_st_v_o                          (ld_st_v_csr_ex),
+      .csr_hs_ld_st_inst_i                (csr_hs_ld_st_inst_ex),
+      .sum_o                              (sum_csr_ex),
+      .vs_sum_o                           (vs_sum_csr_ex),
+      .mxr_o                              (mxr_csr_ex),
+      .vmxr_o                             (vmxr_csr_ex),
+      .satp_ppn_o                         (satp_ppn_csr_ex),
+      .asid_o                             (asid_csr_ex),
+      .vsatp_ppn_o                        (vsatp_ppn_csr_ex),
+      .vs_asid_o                          (vs_asid_csr_ex),
+      .hgatp_ppn_o                        (hgatp_ppn_csr_ex),
+      .vmid_o                             (vmid_csr_ex),
       .irq_i,
       .ipi_i,
       .debug_req_i,
-      .set_debug_pc_o          (set_debug_pc),
-      .tvm_o                   (tvm_csr_id),
-      .tw_o                    (tw_csr_id),
-      .vtw_o                   (vtw_csr_id),
-      .tsr_o                   (tsr_csr_id),
-      .hu_o                    (hu),
-      .debug_mode_o            (debug_mode),
-      .single_step_o           (single_step_csr_commit),
-      .icache_en_o             (icache_enable_o),
-      .dcache_en_o             (dcache_enable_o),
+      .set_debug_pc_o                     (set_debug_pc),
+      .tvm_o                              (tvm_csr_id),
+      .tw_o                               (tw_csr_id),
+      .vtw_o                              (vtw_csr_id),
+      .tsr_o                              (tsr_csr_id),
+      .hu_o                               (hu),
+      .debug_mode_o                       (debug_mode),
+      .single_step_o                      (single_step_csr_commit),
+      .icache_en_o                        (icache_enable_o),
+      .dcache_en_o                        (dcache_enable_o),
+      .dcache_scrub_en_o                  (dcache_scrub_enable_o),
+      .dcache_scrub_period_o              (dcache_scrub_period_o),
+      .dcache_scrub_cycle_i               (dcache_scrub_cycle_i),
+      .dcache_dat_cor_err_i               (dcache_dat_cor_err_i),
+      .dcache_dat_unc_err_i               (dcache_dat_unc_err_i),
+      .dcache_dir_cor_err_i               (dcache_dir_cor_err_i),
+      .dcache_dir_unc_err_i               (dcache_dir_unc_err_i),
       // Accelerator
-      .acc_cons_en_o           (  /*FIXME*/),
-      .perf_addr_o             (addr_csr_perf),
-      .perf_data_o             (data_csr_perf),
-      .perf_data_i             (data_perf_csr),
-      .perf_we_o               (we_csr_perf),
-      .pmpcfg_o                (pmpcfg),
-      .pmpaddr_o               (pmpaddr),
-      .mcountinhibit_o         (mcountinhibit_csr_perf),
-      .jvt_o                   (jvt),
+      .acc_cons_en_o                      (  /*FIXME*/),
+      .perf_addr_o                        (addr_csr_perf),
+      .perf_data_o                        (data_csr_perf),
+      .perf_data_i                        (data_perf_csr),
+      .perf_we_o                          (we_csr_perf),
+      .pmpcfg_o                           (pmpcfg),
+      .pmpaddr_o                          (pmpaddr),
+      .mcountinhibit_o                    (mcountinhibit_csr_perf),
+      .mcbie_o                            (mcbie),
+      .scbie_o                            (scbie),
+      .hcbie_o                            (hcbie),
+      .mcbcfe_o                           (mcbcfe),
+      .scbcfe_o                           (scbcfe),
+      .hcbcfe_o                           (hcbcfe),
+      .jvt_o                              (jvt),
       //RVFI
-      .rvfi_csr_o              (rvfi_csr)
+      .rvfi_csr_o                         (rvfi_csr),
+      // Trigger Signals
+      .sdtrig_commit_std_exception_valid_o(sdtrig_commit_std_exception_valid),
+      //Decoder/FE <-> Trigger Module
+      .fetch_sdtrig_pc_i                  (fetch_sdtrig_pc),
+      .fetch_sdtrig_instr_i               (fetch_sdtrig_instr),
+      .sdtrig_decoder_action_o            (sdtrig_decoder_action),
+      //Load/Store Unit <-> Trigger Module
+      .sdtrig_lsu_inputs_vaddr_i          (sdtrig_lsu_inputs_operand_a),
+      .sdtrig_lsu_inputs_data_i           (sdtrig_lsu_inputs_operand_c),
+      .sdtrig_lsu_inputs_fu_i             (sdtrig_lsu_inputs_we),
+      .sdtrig_lsu_inputs_valid_i          (sdtrig_lsu_inputs_valid),
+      .sdtrig_load_data_i                 (sdtrig_load_data),
+      .sdtrig_load_valid_i                (sdtrig_load_data_valid),
+      .sdtrig_load_data_action_o          (sdtrig_load_data_action),
+      .sdtrig_load_cancel_o               (sdtrig_load_cancel),
+      .sdtrig_load_action_o               (sdtrig_load_action),
+      .sdtrig_store_stall_o               (sdtrig_store_stall),
+      .sdtrig_store_action_o              (sdtrig_store_action),
+      //Commit <- Trigger module
+      .sdtrig_commit_icount_valid_o       (sdtrig_commit_icount_valid),
+      .sdtrig_commit_action_o             (sdtrig_commit_action),
+      .sdtrig_commit_icount_nr_instr_o    (sdtrig_commit_icount_nr_instr)
   );
 
   // ------------------------
@@ -1217,6 +1312,7 @@ module cva6_pipeline
       // Accelerator
       .halt_acc_i            ('0  /*FIXME*/),
       .halt_o                (halt_ctrl),
+      .halt_frontend_o       (halt_frontend_ctrl),
       // control ports
       .eret_i                (eret),
       .ex_valid_i            (ex_commit.valid),
@@ -1232,13 +1328,6 @@ module cva6_pipeline
       // Accelerator
       .flush_acc_i           ('0  /*FIXME*/)
   );
-
-  // -------------------
-  // Parameter Check
-  // -------------------
-  // pragma translate_off
-  initial config_pkg::check_cfg(CVA6Cfg);
-  // pragma translate_on
 
   // -------------------
   // Instruction Tracer
@@ -1293,19 +1382,22 @@ module cva6_pipeline
 
 `ifndef VERILATOR
 
-  logic [31:0] fetch_instructions[CVA6Cfg.NrIssuePorts-1:0];
+  logic [                     31:0]       fetch_instructions     [CVA6Cfg.NrIssuePorts-1:0];
+  logic [CVA6Cfg.NrCommitPorts-1:0][63:0] wdata_commit_id_padded;
 
   for (genvar i = 0; i < CVA6Cfg.NrIssuePorts; ++i) begin
     assign fetch_instructions[i] = fetch_entry_if_id[i].instruction;
+  end
+
+  for (genvar i = 0; i < CVA6Cfg.NrCommitPorts; ++i) begin
+    assign wdata_commit_id_padded[i] = {{(64 - CVA6Cfg.XLEN) {1'b0}}, wdata_commit_id[i]};
   end
 
   instr_tracer #(
       .CVA6Cfg(CVA6Cfg),
       .bp_resolve_t(bp_resolve_t),
       .scoreboard_entry_t(scoreboard_entry_t),
-      .interrupts_t(interrupts_t),
-      .exception_t(exception_t),
-      .INTERRUPTS(INTERRUPTS)
+      .exception_t(exception_t)
   ) instr_tracer_i (
       // .tracer_if(tracer_if),
       .pck(clk_i),
@@ -1318,11 +1410,12 @@ module cva6_pipeline
       .issue_ack(issue_stage_i.i_scoreboard.issue_ack_i),
       .issue_sbe(issue_stage_i.i_scoreboard.issue_instr_o),
       .waddr(waddr_commit_id),
-      .wdata(wdata_commit_id),
+      .wdata(wdata_commit_id_padded),
       .we_gpr(we_gpr_commit_id),
       .we_fpr(we_fpr_commit_id),
       .commit_instr(commit_instr_id_commit),
-      .commit_ack(commit_ack),
+      .commit_ack(commit_ack_commit_id),
+      .commit_drop(commit_drop_id_commit),
       .st_valid(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i),
       .st_paddr(ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i),
       .ld_valid(ex_stage_i.lsu_i.i_load_unit.ypb_load_req_o.preq),
@@ -1452,5 +1545,7 @@ module cva6_pipeline
     else $fatal(1, "Accelerator is not supported by superscalar pipeline");
   end
   //pragma translate_on
+
+
 
 endmodule  // ariane

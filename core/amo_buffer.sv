@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 20.09.2018
 // Description: Buffers AMO requests
-// This unit buffers an atomic memory operations for the cache subsyste.
+// This unit buffers an atomic memory operation for the cache subsystem.
 // Furthermore it handles interfacing with the commit stage
 
 module amo_buffer #(
@@ -35,7 +35,7 @@ module amo_buffer #(
     // AMO response - DCACHE
     input ypb_amo_rsp_t ypb_amo_rsp_i,
     // Auxiliary signals
-    input logic amo_valid_commit_i,  // We have a vaild AMO in the commit stage
+    input logic amo_valid_commit_i,  // We have a valid AMO in the commit stage
     input logic no_st_pending_i  // there is currently no store pending anymore
 );
   logic flush_amo_buffer;
@@ -61,7 +61,7 @@ module amo_buffer #(
   assign ypb_amo_req_o.preq = no_st_pending_i & amo_valid_commit_i & amo_valid;
   assign ypb_amo_req_o.paddr = amo_data_out.paddr;
   assign ypb_amo_req_o.we = 1'b1;
-  assign ypb_amo_req_o.be = CVA6Cfg.XLEN == 64 ? ariane_pkg::be_gen(
+  assign ypb_amo_req_o.be = CVA6Cfg.IS_XLEN64 ? ariane_pkg::be_gen(
       amo_data_out.paddr[2:0], amo_data_out.size
   ) : ariane_pkg::be_gen_32(
       amo_data_out.paddr[1:0], amo_data_out.size
@@ -70,8 +70,12 @@ module amo_buffer #(
   assign ypb_amo_req_o.wdata = amo_data_out.data;
   assign ypb_amo_req_o.aid = '0;
   assign ypb_amo_req_o.atop = amo_data_out.op;
+  assign ypb_amo_req_o.cbo_op = ariane_pkg::CBO_NONE;
   assign ypb_amo_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr}  //TO DO CHECK GRANULARITY
+  );
+  assign ypb_amo_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, amo_data_out.paddr}
   );
   assign ypb_amo_req_o.access_type = 1'b1;  //1 = data
   assign ypb_amo_req_o.rready = amo_valid_commit_i;

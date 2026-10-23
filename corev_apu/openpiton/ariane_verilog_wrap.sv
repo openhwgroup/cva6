@@ -36,6 +36,10 @@ module ariane_verilog_wrap
   parameter int unsigned               NrCachedRegionRules   =  0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0,
+  // bufferable regions
+  parameter int unsigned               NrBufferableRegionRules  =  0,
+  parameter logic [NrMaxRules*64-1:0]  BufferableRegionAddrBase = '0,
+  parameter logic [NrMaxRules*64-1:0]  BufferableRegionLength   = '0,
   // PMP
   parameter int unsigned               NrPMPEntries          =  8
 ) (
@@ -171,6 +175,10 @@ module ariane_verilog_wrap
     NrCachedRegionRules:   NrCachedRegionRules,
     CachedRegionAddrBase:  CachedRegionAddrBase,
     CachedRegionLength:    CachedRegionLength,
+    // bufferable region
+    NrBufferableRegionRules:  NrBufferableRegionRules,
+    BufferableRegionAddrBase: BufferableRegionAddrBase,
+    BufferableRegionLength:   BufferableRegionLength,
     // cache config
     AxiCompliant:          1'b0,
     SwapEndianess:         SwapEndianess,

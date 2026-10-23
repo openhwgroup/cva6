@@ -45,6 +45,7 @@ module store_buffer
     input logic [CVA6Cfg.XLEN-1:0] data_i,  // data which is placed in the queue
     input logic [(CVA6Cfg.XLEN/8)-1:0] be_i,  // byte enable in
     input logic [1:0] data_size_i,  // type of request we are making (e.g.: bytes to write)
+    input ariane_pkg::fu_op cbo_op_i,  // type of cache block operation
 
     // D$ interface
     // Store cache response - DCACHE
@@ -61,6 +62,7 @@ module store_buffer
     logic [CVA6Cfg.XLEN-1:0] data;
     logic [(CVA6Cfg.XLEN/8)-1:0] be;
     logic [1:0] data_size;
+    ariane_pkg::fu_op cbo_op;
     logic valid;  // this entry is valid, we need this for checking if the address offset matches
   }
       speculative_queue_n[DEPTH_SPEC-1:0],
@@ -99,6 +101,17 @@ module store_buffer
 
   logic pending_rvalid_n, pending_rvalid_q;
 
+  // A cache block operation only completes when the cache answers, so its
+  // entry must be held until rvalid even in the configurations where a plain
+  // store is considered done on its grant.
+  logic commit_is_cbo, spec_is_cbo;
+  assign commit_is_cbo = CVA6Cfg.RVZiCbom && (commit_queue_q[commit_read_pointer_q].cbo_op
+                          inside {ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH,
+                                  ariane_pkg::CBO_INVAL});
+  assign spec_is_cbo = CVA6Cfg.RVZiCbom && (speculative_queue_q[speculative_read_pointer_q].cbo_op
+                        inside {ariane_pkg::CBO_CLEAN, ariane_pkg::CBO_FLUSH,
+                                ariane_pkg::CBO_INVAL});
+
   assign store_buffer_empty_o = (speculative_status_cnt_q == 0) & !valid_i & no_st_pending_o;
   // ----------------------------------------
   // Speculative Queue - Core Interface
@@ -118,6 +131,7 @@ module store_buffer
       speculative_queue_n[speculative_write_pointer_q].data = data_i;
       speculative_queue_n[speculative_write_pointer_q].be = be_i;
       speculative_queue_n[speculative_write_pointer_q].data_size = data_size_i;
+      speculative_queue_n[speculative_write_pointer_q].cbo_op = cbo_op_i;
       speculative_queue_n[speculative_write_pointer_q].valid = 1'b1;
       // advance the write pointer
       speculative_write_pointer_n = speculative_write_pointer_q + 1'b1;
@@ -167,12 +181,20 @@ module store_buffer
   assign ypb_store_req_o.wdata = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].data : commit_queue_q[commit_read_pointer_q].data;
   assign ypb_store_req_o.aid = '0;
   assign ypb_store_req_o.atop = ariane_pkg::AMO_NONE;
+  assign ypb_store_req_o.cbo_op = direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].cbo_op : commit_queue_q[commit_read_pointer_q].cbo_op;
   assign ypb_store_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg,
       {
         {64 - CVA6Cfg.PLEN{1'b0}},
         direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
       }  //TO DO CHECK GRANULARITY
+  );
+  assign ypb_store_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg,
+      {
+        {64 - CVA6Cfg.PLEN{1'b0}},
+        direct_req_from_speculative ? speculative_queue_q[speculative_read_pointer_q].address : commit_queue_q[commit_read_pointer_q].address
+      }
   );
   assign ypb_store_req_o.access_type = 1'b1;  //1 = data
 
@@ -203,10 +225,10 @@ module store_buffer
     // A full in-flight tracking holds the request back: its address could no
     // longer be reported to the load unit.
     if (commit_queue_q[commit_read_pointer_q].valid && !stall_st_pending_i && !inflight_full) begin
-      ypb_store_req_o.preq = (!CVA6Cfg.PipelineOnly && pending_rvalid_q) ? 1'b0 : 1'b1;
+      ypb_store_req_o.preq = ((!CVA6Cfg.StoreAckOnGrant || commit_is_cbo) && pending_rvalid_q) ? 1'b0 : 1'b1;
       if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
 
-      if ((!CVA6Cfg.PipelineOnly && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && ypb_store_rsp_i.pgnt)) begin
+      if (((!CVA6Cfg.StoreAckOnGrant || commit_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.StoreAckOnGrant && !commit_is_cbo && ypb_store_rsp_i.pgnt)) begin
         pending_rvalid_n = 1'b0;
         // we can evict it from the commit buffer
         commit_queue_n[commit_read_pointer_q].valid = 1'b0;
@@ -217,17 +239,17 @@ module store_buffer
     end else if (speculative_queue_q[speculative_read_pointer_q].valid) begin
       if (commit_i && (commit_write_pointer_q == speculative_read_pointer_q) &&
           !stall_st_pending_i && !inflight_full) begin
-        ypb_store_req_o.preq = (!CVA6Cfg.PipelineOnly && pending_rvalid_q) ? '0 : 1'b1;
+        ypb_store_req_o.preq = ((!CVA6Cfg.StoreAckOnGrant || spec_is_cbo) && pending_rvalid_q) ? '0 : 1'b1;
         direct_req_from_speculative = 1'b1;
         if (ypb_store_rsp_i.pgnt) pending_rvalid_n = 1'b1;
       end
     end
 
-    // in PipelineOnly configuration we ignore the rvalid signal for now as we assume that the store
-    // happened if we got a grant, with cache wait for rvalid
+    // With StoreAckOnGrant a store is complete once granted and its rvalid is
+    // ignored; otherwise it waits for rvalid. A CBO always waits for rvalid.
 
     // shift the store request from the speculative buffer to the non-speculative
-    if (commit_i && !(((!CVA6Cfg.PipelineOnly && ypb_store_rsp_i.rvalid) || (CVA6Cfg.PipelineOnly && ypb_store_rsp_i.pgnt)) && direct_req_from_speculative)) begin
+    if (commit_i && !((((!CVA6Cfg.StoreAckOnGrant || spec_is_cbo) && ypb_store_rsp_i.rvalid) || (CVA6Cfg.StoreAckOnGrant && !spec_is_cbo && ypb_store_rsp_i.pgnt)) && direct_req_from_speculative)) begin
       commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
       commit_write_pointer_n = commit_write_pointer_n + 1'b1;
       commit_status_cnt++;
@@ -344,7 +366,9 @@ module store_buffer
   // registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_spec
     if (~rst_ni) begin
-      speculative_queue_q         <= '{default: 0};
+      for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
+        speculative_queue_q[i] <= '0;
+      end
       speculative_read_pointer_q  <= '0;
       speculative_write_pointer_q <= '0;
       speculative_status_cnt_q    <= '0;
@@ -361,7 +385,9 @@ module store_buffer
   // registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_commit
     if (~rst_ni) begin
-      commit_queue_q         <= '{default: 0};
+      for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
+        commit_queue_q[i] <= '0;
+      end
       commit_read_pointer_q  <= '0;
       commit_write_pointer_q <= '0;
       commit_status_cnt_q    <= '0;

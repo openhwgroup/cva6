@@ -16,7 +16,7 @@
     logic accept; /*Is the offloaded compressed instruction (id) accepted by the coprocessor?*/ \
 }
 
-`define X_ISSUE_REQ_T(Cfg, hartit_t, id_t) struct packed { \
+`define X_ISSUE_REQ_T(Cfg, hartid_t, id_t) struct packed { \
     logic [31:0] instr; /*Offloaded instruction*/ \
     hartid_t hartid; /*Identification of the hart offloading the instruction*/ \
     id_t id; /*Identification of the offloaded instruction*/ \
@@ -48,7 +48,7 @@
     writeregflags_t we;  /*Register file write enable(s)*/ \
 }
 
-`define CVXIF_REQ_T(Cfg, x_compressed_req_t, x_issue_req_t, x_register_req_t, x_commit_t) struct packed { \
+`define CVXIF_REQ_T(Cfg, x_compressed_req_t, x_issue_req_t, x_register_t, x_commit_t) struct packed { \
     logic              compressed_valid; \
     x_compressed_req_t compressed_req; \
     logic              issue_valid; \

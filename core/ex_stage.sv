@@ -49,6 +49,8 @@ module ex_stage
     input logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.VLEN-1:0] rs2_forwarding_i,
     // FU data useful to execute instruction - ISSUE_STAGE
     input fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_i,
+    // ALU to ALU bypass control - ISSUE_STAGE
+    input alu_bypass_t alu_bypass_i,
     // PC of the current instruction - ISSUE_STAGE
     input logic [CVA6Cfg.VLEN-1:0] pc_i,
     // Is_zcmt instruction - ISSUE_STAGE
@@ -113,10 +115,16 @@ module ex_stage
     output logic lsu_commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // The committing instruction is dropped (speculative scoreboard) - COMMIT_STAGE
+    input logic commit_drop_i,
     // TO_BE_COMPLETED - ACC_DISPATCHER
     input logic stall_st_pending_i,
     // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
+    // Data endianness - CSR REGFILE
+    input logic mbe_i,
     // Atomic result is valid - COMMIT_STAGE
     input logic amo_valid_commit_i,
     // FU is ready - ISSUE_STAGE
@@ -139,6 +147,8 @@ module ex_stage
     output logic fpu_valid_o,
     // FPU exception - ISSUE_STAGE
     output exception_t fpu_exception_o,
+    // FPU early valid - ISSUE_STAGE
+    output logic fpu_early_valid_o,
     // ALU2 instruction is valid - ISSUE_STAGE
     input logic [CVA6Cfg.NrIssuePorts-1:0] alu2_valid_i,
     // CVXIF instruction is valid - ISSUE_STAGE
@@ -165,6 +175,18 @@ module ex_stage
     output logic x_result_ready_o,
     // CVXIF Issue transaction rejected -> illegal instruction - ISSUE_STAGE
     input logic x_transaction_rejected_i,
+    //Trigger module communication
+    output logic [CVA6Cfg.VLEN-1:0] sdtrig_lsu_inputs_operand_a_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_lsu_inputs_operand_c_o,
+    output logic sdtrig_lsu_inputs_we_o,
+    output logic sdtrig_lsu_inputs_valid_o,
+    input logic sdtrig_load_cancel_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    output logic sdtrig_load_data_valid_o,
+    output logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_o,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_i,
+    input logic sdtrig_store_stall_i,
+    input logic [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i,
     // accelerate port result is valid - ACC_DISPATCHER
     input logic acc_valid_i,
     // Enable virtual memory translation - CSR_REGFILE
@@ -239,9 +261,9 @@ module ex_stage
     // To count the data TLB misses - PERF_COUNTERS
     output logic dtlb_miss_o,
     // Report the PMP configuration - CSR_REGFILE
-    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
+    input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg_i,
     // Report the PMP addresses - CSR_REGFILE
-    input logic [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
     // Information dedicated to RVFI - RVFI
     output lsu_ctrl_t rvfi_lsu_ctrl_o,
     // Information dedicated to RVFI - RVFI
@@ -283,7 +305,8 @@ module ex_stage
 
   // from ALU to branch unit
   logic alu_branch_res;  // branch comparison result
-  logic [CVA6Cfg.XLEN-1:0] alu_result, csr_result, mult_result, aes_result;
+  logic [CVA6Cfg.NrALUs-1:0][CVA6Cfg.XLEN-1:0] alu_result;
+  logic [CVA6Cfg.XLEN-1:0] csr_result, mult_result, aes_result;
   logic [CVA6Cfg.VLEN-1:0] branch_result;
   logic csr_ready, mult_ready;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] mult_trans_id;
@@ -310,15 +333,29 @@ module ex_stage
     end
   end
 
-  // 1. ALU (combinatorial)
-  alu #(
+  // 1. ALU(s) (combinatorial)
+  fu_data_t [CVA6Cfg.NrALUs-1:0] alu_data;
+
+  assign alu_data[0] = one_cycle_data;
+
+  if (CVA6Cfg.SuperscalarEn) begin : gen_alu2_data_sel
+    always_comb begin
+      unique case (1'b1)
+        alu2_valid_i[1]: alu_data[1] = fu_data_i[1];
+        alu2_valid_i[0]: alu_data[1] = fu_data_i[0];
+        default: alu_data[1] = '0;
+      endcase
+    end
+  end
+
+  alu_wrapper #(
       .CVA6Cfg  (CVA6Cfg),
-      .HasBranch(1'b1),
       .fu_data_t(fu_data_t)
-  ) alu_i (
+  ) alu_wrapper_i (
       .clk_i,
       .rst_ni,
-      .fu_data_i       (one_cycle_data),
+      .alu_bypass_i    (alu_bypass_i),
+      .fu_data_i       (alu_data),
       .result_o        (alu_result),
       .alu_branch_res_o(alu_branch_res)
   );
@@ -375,7 +412,7 @@ module ex_stage
     flu_trans_id_o = one_cycle_data.trans_id;
     // ALU result
     if (|alu_valid_i) begin
-      flu_result_o = alu_result;
+      flu_result_o = alu_result[0];
       // CSR result
     end else if (|csr_valid_i) begin
       flu_result_o = csr_result;
@@ -426,7 +463,6 @@ module ex_stage
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] fpu_trans_id;
   logic [CVA6Cfg.XLEN-1:0] fpu_result;
   logic alu2_valid;
-  logic [CVA6Cfg.XLEN-1:0] alu2_result;
 
   generate
     if (CVA6Cfg.FpPresent) begin : fpu_gen
@@ -458,56 +494,31 @@ module ex_stage
           .fpu_trans_id_o(fpu_trans_id),
           .result_o(fpu_result),
           .fpu_valid_o(fpu_valid),
-          .fpu_exception_o
+          .fpu_exception_o,
+          .fpu_early_valid_o
       );
     end else begin : no_fpu_gen
-      assign fpu_ready_o     = '0;
-      assign fpu_trans_id    = '0;
-      assign fpu_result      = '0;
-      assign fpu_valid       = '0;
-      assign fpu_exception_o = '0;
+      assign fpu_ready_o       = '0;
+      assign fpu_trans_id      = '0;
+      assign fpu_result        = '0;
+      assign fpu_valid         = '0;
+      assign fpu_exception_o   = '0;
+      assign fpu_early_valid_o = '0;
     end
   endgenerate
 
   // ----------------
-  // ALU2
-  // ----------------
-  fu_data_t alu2_data;
-  if (CVA6Cfg.SuperscalarEn) begin : alu2_gen
-    always_comb begin
-      alu2_data = alu2_valid_i[0] ? fu_data_i[0] : '0;
-      if (alu2_valid_i[1]) begin
-        alu2_data = fu_data_i[1];
-      end
-    end
-
-    alu #(
-        .CVA6Cfg  (CVA6Cfg),
-        .HasBranch(1'b0),
-        .fu_data_t(fu_data_t)
-    ) alu2_i (
-        .clk_i,
-        .rst_ni,
-        .fu_data_i       (alu2_data),
-        .result_o        (alu2_result),
-        .alu_branch_res_o(  /* this ALU does not handle branching */)
-    );
-  end else begin
-    assign alu2_data   = '0;
-    assign alu2_result = '0;
-  end
-
   // result MUX
   // This is really explicit so that synthesis tools can elide unused signals
   if (CVA6Cfg.SuperscalarEn) begin
     if (CVA6Cfg.FpPresent) begin
       assign fpu_valid_o    = fpu_valid || |alu2_valid_i;
-      assign fpu_result_o   = fpu_valid ? fpu_result   : alu2_result;
-      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu2_data.trans_id;
+      assign fpu_result_o   = fpu_valid ? fpu_result   : alu_result[1];
+      assign fpu_trans_id_o = fpu_valid ? fpu_trans_id : alu_data[1].trans_id;
     end else begin
       assign fpu_valid_o    = |alu2_valid_i;
-      assign fpu_result_o   = alu2_result;
-      assign fpu_trans_id_o = alu2_data.trans_id;
+      assign fpu_result_o   = alu_result[1];
+      assign fpu_trans_id_o = alu_data[1].trans_id;
     end
   end else begin
     if (CVA6Cfg.FpPresent) begin
@@ -559,9 +570,11 @@ module ex_stage
       .flush_i,
       .stall_st_pending_i,
       .no_st_pending_o,
-      .fu_data_i             (lsu_data),
+      .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
+      .mbe_i,
+      .fu_data_i              (lsu_data),
       .lsu_ready_o,
-      .lsu_valid_i           (|lsu_valid_i),
+      .lsu_valid_i            (|lsu_valid_i),
       .load_trans_id_o,
       .load_result_o,
       .load_valid_o,
@@ -570,9 +583,10 @@ module ex_stage
       .store_result_o,
       .store_valid_o,
       .store_exception_o,
-      .commit_i              (lsu_commit_i),
-      .commit_ready_o        (lsu_commit_ready_o),
+      .commit_i               (lsu_commit_i),
+      .commit_ready_o         (lsu_commit_ready_o),
       .commit_tran_id_i,
+      .commit_drop_i,
       .enable_translation_i,
       .enable_g_translation_i,
       .en_ld_st_translation_i,
@@ -593,34 +607,56 @@ module ex_stage
       .hgatp_ppn_i,
       .asid_i,
       .vs_asid_i,
-      .asid_to_be_flushed_i  (asid_to_be_flushed),
+      .asid_to_be_flushed_i   (asid_to_be_flushed),
       .vmid_i,
-      .vmid_to_be_flushed_i  (vmid_to_be_flushed),
-      .vaddr_to_be_flushed_i (vaddr_to_be_flushed),
-      .gpaddr_to_be_flushed_i(gpaddr_to_be_flushed),
+      .vmid_to_be_flushed_i   (vmid_to_be_flushed),
+      .vaddr_to_be_flushed_i  (vaddr_to_be_flushed),
+      .gpaddr_to_be_flushed_i (gpaddr_to_be_flushed),
       .flush_tlb_i,
       .flush_tlb_vvma_i,
       .flush_tlb_gvma_i,
       .itlb_miss_o,
       .dtlb_miss_o,
       // DCACHE interfaces
-      .ypb_amo_req_o         (ypb_amo_req_o),
-      .ypb_amo_rsp_i         (ypb_amo_rsp_i),
-      .ypb_store_req_o       (ypb_store_req_o),
-      .ypb_store_rsp_i       (ypb_store_rsp_i),
-      .ypb_load_req_o        (ypb_load_req_o),
-      .ypb_load_rsp_i        (ypb_load_rsp_i),
-      .ypb_mmu_ptw_req_o     (ypb_mmu_ptw_req_o),
-      .ypb_mmu_ptw_rsp_i     (ypb_mmu_ptw_rsp_i),
+      .ypb_amo_req_o          (ypb_amo_req_o),
+      .ypb_amo_rsp_i          (ypb_amo_rsp_i),
+      .ypb_store_req_o        (ypb_store_req_o),
+      .ypb_store_rsp_i        (ypb_store_rsp_i),
+      .ypb_load_req_o         (ypb_load_req_o),
+      .ypb_load_rsp_i         (ypb_load_rsp_i),
+      .ypb_mmu_ptw_req_o      (ypb_mmu_ptw_req_o),
+      .ypb_mmu_ptw_rsp_i      (ypb_mmu_ptw_rsp_i),
       .dcache_wbuffer_empty_i,
       .dcache_wbuffer_not_ni_i,
       .amo_valid_commit_i,
-      .tinst_i               (lsu_tinst),
+      .tinst_i                (lsu_tinst),
       .pmpcfg_i,
       .pmpaddr_i,
       .rvfi_lsu_ctrl_o,
-      .rvfi_mem_paddr_o
+      .rvfi_mem_paddr_o,
+      //Trigger module command signals
+      .sdtrig_load_cancel_i   (sdtrig_load_cancel_i),
+      .sdtrig_load_action_i   (sdtrig_load_action_i),
+      .sdtrig_load_data_valid_o,
+      .sdtrig_load_data_o,
+      .sdtrig_load_data_action_i,
+      .sdtrig_store_stall_i   (sdtrig_store_stall_i),
+      .sdtrig_store_action_i  (sdtrig_store_action_i)
   );
+
+  //Sdtrig: the address and the value an access carries, tapped before the LSU
+  //consumes them, so a trigger can compare either one.
+  if (CVA6Cfg.SdtrigMcontrol6Store || CVA6Cfg.SdtrigMcontrol6LoadAddr || CVA6Cfg.SdtrigMcontrol6LoadData) begin : gen_sdtrig_lsu_taps
+    assign sdtrig_lsu_inputs_operand_a_o = CVA6Cfg.VLEN'(lsu_data.operand_a + lsu_data.imm);
+    assign sdtrig_lsu_inputs_operand_c_o = lsu_data.operand_b;
+    assign sdtrig_lsu_inputs_we_o = lsu_data.fu == STORE;
+    assign sdtrig_lsu_inputs_valid_o = |lsu_valid_i;
+  end else begin : gen_no_sdtrig_lsu_taps
+    assign sdtrig_lsu_inputs_operand_a_o = '0;
+    assign sdtrig_lsu_inputs_operand_c_o = '0;
+    assign sdtrig_lsu_inputs_we_o = '0;
+    assign sdtrig_lsu_inputs_valid_o = '0;
+  end
 
   if (CVA6Cfg.CvxifEn) begin : gen_cvxif
     fu_data_t cvxif_data;
@@ -661,6 +697,8 @@ module ex_stage
     assign x_exception_o    = '0;
     assign x_result_o       = '0;
     assign x_valid_o        = '0;
+    assign x_we_o           = '0;
+    assign x_rd_o           = '0;
   end
 
   if (CVA6Cfg.RVS) begin
@@ -711,7 +749,7 @@ module ex_stage
           // if the current instruction in EX_STAGE is a sfence.vma, in the next cycle no writes will happen
         end else if ((~(current_instruction_is_sfence_vma || current_instruction_is_hfence_vvma || current_instruction_is_hfence_gvma)) && (~((fu_data_i[0].operation == SFENCE_VMA || fu_data_i[0].operation == HFENCE_VVMA || fu_data_i[0].operation == HFENCE_GVMA ) && |csr_valid_i))) begin
           vaddr_to_be_flushed  <= rs1_forwarding;
-          gpaddr_to_be_flushed <= {2'b00, rs1_forwarding[CVA6Cfg.GPLEN-1:2]};
+          gpaddr_to_be_flushed <= {rs1_forwarding[CVA6Cfg.GPLEN-3:0], 2'b00};
           asid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.ASID_WIDTH-1:0];
           vmid_to_be_flushed   <= rs2_forwarding[CVA6Cfg.VMID_WIDTH-1:0];
         end

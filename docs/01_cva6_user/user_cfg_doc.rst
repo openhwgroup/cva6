@@ -80,6 +80,10 @@
      - ``bit``
      - Zihpm RISC-V extension
 
+   * - ``BigEndianEn``
+     - ``bit``
+     - Big endian data accesses: mstatus.MBE, SBE and UBE are writable
+
    * - ``RVF``
      - ``bit``
      - Floating Point
@@ -204,6 +208,18 @@
      - ``logic [NrMaxRules-1:0][63:0]``
      - PMA cache region rules
 
+   * - ``NrBufferableRegionRules``
+     - ``int unsigned``
+     - PMA regions with bufferable rules number
+
+   * - ``BufferableRegionAddrBase``
+     - ``logic [NrMaxRules-1:0][63:0]``
+     - PMA bufferable region base address
+
+   * - ``BufferableRegionLength``
+     - ``logic [NrMaxRules-1:0][63:0]``
+     - PMA bufferable region length
+
    * - ``CvxifEn``
      - ``bit``
      - CV-X-IF coprocessor interface enable
@@ -248,9 +264,9 @@
      - ``int unsigned``
      - Instruction cache line width
 
-   * - ``DCacheType``
-     - ``cache_type_t``
-     - Cache Type
+   * - ``CacheWritePolicy``
+     - ``cache_write_policy_e``
+     - Write policy of the data cache
 
    * - ``DcacheIdWidth``
      - ``int unsigned``
@@ -372,13 +388,9 @@
      - ``bit``
      - Option to enable Svnapot extension
 
-   * - ``ObiVersion``
-     - ``int unsigned``
-     - OBI version compliance, 0 means not compliant -> best performance
-
-   * - ``PipelineOnly``
-     - ``bit``
-     - Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
+   * - ``MemSubsystem``
+     - ``mem_subsystem_e``
+     - Memory subsystem between the pipeline and the system bus
 
    * - ``NrStoreInFlight``
      - ``int unsigned``

@@ -13,6 +13,7 @@
 import importlib
 from pathlib import Path
 import pkgutil
+import subprocess
 import sys
 import typer
 
@@ -43,6 +44,48 @@ def check_cwd():
         sys.exit(1)
 
 
+# Commands run before the submodules are patched: the setup recipes, and the
+# regression, which runs git-dependencies itself before any elaboration
+SETUP_COMMANDS = ("git-dependencies", "self-check", "full-regression")
+
+
+def check_submodule_patches():
+    """
+    Stop when a patch of a Git submodule is not applied.
+
+    The patches come with the repository: a pull can bring a new one, and
+    nothing would apply it before the next `git-dependencies`. The RTL or
+    testbench would then be used unpatched without any message. The check is
+    `git apply --reverse --check`, which modifies nothing.
+    """
+    command = next((a for a in sys.argv[1:] if not a.startswith("-")), None)
+    if command is None or command in SETUP_COMMANDS:
+        return
+    # pylint: disable-next=import-outside-toplevel
+    from flows.recipes.git_dependencies import submodule_patches
+
+    missing = []
+    for _, patch_file, patch_cwd in submodule_patches(REPO_DIR):
+        result = subprocess.run(
+            ["git", "apply", "--reverse", "--check", str(patch_file)],
+            cwd=patch_cwd,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            missing.append(
+                f"{patch_file.relative_to(REPO_DIR)} in {patch_cwd.relative_to(REPO_DIR)}"
+            )
+    if missing:
+        print(
+            "Patches of the Git submodules not applied:\n  "
+            + "\n  ".join(missing)
+            + "\n  Run: ./cook.py git-dependencies",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def load_commands(folder: str):
     # folder to look for typer commands
     package = f"flows.{folder}"
@@ -63,4 +106,5 @@ load_commands("macros")
 
 if __name__ == "__main__":
     check_cwd()
+    check_submodule_patches()
     app()

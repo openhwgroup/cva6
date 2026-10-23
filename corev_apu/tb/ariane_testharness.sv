@@ -133,7 +133,7 @@ module ariane_testharness #(
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
-    if (CVA6Cfg.XLEN != 32 & CVA6Cfg.XLEN != 64) $error("CVA6Cfg.XLEN different from 32 and 64");
+    if (!CVA6Cfg.IS_XLEN32 & !CVA6Cfg.IS_XLEN64) $error("CVA6Cfg.XLEN different from 32 and 64");
   end
 
   // debug if MUX
@@ -753,8 +753,14 @@ module ariane_testharness #(
         .encap_fifo_entry_o (encap_fifo_entry_i)
     );
 
+    // The slicer drains one packet every NUM_SLICES cycles while nothing holds
+    // the encoder back, so a burst of taken branches can fill this FIFO. A packet
+    // that finds it full is dropped: only the slice stream loses it, encaps.traces
+    // is written before the FIFO.
+    localparam int unsigned ENCAP_FIFO_DEPTH = 64;
+
     fifo_v3 # (
-        .DEPTH(16),
+        .DEPTH(ENCAP_FIFO_DEPTH),
         .dtype(encap_pkg::encap_fifo_entry_s)
     ) i_fifo_encap (
         .clk_i     (clk_i),
@@ -765,10 +771,27 @@ module ariane_testharness #(
         .empty_o   (encap_fifo_empty),
         .usage_o   (),
         .data_i    (encap_fifo_entry_i),
-        .push_i    (encap_valid),
+        .push_i    (encap_valid && !encap_fifo_full),
         .data_o    (encap_fifo_entry_o),
         .pop_i     (encap_fifo_pop)
     );
+
+    // pragma translate_off
+    int unsigned encap_fifo_dropped = 0;
+    always_ff @(posedge clk_i) begin
+        if (rst_ni && encap_valid && encap_fifo_full) begin
+            if (encap_fifo_dropped == 0)
+                $warning("Instruction trace: encapsulator FIFO full (DEPTH=%0d) at cycle %0d, packet dropped from the slice stream; encaps.traces stays complete",
+                         ENCAP_FIFO_DEPTH, rvfi_to_iti.cycles);
+            encap_fifo_dropped <= encap_fifo_dropped + 1;
+        end
+    end
+    final begin
+        if (encap_fifo_dropped != 0)
+            $display("Instruction trace: %0d packet(s) dropped by the encapsulator FIFO (DEPTH=%0d)",
+                     encap_fifo_dropped, ENCAP_FIFO_DEPTH);
+    end
+    // pragma translate_on
     localparam DATA_LEN = 8;
 
     logic                           slicer_valid;

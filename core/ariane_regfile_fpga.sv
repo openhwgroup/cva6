@@ -66,7 +66,7 @@ module ariane_regfile_fpga #(
   always_comb begin
     for (int unsigned j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin
       for (int unsigned i = 0; i < NUM_WORDS; i++) begin
-        if (waddr_i[j] == i) begin
+        if (32'(waddr_i[j]) == i) begin
           we_dec[j][i] = we_i[j];
         end else begin
           we_dec[j][i] = 1'b0;
@@ -106,7 +106,9 @@ module ariane_regfile_fpga #(
   logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0] mem_read[CVA6Cfg.NrCommitPorts];
   logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0] mem_read_sync[CVA6Cfg.NrCommitPorts];
   for (genvar j = 0; j < CVA6Cfg.NrCommitPorts; j++) begin : regfile_ram_block
-    always_ff @(posedge clk_i) begin
+    // always, not always_ff: mem is also written by the initial block below,
+    // and always_ff forbids any other process from writing it.
+    always @(posedge clk_i) begin
       if (we_i[j] && ~waddr_i[j] != 0) begin
         mem[j][waddr_i[j]] <= wdata_i[j];
         if (CVA6Cfg.FpgaAlteraEn)

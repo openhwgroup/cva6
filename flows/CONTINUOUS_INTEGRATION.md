@@ -167,12 +167,39 @@ machine without Vivado or without the board. The Intel/Altera images of
 `ALTERA_TARGETS` are run only with `--altera`, no runner carrying their
 board yet.
 
+Every target is linted by `rtl-lint`: slang, then Verilator in lint
+mode, from the same top as Spyglass. It takes no licence, so it covers the
+targets Spyglass leaves out, and the targets of `SPYGLASS_TARGETS` get
+both. As for Spyglass, the verdict is a comparison with a baseline, here
+`config/target/<target>/expected_lint.yml`: any error fails, and so does a
+new rule or a higher count. Once a warning is fixed, lower the baseline
+with `./cook.py rtl-lint -t <target> --update-baseline`. slang is the
+binary when it is in the path, else the pyslang module of
+`flows/requirements.txt`.
+
+Every target is also synthesised by `yosys-synth`, on the generic cells of
+Yosys, once its RTL elaborates: no licence and no PDK, the open-source
+counterpart of the GTECH synthesis below. The SystemVerilog is read by the
+slang plugin of Yosys, the hierarchy is kept for the cells of each block,
+and the job fails on any latch or on cell and register counts away from
+`yosys_cells` and `yosys_registers` of `expected_values.yml`.
+
 The targets of `GTECH_TARGETS` (cv32a60x, cv32a65x_noPMP_axi and
 cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi) are synthesised on the GTECH cells
 of dc_shell (`dc-shell-synth --gtech`), which needs no PDK, once their RTL
 elaborates. The job checks their cell and register counts, and fails on
 any latch. The synthesis on a real techno, and the gate-level simulation
 of its netlist, only run with `--techno`.
+
+The targets of the documentation, the Spyglass lint, the GTECH synthesis
+and the techno synthesis can be chosen per run, without changing the
+macro: `--docs-targets`, `--spyglass-targets`, `--gtech-targets` and
+`--synth-targets` take a comma separated list of targets, `all` for every
+target of the run, or `none`. Left empty, they keep `DOCS_TARGETS`,
+`SPYGLASS_TARGETS`, `GTECH_TARGETS`, and every target for the techno
+synthesis. They select within the targets of the run: a listed target
+that `--target` leaves out is not run, and a name that is not a target
+fails the macro.
 
 ### Scheduling and licences
 
@@ -218,7 +245,7 @@ are described in the [Reports](README.md#reports) section of the README.
 
 **Optional:**
 - `-t, --target TEXT` - CVA6 user configuration, repeatable (default: every target of the CI matrix)
-- `-j, --jobs INTEGER` - Maximum number of recipes running at the same time (default: 8)
+- `-j, --jobs INTEGER` - Maximum number of recipes running at the same time (default: 8, 16 in `.gitlab-ci.yml`)
 - `--vcs-licenses INTEGER` - Concurrent VCS jobs (default: 10)
 - `--spyglass-licenses INTEGER` - Concurrent Spyglass jobs (default: 1)
 - `--synth-licenses INTEGER` - Concurrent DC Shell synthesis jobs (default: 1)
@@ -228,6 +255,10 @@ are described in the [Reports](README.md#reports) section of the README.
 - `--quartus-licenses INTEGER` - Concurrent Quartus builds (default: 1)
 - `--techno [...]` - Enable the synthesis and gate-level stages with this techno (disabled by default, like in the CI)
 - `--period TEXT` - Synthesis target period (default: 15)
+- `--docs-targets TEXT` - Targets the documentation is built for: list, `all` or `none` (default: `DOCS_TARGETS`)
+- `--spyglass-targets TEXT` - Targets of the Spyglass lint (default: `SPYGLASS_TARGETS`)
+- `--gtech-targets TEXT` - Targets of the GTECH synthesis (default: `GTECH_TARGETS`)
+- `--synth-targets TEXT` - Targets of the techno synthesis and gate-level simulation, with `--techno` (default: all)
 - `--dry-run` - List the jobs, their licence pool and their dependencies, run nothing
 - `-q, --quiet` - Suppress output (errors only)
 
@@ -246,6 +277,9 @@ Details of its own report. Use `--jobs 1` to get the verbose output back.
 
 # Single target, including synthesis and gate-level simulation
 ./cook.py full-regression -t cv32a65x --techno my_techno --period 10
+
+# GTECH synthesis of every target, no Spyglass
+./cook.py full-regression --gtech-targets all --spyglass-targets none
 ```
 
 ### Adding a job
@@ -254,6 +288,8 @@ In `flows/macros/full_regression.py`:
 
 - `TARGETS` lists the targets.
 - `TESTLISTS` maps a target to its testlists.
+- `DOCS_TARGETS`, `SPYGLASS_TARGETS` and `GTECH_TARGETS` are the default
+  targets of the documentation, the Spyglass lint and the GTECH synthesis.
 - `FPGA_TARGETS` and `ALTERA_TARGETS` pair a target with the board its
   image is built for.
 - `scheduler.add(name, run, report_dir, deps=..., resource=...)` registers
@@ -322,9 +358,9 @@ the build tree `merge-reports` reads; `pages` copies the result into
 | `CONFIG_DIR` | Directory holding `setenv.sh`, `compiler.yml` and `techno.yml`; to be set in the CI project variables |
 | `MY_JOBS` | `--jobs` of the macro |
 | `MY_VCS_LICENSES`, `MY_SPYGLASS_LICENSES`, `MY_SYNTH_LICENSES`, `MY_VIVADO_LICENSES` | Licence pools of the macro |
+| `MY_DOCS_TARGETS`, `MY_SPYGLASS_TARGETS`, `MY_GTECH_TARGETS`, `MY_SYNTH_TARGETS` | `--docs-targets`, `--spyglass-targets`, `--gtech-targets`, `--synth-targets` of the macro: empty for the default of the macro, set per pipeline kind by `workflow:rules`: development branches and merge requests take the lists of the macro (anchor `.targets_dev`, to be kept in sync with `DOCS_TARGETS`, `SPYGLASS_TARGETS` and `GTECH_TARGETS`), the default branch, master_candidate, takes the same lists but runs the GTECH synthesis on every target. Empty for a web or a scheduled pipeline unless set by hand |
 | `XILINX_VIVADO_BASHRC`, `HW_SERVER_URL`, `UART_SERIAL`, `VIVADO_CMD` | Vivado and the board, for the FPGA jobs of the macro |
 | `VERILATOR_INSTALL_DIR` | Verilator of the TestHarness jobs of the macro: `setenv.sh` puts its `bin/` in `PATH`, where the recipes look for it |
-| `CI_KIND` | Which jobs a pipeline runs: set by `workflow:rules` from the pipeline source, or by hand for a web pipeline |
 | `PAGES_PREFIX`, `PAGES_EXPIRE` | Deployment of the dashboard, set by `workflow:rules` |
 
 ## The GitHub Actions TestHarness smoke

@@ -70,6 +70,15 @@ def xcelium_uvm_run(
         False, help="Launch GUI for interactive simulation"
     ),
     run_opts: list[str] = typer.Option([], "--run_opts", help="Simulation run options"),
+    irq_delay: list[str] = typer.Option(
+        [],
+        "--irq_delay",
+        help=(
+            "Delay in cycles between a deterministic interrupt hook retiring and "
+            "the channel being raised, as CHANNEL=CYCLES. Channels are mei, timer "
+            "and ipi. Defaults to 10 for a channel not given."
+        ),
+    ),
     uvm_seed: str = typer.Option(
         default=str(random.getrandbits(31)), help="Randomize UVM seed"
     ),
@@ -254,6 +263,30 @@ def xcelium_uvm_run(
     add_start_window = symbols.get("GLOBAL_PATTERN_start", 0)
     add_end_window = symbols.get("GLOBAL_PATTERN_end", 0)
 
+    # --irq_delay mei=20 --irq_delay timer=5
+    irq_delays: dict[str, int] = {}
+    for spec in irq_delay:
+        channel, _, cycles = spec.partition("=")
+        if channel not in ("mei", "timer", "ipi") or not cycles.isdigit():
+            report.error_exit(
+                f"Bad --irq_delay {spec!r}, expected mei|timer|ipi=<cycles>",
+                env=True,
+            )
+        irq_delays[channel] = int(cycles)
+
+    # Deterministic interrupts. An address of zero means the test defined no hook
+    # for that channel and the agent leaves it alone. The delay is in cycles,
+    # counted from the retirement of the hook instruction.
+    # A test defining load_err_word gets an error response on the load port
+    # for a load from that word (OBI testbench).
+    load_err_addr = symbols.get("load_err_word", 0)
+    irq_mei_addr = symbols.get("irq_mei_hook", 0)
+    irq_timer_addr = symbols.get("irq_timer_hook", 0)
+    irq_ipi_addr = symbols.get("irq_ipi_hook", 0)
+    irq_mei_delay = irq_delays.get("mei", 10)
+    irq_timer_delay = irq_delays.get("timer", 10)
+    irq_ipi_delay = irq_delays.get("ipi", 10)
+
     spike_param_file = repo_dir / "config" / "target" / target / "spike.yaml"
 
     if not spike_param_file.exists():
@@ -296,6 +329,13 @@ def xcelium_uvm_run(
         f"+tohost_addr={add_tohost}",
         f"+GLOBAL_PATTERN_start={add_start_window}",
         f"+GLOBAL_PATTERN_end={add_end_window}",
+        f"+irq_mei_addr={irq_mei_addr}",
+        f"+load_err_addr={load_err_addr}",
+        f"+irq_mei_delay={irq_mei_delay}",
+        f"+irq_timer_addr={irq_timer_addr}",
+        f"+irq_timer_delay={irq_timer_delay}",
+        f"+irq_ipi_addr={irq_ipi_addr}",
+        f"+irq_ipi_delay={irq_ipi_delay}",
         "-log",
         "simulation.log",
     ]

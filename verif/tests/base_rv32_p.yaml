@@ -34,6 +34,14 @@ common_test_config: &common_test_config
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/ -lgcc"
   llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
 
+# Directed tests of verif/tests/custom need the local runtime instead of the
+# riscv-tests environment: crt.S for the reset vector and tohost, and syscalls.c
+# for the exit path.
+custom_test_config: &custom_test_config
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common -lgcc"
+  llvm_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles <path_var>/custom/common/syscalls.c <path_var>/custom/common/crt.S -I<path_var>/custom/env -I<path_var>/custom/common"
+
 testlist:
   - test: rv32ui-p-add
     iterations: 1
@@ -59,3 +67,23 @@ testlist:
     iterations: 1
     <<: *common_test_config
     asm_tests: <path_var>/riscv-tests/isa/rv32ui/jal.S
+
+  - test: alu_chain_test
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/alu/alu_chain_test.S
+
+  - test: false_4k_alias
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/lsu/false_4k_alias.S
+
+  - test: irq_mtval_zero
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/interrupt/irq_mtval_zero.S
+
+  - test: mcause_warl
+    iterations: 1
+    <<: *custom_test_config
+    asm_tests: <path_var>/custom/CSR/mcause_warl.S

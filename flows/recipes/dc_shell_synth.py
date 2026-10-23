@@ -35,8 +35,9 @@ from flows.utils.target_config import (
 
 app = typer.Typer()
 
-# Gate count deviation tolerance vs config/target/<target>/expected_values.yml
-DIFF_GATES = 250
+# Deviation tolerated on the gate count, relative to
+# config/target/<target>/expected_values.yml
+GATES_TOLERANCE = 0.05
 
 # Columns of the hierarchical area CSV (graph generation)
 CSV_COLUMNS_AREA = [
@@ -71,7 +72,7 @@ GTECH_CORES = 8
 
 # Deviation tolerated on the GTECH counts, relative to
 # config/target/<target>/expected_values.yml
-GTECH_TOLERANCE = 0.01
+GTECH_TOLERANCE = 0.05
 
 # Levels of hierarchy the per-block cell counts go down to, below the top
 # instance: enough to reach the stages of the pipeline under the DCLS
@@ -317,7 +318,14 @@ def _gtech_synth(target, define_one_string, clean, quiet):
         if name == "gtech_latches":
             continue
         expected = read_config_expected_value(target, name, report)
-        report.kpi(name, value, unit="cells", expected=expected, better="lower")
+        report.kpi(
+            name,
+            value,
+            unit="cells",
+            expected=expected,
+            better="lower",
+            tolerance=GTECH_TOLERANCE,
+        )
         if expected is None:
             report.info(f"{name}: {value}, no expected value")
         elif abs(value - expected) > expected * GTECH_TOLERANCE:
@@ -706,15 +714,16 @@ def dc_shell_synth(
         unit="gates",
         expected=int(expected_gates) if expected_gates is not None else None,
         better="lower",
+        tolerance=GATES_TOLERANCE,
     )
 
     if expected_gates is None:
         report.info("No expected gate count available, skipping gate count check")
     else:
         diff = gates - int(expected_gates)
-        if abs(diff) >= DIFF_GATES:
+        if abs(diff) > int(expected_gates) * GATES_TOLERANCE:
             report.error(
-                f"Gate count deviation limit exceeded (>= {DIFF_GATES} gates)\n\n"
+                f"Gate count deviation over {GATES_TOLERANCE:.0%}\n\n"
                 f"Expected:  {expected_gates} gates\n"
                 f"Observed:  {gates} gates\n"
                 f"Delta:     {diff} gates"

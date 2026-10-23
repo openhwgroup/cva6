@@ -28,19 +28,15 @@ module cva6_hpdcache_wrapper
     parameter type ypb_mmu_ptw_rsp_t = logic,
     parameter type ypb_zcmt_req_t = logic,
     parameter type ypb_zcmt_rsp_t = logic,
-    parameter int HPDCACHE_ENABLE_CMO,
     parameter int HPDCACHE_NREQUESTERS,
     parameter int NUM_SNOOP_PORTS,
     parameter int MMU_PTW_INDEX,
     parameter int ZCMT_INDEX,
     parameter int LOAD_INDEX,
     parameter int STORE_AMO_INDEX,
-    parameter int CMO_INDEX,
     parameter int HWPF_INDEX,
     parameter int NrHwPrefetchers = 4,
 
-    parameter type cmo_req_t = logic,
-    parameter type cmo_rsp_t = logic,
     parameter type hpdcache_mem_addr_t = logic,
     parameter type hpdcache_mem_id_t = logic,
     parameter type hpdcache_mem_data_t = logic,
@@ -77,17 +73,28 @@ module cva6_hpdcache_wrapper
     //  {{{
     //    Cache management
     // Data cache enable - CSR_REGFILE
-    input  logic dcache_enable_i,
+    input logic dcache_enable_i,
+    // Data cache scrubber enable - CSR_REGFILE
+    input logic dcache_scrub_enable_i,
+    // Data cache scrubber period - CSR_REGFILE
+    input logic [5:0] dcache_scrub_period_i,
+    // Data cache scrubber completed a cycle - CSR_REGFILE
+    output logic dcache_scrub_cycle_o,
+    // Data cache data error corrected - CSR_REGFILE
+    output logic dcache_dat_cor_err_o,
+    // Data cache data error detected but not corrected - CSR_REGFILE
+    output logic dcache_dat_unc_err_o,
+    // Data cache tag error corrected - CSR_REGFILE
+    output logic dcache_dir_cor_err_o,
+    // Data cache tag error detected but not corrected - CSR_REGFILE
+    output logic dcache_dir_unc_err_o,
     // Data cache flush - CONTROLLER
-    input  logic dcache_flush_i,
+    input logic dcache_flush_i,
     // Flush acknowledge - CONTROLLER
     output logic dcache_flush_ack_o,
     // Load or store miss - PERF_COUNTERS
     output logic dcache_miss_o,
 
-    // CMO interface request/response
-    input  cmo_req_t         dcache_cmo_req_i,
-    output cmo_rsp_t         dcache_cmo_rsp_o,
     // Load cache input request/response ports - EX_STAGE
     input  ypb_load_req_t    ypb_load_req_i,
     output ypb_load_rsp_t    ypb_load_rsp_o,
@@ -162,8 +169,6 @@ module cva6_hpdcache_wrapper
   hpdcache_req_offset_t                   [NUM_SNOOP_PORTS-1:0] snoop_addr_offset;
   hpdcache_tag_t                          [NUM_SNOOP_PORTS-1:0] snoop_addr_tag;
   logic                                   [NUM_SNOOP_PORTS-1:0] snoop_phys_indexed;
-
-  logic                                                         dcache_cmo_req_is_prefetch;
 
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_in;
   hwpf_stride_pkg::hwpf_stride_throttle_t [NrHwPrefetchers-1:0] hwpf_throttle_out;
@@ -388,34 +393,6 @@ module cva6_hpdcache_wrapper
       .hpdcache_rsp_i      (dcache_rsp[STORE_AMO_INDEX])
   );
 
-  if (HPDCACHE_ENABLE_CMO) begin : gen_cmo_if_adapter
-
-    cva6_hpdcache_cmo_if_adapter #(
-        .cmo_req_t(cmo_req_t),
-        .cmo_rsp_t(cmo_rsp_t)
-    ) i_cva6_hpdcache_cmo_if_adapter (
-        .clk_i,
-        .rst_ni,
-
-        .dcache_req_sid_i(hpdcache_req_sid_t'(CMO_INDEX)),
-
-        .cva6_cmo_req_i (dcache_cmo_req_i),
-        .cva6_cmo_resp_o(dcache_cmo_rsp_o),
-
-        .dcache_req_valid_o(dcache_req_valid[CMO_INDEX]),
-        .dcache_req_ready_i(dcache_req_ready[CMO_INDEX]),
-        .dcache_req_o      (dcache_req[CMO_INDEX]),
-        .dcache_req_abort_o(dcache_req_abort[CMO_INDEX]),
-        .dcache_req_tag_o  (dcache_req_tag[CMO_INDEX]),
-        .dcache_req_pma_o  (dcache_req_pma[CMO_INDEX]),
-
-        .dcache_rsp_valid_i(dcache_rsp_valid[CMO_INDEX]),
-        .dcache_rsp_i      (dcache_rsp[CMO_INDEX])
-    );
-  end
-
-
-
   //  Snoop load port
   assign snoop_valid[0] = dcache_req_valid[LOAD_INDEX] & dcache_req_ready[LOAD_INDEX],
       snoop_abort[0] = dcache_req_abort[LOAD_INDEX],
@@ -429,18 +406,6 @@ module cva6_hpdcache_wrapper
       snoop_addr_offset[1] = dcache_req[STORE_AMO_INDEX].addr_offset,
       snoop_addr_tag[1] = dcache_req_tag[STORE_AMO_INDEX],
       snoop_phys_indexed[1] = dcache_req[STORE_AMO_INDEX].phys_indexed;
-
-  if (HPDCACHE_ENABLE_CMO) begin : gen_cmo_snoop
-    //  Snoop CMO port (in case of read prefetch accesses)
-    assign dcache_cmo_req_is_prefetch = hpdcache_pkg::is_cmo_prefetch(dcache_req[CMO_INDEX].op);
-    assign snoop_valid[2]        = dcache_req_valid[CMO_INDEX]
-                                   & dcache_req_ready[CMO_INDEX]
-                                   & dcache_cmo_req_is_prefetch,
-        snoop_abort[2] = dcache_req_abort[CMO_INDEX],
-        snoop_addr_offset[2] = dcache_req[CMO_INDEX].addr_offset,
-        snoop_addr_tag[2] = dcache_req_tag[CMO_INDEX],
-        snoop_phys_indexed[2] = dcache_req[CMO_INDEX].phys_indexed;
-  end
 
   generate
     for (genvar h = 0; h < NrHwPrefetchers; h++) begin : gen_hwpf_throttle
@@ -556,11 +521,11 @@ module cva6_hpdcache_wrapper
 
       .evt_cache_write_miss_o (dcache_write_miss),
       .evt_cache_read_miss_o  (dcache_read_miss),
-      .evt_cache_dir_unc_err_o(  /* unused */),
-      .evt_cache_dir_cor_err_o(  /* unused */),
-      .evt_cache_dat_unc_err_o(  /* unused */),
-      .evt_cache_dat_cor_err_o(  /* unused */),
-      .evt_scrub_complete_o   (  /* unused */),
+      .evt_cache_dir_unc_err_o(dcache_dir_unc_err_o),
+      .evt_cache_dir_cor_err_o(dcache_dir_cor_err_o),
+      .evt_cache_dat_unc_err_o(dcache_dat_unc_err_o),
+      .evt_cache_dat_cor_err_o(dcache_dat_cor_err_o),
+      .evt_scrub_complete_o   (dcache_scrub_cycle_o),
       .evt_uncached_req_o     (  /* unused */),
       .evt_cmo_req_o          (  /* unused */),
       .evt_write_req_o        (  /* unused */),
@@ -582,9 +547,11 @@ module cva6_hpdcache_wrapper
       .cfg_error_on_cacheable_amo_i       (1'b0),
       .cfg_rtab_single_entry_i            (1'b0),
       .cfg_default_wb_i                   (1'b0),
-      .cfg_scrub_enable_i                 (1'b0),
-      .cfg_scrub_period_i                 ('0),
-      .cfg_scrub_restart_i                (1'b0)
+      .cfg_scrub_enable_i                 (dcache_scrub_enable_i),
+      .cfg_scrub_period_i                 (dcache_scrub_period_i),
+      //  The scrubber stops after one pass unless restart is set: following the
+      //  enable keeps it scrubbing the cache every scrub period.
+      .cfg_scrub_restart_i                (dcache_scrub_enable_i)
   );
 
   assign dcache_miss_o = dcache_read_miss, wbuffer_not_ni_o = wbuffer_empty_o;

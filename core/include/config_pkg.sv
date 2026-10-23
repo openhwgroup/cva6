@@ -7,8 +7,6 @@
 //
 // Original Author: Jean-Roch COULON - Thales
 
-`include "../include/utils_macros.svh"
-
 package config_pkg;
 
   // ---------------
@@ -16,13 +14,6 @@ package config_pkg;
   // ---------------
   localparam int unsigned ILEN = 32;
   localparam int unsigned NRET = 1;
-
-  // ---------------
-  // OBI
-  // ---------------
-
-  localparam int unsigned OBI_NOT_COMPLIANT = 0;
-  localparam int unsigned OBI_V1_6 = 1600;
 
   /// The NoC type is a top-level parameter, hence we need a bit more
   /// information on what protocol those type parameters are supporting.
@@ -35,14 +26,29 @@ package config_pkg;
     NOC_TYPE_L15_LITTLE_ENDIAN
   } noc_type_e;
 
-  /// Cache type parameter
-  typedef enum logic [2:0] {
-    WB = 0,
-    WT = 1,
-    HPDCACHE_WT = 2,
-    HPDCACHE_WB = 3,
-    HPDCACHE_WT_WB = 4
-  } cache_type_t;
+  /// Memory subsystem between the pipeline and the system bus
+  typedef enum logic [1:0] {
+    /// No cache: each memory port of the pipeline is an OBI bus
+    MEM_OBI = 0,
+    /// HPDcache data cache and HPICache instruction cache on an AXI bus
+    MEM_HPDCACHE_AXI = 1
+  } mem_subsystem_e;
+
+  /// Write policy of the data cache
+  typedef enum logic [1:0] {
+    /// Write-through: every store is forwarded to memory
+    CACHE_WT = 0,
+    /// Write-back: stores stay in the cache until the line is evicted
+    CACHE_WB = 1,
+    /// Both, chosen per access from the PMA write policy hint
+    CACHE_WT_WB = 2
+  } cache_write_policy_e;
+
+  /// Branch predictor parameter
+  typedef enum logic {
+    BHT = 0,  // Bimodal predictor
+    PH_BHT = 1  // Private History Bimodal predictor
+  } bp_type_t;
 
   /// Data and Address length
   typedef enum logic [3:0] {
@@ -71,7 +77,7 @@ package config_pkg;
     bit                          RVA;
     // Bit manipulation RISC-V extension
     bit                          RVB;
-    // Scalar Cryptography RISC-V entension
+    // Scalar Cryptography RISC-V extension
     bit                          ZKN;
     // Vector RISC-V extension
     bit                          RVV;
@@ -87,12 +93,16 @@ package config_pkg;
     bit                          RVZCMT;
     // Zicond RISC-V extension
     bit                          RVZiCond;
+    // Zicbom RISC-V extension (cache management / CBO)
+    bit                          RVZiCbom;
     // Zicntr RISC-V extension
     bit                          RVZicntr;
     // Zifencei RISC-V extension
     bit                          RVZifencei;
     // Zihpm RISC-V extension
     bit                          RVZihpm;
+    // Big endian data accesses: mstatus.MBE, SBE and UBE are writable
+    bit                          BigEndianEn;
     // Floating Point
     bit                          RVF;
     // Floating Point
@@ -123,6 +133,22 @@ package config_pkg;
     logic [63:0]                 HaltAddress;
     // Address to jump when exception
     logic [63:0]                 ExceptionAddress;
+    // Trigger Module Sdtrig Extension
+    bit                          Sdtrig;
+    bit                          SdtrigMcontrol6;
+    bit                          SdtrigMcontrol6ExecAddr;
+    bit                          SdtrigMcontrol6ExecData;
+    bit                          SdtrigMcontrol6Store;
+    bit                          SdtrigMcontrol6LoadAddr;
+    bit                          SdtrigMcontrol6LoadData;
+    bit                          SdtrigIcount;
+    bit                          SdtrigEtrigger;
+    bit                          SdtrigItrigger;
+    int                          SdtrigNrTriggers;
+    bit                          SdtrigTriggerChaining;
+    logic [1:0]                  SdtrigSupportedActions;
+    logic [9:0]                  SdtrigSupportedMatch;
+    bit                          SdtrigSupportTextra;
     // Tval Support Enable
     bit                          TvalEn;
     // MTVEC CSR supports only direct mode
@@ -155,6 +181,12 @@ package config_pkg;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     // PMA cache region rules
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
+    // PMA regions with bufferable rules number
+    int unsigned                 NrBufferableRegionRules;
+    // PMA bufferable region base address
+    logic [NrMaxRules-1:0][63:0] BufferableRegionAddrBase;
+    // PMA bufferable region length
+    logic [NrMaxRules-1:0][63:0] BufferableRegionLength;
     // CV-X-IF coprocessor interface enable
     bit                          CvxifEn;
     // Coprocessor type
@@ -177,8 +209,8 @@ package config_pkg;
     int unsigned                 IcacheSetAssoc;
     // Instruction cache line width
     int unsigned                 IcacheLineWidth;
-    // Cache Type
-    cache_type_t                 DCacheType;
+    // Write policy of the data cache
+    cache_write_policy_e         CacheWritePolicy;
     // Data cache ID
     int unsigned                 DcacheIdWidth;
     // Data cache size (in bytes)
@@ -187,10 +219,17 @@ package config_pkg;
     int unsigned                 DcacheSetAssoc;
     // Data cache line width
     int unsigned                 DcacheLineWidth;
-    // Data cache flush on fence
+    // three configurations for cache coherency after flush:
+    // DcacheFlushOnFence causes dcache flush for every fence instruction
+    // DcacheFlushOnFenceI causes dcache flush for every fence.I instruction
+    // DcacheInvalidateOnFlush causes dcache to also be invalidated when flushed
     bit                          DcacheFlushOnFence;
-    // Data cache invalidate on flush
+    bit                          DcacheFlushOnFenceI;
     bit                          DcacheInvalidateOnFlush;
+    // Is Error Detection and Correction enabled in the L1D ?
+    bit                          DcacheEccEnable;
+    // Is Error Detection and Correction scrubber integrated in the L1D ?
+    bit                          DcacheEccScrubberEnable;
     // User field on data bus enable
     bit                          DataUserEn;
     // Write-through data cache write buffer depth
@@ -203,10 +242,12 @@ package config_pkg;
     bit                          FpgaEn;
     // Is FPGA optimization for Altera FPGA
     bit                          FpgaAlteraEn;
-    // Is Techno Cut instanciated
+    // Is Techno Cut instantiated
     bit                          TechnoCut;
     // Enable superscalar* with 2 issue ports and 2 commit ports.
     bit                          SuperscalarEn;
+    // Enable ALU-ALU bypass (superscalar mode only)
+    bit                          ALUBypass;
     // Number of commit ports. Forced to 2 if SuperscalarEn.
     int unsigned                 NrCommitPorts;
     // Load cycle latency number
@@ -223,8 +264,12 @@ package config_pkg;
     int unsigned                 RASDepth;
     // Branch target buffer entries
     int unsigned                 BTBEntries;
+    // Branch predictor type
+    bp_type_t                    BPType;
     // Branch history entries
     int unsigned                 BHTEntries;
+    // Branch history bits
+    int unsigned                 BHTHist;
     // MMU instruction TLB entries
     int unsigned                 InstrTlbEntries;
     // MMU data TLB entries
@@ -233,10 +278,10 @@ package config_pkg;
     bit unsigned                 UseSharedTlb;
     // MMU depth of shared TLB
     int unsigned                 SharedTlbDepth;
-    // OBI version compliance, 0 means not compliant -> best performance
-    int unsigned                 ObiVersion;
-    // Configuration defines cva6_pipeline module as top instead of cva6 (no cache and OBI instead of AXI)
-    bit                          PipelineOnly;
+    // Option to enable Svnapot extension
+    bit                          SvnapotEn;
+    // Memory subsystem between the pipeline and the system bus
+    mem_subsystem_e              MemSubsystem;
     // Depth of the store buffer FIFO tracking the stores granted but not yet
     // acknowledged, so that a colliding load waits for them. 0 disables the
     // tracking, which is only safe when nothing buffers the accesses between
@@ -270,6 +315,9 @@ package config_pkg;
     int unsigned NrIssuePorts;
     bit          SpeculativeSb;
 
+    int unsigned NrALUs;
+    bit          ALUBypass;
+
     int unsigned NrLoadPipeRegs;
     int unsigned NrStorePipeRegs;
     /// AXI parameters.
@@ -298,9 +346,11 @@ package config_pkg;
     bit          CvxifEn;
     copro_type_t CoproType;
     bit          RVZiCond;
+    bit          RVZiCbom;
     bit          RVZicntr;
     bit          RVZifencei;
     bit          RVZihpm;
+    bit          BigEndianEn;
 
     int unsigned NR_SB_ENTRIES;
     int unsigned TRANS_ID_BITS;
@@ -325,36 +375,58 @@ package config_pkg;
     logic [63:0] ExceptionAddress;
     int unsigned RASDepth;
     int unsigned BTBEntries;
+    bp_type_t    BPType;
     int unsigned BHTEntries;
+    int unsigned BHTHist;
     int unsigned InstrTlbEntries;
     int unsigned DataTlbEntries;
     bit unsigned UseSharedTlb;
+    bit SvnapotEn;
     int unsigned SharedTlbDepth;
     int unsigned VpnLen;
     int unsigned PtLevels;
 
-    logic [63:0]                 DmBaseAddress;
-    bit                          TvalEn;
-    bit                          DirectVecOnly;
-    int unsigned                 NrPMPEntries;
-    logic [63:0][63:0]           PMPCfgRstVal;
-    logic [63:0][63:0]           PMPAddrRstVal;
-    bit [63:0]                   PMPEntryReadOnly;
-    bit                          PMPNapotEn;
-    noc_type_e                   NOCType;
-    int unsigned                 NrNonIdempotentRules;
+    logic [63:0] DmBaseAddress;
+    // Trigger Module Sdtrig Extension
+    bit Sdtrig;
+    bit SdtrigMcontrol6;
+    bit SdtrigMcontrol6ExecAddr;
+    bit SdtrigMcontrol6ExecData;
+    bit SdtrigMcontrol6Store;
+    bit SdtrigMcontrol6LoadAddr;
+    bit SdtrigMcontrol6LoadData;
+    bit SdtrigIcount;
+    bit SdtrigEtrigger;
+    bit SdtrigItrigger;
+    int SdtrigNrTriggers;
+    bit SdtrigTriggerChaining;
+    logic [1:0] SdtrigSupportedActions;
+    logic [9:0] SdtrigSupportedMatch;
+    bit SdtrigSupportTextra;
+    bit TvalEn;
+    bit DirectVecOnly;
+    int unsigned NrPMPEntries;
+    logic [63:0][63:0] PMPCfgRstVal;
+    logic [63:0][63:0] PMPAddrRstVal;
+    bit [63:0] PMPEntryReadOnly;
+    bit PMPNapotEn;
+    noc_type_e NOCType;
+    int unsigned NrNonIdempotentRules;
     logic [NrMaxRules-1:0][63:0] NonIdempotentAddrBase;
     logic [NrMaxRules-1:0][63:0] NonIdempotentLength;
-    int unsigned                 NrExecuteRegionRules;
+    int unsigned NrExecuteRegionRules;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] ExecuteRegionLength;
-    int unsigned                 NrCachedRegionRules;
+    int unsigned NrCachedRegionRules;
     logic [NrMaxRules-1:0][63:0] CachedRegionAddrBase;
     logic [NrMaxRules-1:0][63:0] CachedRegionLength;
-    int unsigned                 MaxOutstandingStores;
-    bit                          DebugEn;
-    bit                          NonIdemPotenceEn;       // Currently only used by V extension (Ara)
-    bit                          AxiBurstWriteEn;
+    int unsigned NrBufferableRegionRules;
+    logic [NrMaxRules-1:0][63:0] BufferableRegionAddrBase;
+    logic [NrMaxRules-1:0][63:0] BufferableRegionLength;
+    int unsigned MaxOutstandingStores;
+    bit DebugEn;
+    bit NonIdemPotenceEn;  // Currently only used by V extension (Ara)
+    bit AxiBurstWriteEn;
 
     int unsigned ICACHE_SET_ASSOC;
     int unsigned ICACHE_SET_ASSOC_WIDTH;
@@ -362,7 +434,7 @@ package config_pkg;
     int unsigned ICACHE_TAG_WIDTH;
     int unsigned ICACHE_LINE_WIDTH;
     int unsigned ICACHE_USER_LINE_WIDTH;
-    cache_type_t DCacheType;
+    cache_write_policy_e CacheWritePolicy;
     int unsigned DcacheIdWidth;
     int unsigned DCACHE_SET_ASSOC;
     int unsigned DCACHE_SET_ASSOC_WIDTH;
@@ -375,7 +447,10 @@ package config_pkg;
     int unsigned DCACHE_NUM_WORDS;
 
     bit DcacheFlushOnFence;
+    bit DcacheFlushOnFenceI;
     bit DcacheInvalidateOnFlush;
+    bit DcacheEccEnable;
+    bit DcacheEccScrubberEnable;
 
     bit          DATA_USER_EN;
     int unsigned WtDcacheWbufDepth;
@@ -409,7 +484,6 @@ package config_pkg;
     int unsigned X_ISSUE_REGISTER_SPLIT;
 
     int unsigned IdWidth;
-    int unsigned ObiVersion;
 
     obi_pkg::obi_cfg_t ObiFetchbusCfg;
     obi_pkg::obi_cfg_t ObiStorebusCfg;
@@ -418,7 +492,13 @@ package config_pkg;
     obi_pkg::obi_cfg_t ObiMmuPtwbusCfg;
     obi_pkg::obi_cfg_t ObiZcmtbusCfg;
 
-    bit PipelineOnly;
+    mem_subsystem_e MemSubsystem;
+    // A store is complete when its request is granted, without waiting for
+    // a response
+    bit StoreAckOnGrant;
+    // Load requests have two address phases: a first phase (s0) and the
+    // physical one (s1) the next cycle
+    bit TwoPhaseReq;
     int unsigned NrStoreInFlight;
 
     bit DclsEn;
@@ -432,45 +512,37 @@ package config_pkg;
   /// you develop a module that resides within the core, assign this constant.
   localparam cva6_cfg_t cva6_cfg_empty = cva6_cfg_t'(0);
 
-  /// Utility function being called to check parameters. Not all values make
-  /// sense for all parameters, here is the place to sanity check them.
-  function automatic void check_cfg(cva6_cfg_t Cfg);
-    // pragma translate_off
-    assert (Cfg.RASDepth > 0)
-    else `ASSERT_FATAL("");
-    assert (Cfg.BTBEntries == 0 || (2 ** $clog2(Cfg.BTBEntries) == Cfg.BTBEntries))
-    else `ASSERT_FATAL("");
-    assert (Cfg.BHTEntries == 0 || (2 ** $clog2(Cfg.BHTEntries) == Cfg.BHTEntries))
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrNonIdempotentRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrExecuteRegionRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrCachedRegionRules <= NrMaxRules)
-    else `ASSERT_FATAL("");
-    assert (Cfg.NrPMPEntries <= 64)
-    else `ASSERT_FATAL("");
-    assert (!(Cfg.SuperscalarEn && Cfg.RVF))
-    else `ASSERT_FATAL("");
-    assert (Cfg.FETCH_WIDTH == 32 || Cfg.FETCH_WIDTH == 64)
-    else `ASSERT_FATAL("[frontend] fetch width != not supported");
-    // Support for disabling MIP.MSIP and MIE.MSIE in Hypervisor and Supervisor mode is not supported
-    // Software Interrupt can be disabled when there is only M machine mode in CVA6.
-    assert (!(Cfg.RVS && !Cfg.SoftwareInterruptEn))
-    else `ASSERT_FATAL("");
-    assert (!(Cfg.RVH && !Cfg.SoftwareInterruptEn))
-    else `ASSERT_FATAL("");
-    assert (!(Cfg.RVZCMT && Cfg.MmuPresent))
-    else `ASSERT_FATAL("");
-    // pragma translate_on
-  endfunction
-
   function automatic logic range_check(logic [63:0] base, logic [63:0] len, logic [63:0] address);
     // if len is a power of two, and base is properly aligned, this check could be simplified
     // Extend base by one bit to prevent an overflow.
     return (address >= base) && (({1'b0, address}) < (65'(base) + len));
   endfunction : range_check
 
+  // Bufferable attribute of the memory interface (OBI memtype[0], AXI AxCACHE[0]):
+  // a cacheable bufferable region is write-back, a cacheable non-bufferable one
+  // write-through, a non-cacheable bufferable one accepts writes acknowledged
+  // before they reach their destination.
+  function automatic logic is_inside_bufferable_regions(cva6_cfg_t Cfg, logic [63:0] address);
+    automatic logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    for (int unsigned k = 0; k < Cfg.NrBufferableRegionRules; k++) begin
+      pass[k] =
+          range_check(Cfg.BufferableRegionAddrBase[k], Cfg.BufferableRegionLength[k], address);
+    end
+    return |pass;
+  endfunction : is_inside_bufferable_regions
+
+  // The region [base, base+len) lies inside a single bufferable region.
+  function automatic logic is_region_inside_bufferable_regions(cva6_cfg_t Cfg, logic [63:0] base,
+                                                               logic [63:0] len);
+    automatic logic [NrMaxRules-1:0] pass;
+    pass = '0;
+    for (int unsigned k = 0; k < Cfg.NrBufferableRegionRules; k++) begin
+      pass[k] = (base >= Cfg.BufferableRegionAddrBase[k]) &&
+          ((65'(base) + len) <= (65'(Cfg.BufferableRegionAddrBase[k]) + Cfg.BufferableRegionLength[k]));
+    end
+    return |pass;
+  endfunction : is_region_inside_bufferable_regions
 
   function automatic logic is_inside_nonidempotent_regions(cva6_cfg_t Cfg, logic [63:0] address);
     logic [NrMaxRules-1:0] pass;

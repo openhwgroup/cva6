@@ -10,6 +10,7 @@
 # Please refer to flows/README.md to add target
 
 from pathlib import Path
+import fnmatch
 import shutil
 import typer
 from flows.utils.run_cmd import run_cmd
@@ -18,6 +19,33 @@ from flows.utils.autocompletion import autocompletion_target
 from flows.utils.recipe_report import RecipeReport
 
 app = typer.Typer()
+
+# Same scope as the CI Verible check (.github/workflows/verible.yml): the
+# CVA6 RTL under core/, without its submodules and the generated configuration
+# packages.
+FORMAT_ROOT = "core"
+FORMAT_EXCLUDE = [
+    "core/include/*_config_pkg.sv",
+    "core/cvfpu/*",
+    "core/cache_subsystem/hpdcache/*",
+]
+
+
+def files_to_format(files, repo_dir):
+    """Keep the files of `files` that belong to the formatted scope."""
+    repo_dir = Path(repo_dir).resolve()
+    kept = []
+    for f in files:
+        try:
+            rel = Path(f).resolve().relative_to(repo_dir).as_posix()
+        except ValueError:
+            continue
+        if not rel.startswith(FORMAT_ROOT + "/"):
+            continue
+        if any(fnmatch.fnmatch(rel, pat) for pat in FORMAT_EXCLUDE):
+            continue
+        kept.append(f)
+    return kept
 
 
 @app.command()
@@ -34,7 +62,8 @@ def verible_rtl_formating(
     ),
 ):
     """
-    Format CVA6 RTL files with Verible (mandatory for submit PR)
+    Format CVA6 RTL files with Verible, failing if any file was not formatted
+    (mandatory for submit PR)
     """
 
     repo_dir = Path.cwd()
@@ -74,14 +103,43 @@ def verible_rtl_formating(
     # GET FILE LIST TO FORMAT
     # ==========================================================
 
-    analyse_files = read_config_or_exit_flist(target, report)
+    flist_files = read_config_or_exit_flist(target, report)
+    analyse_files = files_to_format(flist_files, repo_dir)
+    report.info(
+        f"{len(analyse_files)} of {len(flist_files)} filelist files in scope"
+        f" ({FORMAT_ROOT}/, without {', '.join(FORMAT_EXCLUDE)})"
+    )
 
     # ==========================================================
     # BUILD VERIBLE COMMAND
     # ==========================================================
 
-    verible_cmd = ["verible-verilog-format", "--inplace"]
-    verible_cmd += analyse_files
+    # With --verify, Verible only reports the files that would change and
+    # returns 1 if there is any; without it, --inplace always returns 0. The
+    # check runs first, then the formatting. Several files require --inplace.
+    check_cmd = ["verible-verilog-format", "--inplace", "--verify"] + analyse_files
+    verible_cmd = ["verible-verilog-format", "--inplace"] + analyse_files
+
+    # ==========================================================
+    # CHECK FORMATTING
+    # ==========================================================
+    report.step("Check formatting")
+
+    check_log = verible_dir / "verible-check.log"
+
+    run_cmd(
+        cmd=check_cmd,
+        report=report,
+        cwd=None,
+        env=None,
+        error_patterns=["Needs formatting"],
+        warning_patterns=None,
+        highlight_patterns=None,
+        log_file=check_log,
+        timeout=300,
+        check=True,
+        capture_output=False,
+    )
 
     # ==========================================================
     # LAUNCH VERIBLE
@@ -100,17 +158,23 @@ def verible_rtl_formating(
         highlight_patterns=None,
         log_file=log_file,
         timeout=300,
-        check=False,
+        check=True,
         capture_output=False,
     )
 
-    report.success(f"Formatted {len(analyse_files)} RTL files")
+    if report.failed:
+        report.error(
+            "Verible formatting check failed: the files were reformatted,"
+            " commit them"
+        )
+    else:
+        report.success(f"All {len(analyse_files)} RTL files properly formatted")
 
     # ==========================================================
     # List
     # ==========================================================
 
-    gen_files = [log_file]
+    gen_files = [check_log, log_file]
 
     report.step("Generated files")
     for genfile in gen_files:

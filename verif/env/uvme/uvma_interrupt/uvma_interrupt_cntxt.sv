@@ -25,6 +25,11 @@ class uvma_interrupt_cntxt_c extends uvm_object;
    uvml_mem_c#(MAX_ADDR_WIDTH)    mem_axi;
    uvml_mem_c                     mem_obi;
 
+   // Retired instruction interface, used by the deterministic interrupt mode to
+   // spot the hook address committing. Left at the interface defaults: the
+   // fields used, rvfi_valid and rvfi_pc_rdata, do not depend on ILEN.
+   virtual uvma_rvfi_instr_if rvfi_instr_vif;
+
    // Integrals
    uvma_interrupt_reset_state_enum  reset_state        = UVMA_INTERRUPT_RESET_STATE_PRE_RESET;
 

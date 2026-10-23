@@ -29,7 +29,7 @@
  *  translate the firmware into a "hexfile" that is read into the CVA6
  *  instruction memory in the testbench module.
  *
- *  This class doesn't care what the firmware does, it mearly compiles it.
+ *  This class doesn't care what the firmware does, it merely compiles it.
  *
  */
 class uvmt_cva6_firmware_test_c extends uvmt_cva6_base_test_c;
@@ -149,7 +149,7 @@ task uvmt_cva6_firmware_test_c::run_phase(uvm_phase phase);
    // Let all pending AXI requests settle.
    // FIXME TODO: Insert this delay in AXI agent rather than here,
    // based on AXI state and latency setting.
-   if (!RTLCVA6Cfg.PipelineOnly || config_pkg::OBI_NOT_COMPLIANT) begin
+   if (RTLCVA6Cfg.MemSubsystem != config_pkg::MEM_OBI) begin
       `uvm_info("TEST", "Running a 100-cycle delay to settle AXI requests...", UVM_NONE);
       repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
       `uvm_info("TEST", "Running a 100-cycle delay to settle AXI requests... DONE", UVM_NONE);

@@ -47,7 +47,7 @@ class uvma_cva6_core_cntrl_agent_c extends uvma_core_cntrl_agent_c;
    extern virtual function void retrieve_vif();
 
    /**
-    * Spawn active sequnces
+    * Spawn active sequences
     */
    extern virtual task run_phase(uvm_phase phase);
 

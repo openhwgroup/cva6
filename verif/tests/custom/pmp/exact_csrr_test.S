@@ -13,62 +13,41 @@
 main:
 
     # Write in addresses and check what is written.
+    #
+    # The number of PMP entries is a parameter of the core (NrPMPEntries, 0 to
+    # 64), so the test finds it instead of assuming it: implemented entries
+    # are the lowest-numbered ones and read back the value written (bit 0
+    # reads 0, the entries being OFF); the others are read-only zero. Each of
+    # the 64 pmpaddr is written with its own value and read back:
+    #   - read == written: implemented, only allowed while no unimplemented
+    #     entry has been seen (s0 = 0), counted in s1;
+    #   - read == 0: not implemented, sets s0;
+    #   - anything else: fail.
 
-    # Checking PMP ADDR 0
-    li t0, 0xFACADE00
-    csrw pmpaddr0, t0
-    csrr t1, pmpaddr0
-    bne t0, t1, fail
-    csrw pmpaddr0, zero
+    li s0, 0                          # an unimplemented entry has been seen
+    li s1, 0                          # number of implemented entries
 
-    # Checking PMP ADDR 1
-    li t0, 0xFACADE02
-    csrw pmpaddr1, t0
-    csrr t1, pmpaddr1
-    bne t0, t1, fail
-    csrw pmpaddr1, zero
+    .set k, 0
+    .rept 64
+    li t0, 0xFACADE00 + 2 * k
+    csrw 0x3B0 + k, t0                # pmpaddr<k>
+    csrr t1, 0x3B0 + k
+    csrw 0x3B0 + k, zero
+    beq t1, t0, 1f
+    bnez t1, fail
+    li s0, 1
+    j 2f
+1:
+    bnez s0, fail                     # implemented above an unimplemented one
+    addi s1, s1, 1
+2:
+    .set k, k + 1
+    .endr
 
-    # Checking PMP ADDR 2
-    li t0, 0xFACADE04
-    csrw pmpaddr2, t0
-    csrr t1, pmpaddr2
-    bne t0, t1, fail
-    csrw pmpaddr2, zero
-
-    # Checking PMP ADDR 3
-    li t0, 0xFACADE06
-    csrw pmpaddr3, t0
-    csrr t1, pmpaddr3
-    bne t0, t1, fail
-    csrw pmpaddr3, zero
-
-    # Checking PMP ADDR 4
-    li t0, 0xFACADE08
-    csrw pmpaddr4, t0
-    csrr t1, pmpaddr4
-    bne t0, t1, fail
-    csrw pmpaddr4, zero
-
-    # Checking PMP ADDR 5
-    li t0, 0xFACADE0A
-    csrw pmpaddr5, t0
-    csrr t1, pmpaddr5
-    bne t0, t1, fail
-    csrw pmpaddr5, zero
-
-    # Checking PMP ADDR 6
-    li t0, 0xFACADE0C
-    csrw pmpaddr6, t0
-    csrr t1, pmpaddr6
-    bne t0, t1, fail
-    csrw pmpaddr6, zero
-
-    # Checking PMP ADDR 7
-    li t0, 0xFACADE0E
-    csrw pmpaddr7, t0
-    csrr t1, pmpaddr7
-    bne t0, t1, fail
-    csrw pmpaddr7, zero
+    # A PMP target has at least the entries the configuration checks below
+    # rely on.
+    li t0, 8
+    bltu s1, t0, fail
 
 
     # Write in configurations and check what is written, except for the reserved combinations with R=0 and W=1.

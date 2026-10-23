@@ -20,7 +20,7 @@
 +incdir+common/local/util/
 +incdir+corev_apu/register_interface/include/
 
-core/include/cv64a6_imafdc_sv39_openpiton_config_pkg.sv
+config/target/cv64a6_imafdc_sv39_hpdcache_pmp_mmu_axi/rtl_cfg_pkg.sv
 core/include/riscv_pkg.sv
 corev_apu/riscv-dbg/src/dm_pkg.sv
 vendor/openhwgroup/cvfpu/src/fpnew_pkg.sv
@@ -59,6 +59,7 @@ vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv
 vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv
 core/cache_subsystem/axi_adapter.sv
 core/alu.sv
+core/alu_wrapper.sv
 core/fpu_wrap.sv
 corev_apu/src/ariane.sv
 core/cva6.sv
@@ -71,6 +72,7 @@ core/decoder.sv
 core/ex_stage.sv
 core/frontend/btb.sv
 core/frontend/bht.sv
+core/frontend/bht2lvl.sv
 core/frontend/ras.sv
 core/frontend/instr_scan.sv
 core/frontend/instr_queue.sv
@@ -93,21 +95,13 @@ core/mmu_sv39x4/ptw_sv39x4.sv
 core/ariane_regfile_ff.sv
 core/re_name.sv
 core/scoreboard.sv
+core/raw_checker.sv
 core/store_buffer.sv
 core/amo_buffer.sv
 core/store_unit.sv
 core/mmu_sv39/tlb.sv
 core/mmu_sv39x4/tlb_sv39x4.sv
 core/commit_stage.sv
-core/cache_subsystem/wt_dcache_ctrl.sv
-core/cache_subsystem/wt_dcache_mem.sv
-core/cache_subsystem/wt_dcache_missunit.sv
-core/cache_subsystem/wt_dcache_wbuffer.sv
-core/cache_subsystem/wt_dcache.sv
-core/cache_subsystem/cva6_icache.sv
-core/cache_subsystem/cva6_icache_axi_wrapper.sv
-core/cache_subsystem/wt_l15_adapter.sv
-core/cache_subsystem/wt_cache_subsystem.sv
 corev_apu/clint/clint.sv
 corev_apu/clint/axi_lite_interface.sv
 corev_apu/riscv-dbg/debug_rom/debug_rom.sv

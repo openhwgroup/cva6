@@ -41,6 +41,8 @@ module load_store_unit
     input logic stall_st_pending_i,
     // No store pending - COMMIT_STAGE
     output logic no_st_pending_o,
+    // Shared TLB is busy processing a multi-cycle flush
+    output logic shared_tlb_flush_busy_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic amo_valid_commit_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -76,6 +78,8 @@ module load_store_unit
     output logic commit_ready_o,
     // Commit transaction ID - COMMIT_STAGE
     input logic [CVA6Cfg.TRANS_ID_BITS-1:0] commit_tran_id_i,
+    // The committing instruction is dropped (speculative scoreboard) - COMMIT_STAGE
+    input logic commit_drop_i,
 
     // Enable virtual memory translation - CSR_REGFILE
     input logic enable_translation_i,
@@ -93,6 +97,8 @@ module load_store_unit
 
     // Current privilege mode - CSR_REGFILE
     input riscv::priv_lvl_t priv_lvl_i,
+    // Data Endian mode - CSR_REGFILE
+    input logic mbe_i,
     // Current virtualization mode - CSR_REGFILE
     input logic v_i,
     // Privilege level at which load and stores should happen - CSR_REGFILE
@@ -158,14 +164,22 @@ module load_store_unit
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic dcache_wbuffer_not_ni_i,
     // PMP configuration - CSR_REGFILE
-    input riscv::pmpcfg_t [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0] pmpcfg_i,
+    input riscv::pmpcfg_t [avoid_neg(CVA6Cfg.NrPMPEntries-1):0] pmpcfg_i,
     // PMP address - CSR_REGFILE
-    input logic           [(CVA6Cfg.NrPMPEntries > 0 ? CVA6Cfg.NrPMPEntries-1 : 0):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
+    input logic [avoid_neg(CVA6Cfg.NrPMPEntries-1):0][CVA6Cfg.PLEN-3:0] pmpaddr_i,
 
-    // RVFI inforamtion - RVFI
+    // RVFI information - RVFI
     output lsu_ctrl_t                    rvfi_lsu_ctrl_o,
     // RVFI information - RVFI
-    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o
+    output logic      [CVA6Cfg.PLEN-1:0] rvfi_mem_paddr_o,
+    //Trigger module communication
+    input  logic                         sdtrig_load_cancel_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_action_i,
+    output logic                         sdtrig_load_data_valid_o,
+    output logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_data_o,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_load_data_action_i,
+    input  logic                         sdtrig_store_stall_i,
+    input  logic      [CVA6Cfg.XLEN-1:0] sdtrig_store_action_i
 );
 
   // data is misaligned
@@ -216,6 +230,9 @@ module load_store_unit
   logic                    translation_valid;
   logic [CVA6Cfg.VLEN-1:0] mmu_vaddr;
   logic [CVA6Cfg.PLEN-1:0] mmu_paddr, fetch_vaddr_plen, lsu_paddr;
+  logic        [         CVA6Cfg.VLEN-1:0] pmp_vaddr_q;
+  logic                                    pmp_is_store_q;
+  logic                                    pmp_hlvx_inst_q;
   logic        [                     31:0] mmu_tinst;
   logic                                    mmu_hs_ld_st_inst;
   logic                                    mmu_hlvx_inst;
@@ -285,6 +302,9 @@ module load_store_unit
         .lsu_valid_o    (pmp_translation_valid),
         .lsu_paddr_o    (lsu_paddr),
         .lsu_exception_o(pmp_exception),
+        .lsu_vaddr_o    (pmp_vaddr_q),
+        .lsu_is_store_o (pmp_is_store_q),
+        .lsu_hlvx_inst_o(pmp_hlvx_inst_q),
 
         .priv_lvl_i      (priv_lvl_i),
         .v_i,
@@ -294,6 +314,7 @@ module load_store_unit
         .vs_sum_i,
         .mxr_i,
         .vmxr_i,
+        .mbe_i           (mbe_i),
 
         .hlvx_inst_i    (mmu_hlvx_inst),
         .hs_ld_st_inst_i(mmu_hs_ld_st_inst),
@@ -313,6 +334,7 @@ module load_store_unit
 
         .itlb_miss_o(itlb_miss_o),
         .dtlb_miss_o(dtlb_miss_o),
+        .shared_tlb_flush_busy_o(shared_tlb_flush_busy_o),
 
         .ypb_mmu_ptw_req_o(ypb_mmu_ptw_req_o),
         .ypb_mmu_ptw_rsp_i(ypb_mmu_ptw_rsp_i),
@@ -323,25 +345,30 @@ module load_store_unit
   end else begin : gen_no_mmu
     // fetch request without MMU, virtual and physical address are identical
     assign pmp_fetch_arsp.fetch_valid = fetch_areq_i.fetch_req;
+    assign shared_tlb_flush_busy_o = 1'b0;  //default 0 for shared_tlb flush
     if (CVA6Cfg.VLEN >= CVA6Cfg.PLEN) begin : gen_virtual_physical_address_instruction_vlen_greater
       assign pmp_fetch_arsp.fetch_paddr = fetch_areq_i.fetch_vaddr[CVA6Cfg.PLEN-1:0];
     end else begin : gen_virtual_physical_address_instruction_plen_greater
       assign pmp_fetch_arsp.fetch_paddr = CVA6Cfg.PLEN'(fetch_areq_i.fetch_vaddr);
     end
     assign pmp_fetch_arsp.fetch_exception = 'h0;
-    assign pmp_exception = misaligned_exception;
-    assign pmp_translation_valid = translation_req;
-
-    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin
-      assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
-    end else begin
-      assign lsu_paddr = CVA6Cfg.PLEN'(mmu_vaddr);
-    end
 
     assign itlb_miss_o = 1'b0;
     assign dtlb_miss_o = 1'b0;
-    assign dtlb_ppn    = lsu_paddr[CVA6Cfg.PLEN-1:12];
-    assign dtlb_hit    = 1'b1;
+    assign dtlb_hit = 1'b1;
+
+    //  The PMP checks the request in the cycle it is presented.
+    assign pmp_translation_valid = translation_req;
+    assign pmp_exception = misaligned_exception;
+    assign pmp_vaddr_q = mmu_vaddr;
+    assign pmp_is_store_q = st_translation_req;
+    assign pmp_hlvx_inst_q = mmu_hlvx_inst;
+    if (CVA6Cfg.VLEN > CVA6Cfg.PLEN) begin : gen_paddr_vlen_greater
+      assign lsu_paddr = mmu_vaddr[CVA6Cfg.PLEN-1:0];
+    end else begin : gen_paddr_plen_greater
+      assign lsu_paddr = CVA6Cfg.PLEN'(mmu_vaddr);
+    end
+    assign dtlb_ppn = lsu_paddr[CVA6Cfg.PLEN-1:12];
 
   end
 
@@ -361,9 +388,10 @@ module load_store_unit
       .icache_fetch_vaddr_i(fetch_areq_i.fetch_vaddr),
       .lsu_valid_i         (pmp_translation_valid),
       .lsu_paddr_i         (lsu_paddr),
-      .lsu_vaddr_i         (mmu_vaddr),
+      .lsu_vaddr_i         (pmp_vaddr_q),
       .lsu_exception_i     (pmp_exception),
-      .lsu_is_store_i      (st_translation_req),
+      .lsu_is_store_i      (pmp_is_store_q),
+      .lsu_hlvx_inst_i     (pmp_hlvx_inst_q),
       .lsu_valid_o         (translation_valid),
       .lsu_paddr_o         (mmu_paddr),
       .lsu_exception_o     (mmu_exception),
@@ -375,6 +403,32 @@ module load_store_unit
       .pmpaddr_i           (pmpaddr_i)
   );
 
+
+  // The load unit reads the translated address and its exception in s1 with
+  // TwoPhaseReq. With an MMU the MMU provides them there. Without one the
+  // translation and the PMP check happen in the request cycle, as for a store,
+  // and their result is registered for the load.
+  logic [CVA6Cfg.PLEN-1:0] ld_paddr;
+  exception_t ld_ex_s1;
+  if (CVA6Cfg.TwoPhaseReq && !CVA6Cfg.MmuPresent) begin : gen_ld_s1
+    logic [CVA6Cfg.PLEN-1:0] ld_paddr_q;
+    exception_t ld_ex_q;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (~rst_ni) begin
+        ld_paddr_q <= '0;
+        ld_ex_q    <= '0;
+      end else begin
+        ld_paddr_q <= mmu_paddr;
+        ld_ex_q    <= mmu_exception;
+        ld_ex_q.valid <= mmu_exception.valid && ld_translation_req && ld_valid_i;
+      end
+    end
+    assign ld_paddr = ld_paddr_q;
+    assign ld_ex_s1 = ld_ex_q;
+  end else begin : gen_ld_direct
+    assign ld_paddr = mmu_paddr;
+    assign ld_ex_s1 = mmu_exception;
+  end
 
   logic store_buffer_empty;
   // ------------------
@@ -402,6 +456,7 @@ module load_store_unit
       .commit_i,
       .commit_ready_o,
       .amo_valid_commit_i,
+      .mbe_i     (mbe_i),
 
       .valid_o              (st_valid),
       .trans_id_o           (st_trans_id),
@@ -423,7 +478,10 @@ module load_store_unit
       .ypb_amo_req_o        (ypb_amo_req_o),
       .ypb_amo_rsp_i        (ypb_amo_rsp_i),
       .ypb_store_req_o      (ypb_store_req_o),
-      .ypb_store_rsp_i      (ypb_store_rsp_i)
+      .ypb_store_rsp_i      (ypb_store_rsp_i),
+      //Trigger module
+      .sdtrig_store_stall_i (sdtrig_store_stall_i),
+      .sdtrig_store_action_i(sdtrig_store_action_i)
   );
 
   // ------------------
@@ -447,14 +505,15 @@ module load_store_unit
       .trans_id_o           (ld_trans_id),
       .result_o             (ld_result),
       .ex_o                 (ld_ex),
+      .mbe_i                (mbe_i),
       // MMU port
       .translation_req_o    (ld_translation_req),
       .vaddr_o              (ld_vaddr),
       .tinst_o              (ld_tinst),
       .hs_ld_st_inst_o      (ld_hs_ld_st_inst),
       .hlvx_inst_o          (ld_hlvx_inst),
-      .paddr_i              (mmu_paddr),
-      .ex_i                 (mmu_exception),
+      .paddr_i              (ld_paddr),
+      .ex_i                 (ld_ex_s1),
       .dtlb_hit_i           (dtlb_hit),
       .dtlb_ppn_i           (dtlb_ppn),
       // to store unit
@@ -462,10 +521,14 @@ module load_store_unit
       .page_offset_matches_i(page_offset_matches),
       .store_buffer_empty_i (store_buffer_empty),
       .commit_tran_id_i,
+      .commit_drop_i,
       // to memory arbiter
       .ypb_load_req_o       (ypb_load_req_o),
       .ypb_load_rsp_i       (ypb_load_rsp_i),
-      .dcache_wbuffer_not_ni_i
+      .dcache_wbuffer_not_ni_i,
+      //sdtrig
+      .sdtrig_load_cancel_i (sdtrig_load_cancel_i),
+      .sdtrig_load_action_i (sdtrig_load_action_i)
   );
 
   // ----------------------------
@@ -475,6 +538,8 @@ module load_store_unit
   // amount of pipeline registers inserted for load/store return path
   // can be tuned to trade-off IPC vs. cycle time
 
+  exception_t load_exception;
+
   shift_reg #(
       .dtype(logic [$bits(ld_valid) + $bits(ld_trans_id) + $bits(ld_result) + $bits(ld_ex) - 1:0]),
       .Depth(CVA6Cfg.NrLoadPipeRegs)
@@ -482,8 +547,24 @@ module load_store_unit
       .clk_i,
       .rst_ni,
       .d_i({ld_valid, ld_trans_id, ld_result, ld_ex}),
-      .d_o({load_valid_o, load_trans_id_o, load_result_o, load_exception_o})
+      .d_o({load_valid_o, load_trans_id_o, load_result_o, load_exception})
   );
+
+  // Load data trigger: the result is compared as it leaves the output
+  // register, with the load it belongs to, so the break and the load retire
+  // together whatever NrLoadPipeRegs. It breaks after the load: the load
+  // writes its result and the commit stage raises the break on the next
+  // instruction (exception timing). A load that raised an exception has no
+  // data to compare.
+  assign sdtrig_load_data_valid_o = CVA6Cfg.SdtrigMcontrol6LoadData && load_valid_o && !load_exception.valid;
+  assign sdtrig_load_data_o = load_result_o;
+  always_comb begin
+    load_exception_o = load_exception;
+    if (sdtrig_load_data_valid_o && sdtrig_load_data_action_i != '0) begin
+      load_exception_o.cause  = sdtrig_load_data_action_i;
+      load_exception_o.timing = 1'b1;
+    end
+  end
 
   shift_reg #(
       .dtype(logic [$bits(st_valid) + $bits(st_trans_id) + $bits(st_result) + $bits(st_ex) - 1:0]),
@@ -582,9 +663,7 @@ module load_store_unit
   // the misaligned exception is passed to the functional unit via the MMU, which in case
   // can augment the exception if other memory related exceptions like a page fault or access errors
   always_comb begin : data_misaligned_detection
-    misaligned_exception = {
-      {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.XLEN{1'b0}}, {CVA6Cfg.GPLEN{1'b0}}, {32{1'b0}}, 1'b0, 1'b0
-    };
+    misaligned_exception = '0;
     data_misaligned = 1'b0;
 
     if (lsu_ctrl.valid) begin
@@ -751,11 +830,21 @@ module load_store_unit
       .ready_o   (lsu_ready_o)
   );
 
-  assign rvfi_lsu_ctrl_o = lsu_ctrl;
+  assign rvfi_lsu_ctrl_o  = lsu_ctrl;
   // Probe only: the translated address of the access currently presented to
   // the store buffer / AMO buffer. Pairing it with the access it belongs to is
   // done in cva6_rvfi.sv, no RVFI logic lives in the CPU RTL.
   assign rvfi_mem_paddr_o = mmu_paddr;
+
+  //pragma translate_off
+  // A load data trigger break goes with the load it matched, which leaves the
+  // output register in the same cycle and carries it.
+  sdtrig_load_data_on_its_load :
+  assert property (@(posedge clk_i) disable iff (~rst_ni)
+        (CVA6Cfg.SdtrigMcontrol6LoadData && sdtrig_load_data_action_i != '0)
+        |-> (load_valid_o && !load_exception.valid && load_exception_o.timing))
+  else $error("[load_store_unit] load data trigger break without the load it matched");
+  //pragma translate_on
 
 endmodule
 

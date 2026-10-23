@@ -20,11 +20,13 @@ module zcmt_decoder #(
     input  logic                             clk_i,
     // Asynchronous reset active low - SUBSYSTEM
     input  logic                             rst_ni,
+    // Flush the decoded instruction - CONTROLLER
+    input  logic                             flush_i,
     // Instruction input - compressed_decoder
     input  logic          [            31:0] instr_i,
     // current PC - FRONTEND
     input  logic          [CVA6Cfg.VLEN-1:0] pc_i,
-    // Intruction is of ZCMT extension - compressed_decoder
+    // Instruction is of ZCMT extension - compressed_decoder
     input  logic                             is_zcmt_instr_i,
     // Instruction is illegal - compressed_decoder
     input  logic                             illegal_instr_i,
@@ -61,9 +63,15 @@ module zcmt_decoder #(
   // Physical address: jvt + (index <<2)
   logic [CVA6Cfg.VLEN-1:0] table_address;
   logic [CVA6Cfg.VLEN-1:0] req_addr_q, req_addr_d;
+  // The pending table read belongs to a flushed instruction: its response is
+  // dropped, else it would be taken for the read of the next table jump
+  logic drop_q, drop_d;
 
   assign ypb_zcmt_req_o.cacheable = config_pkg::is_inside_cacheable_regions(
       CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_zcmt_req_o.paddr}  //TO DO CHECK GRANULARITY
+  );
+  assign ypb_zcmt_req_o.bufferable = config_pkg::is_inside_bufferable_regions(
+      CVA6Cfg, {{64 - CVA6Cfg.PLEN{1'b0}}, ypb_zcmt_req_o.paddr}
   );
   assign ypb_zcmt_req_o.access_type = 1'b1;  //1 = data
 
@@ -75,28 +83,33 @@ module zcmt_decoder #(
     fetch_stall_o           = '0;
     jump_address_o          = '0;  // cache request port
     req_addr_d              = req_addr_q;
-    ypb_zcmt_req_o.paddr    = req_addr_q;
+    drop_d                  = drop_q;
+    ypb_zcmt_req_o.paddr    = CVA6Cfg.PLEN'(req_addr_q);
     ypb_zcmt_req_o.preq     = 1'b0;
     ypb_zcmt_req_o.we       = 1'b0;
-    ypb_zcmt_req_o.be       = 4'b1111;
-    ypb_zcmt_req_o.size     = 2'b10;
+    // One XLEN-bit table entry
+    ypb_zcmt_req_o.be       = '1;
+    ypb_zcmt_req_o.size     = CVA6Cfg.IS_XLEN64 ? 2'b11 : 2'b10;
     ypb_zcmt_req_o.wdata    = '0;
     ypb_zcmt_req_o.rready   = '1;
     ypb_zcmt_req_o.aid      = 1'b0;
     ypb_zcmt_req_o.kill_req = 1'b0;
     ypb_zcmt_req_o.vreq     = 1'b0;
     ypb_zcmt_req_o.atop     = ariane_pkg::AMO_NONE;
+    ypb_zcmt_req_o.cbo_op   = ariane_pkg::CBO_NONE;
     unique case (state_q)
       IDLE: begin
         fetch_stall_o = 1'b0;
         ypb_zcmt_req_o.preq = 1'b0;
         if (is_zcmt_instr_i) begin
-          if (CVA6Cfg.XLEN == 32) begin
-            req_addr_d = {jvt_i.base, 6'b000000} + {24'h0, instr_i[9:2], 2'b00};
-            ypb_zcmt_req_o.paddr = req_addr_d;
-            ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
-            fetch_stall_o = 1'b1;
-          end else illegal_instr_o = 1'b1;
+          // table_address = jvt.base + (index << log2(XLEN/8))
+          req_addr_d = {jvt_i.base, 6'b000000} +
+              (CVA6Cfg.IS_XLEN64 ? CVA6Cfg.VLEN'({instr_i[9:2], 3'b000}) :
+                                   CVA6Cfg.VLEN'({instr_i[9:2], 2'b00}));
+          ypb_zcmt_req_o.paddr = CVA6Cfg.PLEN'(req_addr_d);
+          ypb_zcmt_req_o.preq = 1'b1;  // Always assert req
+          fetch_stall_o = 1'b1;
+          drop_d = flush_i;
           if (!ypb_zcmt_rsp_i.pgnt) begin
             state_d = TABLE_WAIT_GNT;
           end else begin
@@ -111,7 +124,11 @@ module zcmt_decoder #(
 
       TABLE_WAIT_GNT: begin
         fetch_stall_o = 1'b1;
-        ypb_zcmt_req_o.preq = 1'b1;  // Deassert req once gnt is asserted1
+        // The request stays asserted until granted, even on a flush
+        ypb_zcmt_req_o.preq = 1'b1;
+        if (flush_i) begin
+          drop_d = 1'b1;
+        end
         if (ypb_zcmt_rsp_i.pgnt) begin
           state_d = TABLE_WAIT_RVALID;
         end
@@ -119,9 +136,16 @@ module zcmt_decoder #(
 
       TABLE_WAIT_RVALID: begin
         ypb_zcmt_req_o.preq = 1'b0;
-        if (ypb_zcmt_rsp_i.rvalid) begin
-          // save the PC relative XLEN table jump address
-          jump_address_o = $unsigned($signed(ypb_zcmt_rsp_i.rdata) - $signed(pc_i));
+        if (ypb_zcmt_rsp_i.rvalid && drop_q) begin
+          // Response of a flushed instruction: drop it and keep the fetch
+          // stalled for this cycle
+          fetch_stall_o = 1'b1;
+          drop_d = 1'b0;
+          state_d = IDLE;
+        end else if (ypb_zcmt_rsp_i.rvalid) begin
+          // Clear bit 0 of the JVT target before converting it to a PC-relative offset.
+          jump_address_o =
+              $unsigned($signed({ypb_zcmt_rsp_i.rdata[CVA6Cfg.XLEN-1:1], 1'b0}) - $signed(pc_i));
           if (instr_i[9:2] < 32) begin
             // jal pc_offset, x0 for no return stack
             instr_o = {20'h0, 5'h0, riscv::OpcodeJal};
@@ -136,6 +160,9 @@ module zcmt_decoder #(
           state_d = IDLE;
         end else begin
           fetch_stall_o = 1'b1;
+          if (flush_i) begin
+            drop_d = 1'b1;
+          end
           state_d = TABLE_WAIT_RVALID;
         end
 
@@ -150,9 +177,11 @@ module zcmt_decoder #(
     if (~rst_ni) begin
       state_q <= IDLE;
       req_addr_q <= '0;
+      drop_q <= 1'b0;
     end else begin
       state_q <= state_d;
       req_addr_q <= req_addr_d;
+      drop_q <= drop_d;
     end
   end
 endmodule

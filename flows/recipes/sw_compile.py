@@ -327,7 +327,18 @@ def sw_compile(
     # One `nm` invocation for all symbols. Addresses are recorded in the
     # build manifest (raw hex, consumed by the *_uvm_run and spike-run
     # recipes) and in the report as `0x...`.
-    wanted_symbols = ["tohost", "GLOBAL_PATTERN_start", "GLOBAL_PATTERN_end"]
+    # irq_* label the hooks of the deterministic interrupt feature: the interrupt
+    # agent raises the matching channel when that address retires.
+    # load_err_word marks a word whose load gets an error response.
+    wanted_symbols = [
+        "tohost",
+        "GLOBAL_PATTERN_start",
+        "GLOBAL_PATTERN_end",
+        "irq_mei_hook",
+        "irq_timer_hook",
+        "irq_ipi_hook",
+        "load_err_word",
+    ]
 
     nm_output = run_cmd(
         cmd=[f"{tools_path}/bin/{nm}", str(elf_file)],
@@ -349,10 +360,18 @@ def sw_compile(
         if len(parts) >= 3 and parts[2] in wanted_symbols:
             symbols[parts[2]] = parts[0]
 
+    # Test features a test may not use: their absence is not worth a warning.
+    optional_symbols = {
+        "irq_mei_hook",
+        "irq_timer_hook",
+        "irq_ipi_hook",
+        "load_err_word",
+    }
+
     for symbol_name in wanted_symbols:
         if symbol_name in symbols:
             report.success(f"{symbol_name}: 0x{symbols[symbol_name]}")
-        else:
+        elif symbol_name not in optional_symbols:
             report.warning(f"{symbol_name} not found")
 
     if symbols:

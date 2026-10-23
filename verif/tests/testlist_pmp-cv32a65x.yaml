@@ -41,7 +41,7 @@ testlist:
   - test: defined_matches
     <<: *common_test_config
     iterations: 0
-    asm_tests: <path_var>/custom/pmp/defined_matches.S
+    asm_tests: <path_var>/custom/pmp/defined_matches_test.S
 
   - test: double_entries_test
     <<: *common_test_config

@@ -54,7 +54,7 @@ module cvxif_fu
 
   assign result_ready_o = 1'b1;
 
-  assign x_ready_o = 1'b1; // Readyness of cvxif_fu is determined in issue stage by CVXIF issue interface
+  assign x_ready_o = 1'b1; // Readiness of cvxif_fu is determined in issue stage by CVXIF issue interface
   // Result signals
   assign x_valid_o = x_illegal_i || result_valid_i;
   assign x_result_o = result_i.data;
@@ -66,7 +66,15 @@ module cvxif_fu
   always_comb begin
     x_exception_o.valid = x_illegal_i;
     x_exception_o.cause = x_illegal_i ? riscv::ILLEGAL_INSTR : '0;
-    if (CVA6Cfg.TvalEn) x_exception_o.tval = x_off_instr_i;
+    //  TODO Optimization : Set exception in IRO.
+    x_exception_o.tval = CVA6Cfg.TvalEn ? CVA6Cfg.XLEN'(x_off_instr_i) : '0;
+    // Hypervisor exception fields
+    x_exception_o.tval2 = {CVA6Cfg.GPLEN{1'b0}};
+    x_exception_o.tinst = '0;
+    //  tval holds the offending instruction, not an address, so it is never a
+    //  guest virtual address whatever the virtualization mode is.
+    x_exception_o.gva = 1'b0;
+    x_exception_o.timing = '0;
   end
 
 endmodule

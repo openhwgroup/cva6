@@ -25,6 +25,7 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/fpga-support/rtl/SyncDpRam_ind_r_w.sv
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/vendor/pulp-platform/axi/include/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
++incdir+${HPDCACHE_DIR}/rtl/src/utils/ecc
 
 // Floating point unit
 // T-Head OpenE906 vendor files (for gated_clk_cell and pa_fdsu modules)
@@ -87,10 +88,10 @@ ${CVA6_REPO_DIR}/vendor/pulp-platform/axi/src/axi_pkg.sv
 
 // Packages
 ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
-${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 ${CVA6_REPO_DIR}/core/include/build_config_pkg.sv
 ${CVA6_REPO_DIR}/core/include/aes_pkg.sv
+${CVA6_REPO_DIR}/core/include/triggers_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/cvxif_compressed_if_driver.sv
@@ -139,6 +140,7 @@ ${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/cva6_pipeline.sv
 ${CVA6_REPO_DIR}/core/cva6_rvfi_probes.sv
 ${CVA6_REPO_DIR}/core/alu.sv
+${CVA6_REPO_DIR}/core/alu_wrapper.sv
 ${CVA6_REPO_DIR}/core/aes.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/fpu_wrap.sv
@@ -149,6 +151,7 @@ ${CVA6_REPO_DIR}/core/controller.sv
 ${CVA6_REPO_DIR}/core/zcmt_decoder.sv
 ${CVA6_REPO_DIR}/core/csr_buffer.sv
 ${CVA6_REPO_DIR}/core/csr_regfile.sv
+${CVA6_REPO_DIR}/core/trigger_module.sv
 ${CVA6_REPO_DIR}/core/decoder.sv
 ${CVA6_REPO_DIR}/core/ex_stage.sv
 ${CVA6_REPO_DIR}/core/instr_realign.sv
@@ -166,6 +169,7 @@ ${CVA6_REPO_DIR}/core/ariane_regfile_ff.sv
 ${CVA6_REPO_DIR}/core/ariane_regfile_fpga.sv
 // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
 ${CVA6_REPO_DIR}/core/scoreboard.sv
+${CVA6_REPO_DIR}/core/raw_checker.sv
 ${CVA6_REPO_DIR}/core/store_buffer.sv
 ${CVA6_REPO_DIR}/core/amo_buffer.sv
 ${CVA6_REPO_DIR}/core/store_unit.sv
@@ -178,6 +182,7 @@ ${CVA6_REPO_DIR}/core/cva6_fifo_v3.sv
 // What is "frontend"?
 ${CVA6_REPO_DIR}/core/frontend/btb.sv
 ${CVA6_REPO_DIR}/core/frontend/bht.sv
+${CVA6_REPO_DIR}/core/frontend/bht2lvl.sv
 ${CVA6_REPO_DIR}/core/frontend/ras.sv
 ${CVA6_REPO_DIR}/core/frontend/instr_scan.sv
 ${CVA6_REPO_DIR}/core/frontend/instr_queue.sv
@@ -185,12 +190,25 @@ ${CVA6_REPO_DIR}/core/frontend/frontend.sv
 
 // Cache subsystem
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_obi_adapter_subsystem.sv
-${CVA6_REPO_DIR}/core/cache_subsystem/cva6_icache.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/axi_adapter.sv
 -F ${HPDCACHE_DIR}/rtl/hpdcache.Flist
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_36_29_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_36_29_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_39_32_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_39_32_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_55_48_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_55_48_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_72_64_dec.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_72_64_enc.sv
+${HPDCACHE_DIR}/rtl/src/utils/ecc/prim_secded_pkg.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_resp_demux.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_read.sv
 ${HPDCACHE_DIR}/rtl/src/utils/hpdcache_mem_to_axi_write.sv
+${CVA6_REPO_DIR}/core/include/dummy_l15_pkg.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_to_l15.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_l15_req_arbiter.sv
+${HPDCACHE_DIR}/rtl/src/utils/hpdcache_l15_resp_demux.sv
+${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem_l15_adapter.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_subsystem_axi_arbiter.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpdcache_if_adapter.sv
@@ -200,6 +218,9 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/cva6_hpicache_wrapper.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_wbyteenable_1rw.sv
 ${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_wmask_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_ecc_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_wbyteenable_ecc_1rw.sv
+${HPDCACHE_DIR}/rtl/src/common/macros/blackbox/hpdcache_sram_wmask_ecc_1rw.sv
 
 // Physical Memory Protection
 // NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
