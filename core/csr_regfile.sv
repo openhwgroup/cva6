@@ -1677,6 +1677,7 @@ module csr_regfile
                              (1 << riscv::ST_ADDR_MISALIGNED) |
                              (1 << riscv::ST_ACCESS_FAULT) |
                              (1 << riscv::ENV_CALL_UMODE) |
+                             (1 << riscv::ENV_CALL_SMODE) |
                              ((CVA6Cfg.RVH ? 1 : 0) << riscv::ENV_CALL_VSMODE) |
                              (1 << riscv::INSTR_PAGE_FAULT) |
                              (1 << riscv::LOAD_PAGE_FAULT) |
