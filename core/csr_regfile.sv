@@ -1745,6 +1745,10 @@ module csr_regfile
           // we are in vector mode, this implementation requires the additional
           // alignment constraint of 64 * 4 bytes
           if (DirVecOnly) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, DirVecOnly};
+          // Machine-mode instruction fetches use physical addresses. Legalize
+          // mtvec to the implemented physical address width so its CSR-visible
+          // value matches the address that can actually be fetched.
+          mtvec_d = CVA6Cfg.XLEN'(CVA6Cfg.PLEN'(mtvec_d));
         end
         riscv::CSR_MCOUNTEREN: begin
           if (CVA6Cfg.RVU) mcounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
