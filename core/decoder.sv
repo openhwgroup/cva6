@@ -363,40 +363,63 @@ module decoder
                 else if (!hu_i && priv_lvl_i == riscv::PRIV_LVL_U) illegal_instr = 1'b1;
                 unique case (instr.rtype.funct7)
                   7'b011_0000: begin
-                    if (instr.rtype.rs2 == 5'b0) begin
-                      instruction_o.op = ariane_pkg::HLV_B;
-                    end
-                    if (instr.rtype.rs2 == 5'b1) begin
-                      instruction_o.op = ariane_pkg::HLV_BU;
-                    end
+                    unique case (instr.rtype.rs2)
+                      5'd0: instruction_o.op = ariane_pkg::HLV_B;
+                      5'd1: instruction_o.op = ariane_pkg::HLV_BU;
+                      default: illegal_instr = 1'b1;
+                    endcase
                   end
                   7'b011_0010: begin
-                    if (instr.rtype.rs2 == 5'b0) begin
-                      instruction_o.op = ariane_pkg::HLV_H;
-                    end
-                    if (instr.rtype.rs2 == 5'b1) begin
-                      instruction_o.op = ariane_pkg::HLV_HU;
-                    end
-                    if (instr.rtype.rs2 == 5'b11) begin
-                      instruction_o.op = ariane_pkg::HLVX_HU;
-                    end
+                    unique case (instr.rtype.rs2)
+                      5'd0: instruction_o.op = ariane_pkg::HLV_H;
+                      5'd1: instruction_o.op = ariane_pkg::HLV_HU;
+                      5'd3: instruction_o.op = ariane_pkg::HLVX_HU;
+                      default: illegal_instr = 1'b1;
+                    endcase
                   end
                   7'b011_0100: begin
-                    if (instr.rtype.rs2 == 5'b0) begin
-                      instruction_o.op = ariane_pkg::HLV_W;
-                    end
-                    if (instr.rtype.rs2 == 5'b1) begin
-                      instruction_o.op = ariane_pkg::HLV_WU;
-                    end
-                    if (instr.rtype.rs2 == 5'b11) begin
-                      instruction_o.op = ariane_pkg::HLVX_WU;
+                    unique case (instr.rtype.rs2)
+                      5'd0: instruction_o.op = ariane_pkg::HLV_W;
+                      5'd1: instruction_o.op = ariane_pkg::HLV_WU;
+                      5'd3: instruction_o.op = ariane_pkg::HLVX_WU;
+                      default: illegal_instr = 1'b1;
+                    endcase
+                  end
+                  7'b011_0001: begin
+                    if (instr.rtype.rd == '0) begin
+                      instruction_o.op = ariane_pkg::HSV_B;
+                    end else begin
+                      illegal_instr = 1'b1;
                     end
                   end
-                  7'b011_0001: instruction_o.op = ariane_pkg::HSV_B;
-                  7'b011_0011: instruction_o.op = ariane_pkg::HSV_H;
-                  7'b011_0101: instruction_o.op = ariane_pkg::HSV_W;
-                  7'b011_0110: instruction_o.op = ariane_pkg::HLV_D;
-                  7'b011_0111: instruction_o.op = ariane_pkg::HSV_D;
+                  7'b011_0011: begin
+                    if (instr.rtype.rd == '0) begin
+                      instruction_o.op = ariane_pkg::HSV_H;
+                    end else begin
+                      illegal_instr = 1'b1;
+                    end
+                  end
+                  7'b011_0101: begin
+                    if (instr.rtype.rd == '0) begin
+                      instruction_o.op = ariane_pkg::HSV_W;
+                    end else begin
+                      illegal_instr = 1'b1;
+                    end
+                  end
+                  7'b011_0110: begin
+                    if (instr.rtype.rs2 == '0) begin
+                      instruction_o.op = ariane_pkg::HLV_D;
+                    end else begin
+                      illegal_instr = 1'b1;
+                    end
+                  end
+                  7'b011_0111: begin
+                    if (instr.rtype.rd == '0) begin
+                      instruction_o.op = ariane_pkg::HSV_D;
+                    end else begin
+                      illegal_instr = 1'b1;
+                    end
+                  end
                   default: illegal_instr = 1'b1;
 
                 endcase
@@ -477,15 +500,20 @@ module decoder
                 instruction_o.rs1[4:0] = instr.itype.rs1;
                 // not used - zero
                 instruction_o.rs2[4:0] = '0;
-                unique case (instr.itype.imm)
-                  // CBO.INVAL
-                  12'b000000000000: instruction_o.op = ariane_pkg::CBO_INVAL;
-                  // CBO.CLEAN
-                  12'b000000000001: instruction_o.op = ariane_pkg::CBO_CLEAN;
-                  // CBO.FLUSH
-                  12'b000000000010: instruction_o.op = ariane_pkg::CBO_FLUSH;
-                  default: illegal_instr = 1'b1;
-                endcase
+                // rd is fixed to zero for CBO.INVAL/CLEAN/FLUSH encodings.
+                if (instr.itype.rd != '0) begin
+                  illegal_instr = 1'b1;
+                end else begin
+                  unique case (instr.itype.imm)
+                    // CBO.INVAL
+                    12'b000000000000: instruction_o.op = ariane_pkg::CBO_INVAL;
+                    // CBO.CLEAN
+                    12'b000000000001: instruction_o.op = ariane_pkg::CBO_CLEAN;
+                    // CBO.FLUSH
+                    12'b000000000010: instruction_o.op = ariane_pkg::CBO_FLUSH;
+                    default: illegal_instr = 1'b1;
+                  endcase
+                end
 
                 if (instruction_o.op == ariane_pkg::CBO_INVAL) begin
                   // CBO.INVAL permission checks

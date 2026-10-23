@@ -126,6 +126,44 @@ testlist:
     iterations: 1
     asm_tests: <path_var>/custom/issues/decoder-zip-unzip-rv64.S
 
+  - test: decoder-hlv-hsv-fixed-fields-rv64
+    <<: *common_test_config
+    description: >
+      Check that reserved HLV/HLVX rs2 encodings and HSV encodings with
+      non-zero rd raise illegal-instruction exceptions.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/decoder-hlv-hsv-fixed-fields-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      ../tests/custom/common/crt.S
+      -I../tests/custom/env
+      -I../tests/custom/common
+      -lgcc
+
+  - test: decoder-cbo-rd-zero-rv64
+    <<: *common_test_config
+    description: >
+      Check that CBO.INVAL, CBO.CLEAN, and CBO.FLUSH encodings with
+      non-zero rd raise illegal-instruction exceptions.
+    iterations: 1
+    asm_tests: <path_var>/custom/issues/decoder-cbo-rd-zero-rv64.S
+    gcc_opts: >-
+      -static
+      -misa-spec=2.2
+      -mcmodel=medany
+      -fvisibility=hidden
+      -nostdlib
+      -nostartfiles
+      ../tests/custom/common/crt.S
+      -I../tests/custom/env
+      -I../tests/custom/common
+      -lgcc
+
   - test: pmp-misalign-priority-over-access-fault
     description: >
       Misaligned hsv.d/hlv.d to a PMP-denied paddr must report
