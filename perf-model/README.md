@@ -28,19 +28,37 @@ The disassembled RVFI trace is `build/<target>/simulation/sim_rtl/<test-name>/sp
 python3 perf-model/model.py build/<target>/simulation/sim_rtl/<test-name>/spike_dasm.log
 ```
 
-The annotated trace is generated in an `annotated.log` file in the current directory.
+The annotated trace is generated in an `annotated.log` file in the current directory (`--output` to change it).
 
 It prints a lot of debug information so that you can see all the events (note: it slows down model execution).
-To disable these prints, modify the instantiation with `Model(debug=False)` in the `main` function.
+`-q` disables these prints.
 
 At the end of the simulation, the model prints statistics with the `print_stats` call in the `main` function.
-These statistics can be performed on the timed part, which is filtered with the `filter_timed_part` function.
+With `--timed`, these statistics are computed on the timed part only, which is filtered with the `filter_timed_part` function: the instructions between the two `csrr minstret`.
 Feel free to modify the `filter_timed_part` function to suit your needs.
 
 
 ### Exploring design space
 
-In `model.py`, the `main` function runs the model with arguments which override default values.
+The parameters of the model are command line options (`python3 perf-model/model.py --help`):
+
+| Option            | Default     | Description                             |
+| :---              | :---        | :---                                    |
+| `--issue`         | 2           | Issue width                             |
+| `--commit`        | 2           | Commit width                            |
+| `--sb-len`        | 8           | Scoreboard entries                      |
+| `--fetch-size`    | 4 * issue   | Instruction queue fetch size, in bytes  |
+| `--ras-depth`     | 2           | Return address stack depth              |
+| `--bht-entries`   | 128         | Branch history table entries            |
+| `--no-forwarding` |             | Disable operand forwarding              |
+| `--no-renaming`   |             | Disable register renaming               |
+
+For instance, the timed part of CoreMark with one commit port:
+
+```bash
+python3 perf-model/model.py -q --timed --commit 1 build/cv32a65x/simulation/sim_rtl/coremark/spike_dasm.log
+```
+
 Generic parameters are available in `Model.__init__`.
 You can add new parameters to explore here.
 

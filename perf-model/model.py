@@ -11,7 +11,7 @@
 Performance model of the cva6
 """
 
-import sys
+import argparse
 import re
 
 from dataclasses import dataclass
@@ -392,9 +392,11 @@ class Model:
         fetch_size=None,
         has_forwarding=True,
         has_renaming=True,
+        ras_depth=2,
+        bht_entries=128,
     ):
-        self.ras = Ras(debug=debug)
-        self.bht = Bht()
+        self.ras = Ras(depth=ras_depth, debug=debug)
+        self.bht = Bht(entries=bht_entries)
         self.instr_queue = []
         self.scoreboard = []
         self.fus = FusBusy(issue > 1)
@@ -736,18 +738,66 @@ def print_stats(instructions):
         print_data(f"{ek}/instr", f"{100 * count / n_instr:.2f}%")
 
 
-def main(input_file: str):
-    "Entry point"
+def parse_args(argv=None):
+    "Command line options, each one a parameter of Model"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("trace", help="RVFI trace (spike_dasm.log of cook.py)")
+    parser.add_argument("--issue", type=int, default=2, help="issue width")
+    parser.add_argument("--commit", type=int, default=2, help="commit width")
+    parser.add_argument("--sb-len", type=int, default=8, help="scoreboard entries")
+    parser.add_argument(
+        "--fetch-size",
+        type=int,
+        default=None,
+        help="instruction queue fetch size in bytes (default: 4 * issue)",
+    )
+    parser.add_argument("--ras-depth", type=int, default=2, help="RAS depth")
+    parser.add_argument("--bht-entries", type=int, default=128, help="BHT entries")
+    parser.add_argument(
+        "--no-forwarding", action="store_true", help="disable operand forwarding"
+    )
+    parser.add_argument(
+        "--no-renaming", action="store_true", help="disable register renaming"
+    )
+    parser.add_argument(
+        "--timed",
+        action="store_true",
+        help="statistics on the part between the two csrr minstret only",
+    )
+    parser.add_argument(
+        "--output",
+        default="annotated.log",
+        help="annotated trace (default: annotated.log)",
+    )
+    parser.add_argument(
+        "-q", "--quiet", action="store_true", help="do not print the events"
+    )
+    return parser.parse_args(argv)
 
-    model = Model(debug=True, issue=2, commit=2)
-    model.load_file(input_file)
+
+def main(argv=None):
+    "Entry point"
+    args = parse_args(argv)
+
+    model = Model(
+        debug=not args.quiet,
+        issue=args.issue,
+        commit=args.commit,
+        sb_len=args.sb_len,
+        fetch_size=args.fetch_size,
+        has_forwarding=not args.no_forwarding,
+        has_renaming=not args.no_renaming,
+        ras_depth=args.ras_depth,
+        bht_entries=args.bht_entries,
+    )
+    model.load_file(args.trace)
     model.run()
 
-    write_trace("annotated.log", model.retired)
+    write_trace(args.output, model.retired)
 
-    # print_stats(filter_timed_part(model.retired))
-    print_stats(model.retired)
+    retired = filter_timed_part(model.retired) if args.timed else model.retired
+    print_stats(retired)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main()
