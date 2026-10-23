@@ -273,7 +273,7 @@ module cva6_rvfi
   logic [(CVA6Cfg.XLEN/8)-1:0] lsu_ctrl_be;
   logic [CVA6Cfg.TRANS_ID_BITS-1:0] lsu_ctrl_trans_id;
 
-  logic [((CVA6Cfg.CvxifEn || CVA6Cfg.RVV) ? 5 : 4)-1:0][CVA6Cfg.XLEN-1:0] wbdata;
+  logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.XLEN-1:0] wbdata;
   logic [CVA6Cfg.NrCommitPorts-1:0] commit_ack;
   logic [CVA6Cfg.PLEN-1:0] mem_paddr;
   logic debug_mode;
@@ -678,7 +678,6 @@ module cva6_rvfi
     `CONNECT_RVFI_SAME(1'b1, dcache)
     `CONNECT_RVFI_SAME(1'b1, icache)
 
-    `CONNECT_RVFI_SAME(CVA6Cfg.EnableAccelerator, acc_cons)
     `CONNECT_RVFI_SAME(CVA6Cfg.RVZCMT, jvt)
     `CONNECT_RVFI_FULL(1'b1, pmpcfg0, csr.pmpcfg_q[CVA6Cfg.XLEN/8-1:0])
     `CONNECT_RVFI_FULL(CVA6Cfg.IS_XLEN32, pmpcfg1, csr.pmpcfg_q[7:4])
