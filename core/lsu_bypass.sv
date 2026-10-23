@@ -122,6 +122,10 @@ module lsu_bypass
   always_comb begin : output_assignments
     if (empty) begin
       lsu_ctrl_o = lsu_req_i;
+      // Branches of speculative loads resolve in the cycle the load arrives. Mark mispredicted
+      // loads on the pass-through path too, which mem_n alone records otherwise.
+      if (CVA6Cfg.SpeculativeSb && lsu_req_i.is_speculative_load && resolved_branch_i.valid && resolved_branch_i.is_mispredict)
+        lsu_ctrl_o.is_speculative_load_miss = 1'b1;
     end else begin
       lsu_ctrl_o = mem_q[read_pointer_q];
     end
