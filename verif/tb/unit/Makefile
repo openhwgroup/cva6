@@ -22,5 +22,10 @@ trigger_napot_test:
 	$(VERILATOR) --binary --assert --timing --top-module $@ --Mdir $(BUILD_ROOT)/$@ $(ROOT)/core/include/triggers_pkg.sv $@.sv
 	$(BUILD_ROOT)/$@/V$@
 
+store_buffer_cbo_hazard_test:
+	mkdir -p $(BUILD_ROOT)
+	$(VERILATOR) --binary --assert --timing -Wno-fatal -Wno-WIDTHTRUNC -Wno-WIDTHEXPAND --top-module $@ --Mdir $(BUILD_ROOT)/$@ $(ROOT)/core/include/config_pkg.sv $(ROOT)/core/include/cv64a6_imafdc_sv39_hpdcache_wb_config_pkg.sv $(ROOT)/core/include/build_config_pkg.sv $(ROOT)/core/include/riscv_pkg.sv $(ROOT)/core/include/ariane_pkg.sv $(ROOT)/core/store_buffer.sv $@.sv
+	$(BUILD_ROOT)/$@/V$@
+
 clean:
 	rm -rf $(BUILD_ROOT)
