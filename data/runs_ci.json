@@ -1,5 +1,26 @@
 [
   {
+    "id": 39916512144,
+    "source": "github-actions",
+    "simulator": "verilator",
+    "run_number": 6659,
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/openhwfoundation/cva6/actions/runs/39916512144",
+    "head_branch": "jchen/master-candidate-openhw-tier-ci",
+    "head_sha": "c0456d49",
+    "event": "pull_request",
+    "created_at": "2026-10-23T07:14:49Z",
+    "updated_at": "2026-10-23T07:14:49Z",
+    "run_started_at": "2026-10-23T07:14:49Z",
+    "duration_seconds": 0,
+    "total_jobs": 0,
+    "passed_jobs": 0,
+    "failed_jobs": 0,
+    "skipped_jobs": 0,
+    "jobs": []
+  },
+  {
     "id": 39891765328,
     "source": "github-actions",
     "simulator": "verilator",
@@ -3877,26 +3898,5 @@
         "simulator": "veri-testharness"
       }
     ]
-  },
-  {
-    "id": 38274497560,
-    "source": "github-actions",
-    "simulator": "verilator",
-    "run_number": 6609,
-    "status": "completed",
-    "conclusion": "action_required",
-    "html_url": "https://github.com/openhwfoundation/cva6/actions/runs/38274497560",
-    "head_branch": "ffrancois-inria_orfs-bazel-flow",
-    "head_sha": "a8523968",
-    "event": "pull_request",
-    "created_at": "2026-10-12T16:01:40Z",
-    "updated_at": "2026-10-12T16:01:40Z",
-    "run_started_at": "2026-10-12T16:01:40Z",
-    "duration_seconds": 0,
-    "total_jobs": 0,
-    "passed_jobs": 0,
-    "failed_jobs": 0,
-    "skipped_jobs": 0,
-    "jobs": []
   }
 ]
