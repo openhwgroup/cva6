@@ -1531,6 +1531,13 @@ module decoder
                   3'b011:  if (~CVA6Cfg.XF8) illegal_instr = 1'b1;
                   default: illegal_instr = 1'b1;
                 endcase
+                if (CVA6Cfg.XF16ALT && instr.rftype.fmt == 2'b10) begin
+                  if ((instr.rftype.rm == 3'b101 && instr.rftype.rs2[22:20] == 3'b110) ||
+                      (instr.rftype.rm != 3'b101 && instr.rftype.rs2[22:20] == 3'b010))
+                    illegal_instr = 1'b1;
+                end else if (instr.rftype.rs2[21:20] == instr.rftype.fmt) begin
+                  illegal_instr = 1'b1;
+                end
               end
               5'b10100: begin
                 instruction_o.op = ariane_pkg::FCMP;  // feq/flt/fle.fmt - FP Comparisons
